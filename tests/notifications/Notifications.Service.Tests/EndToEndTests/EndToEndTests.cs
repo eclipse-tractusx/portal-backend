@@ -1,9 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Notifications.Service.Tests.EndToEndTests;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Registration.Service.Tests.RestAssured;
+using Tests.Shared.EndToEndTests;
 using Tests.Shared.RestAssured.AuthFlow;
 using Xunit;
 using static RestAssured.Dsl;
@@ -12,16 +13,16 @@ namespace Notifications.Service.Tests.RestAssured;
 
 [TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
     "Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests")]
-public class NotificationEndpointTests
+public class EndToEndTests
 {
-    private static readonly string BaseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/notification";
     private static readonly string AdminEndPoint = "/api/administration";
     private static string? _companyUserId;
     private static string? _techUserToken;
     private static string? _username;
-    private const string TechCompanyName = "TestAutomation";
-    private const string OfferId = "9b957704-3505-4445-822c-d7ef80f27fcd";
+    private static readonly string TechCompanyName = TestResources.TechCompanyName;
+    private static readonly string OfferId = TestResources.NotificationOfferId;
     private static readonly Secrets Secrets = new ();
 
     [Theory]

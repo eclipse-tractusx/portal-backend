@@ -6,6 +6,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Tests.Shared.EndToEndTests;
 using Tests.Shared.RestAssured.AuthFlow;
 using static RestAssured.Dsl;
 
@@ -13,11 +14,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestA
 
 public static class AdministrationEndpointHelper
 {
-    private static readonly string BaseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/administration";
-    private static readonly string OperatorCompanyName = "CX-Operator";
     private static readonly Secrets Secrets = new();
     private static string? _operatorToken;
+    private static readonly string OperatorCompanyName = TestResources.OperatorCompanyName;
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {

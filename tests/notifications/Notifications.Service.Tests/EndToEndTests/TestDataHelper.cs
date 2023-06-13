@@ -1,20 +1,18 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Castle.Core.Internal;
+using Notifications.Service.Tests.RestAssured;
+using Tests.Shared.EndToEndTests;
 
-namespace Notifications.Service.Tests.RestAssured;
+namespace Notifications.Service.Tests.EndToEndTests;
 
 public static class TestDataHelper
 {
-    private static readonly string TestDataDirectory = ".." + Path.DirectorySeparatorChar + ".." +
-                                              Path.DirectorySeparatorChar + ".." +
-                                              Path.DirectorySeparatorChar + ".." +
-                                              Path.DirectorySeparatorChar + ".." +
-                                              Path.DirectorySeparatorChar + "shared" +
-                                              Path.DirectorySeparatorChar + "Tests.Shared" +
-                                              Path.DirectorySeparatorChar + "RestAssured" +
-                                              Path.DirectorySeparatorChar + "TestData";
-
+    private static readonly string TestDataDirectory = Directory.GetParent(TestResources.GetSourceFilePathName()).Parent.Parent.Parent.FullName +
+                                                       Path.DirectorySeparatorChar + "shared" +
+                                                       Path.DirectorySeparatorChar + "Tests.Shared" +
+                                                       Path.DirectorySeparatorChar + "EndToEndTests" +
+                                                       Path.DirectorySeparatorChar + "TestData";
 
     public static List<TestDataModel>? GetTestData()
     {

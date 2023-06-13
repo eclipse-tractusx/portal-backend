@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using Registration.Service.Tests.EndToEndTests;
+using Xunit;
 
 namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
