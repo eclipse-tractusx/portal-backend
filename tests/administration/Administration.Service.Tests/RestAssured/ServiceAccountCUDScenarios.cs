@@ -7,8 +7,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestA
 public class ServiceAccountCUDScenarios
 {
     //Scenario - Create a new service account
-    [Fact]
-    public async Task Scenario_HappyPathCreateServiceAccount()
+    [Theory]
+    [MemberData(nameof(GetDataEntries))]
+    public async Task Scenario_HappyPathCreateServiceAccount(string[] permissions)
     {
         await AdministrationEndpointHelper.GetOperatorToken();
 
@@ -20,7 +21,7 @@ public class ServiceAccountCUDScenarios
 
         //create a new service account
         var newServiceAccount =
-            AdministrationEndpointHelper.CreateNewServiceAccount(techUserName, "This is a new test technical user");
+            AdministrationEndpointHelper.CreateNewServiceAccount(permissions, techUserName, "This is a new test technical user");
 
         if (newServiceAccount != null)
         {
@@ -50,8 +51,9 @@ public class ServiceAccountCUDScenarios
     }
 
     //Scenario - Create a new service account and update the same
-    [Fact]
-    public async Task Scenario_HappyPathCreateAndUpdateServiceAccount()
+    [Theory]
+    [MemberData(nameof(GetDataEntries))]
+    public async Task Scenario_HappyPathCreateAndUpdateServiceAccount(string[] permissions)
     {
         await AdministrationEndpointHelper.GetOperatorToken();
         var now = DateTime.Now;
@@ -59,7 +61,7 @@ public class ServiceAccountCUDScenarios
 
         //create a new service account
         var newServiceAccount =
-            AdministrationEndpointHelper.CreateNewServiceAccount(techUserName, "This is a new test technical user");
+            AdministrationEndpointHelper.CreateNewServiceAccount(permissions, techUserName, "This is a new test technical user");
 
         //update the previous created service account details by changing "name" and "description"
         var newTechUserName = $"UpdatedTechUserName_{now:s}";
@@ -76,8 +78,9 @@ public class ServiceAccountCUDScenarios
     }
 
     //Scenario - Create a new service account and update the credentials
-    [Fact]
-    public async Task Scenario_HappyPathCreateServiceAccountAndUpdateCredentials()
+    [Theory]
+    [MemberData(nameof(GetDataEntries))]
+    public async Task Scenario_HappyPathCreateServiceAccountAndUpdateCredentials(string[] permissions)
     {
         await AdministrationEndpointHelper.GetOperatorToken();
 
@@ -86,7 +89,7 @@ public class ServiceAccountCUDScenarios
 
         // create a new service account
         var newServiceAccount =
-            AdministrationEndpointHelper.CreateNewServiceAccount(techUserName, "This is a new test technical user");
+            AdministrationEndpointHelper.CreateNewServiceAccount(permissions, techUserName, "This is a new test technical user");
 
         //reset service account credentials
         var updatedServiceAccount =
@@ -105,8 +108,9 @@ public class ServiceAccountCUDScenarios
     }
 
     //Scenario - Create and delete a new service account
-    [Fact]
-    public async Task Scenario_HappyPathCreateAndDeleteServiceAccount()
+    [Theory]
+    [MemberData(nameof(GetDataEntries))]
+    public async Task Scenario_HappyPathCreateAndDeleteServiceAccount(string[] permissions)
     {
         await AdministrationEndpointHelper.GetOperatorToken();
         var now = DateTime.Now;
@@ -114,7 +118,7 @@ public class ServiceAccountCUDScenarios
 
         // create a new service account
         var newServiceAccount =
-            AdministrationEndpointHelper.CreateNewServiceAccount(techUserName, "This is a new test technical user");
+            AdministrationEndpointHelper.CreateNewServiceAccount(permissions, techUserName, "This is a new test technical user");
 
         //  check if the new service account is available
         var existingServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
@@ -158,4 +162,13 @@ public class ServiceAccountCUDScenarios
         var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
         return jwtSecurityToken.Payload.ContainsKey(attribute);
     }
+    
+    private static IEnumerable<object> GetDataEntries()
+    {
+        var testDataEntries = TestDataHelper.GetTestData("TestDataServiceAccountCUDScenarios.json");
+        foreach (var t in testDataEntries)
+        {
+            yield return new object[] { t };
+        }
+    } 
 }

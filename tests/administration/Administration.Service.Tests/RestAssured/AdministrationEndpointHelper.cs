@@ -16,11 +16,8 @@ public static class AdministrationEndpointHelper
     private static readonly string BaseUrl = "https://portal-backend.dev.demo.catena-x.net";
     private static readonly string EndPoint = "/api/administration";
     private static readonly string OperatorCompanyName = "CX-Operator";
-    private static string? _userCompanyToken;
     private static readonly Secrets Secrets = new();
     private static string? _operatorToken;
-
-    private static string? _applicationId;
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
@@ -76,12 +73,16 @@ public static class AdministrationEndpointHelper
     }
 
     //POST: api/administration/serviceaccount/owncompany/serviceaccounts - create a new service account
-    public static ServiceAccountDetails? CreateNewServiceAccount(string techUserName, string description)
+    public static ServiceAccountDetails? CreateNewServiceAccount(string[] permissions, string techUserName, string description)
     {
         var allServiceAccountsRoles = GetAllServiceAccountRoles();
         var userRoleIds = new List<Guid>();
-        userRoleIds.AddRange(
-            from t in allServiceAccountsRoles where t.UserRoleText.Contains("BPDM") select t.UserRoleId);
+
+        foreach (var p in permissions)
+        {
+            userRoleIds.AddRange(
+                from t in allServiceAccountsRoles where t.UserRoleText.Contains(p) select t.UserRoleId);
+        }
 
         var serviceAccountCreationInfo =
             new ServiceAccountCreationInfo(techUserName, description, IamClientAuthMethod.SECRET, userRoleIds);
