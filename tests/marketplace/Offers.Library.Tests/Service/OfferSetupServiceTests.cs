@@ -275,7 +275,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles,(_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, (_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -377,7 +377,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), (Guid.NewGuid(),Guid.NewGuid()), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), (Guid.NewGuid(), Guid.NewGuid()), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -708,7 +708,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
-            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)            
+            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.IsUserOfProvider, true)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(true, "https://www.test.de"))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
@@ -745,7 +745,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
-            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)            
+            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.IsUserOfProvider, true)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(false, null))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
