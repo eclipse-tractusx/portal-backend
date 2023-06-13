@@ -98,7 +98,7 @@ public class ApplicationRepository : IApplicationRepository
                 companyApplication.CompanyUser.Email,
                 companyApplication.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
                 new CompanyData(companyApplication.Application.Company!.Name,companyApplication.Application.Company!.AddressId,companyApplication.Application.Company!.Address!.Streetname,companyApplication.Application.Company!.Address!.City,companyApplication.Application.Company!.Address!.Country!.CountryNameDe,companyApplication.Application.Company!.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),companyApplication.Application.Company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
-                companyApplication.Application.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                companyApplication.Application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
                             consent.AgreementId, consent.ConsentStatusId))
                 ))
