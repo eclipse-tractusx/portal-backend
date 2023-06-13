@@ -97,6 +97,11 @@ public class ServiceAccountCUDScenarios
         Assert.True(newServiceAccount.Secret != updatedServiceAccount.Secret);
 
         //get a token with the new credentials to ensure that the reset was really successful
+        var token = RetrieveTechUserToken(updatedServiceAccount.ClientId, updatedServiceAccount.Secret);
+        
+        if (token.IsNullOrEmpty())
+            throw new Exception("Token for new technical user could not be fetched correctly");
+        Assert.NotEmpty(token);
     }
 
     //Scenario - Create and delete a new service account
@@ -124,10 +129,7 @@ public class ServiceAccountCUDScenarios
     }
 
     private string? RetrieveTechUserToken(string client_id, string client_secret)
-        // [Fact]
-        // public void RetrieveTechUserToken()
     {
-        // string client_id = "sa39", client_secret = "";
         var formData = new[]
         {
             new KeyValuePair<string, string>("client_secret", client_secret),
