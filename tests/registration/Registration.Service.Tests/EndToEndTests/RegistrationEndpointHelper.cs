@@ -9,6 +9,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using PasswordGenerator;
+using Tests.Shared.RestAssured.AuthFlow;
 using Xunit;
 using static RestAssured.Dsl;
 

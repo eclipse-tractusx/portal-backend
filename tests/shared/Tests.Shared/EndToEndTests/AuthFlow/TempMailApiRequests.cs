@@ -5,7 +5,7 @@ using System.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
-namespace Registration.Service.Tests.RestAssured;
+namespace Tests.Shared.RestAssured.AuthFlow;
 
 public class TempMailApiRequests
 {

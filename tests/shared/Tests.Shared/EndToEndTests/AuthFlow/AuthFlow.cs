@@ -2,10 +2,9 @@ using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using static RestAssured.Dsl;
 
-namespace Registration.Service.Tests.RestAssured;
+namespace Tests.Shared.RestAssured.AuthFlow;
 
 public class AuthFlow
 {
@@ -50,7 +49,7 @@ public class AuthFlow
         var htmlString = response.Content.ReadAsStringAsync().Result;
         HtmlDocument doc = new HtmlDocument();
         doc.LoadHtml(htmlString);
-        _cookies = response.Headers.GetValues("Set-Cookie").ToList();
+        _cookies = Enumerable.ToList<string>(response.Headers.GetValues("Set-Cookie"));
         var companies = JsonConvert.DeserializeObject<List<CentralidpCompany>>(doc.DocumentNode.Descendants("pre")
             .Single()
             .InnerText);

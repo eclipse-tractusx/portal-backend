@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
+namespace Tests.Shared.RestAssured.AuthFlow;
 
 public record DevMailboxData(
     [property: JsonPropertyName("success")] bool Success,

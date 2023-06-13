@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Registration.Service.Tests.RestAssured;
+namespace Tests.Shared.RestAssured.AuthFlow;
 
 public record EmailMessageData(
     int Id,

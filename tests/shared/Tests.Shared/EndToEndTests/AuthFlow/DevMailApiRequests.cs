@@ -1,16 +1,12 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using AutoFixture;
-using Microsoft.Extensions.Configuration;
 using MimeKit;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using RestAssured.Request.Logging;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Registration.Service.Tests.RestAssured;
+namespace Tests.Shared.RestAssured.AuthFlow;
 
 public class DevMailApiRequests
 {
