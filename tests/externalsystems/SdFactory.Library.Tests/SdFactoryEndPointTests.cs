@@ -1,13 +1,14 @@
 ﻿using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Tests.Shared.EndToEndTests;
 using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
 
 public class SdFactoryEndpointTests
 {
-    private static readonly string BaseUrl = "https://sdfactory.dev.demo.catena-x.net";
+    private static readonly string BaseUrl = TestResources.SdFactoryBaseUrl;
     private static readonly string EndPoint = "/api/rel3/selfdescription";
-    private static readonly string WalletBaseUrl = "https://managed-identity-wallets.dev.demo.catena-x.net";
+    private static readonly string WalletBaseUrl = TestResources.WalletBaseUrl;
     private static readonly string WalletEndPoint = "/api/wallets";
     private static string? _interfaceHealthCheckTechUserToken;
     private static string? _bpn;

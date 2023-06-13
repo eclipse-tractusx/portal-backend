@@ -7,14 +7,13 @@ namespace Notifications.Service.Tests.RestAssured;
 public static class TestDataHelper
 {
     private static readonly string TestDataDirectory = ".." + Path.DirectorySeparatorChar + ".." +
-                                              Path.DirectorySeparatorChar + ".." +
-                                              Path.DirectorySeparatorChar + ".." +
-                                              Path.DirectorySeparatorChar + ".." +
-                                              Path.DirectorySeparatorChar + "shared" +
-                                              Path.DirectorySeparatorChar + "Tests.Shared" +
-                                              Path.DirectorySeparatorChar + "RestAssured" +
-                                              Path.DirectorySeparatorChar + "TestData";
-
+                                                       Path.DirectorySeparatorChar + ".." +
+                                                       Path.DirectorySeparatorChar + ".." +
+                                                       Path.DirectorySeparatorChar + ".." +
+                                                       Path.DirectorySeparatorChar + "shared" +
+                                                       Path.DirectorySeparatorChar + "Tests.Shared" +
+                                                       Path.DirectorySeparatorChar + "RestAssured" +
+                                                       Path.DirectorySeparatorChar + "TestData";
 
     public static List<TestDataModel>? GetTestData()
     {

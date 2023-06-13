@@ -9,6 +9,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using PasswordGenerator;
+using Tests.Shared.EndToEndTests;
 using Tests.Shared.RestAssured.AuthFlow;
 using Xunit;
 using static RestAssured.Dsl;
@@ -17,7 +18,7 @@ namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
 public static class RegistrationEndpointHelper
 {
-    private static readonly string BaseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/registration";
     private static readonly string AdminEndPoint = "/api/administration";
     private static string? _userCompanyToken;
