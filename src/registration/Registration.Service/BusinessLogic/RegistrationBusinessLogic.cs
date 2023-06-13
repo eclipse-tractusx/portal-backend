@@ -636,7 +636,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         GetAndValidateCompanyDataDetails(applicationUserData, _settings.SubmitDocumentTypeIds);
         if (applicationUserData.DocumentDatas.Any())
         {
-            
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             foreach (var document in applicationUserData.DocumentDatas)
             {
@@ -739,7 +738,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (!companyApplicationDetails.DocumentDatas.Any())
         {
-                throw new ControllerArgumentException($"At least one Document type Id must be [{string.Join(", ", docTypeId)}]");
+            throw new ControllerArgumentException($"At least one Document type Id must be [{string.Join(", ", docTypeId)}]");
         }
     }
     public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
