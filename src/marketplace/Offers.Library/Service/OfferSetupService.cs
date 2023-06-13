@@ -121,7 +121,7 @@ public class OfferSetupService : IOfferSetupService
             return new OfferAutoSetupResponseData(technicalUserInfoData, clientInfoData);
         }
 
-        await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName).ConfigureAwait(false);
+        await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName, offerDetails.OfferTypeId).ConfigureAwait(false);
         return new OfferAutoSetupResponseData(
             technicalUserInfoData,
             clientInfoData);
@@ -341,9 +341,10 @@ public class OfferSetupService : IOfferSetupService
             notifications,
             offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
 
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
         if (!userIdsOfNotifications.Contains(offerDetails.RequesterId))
         {
-            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
+            notificationRepository.CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
             {
                 notification.Content = notificationContent;
                 notification.CreatorUserId = creatorId;
@@ -368,7 +369,7 @@ public class OfferSetupService : IOfferSetupService
             .ConfigureAwait(false);
     }
 
-    private async Task SendMail(string basePortalAddress, string userName, string requesterEmail, string? offerName)
+    private async Task SendMail(string basePortalAddress, string userName, string requesterEmail, string? offerName, OfferTypeId offerType)
     {
         var mailParams = new Dictionary<string, string>
         {
@@ -377,7 +378,7 @@ public class OfferSetupService : IOfferSetupService
             {"url", basePortalAddress},
         };
         await _mailingService
-            .SendMails(requesterEmail, mailParams, new List<string> { "subscription-activation" })
+            .SendMails(requesterEmail, mailParams, new List<string> { $"{offerType.ToString().ToLower()}-subscription-activation" })
             .ConfigureAwait(false);
     }
 
@@ -555,23 +556,30 @@ public class OfferSetupService : IOfferSetupService
         {
             offerDetails.OfferId,
             offerDetails.CompanyName,
-            offerDetails.OfferName
+            offerDetails.OfferName,
+            OfferSubscriptionId = offerSubscriptionId
         });
         var notificationTypeId = offerDetails.OfferTypeId == OfferTypeId.APP
             ? NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION
             : NotificationTypeId.SERVICE_ACTIVATION;
-        var userIdsOfNotifications = await _notificationService.CreateNotifications(
+        var userIdsOfNotifications = await _notificationService.CreateNotificationsWithExistenceCheck(
             itAdminRoles,
             null,
             new List<(string?, NotificationTypeId)>
             {
                 (notificationContent, notificationTypeId)
             },
-            offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
+            offerDetails.CompanyId,
+            nameof(offerSubscriptionId),
+            offerSubscriptionId.ToString()).ToListAsync().ConfigureAwait(false);
 
-        if (!userIdsOfNotifications.Contains(offerDetails.RequesterId))
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        if (!userIdsOfNotifications.Contains(offerDetails.RequesterId) &&
+            !await notificationRepository
+                .CheckNotificationExistsForParam(offerDetails.RequesterId, notificationTypeId, nameof(offerSubscriptionId), offerSubscriptionId.ToString())
+                .ConfigureAwait(false))
         {
-            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId,
+            notificationRepository.CreateNotification(offerDetails.RequesterId,
                 notificationTypeId, false, notification => { notification.Content = notificationContent; });
         }
 
@@ -586,7 +594,7 @@ public class OfferSetupService : IOfferSetupService
 
         try
         {
-            await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName).ConfigureAwait(false);
+            await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName, offerDetails.OfferTypeId).ConfigureAwait(false);
         }
         catch (Exception e)
         {

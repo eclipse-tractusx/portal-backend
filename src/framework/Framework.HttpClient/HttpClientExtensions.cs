@@ -29,7 +29,10 @@ public static class HttpClientExtensions
     {
         services.AddHttpClient(typeof(T).Name, c =>
         {
-            c.BaseAddress = new Uri(baseAddress);
+            if (!string.IsNullOrWhiteSpace(baseAddress))
+            {
+                c.BaseAddress = new Uri(baseAddress);
+            }
         }).AddHttpMessageHandler<LoggingHandler<T>>();
 
         services.AddHttpClient($"{typeof(T).Name}Auth", c =>

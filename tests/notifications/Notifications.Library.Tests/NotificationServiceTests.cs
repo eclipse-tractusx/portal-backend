@@ -317,6 +317,7 @@ public class NotificationServiceTests
     #endregion
 
     #region SetNotificationsForOfferToDone
+
     [Fact]
     public async Task SetNotificationsForOfferToDone_WithAdditionalUsersAndMultipleNotifications_UpdatesThreeNotification()
     {
@@ -427,6 +428,63 @@ public class NotificationServiceTests
 
     #endregion
 
+    #region CreateNotificationsWithExistenceCheck
+
+    [Fact]
+    public async Task CreateNotificationsWithExistenceCheck_WithSingleUserRoleAndOneNotificationTypeId_CreatesOneNotification()
+    {
+        // Arrange
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "Company Admin" } }
+        };
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new (string?, NotificationTypeId)[]
+        {
+            new (JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO)
+        };
+
+        // Act
+        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        _notifications.Should().HaveCount(3);
+        _notifications.Should().AllSatisfy(x => x.NotificationTypeId.Should().Be(NotificationTypeId.INFO));
+        userIds.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task CreateNotificationsWithExistenceCheck_WithAlreadyExistingNotification_CreatesNone()
+    {
+        // Arrange
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "CX Admin" } }
+        };
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new (string?, NotificationTypeId)[]
+        {
+            new (JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO)
+        };
+
+        // Act
+        var userIds = await _sut.CreateNotificationsWithExistenceCheck(userRoles, CxAdminUserId, content.AsEnumerable(), Guid.NewGuid(), "appId", new("5cf74ef8-e0b7-4984-a872-474828beb5d2")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        _notifications.Should().BeEmpty();
+        userIds.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupFakes()
@@ -451,6 +509,11 @@ public class NotificationServiceTests
             .Returns(new List<Guid> { CxAdminUserId }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithRoleId(A<List<Guid>>.That.Not.Matches(x => x.Contains(CxAdminRoleId) || x.Contains(UserRoleId))))
             .Returns(new List<Guid>().ToAsyncEnumerable());
+
+        A.CallTo(() => _notificationRepository.CheckNotificationsExistsForParam(A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 1 && x.Single() == CxAdminUserId), A<IEnumerable<NotificationTypeId>>._, A<string>._, A<string>._))
+            .Returns(new List<(NotificationTypeId, Guid)> { (NotificationTypeId.INFO, CxAdminUserId) }.ToAsyncEnumerable());
+        A.CallTo(() => _notificationRepository.CheckNotificationsExistsForParam(A<IEnumerable<Guid>>.That.Not.Matches(x => x.Count() == 1 && x.Single() == CxAdminUserId), A<IEnumerable<NotificationTypeId>>._, A<string>._, A<string>._))
+            .Returns(new List<(NotificationTypeId, Guid)>().ToAsyncEnumerable());
 
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
             .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
