@@ -20,6 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record IdentityData(string UserEntityId, Guid UserId, IdentityTypeId IdentityType, Guid CompanyId);
