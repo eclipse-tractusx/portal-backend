@@ -258,7 +258,7 @@ public class OfferSetupService : IOfferSetupService
     private static async Task<OfferSubscriptionTransferData> GetAndValidateOfferDetails(Guid requestId, Guid companyId, OfferTypeId offerTypeId, IOfferSubscriptionsRepository offerSubscriptionsRepository)
     {
         var offerDetails = await offerSubscriptionsRepository
-            .GetOfferDetailsAndCheckUser(requestId, companyId, offerTypeId)
+            .GetOfferDetailsAndCheckProviderCompany(requestId, companyId, offerTypeId)
             .ConfigureAwait(false);
         if (offerDetails == null)
         {
@@ -270,7 +270,7 @@ public class OfferSetupService : IOfferSetupService
             throw new ConflictException("Status of the offer subscription must be pending");
         }
 
-        if (!offerDetails.IsUserOfProvider)
+        if (!offerDetails.IsProviderCompany)
         {
             throw new ForbiddenException("Only the providing company can setup the service");
         }
