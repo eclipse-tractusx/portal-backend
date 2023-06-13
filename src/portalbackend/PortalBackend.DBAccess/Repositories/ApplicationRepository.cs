@@ -91,12 +91,12 @@ public class ApplicationRepository : IApplicationRepository
             {
                 Application = application,
                 CompanyUser = application.Company!.Identities.Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Id == companyUserId),
-                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED && submitDocumentTypeIds.Contains(Doc.DocumentTypeId))
+                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED && submitDocumentTypeIds.Contains(doc.DocumentTypeId))
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
-                data.CompanyUser!.Id,
-                data.CompanyUser.Email,
+                data.CompanyUser != null,
+                data.CompanyUser!.Email,
                 data.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
                 new CompanyData(
                     data.Application.Company!.Name,
