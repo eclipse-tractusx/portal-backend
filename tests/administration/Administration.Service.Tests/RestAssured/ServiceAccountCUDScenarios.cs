@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using Castle.Core.Internal;
 using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
@@ -21,13 +22,31 @@ public class ServiceAccountCUDScenarios
         var newServiceAccount =
             AdministrationEndpointHelper.CreateNewServiceAccount(techUserName, "This is a new test technical user");
 
-        //check if the new service account is added (validation against the previous taken snapshot)
-        var updatedServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
+        if (newServiceAccount != null)
+        {
+            //check if the new service account is added (validation against the previous taken snapshot)
+            var updatedServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
 
-        //fetch the serviceAccount token and validate if the token includes a attribute "bpn"
-        var token = RetrieveTechUserToken(newServiceAccount.ClientId, newServiceAccount.Secret);
-        Assert.NotEmpty(token);
-        Assert.True(CheckTokenForAttribute(token, "bpn"));
+            if (existingServiceAccounts != null)
+            {
+                var checkAccountIsNew =
+                    existingServiceAccounts.Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);
+                Assert.Empty(checkAccountIsNew);
+            }
+
+            if (updatedServiceAccounts == null) throw new Exception("List of service accounts was not found");
+            var checkAccountAdded =
+                updatedServiceAccounts.Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);
+            Assert.NotEmpty(checkAccountAdded);
+
+            //fetch the serviceAccount token and validate if the token includes a attribute "bpn"
+            var token = RetrieveTechUserToken(newServiceAccount.ClientId, newServiceAccount.Secret);
+            if (token.IsNullOrEmpty())
+                throw new Exception("Token for new technical user could not be fetched correctly");
+            Assert.NotEmpty(token);
+            Assert.True(CheckTokenForAttribute(token, "bpn"));
+        }
+        else throw new Exception("Service Account was not created correctly");
     }
 
     //Scenario - Create a new service account and update the same
