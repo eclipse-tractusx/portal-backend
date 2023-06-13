@@ -634,7 +634,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
-        GetAndValidateCompanyDataDetails(applicationUserData);
+        GetAndValidateCompanyDataDetails(applicationUserData, _settings.SubmitDocumentTypeIds);
         if (applicationUserData.DocumentDatas.Any())
         {
             
@@ -691,7 +691,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return true;
     }
 
-    private static void GetAndValidateCompanyDataDetails(CompanyApplicationUserEmailData companyApplicationDetails)
+    private static void GetAndValidateCompanyDataDetails(CompanyApplicationUserEmailData companyApplicationDetails, IEnumerable<DocumentTypeId> docTypeId)
     {
         if (companyApplicationDetails.CompanyData.Name is not null &&
            companyApplicationDetails.CompanyData.AddressId is not null &&
@@ -740,7 +740,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (!companyApplicationDetails.DocumentDatas.Any())
         {
-                throw new ControllerArgumentException($"At least one Document type Id must be COMMERCIAL_REGISTER_EXTRACT");
+                throw new ControllerArgumentException($"At least one Document type Id must be [{string.Join(", ", docTypeId)}]");
         }
     }
     public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
