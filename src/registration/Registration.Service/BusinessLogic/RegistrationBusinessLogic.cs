@@ -691,19 +691,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private static void GetAndValidateCompanyDataDetails(CompanyApplicationUserEmailData companyApplicationDetails, IEnumerable<DocumentTypeId> docTypeId)
     {
-        if (companyApplicationDetails.CompanyData.Name is not null &&
-           companyApplicationDetails.CompanyData.AddressId is not null &&
-           companyApplicationDetails.CompanyData.Streetname is not null &&
-           companyApplicationDetails.CompanyData.City is not null &&
-           companyApplicationDetails.CompanyData.Country is not null &&
-           companyApplicationDetails.CompanyData.UniqueIds.Any() &&
-           companyApplicationDetails.CompanyData.CompanyRoleIds.Any() &&
-           companyApplicationDetails.DocumentDatas.Any() &&
-           companyApplicationDetails.AgreementConsentStatuses.Any())
-        {
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Name))
         {
             throw new ConflictException($"Company Name must not be empty");
