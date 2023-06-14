@@ -1905,7 +1905,39 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingAddressId_ThrowsArgumentException()
+    public async Task SubmitRegistrationAsync_WithNotExistingStreetName_ThrowsConflictException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        {
+            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var companyData = new CompanyData("Test Company", Guid.NewGuid(), string.Empty, "Munich", "Germany", uniqueIds, companyRoleIds);
+        var settings = new RegistrationSettings
+        {
+            SubmitDocumentTypeIds = new[]{
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, false, null, null!, companyData, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
+            .ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Street Name must not be empty");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingAddressId_ThrowsConflictException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1926,12 +1958,12 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Address must not be empty (Parameter 'AddressId')");
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("Address must not be empty");
     }
 
     [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingCompanyName_ThrowsArgumentException()
+    public async Task SubmitRegistrationAsync_WithNotExistingCompanyName_ThrowsConflictException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1952,12 +1984,12 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Company Name must not be empty (Parameter 'Name')");
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("Company Name must not be empty");
     }
 
     [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingUniqueId_ThrowsArgumentException()
+    public async Task SubmitRegistrationAsync_WithNotExistingUniqueId_ThrowsConflictException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1978,12 +2010,12 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Company Identifiers [{string.Join(", ", uniqueIdentifierData)}] must not be empty");
     }
 
     [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingCompanyRoleId_ThrowsArgumentException()
+    public async Task SubmitRegistrationAsync_WithNotExistingCompanyRoleId_ThrowsConflictException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -2004,12 +2036,12 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Company assigned role [{string.Join(", ", companyRoleIdData)}] must not be empty");
     }
 
     [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingAgreementandConsent_ThrowsArgumentException()
+    public async Task SubmitRegistrationAsync_WithNotExistingAgreementandConsent_ThrowsConflictException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -2027,12 +2059,12 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Agreement and Consent must not be empty");
     }
 
     [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingCity_ThrowsArgumentException()
+    public async Task SubmitRegistrationAsync_WithNotExistingCity_ThrowsConflictException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -2053,12 +2085,12 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("City must not be empty (Parameter 'City')");
     }
 
     [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingCountry_ThrowsArgumentException()
+    public async Task SubmitRegistrationAsync_WithNotExistingCountry_ThrowsConflictException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -2080,7 +2112,7 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Country must not be empty (Parameter 'Country')");
     }
 
