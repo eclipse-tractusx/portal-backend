@@ -236,7 +236,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.IsConnectorIdExist.Should().BeTrue();
+        result.IsValidConnectorId.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().BeNull();
         result.DocumentStatusId.Should().BeNull();
     }
@@ -252,7 +252,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.IsConnectorIdExist.Should().BeTrue();
+        result.IsValidConnectorId.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().Be(new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b3"));
         result.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
     }
@@ -268,7 +268,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.IsConnectorIdExist.Should().BeFalse();
+        result.IsValidConnectorId.Should().BeFalse();
         result.SelfDescriptionDocumentId.Should().BeNull();
         result.DocumentStatusId.Should().BeNull();
     }

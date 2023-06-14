@@ -497,7 +497,7 @@ public class ConnectorsBusinessLogicTests
         var connector = new Connector(connectorId, null!, null!, null!);
         var selfDescriptionDocumentId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._))
-            .Returns((true, "123", selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.ACTIVE));
+            .Returns((true, "123", selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.ACTIVE, true));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid DocId, Action<Document>? initialize, Action<Document> modify)
@@ -534,7 +534,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var connector = new Connector(connectorId, null!, null!, null!);
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId))
-            .Returns((true, "12345", null, null, ConnectorStatusId.ACTIVE));
+            .Returns((true, "12345", null, null, ConnectorStatusId.ACTIVE, true));
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
             .Invokes((Guid _, Action<Connector>? initialize, Action<Connector> setOptionalFields) =>
             {
@@ -558,14 +558,14 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId))
-            .Returns((true, "1234", null, null, ConnectorStatusId.INACTIVE));
+            .Returns((true, null, null, null, ConnectorStatusId.ACTIVE, false));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.UserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("INACTIVE Connector can not be deleted");
+        ex.Message.Should().Be("Connector status does not match a deletion scenario. Deletion declined");
     }
 
     [Fact]
@@ -574,7 +574,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId))
-            .Returns((true, null, null, null, ConnectorStatusId.ACTIVE));
+            .Returns((true, null, null, null, ConnectorStatusId.ACTIVE, true));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.UserId, CancellationToken.None).ConfigureAwait(false);
@@ -590,7 +590,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId))
-            .Returns(((bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId))default);
+            .Returns(((bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId, bool))default);
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.UserId, CancellationToken.None).ConfigureAwait(false);
