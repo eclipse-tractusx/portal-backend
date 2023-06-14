@@ -4,12 +4,16 @@ using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
 
+[TestCaseOrderer("Administration.Service.Tests.EndToEndTests.AlphabeticalOrderer",
+    "Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests")]
 public class ServiceAccountCUDScenarios
 {
+    private static List<Guid> _createdServiceAccountIds = new List<Guid>();
+    
     //Scenario - Create a new service account
     [Theory]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario_HappyPathCreateServiceAccount(string[] permissions)
+    public async Task Scenario1_HappyPathCreateServiceAccount(string[] permissions)
     {
         await AdministrationEndpointHelper.GetOperatorToken();
 
@@ -46,6 +50,7 @@ public class ServiceAccountCUDScenarios
                 throw new Exception("Token for new technical user could not be fetched correctly");
             Assert.NotEmpty(token);
             Assert.True(CheckTokenForAttribute(token, "bpn"));
+            _createdServiceAccountIds.Add(newServiceAccount.ServiceAccountId);
         }
         else throw new Exception("Service Account was not created correctly");
     }
@@ -53,7 +58,7 @@ public class ServiceAccountCUDScenarios
     //Scenario - Create a new service account and update the same
     [Theory]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario_HappyPathCreateAndUpdateServiceAccount(string[] permissions)
+    public async Task Scenario2_HappyPathCreateAndUpdateServiceAccount(string[] permissions)
     {
         await AdministrationEndpointHelper.GetOperatorToken();
         var now = DateTime.Now;
@@ -75,12 +80,13 @@ public class ServiceAccountCUDScenarios
 
         Assert.True(updatedServiceAccount.Name == newTechUserName);
         Assert.True(updatedServiceAccount.Description == newDescription);
+        _createdServiceAccountIds.Add(newServiceAccount.ServiceAccountId);
     }
 
     //Scenario - Create a new service account and update the credentials
     [Theory]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario_HappyPathCreateServiceAccountAndUpdateCredentials(string[] permissions)
+    public async Task Scenario3_HappyPathCreateServiceAccountAndUpdateCredentials(string[] permissions)
     {
         await AdministrationEndpointHelper.GetOperatorToken();
 
@@ -105,12 +111,13 @@ public class ServiceAccountCUDScenarios
         if (token.IsNullOrEmpty())
             throw new Exception("Token for new technical user could not be fetched correctly");
         Assert.NotEmpty(token);
+        _createdServiceAccountIds.Add(newServiceAccount.ServiceAccountId);
     }
 
     //Scenario - Create and delete a new service account
     [Theory]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario_HappyPathCreateAndDeleteServiceAccount(string[] permissions)
+    public async Task Scenario4_HappyPathCreateAndDeleteServiceAccount(string[] permissions)
     {
         await AdministrationEndpointHelper.GetOperatorToken();
         var now = DateTime.Now;
@@ -130,6 +137,14 @@ public class ServiceAccountCUDScenarios
         var updatedServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
 
         Assert.Empty(updatedServiceAccounts.Where(item => item.ServiceAccountId == newServiceAccount.ServiceAccountId));
+    }
+
+    [Fact]
+    public async Task Scenario5_Cleanup_DeleteCreatedServiceAccounts()
+    {
+        await AdministrationEndpointHelper.GetOperatorToken();
+        foreach (var t in _createdServiceAccountIds)
+            AdministrationEndpointHelper.DeleteServiceAccount(t.ToString());
     }
 
     private string? RetrieveTechUserToken(string client_id, string client_secret)

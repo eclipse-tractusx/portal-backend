@@ -1,17 +1,15 @@
 ﻿using System.Text.Json;
 using Castle.Core.Internal;
+using Tests.Shared.EndToEndTests;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
 
 public class TestDataHelper
 {
-    private static readonly string TestDataDirectory = ".." + Path.DirectorySeparatorChar + ".." +
-                                                       Path.DirectorySeparatorChar + ".." +
-                                                       Path.DirectorySeparatorChar + ".." +
-                                                       Path.DirectorySeparatorChar + ".." +
+    private static readonly string TestDataDirectory = Directory.GetParent(TestResources.GetSourceFilePathName()).Parent.Parent.Parent.FullName +
                                                        Path.DirectorySeparatorChar + "shared" +
                                                        Path.DirectorySeparatorChar + "Tests.Shared" +
-                                                       Path.DirectorySeparatorChar + "RestAssured" +
+                                                       Path.DirectorySeparatorChar + "EndToEndTests" +
                                                        Path.DirectorySeparatorChar + "TestData";
 
     public static List<string[]>? GetTestData(string fileName)
