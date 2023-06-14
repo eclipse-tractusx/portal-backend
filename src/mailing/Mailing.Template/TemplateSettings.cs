@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
@@ -39,7 +40,7 @@ public class TemplateSettings
         var validation = new ConfigurationValidation<TemplateSettings>()
             .NotNull(Templates, () => nameof(Templates));
 
-        if (Templates.GroupBy(x => x.Name).Any(x => x.Count() > 1))
+        if (Templates.DuplicatesBy(x => x.Name).Any())
         {
             throw new ConfigurationException($"{nameof(Templates)}: The name of the tempalte must be unique");
         }

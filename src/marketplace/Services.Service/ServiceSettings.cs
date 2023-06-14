@@ -20,6 +20,7 @@
 
 using Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -131,7 +132,7 @@ public class ServiceSettings
 
     public static bool Validate(ServiceSettings settings)
     {
-        if (settings.UploadServiceDocumentTypeIds.GroupBy(x => x.DocumentTypeId).Any(x => x.Count() > 1))
+        if (settings.UploadServiceDocumentTypeIds.DuplicatesBy(x => x.DocumentTypeId).Any())
         {
             throw new ConfigurationException($"{nameof(UploadServiceDocumentTypeIds)}: The document type id of the service documents must be unique");
         }
