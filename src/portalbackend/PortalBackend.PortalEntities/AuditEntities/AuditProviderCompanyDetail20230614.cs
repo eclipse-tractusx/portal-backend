@@ -29,9 +29,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 /// Audit entity for <see cref="ProviderCompanyDetail"/> relationship between companies and apps.
 /// </summary>
 
-public class AuditProviderCompanyDetail20230601 : IAuditEntityV1
+public class AuditProviderCompanyDetail20230614 : IAuditEntityV1
 {
-    public AuditProviderCompanyDetail20230601()
+    public AuditProviderCompanyDetail20230614()
     {
         AutoSetupUrl = null!;
     }

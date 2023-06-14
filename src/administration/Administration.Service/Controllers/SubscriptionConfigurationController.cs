@@ -80,6 +80,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [HttpPut]
     [Route("owncompany")]
     [Authorize(Roles = "add_service_offering, add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -87,7 +88,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> SetProviderCompanyDetail([FromBody] ProviderDetailData data)
     {
-        await this.WithCompanyId(companyId => _businessLogic.SetProviderCompanyDetailsAsync(data, companyId)).ConfigureAwait(false);
+        await this.WithUserIdAndCompanyId(identity => _businessLogic.SetProviderCompanyDetailsAsync(data, identity)).ConfigureAwait(false);
         return NoContent();
     }
 

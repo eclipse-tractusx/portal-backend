@@ -113,7 +113,7 @@ public class SubscriptionConfigurationControllerTests
         var result = await this._controller.SetProviderCompanyDetail(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, new(_identity.UserId, _identity.CompanyId))).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

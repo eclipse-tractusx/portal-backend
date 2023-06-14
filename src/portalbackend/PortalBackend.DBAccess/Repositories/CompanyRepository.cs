@@ -140,11 +140,11 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
+    public Task<(bool IsValidCompanyId, bool IsCompanyRoleOwner)> IsValidCompanyRoleOwner(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
         _context.Companies.AsNoTracking()
             .Where(company => company.Id == companyId)
-            .Select(company => new ValueTuple<Guid, bool>(
-                company.Id,
+            .Select(company => new ValueTuple<bool, bool>(
+                true,
                 company.CompanyAssignedRoles.Any(companyRole => companyRoleIds.Contains(companyRole.CompanyRoleId))
             ))
             .SingleOrDefaultAsync();

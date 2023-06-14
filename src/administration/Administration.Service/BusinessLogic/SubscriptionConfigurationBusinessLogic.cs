@@ -59,7 +59,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     }
 
     /// <inheritdoc />
-    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, Guid companyId)
+    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, (Guid UserId, Guid CompanyId) identity)
     {
         data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
         data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
@@ -70,34 +70,36 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                 "the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
-        return SetOfferProviderCompanyDetailsInternalAsync(data, companyId);
+        return SetOfferProviderCompanyDetailsInternalAsync(data, identity);
     }
 
-    private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, Guid companyId)
+    private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, (Guid UserId, Guid CompanyId) identity)
     {
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var providerDetailData = await companyRepository
-            .GetProviderCompanyDetailsExistsForUser(companyId)
+            .GetProviderCompanyDetailsExistsForUser(identity.CompanyId)
             .ConfigureAwait(false);
         if (providerDetailData == default)
         {
             var result = await companyRepository
-                .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(companyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
+                .IsValidCompanyRoleOwner(identity.CompanyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
                 .ConfigureAwait(false);
-            if (result == default)
+            if (!result.IsValidCompanyId)
             {
-                throw new ConflictException($"Company {companyId} not found");
+                throw new ConflictException($"Company {identity.CompanyId} not found");
             }
-            if (!result.IsServiceProviderCompany)
+            if (!result.IsCompanyRoleOwner)
             {
-                throw new ForbiddenException($"Company {companyId} is not a service-provider");
+                throw new ForbiddenException($"Company {identity.CompanyId} is not an app- or service-provider");
             }
-            companyRepository.CreateProviderCompanyDetail(result.CompanyId, data.Url, providerDetails =>
+            companyRepository.CreateProviderCompanyDetail(identity.CompanyId, data.Url, providerDetails =>
             {
                 if (data.CallbackUrl != null)
                 {
                     providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
                 }
+                providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
+                providerDetails.LastEditorId = identity.UserId;
             });
         }
         else
@@ -109,7 +111,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                 {
                     details.AutoSetupUrl = data.Url;
                     details.DateLastChanged = DateTimeOffset.UtcNow;
-                    details.LastEditorId = result.UserId;
+                    details.LastEditorId = identity.UserId;
                 });
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

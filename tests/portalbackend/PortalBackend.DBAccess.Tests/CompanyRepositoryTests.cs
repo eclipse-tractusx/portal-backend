@@ -127,38 +127,24 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region Check Company is ServiceProvider and exists for IamUser
+    #region IsValidCompanyRoleOwner
 
-    [Fact]
-    public async Task CheckCompanyIsServiceProviderAndExistsForIamUser_WithValidData_ReturnsTrue()
+    [Theory]
+    [InlineData("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", new[] { CompanyRoleId.SERVICE_PROVIDER }, true, true)]
+    [InlineData("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", new[] { CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.OPERATOR }, true, true)]
+    [InlineData("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", new[] { CompanyRoleId.OPERATOR }, true, false)]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", new[] { CompanyRoleId.SERVICE_PROVIDER }, false, false)]
+    public async Task IsValidCompanyRoleOwner_ReturnsExpected(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds, bool isValidCompany, bool isCompanyRoleOwner)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"), Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
+        var results = await sut.IsValidCompanyRoleOwner(companyId, companyRoleIds);
 
         // Assert
-        results.Should().NotBe(default);
-        results.CompanyId.Should().NotBe(Guid.Empty);
-        results.IsServiceProviderCompany.Should().BeTrue();
-        results.UserId.Should().NotBe(Guid.Empty);
-    }
-
-    [Fact]
-    public async Task CheckCompanyIsServiceProviderAndExistsForIamUser_WithNonServiceProviderCompany_ReturnsFalse()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(new("0dcd8209-85e2-4073-b130-ac094fb47106"), Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
-
-        // Assert
-        results.Should().NotBe(default);
-        results.CompanyId.Should().NotBe(Guid.Empty);
-        results.IsServiceProviderCompany.Should().BeFalse();
-        results.UserId.Should().NotBe(Guid.Empty);
+        results.IsValidCompanyId.Should().Be(isValidCompany);
+        results.IsCompanyRoleOwner.Should().Be(isCompanyRoleOwner);
     }
 
     #endregion

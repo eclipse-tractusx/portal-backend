@@ -66,6 +66,6 @@ public interface ISubscriptionConfigurationBusinessLogic
     /// Sets service provider company details
     /// </summary>
     /// <param name="data">Detail data for the service provider</param>
-    /// <param name="companyId">Id of the users company</param>
-    Task SetProviderCompanyDetailsAsync(ProviderDetailData data, Guid companyId);
+    /// <param name="identity">Id of the users and the users company</param>
+    Task SetProviderCompanyDetailsAsync(ProviderDetailData data, (Guid UserId, Guid CompanyId) identity);
 }
