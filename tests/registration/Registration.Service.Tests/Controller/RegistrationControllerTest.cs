@@ -190,14 +190,16 @@ public class RegistrationControllerTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
-        A.CallTo(() => _registrationBusinessLogicFake.InviteNewUserAsync(applicationId, A<UserCreationInfoWithMessage>._, _identity.UserId))
+        var creationInfo = _fixture.Create<UserCreationInfoWithMessage>();
+
+        A.CallTo(() => _registrationBusinessLogicFake.InviteNewUserAsync(A<Guid>._, A<UserCreationInfoWithMessage>._, A<(Guid, Guid)>._))
             .Returns(1);
 
         //Act
-        var result = await this._controller.InviteNewUserAsync(applicationId, _fixture.Create<UserCreationInfoWithMessage>()).ConfigureAwait(false);
+        var result = await this._controller.InviteNewUserAsync(applicationId, creationInfo).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _registrationBusinessLogicFake.InviteNewUserAsync(applicationId, A<UserCreationInfoWithMessage>._, _identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _registrationBusinessLogicFake.InviteNewUserAsync(applicationId, creationInfo, new(_identity.UserId, _identity.CompanyId))).MustHaveHappenedOnceExactly();
         result.Should().Be(1);
     }
 }

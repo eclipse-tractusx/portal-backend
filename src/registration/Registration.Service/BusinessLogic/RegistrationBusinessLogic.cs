@@ -447,23 +447,23 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 c.AddressId = addressId;
             });
 
-    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, Guid userId)
+    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, (Guid UserId, Guid CompanyId) identity)
     {
         if (string.IsNullOrEmpty(userCreationInfo.eMail))
         {
             throw new ControllerArgumentException($"email must not be empty");
         }
-        return InviteNewUserInternalAsync(applicationId, userCreationInfo, userId);
+        return InviteNewUserInternalAsync(applicationId, userCreationInfo, identity);
     }
 
-    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, Guid userId)
+    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, (Guid UserId, Guid CompanyId) identity)
     {
-        if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, userId))
+        if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, identity.CompanyId))
         {
             throw new ControllerArgumentException($"user with email {userCreationInfo.eMail} does already exist");
         }
 
-        var (companyNameIdpAliasData, createdByName) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(userId, applicationId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, createdByName) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.UserId, applicationId).ConfigureAwait(false);
 
         IEnumerable<UserRoleData>? userRoleDatas = null;
 
