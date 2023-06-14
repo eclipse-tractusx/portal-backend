@@ -217,7 +217,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(Guid companyId) =>
-       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(companyId, _settings.SalesManagerRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames));
+       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(companyId, _settings.SalesManagerRoles);
 
     /// <inheritdoc/>
     public Task<Guid> AddAppAsync(AppRequestModel appRequestModel, Guid companyId)

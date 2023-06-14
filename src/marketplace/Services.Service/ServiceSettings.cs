@@ -131,8 +131,7 @@ public class ServiceSettings
 
     public static bool Validate(ServiceSettings settings)
     {
-        if (settings.UploadServiceDocumentTypeIds.Select(x => x.DocumentTypeId).Distinct().Count() !=
-            settings.UploadServiceDocumentTypeIds.Count())
+        if (settings.UploadServiceDocumentTypeIds.GroupBy(x => x.DocumentTypeId).Any(x => x.Count() > 1))
         {
             throw new ConfigurationException($"{nameof(UploadServiceDocumentTypeIds)}: The document type id of the service documents must be unique");
         }

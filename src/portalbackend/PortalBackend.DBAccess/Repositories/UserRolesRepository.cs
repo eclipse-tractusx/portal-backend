@@ -19,6 +19,9 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -80,13 +83,13 @@ public class UserRolesRepository : IUserRolesRepository
                 userRole.UserRoleText))
             .ToAsyncEnumerable();
 
-    public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
+    public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles)
     {
         foreach (var clientRole in clientRoles)
         {
             await foreach (var userRoleId in _dbContext.UserRoles
                 .AsNoTracking()
-                .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientRole.Key) && clientRole.Value.Contains(userRole.UserRoleText))
+                .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientRole.ClientId) && clientRole.UserRoleNames.Contains(userRole.UserRoleText))
                 .Select(userRole => userRole.Id)
                 .AsAsyncEnumerable()
                 .ConfigureAwait(false))
@@ -125,13 +128,13 @@ public class UserRolesRepository : IUserRolesRepository
             ))
             .ToAsyncEnumerable();
 
-    public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
+    public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles)
     {
         foreach (var clientRole in clientRoles)
         {
             await foreach (var userRoleData in _dbContext.UserRoles
                 .AsNoTracking()
-                .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.Key) && clientRole.Value.Contains(userRole.UserRoleText))
+                .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.ClientId) && clientRole.UserRoleNames.Contains(userRole.UserRoleText))
                 .Select(userRole => new
                 {
                     Id = userRole.Id,
@@ -141,7 +144,7 @@ public class UserRolesRepository : IUserRolesRepository
             {
                 yield return new UserRoleData(
                     userRoleData.Id,
-                    clientRole.Key,
+                    clientRole.ClientId,
                     userRoleData.Text
                 );
             }
@@ -212,14 +215,14 @@ public class UserRolesRepository : IUserRolesRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<CompanyUserNameData> GetUserDataByAssignedRoles(Guid companyId, IDictionary<string, IEnumerable<string>> clientRoles)
+    public async IAsyncEnumerable<CompanyUserNameData> GetUserDataByAssignedRoles(Guid companyId, IEnumerable<UserRoleConfig> clientRoles)
     {
         foreach (var clientRole in clientRoles)
         {
             await foreach (var companyUserData in _dbContext.IdentityAssignedRoles
                 .AsNoTracking()
-                .Where(companyAssignedUserRole => companyAssignedUserRole.UserRole!.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.Key) &&
-                                                  clientRole.Value.Contains(companyAssignedUserRole.UserRole.UserRoleText) &&
+                .Where(companyAssignedUserRole => companyAssignedUserRole.UserRole!.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.ClientId) &&
+                                                  clientRole.UserRoleNames.Contains(companyAssignedUserRole.UserRole.UserRoleText) &&
                                                   companyAssignedUserRole.Identity!.CompanyId == companyId)
                 .Where(x => x.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER)
                 .Select(companyAssignedUserRole => new CompanyUserNameData(

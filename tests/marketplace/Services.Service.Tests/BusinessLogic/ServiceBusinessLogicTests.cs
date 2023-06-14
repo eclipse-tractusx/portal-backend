@@ -678,8 +678,7 @@ public class ServiceBusinessLogicTests
             .Returns((ConsentDetailData?)null);
 
         var userRoleData = _fixture.CreateMany<UserRoleData>(3);
-        A.CallTo(
-                () => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(userRoleData.ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(A<Guid>.That.Matches(x => x == _existingServiceId)))

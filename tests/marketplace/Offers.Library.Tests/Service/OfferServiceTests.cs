@@ -1123,7 +1123,7 @@ public class OfferServiceTests
                 initializeParemeters?.Invoke(offer);
                 setOptionalParameters.Invoke(offer);
             });
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, A<Guid>._))
             .Returns(new (string Email, string? Firstname, string? Lastname)[] { new("test@email.com", "Test User 1", "cx-user-2") }.ToAsyncEnumerable());
@@ -2156,7 +2156,7 @@ public class OfferServiceTests
     private void SetupValidateSalesManager()
     {
         var roleIds = _fixture.CreateMany<Guid>(2);
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetRolesForCompanyUser(A<Guid>._, A<IEnumerable<Guid>>._, A<Guid>.That.Matches(x => x == _companyUser.Id)))
             .Returns((true, roleIds));
@@ -2248,7 +2248,7 @@ public class OfferServiceTests
         var data = new OfferSubscriptionDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, "Test App", "Stark Industry", "BPN123456789",
             new[] { "tony@stark.com", "steven@strange.com" }, _fixture.CreateMany<SubscriptionTechnicalUserData>(5));
 
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x.ContainsKey("ClientTest"))))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.Any(y => y.ClientId == "ClientTest"))))
             .Returns(new[] { _validUserRoleId }.ToAsyncEnumerable());
 
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsAsync(_existingServiceId, A<Guid>._, _identity.CompanyId, A<OfferTypeId>._, A<IEnumerable<Guid>>._, A<bool>._))

@@ -40,7 +40,7 @@ public class TemplateManager : ITemplateManager
 
     public async Task<Mail> ApplyTemplateAsync(string id, IDictionary<string, string> parameters)
     {
-        if (_settings.Templates.All(x => x.Name != id))
+        if (!_settings.Templates.Any(x => x.Name == id))
         {
             throw new NoSuchTemplateException(id);
         }

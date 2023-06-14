@@ -305,7 +305,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     public async Task<CompanyOwnUserDetails> GetOwnUserDetails(Guid userId)
     {
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleIdsUntrackedAsync(_settings.UserAdminRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames)).ToListAsync().ConfigureAwait(false);
+            .GetUserRoleIdsUntrackedAsync(_settings.UserAdminRoles).ToListAsync().ConfigureAwait(false);
         var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(userId, userRoleIds).ConfigureAwait(false);
         if (details == null)
         {

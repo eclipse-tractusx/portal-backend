@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -329,24 +330,24 @@ public class UserProvisioningServiceCreateUsersTests
     [Fact]
     public async Task TestGetRoleDatasSuccess()
     {
-        var clientRoles = _fixture.Create<IDictionary<string, IEnumerable<string>>>();
+        var clientRoles = _fixture.Create<IEnumerable<UserRoleConfig>>();
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
         var result = await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
 
-        result.Should().HaveSameCount(clientRoles.SelectMany(r => r.Value));
+        result.Should().HaveSameCount(clientRoles.SelectMany(r => r.UserRoleNames));
     }
 
     [Fact]
     public async Task TestGetRoleDatasThrows()
     {
-        var clientRoles = _fixture.Create<IDictionary<string, IEnumerable<string>>>();
+        var clientRoles = _fixture.Create<IEnumerable<UserRoleConfig>>();
 
-        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily((IDictionary<string, IEnumerable<string>> clientRoles) =>
-                clientRoles.SelectMany(r => r.Value.Take(r.Value.Count() - 1).Select(role => _fixture.Build<UserRoleData>()
-                    .With(x => x.ClientClientId, r.Key)
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .ReturnsLazily((IEnumerable<UserRoleConfig> clientRoles) =>
+                clientRoles.SelectMany(r => r.UserRoleNames.Take(r.UserRoleNames.Count() - 1).Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, r.ClientId)
                     .With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
@@ -424,11 +425,11 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._))
             .ReturnsLazily((Guid companyUserId, string businessPartnerNumber) => new CompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber));
 
-        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily((IDictionary<string, IEnumerable<string>> clientRoles) =>
-                clientRoles.SelectMany(r => r.Value.Select(role => _fixture.Build<UserRoleData>()
-                    .With(x => x.ClientClientId, r.Key)
-                    .With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .ReturnsLazily((IEnumerable<UserRoleConfig> clientRoles) =>
+                clientRoles.SelectMany(role => role.UserRoleNames.Select(r => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, role.ClientId)
+                    .With(x => x.UserRoleText, r).Create())).ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<Guid>._))
             .ReturnsLazily((string client, IEnumerable<string> roles, Guid _) =>

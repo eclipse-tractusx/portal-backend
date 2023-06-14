@@ -654,10 +654,9 @@ public class ApplicationActivationTests
         A.CallTo(() => _applicationRepository.GetEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id)))
             .Returns(Enumerable.Empty<EmailData>().ToAsyncEnumerable());
 
-        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
+        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.First(y => y.ClientId == ClientId).UserRoleNames.First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
             .Returns(userRoleData.ToAsyncEnumerable());
-
-        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == _settings.CompanyAdminRoles.First(x => x.ClientId == ClientId).UserRoleNames.First())))
+        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.First(y => y.ClientId == ClientId).UserRoleNames.First() == _settings.CompanyAdminRoles.First(x => x.ClientId == ClientId).UserRoleNames.First())))
             .Returns(new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
 
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id))

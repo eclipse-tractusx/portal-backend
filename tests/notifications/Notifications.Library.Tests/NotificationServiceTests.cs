@@ -434,11 +434,11 @@ public class NotificationServiceTests
 
     private void SetupFakes()
     {
-        A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == "Company Admin")))
+        A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.Single(y => y.ClientId == ClientId).UserRoleNames.First() == "Company Admin")))
             .Returns(new List<Guid> { UserRoleId }.ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == "CX Admin")))
+        A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.Single(y => y.ClientId == ClientId).UserRoleNames.First() == "CX Admin")))
             .Returns(new List<Guid> { CxAdminRoleId }.ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Not.Matches(x => x[ClientId].First() == "CX Admin" || x[ClientId].First() == "Company Admin")))
+        A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Not.Matches(x => x.Single(y => y.ClientId == ClientId).UserRoleNames.First() == "CX Admin" || x.First(y => y.ClientId == ClientId).UserRoleNames.First() == "Company Admin")))
             .Returns(new List<Guid>().ToAsyncEnumerable());
 
         A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == UserRoleId)), A<Guid>._))

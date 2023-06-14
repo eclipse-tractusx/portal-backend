@@ -1,7 +1,26 @@
+/********************************************************************************
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using System.Collections;
 using System.ComponentModel.DataAnnotations;
 
 namespace Framework.Models.Validation;
@@ -44,37 +63,37 @@ public class EnumEnumerableValidation<TOptions> : IValidateOptions<TOptions> whe
             return ValidateOptionsResult.Skip;
         }
 
-        var validationResults = new List<ValidationResult>();
-        var propertyInfos = options.GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(EnumEnumerationAttribute)));
-        foreach (var propertyInfo in propertyInfos)
+        IEnumerable<ValidationResult> GetValidationResults()
         {
-            var configuredValues = new List<string>();
-            _section.GetSection(propertyInfo.Name).Bind(configuredValues);
-            var propertyType = propertyInfo.PropertyType
-                .GetGenericArguments()
-                .FirstOrDefault();
-            if (propertyType is not { IsEnum: true })
+            foreach (var propertyInfo in options.GetType()
+                         .GetProperties()
+                         .Where(prop => Attribute.IsDefined(prop, typeof(EnumEnumerationAttribute))))
             {
-                throw new ConfigurationException($"{propertyInfo.Name} must be of type IEnumerable<Enum>");
-            }
+                var configuredValues = new List<string>();
+                _section.GetSection(propertyInfo.Name).Bind(configuredValues);
 
-            var listType = typeof(List<>).MakeGenericType(propertyType);
-            var propertyValue = Activator.CreateInstance(listType);
-            _section.GetSection(propertyInfo.Name).Bind(propertyValue);
+                var propertyType = propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault();
+                if (propertyType is not { IsEnum: true })
+                {
+                    throw new ConfigurationException($"{propertyInfo.Name} must be of type IEnumerable<Enum>");
+                }
 
-            var notMatchingValues = configuredValues.Where(value => !Enum.TryParse(propertyType, value, out _));
-            if (notMatchingValues.Any())
-            {
-                validationResults.Add(
-                    new ValidationResult($"{string.Join(",", notMatchingValues)} is not a valid value for {propertyType}. Valid values are: {string.Join(", ", propertyType.GetEnumNames())}",
-                        new[] { propertyInfo.Name }));
+                var listType = typeof(List<>).MakeGenericType(propertyType);
+                var propertyValue = Activator.CreateInstance(listType);
+                _section.GetSection(propertyInfo.Name).Bind(propertyValue);
+
+                var notMatchingValues = configuredValues.Where(value => !Enum.TryParse(propertyType, value, out _));
+                if (notMatchingValues.Any())
+                {
+                    yield return new($"{string.Join(",", notMatchingValues)} is not a valid value for {propertyType}. Valid values are: {string.Join(", ", propertyType.GetEnumNames())}", new[] { propertyInfo.Name });
+                }
             }
         }
+
+        var validationResults = GetValidationResults();
 
         return validationResults.Any() ?
             ValidateOptionsResult.Fail(validationResults.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'.").ToList()) :
             ValidateOptionsResult.Success;
-
-        // Ignored if not validating this instance.
     }
 }

@@ -115,7 +115,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         Guid companyUserId,
         string notificationContent)
     {
-        var serviceManagerRoles = _settings.ServiceManagerRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames);
+        var serviceManagerRoles = _settings.ServiceManagerRoles;
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
 
         var notificationTypeId = offerTypeId == OfferTypeId.SERVICE ? NotificationTypeId.SERVICE_REQUEST : NotificationTypeId.APP_SUBSCRIPTION_REQUEST;
@@ -134,9 +134,9 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             .GetUserRoleIdsUntrackedAsync(serviceManagerRoles)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
         {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
         }
 
         await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))

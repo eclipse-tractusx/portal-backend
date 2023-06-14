@@ -91,7 +91,7 @@ public class NotificationService : INotificationService
     {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(receiverUserRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
+            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
             .ToListAsync()
             .ConfigureAwait(false);
         if (roleData.Count < receiverUserRoles.Select(x => x.UserRoleNames).Sum(clientRoles => clientRoles.Count()))

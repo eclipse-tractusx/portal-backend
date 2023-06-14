@@ -289,7 +289,7 @@ public class OfferService : IOfferService
     public async Task ValidateSalesManager(Guid salesManagerId, Guid companyId, IEnumerable<UserRoleConfig> salesManagerRoles)
     {
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleIdsUntrackedAsync(salesManagerRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames)).ToListAsync().ConfigureAwait(false);
+            .GetUserRoleIdsUntrackedAsync(salesManagerRoles).ToListAsync().ConfigureAwait(false);
         var responseData = await _portalRepositories.GetInstance<IUserRepository>()
             .GetRolesForCompanyUser(companyId, userRoleIds, salesManagerId)
             .ConfigureAwait(false);
@@ -565,16 +565,16 @@ public class OfferService : IOfferService
 
     private async Task SendMail(IEnumerable<UserRoleConfig> receiverRoles, string offerName, string basePortalAddress, string message, Guid companyId)
     {
-        var receiverUserRoles = receiverRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames);
+        var receiverUserRoles = receiverRoles;
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
             .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
         {
             throw new ConfigurationException(
-                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
         }
 
         var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
@@ -836,7 +836,7 @@ public class OfferService : IOfferService
     {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(userRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
+            .GetUserRoleIdsUntrackedAsync(userRoles)
             .ToListAsync()
             .ConfigureAwait(false);
         if (roleData.Count < userRoles.Select(x => x.UserRoleNames).Sum(clientRoles => clientRoles.Count()))

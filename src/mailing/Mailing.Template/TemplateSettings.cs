@@ -39,7 +39,7 @@ public class TemplateSettings
         var validation = new ConfigurationValidation<TemplateSettings>()
             .NotNull(Templates, () => nameof(Templates));
 
-        if (Templates.Select(x => x.Name).Distinct().Count() != Templates.Count())
+        if (Templates.GroupBy(x => x.Name).Any(x => x.Count() > 1))
         {
             throw new ConfigurationException($"{nameof(Templates)}: The name of the tempalte must be unique");
         }

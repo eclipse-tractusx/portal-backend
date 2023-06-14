@@ -344,7 +344,7 @@ public class OfferProviderBusinessLogicTests
             .Returns((TriggerProviderInformation?)null);
 
         var userRoleId = Guid.NewGuid();
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(new[] { userRoleId }.ToAsyncEnumerable());
 
         A.CallTo(() => _userRepository.GetServiceProviderCompanyUserWithRoleIdAsync(_offerId, A<List<Guid>>.That.Matches(x => x.Count() == 1 && x.Single() == userRoleId)))

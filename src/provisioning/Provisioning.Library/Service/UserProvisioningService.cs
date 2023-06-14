@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -301,13 +302,19 @@ public class UserProvisioningService : IUserProvisioningService
         }
     }
 
-    public async IAsyncEnumerable<UserRoleData> GetRoleDatas(IDictionary<string, IEnumerable<string>> clientRoles)
+    public async IAsyncEnumerable<UserRoleData> GetRoleDatas(IEnumerable<UserRoleConfig> clientRoles)
     {
-        await foreach (var roleDataGrouping in _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleDataUntrackedAsync(clientRoles)
-            .PreSortedGroupBy(d => d.ClientClientId))
+        var duplicates = clientRoles.GroupBy(x => x.ClientId).Where(x => x.Count() > 1);
+        if (duplicates.Any())
         {
-            ValidateRoleData(roleDataGrouping, roleDataGrouping.Key, clientRoles[roleDataGrouping.Key]);
+            throw new ConfigurationException($"{string.Join(",", duplicates.Select(x => x.Key))}");
+        }
+
+        await foreach (var roleDataGrouping in _portalRepositories.GetInstance<IUserRolesRepository>()
+                           .GetUserRoleDataUntrackedAsync(clientRoles)
+                           .PreSortedGroupBy(d => d.ClientClientId))
+        {
+            ValidateRoleData(roleDataGrouping, roleDataGrouping.Key, clientRoles.Single(x => x.ClientId == roleDataGrouping.Key).UserRoleNames);
             foreach (var data in roleDataGrouping)
             {
                 yield return data;
