@@ -286,15 +286,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="502">Service Unavailable.</response>
         [HttpPost]
         [Authorize(Roles = "invite_user")]
-        [Authorize(Policy = PolicyTypes.ValidCompany)]
+        [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("application/{applicationId}/inviteNewUser")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfoWithMessage userCreationInfo) =>
-            this.WithCompanyId(companyId =>
-                _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, companyId));
+            this.WithUserId(userId => _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, userId));
 
         /// <summary>
         /// Post the agreement consent status for the given application.
