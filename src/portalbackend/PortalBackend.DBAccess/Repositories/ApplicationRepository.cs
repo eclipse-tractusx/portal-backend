@@ -82,20 +82,39 @@ public class ApplicationRepository : IApplicationRepository
             .Select(application => new ValueTuple<bool, bool, CompanyApplicationStatusId>(true, application.CompanyId == companyId, application.ApplicationStatusId))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId) =>
+    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds) =>
         _dbContext.CompanyApplications
+            .AsSplitQuery()
+            .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .Select(application => new
             {
                 Application = application,
                 CompanyUser = application.Company!.Identities.Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Id == companyUserId),
-                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED)
+                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED && submitDocumentTypeIds.Contains(doc.DocumentTypeId)),
+                Company = application.Company,
+                Consents = application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
                 data.CompanyUser != null,
                 data.CompanyUser!.Email,
-                data.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))
+                data.Documents.Select(doc =>
+                    new DocumentStatusData(
+                        doc.Id,
+                        doc.DocumentStatusId)),
+                new CompanyData(
+                    data.Company!.Name,
+                    data.Company.AddressId,
+                    data.Company.Address!.Streetname,
+                    data.Company.Address.City,
+                    data.Company.Address.Country!.CountryNameDe,
+                    data.Company.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),
+                    data.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
+                data.Consents.Select(consent =>
+                    new ValueTuple<Guid, ConsentStatusId>(
+                        consent.AgreementId,
+                        consent.ConsentStatusId))
                 ))
             .SingleOrDefaultAsync();
 

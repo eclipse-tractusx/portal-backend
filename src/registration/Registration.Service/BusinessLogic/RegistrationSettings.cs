@@ -57,6 +57,13 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId> RegistrationDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// SubmitDocument Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> SubmitDocumentTypeIds { get; set; } = null!;
 }
 
 public static class RegistrationSettingsExtension

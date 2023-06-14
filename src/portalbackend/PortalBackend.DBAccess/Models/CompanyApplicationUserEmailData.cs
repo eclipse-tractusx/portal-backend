@@ -22,6 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyApplicationUserEmailData(CompanyApplicationStatusId CompanyApplicationStatusId, bool IsApplicationCompanyUser, string? Email, IEnumerable<DocumentStatusData> DocumentDatas);
+public record CompanyApplicationUserEmailData(CompanyApplicationStatusId CompanyApplicationStatusId, bool IsApplicationCompanyUser, string? Email, IEnumerable<DocumentStatusData> DocumentDatas, CompanyData CompanyData, IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> AgreementConsentStatuses);
 
 public record DocumentStatusData(Guid DocumentId, DocumentStatusId StatusId);
+
+public record CompanyData(string Name, Guid? AddressId, string? Streetname, string? City, string? Country, IEnumerable<UniqueIdentifierId> UniqueIds, IEnumerable<CompanyRoleId> CompanyRoleIds);
