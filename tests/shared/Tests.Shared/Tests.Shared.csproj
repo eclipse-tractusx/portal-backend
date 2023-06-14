@@ -51,6 +51,7 @@
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Models\Framework.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>

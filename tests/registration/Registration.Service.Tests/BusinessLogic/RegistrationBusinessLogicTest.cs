@@ -1696,6 +1696,21 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, "test@mail.de", documents, companyData, agreementConsents));
 
+        var modifiedDocuments = new List<(Document Initial, Document Modified)>();
+
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>._))
+            .Invokes((IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> documentKeyActions) =>
+            {
+                foreach (var x in documentKeyActions)
+                {
+                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    x.Initialize?.Invoke(initial);
+                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    x.Modify(modified);
+                    modifiedDocuments.Add((initial, modified));
+                }
+            });
+
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
             .Returns(checklist);
 
@@ -1745,7 +1760,13 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.UserId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
             .MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappened(2, Times.Exactly);
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>.That.Matches(x => x.Count() == 2)))
+            .MustHaveHappenedOnceExactly();
+
+        modifiedDocuments.Should().HaveCount(2).And.Satisfy(
+            x => x.Initial.Id == documents[0].DocumentId && x.Initial.DocumentStatusId == documents[0].StatusId && x.Modified.Id == documents[0].DocumentId && x.Modified.DocumentStatusId == DocumentStatusId.LOCKED,
+            x => x.Initial.Id == documents[1].DocumentId && x.Initial.DocumentStatusId == documents[1].StatusId && x.Modified.Id == documents[1].DocumentId && x.Modified.DocumentStatusId == DocumentStatusId.LOCKED
+        );
 
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
             .MustHaveHappenedOnceExactly();
@@ -1956,7 +1977,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
             .ConfigureAwait(false);
 
-        // Arrange
+        // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Address must not be empty");
     }
@@ -1982,7 +2003,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
             .ConfigureAwait(false);
 
-        // Arrange
+        // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Company Name must not be empty");
     }
@@ -2008,7 +2029,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
             .ConfigureAwait(false);
 
-        // Arrange
+        // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Company Identifiers [{string.Join(", ", uniqueIdentifierData)}] must not be empty");
     }
@@ -2034,7 +2055,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
             .ConfigureAwait(false);
 
-        // Arrange
+        // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Company assigned role [{string.Join(", ", companyRoleIdData)}] must not be empty");
     }
@@ -2057,7 +2078,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
             .ConfigureAwait(false);
 
-        // Arrange
+        // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Agreement and Consent must not be empty");
     }
@@ -2083,7 +2104,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
             .ConfigureAwait(false);
 
-        // Arrange
+        // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("City must not be empty");
     }
@@ -2110,7 +2131,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
             .ConfigureAwait(false);
 
-        // Arrange
+        // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Country must not be empty");
     }

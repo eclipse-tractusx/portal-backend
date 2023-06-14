@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -623,33 +624,18 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<bool> SubmitRegistrationAsync(Guid applicationId, Guid userId)
     {
-        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, _settings.SubmitDocumentTypeIds).ConfigureAwait(false);
-        if (applicationUserData == null)
-        {
-            throw new NotFoundException($"application {applicationId} does not exist");
-        }
-        if (!applicationUserData!.IsApplicationCompanyUser)
-        {
-            throw new ForbiddenException($"userId {userId} is not associated with CompanyApplication {applicationId}");
-        }
-        GetAndValidateCompanyDataDetails(applicationUserData, _settings.SubmitDocumentTypeIds);
-        if (applicationUserData.DocumentDatas.Any())
-        {
-            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-            foreach (var document in applicationUserData.DocumentDatas)
-            {
-                documentRepository.AttachAndModifyDocument(
-                    document.DocumentId,
-                    doc => doc.DocumentStatusId = document.StatusId,
-                    doc => doc.DocumentStatusId = DocumentStatusId.LOCKED);
-            }
-        }
+        var applicationUserData = await GetAndValidateCompanyDataDetails(applicationId, userId, _settings.SubmitDocumentTypeIds).ConfigureAwait(false);
 
         if (GetAndValidateUpdateApplicationStatus(applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration) != CompanyApplicationStatusId.SUBMITTED)
         {
             throw new UnexpectedConditionException("updateStatus should allways be SUBMITTED here");
         }
+
+        _portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocuments(
+            applicationUserData.DocumentDatas.Select(x => new ValueTuple<Guid, Action<Document>?, Action<Document>>(
+                x.DocumentId,
+                doc => doc.DocumentStatusId = x.StatusId,
+                doc => doc.DocumentStatusId = DocumentStatusId.LOCKED)));
 
         var entries = await _checklistService.CreateInitialChecklistAsync(applicationId);
 
@@ -689,45 +675,58 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return true;
     }
 
-    private static void GetAndValidateCompanyDataDetails(CompanyApplicationUserEmailData companyApplicationDetails, IEnumerable<DocumentTypeId> docTypeId)
+    private async ValueTask<CompanyApplicationUserEmailData> GetAndValidateCompanyDataDetails(Guid applicationId, Guid userId, IEnumerable<DocumentTypeId> docTypeIds)
     {
-        if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Name))
+        var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, docTypeIds).ConfigureAwait(false);
+
+        if (applicationUserData == null)
+        {
+            throw new NotFoundException($"application {applicationId} does not exist");
+        }
+        if (!applicationUserData.IsApplicationCompanyUser)
+        {
+            throw new ForbiddenException($"userId {userId} is not associated with CompanyApplication {applicationId}");
+        }
+        if (string.IsNullOrWhiteSpace(applicationUserData.CompanyData.Name))
         {
             throw new ConflictException($"Company Name must not be empty");
         }
-        if (companyApplicationDetails.CompanyData.AddressId == null)
+        if (applicationUserData.CompanyData.AddressId == null)
         {
             throw new ConflictException($"Address must not be empty");
         }
-        if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Streetname))
+        if (string.IsNullOrWhiteSpace(applicationUserData.CompanyData.Streetname))
         {
             throw new ConflictException($"Street Name must not be empty");
         }
-        if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.City))
+        if (string.IsNullOrWhiteSpace(applicationUserData.CompanyData.City))
         {
             throw new ConflictException($"City must not be empty");
         }
-        if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Country))
+        if (string.IsNullOrWhiteSpace(applicationUserData.CompanyData.Country))
         {
             throw new ConflictException($"Country must not be empty");
         }
-        if (!companyApplicationDetails.CompanyData.UniqueIds.Any())
+        if (!applicationUserData.CompanyData.UniqueIds.Any())
         {
-            throw new ConflictException($"Company Identifiers [{string.Join(", ", companyApplicationDetails.CompanyData.UniqueIds)}] must not be empty");
+            throw new ConflictException($"Company Identifiers [{string.Join(", ", applicationUserData.CompanyData.UniqueIds)}] must not be empty");
         }
-        if (!companyApplicationDetails.CompanyData.CompanyRoleIds.Any())
+        if (!applicationUserData.CompanyData.CompanyRoleIds.Any())
         {
-            throw new ConflictException($"Company assigned role [{string.Join(", ", companyApplicationDetails.CompanyData.CompanyRoleIds)}] must not be empty");
+            throw new ConflictException($"Company assigned role [{string.Join(", ", applicationUserData.CompanyData.CompanyRoleIds)}] must not be empty");
         }
-        if (!companyApplicationDetails.AgreementConsentStatuses.Any())
+        if (!applicationUserData.AgreementConsentStatuses.Any())
         {
             throw new ConflictException($"Agreement and Consent must not be empty");
         }
-        if (!companyApplicationDetails.DocumentDatas.Any())
+        if (!applicationUserData.DocumentDatas.Any())
         {
-            throw new ConflictException($"At least one Document type Id must be [{string.Join(", ", docTypeId)}]");
+            throw new ConflictException($"At least one Document type Id must be [{string.Join(", ", docTypeIds)}]");
         }
+        return applicationUserData;
     }
+
     public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
     {
         await foreach (var item in _portalRepositories.GetInstance<IInvitationRepository>().GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
