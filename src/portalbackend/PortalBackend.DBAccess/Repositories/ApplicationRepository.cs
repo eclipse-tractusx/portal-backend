@@ -69,41 +69,44 @@ public class ApplicationRepository : IApplicationRepository
                     default,
                     default)));
 
-    public Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
+    public Task<(bool Exists, CompanyApplicationStatusId StatusId)> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, Guid userCompanyId) =>
         _dbContext.CompanyApplications
-            .Where(application => application.Id == applicationId)
-            .Select(application => new CompanyApplicationUserData(application)
-            {
-                CompanyUserId = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
-            })
+            .Where(application => application.Id == applicationId && application.CompanyId == userCompanyId)
+            .Select(application => new ValueTuple<bool, CompanyApplicationStatusId>(true, application.ApplicationStatusId))
             .SingleOrDefaultAsync();
-    public Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId) =>
+
+    public Task<(bool Exists, bool IsUserOfCompany, CompanyApplicationStatusId ApplicationStatus)> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, Guid companyId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
-            .Select(application => new CompanyApplicationStatusUserData(application.ApplicationStatusId)
-            {
-                CompanyUserId = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
-            })
+            .Select(application => new ValueTuple<bool, bool, CompanyApplicationStatusId>(true, application.CompanyId == companyId, application.ApplicationStatusId))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds) =>
+    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds) =>
         _dbContext.CompanyApplications
             .AsSplitQuery()
+            .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .Select(application => new
             {
                 Application = application,
-                CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault(),
-                Documents = application.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents).Where(Doc => Doc.DocumentStatusId != DocumentStatusId.LOCKED && submitDocumentTypeIds.Contains(Doc.DocumentTypeId))
+                CompanyUser = application.Company!.Identities.Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Id == companyUserId),
+                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED && submitDocumentTypeIds.Contains(doc.DocumentTypeId))
             })
-            .Select(companyApplication => new CompanyApplicationUserEmailData(
-                companyApplication.Application.ApplicationStatusId,
-                companyApplication.CompanyUser!.Id,
-                companyApplication.CompanyUser.Email,
-                companyApplication.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
-                new CompanyData(companyApplication.Application.Company!.Name,companyApplication.Application.Company!.AddressId,companyApplication.Application.Company!.Address!.Streetname,companyApplication.Application.Company!.Address!.City,companyApplication.Application.Company!.Address!.Country!.CountryNameDe,companyApplication.Application.Company!.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),companyApplication.Application.Company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
-                companyApplication.Application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
+            .Select(data => new CompanyApplicationUserEmailData(
+                data.Application.ApplicationStatusId,
+                data.CompanyUser != null,
+                data.CompanyUser!.Email,
+                data.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
+                new CompanyData(
+                    data.Application.Company!.Name,
+                    data.Application.Company.AddressId,
+                    data.Application.Company.Address!.Streetname,
+                    data.Application.Company.Address.City,
+                    data.Application.Company.Address.Country!.CountryNameDe,
+                    data.Application.Company.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),
+                    data.Application.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
+                data.Application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
                             consent.AgreementId, consent.ConsentStatusId))
                 ))
@@ -116,7 +119,7 @@ public class ApplicationRepository : IApplicationRepository
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
                 (applicationStatusIds == null || applicationStatusIds.Contains(application.ApplicationStatusId)));
 
-    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, string iamUserId, Guid? companyId = null) =>
+    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId = null) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId &&
@@ -137,10 +140,7 @@ public class ApplicationRepository : IApplicationRepository
                 application.Company.Address.Region,
                 application.Company.Address.CountryAlpha2Code,
                 application.Company.Address.Country!.CountryNameDe,
-                application.Company.CompanyUsers
-                    .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
-                    .Select(companyUser => companyUser.Id)
-                    .SingleOrDefault(),
+                application.CompanyId == userCompanyId,
                 application.Company.CompanyIdentifiers
                     .Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
             .SingleOrDefaultAsync();
@@ -193,12 +193,12 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .Where(invitation => invitation.CompanyApplicationId == applicationId)
             .Select(invitation => invitation.CompanyUser)
-            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
+            .Where(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE)
             .Select(companyUser => new CompanyInvitedUserData(
                 companyUser!.Id,
-                companyUser.IamUser!.UserEntityId,
+                companyUser.Identity!.UserEntityId,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(companyUserAssignedBusinessPartner => companyUserAssignedBusinessPartner.BusinessPartnerNumber),
-                companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
+                companyUser.Identity!.IdentityAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId) =>
@@ -206,8 +206,8 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .SelectMany(application =>
-                application.Company!.CompanyUsers
-                    .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
+                application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!)
+                    .Where(companyUser => companyUser.Identity!.UserStatusId == UserStatusId.ACTIVE)
                     .Select(companyUser => new EmailData(
                         companyUser.Id,
                         companyUser.Firstname,
@@ -254,7 +254,7 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
-    public Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes) =>
+    public Task<(bool IsValidApplicationId, bool IsValidCompany, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, Guid userCompanyId, IEnumerable<DocumentTypeId> documentTypes) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .AsSplitQuery()
@@ -262,7 +262,7 @@ public class ApplicationRepository : IApplicationRepository
                 application.Id == applicationId)
             .Select(application => new
             {
-                IsSameCompanyUser = application.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId),
+                IsSameCompanyUser = application.CompanyId == userCompanyId,
                 Company = application.Company
             })
             .Select(x => new ValueTuple<bool, bool, RegistrationData?>(
@@ -282,10 +282,10 @@ public class ApplicationRepository : IApplicationRepository
                     x.Company.Address.CountryAlpha2Code,
                     x.Company.Address.Country!.CountryNameDe,
                     x.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                    x.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                    x.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
                             consent.AgreementId, consent.ConsentStatusId)),
-                    x.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents.Where(document => documentTypes.Contains(document.DocumentTypeId)).Select(document => document.DocumentName)),
+                    x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).SelectMany(companyUser => companyUser.Documents.Where(document => documentTypes.Contains(document.DocumentTypeId)).Select(document => document.DocumentName)),
                     x.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value)))
                     : null))
             .SingleOrDefaultAsync();
@@ -407,4 +407,8 @@ public class ApplicationRepository : IApplicationRepository
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
             .Select(x => new ValueTuple<Guid, string>(x.CompanyId, x.Company!.Name))
             .SingleOrDefaultAsync();
+
+    public Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId) =>
+        _dbContext.CompanyApplications
+            .AnyAsync(application => application.Id == applicationId && application.CompanyId == companyId);
 }

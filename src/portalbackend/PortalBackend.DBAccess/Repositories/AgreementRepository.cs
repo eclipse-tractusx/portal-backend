@@ -21,6 +21,7 @@
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -77,7 +78,7 @@ public class AgreementRepository : IAgreementRepository
             .AsAsyncEnumerable();
 
     ///<inheritdoc/>
-    public Task<(OfferAgreementConsent OfferAgreementConsent, bool IsProviderCompany)> GetOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
+    public Task<(OfferAgreementConsent OfferAgreementConsent, bool IsProviderCompany)> GetOfferAgreementConsentById(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .Where(offer => offer.Id == offerId &&
@@ -87,12 +88,12 @@ public class AgreementRepository : IAgreementRepository
                     offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AgreementConsentStatus(
                     consentAssignedOffer.Consent!.AgreementId,
                     consentAssignedOffer.Consent.ConsentStatusId))),
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                offer.ProviderCompanyId == userCompanyId
             ))
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
-    public Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId) =>
+    public Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, Guid companyId, OfferStatusId statusId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .AsSplitQuery()
@@ -101,14 +102,13 @@ public class AgreementRepository : IAgreementRepository
                 offer.OfferTypeId == offerTypeId)
             .Select(offer => new ValueTuple<OfferAgreementConsentUpdate, bool>(
                 new OfferAgreementConsentUpdate(
-                    offer.ProviderCompany!.CompanyUsers.Select(companyUser => companyUser.Id).SingleOrDefault(),
-                    offer.ProviderCompany.Id,
+                    offer.ProviderCompany!.Identities.Select(companyUser => companyUser.Id).SingleOrDefault(),
                     offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AppAgreementConsentStatus(
                         consentAssignedOffer.Consent!.AgreementId,
                         consentAssignedOffer.Consent.Id,
                         consentAssignedOffer.Consent.ConsentStatusId)),
                     offer.OfferType!.AgreementAssignedOfferTypes.Select(assigned => assigned.AgreementId)),
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+                offer.ProviderCompanyId == companyId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

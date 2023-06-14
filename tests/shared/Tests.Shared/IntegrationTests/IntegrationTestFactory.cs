@@ -38,7 +38,6 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
     where TTestClass : class
 {
     private readonly TestcontainerDatabase _container;
-    public IList<Action<PortalDbContext>>? SetupDbActions { get; set; }
 
     public IntegrationTestFactory()
     {
@@ -60,7 +59,7 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
         var projectDir = Directory.GetCurrentDirectory();
         var configPath = Path.Combine(projectDir, "appsettings.IntegrationTests.json");
 
-        builder.ConfigureAppConfiguration((context, conf) =>
+        builder.ConfigureAppConfiguration((_, conf) =>
         {
             conf.AddJsonFile(configPath, true);
         });
@@ -73,7 +72,7 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
                     x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                         .MigrationsHistoryTable("__efmigrations_history_portal"));
             });
-            services.EnsureDbCreated(SetupDbActions);
+            services.EnsureDbCreated();
             services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
         });
     }

@@ -47,68 +47,33 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<Guid> CreateNotificationAsync(string iamUserId,
-        NotificationCreationData creationData, Guid receiverId)
-    {
-        var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(iamUserId, receiverId).ToListAsync().ConfigureAwait(false);
-
-        if (users.All(x => x.CompanyUserId != receiverId))
-            throw new ArgumentException("User does not exist", nameof(receiverId));
-
-        var (content, notificationTypeId, notificationStatusId, dueDate) =
-            creationData;
-
-        var notification = _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(
-            receiverId,
-            notificationTypeId,
-            notificationStatusId,
-            notification =>
-            {
-                notification.DueDate = dueDate;
-                notification.CreatorUserId = users.Single(x => x.IsIamUser).CompanyUserId;
-                notification.Content = content;
-            });
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return notification.Id;
-    }
+    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, Guid receiverUserId, NotificationFilters filters) =>
+        Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, _portalRepositories.GetInstance<INotificationRepository>()
+                .GetAllNotificationDetailsByReceiver(receiverUserId, filters.IsRead, filters.TypeId, filters.TopicId, filters.OnlyDueDate, filters.Sorting ?? NotificationSorting.DateDesc));
 
     /// <inheritdoc />
-    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, NotificationFilters filters) =>
-        Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize,
-            _portalRepositories.GetInstance<INotificationRepository>()
-                .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, filters.IsRead, filters.TypeId, filters.TopicId, filters.OnlyDueDate, filters.Sorting ?? NotificationSorting.DateDesc));
-
-    /// <inheritdoc />
-    public async Task<NotificationDetailData> GetNotificationDetailDataAsync(string iamUserId, Guid notificationId)
+    public async Task<NotificationDetailData> GetNotificationDetailDataAsync(Guid userId, Guid notificationId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndIamUserIdUntrackedAsync(notificationId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndValidateReceiverAsync(notificationId, userId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"Notification {notificationId} does not exist.");
         }
         if (!result.IsUserReceiver)
         {
-            throw new ForbiddenException($"iamUserId {iamUserId} is not the receiver of the notification");
+            throw new ForbiddenException("The user is not the receiver of the notification");
         }
         return result.NotificationDetailData;
     }
 
     /// <inheritdoc />
-    public async Task<int> GetNotificationCountAsync(string iamUserId, bool? isRead)
-    {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationCountForIamUserAsync(iamUserId, isRead).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
-        }
-        return result.Count;
-    }
+    public Task<int> GetNotificationCountAsync(Guid userId, bool? isRead) =>
+        _portalRepositories.GetInstance<INotificationRepository>().GetNotificationCountForUserAsync(userId, isRead);
 
     /// <inheritdoc />
-    public async Task<NotificationCountDetails> GetNotificationCountDetailsAsync(string iamUserId)
+    public async Task<NotificationCountDetails> GetNotificationCountDetailsAsync(Guid userId)
     {
-        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(iamUserId).ToListAsync().ConfigureAwait(false);
+        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(userId).ToListAsync().ConfigureAwait(false);
         var unreadNotifications = details.Where(x => !x.IsRead);
         return new NotificationCountDetails(
             details.Where(x => x.IsRead).Sum(x => x.Count),
@@ -120,9 +85,9 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task SetNotificationStatusAsync(string iamUserId, Guid notificationId, bool isRead)
+    public async Task SetNotificationStatusAsync(Guid userId, Guid notificationId, bool isRead)
     {
-        await CheckNotificationExistsAndIamUserIsReceiver(notificationId, iamUserId).ConfigureAwait(false);
+        await CheckNotificationExistsAndValidateReceiver(notificationId, userId).ConfigureAwait(false);
 
         _portalRepositories.GetInstance<INotificationRepository>().AttachAndModifyNotification(notificationId, notification =>
         {
@@ -132,24 +97,24 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task DeleteNotificationAsync(string iamUserId, Guid notificationId)
+    public async Task DeleteNotificationAsync(Guid userId, Guid notificationId)
     {
-        await CheckNotificationExistsAndIamUserIsReceiver(notificationId, iamUserId).ConfigureAwait(false);
+        await CheckNotificationExistsAndValidateReceiver(notificationId, userId).ConfigureAwait(false);
 
         _portalRepositories.GetInstance<INotificationRepository>().DeleteNotification(notificationId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task CheckNotificationExistsAndIamUserIsReceiver(Guid notificationId, string iamUserId)
+    private async Task CheckNotificationExistsAndValidateReceiver(Guid notificationId, Guid userId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndIamUserIdAsync(notificationId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, userId).ConfigureAwait(false);
         if (result == default || !result.IsNotificationExisting)
         {
             throw new NotFoundException($"Notification {notificationId} does not exist.");
         }
         if (!result.IsUserReceiver)
         {
-            throw new ForbiddenException($"iamUserId {iamUserId} is not the receiver of the notification");
+            throw new ForbiddenException("The user is not the receiver of the notification");
         }
     }
 }

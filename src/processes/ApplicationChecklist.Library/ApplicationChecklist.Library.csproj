@@ -31,7 +31,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
-      <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
     </ItemGroup>
 
 </Project>

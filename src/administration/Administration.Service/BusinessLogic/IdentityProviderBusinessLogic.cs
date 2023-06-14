@@ -51,9 +51,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         _settings = options.Value;
     }
 
-    public async IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProvidersAsync(string iamUserId)
+    public async IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProvidersAsync(Guid companyId)
     {
-        await foreach (var identityProviderData in _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderCategoryDataUntracked(iamUserId).ConfigureAwait(false))
+        await foreach (var identityProviderData in _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderCategoryDataUntracked(companyId).ConfigureAwait(false))
         {
             switch (identityProviderData.CategoryId)
             {
@@ -81,7 +81,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string? displayName, string iamUserId)
+    public ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string? displayName, Guid companyId)
     {
         IdentityProviderCategoryId identityProviderCategory;
         switch (protocol)
@@ -100,7 +100,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             ValidateDisplayName(displayName);
         }
 
-        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, displayName, iamUserId);
+        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, displayName, companyId);
     }
 
     private static void ValidateDisplayName(string displayName)
@@ -115,18 +115,19 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, string? displayName, string iamUserId)
+    private async ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, string? displayName, Guid companyId)
     {
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameIdUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (result == default)
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameUntrackedAsync(companyId).ConfigureAwait(false);
+        if (!result.IsValidCompany)
         {
-            throw new ControllerArgumentException($"user {iamUserId} is not associated with a company", nameof(iamUserId));
+            throw new ControllerArgumentException($"company {companyId} does not exist", nameof(companyId));
         }
+
         var alias = await _provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, result.CompanyName, protocol).ConfigureAwait(false);
         var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory);
-        identityProvider.CompanyIdentityProviders.Add(identityProviderRepository.CreateCompanyIdentityProvider(result.CompanyId, identityProvider.Id));
+        identityProvider.CompanyIdentityProviders.Add(identityProviderRepository.CreateCompanyIdentityProvider(companyId, identityProvider.Id));
         identityProviderRepository.CreateIamIdentityProvider(identityProvider, alias);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -141,9 +142,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public async ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProviderAsync(Guid identityProviderId, string iamUserId)
+    public async ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProviderAsync(Guid identityProviderId, Guid companyId)
     {
-        var (alias, category) = await ValidateGetOwnCompanyIdentityProviderArguments(identityProviderId, iamUserId).ConfigureAwait(false);
+        var (alias, category) = await ValidateGetOwnCompanyIdentityProviderArguments(identityProviderId, companyId).ConfigureAwait(false);
 
         switch (category)
         {
@@ -157,12 +158,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<(string Alias, IdentityProviderCategoryId Category)> ValidateGetOwnCompanyIdentityProviderArguments(Guid identityProviderId, string iamUserId)
+    private async ValueTask<(string Alias, IdentityProviderCategoryId Category)> ValidateGetOwnCompanyIdentityProviderArguments(Guid identityProviderId, Guid companyId)
     {
-        var (alias, category, isOwnCompany) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        var (alias, category, isOwnCompany) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, companyId).ConfigureAwait(false);
         if (!isOwnCompany)
         {
-            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+            throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
         }
         if (alias == null)
         {
@@ -171,9 +172,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return new ValueTuple<string, IdentityProviderCategoryId>(alias, category);
     }
 
-    public async ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatusAsync(Guid identityProviderId, bool enabled, string iamUserId)
+    public async ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatusAsync(Guid identityProviderId, bool enabled, Guid companyId)
     {
-        var (category, alias) = await ValidateSetOwnCompanyIdentityProviderStatusArguments(identityProviderId, enabled, iamUserId).ConfigureAwait(false);
+        var (category, alias) = await ValidateSetOwnCompanyIdentityProviderStatusArguments(identityProviderId, enabled, companyId).ConfigureAwait(false);
 
         switch (category)
         {
@@ -191,16 +192,16 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateSetOwnCompanyIdentityProviderStatusArguments(Guid identityProviderId, bool enabled, string iamUserId)
+    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateSetOwnCompanyIdentityProviderStatusArguments(Guid identityProviderId, bool enabled, Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, companyId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
         if (!result.IsSameCompany)
         {
-            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+            throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
         }
         if (!enabled)
         {
@@ -213,9 +214,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return new ValueTuple<IdentityProviderCategoryId, string>(result.IdentityProviderCategory, result.Alias);
     }
 
-    public async ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProviderAsync(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId)
+    public async ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProviderAsync(Guid identityProviderId, IdentityProviderEditableDetails details, Guid companyId)
     {
-        var (category, alias) = await ValidateUpdateOwnCompanyIdentityProviderArguments(identityProviderId, details, iamUserId).ConfigureAwait(false);
+        var (category, alias) = await ValidateUpdateOwnCompanyIdentityProviderArguments(identityProviderId, details, companyId).ConfigureAwait(false);
 
         switch (category)
         {
@@ -233,18 +234,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateUpdateOwnCompanyIdentityProviderArguments(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId)
+    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateUpdateOwnCompanyIdentityProviderArguments(Guid identityProviderId, IdentityProviderEditableDetails details, Guid companyId)
     {
         ValidateDisplayName(details.displayName);
 
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, companyId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
         if (!result.IsSameCompany)
         {
-            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company {companyId}");
         }
         return new ValueTuple<IdentityProviderCategoryId, string>(result.IdentityProviderCategory, result.Alias);
     }
@@ -314,9 +315,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public async ValueTask DeleteOwnCompanyIdentityProviderAsync(Guid identityProviderId, string iamUserId)
+    public async ValueTask DeleteCompanyIdentityProviderAsync(Guid identityProviderId, Guid companyId)
     {
-        var (companyId, companyCount, alias, category) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId, iamUserId).ConfigureAwait(false);
+        var (companyCount, alias, category) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId, companyId).ConfigureAwait(false);
 
         _portalRepositories.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
         if (companyCount == 1)
@@ -335,17 +336,17 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask<(Guid CompanyId, int CompanyCount, string Alias, IdentityProviderCategoryId Category)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, string iamUserId)
+    private async ValueTask<(int CompanyCount, string Alias, IdentityProviderCategoryId Category)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderDeletionDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderDeletionDataUntrackedAsync(identityProviderId, companyId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
-        var (companyId, companyCount, alias, category, aliase) = result;
-        if (result.CompanyId == Guid.Empty)
+        var (isValidCompanyId, companyCount, alias, category, aliase) = result;
+        if (!isValidCompanyId)
         {
-            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+            throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
         }
 
         if (await _provisioningManager.IsCentralIdentityProviderEnabled(alias).ConfigureAwait(false))
@@ -359,7 +360,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             () => throw new ControllerArgumentException($"cannot delete indentityProvider {identityProviderId} as no other active identityProvider exists for this company")
         ).ConfigureAwait(false);
 
-        return new ValueTuple<Guid, int, string, IdentityProviderCategoryId>(companyId, companyCount, alias, category);
+        return new ValueTuple<int, string, IdentityProviderCategoryId>(companyCount, alias, category);
     }
 
     private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsOidc(Guid identityProviderId, string alias, IdentityProviderCategoryId categoryId)
@@ -402,9 +403,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         };
     }
 
-    public async ValueTask<UserIdentityProviderLinkData> CreateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, UserIdentityProviderLinkData identityProviderLinkData, string iamUserId)
+    public async ValueTask<UserIdentityProviderLinkData> CreateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, UserIdentityProviderLinkData identityProviderLinkData, Guid companyId)
     {
-        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderLinkData.identityProviderId, iamUserId).ConfigureAwait(false);
+        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderLinkData.identityProviderId, companyId).ConfigureAwait(false);
 
         try
         {
@@ -427,9 +428,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             identityProviderLinkData.userName);
     }
 
-    public async ValueTask<UserIdentityProviderLinkData> CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData, string iamUserId)
+    public async ValueTask<UserIdentityProviderLinkData> CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData, Guid companyId)
     {
-        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
+        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
 
         try
         {
@@ -453,9 +454,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             userLinkData.userName);
     }
 
-    public async ValueTask<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, string iamUserId)
+    public async ValueTask<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, Guid companyId)
     {
-        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
+        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
 
         var result = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).FirstOrDefaultAsync(identityProviderLink => identityProviderLink.Alias == alias).ConfigureAwait(false);
 
@@ -469,9 +470,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             result.UserName);
     }
 
-    public async ValueTask DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, Guid identityProviderId, string iamUserId)
+    public async ValueTask DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, Guid identityProviderId, Guid companyId)
     {
-        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
+        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
         try
         {
             await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias).ConfigureAwait(false);
@@ -482,17 +483,16 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid> identityProviderIds, string iamUserId, bool unlinkedUsersOnly)
+    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid> identityProviderIds, Guid companyId, bool unlinkedUsersOnly)
     {
-        var identityProviderAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
+        var identityProviderAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, companyId).ConfigureAwait(false);
         var idPerAlias = identityProviderAliasDatas.ToDictionary(item => item.Alias, item => item.IdentityProviderId);
         var aliase = identityProviderAliasDatas.Select(item => item.Alias).ToList();
 
-        await foreach (var (companyUserId, userProfile, links) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId).ConfigureAwait(false))
+        await foreach (var (companyUserId, userProfile, links) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(companyId).ConfigureAwait(false))
         {
             var identityProviderLinks = await links.ToListAsync().ConfigureAwait(false);
-            if (!unlinkedUsersOnly
-                || aliase.Any(alias => identityProviderLinks.All(identityProviderLink => identityProviderLink.Alias != alias)))
+            if (!unlinkedUsersOnly || aliase.Except(identityProviderLinks.Select(link => link.Alias)).Any())
             {
                 yield return new UserIdentityProviderData(
                     companyUserId,
@@ -500,7 +500,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     userProfile.LastName,
                     userProfile.Email,
                     identityProviderLinks
-                        .Where(identityProviderLink => aliase.Contains(identityProviderLink.Alias))
+                        .IntersectBy(aliase, link => link.Alias)
                         .Select(linkData => new UserIdentityProviderLinkData(
                             idPerAlias[linkData.Alias],
                             linkData.UserId,
@@ -510,30 +510,25 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public (Stream FileStream, string ContentType, string FileName, Encoding Encoding) GetOwnCompanyUsersIdentityProviderLinkDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId, bool unlinkedUsersOnly)
+    public (Stream FileStream, string ContentType, string FileName, Encoding Encoding) GetOwnCompanyUsersIdentityProviderLinkDataStream(IEnumerable<Guid> identityProviderIds, Guid companyId, bool unlinkedUsersOnly)
     {
         var csvSettings = _settings.CsvSettings;
-        return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, unlinkedUsersOnly, iamUserId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
+        return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, unlinkedUsersOnly, companyId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
     }
 
-    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
         if (!document.ContentType.Equals(_settings.CsvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
         {
             throw new UnsupportedMediaTypeException($"Only contentType {_settings.CsvSettings.ContentType} files are allowed.");
         }
-        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, iamUserId, cancellationToken);
+        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, identity, cancellationToken);
     }
 
-    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var (companyId, creatorId) = await userRepository.GetOwnCompanyAndCompanyUserId(iamUserId).ConfigureAwait(false);
-        if (companyId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"user {iamUserId} is not associated with a company");
-        }
-        var (sharedIdpAlias, existingAliase) = await GetCompanyAliasDataAsync(companyId).ConfigureAwait(false);
+        var (sharedIdpAlias, existingAliase) = await GetCompanyAliasDataAsync(identity.CompanyId).ConfigureAwait(false);
 
         using var stream = document.OpenReadStream();
 
@@ -546,7 +541,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 numIdps = ParseCSVFirstLineReturningNumIdps(line);
             },
             line => ParseCSVLine(line, numIdps, existingAliase),
-            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, companyId, sharedIdpAlias, creatorId, cancellationToken),
+            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, identity.CompanyId, sharedIdpAlias, identity.UserId, cancellationToken),
             cancellationToken
         ).ConfigureAwait(false);
 
@@ -663,7 +658,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, firstName, lastName, email).ConfigureAwait(false);
             }
         }
-        userRepository.AttachAndModifyCompanyUser(companyUserId, companyUser =>
+        userRepository.AttachAndModifyCompanyUser(companyUserId, null, companyUser =>
             {
                 companyUser.Firstname = profile.FirstName;
                 companyUser.Lastname = profile.LastName;
@@ -784,15 +779,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         yield return csvSettings.HeaderProviderUserName;
     }
 
-    private async IAsyncEnumerable<string> GetOwnCompanyUsersIdentityProviderDataLines(IEnumerable<Guid> identityProviderIds, bool unlinkedUsersOnly, string iamUserId)
+    private async IAsyncEnumerable<string> GetOwnCompanyUsersIdentityProviderDataLines(IEnumerable<Guid> identityProviderIds, bool unlinkedUsersOnly, Guid companyId)
     {
-        var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
+        var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, companyId).ConfigureAwait(false);
         var aliase = idpAliasDatas.Select(data => data.Alias).ToList();
         var csvSettings = _settings.CsvSettings;
 
         var firstLine = true;
 
-        await foreach (var (companyUserId, userProfile, identityProviderLinksAsync) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId).ConfigureAwait(false))
+        await foreach (var (companyUserId, userProfile, identityProviderLinksAsync) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(companyId).ConfigureAwait(false))
         {
             if (firstLine)
             {
@@ -800,8 +795,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 yield return string.Join(csvSettings.Separator, CSVHeaders().Concat(idpAliasDatas.SelectMany(data => CSVIdpHeaders())));
             }
             var identityProviderLinks = await identityProviderLinksAsync.ToListAsync().ConfigureAwait(false);
-            if (!unlinkedUsersOnly
-                || aliase.Any(alias => identityProviderLinks.All(identityProviderLink => identityProviderLink.Alias != alias)))
+            if (!unlinkedUsersOnly || aliase.Except(identityProviderLinks.Select(link => link.Alias)).Any())
             {
                 yield return string.Join(
                     csvSettings.Separator,
@@ -811,41 +805,41 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     userProfile.Email,
                     string.Join(csvSettings.Separator, aliase.SelectMany(alias =>
                         {
-                            var identityProviderLink = identityProviderLinks.FirstOrDefault(linkData => linkData.Alias == alias);
+                            var identityProviderLink = identityProviderLinks.Find(linkData => linkData.Alias == alias);
                             return new[] { alias, identityProviderLink?.UserId, identityProviderLink?.UserName };
                         })));
             }
         }
     }
 
-    private async ValueTask<IEnumerable<(Guid IdentityProviderId, string Alias)>> GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    private async ValueTask<IEnumerable<(Guid IdentityProviderId, string Alias)>> GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(IEnumerable<Guid> identityProviderIds, Guid companyId)
     {
         if (!identityProviderIds.Any())
         {
             throw new ControllerArgumentException("at least one identityProviderId must be specified", nameof(identityProviderIds));
         }
-        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasDataUntracked(iamUserId, identityProviderIds).ToListAsync().ConfigureAwait(false);
+        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasDataUntracked(companyId, identityProviderIds).ToListAsync().ConfigureAwait(false);
 
         var invalidIds = identityProviderIds.Except(identityProviderData.Select(data => data.IdentityProviderId));
         if (invalidIds.Any())
         {
-            throw new ControllerArgumentException($"invalid identityProviders: [{String.Join(", ", invalidIds)}] for user {iamUserId}", nameof(identityProviderIds));
+            throw new ControllerArgumentException($"invalid identityProviders: [{String.Join(", ", invalidIds)}] for company {companyId}", nameof(identityProviderIds));
         }
 
         return identityProviderData;
     }
 
-    private async IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IAsyncEnumerable<IdentityProviderLink> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(string iamUserId)
+    private async IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IAsyncEnumerable<IdentityProviderLink> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(Guid companyId)
     {
         await foreach (var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
-            .GetOwnCompanyUserQuery(iamUserId)
+            .GetOwnCompanyUserQuery(companyId)
             .Select(companyUser =>
                 new ValueTuple<Guid, string?, string?, string?, string?>(
                     companyUser.Id,
                     companyUser.Firstname,
                     companyUser.Lastname,
                     companyUser.Email,
-                    companyUser.IamUser!.UserEntityId))
+                    companyUser.Identity!.UserEntityId))
             .ToAsyncEnumerable().ConfigureAwait(false))
         {
             if (userEntityId != null)
@@ -859,9 +853,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<(string UserEntityId, string Alias)> GetUserAliasDataAsync(Guid companyUserId, Guid identityProviderId, string iamUserId)
+    private async ValueTask<(string UserEntityId, string Alias)> GetUserAliasDataAsync(Guid companyUserId, Guid identityProviderId, Guid companyId)
     {
-        var userAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
+        var userAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
         if (userAliasData == default)
         {
             throw new NotFoundException($"companyUserId {companyUserId} does not exist");
@@ -876,7 +870,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         if (!userAliasData.IsSameCompany)
         {
-            throw new ForbiddenException($"user {iamUserId} does not belong to company of companyUserId {companyUserId}");
+            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company {companyId}");
         }
         return new ValueTuple<string, string>(
             userAliasData.UserEntityId,

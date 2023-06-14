@@ -62,47 +62,45 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 idpAlias,
                 identityProvider.Id)).Entity;
 
-    public Task<(string? SharedIdpAlias, Guid CompanyUserId)> GetSharedIdentityProviderIamAliasDataUntrackedAsync(string iamUserId) =>
-        _context.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
-            .Select(companyUser => new ValueTuple<string?, Guid>(
-                companyUser.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)!.IamIdentityProvider!.IamIdpAlias,
-                companyUser.Id
-            ))
+    public Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId) =>
+        _context.IdentityProviders
+            .AsNoTracking()
+            .Where(identityProvider =>
+                identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED &&
+                identityProvider.Companies.Any(company => company.Id == companyId))
+            .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
             .SingleOrDefaultAsync();
 
-    public Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId) =>
+    public Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, Guid userCompanyId) =>
         _context.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId
-                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && companyUser.Identity!.CompanyId == userCompanyId)
             .Select(companyUser => new IdpUser
             {
-                TargetIamUserId = companyUser.IamUser!.UserEntityId,
-                IdpName = companyUser.Company!.IdentityProviders
+                TargetIamUserId = companyUser.Identity!.UserEntityId,
+                IdpName = companyUser.Identity!.Company!.IdentityProviders
                     .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault()
             }).SingleOrDefaultAsync();
 
-    public Task<(string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
+    public Task<(string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>
                 new ValueTuple<string, IdentityProviderCategoryId, bool>(
                     identityProvider.IamIdentityProvider!.IamIdpAlias,
                     identityProvider.IdentityProviderCategoryId,
-                    identityProvider.Companies.Any(
-                        company => company.CompanyUsers.Any(
-                            companyUser => companyUser.IamUser!.UserEntityId == iamUserId))))
+                    identityProvider.Companies.Any(company => company.Id == companyId)))
             .SingleOrDefaultAsync();
 
-    public Task<(bool IsSameCompany, string Alias, IdentityProviderCategoryId IdentityProviderCategory, IEnumerable<string> Aliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, string iamUserId) =>
+    public Task<(bool IsSameCompany, string Alias, IdentityProviderCategoryId IdentityProviderCategory, IEnumerable<string> Aliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider => new
             {
                 IdentityProvider = identityProvider,
-                Company = identityProvider.Companies.SingleOrDefault(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                Company = identityProvider.Companies.SingleOrDefault(company => company.Id == companyId)
             })
             .Select(item =>
                 new ValueTuple<bool, string, IdentityProviderCategoryId, IEnumerable<string>>(
@@ -113,35 +111,23 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid CompanyId, int LinkedCompaniesCount, string Alias, IdentityProviderCategoryId IdentityProviderCategory, IEnumerable<string> Aliase)> GetOwnCompanyIdentityProviderDeletionDataUntrackedAsync(Guid identityProviderId, string iamUserId) =>
+    public Task<(bool IsValidCompanyId, int LinkedCompaniesCount, string Alias, IdentityProviderCategoryId IdentityProviderCategory, IEnumerable<string> Aliase)> GetCompanyIdentityProviderDeletionDataUntrackedAsync(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider => new
             {
                 IdentityProvider = identityProvider,
-                Company = identityProvider.Companies.SingleOrDefault(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                Company = identityProvider.Companies.SingleOrDefault(company => company.Id == companyId)
             })
             .Select(item =>
-                new ValueTuple<Guid, int, string, IdentityProviderCategoryId, IEnumerable<string>>(
-                    item.Company!.Id,
+                new ValueTuple<bool, int, string, IdentityProviderCategoryId, IEnumerable<string>>(
+                    item.Company != null,
                     item.IdentityProvider.Companies.Count,
                     item.IdentityProvider.IamIdentityProvider!.IamIdpAlias,
                     item.IdentityProvider.IdentityProviderCategoryId,
-                    item.Company.IdentityProviders.Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                    item.Company!.IdentityProviders.Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                 ))
             .SingleOrDefaultAsync();
-
-    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderCategoryDataUntracked(string iamUserId) =>
-        _context.IamUsers
-            .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.IdentityProviders)
-            .Select(identityProvider => new ValueTuple<Guid, IdentityProviderCategoryId, string>(
-                identityProvider.Id,
-                identityProvider.IdentityProviderCategoryId,
-                identityProvider.IamIdentityProvider!.IamIdpAlias
-            ))
-            .ToAsyncEnumerable();
 
     public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId) =>
         _context.IdentityProviders
@@ -154,50 +140,50 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             ))
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid IdentityProviderId, string Alias)> GetOwnCompanyIdentityProviderAliasDataUntracked(string iamUserId, IEnumerable<Guid> identityProviderIds) =>
-        _context.IamUsers
+    public IAsyncEnumerable<(Guid IdentityProviderId, string Alias)> GetOwnCompanyIdentityProviderAliasDataUntracked(Guid companyId, IEnumerable<Guid> identityProviderIds) =>
+        _context.IdentityProviders
             .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.IdentityProviders)
-            .Where(identityProvider => identityProviderIds.Contains(identityProvider.Id))
+            .Where(identityProvider =>
+                identityProvider.Companies.Any(company => company.Id == companyId) &&
+                identityProviderIds.Contains(identityProvider.Id))
             .Select(identityProvider => new ValueTuple<Guid, string>(
                 identityProvider.Id,
                 identityProvider.IamIdentityProvider!.IamIdpAlias
             ))
             .ToAsyncEnumerable();
 
-    public Task<(string? UserEntityId, string? Alias, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, Guid identityProviderId, string iamUserId) =>
+    public Task<(string? UserEntityId, string? Alias, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, Guid identityProviderId, Guid companyId) =>
         _context.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new ValueTuple<string?, string?, bool>(
-                companyUser.IamUser!.UserEntityId,
-                companyUser.Company!.IdentityProviders
+                companyUser.Identity!.UserEntityId,
+                companyUser.Identity!.Company!.IdentityProviders
                     .Where(identityProvider => identityProvider.Id == identityProviderId)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault(),
-                companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+                companyUser.Identity!.CompanyId == companyId))
             .SingleOrDefaultAsync();
 
     public Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
                 (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
                 IEnumerable<string> IdpAliase)>
-        GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId) =>
+        GetCompanyNameIdpAliaseUntrackedAsync(Guid companyUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId) =>
             _context.CompanyUsers
                 .AsNoTracking()
-                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId &&
-                    (applicationId == null || companyUser.Company!.CompanyApplications.Any(application => application.Id == applicationId)))
+                .Where(companyUser => companyUser.Id == companyUserId &&
+                    (applicationId == null || companyUser.Identity!.Company!.CompanyApplications.Any(application => application.Id == applicationId)))
                 .Select(companyUser => new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>>(
                     new ValueTuple<Guid, string?, string?>(
-                        companyUser.Company!.Id,
-                        companyUser.Company.Name,
-                        companyUser.Company!.BusinessPartnerNumber),
+                        companyUser.Identity!.Company!.Id,
+                        companyUser.Identity!.Company.Name,
+                        companyUser.Identity!.Company!.BusinessPartnerNumber),
                     new ValueTuple<Guid, string?, string?, string?>(
                         companyUser.Id,
                         companyUser.Firstname,
                         companyUser.Lastname,
                         companyUser.Email),
-                    companyUser.Company!.IdentityProviders
+                    companyUser.Identity!.Company!.IdentityProviders
                         .Where(identityProvider => identityProvider.IdentityProviderCategoryId == identityProviderCategoryId)
                         .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)))
                 .SingleOrDefaultAsync();
@@ -205,15 +191,15 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     public Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
         (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
         (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>
-        GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
+        GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, Guid companyUserId) =>
             _context.CompanyUsers
                 .AsNoTracking()
-                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                .Where(companyUser => companyUser.Id == companyUserId)
                 .Select(companyUser => new
                 {
-                    Company = companyUser!.Company,
+                    Company = companyUser!.Identity!.Company,
                     CompanyUser = companyUser,
-                    IdentityProvider = companyUser!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)
+                    IdentityProvider = companyUser.Identity!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)
                 })
                 .Select(s => new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), (string?, bool)>(
                     new ValueTuple<Guid, string?, string?>(

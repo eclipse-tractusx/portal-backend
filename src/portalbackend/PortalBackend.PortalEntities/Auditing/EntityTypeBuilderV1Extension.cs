@@ -50,7 +50,9 @@ public static class EntityTypeBuilderV1Extension
         {
             sourceProperties.AddRange(typeof(IBaseEntity).GetProperties());
         }
-        sourceProperties.AddRange(typeof(TEntity).GetProperties().Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)));
+        sourceProperties.AddRange(typeof(TEntity).GetProperties(BindingFlags.Public |
+                                                                BindingFlags.Instance |
+                                                                BindingFlags.DeclaredOnly).Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)));
         var auditProperties = typeof(IAuditEntityV1).GetProperties();
         var targetProperties = auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name);
 
@@ -66,7 +68,9 @@ public static class EntityTypeBuilderV1Extension
             throw new ArgumentException($"{auditEntityAttribute.AuditEntityType.Name} is missing the following properties: {string.Join(", ", missingProperties.Select(x => x.Name))}");
         }
 
-        if (!typeof(TAuditEntity).GetProperties().Any(p => p.Name == AuditPropertyV1Names.AuditV1Id.ToString() && p.CustomAttributes.Any(a => a.AttributeType == typeof(KeyAttribute))))
+        if (!Array.Exists(
+            typeof(TAuditEntity).GetProperties(),
+            p => p.Name == AuditPropertyV1Names.AuditV1Id.ToString() && p.CustomAttributes.Any(a => a.AttributeType == typeof(KeyAttribute))))
         {
             throw new ConfigurationException($"{typeof(TAuditEntity).Name}.{AuditPropertyV1Names.AuditV1Id} must be marked as primary key by attribute {typeof(KeyAttribute).Name}");
         }

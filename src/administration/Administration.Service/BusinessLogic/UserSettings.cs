@@ -41,7 +41,7 @@ public class UserSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IEnumerable<CompanyUserStatusId> CompanyUserStatusIds { get; set; } = null!;
+    public IEnumerable<UserStatusId> CompanyUserStatusIds { get; set; } = null!;
 
     /// <summary>
     /// Company User Status Id

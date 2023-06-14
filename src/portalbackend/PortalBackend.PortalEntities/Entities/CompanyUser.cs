@@ -21,42 +21,31 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyUser20221005))]
-public class CompanyUser : IAuditableV1, IBaseEntity
+[AuditEntityV1(typeof(AuditCompanyUser20230522))]
+public class CompanyUser : IBaseEntity, IAuditableV1
 {
-    public CompanyUser()
+    public CompanyUser(Guid id, Guid? lastEditorId)
     {
+        Id = id;
+        LastEditorId = lastEditorId;
+
         Consents = new HashSet<Consent>();
         Documents = new HashSet<Document>();
         Invitations = new HashSet<Invitation>();
         Offers = new HashSet<Offer>();
         SalesManagerOfOffers = new HashSet<Offer>();
-        UserRoles = new HashSet<UserRole>();
-        CompanyUserAssignedRoles = new HashSet<CompanyUserAssignedRole>();
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
         Notifications = new HashSet<Notification>();
         CreatedNotifications = new HashSet<Notification>();
         RequestedSubscriptions = new HashSet<OfferSubscription>();
     }
 
-    public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated, Guid lastEditorId)
-        : this()
-    {
-        Id = id;
-        DateCreated = dateCreated;
-        CompanyId = companyId;
-        CompanyUserStatusId = companyUserStatusId;
-        LastEditorId = lastEditorId;
-    }
-
+    /// <inheritdoc />
     public Guid Id { get; set; }
-
-    public DateTimeOffset DateCreated { get; private set; }
 
     [MaxLength(255)]
     public string? Email { get; set; }
@@ -69,26 +58,17 @@ public class CompanyUser : IAuditableV1, IBaseEntity
     [MaxLength(255)]
     public string? Lastname { get; set; }
 
-    public Guid CompanyId { get; set; }
-
-    public CompanyUserStatusId CompanyUserStatusId { get; set; }
-
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
-    // Navigation properties
-    public virtual Company? Company { get; set; }
-    public virtual IamUser? IamUser { get; set; }
-    public virtual CompanyUserStatus? CompanyUserStatus { get; set; }
+    public virtual Identity? Identity { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }
     public virtual ICollection<Offer> SalesManagerOfOffers { get; private set; }
-    public virtual ICollection<UserRole> UserRoles { get; private set; }
-    public virtual ICollection<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
     public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }

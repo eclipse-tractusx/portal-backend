@@ -68,6 +68,12 @@
     <Content Update="Seeder\Data\technical_user_profile_assigned_user_roles.consortia.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
+    <Content Update="Seeder\Data\identities.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\identities.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations" />

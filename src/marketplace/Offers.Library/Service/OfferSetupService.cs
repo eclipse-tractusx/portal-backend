@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -28,11 +28,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -43,8 +42,8 @@ public class OfferSetupService : IOfferSetupService
     private readonly IProvisioningManager _provisioningManager;
     private readonly IServiceAccountCreation _serviceAccountCreation;
     private readonly INotificationService _notificationService;
+    private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
     private readonly IMailingService _mailingService;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
 
     /// <summary>
@@ -54,45 +53,36 @@ public class OfferSetupService : IOfferSetupService
     /// <param name="provisioningManager">Access to the provisioning manager</param>
     /// <param name="serviceAccountCreation">Access to the service account creation</param>
     /// <param name="notificationService">Creates notifications for the user</param>
+    /// <param name="offerSubscriptionProcessService">Access to offer subscription process service</param>
     /// <param name="mailingService">Mailing service to send mails to the user</param>
-    /// <param name="httpClientFactory">Creates the http client</param>
     /// <param name="technicalUserProfileService">Access to the technical user profile service</param>
-    public OfferSetupService(IPortalRepositories portalRepositories,
+    public OfferSetupService(
+        IPortalRepositories portalRepositories,
         IProvisioningManager provisioningManager,
         IServiceAccountCreation serviceAccountCreation,
         INotificationService notificationService,
+        IOfferSubscriptionProcessService offerSubscriptionProcessService,
         IMailingService mailingService,
-        IHttpClientFactory httpClientFactory,
         ITechnicalUserProfileService technicalUserProfileService)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
         _serviceAccountCreation = serviceAccountCreation;
         _notificationService = notificationService;
+        _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _mailingService = mailingService;
-        _httpClientFactory = httpClientFactory;
         _technicalUserProfileService = technicalUserProfileService;
     }
 
-    /// <inheritdoc />
-    public async Task AutoSetupOfferSubscription(OfferThirdPartyAutoSetupData autoSetupData, string accessToken, string autoSetupUrl)
-    {
-        var httpClient = _httpClientFactory.CreateClient(nameof(OfferSetupService));
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        await httpClient.PostAsJsonAsync(autoSetupUrl, autoSetupData)
-            .CatchingIntoServiceExceptionFor("autosetup-offer-subscription")
-            .ConfigureAwait(false);
-    }
-
-    public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string, IEnumerable<string>> serviceManagerRoles)
+    public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string, IEnumerable<string>> serviceManagerRoles)
     {
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var offerDetails = await GetAndValidateOfferDetails(data.RequestId, iamUserId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
+        var offerDetails = await GetAndValidateOfferDetails(data.RequestId, identity.CompanyId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
 
         offerSubscriptionsRepository.AttachAndModifyOfferSubscription(data.RequestId, subscription =>
         {
             subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
-            subscription.LastEditorId = offerDetails.CompanyUserId;
+            subscription.LastEditorId = identity.UserId;
         });
 
         if (offerDetails.InstanceData.IsSingleInstance)
@@ -103,7 +93,7 @@ public class OfferSetupService : IOfferSetupService
                     appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
                     appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
                 });
-            await CreateNotifications(itAdminRoles, offerTypeId, offerDetails).ConfigureAwait(false);
+            await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, identity.UserId).ConfigureAwait(false);
             await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
             return new OfferAutoSetupResponseData(null, null);
@@ -115,14 +105,14 @@ public class OfferSetupService : IOfferSetupService
         {
             var (clientId, iamClientId) = await CreateClient(data.OfferUrl, offerDetails.OfferId, true, userRolesRepository).ConfigureAwait(false);
             clientInfoData = new ClientInfoData(clientId, data.OfferUrl);
-            CreateAppInstance(data, offerDetails, iamClientId);
+            CreateAppInstance(data.RequestId, data.OfferUrl, offerDetails.OfferId, iamClientId);
         }
 
         var technicalUserClientId = clientInfoData?.ClientId ?? $"{offerDetails.OfferName}-{offerDetails.CompanyName}";
         var createTechnicalUserData = new CreateTechnicalUserData(offerDetails.CompanyId, offerDetails.OfferName, offerDetails.Bpn, technicalUserClientId, offerTypeId == OfferTypeId.APP);
         var technicalUserInfoData = await CreateTechnicalUserForSubscription(data.RequestId, createTechnicalUserData).ConfigureAwait(false);
 
-        await CreateNotifications(itAdminRoles, offerTypeId, offerDetails).ConfigureAwait(false);
+        await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, identity.UserId).ConfigureAwait(false);
         await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -148,8 +138,9 @@ public class OfferSetupService : IOfferSetupService
         }
         catch (InvalidOperationException)
         {
-            throw new UnexpectedConditionException("There should only be one or none technical user profile configured for ");
+            throw new UnexpectedConditionException($"There should only be one or none technical user profile configured for {subscriptionId}");
         }
+
         if (serviceAccountCreationInfo == null)
         {
             return null;
@@ -171,7 +162,7 @@ public class OfferSetupService : IOfferSetupService
     /// <inheritdoc />
     public async Task SetupSingleInstance(Guid offerId, string instanceUrl)
     {
-        if (!await _portalRepositories.GetInstance<IAppInstanceRepository>()
+        if (await _portalRepositories.GetInstance<IAppInstanceRepository>()
                .CheckInstanceExistsForOffer(offerId)
                .ConfigureAwait(false))
         {
@@ -240,14 +231,34 @@ public class OfferSetupService : IOfferSetupService
         return technicalUserData.Select(x => x.TechnicalClientId);
     }
 
+    private async IAsyncEnumerable<TechnicalUserInfoData> CreateTechnicalUsersForOffer(
+        Guid offerId,
+        OfferTypeId offerTypeId,
+        CreateTechnicalUserData data)
+    {
+        var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
+        foreach (var creationInfo in creationData)
+        {
+            var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
+                .CreateServiceAccountAsync(
+                    creationInfo,
+                    data.CompanyId,
+                    data.Bpn == null ? Enumerable.Empty<string>() : new[] { data.Bpn },
+                    CompanyServiceAccountTypeId.MANAGED,
+                    data.EnhanceTechnicalUserName)
+                .ConfigureAwait(false);
+            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
+        }
+    }
+
     /// <inheritdoc />
     public Task UpdateSingleInstance(string clientClientId, string instanceUrl) =>
         _provisioningManager.UpdateClient(clientClientId, instanceUrl, instanceUrl.AppendToPathEncoded("*"));
 
-    private static async Task<OfferSubscriptionTransferData> GetAndValidateOfferDetails(Guid requestId, string iamUserId, OfferTypeId offerTypeId, IOfferSubscriptionsRepository offerSubscriptionsRepository)
+    private static async Task<OfferSubscriptionTransferData> GetAndValidateOfferDetails(Guid requestId, Guid companyId, OfferTypeId offerTypeId, IOfferSubscriptionsRepository offerSubscriptionsRepository)
     {
         var offerDetails = await offerSubscriptionsRepository
-            .GetOfferDetailsAndCheckUser(requestId, iamUserId, offerTypeId)
+            .GetOfferDetailsAndCheckProviderCompany(requestId, companyId, offerTypeId)
             .ConfigureAwait(false);
         if (offerDetails == null)
         {
@@ -259,7 +270,7 @@ public class OfferSetupService : IOfferSetupService
             throw new ConflictException("Status of the offer subscription must be pending");
         }
 
-        if (offerDetails.CompanyUserId == Guid.Empty && offerDetails.TechnicalUserId == Guid.Empty)
+        if (!offerDetails.IsProviderCompany)
         {
             throw new ForbiddenException("Only the providing company can setup the service");
         }
@@ -284,42 +295,27 @@ public class OfferSetupService : IOfferSetupService
         return (clientId, iamClient.Id);
     }
 
-    private void CreateAppInstance(OfferAutoSetupData data, OfferSubscriptionTransferData offerDetails, Guid iamClientId)
+    private void CreateAppInstance(
+        Guid offerSubscriptionId,
+        string offerUrl,
+        Guid offerId,
+        Guid iamClientId)
     {
         var appInstance = _portalRepositories.GetInstance<IAppInstanceRepository>()
-            .CreateAppInstance(offerDetails.OfferId, iamClientId);
+            .CreateAppInstance(offerId, iamClientId);
         _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
-            .CreateAppSubscriptionDetail(data.RequestId, appSubscriptionDetail =>
+            .CreateAppSubscriptionDetail(offerSubscriptionId, appSubscriptionDetail =>
             {
                 appSubscriptionDetail.AppInstanceId = appInstance.Id;
-                appSubscriptionDetail.AppSubscriptionUrl = data.OfferUrl;
+                appSubscriptionDetail.AppSubscriptionUrl = offerUrl;
             });
-    }
-
-    private async IAsyncEnumerable<TechnicalUserInfoData> CreateTechnicalUsersForOffer(
-        Guid offerId,
-        OfferTypeId offerTypeId,
-        CreateTechnicalUserData data)
-    {
-        var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
-        foreach (var creationInfo in creationData)
-        {
-            var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
-                .CreateServiceAccountAsync(
-                    creationInfo,
-                    data.CompanyId,
-                    data.Bpn == null ? Enumerable.Empty<string>() : new[] { data.Bpn },
-                    CompanyServiceAccountTypeId.MANAGED,
-                    data.EnhanceTechnicalUserName)
-                .ConfigureAwait(false);
-            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
-        }
     }
 
     private async Task CreateNotifications(
         IDictionary<string, IEnumerable<string>> itAdminRoles,
         OfferTypeId offerTypeId,
-        OfferSubscriptionTransferData offerDetails)
+        OfferSubscriptionTransferData offerDetails,
+        Guid userId)
     {
         var appSubscriptionActivation = offerTypeId == OfferTypeId.APP
             ? NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION
@@ -339,10 +335,9 @@ public class OfferSetupService : IOfferSetupService
         {
             notifications.Add((JsonSerializer.Serialize(new { offerDetails.OfferId, offerDetails.OfferName }), NotificationTypeId.TECHNICAL_USER_CREATION));
         }
-        Guid? creatorId = offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null;
         var userIdsOfNotifications = await _notificationService.CreateNotifications(
             itAdminRoles,
-            creatorId,
+            userId,
             notifications,
             offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
 
@@ -351,7 +346,7 @@ public class OfferSetupService : IOfferSetupService
             _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
             {
                 notification.Content = notificationContent;
-                notification.CreatorUserId = creatorId;
+                notification.CreatorUserId = userId;
             });
         }
     }
@@ -384,6 +379,225 @@ public class OfferSetupService : IOfferSetupService
         await _mailingService
             .SendMails(requesterEmail, mailParams, new List<string> { "subscription-activation" })
             .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId, OfferTypeId offerTypeId)
+    {
+        var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var details = await GetAndValidateOfferDetails(data.RequestId, companyId, offerTypeId, offerSubscriptionRepository).ConfigureAwait(false);
+        if (details.InstanceData.IsSingleInstance)
+        {
+            throw new ConflictException("This step is not eligible to run for single instance apps");
+        }
+
+        var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(data.RequestId,
+            ProcessStepTypeId.START_AUTOSETUP, null, true).ConfigureAwait(false);
+
+        offerSubscriptionRepository.CreateOfferSubscriptionProcessData(data.RequestId, data.OfferUrl);
+
+        var nextProcessStepTypeIds = new[]
+        {
+            offerTypeId == OfferTypeId.APP ?
+                ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION :
+                ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
+        };
+
+        _offerSubscriptionProcessService.FinalizeProcessSteps(context, nextProcessStepTypeIds);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId)
+    {
+        var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(false);
+        if (offerDetails == null)
+        {
+            throw new NotFoundException($"Offer Subscription {offerSubscriptionId} does not exist");
+        }
+
+        switch (offerDetails.InstanceData.IsSingleInstance)
+        {
+            case false:
+                throw new ConflictException("The process step is only executable for single instance apps");
+            case true when offerDetails.AppInstanceIds.Count() != 1:
+                throw new ConflictException("There must only be one app instance for single instance apps");
+            default:
+                _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
+                    .CreateAppSubscriptionDetail(offerSubscriptionId, appSubscriptionDetail =>
+                    {
+                        appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
+                        appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
+                    });
+
+                return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+                    new[]
+                    {
+                        ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
+                    },
+                    ProcessStepStatusId.DONE,
+                    true,
+                    null);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateClient(Guid offerSubscriptionId)
+    {
+        var clientCreationData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetClientCreationData(offerSubscriptionId).ConfigureAwait(false);
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        if (clientCreationData == null)
+        {
+            throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
+        }
+
+        if (string.IsNullOrWhiteSpace(clientCreationData.OfferUrl))
+        {
+            throw new ConflictException("OfferUrl should be set");
+        }
+
+        if (clientCreationData.OfferType != OfferTypeId.APP)
+        {
+            throw new ConflictException($"Offers without type {OfferTypeId.APP} are not eligible to run");
+        }
+
+        var (_, iamClientId) = await CreateClient(clientCreationData.OfferUrl, clientCreationData.OfferId, true, userRolesRepository);
+        CreateAppInstance(offerSubscriptionId, clientCreationData.OfferUrl, clientCreationData.OfferId, iamClientId);
+
+        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+            new[]
+            {
+                clientCreationData.IsTechnicalUserNeeded ?
+                    ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION :
+                    ProcessStepTypeId.ACTIVATE_APPLICATION
+            },
+            ProcessStepStatusId.DONE,
+            true,
+            null);
+    }
+
+    /// <inheritdoc />
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles)
+    {
+        var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetTechnicalUserCreationData(offerSubscriptionId)
+            .ConfigureAwait(false);
+        if (data == null)
+        {
+            throw new NotFoundException($"Offer subscription {offerSubscriptionId} does not exist");
+        }
+
+        if (!data.IsTechnicalUserNeeded)
+        {
+            throw new ConflictException("Technical user is not needed");
+        }
+
+        var technicalUserClientId = data.ClientId ?? $"{data.OfferName}-{data.CompanyName}";
+        var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, true);
+        var technicalUserInfoData = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData).ConfigureAwait(false);
+        var technicalClientId = technicalUserInfoData?.TechnicalClientId;
+
+        var content = JsonSerializer.Serialize(new
+        {
+            technicalClientId,
+        });
+
+        await _notificationService.CreateNotifications(
+            itAdminRoles,
+            null,
+            new[]
+            {
+                (content, NotificationTypeId.TECHNICAL_USER_CREATION)
+            }!,
+            data.CompanyId).AwaitAll().ConfigureAwait(false);
+
+        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+            new[]
+            {
+                ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
+            },
+            ProcessStepStatusId.DONE,
+            true,
+            null);
+    }
+
+    /// <inheritdoc />
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, IDictionary<string, IEnumerable<string>> serviceManagerRoles, string basePortalAddress)
+    {
+        var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(false);
+        if (offerDetails == null)
+        {
+            throw new NotFoundException($"Offer Subscription {offerSubscriptionId} does not exist");
+        }
+
+        switch (offerDetails.InstanceData.IsSingleInstance)
+        {
+            case true when offerDetails.AppInstanceIds.Count() != 1:
+                throw new ConflictException("There must only be one app instance for single instance apps");
+            case true:
+                await SetNotificationsToDone(serviceManagerRoles, offerDetails.OfferTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
+                break;
+        }
+
+        offerSubscriptionRepository.AttachAndModifyOfferSubscription(offerSubscriptionId, subscription =>
+        {
+            subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+        });
+
+        if (offerDetails.HasOfferSubscriptionProcessData)
+        {
+            offerSubscriptionRepository.RemoveOfferSubscriptionProcessData(offerSubscriptionId);
+        }
+
+        var notificationContent = JsonSerializer.Serialize(new
+        {
+            offerDetails.OfferId,
+            offerDetails.CompanyName,
+            offerDetails.OfferName
+        });
+        var notificationTypeId = offerDetails.OfferTypeId == OfferTypeId.APP
+            ? NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION
+            : NotificationTypeId.SERVICE_ACTIVATION;
+        var userIdsOfNotifications = await _notificationService.CreateNotifications(
+            itAdminRoles,
+            null,
+            new List<(string?, NotificationTypeId)>
+            {
+                (notificationContent, notificationTypeId)
+            },
+            offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
+
+        if (!userIdsOfNotifications.Contains(offerDetails.RequesterId))
+        {
+            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId,
+                notificationTypeId, false, notification => { notification.Content = notificationContent; });
+        }
+
+        if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
+        {
+            return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+                offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
+                ProcessStepStatusId.DONE,
+                true,
+                null);
+        }
+
+        try
+        {
+            await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            throw new ServiceException(e.Message, true);
+        }
+
+        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+            offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
+            ProcessStepStatusId.DONE,
+            true,
+            null);
     }
 
     internal record CreateTechnicalUserData(Guid CompanyId, string? OfferName, string? Bpn, string TechnicalUserName, bool EnhanceTechnicalUserName);

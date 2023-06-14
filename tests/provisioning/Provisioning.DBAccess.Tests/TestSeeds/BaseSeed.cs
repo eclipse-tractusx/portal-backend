@@ -28,8 +28,8 @@ public static class BaseSeed
     {
         dbContext.UserPasswordResets.AddRange(new List<UserPasswordReset>
         {
-            new ("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", DateTimeOffset.UtcNow, 1),
-            new ("3d8142f1-860b-48aa-8c2b-1ccb18699f65", DateTimeOffset.UtcNow, 2),
+            new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"), DateTimeOffset.UtcNow, 1),
+            new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, 2),
         });
     };
 }

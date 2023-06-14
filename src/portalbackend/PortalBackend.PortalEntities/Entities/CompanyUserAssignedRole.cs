@@ -23,21 +23,21 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyUserAssignedRole20221018))]
-public class CompanyUserAssignedRole : IAuditableV1
+[AuditEntityV1(typeof(AuditIdentityAssignedRole20230522))]
+public class IdentityAssignedRole : IAuditableV1
 {
-    public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
+    public IdentityAssignedRole(Guid identityId, Guid userRoleId)
     {
-        CompanyUserId = companyUserId;
+        IdentityId = identityId;
         UserRoleId = userRoleId;
     }
 
-    public Guid CompanyUserId { get; private set; }
+    public Guid IdentityId { get; private set; }
     public Guid UserRoleId { get; private set; }
 
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
     // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; private set; }
+    public virtual Identity? Identity { get; private set; }
     public virtual UserRole? UserRole { get; private set; }
 }

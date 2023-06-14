@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -59,13 +60,15 @@ public class DocumentsController : ControllerBase
     [HttpGet]
     [Route("{documentId}")]
     [Authorize(Roles = "view_documents")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, mediaType) = await this.WithIamUserId(iamUserId => _businessLogic.GetDocumentAsync(documentId, iamUserId).ConfigureAwait(false));
+        var (fileName, content, mediaType) = await this.WithCompanyId(companyId => _businessLogic.GetDocumentAsync(documentId, companyId).ConfigureAwait(false));
         return File(content, mediaType, fileName);
     }
 
@@ -100,6 +103,8 @@ public class DocumentsController : ControllerBase
     /// <response code="404">The document was not found.</response>
     [HttpDelete]
     [Authorize(Roles = "delete_documents")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("{documentId}")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
@@ -107,7 +112,7 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) =>
-        this.WithIamUserId(userId => _businessLogic.DeleteDocumentAsync(documentId, userId));
+        this.WithUserId(userId => _businessLogic.DeleteDocumentAsync(documentId, userId));
 
     /// <summary>
     /// Gets the json the seed data for a specific document
