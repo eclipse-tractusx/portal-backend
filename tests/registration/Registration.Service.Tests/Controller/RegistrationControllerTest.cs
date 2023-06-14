@@ -184,8 +184,7 @@ public class RegistrationControllerTest
         A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
         result.Should().NotBeNull();
     }
-    
-    
+
     [Fact]
     public async Task InviteNewUserAsync_WithValidData_ReturnsExpected()
     {
