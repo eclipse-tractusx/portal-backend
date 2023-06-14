@@ -707,39 +707,39 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Name))
         {
-            throw new ControllerArgumentException($"Company Name must not be empty", nameof(companyApplicationDetails.CompanyData.Name));
+            throw new ConflictException($"Company Name must not be empty");
         }
         if (companyApplicationDetails.CompanyData.AddressId == null)
         {
-            throw new ControllerArgumentException($"Address must not be empty", nameof(companyApplicationDetails.CompanyData.AddressId));
+            throw new ConflictException($"Address must not be empty");
         }
         if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Streetname))
         {
-            throw new ControllerArgumentException($"Street Name must not be empty", nameof(companyApplicationDetails.CompanyData.Streetname));
+            throw new ConflictException($"Street Name must not be empty");
         }
         if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.City))
         {
-            throw new ControllerArgumentException($"City must not be empty", nameof(companyApplicationDetails.CompanyData.City));
+            throw new ConflictException($"City must not be empty");
         }
         if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Country))
         {
-            throw new ControllerArgumentException($"Country must not be empty", nameof(companyApplicationDetails.CompanyData.Country));
+            throw new ConflictException($"Country must not be empty");
         }
         if (!companyApplicationDetails.CompanyData.UniqueIds.Any())
         {
-            throw new ControllerArgumentException($"Company Identifiers [{string.Join(", ", companyApplicationDetails.CompanyData.UniqueIds)}] must not be empty");
+            throw new ConflictException($"Company Identifiers [{string.Join(", ", companyApplicationDetails.CompanyData.UniqueIds)}] must not be empty");
         }
         if (!companyApplicationDetails.CompanyData.CompanyRoleIds.Any())
         {
-            throw new ControllerArgumentException($"Company assigned role [{string.Join(", ", companyApplicationDetails.CompanyData.CompanyRoleIds)}] must not be empty");
+            throw new ConflictException($"Company assigned role [{string.Join(", ", companyApplicationDetails.CompanyData.CompanyRoleIds)}] must not be empty");
         }
         if (!companyApplicationDetails.AgreementConsentStatuses.Any())
         {
-            throw new ControllerArgumentException($"Agreement and Consent must not be empty");
+            throw new ConflictException($"Agreement and Consent must not be empty");
         }
         if (!companyApplicationDetails.DocumentDatas.Any())
         {
-            throw new ControllerArgumentException($"At least one Document type Id must be [{string.Join(", ", docTypeId)}]");
+            throw new ConflictException($"At least one Document type Id must be [{string.Join(", ", docTypeId)}]");
         }
     }
     public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
