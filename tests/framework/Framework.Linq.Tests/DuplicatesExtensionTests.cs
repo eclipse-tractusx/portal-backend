@@ -24,13 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq.Tests;
 
 public class DuplicatesExtensionTests
 {
-    private readonly IFixture _fixture;
-
-    public DuplicatesExtensionTests()
-    {
-        _fixture = new Fixture();
-    }
-
     #region Duplicates
 
     [Theory]

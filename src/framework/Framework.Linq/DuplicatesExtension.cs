@@ -34,7 +34,7 @@ public static class DuplicatesExtension
         }
     }
 
-    public static IEnumerable<T> DuplicatesBy<T,S>(this IEnumerable<T> source, Func<T,S> selector)
+    public static IEnumerable<T> DuplicatesBy<T, S>(this IEnumerable<T> source, Func<T, S> selector)
     {
         var buffer = new HashSet<S>();
         foreach (var t in source)

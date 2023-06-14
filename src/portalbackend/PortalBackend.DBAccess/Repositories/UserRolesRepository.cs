@@ -56,11 +56,12 @@ public class UserRolesRepository : IUserRolesRepository
         return roleDescriptions;
     }
 
-    public IdentityAssignedRole CreateIdentityAssignedRole(Guid companyUserId, Guid userRoleId) =>
+    public IdentityAssignedRole CreateIdentityAssignedRole(Guid companyUserId, Guid companyUserRoleId) =>
         _dbContext.IdentityAssignedRoles.Add(
             new IdentityAssignedRole(
                 companyUserId,
-                userRoleId
+                companyUserRoleId
+
             )).Entity;
 
     public IdentityAssignedRole DeleteIdentityAssignedRole(Guid companyUserId, Guid userRoleId) =>
