@@ -636,7 +636,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         GetAndValidateCompanyDataDetails(applicationUserData, _settings.SubmitDocumentTypeIds);
         if (applicationUserData.DocumentDatas.Any())
         {
-            
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             foreach (var document in applicationUserData.DocumentDatas)
             {
