@@ -348,7 +348,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
     private async Task DeleteConnectorWithDocuments(Guid connectorId, Guid selfDescriptionDocumentId, IConnectorsRepository connectorsRepository)
     {
-        _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(selfDescriptionDocumentId!);
+        _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(selfDescriptionDocumentId);
         connectorsRepository.DeleteConnectorDetails(connectorId);
         await _portalRepositories.SaveAsync();
     }
