@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
@@ -116,7 +117,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
         var data = _fixture.Create<CompanyRoleAgreementConsents>();
         A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _identity.UserId, _identity.CompanyId))
-            .ReturnsLazily(() => 1);
+            .Returns(1);
 
         //Act
         var result = await this._controller.SubmitCompanyRoleConsentToAgreementsAsync(applicationId, data).ConfigureAwait(false);
@@ -133,7 +134,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
         var data = _fixture.CreateMany<UniqueIdentifierData>(1);
         A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE"))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         //Act
         var result = await this._controller.GetCompanyIdentifiers("DE").ConfigureAwait(false);
@@ -156,7 +157,7 @@ public class RegistrationControllerTest
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
         A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity.UserId))
-            .ReturnsLazily(() => (fileName, content, contentType));
+            .Returns((fileName, content, contentType));
 
         //Act
         var result = await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
@@ -174,7 +175,7 @@ public class RegistrationControllerTest
         var documentId = _fixture.Create<Guid>();
         var content = new byte[7];
         A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId))
-            .ReturnsLazily(() => new ValueTuple<string, byte[], string>("test.json", content, "application/json"));
+            .Returns(new ValueTuple<string, byte[], string>("test.json", content, "application/json"));
 
         //Act
         var result = await this._controller.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
@@ -182,5 +183,21 @@ public class RegistrationControllerTest
         // Assert
         A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
         result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task InviteNewUserAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _registrationBusinessLogicFake.InviteNewUserAsync(applicationId, A<UserCreationInfoWithMessage>._, _identity.UserId))
+            .Returns(1);
+
+        //Act
+        var result = await this._controller.InviteNewUserAsync(applicationId, _fixture.Create<UserCreationInfoWithMessage>()).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _registrationBusinessLogicFake.InviteNewUserAsync(applicationId, A<UserCreationInfoWithMessage>._, _identity.UserId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(1);
     }
 }

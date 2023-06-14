@@ -300,10 +300,10 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         switch ((dapsRegistrationSuccess ?? false, connectorStatus))
         {
             case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId == null:
-                await DeleteUpdateConnectorDetail(connectorId, userId, cancellationToken, dapsClientId, connectorsRepository);
+                await DeleteUpdateConnectorDetail(connectorId, userId, dapsClientId, connectorsRepository, cancellationToken);
                 break;
             case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId != null && documentStatus != null:
-                await DeleteConnector(connectorId, userId, cancellationToken, dapsClientId, selfDescriptionDocumentId.Value, documentStatus.Value, connectorsRepository);
+                await DeleteConnector(connectorId, userId, dapsClientId, selfDescriptionDocumentId.Value, documentStatus.Value, connectorsRepository, cancellationToken);
                 break;
             case (false, ConnectorStatusId.PENDING) when selfDescriptionDocumentId == null:
                 await DeleteConnectorWithoutDocuments(connectorId, connectorsRepository);
@@ -318,17 +318,17 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
     }
 
-    private async Task DeleteConnector(Guid connectorId, Guid userId, CancellationToken cancellationToken, string? dapsClientId, Guid selfDescriptionDocumentId, DocumentStatusId documentStatus, IConnectorsRepository connectorsRepository)
+    private async Task DeleteConnector(Guid connectorId, Guid userId, string? dapsClientId, Guid selfDescriptionDocumentId, DocumentStatusId documentStatus, IConnectorsRepository connectorsRepository, CancellationToken cancellationToken)
     {
         _portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocument(
             selfDescriptionDocumentId,
             a => { a.DocumentStatusId = documentStatus; },
             a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
 
-        await DeleteUpdateConnectorDetail(connectorId, userId, cancellationToken, dapsClientId, connectorsRepository);
+        await DeleteUpdateConnectorDetail(connectorId, userId, dapsClientId, connectorsRepository, cancellationToken);
     }
 
-    private async Task DeleteUpdateConnectorDetail(Guid connectorId, Guid userId, CancellationToken cancellationToken, string? dapsClientId, IConnectorsRepository connectorsRepository)
+    private async Task DeleteUpdateConnectorDetail(Guid connectorId, Guid userId, string? dapsClientId, IConnectorsRepository connectorsRepository, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(dapsClientId))
         {
