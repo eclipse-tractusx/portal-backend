@@ -129,12 +129,24 @@ public class ServiceAccountCUDScenarios
 
         //  check if the new service account is available
         var existingServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
-
+        
+        if (existingServiceAccounts != null)
+        {
+            var checkAccountIsAvailable =
+                existingServiceAccounts.Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);
+            Assert.NotEmpty(checkAccountIsAvailable);
+        }
+        
         //delete the created service account
         AdministrationEndpointHelper.DeleteServiceAccount(newServiceAccount.ServiceAccountId.ToString());
 
         //check the endpoint, the deleted service account should not be available anymore
         var updatedServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
+        
+        if (updatedServiceAccounts == null) throw new Exception("List of service accounts is empty");
+        var checkAccountDeleted =
+            updatedServiceAccounts.Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);
+        Assert.Empty(checkAccountDeleted);
 
         Assert.Empty(updatedServiceAccounts.Where(item => item.ServiceAccountId == newServiceAccount.ServiceAccountId));
     }
