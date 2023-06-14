@@ -129,10 +129,11 @@ public static class RegistrationEndpointHelper
         return invitedUsers;
     }
 
-    public static async Task ExecuteInvitation(string userCompanyName)
+    public static async Task<(string?, string?)> ExecuteInvitation(string userCompanyName)
     {
-        string emailAddress = "";
+        var emailAddress = "";
         var devMailApiRequests = new DevMailApiRequests();
+        (string?, string?) data;
         var tempMailApiRequests = new TempMailApiRequests();
         try
         {
@@ -168,44 +169,43 @@ public static class RegistrationEndpointHelper
 
             var newPassword = new Password().Next();
 
-            await SetCompanyTokenAndApplicationId(userCompanyName, emailAddress, currentPassword, newPassword);
+            data = await GetCompanyTokenAndApplicationId(userCompanyName, emailAddress, currentPassword, newPassword);
         }
+        return data;
     }
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
 
-    public static void SetCompanyDetailData(CompanyDetailData testCompanyDetailData)
+    public static CompanyDetailData? SetCompanyDetailData(CompanyDetailData testCompanyDetailData)
     {
         var applicationStatus = GetApplicationStatus();
-        if (applicationStatus == CompanyApplicationStatusId.CREATED.ToString())
+        if (applicationStatus != CompanyApplicationStatusId.CREATED.ToString()) throw new Exception($"Application status is not fitting to the pre-requisite");
+        SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
+        var companyDetailData = GetCompanyDetailData();
+
+        var newCompanyDetailData = testCompanyDetailData with
         {
-            SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
-            var companyDetailData = GetCompanyDetailData();
+            CompanyId = companyDetailData.CompanyId,
+            Name = companyDetailData.Name
+        };
 
-            var newCompanyDetailData = testCompanyDetailData with
-            {
-                CompanyId = companyDetailData.CompanyId,
-                Name = companyDetailData.Name
-            };
+        var body = JsonSerializer.Serialize(newCompanyDetailData, JsonSerializerOptions);
 
-            var body = JsonSerializer.Serialize(newCompanyDetailData, JsonSerializerOptions);
-
-            Given()
-                .RelaxedHttpsValidation()
-                .Header(
-                    "authorization",
-                    $"Bearer {_userCompanyToken}")
-                .ContentType("application/json")
-                .When()
-                .Body(body)
-                .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/companyDetailsWithAddress")
-                .Then()
-                .StatusCode(200);
-            var storedCompanyDetailData = GetCompanyDetailData();
-            if (!VerifyCompanyDetailDataStorage(storedCompanyDetailData, newCompanyDetailData))
-                throw new Exception($"Company detail data was not stored correctly");
-        }
-        else throw new Exception($"Application status is not fitting to the pre-requisite");
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_userCompanyToken}")
+            .ContentType("application/json")
+            .When()
+            .Body(body)
+            .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/companyDetailsWithAddress")
+            .Then()
+            .StatusCode(200);
+        var storedCompanyDetailData = GetCompanyDetailData();
+        if (!VerifyCompanyDetailDataStorage(storedCompanyDetailData, newCompanyDetailData))
+            throw new Exception($"Company detail data was not stored correctly");
+        return storedCompanyDetailData;
     }
 
     public static void UpdateCompanyDetailData(CompanyDetailData updateCompanyDetailData)
@@ -242,33 +242,33 @@ public static class RegistrationEndpointHelper
 
     // POST /api/registration/application/{applicationId}/companyRoleAgreementConsents
 
-    public static void SubmitCompanyRoleConsentToAgreements(List<CompanyRoleId> companyRoles)
+    public static string? SubmitCompanyRoleConsentToAgreements(List<CompanyRoleId> companyRoles)
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString())
-        {
-            if (companyRoles.IsNullOrEmpty()) throw new Exception($"No company roles were found");
-            var companyRoleAgreementConsents = GetCompanyRolesAndConsentsForSelectedRoles(companyRoles);
-            var body = JsonSerializer.Serialize(companyRoleAgreementConsents, JsonSerializerOptions);
+        if (GetApplicationStatus() != CompanyApplicationStatusId.INVITE_USER.ToString()) throw new Exception($"Application status is not fitting to the pre-requisite");
+        if (companyRoles.IsNullOrEmpty()) throw new Exception($"No company roles were found");
+        var companyRoleAgreementConsents = GetCompanyRolesAndConsentsForSelectedRoles(companyRoles);
+        var body = JsonSerializer.Serialize(companyRoleAgreementConsents, JsonSerializerOptions);
 
-            SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
-            Given()
-                .RelaxedHttpsValidation()
-                .Header(
-                    "authorization",
-                    $"Bearer {_userCompanyToken}")
-                .ContentType("application/json")
-                .Body(body)
-                .When()
-                .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/companyRoleAgreementConsents")
-                .Then()
-                .StatusCode(200);
-        }
-        else throw new Exception($"Application status is not fitting to the pre-requisite");
+        SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
+        var result = Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_userCompanyToken}")
+            .ContentType("application/json")
+            .Body(body)
+            .When()
+            .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/companyRoleAgreementConsents")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(int)).ToString();
+        return result;
     }
 
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
-    public static void UploadDocument_WithEmptyTitle(string userCompanyName, string? documentTypeId,
+    public static int UploadDocument_WithEmptyTitle(string userCompanyName, string? documentTypeId,
         string? documentPath)
     {
         if (documentTypeId == null || !Enum.IsDefined(typeof(DocumentTypeId), documentTypeId))
@@ -279,57 +279,52 @@ public static class RegistrationEndpointHelper
             File.WriteAllText(documentPath, "Some Text");
         }
 
-        if (GetApplicationStatus() == CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
-        {
-            var result = (int)Given()
-                .RelaxedHttpsValidation()
-                .Header(
-                    "authorization",
-                    $"Bearer {_userCompanyToken}")
-                .ContentType("multipart/form-data")
-                .MultiPart(new FileInfo(documentPath), "document")
-                .When()
-                .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
-                .Then()
-                .StatusCode(200)
-                .Extract()
-                .As(typeof(int));
-            Assert.Equal(1, result);
-
-            if (result == 1) SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
-        }
-        else throw new Exception($"Application status is not fitting to the pre-requisite");
+        if (GetApplicationStatus() != CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString()) throw new Exception($"Application status is not fitting to the pre-requisite");
+        var result = (int)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_userCompanyToken}")
+            .ContentType("multipart/form-data")
+            .MultiPart(new FileInfo(documentPath), "document")
+            .When()
+            .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(int));
+        
+        if (result == 1) SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
+        
+        return result;
     }
 
     // POST /api/registration/application/{applicationId}/submitRegistration
 
     //[Fact]
-    public static void SubmitRegistration()
+    public static bool SubmitRegistration()
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.VERIFY.ToString())
-        {
-            var status = (bool)Given()
-                .RelaxedHttpsValidation()
-                .Header(
-                    "authorization",
-                    $"Bearer {_userCompanyToken}")
-                .ContentType("application/json")
-                //.Body("")
-                .When()
-                .Post(
-                    $"{BaseUrl}{EndPoint}/application/{_applicationId}/submitRegistration")
-                .Then()
-                .StatusCode(200)
-                .Extract()
-                .As(typeof(bool));
-            Assert.True(status);
-        }
-        else throw new Exception($"Application status is not fitting to the pre-requisite");
+        if (GetApplicationStatus() != CompanyApplicationStatusId.VERIFY.ToString()) throw new Exception($"Application status is not fitting to the pre-requisite");
+        var status = (bool)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_userCompanyToken}")
+            .ContentType("application/json")
+            //.Body("")
+            .When()
+            .Post(
+                $"{BaseUrl}{EndPoint}/application/{_applicationId}/submitRegistration")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(bool));
+        return status;
     }
 
     // GET: api/administration/registration/applications?companyName={companyName}
 
-    public static void GetApplicationDetails(string userCompanyName)
+    public static CompanyApplicationDetails? GetApplicationDetails(string userCompanyName)
     {
         var response = Given()
             .RelaxedHttpsValidation()
@@ -346,12 +341,11 @@ public static class RegistrationEndpointHelper
 
         var data = DeserializeData<Pagination.Response<CompanyApplicationDetails>>(response.Content.ReadAsStringAsync()
             .Result);
-        Assert.Contains("SUBMITTED", data.Content.First().CompanyApplicationStatusId.ToString());
-        Assert.Equal(_applicationId.ToString(), data.Content.First().ApplicationId.ToString());
+        return data?.Content.First();
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
-    public static void GetCompanyWithAddress()
+    public static CompanyDetailData? GetCompanyWithAddress()
     {
         // Given
         var data = (CompanyDetailData)Given()
@@ -365,7 +359,7 @@ public static class RegistrationEndpointHelper
             .StatusCode(200)
             .Extract()
             .As(typeof(CompanyDetailData));
-        Assert.NotNull(data);
+        return data;
     }
 
     public static void InviteNewUser()
@@ -438,13 +432,15 @@ public static class RegistrationEndpointHelper
         }
     }
 
-    private static async Task SetCompanyTokenAndApplicationId(string userCompanyName, string emailAddress,
+    private static async Task<(string?, string?)> GetCompanyTokenAndApplicationId(string userCompanyName, string emailAddress,
         string currentPassword, string newPassword)
     {
         _userCompanyToken =
             await new AuthFlow(userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, currentPassword,
                 newPassword);
         _applicationId = GetFirstApplicationId();
+
+        return (_userCompanyToken, _applicationId);
     }
 
     private static bool VerifyCompanyDetailDataStorage(CompanyDetailData storedData, CompanyDetailData postedData)

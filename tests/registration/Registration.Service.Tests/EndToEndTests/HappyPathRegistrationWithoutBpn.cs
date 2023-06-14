@@ -13,20 +13,37 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     {
         var now = DateTime.Now;
         var userCompanyName = $"{testEntry.companyDetailData.Name}_{now:s}";
+        userCompanyName = userCompanyName.Replace(":", "").Replace("_", "");
 
-        await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName);
-        RegistrationEndpointHelper.SetCompanyDetailData(testEntry.companyDetailData);
+        var (companyToken, applicationId) = await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName);
+        Assert.NotNull(companyToken);
+        Assert.NotNull(applicationId);
+        
+        var companyDetailData = RegistrationEndpointHelper.SetCompanyDetailData(testEntry.companyDetailData);
+        Assert.Equal(userCompanyName, companyDetailData?.Name);
         Thread.Sleep(3000);
-        RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.companyRoles);
+        
+        var roleSubmissionResult = RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.companyRoles);
+        Assert.True(int.Parse(roleSubmissionResult) > 0);
         Thread.Sleep(3000);
-        RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(userCompanyName, testEntry.documentTypeId,
+        
+        var docUploadResult = RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(userCompanyName, testEntry.documentTypeId,
             testEntry.documentPath);
+        Assert.Equal(1, docUploadResult);
+        
         Thread.Sleep(3000);
-        RegistrationEndpointHelper.SubmitRegistration();
+        var status = RegistrationEndpointHelper.SubmitRegistration();
+        Assert.True(status);
         Thread.Sleep(3000);
-        RegistrationEndpointHelper.GetApplicationDetails(userCompanyName);
+        
+        var applicationDetails = RegistrationEndpointHelper.GetApplicationDetails(userCompanyName);
+        Assert.NotNull(applicationDetails);
+        Assert.Contains("SUBMITTED", applicationDetails.CompanyApplicationStatusId.ToString());
+        Assert.Equal(applicationId, applicationDetails.ApplicationId.ToString());
+        
         Thread.Sleep(3000);
-        RegistrationEndpointHelper.GetCompanyWithAddress();
+        var storedCompanyDetailData = RegistrationEndpointHelper.GetCompanyWithAddress();
+        Assert.NotNull(storedCompanyDetailData);
     }
 
     private static IEnumerable<object> GetDataEntries()
