@@ -77,12 +77,14 @@ public class ServiceAccountController : ControllerBase
     /// <remarks>Example: DELETE: api/administration/serviceaccount/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000</remarks>
     /// <response code="200">Successful if the service account was deleted.</response>
     /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
+    /// <response code="409">Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user.</response>
     [HttpDelete]
     [Authorize(Roles = "delete_tech_user_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteServiceAccount([FromRoute] Guid serviceAccountId) =>
         this.WithCompanyId(companyId => _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, companyId));
 

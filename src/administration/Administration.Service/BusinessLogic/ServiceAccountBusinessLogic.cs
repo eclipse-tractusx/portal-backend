@@ -102,6 +102,10 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
         }
+        if (result.statusId == ConnectorStatusId.ACTIVE || result.statusId == ConnectorStatusId.PENDING)
+        {
+            throw new ConflictException($"Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user.");
+        }
 
         _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
         {
