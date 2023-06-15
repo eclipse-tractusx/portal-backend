@@ -26,22 +26,16 @@ public class ClearinghouseEndToEndTests
             .Post($"{BaseUrl}{EndPoint}")
             .Then()
             .StatusCode(200);
-            // .And()
-            // .Extract()
-            // .Body("$.totalElements");
-        //.Response();
-        //Assert.Contains(response.Content.ReadAsStringAsync());
-        //Assert.NotEqual(0, response);
     }
     
     private string? RetrieveHealthCheckTechUserToken()
     {
         var formData = new[]
         {
-            new KeyValuePair<string, string>("client_secret", Secrets.InterfaceHealthCheckTechUserPassword),
+            new KeyValuePair<string, string>("client_secret", Secrets.InterfaceHealthCheckTechUserPasswordInt),
             new KeyValuePair<string, string>("grant_type", "client_credentials"),
             new KeyValuePair<string, string>("scope", "openid"),
-            new KeyValuePair<string, string>("client_id", Secrets.InterfaceHealthCheckTechUserName),
+            new KeyValuePair<string, string>("client_id", Secrets.InterfaceHealthCheckTechUserNameInt),
         };
       
       
@@ -49,7 +43,7 @@ public class ClearinghouseEndToEndTests
             .ContentType("application/x-www-form-urlencoded")
             .FormData(formData)
             .When()
-            .Post("https://centralidp.dev.demo.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/token")
+            .Post("https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/token")
             .Then()
             .StatusCode(200)
             .And()

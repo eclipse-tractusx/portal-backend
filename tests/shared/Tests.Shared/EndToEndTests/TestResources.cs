@@ -26,8 +26,8 @@ public static class TestResources
         OperatorCompanyName = configuration.GetSection("OperatorCompanyName").Value;
         TechCompanyName = configuration.GetSection("TechCompanyName").Value;
         BaseUrl = $"https://portal-backend.{Env}.demo.catena-x.net";
-        ClearingHouseUrl = $"https://validation.{Env}.dih-cloud.com";
-        SdFactoryBaseUrl = $"https://sdfactory.int.demo.catena-x.net";
+        ClearingHouseUrl = "https://validation.test.dih-cloud.com";
+        SdFactoryBaseUrl = "https://sdfactory.int.demo.catena-x.net";
         WalletBaseUrl = $"https://managed-identity-wallets.{Env}.demo.catena-x.net";
     }
 
