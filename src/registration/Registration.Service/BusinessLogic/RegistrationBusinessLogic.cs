@@ -632,7 +632,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (!applicationUserData!.IsApplicationCompanyUser)
         {
-            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+            throw new ForbiddenException($"iamUserId {userId} is not assigned with CompanyApplication {applicationId}");
         }
         GetAndValidateCompanyDataDetails(applicationUserData, _settings.SubmitDocumentTypeIds);
         if (applicationUserData.DocumentDatas.Any())

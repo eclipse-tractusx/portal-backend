@@ -1899,7 +1899,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"userId {userId} is not associated with CompanyApplication {applicationId}");
+        ex.Message.Should().Be($"iamUserId {userId} is not associated with CompanyApplication {applicationId}");
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
             .MustHaveHappenedOnceExactly();
     }
