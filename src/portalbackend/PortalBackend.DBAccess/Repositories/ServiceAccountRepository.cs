@@ -132,7 +132,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.CompanyServiceAccountTypeId,
                     serviceAccount.OfferSubscriptionId,
                     (serviceAccount.Connector == null) ? null : new ConnectorResponseData(serviceAccount.Connector!.Id, serviceAccount.Connector!.Name),
-                    (serviceAccount!.OfferSubscription == null) ? null : new OfferResponseData(serviceAccount.OfferSubscription!.OfferId, serviceAccount.OfferSubscription!.Offer!.OfferTypeId, serviceAccount.OfferSubscription!.Offer!.Name!, serviceAccount.OfferSubscription!.Id)))
+                    (serviceAccount!.OfferSubscription == null) ? null : new OfferResponseData(serviceAccount.OfferSubscription!.OfferId, serviceAccount.OfferSubscription!.Offer!.OfferTypeId, serviceAccount.OfferSubscription!.Offer!.Name, serviceAccount.OfferSubscription!.Id)))
             .SingleOrDefaultAsync();
 
     public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId) =>
@@ -153,7 +153,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                         serviceAccount.CompanyServiceAccountTypeId,
                         serviceAccount.OfferSubscriptionId,
                         (serviceAccount.Connector == null) ? null : new ConnectorResponseData(serviceAccount.Connector!.Id, serviceAccount.Connector!.Name),
-                        (serviceAccount!.OfferSubscription == null) ? null : new OfferResponseData(serviceAccount.OfferSubscription!.OfferId, serviceAccount.OfferSubscription!.Offer!.OfferTypeId, serviceAccount.OfferSubscription!.Offer!.Name!, serviceAccount.OfferSubscription!.Id))
+                        (serviceAccount!.OfferSubscription == null) ? null : new OfferResponseData(serviceAccount.OfferSubscription!.OfferId, serviceAccount.OfferSubscription!.Offer!.OfferTypeId, serviceAccount.OfferSubscription!.Offer!.Name, serviceAccount.OfferSubscription!.Id))
         ).SingleOrDefaultAsync();
 
     /// <inheritdoc />

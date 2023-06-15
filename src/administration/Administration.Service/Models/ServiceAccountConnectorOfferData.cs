@@ -34,7 +34,7 @@ public record ServiceAccountConnectorOfferData(
     [property: JsonPropertyName("roles")] IEnumerable<UserRoleData> UserRoleDatas,
     [property: JsonPropertyName("companyServiceAccountTypeId")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     [property: JsonPropertyName("secret")] string? Secret,
-    [property: JsonPropertyName("connector")] ConnectorResponseData Connector,
-    [property: JsonPropertyName("offer")] OfferResponseData Offer,
+    [property: JsonPropertyName("connector")] ConnectorResponseData? Connector,
+    [property: JsonPropertyName("offer")] OfferResponseData? Offer,
     [property: JsonPropertyName("subscriptionId")] Guid? SubscriptionId = null
 );

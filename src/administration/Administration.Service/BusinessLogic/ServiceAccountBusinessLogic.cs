@@ -158,8 +158,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
             authData.Secret,
-            result.ConnectorData!,
-            result.OfferSubscroiptionsData!,
+            result.ConnectorData,
+            result.OfferSubscriptionData,
             result.SubscriptionId);
     }
 
