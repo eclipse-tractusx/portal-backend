@@ -136,7 +136,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<ServiceAccountDetails> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, Guid companyId)
+    public async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, Guid companyId)
     {
         var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
 
@@ -149,7 +149,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ConflictException($"undefined clientId for serviceAccount {serviceAccountId}");
         }
         var authData = await _provisioningManager.GetCentralClientAuthDataAsync(result.ClientId).ConfigureAwait(false);
-        return new ServiceAccountDetails(
+        return new ServiceAccountConnectorOfferData(
             result.ServiceAccountId,
             result.ClientClientId,
             result.Name,
@@ -158,6 +158,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
             authData.Secret,
+            result.ConnectorData,
+            result.OfferSubscriptionData,
             result.SubscriptionId);
     }
 

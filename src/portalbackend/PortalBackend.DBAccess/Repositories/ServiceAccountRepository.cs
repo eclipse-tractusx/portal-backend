@@ -78,7 +78,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE
-                && serviceAccount.Identity!.CompanyId == userCompanyId)
+                && serviceAccount.Identity.CompanyId == userCompanyId)
             .Select(serviceAccount => new CompanyServiceAccountWithRoleDataClientId(
                     serviceAccount.Id,
                     serviceAccount.Identity!.UserStatusId,
@@ -115,7 +115,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
                 serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                serviceAccount.Identity!.CompanyId == companyId)
+                serviceAccount.Identity.CompanyId == companyId)
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
                     serviceAccount.ClientId,
@@ -123,14 +123,26 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.Identity!.UserEntityId,
                     serviceAccount.Name,
                     serviceAccount.Description,
-                    serviceAccount.Identity!.IdentityAssignedRoles
+                    serviceAccount.Identity.IdentityAssignedRoles
                         .Select(assignedRole => assignedRole.UserRole)
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
                             userRole.Offer!.AppInstances.First().IamClient!.ClientClientId,
                             userRole.UserRoleText)),
                     serviceAccount.CompanyServiceAccountTypeId,
-                    serviceAccount.OfferSubscriptionId))
+                    serviceAccount.OfferSubscriptionId,
+                    serviceAccount.Connector == null
+                        ? null
+                        : new ConnectorResponseData(
+                            serviceAccount.Connector.Id,
+                            serviceAccount.Connector.Name),
+                    serviceAccount!.OfferSubscription == null
+                        ? null
+                        : new OfferResponseData(
+                            serviceAccount.OfferSubscription.OfferId,
+                            serviceAccount.OfferSubscription.Offer!.OfferTypeId,
+                            serviceAccount.OfferSubscription.Offer.Name,
+                            serviceAccount.OfferSubscription.Id)))
             .SingleOrDefaultAsync();
 
     public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId) =>
@@ -141,16 +153,28 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 .AsNoTracking()
                 .Where(serviceAccount =>
                     serviceAccount.Identity!.CompanyId == userCompanyId &&
-                    serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE)
+                    serviceAccount.Identity.UserStatusId == UserStatusId.ACTIVE)
                 .GroupBy(serviceAccount => serviceAccount.Identity!.CompanyId),
             serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
             serviceAccount => new CompanyServiceAccountData(
-                        serviceAccount.Id,
-                        serviceAccount.ClientClientId,
-                        serviceAccount.Name,
-                        serviceAccount.CompanyServiceAccountTypeId,
-                        serviceAccount.OfferSubscriptionId)
-        ).SingleOrDefaultAsync();
+                serviceAccount.Id,
+                serviceAccount.ClientClientId,
+                serviceAccount.Name,
+                serviceAccount.CompanyServiceAccountTypeId,
+                serviceAccount.OfferSubscriptionId,
+                serviceAccount.Connector == null
+                    ? null
+                    : new ConnectorResponseData(
+                        serviceAccount.Connector.Id,
+                        serviceAccount.Connector.Name),
+                serviceAccount!.OfferSubscription == null
+                    ? null
+                    : new OfferResponseData(
+                        serviceAccount.OfferSubscription.OfferId,
+                        serviceAccount.OfferSubscription.Offer!.OfferTypeId,
+                        serviceAccount.OfferSubscription.Offer.Name,
+                        serviceAccount.OfferSubscription.Id)))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<bool> CheckActiveServiceAccountExistsForCompanyAsync(Guid technicalUserId, Guid companyId) =>
@@ -158,6 +182,6 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(sa =>
                 sa.Id == technicalUserId &&
                 sa.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                sa.Identity!.CompanyId == companyId)
+                sa.Identity.CompanyId == companyId)
             .AnyAsync();
 }

@@ -101,10 +101,10 @@ public class ServiceAccountController : ControllerBase
     [Authorize(Roles = "view_tech_user_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}", Name = "GetServiceAccountDetails")]
-    [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceAccountConnectorOfferData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task<ServiceAccountDetails> GetServiceAccountDetails([FromRoute] Guid serviceAccountId) =>
+    public Task<ServiceAccountConnectorOfferData> GetServiceAccountDetails([FromRoute] Guid serviceAccountId) =>
         this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAccountId, companyId));
 
     /// <summary>

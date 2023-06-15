@@ -18,17 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record CompanyServiceAccountData(
+public record ServiceAccountConnectorOfferData(
     [property: JsonPropertyName("serviceAccountId")] Guid ServiceAccountId,
-    [property: JsonPropertyName("clientId")] string? ClientId,
+    [property: JsonPropertyName("clientId")] string ClientId,
     [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-    [property: JsonPropertyName("offerSubscriptionId")] Guid? OfferSubscriptionId,
-    [property: JsonPropertyName("connector")] ConnectorResponseData? ConnectorData,
-    [property: JsonPropertyName("offer")] OfferResponseData? OfferSubscriptionsData
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,
+    [property: JsonPropertyName("roles")] IEnumerable<UserRoleData> UserRoleDatas,
+    [property: JsonPropertyName("companyServiceAccountTypeId")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    [property: JsonPropertyName("secret")] string? Secret,
+    [property: JsonPropertyName("connector")] ConnectorResponseData? Connector,
+    [property: JsonPropertyName("offer")] OfferResponseData? Offer,
+    [property: JsonPropertyName("subscriptionId")] Guid? SubscriptionId = null
 );
