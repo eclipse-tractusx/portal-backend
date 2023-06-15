@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -43,6 +44,7 @@ public class ApplicationActivationService : IApplicationActivationService
     private readonly IProvisioningManager _provisioningManager;
     private readonly IMailingService _mailingService;
     private readonly IDateTimeProvider _dateTime;
+    private readonly ICustodianService _custodianService;
     private readonly ApplicationActivationSettings _settings;
 
     public ApplicationActivationService(
@@ -51,6 +53,7 @@ public class ApplicationActivationService : IApplicationActivationService
         IProvisioningManager provisioningManager,
         IMailingService mailingService,
         IDateTimeProvider dateTime,
+        ICustodianService custodianService,
         IOptions<ApplicationActivationSettings> options)
     {
         _portalRepositories = portalRepositories;
@@ -58,6 +61,7 @@ public class ApplicationActivationService : IApplicationActivationService
         _provisioningManager = provisioningManager;
         _mailingService = mailingService;
         _dateTime = dateTime;
+        _custodianService = custodianService;
         _settings = options.Value;
     }
 
@@ -72,10 +76,10 @@ public class ApplicationActivationService : IApplicationActivationService
         {
             throw new ConflictException($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: {string.Join(",", prerequisiteEntries)}");
         }
-        return HandleApplicationActivationInternal(context);
+        return HandleApplicationActivationInternal(context, cancellationToken);
     }
 
-    private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context)
+    private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cts)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(false);
@@ -107,28 +111,45 @@ public class ApplicationActivationService : IApplicationActivationService
         });
 
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll(cts).ConfigureAwait(false);
 
+        var resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cts).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(false);
 
-        if (assignedRoles != null)
+        if (assignedRoles == null)
         {
-            var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
-                .ToDictionary(x => x.ClientId, x => x.UserRoleNames)
-                .Select(initialClientRoles => (
-                    client: initialClientRoles.Key,
-                    roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
-                .Where(clientRoles => clientRoles.roles.Any())
-                .ToList();
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.DONE,
+                entry =>
+                {
+                    entry.Comment = resultMessage;
+                    entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
+                },
+                null,
+                Enum.GetValues<ProcessStepTypeId>().Except(new[] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
+                true,
+                null);
+        }
 
-            if (unassignedClientRoles.Any())
-            {
-                throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
-            }
+        var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+            .ToDictionary(x => x.ClientId, x => x.UserRoleNames)
+            .Select(initialClientRoles => (
+                client: initialClientRoles.Key,
+                roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
+            .Where(clientRoles => clientRoles.roles.Any())
+            .ToList();
+
+        if (unassignedClientRoles.Any())
+        {
+            throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
         }
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
-            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+            entry =>
+            {
+                entry.Comment = resultMessage;
+                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
+            },
             null,
             Enum.GetValues<ProcessStepTypeId>().Except(new[] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
             true,

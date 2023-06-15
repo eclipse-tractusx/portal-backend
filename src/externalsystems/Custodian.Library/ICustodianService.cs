@@ -45,4 +45,11 @@ public interface ICustodianService
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>The content of the document</returns>
     Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the membership for the given bpn
+    /// </summary>
+    /// <param name="bpn">bpn of the company</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task<string> SetMembership(string bpn, CancellationToken cancellationToken);
 }

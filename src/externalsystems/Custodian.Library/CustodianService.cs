@@ -41,25 +41,6 @@ public class CustodianService : ICustodianService
     }
 
     /// <inhertidoc />
-    public async Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
-    {
-        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
-
-        var requestBody = new { name = name, bpn = bpn };
-        var json = JsonSerializer.Serialize(requestBody);
-        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
-        const string walletUrl = "/api/wallets";
-
-        async ValueTask<string?> CreateErrorMessage(HttpContent errorContent) =>
-            (await JsonSerializer.DeserializeAsync<WalletErrorResponse>(errorContent.ReadAsStream(cancellationToken), _options, cancellationToken).ConfigureAwait(false))?.Message;
-
-        var result = await httpClient.PostAsync(walletUrl, stringContent, cancellationToken)
-            .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
-
-        return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inhertidoc />
     public async Task<WalletData> GetWalletByBpnAsync(string bpn, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
@@ -84,5 +65,39 @@ public class CustodianService : ICustodianService
         {
             throw new ServiceException("Couldn't resolve wallet data");
         }
+    }
+
+    /// <inhertidoc />
+    public async Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+
+        var requestBody = new { name = name, bpn = bpn };
+        var json = JsonSerializer.Serialize(requestBody);
+        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
+        const string walletUrl = "/api/wallets";
+
+        async ValueTask<string?> CreateErrorMessage(HttpContent errorContent) =>
+            (await JsonSerializer.DeserializeAsync<WalletErrorResponse>(errorContent.ReadAsStream(cancellationToken), _options, cancellationToken).ConfigureAwait(false))?.Message;
+
+        var result = await httpClient.PostAsync(walletUrl, stringContent, cancellationToken)
+            .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
+
+        return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inhertidoc />
+    public async Task<string> SetMembership(string bpn, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+
+        var requestBody = new { bpn = bpn };
+        var json = JsonSerializer.Serialize(requestBody);
+        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+        await httpClient.PostAsync("/api/credentials/issuer/membership", stringContent, cancellationToken)
+            .CatchingIntoServiceExceptionFor("custodian-membership-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+
+        return "Membership Credential successfully created";
     }
 }

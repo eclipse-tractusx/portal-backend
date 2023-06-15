@@ -89,7 +89,7 @@ public class CustodianServiceTests
     [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-post failed with statuscode 403")]
-    public async Task CreateWallet_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string content, string message)
+    public async Task CreateWallet_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string? content, string message)
     {
         // Arrange
         const string bpn = "123";
@@ -192,6 +192,59 @@ public class CustodianServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    #endregion
+
+    #region SetMembership
+
+    [Fact]
+    public async Task SetMembership_WithValidData_DoesNotThrowException()
+    {
+        // Arrange
+        const string bpn = "123";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
+            .Returns(httpClient);
+        var sut = new CustodianService(_tokenService, _options);
+
+        // Act
+        var result = await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be("Membership Credential successfully created");
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Conflict, "{ \"message\": \"Membership already exists!\" }", "call to external system custodian-membership-post failed with statuscode 409")]
+    [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-membership-post failed with statuscode 400")]
+    [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-membership-post failed with statuscode 400")]
+    [InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-membership-post failed with statuscode 403")]
+    public async Task SetMembership_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string? content, string message)
+    {
+        // Arrange
+        const string bpn = "123";
+        var httpMessageHandlerMock = content == null
+            ? new HttpMessageHandlerMock(statusCode)
+            : new HttpMessageHandlerMock(statusCode, new StringContent(content));
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new CustodianService(_tokenService, _options);
+
+        // Act
+        async Task Act() => await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Be(message);
+        ex.StatusCode.Should().Be(statusCode);
     }
 
     #endregion

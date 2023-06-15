@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
@@ -67,6 +68,7 @@ public class ApplicationActivationTests
     private readonly ApplicationActivationSettings _settings;
     private readonly ApplicationActivationService _sut;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly ICustodianService _custodianService;
 
     public ApplicationActivationTests()
     {
@@ -84,6 +86,7 @@ public class ApplicationActivationTests
         _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
+        _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<ApplicationActivationSettings>();
 
         var options = A.Fake<IOptions<ApplicationActivationSettings>>();
@@ -107,7 +110,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
-        _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _mailingService, _dateTimeProvider, options);
+        _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _mailingService, _dateTimeProvider, _custodianService, options);
     }
 
     #region HandleApplicationActivation
@@ -218,6 +221,8 @@ public class ApplicationActivationTests
             {
                 setOptionalParameters.Invoke(company);
             });
+        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
+            .Returns("Membership Credential successfully created");
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
@@ -250,6 +255,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("2", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)
             .And.ContainInOrder(CompanyUserId1, CompanyUserId2, CompanyUserId3);
@@ -258,6 +264,7 @@ public class ApplicationActivationTests
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
         result.ModifyChecklistEntry!.Invoke(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        entry.Comment.Should().Be("Membership Credential successfully created");
         result.ScheduleStepTypeIds.Should().BeNull();
         result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
         result.Modified.Should().BeTrue();
@@ -295,6 +302,8 @@ public class ApplicationActivationTests
             {
                 setOptionalParameters.Invoke(company);
             });
+        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
+            .Returns("Membership Credential successfully created");
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
@@ -328,6 +337,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)
             .And.ContainInOrder(CompanyUserId1, CompanyUserId2, CompanyUserId3);
@@ -336,6 +346,7 @@ public class ApplicationActivationTests
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
         result.ModifyChecklistEntry!.Invoke(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        entry.Comment.Should().Be("Membership Credential successfully created");
         result.ScheduleStepTypeIds.Should().BeNull();
         result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
         result.Modified.Should().BeTrue();
