@@ -78,10 +78,6 @@ public class EnumEnumerableValidation<TOptions> : IValidateOptions<TOptions> whe
                     throw new ConfigurationException($"{propertyInfo.Name} must be of type IEnumerable<Enum>");
                 }
 
-                var listType = typeof(List<>).MakeGenericType(propertyType);
-                var propertyValue = Activator.CreateInstance(listType);
-                _section.GetSection(propertyInfo.Name).Bind(propertyValue);
-
                 var notMatchingValues = configuredValues.Where(value => !Enum.TryParse(propertyType, value, out _));
                 if (notMatchingValues.Any())
                 {
