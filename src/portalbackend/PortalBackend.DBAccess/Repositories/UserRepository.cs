@@ -131,11 +131,9 @@ public class UserRepository : IUserRepository
                     : Guid.Empty))
             .AsAsyncEnumerable();
 
-    public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, Guid companyUserId) =>
+    public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, Guid companyId) =>
         _dbContext.CompanyUsers
-            .Where(user => user.Id == companyUserId)
-            .SelectMany(user => user.Identity!.Company!.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!))
-            .AnyAsync(companyUser => companyUser!.Email == email);
+            .AnyAsync(companyUser => companyUser.Identity!.CompanyId == companyId && companyUser.Email == email);
 
     public Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers

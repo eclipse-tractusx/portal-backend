@@ -1257,7 +1257,7 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity.UserId).ConfigureAwait(false);
+        await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustHaveHappened();
@@ -1286,7 +1286,7 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity.UserId);
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, (_identity.UserId, _identity.CompanyId));
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be("email must not be empty");
@@ -1314,11 +1314,12 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity.UserId);
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, (_identity.UserId, _identity.CompanyId));
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"user with email {userCreationInfo.eMail} does already exist");
 
+        A.CallTo(() => _userRepository.IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
@@ -1346,7 +1347,7 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity.UserId);
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, (_identity.UserId, _identity.CompanyId));
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
