@@ -30,5 +30,5 @@ public record CompanyServiceAccountData(
     [property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     [property: JsonPropertyName("offerSubscriptionId")] Guid? OfferSubscriptionId,
     [property: JsonPropertyName("connector")] ConnectorResponseData? ConnectorData,
-    [property: JsonPropertyName("offer")] OfferResponseData? OfferSubscroiptionsData
-    );
+    [property: JsonPropertyName("offer")] OfferResponseData? OfferSubscriptionsData
+);
