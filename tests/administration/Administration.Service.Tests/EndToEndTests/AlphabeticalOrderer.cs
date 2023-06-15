@@ -1,7 +1,7 @@
 ﻿using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndToEndTests;
 
 public class AlphabeticalOrderer : ITestCaseOrderer
 {

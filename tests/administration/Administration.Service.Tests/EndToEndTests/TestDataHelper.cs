@@ -2,7 +2,7 @@
 using Castle.Core.Internal;
 using Tests.Shared.EndToEndTests;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndToEndTests;
 
 public class TestDataHelper
 {

@@ -2,12 +2,13 @@
 using Castle.Core.Internal;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndToEndTests;
 
-[TestCaseOrderer("Administration.Service.Tests.EndToEndTests.AlphabeticalOrderer",
+[TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndToEndTests.AlphabeticalOrderer",
     "Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests")]
 public class ServiceAccountCUDScenarios
 {
+    
     private static List<Guid> _createdServiceAccountIds = new List<Guid>();
     
     //Scenario - Create a new service account
