@@ -10,7 +10,7 @@ using Tests.Shared.EndToEndTests;
 using Tests.Shared.RestAssured.AuthFlow;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndToEndTests;
 
 public static class AdministrationEndpointHelper
 {
