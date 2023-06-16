@@ -40,12 +40,8 @@ public class TemplateManager : ITemplateManager
 
     public async Task<Mail> ApplyTemplateAsync(string id, IDictionary<string, string> parameters)
     {
-        if (!_settings.Templates.Any(x => x.Name == id))
-        {
-            throw new NoSuchTemplateException(id);
-        }
+        var template = _settings.Templates.SingleOrDefault(x => x.Name == id)?.Setting ?? throw new NoSuchTemplateException(id);
 
-        var template = _settings.Templates.Single(x => x.Name == id).Setting;
         var body = template.EmailTemplateType.HasValue
             ? await GetTemplateStringFromType(template.EmailTemplateType.Value).ConfigureAwait(false)
             : template.Body;

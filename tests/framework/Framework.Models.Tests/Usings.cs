@@ -18,9 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
-
-[AttributeUsage(AttributeTargets.Property)]
-public class EnumEnumerationAttribute : Attribute
-{
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

@@ -23,7 +23,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.ComponentModel.DataAnnotations;
 
-namespace Framework.Models.Validation;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 /// <summary>
 /// Implementation of <see cref="IValidateOptions{TOptions}"/> that uses DataAnnotation's <see cref="Validator"/> for validation.
@@ -66,8 +66,8 @@ public class EnumEnumerableValidation<TOptions> : IValidateOptions<TOptions> whe
         IEnumerable<ValidationResult> GetValidationResults()
         {
             foreach (var propertyInfo in options.GetType()
-                         .GetProperties()
-                         .Where(prop => Attribute.IsDefined(prop, typeof(EnumEnumerationAttribute))))
+                            .GetProperties()
+                            .Where(prop => Attribute.IsDefined(prop, typeof(EnumEnumerationAttribute))))
             {
                 var configuredValues = new List<string>();
                 _section.GetSection(propertyInfo.Name).Bind(configuredValues);

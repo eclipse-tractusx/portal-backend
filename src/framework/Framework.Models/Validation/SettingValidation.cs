@@ -22,7 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Framework.Models.Validation;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 /// <summary>
 /// Extension methods for adding options related validation
@@ -39,6 +39,19 @@ public static class SettingValidation
     public static OptionsBuilder<TOptions> ValidateEnumEnumeration<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section) where TOptions : class
     {
         optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new EnumEnumerableValidation<TOptions>(optionsBuilder.Name, section));
+        return optionsBuilder;
+    }
+
+    /// <summary>
+    /// Register this options instance for validation of the custom <see cref="DistinctValuesAttribute"/>.
+    /// </summary>
+    /// <typeparam name="TOptions">The options type to be configured.</typeparam>
+    /// <param name="optionsBuilder">The options builder to add the services to.</param>
+    /// <param name="section">The current configuration section</param>
+    /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
+    public static OptionsBuilder<TOptions> ValidateDistinctValues<TOptions>(this OptionsBuilder<TOptions> optionsBuilder) where TOptions : class
+    {
+        optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name));
         return optionsBuilder;
     }
 }

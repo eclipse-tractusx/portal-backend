@@ -21,6 +21,19 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 [AttributeUsage(AttributeTargets.Property)]
-public class EnumEnumerationAttribute : Attribute
+public class DistinctValuesAttribute : Attribute
 {
+    private readonly string? _selector;
+
+    public DistinctValuesAttribute(string? selectorExpression = null)
+    {
+        _selector = selectorExpression == null
+            ? null
+            : selectorExpression;
+    }
+
+    public virtual string? Selector
+    {
+        get { return _selector; }
+    }
 }

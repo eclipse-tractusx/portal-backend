@@ -21,7 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 public class ValidateEnumValueAttribute : ValidationAttribute
 {
