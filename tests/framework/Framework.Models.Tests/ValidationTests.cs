@@ -182,9 +182,9 @@ public class ValidationTests
 
     public enum TestEnum
     {
-        Foo,
-        Bar,
-        Baz
+        Foo = 1,
+        Bar = 2,
+        Baz = 3
     }
 
     public class EnumEnumerableTestSettings
@@ -323,6 +323,65 @@ public class ValidationTests
         result.Should().NotBeNull().And.Match<UnexpectedConditionException>(r =>
             r.Message == "Attribute EnumEnumeration is applied to property InvalidProperty which is not an IEnumerable type (Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+TestEnum)"
         );
+    }
+
+    #endregion
+
+    #region ValidateEnumValuesAttribute
+
+    [Fact]
+    public void ValidateEnumValuesAttribute_Valid_ReturnsExpected()
+    {
+        // Arrange
+        var data = new[] {
+            TestEnum.Foo,
+            TestEnum.Bar
+        };
+
+        var sut = new ValidateEnumValuesAttribute();
+
+        // Act
+        var result = sut.IsValid(data);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ValidateEnumValuesAttribute_ValidNumbers_ReturnsExpected()
+    {
+        // Arrange
+        var data = new[] {
+            (TestEnum)1,
+            (TestEnum)2
+        };
+
+        var sut = new ValidateEnumValuesAttribute();
+
+        // Act
+        var result = sut.IsValid(data);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ValidateEnumValuesAttribute_Invalid_ReturnsExpected()
+    {
+        // Arrange
+        var data = new[] {
+            TestEnum.Foo,
+            TestEnum.Bar,
+            (TestEnum)0
+        };
+
+        var sut = new ValidateEnumValuesAttribute();
+
+        // Act
+        var result = sut.IsValid(data);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     #endregion

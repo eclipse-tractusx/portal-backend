@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
@@ -39,29 +40,14 @@ public class ValidateEnumValuesAttribute : ValidationAttribute
             throw new UnexpectedConditionException($"invalid use of attribute ValidateEnumValues: {validationContext.MemberName}, value {validationContext.ObjectInstance} is of type {validationContext.ObjectType} which is not an IEnumerable of Enum-type");
         }
         var values = type.GetEnumValues();
-        var enumerator = value?.GetType().GetMethod("GetEnumerator")?.Invoke(value, null);
-        var moveNext = enumerator?.GetType().GetMethod("MoveNext");
-        var current = enumerator?.GetType().GetProperty("Current")?.GetMethod;
-        if (enumerator is null || moveNext is null || current is null)
+
+        foreach (var item in value!.ToIEnumerable())
         {
-            throw new UnexpectedConditionException($"attribute ValidateEnumValues failed to enumerate {validationContext.MemberName}: enumerator, moveNext or current should never be null here");
-        }
-        while (true)
-        {
-            var hasNext = moveNext.Invoke(enumerator, null);
-            if (hasNext is null)
-            {
-                throw new UnexpectedConditionException($"attribute ValidateEnumValues failed to enumerate {validationContext.MemberName}: hasNext should never be null here");
-            }
-            if (hasNext is not true)
-            {
-                return null;
-            }
-            var item = current.Invoke(enumerator, null);
             if (item is null || Array.BinarySearch(values, item) < 0)
             {
                 return new ValidationResult($"{item} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}");
             }
         }
+        return null;
     }
 }
