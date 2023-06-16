@@ -28,8 +28,8 @@ public static class GenericSelectExtension
 {
     public static Delegate ToSelectorDelegate(this string selector, Type type)
     {
-        var genericMethod = typeof(CSharpScript).GetMethods().Where(method => method.Name == "EvaluateAsync" && method.IsGenericMethod).SingleOrDefault()?
-            .MakeGenericMethod(new[] { typeof(Func<,>).MakeGenericType(type, typeof(object)) }) ?? throw new UnexpectedConditionException($"unable to access method CSharpScript.EvaluateAsync for {type}");
+        var genericMethod = typeof(CSharpScript).GetMethods().SingleOrDefault(method => method.Name == "EvaluateAsync" && method.IsGenericMethod)?
+            .MakeGenericMethod(typeof(Func<,>).MakeGenericType(type, typeof(object))) ?? throw new UnexpectedConditionException($"unable to access method CSharpScript.EvaluateAsync for {type}");
 
         try
         {

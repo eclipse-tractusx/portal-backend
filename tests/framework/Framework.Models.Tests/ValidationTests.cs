@@ -37,13 +37,13 @@ public class ValidationTests
     public class TestSettings
     {
         [DistinctValues]
-        public IEnumerable<string> StringProperty { get; set; } = new string[] { };
+        public IEnumerable<string> StringProperty { get; set; } = null!;
 
         [DistinctValues("x => x.Key")]
-        public IEnumerable<KeyValuePair<string, string>> TypedProperty { get; set; } = new KeyValuePair<string, string>[] { };
+        public IEnumerable<KeyValuePair<string, string>> TypedProperty { get; set; } = null!;
 
         [DistinctValues("x => x.Foo")]
-        public IEnumerable<KeyValuePair<string, string>> InvalidProperty { get; set; } = new KeyValuePair<string, string>[] { };
+        public IEnumerable<KeyValuePair<string, string>> InvalidProperty { get; set; } = null!;
     }
 
     [Fact]
@@ -59,6 +59,26 @@ public class ValidationTests
                 new KeyValuePair<string, string>("baz", "value3")
             }
         };
+
+        var sut = new DistinctValuesValidation<TestSettings>("settings");
+
+        // Act
+        var result = sut.Validate("settings", settings);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
+            !r.Skipped &&
+            r.Succeeded &&
+            !r.Failed &&
+            r.FailureMessage == null
+        );
+    }
+
+    [Fact]
+    public void Missing_ReturnsExpected()
+    {
+        // Arrange
+        var settings = new TestSettings();
 
         var sut = new DistinctValuesValidation<TestSettings>("settings");
 
@@ -116,6 +136,7 @@ public class ValidationTests
         };
 
         var sut = new DistinctValuesValidation<TestSettings>("settings");
+
         var Act = () => sut.Validate("settings", settings);
 
         // Act

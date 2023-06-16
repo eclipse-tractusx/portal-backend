@@ -59,34 +59,39 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
             return ValidateOptionsResult.Skip;
         }
 
-        IEnumerable<ValidationResult> GetValidationResults()
+        var validationErrors = GetValidationErrors(options);
+
+        return validationErrors.Any() ?
+            ValidateOptionsResult.Fail(validationErrors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'.")) :
+            ValidateOptionsResult.Success;
+    }
+
+    private static IEnumerable<ValidationResult> GetValidationErrors(TOptions options)
+    {
+        foreach (var propertyInfo in options.GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(DistinctValuesAttribute))))
         {
-            foreach (var propertyInfo in options.GetType()
-                            .GetProperties()
-                            .Where(prop => Attribute.IsDefined(prop, typeof(DistinctValuesAttribute))))
+            var attribute = (DistinctValuesAttribute)propertyInfo.GetCustomAttributes(typeof(DistinctValuesAttribute), false).Single();
+
+            if (!propertyInfo.PropertyType.GetInterfaces().Contains(typeof(System.Collections.IEnumerable)))
+                throw new UnexpectedConditionException($"Attribute DistinctValues is applied to property {propertyInfo.Name} which is not an IEnumerable type ({propertyInfo.PropertyType})");
+
+            var getter = propertyInfo.GetGetMethod() ?? throw new UnexpectedConditionException($"cannot access property getter of {propertyInfo.Name}");
+
+            var items = getter.Invoke(options, Array.Empty<object>())?.ToIEnumerable();
+
+            if (items == null)
             {
-                var attribute = (DistinctValuesAttribute)propertyInfo.GetCustomAttributes(typeof(DistinctValuesAttribute), false).Single();
+                continue;
+            }
 
-                if (!propertyInfo.PropertyType.GetInterfaces().Contains(typeof(System.Collections.IEnumerable)))
-                    throw new UnexpectedConditionException($"Attribute DistinceValues is applied to property {propertyInfo.Name} which is not an IEnumerable type ({propertyInfo.PropertyType})");
+            var duplicates = attribute.Selector == null
+                ? items.Duplicates()
+                : items.DuplicatesBy(x => attribute.Selector.ToSelectorDelegate(propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault() ?? throw new UnexpectedConditionException($"cannot get generic arguments of {propertyInfo.PropertyType}")).DynamicInvoke(x));
 
-                var items = propertyInfo.GetGetMethod()?.Invoke(options, new object[] { })?.ToIEnumerable() ?? throw new UnexpectedConditionException($"cannot access property getter of {propertyInfo.Name}");
-
-                var duplicates = attribute.Selector == null
-                    ? items.Duplicates()
-                    : items.DuplicatesBy(x => attribute.Selector.ToSelectorDelegate(propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault() ?? throw new UnexpectedConditionException($"cannot get generic arguments of {propertyInfo.PropertyType}")).DynamicInvoke(x));
-
-                if (duplicates.Any())
-                {
-                    yield return new($"{string.Join(",", duplicates)} are duplicate values for {propertyInfo.Name}.", new[] { propertyInfo.Name });
-                }
+            if (duplicates.Any())
+            {
+                yield return new($"{string.Join(",", duplicates)} are duplicate values for {propertyInfo.Name}.", new[] { propertyInfo.Name });
             }
         }
-
-        var validationResults = GetValidationResults();
-
-        return validationResults.Any() ?
-            ValidateOptionsResult.Fail(validationResults.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'.")) :
-            ValidateOptionsResult.Success;
     }
 }

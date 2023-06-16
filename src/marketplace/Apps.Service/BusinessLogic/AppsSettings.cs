@@ -177,17 +177,6 @@ public class AppsSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> CompanyAdminRoles { get; set; } = null!;
-
-    public static bool Validate(AppsSettings settings)
-    {
-        if (settings.UploadAppDocumentTypeIds.Select(x => x.DocumentTypeId).Distinct().Count() !=
-            settings.UploadAppDocumentTypeIds.Count())
-        {
-            throw new ConfigurationException($"{nameof(UploadAppDocumentTypeIds)}: The document type id of the app documents must be unique");
-        }
-
-        return true;
-    }
 }
 
 /// <summary>
@@ -205,7 +194,6 @@ public static class AppsSettingsExtension
         services.AddOptions<AppsSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
-            .Validate(AppsSettings.Validate)
             .ValidateEnumEnumeration(section)
             .ValidateDistinctValues()
             .ValidateOnStart();

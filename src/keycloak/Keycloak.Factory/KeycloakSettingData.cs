@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using System.Runtime.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
@@ -59,8 +60,17 @@ public class KeycloakSettings
     }
 }
 
-public class KeycloakSettingsMap : Dictionary<string, KeycloakSettings>
+[Serializable]
+public sealed class KeycloakSettingsMap : Dictionary<string, KeycloakSettings>
 {
+    public KeycloakSettingsMap()
+    {
+    }
+
+    private KeycloakSettingsMap(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
+    }
+
     public bool Validate()
     {
         if (!Values.Any())
