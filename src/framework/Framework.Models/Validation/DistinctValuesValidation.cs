@@ -67,7 +67,8 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
             {
                 var attribute = (DistinctValuesAttribute)propertyInfo.GetCustomAttributes(typeof(DistinctValuesAttribute), false).Single();
 
-                if (!propertyInfo.PropertyType.GetInterfaces().Contains(typeof(System.Collections.IEnumerable))) throw new UnexpectedConditionException($"Attribute DistinceValues is applied to property {propertyInfo.Name} which is not an IEnumerable type ({propertyInfo.PropertyType})");
+                if (!propertyInfo.PropertyType.GetInterfaces().Contains(typeof(System.Collections.IEnumerable)))
+                    throw new UnexpectedConditionException($"Attribute DistinceValues is applied to property {propertyInfo.Name} which is not an IEnumerable type ({propertyInfo.PropertyType})");
 
                 var items = propertyInfo.GetGetMethod()?.Invoke(options, new object[] { })?.ToIEnumerable() ?? throw new UnexpectedConditionException($"cannot access property getter of {propertyInfo.Name}");
 

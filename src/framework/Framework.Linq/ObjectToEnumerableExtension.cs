@@ -27,7 +27,7 @@ public static class ObjectToEnumerableExtension
     public static IEnumerable<object> ToIEnumerable(this object value)
     {
         var enumerator = value?.GetType().GetMethod("GetEnumerator")?.Invoke(value, null) ?? throw new ArgumentException($"object instance does not implement IEnumerable ({value?.GetType()})");
-        var moveNext = enumerator?.GetType().GetMethod("MoveNext") ?? throw new UnexpectedConditionException("method 'moveNext' should never be null here"); 
+        var moveNext = enumerator?.GetType().GetMethod("MoveNext") ?? throw new UnexpectedConditionException("method 'moveNext' should never be null here");
         var current = enumerator?.GetType().GetProperty("Current")?.GetMethod ?? throw new UnexpectedConditionException("property 'Current' should never be null here");
         while (true)
         {
