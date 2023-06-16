@@ -305,12 +305,6 @@ public class UserProvisioningService : IUserProvisioningService
 
     public async IAsyncEnumerable<UserRoleData> GetRoleDatas(IEnumerable<UserRoleConfig> clientRoles)
     {
-        var duplicates = clientRoles.DuplicatesBy(x => x.ClientId);
-        if (duplicates.Any())
-        {
-            throw new ConfigurationException($"{string.Join(",", duplicates.Select(x => x.ClientId))}");
-        }
-
         await foreach (var roleDataGrouping in _portalRepositories.GetInstance<IUserRolesRepository>()
                                 .GetUserRoleDataUntrackedAsync(clientRoles)
                                 .PreSortedGroupBy(d => d.ClientClientId))

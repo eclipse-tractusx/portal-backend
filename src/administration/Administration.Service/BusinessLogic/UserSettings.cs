@@ -44,12 +44,14 @@ public class UserSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<UserStatusId> CompanyUserStatusIds { get; set; } = null!;
 
     /// <summary>
     /// Company User Status Id
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> UserAdminRoles { get; set; } = null!;
 }
 
@@ -84,6 +86,7 @@ public static class UserSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

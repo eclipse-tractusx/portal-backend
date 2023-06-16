@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
@@ -29,12 +30,14 @@ public class OfferSubscriptionsProcessSettings
     /// IT Admin Roles
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ItAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Service Manager Roles
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; set; } = null!;
 
     /// <summary>

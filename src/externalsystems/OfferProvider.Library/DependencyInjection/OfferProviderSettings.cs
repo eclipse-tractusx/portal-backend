@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
@@ -30,5 +31,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyIn
 public class OfferProviderSettings : KeyVaultAuthSettings
 {
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; init; } = null!;
 }

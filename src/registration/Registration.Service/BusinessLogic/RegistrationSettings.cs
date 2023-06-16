@@ -44,6 +44,7 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -52,6 +53,7 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<CompanyApplicationStatusId> ApplicationStatusIds { get; set; } = null!;
 
     /// <summary>
@@ -60,6 +62,7 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> RegistrationDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -67,6 +70,7 @@ public class RegistrationSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> SubmitDocumentTypeIds { get; set; } = null!;
 }
 
@@ -80,6 +84,7 @@ public static class RegistrationSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

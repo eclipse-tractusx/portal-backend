@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -36,6 +37,7 @@ public class InvitationSettings
     public string RegistrationAppAddress { get; set; }
 
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> InvitedUserInitialRoles { get; set; }
 
     [Required(AllowEmptyStrings = false)]
@@ -51,6 +53,7 @@ public static class InvitationSettingsExtension
         services.AddOptions<InvitationSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

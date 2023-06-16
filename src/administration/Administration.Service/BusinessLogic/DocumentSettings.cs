@@ -35,6 +35,7 @@ public class DocumentSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> FrameDocumentTypeIds { get; set; } = null!;
 }
 
@@ -48,6 +49,7 @@ public static class DocumentSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

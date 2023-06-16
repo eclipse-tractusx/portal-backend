@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Linq\Framework.Linq.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>

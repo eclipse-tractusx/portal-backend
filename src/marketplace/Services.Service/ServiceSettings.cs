@@ -37,12 +37,15 @@ public class ServiceSettings
     public int ApplicationsMaxPageSize { get; init; }
 
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> CatenaAdminRoles { get; init; } = null!;
 
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; init; } = null!;
 
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> SalesManagerRoles { get; init; } = null!;
 
     /// <summary>
@@ -51,6 +54,7 @@ public class ServiceSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -71,15 +75,18 @@ public class ServiceSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; init; } = null!;
 
     /// <summary>
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ApproveServiceUserRoles { get; init; } = null!;
 
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ITAdminRoles { get; init; } = null!;
 
     /// <summary>
@@ -94,6 +101,7 @@ public class ServiceSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -102,6 +110,7 @@ public class ServiceSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 
     /// <summary>
@@ -110,6 +119,7 @@ public class ServiceSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -122,23 +132,15 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [DistinctValues("x => x.DocumentTypeId")]
     public IEnumerable<UploadDocumentConfig> UploadServiceDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Company Admin Roles
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> CompanyAdminRoles { get; set; } = null!;
-
-    public static bool Validate(ServiceSettings settings)
-    {
-        if (settings.UploadServiceDocumentTypeIds.DuplicatesBy(x => x.DocumentTypeId).Any())
-        {
-            throw new ConfigurationException($"{nameof(UploadServiceDocumentTypeIds)}: The document type id of the service documents must be unique");
-        }
-
-        return true;
-    }
 }
 
 public static class ServiceSettingsExtension
@@ -151,7 +153,7 @@ public static class ServiceSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateEnumEnumeration(section)
-            .Validate(ServiceSettings.Validate)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

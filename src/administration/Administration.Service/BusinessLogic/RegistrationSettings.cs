@@ -39,6 +39,7 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; }
 }
 
@@ -52,6 +53,7 @@ public static class RegistrationSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

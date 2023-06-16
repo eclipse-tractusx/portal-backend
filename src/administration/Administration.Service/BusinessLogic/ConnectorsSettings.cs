@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -37,6 +38,7 @@ public class ConnectorsSettings
     /// Allowed content types for the certificate
     /// </summary>
     [Required]
+    [DistinctValues]
     public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
 
     /// <summary>
@@ -55,6 +57,7 @@ public static class ConnectorsSettingsExtensions
     {
         services.AddOptions<ConnectorsSettings>()
             .Bind(section)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

@@ -37,6 +37,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> CatenaAdminRoles { get; set; } = null!;
 
     /// <summary>
@@ -45,6 +46,7 @@ public class AppsSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -63,12 +65,14 @@ public class AppsSettings
     /// Sales Manager roles
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> SalesManagerRoles { get; set; } = null!;
 
     /// <summary>
     /// Roles to notify when a new subscription was created
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; set; } = null!;
 
     /// <summary>
@@ -77,6 +81,7 @@ public class AppsSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 
     /// <summary>
@@ -84,6 +89,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ActiveAppCompanyAdminRoles { get; set; } = null!;
 
     /// <summary>
@@ -92,6 +98,7 @@ public class AppsSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -99,12 +106,14 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ApproveAppUserRoles { get; set; } = null!;
 
     /// <summary>
@@ -118,12 +127,14 @@ public class AppsSettings
     /// <value></value>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> AppImageDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// IT Admin Roles
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ITAdminRoles { get; set; } = null!;
 
     /// <summary>
@@ -137,6 +148,7 @@ public class AppsSettings
     /// </summary>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -144,12 +156,14 @@ public class AppsSettings
     /// </summary>
     [Required]
     [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> SubmitAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Document Type Id and ContentType to be uploaded
     /// </summary>
     [Required]
+    [DistinctValues("x => x.DocumentTypeId")]
     public IEnumerable<UploadDocumentConfig> UploadAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -161,6 +175,7 @@ public class AppsSettings
     /// Company Admin Roles
     /// </summary>
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> CompanyAdminRoles { get; set; } = null!;
 
     public static bool Validate(AppsSettings settings)
@@ -192,6 +207,7 @@ public static class AppsSettingsExtension
             .ValidateDataAnnotations()
             .Validate(AppsSettings.Validate)
             .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

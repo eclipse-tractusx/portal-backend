@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
@@ -33,17 +34,13 @@ public class TemplateSettings
     /// </summary>        
     public const string Position = "MailingService";
 
+    [DistinctValues("x => x.Name")]
     public IEnumerable<TemplateInfo> Templates { get; set; } = null!;
 
     public bool Validate()
     {
         var validation = new ConfigurationValidation<TemplateSettings>()
             .NotNull(Templates, () => nameof(Templates));
-
-        if (Templates.DuplicatesBy(x => x.Name).Any())
-        {
-            throw new ConfigurationException($"{nameof(Templates)}: The name of the tempalte must be unique");
-        }
 
         return Templates.Select(x => x.Setting).All(t =>
         {
