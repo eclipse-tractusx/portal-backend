@@ -28,20 +28,20 @@ public class UseCaseParticipationStatus
     private UseCaseParticipationStatus()
     {
         Label = null!;
-        CompanyCredentialDetails = new HashSet<CompanyCredentialDetail>();
+        CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
-    public UseCaseParticipationStatus(UseCaseParticipationStatusId useCaseParticipationStatusId) : this()
+    public UseCaseParticipationStatus(CompanySsiDetailStatusId companySsiDetailStatusId) : this()
     {
-        Id = useCaseParticipationStatusId;
-        Label = useCaseParticipationStatusId.ToString();
+        Id = companySsiDetailStatusId;
+        Label = companySsiDetailStatusId.ToString();
     }
 
-    public UseCaseParticipationStatusId Id { get; private set; }
+    public CompanySsiDetailStatusId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<CompanyCredentialDetail> CompanyCredentialDetails { get; private set; }
+    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }
