@@ -63,33 +63,38 @@ public class EnumEnumerableValidation<TOptions> : IValidateOptions<TOptions> whe
             return ValidateOptionsResult.Skip;
         }
 
-        IEnumerable<ValidationResult> GetValidationResults()
-        {
-            foreach (var propertyInfo in options.GetType()
-                            .GetProperties()
-                            .Where(prop => Attribute.IsDefined(prop, typeof(EnumEnumerationAttribute))))
-            {
-                var configuredValues = new List<string>();
-                _section.GetSection(propertyInfo.Name).Bind(configuredValues);
-
-                var propertyType = propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault();
-                if (propertyType is not { IsEnum: true })
-                {
-                    throw new ConfigurationException($"{propertyInfo.Name} must be of type IEnumerable<Enum>");
-                }
-
-                var notMatchingValues = configuredValues.Where(value => !Enum.TryParse(propertyType, value, out _));
-                if (notMatchingValues.Any())
-                {
-                    yield return new($"{string.Join(",", notMatchingValues)} is not a valid value for {propertyType}. Valid values are: {string.Join(", ", propertyType.GetEnumNames())}", new[] { propertyInfo.Name });
-                }
-            }
-        }
-
-        var validationResults = GetValidationResults();
+        var validationResults = GetValidationErrors(options);
 
         return validationResults.Any() ?
             ValidateOptionsResult.Fail(validationResults.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'.").ToList()) :
             ValidateOptionsResult.Success;
+    }
+
+    private IEnumerable<ValidationResult> GetValidationErrors(TOptions options)
+    {
+        foreach (var propertyInfo in options.GetType()
+                        .GetProperties()
+                        .Where(prop => Attribute.IsDefined(prop, typeof(EnumEnumerationAttribute))))
+        {
+            var configuredValues = new List<string>();
+            _section.GetSection(propertyInfo.Name).Bind(configuredValues);
+
+            if (!propertyInfo.PropertyType.GetInterfaces().Contains(typeof(System.Collections.IEnumerable)))
+            {
+                throw new UnexpectedConditionException($"Attribute EnumEnumeration is applied to property {propertyInfo.Name} which is not an IEnumerable type ({propertyInfo.PropertyType})");
+            }
+
+            var propertyType = propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault();
+            if (propertyType is not { IsEnum: true })
+            {
+                throw new UnexpectedConditionException($"{propertyInfo.Name} must be of type IEnumerable<Enum> but is IEnumerable<{propertyType}>");
+            }
+
+            var notMatchingValues = configuredValues.Except(propertyType.GetEnumNames());
+            if (notMatchingValues.Any())
+            {
+                yield return new($"{string.Join(",", notMatchingValues)} is not a valid value for {propertyType}. Valid values are: {string.Join(", ", propertyType.GetEnumNames())}", new[] { propertyInfo.Name });
+            }
+        }
     }
 }

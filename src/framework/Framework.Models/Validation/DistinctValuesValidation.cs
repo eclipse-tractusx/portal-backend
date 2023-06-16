@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
@@ -68,25 +69,36 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
 
     private static IEnumerable<ValidationResult> GetValidationErrors(TOptions options)
     {
-        foreach (var propertyInfo in options.GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(DistinctValuesAttribute))))
+        foreach (var propertyInfo in options.GetType()
+                        .GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(DistinctValuesAttribute))))
         {
             var attribute = (DistinctValuesAttribute)propertyInfo.GetCustomAttributes(typeof(DistinctValuesAttribute), false).Single();
 
             if (!propertyInfo.PropertyType.GetInterfaces().Contains(typeof(System.Collections.IEnumerable)))
+            {
                 throw new UnexpectedConditionException($"Attribute DistinctValues is applied to property {propertyInfo.Name} which is not an IEnumerable type ({propertyInfo.PropertyType})");
+            }
 
             var getter = propertyInfo.GetGetMethod() ?? throw new UnexpectedConditionException($"cannot access property getter of {propertyInfo.Name}");
 
             var items = getter.Invoke(options, Array.Empty<object>())?.ToIEnumerable();
 
-            if (items == null)
-            {
-                continue;
-            }
+            IEnumerable<object> duplicates;
 
-            var duplicates = attribute.Selector == null
-                ? items.Duplicates()
-                : items.DuplicatesBy(x => attribute.Selector.ToSelectorDelegate(propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault() ?? throw new UnexpectedConditionException($"cannot get generic arguments of {propertyInfo.PropertyType}")).DynamicInvoke(x));
+            switch (attribute.Selector, items)
+            {
+                case (null, null):
+                    continue;
+                case (null, _):
+                    duplicates = items.Duplicates();
+                    break;
+                case (_, null):
+                    GetDelegate(attribute.Selector, propertyInfo);
+                    continue;
+                default:
+                    duplicates = items.DuplicatesBy(x => GetDelegate(attribute.Selector, propertyInfo).DynamicInvoke(x));
+                    break;
+            }
 
             if (duplicates.Any())
             {
@@ -94,4 +106,7 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
             }
         }
     }
+
+    private static Delegate GetDelegate(string selector, PropertyInfo propertyInfo) =>
+        selector.ToSelectorDelegate(propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault() ?? throw new UnexpectedConditionException($"cannot get generic arguments of {propertyInfo.PropertyType}"));
 }
