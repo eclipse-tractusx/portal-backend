@@ -22,31 +22,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Language
+public class LanguageLongName
 {
-    private Language()
-    {
-        ShortName = null!;
-        AppDescriptions = new HashSet<OfferDescription>();
-        CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
-        UserRoleDescriptions = new HashSet<UserRoleDescription>();
-        SupportingApps = new HashSet<Offer>();
-        LanguageLongNames = new HashSet<LanguageLongName>();
-    }
-
-    public Language(string shortName) : this()
+    public LanguageLongName(string shortName, string languageShortName, string longName)
     {
         ShortName = shortName;
+        LanguageShortName = languageShortName;
+        LongName = longName;
     }
 
-    [Key]
     [StringLength(2, MinimumLength = 2)]
-    public string ShortName { get; set; }
+    public string ShortName { get; private set; }
 
-    // Navigation properties
-    public virtual ICollection<OfferDescription> AppDescriptions { get; private set; }
-    public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
-    public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
-    public virtual ICollection<Offer> SupportingApps { get; private set; }
-    public virtual ICollection<LanguageLongName> LanguageLongNames { get; private set; }
+    [StringLength(2, MinimumLength = 2)]
+    public string LanguageShortName { get; private set; }
+    public string LongName { get; set; }
+    public virtual Language? Language { get; private set; }
 }
