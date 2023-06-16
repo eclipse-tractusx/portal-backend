@@ -329,59 +329,41 @@ public class ValidationTests
 
     #region ValidateEnumValuesAttribute
 
-    [Fact]
-    public void ValidateEnumValuesAttribute_Valid_ReturnsExpected()
+    [Theory]
+    [InlineData(new[] { TestEnum.Foo, TestEnum.Bar }, true)]
+    [InlineData(new[] { TestEnum.Foo, (TestEnum)3 }, true)]
+    [InlineData(new[] { TestEnum.Foo, (TestEnum)0 }, false)]
+    [InlineData(new TestEnum[] { }, true)]
+    public void ValidateEnumValuesAttribute_ReturnsExpected(IEnumerable<TestEnum> values, bool expected)
     {
         // Arrange
-        var data = new[] {
-            TestEnum.Foo,
-            TestEnum.Bar
-        };
-
         var sut = new ValidateEnumValuesAttribute();
 
         // Act
-        var result = sut.IsValid(data);
+        var result = sut.IsValid(values);
 
         // Assert
-        result.Should().BeTrue();
+        result.Should().Be(expected);
     }
 
-    [Fact]
-    public void ValidateEnumValuesAttribute_ValidNumbers_ReturnsExpected()
+    #endregion
+
+    #region ValidateEnumValueAttribute
+
+    [Theory]
+    [InlineData(TestEnum.Foo, true)]
+    [InlineData((TestEnum)2, true)]
+    [InlineData((TestEnum)0, false)]
+    public void ValidateEnumValueAttribute_ReturnsExpected(TestEnum value, bool expected)
     {
         // Arrange
-        var data = new[] {
-            (TestEnum)1,
-            (TestEnum)2
-        };
-
-        var sut = new ValidateEnumValuesAttribute();
+        var sut = new ValidateEnumValueAttribute();
 
         // Act
-        var result = sut.IsValid(data);
+        var result = sut.IsValid(value);
 
         // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ValidateEnumValuesAttribute_Invalid_ReturnsExpected()
-    {
-        // Arrange
-        var data = new[] {
-            TestEnum.Foo,
-            TestEnum.Bar,
-            (TestEnum)0
-        };
-
-        var sut = new ValidateEnumValuesAttribute();
-
-        // Act
-        var result = sut.IsValid(data);
-
-        // Assert
-        result.Should().BeFalse();
+        result.Should().Be(expected);
     }
 
     #endregion
