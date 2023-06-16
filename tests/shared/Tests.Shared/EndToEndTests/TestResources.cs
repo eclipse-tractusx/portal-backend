@@ -11,7 +11,8 @@ public static class TestResources
     public static readonly string NotificationOfferId;
     public static readonly string SdFactoryBaseUrl;
     public static readonly string WalletBaseUrl;
-    public static readonly string OperatorCompanyName;
+    //public static readonly string OperatorCompanyName;
+    public static readonly string PortalUserCompanyName;
     public static readonly string TechCompanyName;
 
     static TestResources()
@@ -23,7 +24,8 @@ public static class TestResources
             .Build();
         Env = configuration.GetSection("Environment").Value;
         NotificationOfferId = configuration.GetSection("NotificationOfferId").Value;
-        OperatorCompanyName = configuration.GetSection("OperatorCompanyName").Value;
+        //OperatorCompanyName = configuration.GetSection("OperatorCompanyName").Value;
+        PortalUserCompanyName = configuration.GetSection("PortalUserCompanyName").Value;
         TechCompanyName = configuration.GetSection("TechCompanyName").Value;
         BaseUrl = $"https://portal-backend.{Env}.demo.catena-x.net";
         ClearingHouseUrl = "https://validation.test.dih-cloud.com";

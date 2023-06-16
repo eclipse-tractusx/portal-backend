@@ -17,9 +17,10 @@ public static class AdministrationEndpointHelper
     private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/administration";
     private static readonly Secrets Secrets = new();
-    private static string? _operatorToken;
-    private static readonly string OperatorCompanyName = TestResources.OperatorCompanyName;
-
+    private static string? _portalUserToken;
+    //private static readonly string OperatorCompanyName = TestResources.OperatorCompanyName;
+    private static readonly string PortalUserCompanyName = TestResources.PortalUserCompanyName;
+    
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -28,7 +29,7 @@ public static class AdministrationEndpointHelper
 
     public static async Task GetOperatorToken()
     {
-        _operatorToken = await new AuthFlow(OperatorCompanyName).GetAccessToken(Secrets.OperatorUserName, Secrets.OperatorUserPassword);
+        _portalUserToken = await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName, Secrets.PortalUserPassword);
     }
 
     //GET: api/administration/serviceaccount/owncompany/serviceaccounts
@@ -40,7 +41,7 @@ public static class AdministrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/serviceaccount/owncompany/serviceaccounts?size=15")
             .Then()
@@ -57,7 +58,7 @@ public static class AdministrationEndpointHelper
                 .RelaxedHttpsValidation()
                 .Header(
                     "authorization",
-                    $"Bearer {_operatorToken}")
+                    $"Bearer {_portalUserToken}")
                 .When()
                 .Get($"{BaseUrl}{EndPoint}/serviceaccount/owncompany/serviceaccounts?page={i}&size=15")
                 .Then()
@@ -91,7 +92,7 @@ public static class AdministrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Body(JsonSerializer.Serialize(serviceAccountCreationInfo, JsonSerializerOptions))
             .Post($"{BaseUrl}{EndPoint}/serviceaccount/owncompany/serviceaccounts")
@@ -110,7 +111,7 @@ public static class AdministrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Delete($"{BaseUrl}{EndPoint}/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}")
             .Then()
@@ -132,7 +133,7 @@ public static class AdministrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Body(JsonSerializer.Serialize(updateServiceAccountEditableDetails, JsonSerializerOptions))
             .Put($"{BaseUrl}{EndPoint}/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}")
@@ -151,7 +152,7 @@ public static class AdministrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Post($"{BaseUrl}{EndPoint}/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}/resetCredentials")
             .Then()
@@ -169,7 +170,7 @@ public static class AdministrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}")
             .Then()
@@ -187,7 +188,7 @@ public static class AdministrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/serviceaccount/user/roles")
             .Then()

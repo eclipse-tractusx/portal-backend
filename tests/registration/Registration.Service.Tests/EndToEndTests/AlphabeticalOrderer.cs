@@ -1,7 +1,7 @@
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Registration.Service.Tests.RestAssured;
+namespace Registration.Service.Tests.EndToEndTests;
 
 public class AlphabeticalOrderer : ITestCaseOrderer
 {

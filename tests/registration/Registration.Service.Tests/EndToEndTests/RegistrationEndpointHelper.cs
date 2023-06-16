@@ -21,9 +21,10 @@ public static class RegistrationEndpointHelper
     private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/registration";
     private static readonly string AdminEndPoint = "/api/administration";
-    private static readonly string OperatorCompanyName = TestResources.OperatorCompanyName;
+    //private static readonly string OperatorCompanyName = TestResources.OperatorCompanyName;
+    private static readonly string PortalUserCompanyName = TestResources.PortalUserCompanyName;
     private static string? _userCompanyToken;
-    private static string? _operatorToken;
+    private static string? _portalUserToken;
     private static string? _applicationId;
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new ()
@@ -330,7 +331,7 @@ public static class RegistrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get(
                 $"{BaseUrl}{AdminEndPoint}/registration/applications?companyName={userCompanyName}&page=0&size=4&companyApplicationStatus=Closed")
@@ -352,7 +353,7 @@ public static class RegistrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{AdminEndPoint}/registration/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
@@ -409,15 +410,15 @@ public static class RegistrationEndpointHelper
 
         try
         {
-            _operatorToken =
-                await new AuthFlow(OperatorCompanyName).GetAccessToken(Secrets.OperatorUserName,
-                    Secrets.OperatorUserPassword);
+            _portalUserToken =
+                await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
+                    Secrets.PortalUserPassword);
 
             Given()
                 .RelaxedHttpsValidation()
                 .Header(
                     "authorization",
-                    $"Bearer {_operatorToken}")
+                    $"Bearer {_portalUserToken}")
                 .ContentType("application/json")
                 .Body(invitationData)
                 .When()
@@ -489,7 +490,7 @@ public static class RegistrationEndpointHelper
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .ContentType("application/json")
             .When()
             .Get(

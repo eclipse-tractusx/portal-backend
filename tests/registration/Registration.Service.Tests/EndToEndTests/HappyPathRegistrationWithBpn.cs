@@ -13,7 +13,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     private static readonly string EndPoint = "/api/registration";
     private static readonly string AdminEndPoint = "/api/administration";
     private static string? _userCompanyToken;
-    private static string? _operatorToken;
+    private static string? _portalUserToken;
     private static string? _applicationId;
 
     private static string _companyName = "Test-Catena-X";
@@ -198,7 +198,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get(
                 $"{BaseUrl}{AdminEndPoint}/registration/applications?companyName={_companyName}&page=0&size=4&companyApplicationStatus=Closed")
@@ -221,7 +221,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{AdminEndPoint}/registration/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
