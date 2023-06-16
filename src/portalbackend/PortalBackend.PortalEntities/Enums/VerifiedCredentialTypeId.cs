@@ -18,30 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Runtime.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public class CredentialTypeAssignedKind
+public enum VerifiedCredentialTypeId
 {
-    public CredentialTypeAssignedKind(CredentialTypeId credentialTypeId, CredentialTypeKindId credentialTypeKindId)
-    {
-        CredentialTypeId = credentialTypeId;
-        CredentialTypeKindId = credentialTypeKindId;
-    }
+    [EnumMember(Value = "Traceability Framework")]
+    TRACEABILITY_FRAMEWORK = 1,
 
-    /// <summary>
-    /// Id of the credential type.
-    /// </summary>
-    public CredentialTypeId CredentialTypeId { get; private set; }
+    [EnumMember(Value = "Sustainability Framework")]
+    SUSTAINABILITY_FRAMEWORK = 2,
 
-    /// <summary>
-    /// Id of the credential type kind.
-    /// </summary>
-    public CredentialTypeKindId CredentialTypeKindId { get; private set; }
-
-    // Navigation properties
-    public virtual CredentialType? CredentialType { get; private set; }
-
-    public virtual CredentialTypeKind? CredentialTypeKind { get; private set; }
+    [EnumMember(Value = "Dismantler Certificate")]
+    DISMANTLER_CERTIFICATE = 3
 }

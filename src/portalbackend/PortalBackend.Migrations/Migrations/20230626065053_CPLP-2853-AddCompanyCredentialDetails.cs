@@ -30,39 +30,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "credential_type_kinds",
-                schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false),
-                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_credential_type_kinds", x => x.id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "credential_types",
-                schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false),
-                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_credential_types", x => x.id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "use_case_descriptions",
                 schema: "portal",
                 columns: table => new
                 {
                     use_case_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    language_short_name = table.Column<string>(type: "character(255)", maxLength: 255, nullable: false),
-                    description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                    language_short_name = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
+                    description = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,118 +69,129 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "credential_type_assigned_kinds",
+                name: "verified_credential_type_kinds",
                 schema: "portal",
                 columns: table => new
                 {
-                    credential_type_id = table.Column<int>(type: "integer", nullable: false),
-                    credential_type_kind_id = table.Column<int>(type: "integer", nullable: false)
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_credential_type_assigned_kinds", x => new { x.credential_type_id, x.credential_type_kind_id });
-                    table.ForeignKey(
-                        name: "fk_credential_type_assigned_kinds_credential_type_kinds_creden",
-                        column: x => x.credential_type_kind_id,
-                        principalSchema: "portal",
-                        principalTable: "credential_type_kinds",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_credential_type_assigned_kinds_credential_types_credential_",
-                        column: x => x.credential_type_id,
-                        principalSchema: "portal",
-                        principalTable: "credential_types",
-                        principalColumn: "id");
+                    table.PrimaryKey("pk_verified_credential_type_kinds", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "company_credential_details",
+                name: "verified_credential_types",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_verified_credential_types", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "company_ssi_details",
                 schema: "portal",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    credential_type_id = table.Column<int>(type: "integer", nullable: false),
-                    use_case_participation_status_id = table.Column<int>(type: "integer", nullable: false),
+                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false),
+                    company_ssi_detail_status_id = table.Column<int>(type: "integer", nullable: false),
                     document_id = table.Column<Guid>(type: "uuid", nullable: false),
                     expiry_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_credential_details", x => x.id);
+                    table.PrimaryKey("pk_company_ssi_details", x => x.id);
                     table.ForeignKey(
-                        name: "fk_company_credential_details_companies_company_id",
+                        name: "fk_company_ssi_details_companies_company_id",
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_company_credential_details_credential_types_credential_type",
-                        column: x => x.credential_type_id,
-                        principalSchema: "portal",
-                        principalTable: "credential_types",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_company_credential_details_documents_document_id",
+                        name: "fk_company_ssi_details_documents_document_id",
                         column: x => x.document_id,
                         principalSchema: "portal",
                         principalTable: "documents",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_company_credential_details_use_case_participation_status_us",
-                        column: x => x.use_case_participation_status_id,
+                        name: "fk_company_ssi_details_use_case_participation_status_use_case_pa",
+                        column: x => x.company_ssi_detail_status_id,
                         principalSchema: "portal",
                         principalTable: "use_case_participation_status",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_ssi_details_verified_credential_types_verified_cred",
+                        column: x => x.verified_credential_type_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_types",
                         principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "credential_assigned_use_cases",
+                name: "verified_credential_type_assigned_kinds",
                 schema: "portal",
                 columns: table => new
                 {
-                    company_credential_detail_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false),
+                    verified_credential_type_kind_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_verified_credential_type_assigned_kinds", x => new { x.verified_credential_type_id, x.verified_credential_type_kind_id });
+                    table.ForeignKey(
+                        name: "fk_verified_credential_type_assigned_kinds_verified_credential",
+                        column: x => x.verified_credential_type_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_types",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_verified_credential_type_assigned_kinds_verified_credential1",
+                        column: x => x.verified_credential_type_kind_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_type_kinds",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "verified_credential_type_assigned_use_cases",
+                schema: "portal",
+                columns: table => new
+                {
+                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false),
                     use_case_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_credential_assigned_use_cases", x => new { x.company_credential_detail_id, x.use_case_id });
+                    table.PrimaryKey("pk_verified_credential_type_assigned_use_cases", x => new { x.verified_credential_type_id, x.use_case_id });
                     table.ForeignKey(
-                        name: "fk_credential_assigned_use_cases_company_credential_details_co",
-                        column: x => x.company_credential_detail_id,
-                        principalSchema: "portal",
-                        principalTable: "company_credential_details",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_credential_assigned_use_cases_use_cases_use_case_id",
+                        name: "fk_verified_credential_type_assigned_use_cases_use_cases_use_c",
                         column: x => x.use_case_id,
                         principalSchema: "portal",
                         principalTable: "use_cases",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_verified_credential_type_assigned_use_cases_verified_creden",
+                        column: x => x.verified_credential_type_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_types",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "credential_type_kinds",
+                table: "document_types",
                 columns: new[] { "id", "label" },
-                values: new object[,]
-                {
-                    { 1, "USE_CASE" },
-                    { 2, "CERTIFICATE" }
-                });
-
-            migrationBuilder.InsertData(
-                schema: "portal",
-                table: "credential_types",
-                columns: new[] { "id", "label" },
-                values: new object[,]
-                {
-                    { 1, "TRACEABILITY_FRAMEWORK" },
-                    { 2, "SUSTAINABILITY_FRAMEWORK" },
-                    { 3, "DISMANTLER_CERTIFICATE" }
-                });
+                values: new object[] { 14, "PRESENTATION" });
 
             migrationBuilder.InsertData(
                 schema: "portal",
@@ -219,63 +204,84 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 3, "INACTIVE" }
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "ix_company_credential_details_company_id",
+            migrationBuilder.InsertData(
                 schema: "portal",
-                table: "company_credential_details",
+                table: "verified_credential_type_kinds",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "USE_CASE" },
+                    { 2, "CERTIFICATE" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "verified_credential_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "Traceability Framework" },
+                    { 2, "Sustainability Framework" },
+                    { 3, "Dismantler Certificate" }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_ssi_details_company_id",
+                schema: "portal",
+                table: "company_ssi_details",
                 column: "company_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_company_credential_details_credential_type_id",
+                name: "ix_company_ssi_details_company_ssi_detail_status_id",
                 schema: "portal",
-                table: "company_credential_details",
-                column: "credential_type_id");
+                table: "company_ssi_details",
+                column: "company_ssi_detail_status_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_company_credential_details_document_id",
+                name: "ix_company_ssi_details_document_id",
                 schema: "portal",
-                table: "company_credential_details",
+                table: "company_ssi_details",
                 column: "document_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_company_credential_details_use_case_participation_status_id",
+                name: "ix_company_ssi_details_verified_credential_type_id",
                 schema: "portal",
-                table: "company_credential_details",
-                column: "use_case_participation_status_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_credential_assigned_use_cases_company_credential_detail_id",
-                schema: "portal",
-                table: "credential_assigned_use_cases",
-                column: "company_credential_detail_id",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_credential_assigned_use_cases_use_case_id",
-                schema: "portal",
-                table: "credential_assigned_use_cases",
-                column: "use_case_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_credential_type_assigned_kinds_credential_type_id",
-                schema: "portal",
-                table: "credential_type_assigned_kinds",
-                column: "credential_type_id",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_credential_type_assigned_kinds_credential_type_kind_id",
-                schema: "portal",
-                table: "credential_type_assigned_kinds",
-                column: "credential_type_kind_id");
+                table: "company_ssi_details",
+                column: "verified_credential_type_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_use_case_descriptions_language_short_name",
                 schema: "portal",
                 table: "use_case_descriptions",
                 column: "language_short_name");
-       
+
+            migrationBuilder.CreateIndex(
+                name: "ix_verified_credential_type_assigned_kinds_verified_credential",
+                schema: "portal",
+                table: "verified_credential_type_assigned_kinds",
+                column: "verified_credential_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_verified_credential_type_assigned_kinds_verified_credential1",
+                schema: "portal",
+                table: "verified_credential_type_assigned_kinds",
+                column: "verified_credential_type_kind_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_verified_credential_type_assigned_use_cases_use_case_id",
+                schema: "portal",
+                table: "verified_credential_type_assigned_use_cases",
+                column: "use_case_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_verified_credential_type_assigned_use_cases_verified_creden",
+                schema: "portal",
+                table: "verified_credential_type_assigned_use_cases",
+                column: "verified_credential_type_id",
+                unique: true);
+           
             migrationBuilder.Sql(@"CREATE FUNCTION portal.is_company_credential_detail_use_case(company_credential_detail_id UUID)
                 RETURNS BOOLEAN
                 LANGUAGE plpgsql
@@ -308,11 +314,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("DROP FUNCTION portal.is_company_credential_detail_use_case;");
 
             migrationBuilder.DropTable(
-                name: "credential_assigned_use_cases",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "credential_type_assigned_kinds",
+                name: "company_ssi_details",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -320,20 +322,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "company_credential_details",
+                name: "verified_credential_type_assigned_kinds",
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "credential_type_kinds",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "credential_types",
+                name: "verified_credential_type_assigned_use_cases",
                 schema: "portal");
 
             migrationBuilder.DropTable(
                 name: "use_case_participation_status",
                 schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "verified_credential_type_kinds",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "verified_credential_types",
+                schema: "portal");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 14);
         }
     }
 }

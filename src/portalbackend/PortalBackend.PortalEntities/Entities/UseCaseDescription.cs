@@ -26,23 +26,22 @@ public class UseCaseDescription
 {
     private UseCaseDescription()
     {
+        UseCaseId = default!;
         LanguageShortName = null!;
         Description = null!;
     }
 
-    public UseCaseDescription(Guid useCaseId, string languageShortName, string description) : this()
+    public UseCaseDescription(Guid useCaseId, string languageShortName) : this()
     {
         UseCaseId = useCaseId;
         LanguageShortName = languageShortName;
-        Description = description;
     }
 
     public Guid UseCaseId { get; private set; }
 
-    [MaxLength(255)]
-    public string LanguageShortName { get; set; }
+    [MaxLength(2)]
+    public string LanguageShortName { get; private set; }
 
-    [MaxLength(255)]
     public string Description { get; set; }
 
     // Navigation properties

@@ -20,9 +20,9 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum CredentialTypeId
+public enum CompanySsiDetailStatusId
 {
-    TRACEABILITY_FRAMEWORK = 1,
-    SUSTAINABILITY_FRAMEWORK = 2,
-    DISMANTLER_CERTIFICATE = 3
+    PENDING = 1,
+    ACTIVE = 2,
+    INACTIVE = 3
 }

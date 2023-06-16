@@ -20,7 +20,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum CredentialTypeKindId
+public enum VerifiedCredentialTypeKindId
 {
     USE_CASE = 1,
     CERTIFICATE = 2

@@ -24,7 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class CompanyCredentialDetailsRepository : ICompanyCredentialDetailsRepository
+public class CompanySsiDetailsRepository : ICompanyCredentialDetailsRepository
 {
     private readonly PortalDbContext _context;
 
@@ -32,24 +32,24 @@ public class CompanyCredentialDetailsRepository : ICompanyCredentialDetailsRepos
     /// Constructor.
     /// </summary>
     /// <param name="portalDbContext">Portal DB context.</param>
-    public CompanyCredentialDetailsRepository(PortalDbContext portalDbContext)
+    public CompanySsiDetailsRepository(PortalDbContext portalDbContext)
     {
         _context = portalDbContext;
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationForCompany(Guid companyId, string language) =>
-        _context.CompanyCredentialDetails
+        _context.CompanySsiDetails
             .Where(x =>
-                x.UseCaseParticipationStatusId != UseCaseParticipationStatusId.INACTIVE &&
+                x.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE &&
                 x.CompanyId == companyId &&
-                x.CredentialType!.CredentialTypeAssignedKind!.CredentialTypeKindId == CredentialTypeKindId.USE_CASE)
+                x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.USE_CASE)
             .Select(x => new UseCaseParticipation(
                     x.Id,
-                    x.CredentialTypeId,
-                    x.CredentialAssignedUseCase!.UseCase!.Name,
-                    x.CredentialAssignedUseCase!.UseCase.UseCaseDescriptions.Where(ucd => ucd.LanguageShortName == language).Select(ucd => ucd.Description).SingleOrDefault(),
-                    x.UseCaseParticipationStatusId,
+                    x.VerifiedCredentialTypeId,
+                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedUseCase!.UseCase!.Name,
+                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedUseCase.UseCase.UseCaseDescriptions.Where(ucd => ucd.LanguageShortName == language).Select(ucd => ucd.Description).SingleOrDefault(),
+                    x.CompanySsiDetailStatusId,
                     x.ExpiryDate,
                     new DocumentData(x.Document!.Id, x.Document!.DocumentName)
                 ))

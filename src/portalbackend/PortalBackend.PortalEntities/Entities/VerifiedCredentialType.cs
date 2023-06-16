@@ -18,30 +18,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CredentialTypeKind
+public class VerifiedCredentialType
 {
-    private CredentialTypeKind()
+    private VerifiedCredentialType()
     {
         Label = null!;
-        CredentialTypeAssignedKinds = new HashSet<CredentialTypeAssignedKind>();
+        CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
-    public CredentialTypeKind(CredentialTypeKindId credentialTypeKindId) : this()
+    public VerifiedCredentialType(VerifiedCredentialTypeId verifiedCredentialTypeId) : this()
     {
-        Id = credentialTypeKindId;
-        Label = credentialTypeKindId.ToString();
+        Id = verifiedCredentialTypeId;
+        Label = verifiedCredentialTypeId.GetEnumValue();
     }
 
-    public CredentialTypeKindId Id { get; private set; }
+    public VerifiedCredentialTypeId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }
 
-    // Navigation Properties
-    public virtual ICollection<CredentialTypeAssignedKind> CredentialTypeAssignedKinds { get; private set; }
+    // Navigation properties
+    public virtual VerifiedCredentialTypeAssignedKind? VerifiedCredentialTypeAssignedKind { get; set; }
+
+    public virtual VerifiedCredentialTypeAssignedUseCase? VerifiedCredentialTypeAssignedUseCase { get; private set; }
+
+    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

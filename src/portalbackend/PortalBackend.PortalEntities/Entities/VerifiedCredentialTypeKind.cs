@@ -18,24 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyCredentialDetail : IBaseEntity
+public class VerifiedCredentialTypeKind
 {
-    public Guid Id { get; set; }
-    public Guid CompanyId { get; set; }
-    public CredentialTypeId CredentialTypeId { get; set; }
-    public UseCaseParticipationStatusId UseCaseParticipationStatusId { get; set; }
-    public Guid DocumentId { get; set; }
-    public DateTimeOffset? ExpiryDate { get; set; }
+    private VerifiedCredentialTypeKind()
+    {
+        Label = null!;
+        VerifiedCredentialTypeAssignedKinds = new HashSet<VerifiedCredentialTypeAssignedKind>();
+    }
+
+    public VerifiedCredentialTypeKind(VerifiedCredentialTypeKindId verifiedCredentialTypeKindId) : this()
+    {
+        Id = verifiedCredentialTypeKindId;
+        Label = verifiedCredentialTypeKindId.ToString();
+    }
+
+    public VerifiedCredentialTypeKindId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
     // Navigation Properties
-    public virtual Company? Company { get; set; }
-    public virtual CredentialType? CredentialType { get; set; }
-    public virtual UseCaseParticipationStatus? UseCaseParticipationStatus { get; set; }
-    public virtual Document? Document { get; set; }
-    public virtual CredentialAssignedUseCase? CredentialAssignedUseCase { get; private set; }
+    public virtual ICollection<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; private set; }
 }

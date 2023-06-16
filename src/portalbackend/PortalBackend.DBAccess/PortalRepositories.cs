@@ -38,7 +38,7 @@ public class PortalRepositories : IPortalRepositories
         { typeof(IAppSubscriptionDetailRepository), context => new AppSubscriptionDetailRepository(context) },
         { typeof(IClientRepository), context => new ClientRepository(context) },
         { typeof(ICompanyRepository), context => new CompanyRepository(context) },
-        { typeof(ICompanyCredentialDetailsRepository), context => new CompanyCredentialDetailsRepository(context) },
+        { typeof(ICompanyCredentialDetailsRepository), context => new CompanySsiDetailsRepository(context) },
         { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
         { typeof(IConsentAssignedOfferSubscriptionRepository), context => new ConsentAssignedOfferSubscriptionRepository(context) },
         { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },

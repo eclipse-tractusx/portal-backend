@@ -18,11 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum UseCaseParticipationStatusId
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+
+public class CompanySsiDetail : IBaseEntity
 {
-    PENDING = 1,
-    ACTIVE = 2,
-    INACTIVE = 3
+    public Guid Id { get; set; }
+    public Guid CompanyId { get; set; }
+    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
+    public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
+    public Guid DocumentId { get; set; }
+    public DateTimeOffset? ExpiryDate { get; set; }
+
+    // Navigation Properties
+    public virtual Company? Company { get; set; }
+    public virtual VerifiedCredentialType? VerifiedCredentialType { get; set; }
+    public virtual UseCaseParticipationStatus? UseCaseParticipationStatus { get; set; }
+    public virtual Document? Document { get; set; }
 }

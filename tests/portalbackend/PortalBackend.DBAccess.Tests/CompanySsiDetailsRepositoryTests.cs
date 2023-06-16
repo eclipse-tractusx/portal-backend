@@ -23,12 +23,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
-public class CompanyCredentialDetailsRepositoryTests
+public class CompanySsiDetailsRepositoryTests
 {
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly Guid _validCompanyId = new("ac861325-bc54-4583-bcdc-9e9f2a38ff84");
 
-    public CompanyCredentialDetailsRepositoryTests(TestDbFixture testDbFixture)
+    public CompanySsiDetailsRepositoryTests(TestDbFixture testDbFixture)
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -58,9 +58,9 @@ public class CompanyCredentialDetailsRepositoryTests
 
     #endregion
 
-    private async Task<CompanyCredentialDetailsRepository> CreateSut()
+    private async Task<CompanySsiDetailsRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-        return new CompanyCredentialDetailsRepository(context);
+        return new CompanySsiDetailsRepository(context);
     }
 }

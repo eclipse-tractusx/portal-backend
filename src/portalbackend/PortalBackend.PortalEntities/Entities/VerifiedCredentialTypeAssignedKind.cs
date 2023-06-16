@@ -19,31 +19,29 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CredentialType
+public class VerifiedCredentialTypeAssignedKind
 {
-    private CredentialType()
+    public VerifiedCredentialTypeAssignedKind(VerifiedCredentialTypeId verifiedCredentialTypeId, VerifiedCredentialTypeKindId verifiedCredentialTypeKindId)
     {
-        Label = null!;
-        CompanyCredentialDetails = new HashSet<CompanyCredentialDetail>();
+        VerifiedCredentialTypeId = verifiedCredentialTypeId;
+        VerifiedCredentialTypeKindId = verifiedCredentialTypeKindId;
     }
 
-    public CredentialType(CredentialTypeId credentialTypeId) : this()
-    {
-        Id = credentialTypeId;
-        Label = credentialTypeId.ToString();
-    }
+    /// <summary>
+    /// Id of the credential type.
+    /// </summary>
+    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; private set; }
 
-    public CredentialTypeId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
+    /// <summary>
+    /// Id of the credential type kind.
+    /// </summary>
+    public VerifiedCredentialTypeKindId VerifiedCredentialTypeKindId { get; private set; }
 
     // Navigation properties
-    public virtual CredentialTypeAssignedKind? CredentialTypeAssignedKind { get; set; }
+    public virtual VerifiedCredentialType? VerifiedCredentialType { get; private set; }
 
-    public virtual ICollection<CompanyCredentialDetail> CompanyCredentialDetails { get; private set; }
+    public virtual VerifiedCredentialTypeKind? VerifiedCredentialTypeKind { get; private set; }
 }

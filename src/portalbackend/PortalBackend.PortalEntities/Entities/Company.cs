@@ -42,7 +42,7 @@ public class Company : IBaseEntity
         HostedConnectors = new HashSet<Connector>();
         CompanyIdentifiers = new HashSet<CompanyIdentifier>();
         CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-        CompanyCredentialDetails = new HashSet<CompanyCredentialDetail>();
+        CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
@@ -91,5 +91,5 @@ public class Company : IBaseEntity
     public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
     public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
     public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-    public virtual ICollection<CompanyCredentialDetail> CompanyCredentialDetails { get; private set; }
+    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

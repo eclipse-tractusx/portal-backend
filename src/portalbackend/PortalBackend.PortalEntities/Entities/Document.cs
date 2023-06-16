@@ -80,7 +80,7 @@ public class Document : IBaseEntity
     /// </summary>
     public virtual Connector? Connector { get; set; }
 
-    public virtual CompanyCredentialDetail? CompanyCredentialDetail { get; set; }
+    public virtual CompanySsiDetail? CompanySsiDetail { get; set; }
 
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }

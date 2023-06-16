@@ -18,20 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CredentialAssignedUseCase
+public class VerifiedCredentialTypeAssignedUseCase
 {
-    public CredentialAssignedUseCase(Guid companyCredentialDetailId, Guid useCaseId)
+    public VerifiedCredentialTypeAssignedUseCase(VerifiedCredentialTypeId verifiedCredentialTypeId, Guid useCaseId)
     {
-        CompanyCredentialDetailId = companyCredentialDetailId;
+        VerifiedCredentialTypeId = verifiedCredentialTypeId;
         UseCaseId = useCaseId;
     }
 
-    public Guid CompanyCredentialDetailId { get; set; }
+    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
     public Guid UseCaseId { get; set; }
 
     // Navigation Properties
-    public virtual CompanyCredentialDetail? CompanyCredentialDetail { get; set; }
+    public virtual VerifiedCredentialType? VerifiedCredentialType { get; set; }
     public virtual UseCase? UseCase { get; set; }
 }
