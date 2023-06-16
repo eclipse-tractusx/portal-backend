@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests;
@@ -40,6 +41,37 @@ public class ValidationTests
 
         [DistinctValues("x => x.Key")]
         public IEnumerable<KeyValuePair<string, string>> TypedProperty { get; set; } = new KeyValuePair<string, string>[] { };
+
+        [DistinctValues("x => x.Foo")]
+        public IEnumerable<KeyValuePair<string, string>> InvalidProperty { get; set; } = new KeyValuePair<string, string>[] { };
+    }
+
+    [Fact]
+    public void Distinct_ReturnsExpected()
+    {
+        // Arrange
+        var settings = new TestSettings()
+        {
+            StringProperty = new[] { "foo", "bar", "baz" },
+            TypedProperty = new[] {
+                new KeyValuePair<string, string>("foo", "value1"),
+                new KeyValuePair<string, string>("bar", "value2"),
+                new KeyValuePair<string, string>("baz", "value3")
+            }
+        };
+
+        var sut = new DistinctValuesValidation<TestSettings>("settings");
+
+        // Act
+        var result = sut.Validate("settings", settings);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
+            !r.Skipped &&
+            r.Succeeded &&
+            !r.Failed &&
+            r.FailureMessage == null
+        );
     }
 
     [Fact]
@@ -68,6 +100,30 @@ public class ValidationTests
             r.Failed &&
             r.FailureMessage == "DataAnnotation validation failed for members: 'StringProperty' with the error: 'foo are duplicate values for StringProperty.'.; DataAnnotation validation failed for members: 'TypedProperty' with the error: '[foo, value3] are duplicate values for TypedProperty.'."
         );
+    }
+
+    [Fact]
+    public void InvalidProperty_ThrowsExpected()
+    {
+        // Arrange
+        var settings = new TestSettings()
+        {
+            InvalidProperty = new[] {
+                new KeyValuePair<string, string>("foo", "value1"),
+                new KeyValuePair<string, string>("bar", "value2"),
+                new KeyValuePair<string, string>("foo", "value3")
+            }
+        };
+
+        var sut = new DistinctValuesValidation<TestSettings>("settings");
+        var Act = () => sut.Validate("settings", settings);
+
+        // Act
+        var result = Assert.Throws<UnexpectedConditionException>(Act);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<UnexpectedConditionException>(r =>
+            r.Message == "invalid selector x => x.Foo for type System.Collections.Generic.KeyValuePair`2[System.String,System.String]");
     }
 
     #endregion

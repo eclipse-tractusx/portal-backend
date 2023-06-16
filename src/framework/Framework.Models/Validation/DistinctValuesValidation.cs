@@ -18,12 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
@@ -75,7 +73,7 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
 
                 var duplicates = attribute.Selector == null
                     ? items.Duplicates()
-                    : GetGenericDuplicates(propertyInfo, attribute.Selector, items);
+                    : items.DuplicatesBy(x => attribute.Selector.ToSelectorDelegate(propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault() ?? throw new UnexpectedConditionException($"cannot get generic arguments of {propertyInfo.PropertyType}")).DynamicInvoke(x));
 
                 if (duplicates.Any())
                 {
@@ -89,16 +87,5 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
         return validationResults.Any() ?
             ValidateOptionsResult.Fail(validationResults.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'.")) :
             ValidateOptionsResult.Success;
-    }
-    private static IEnumerable<object> GetGenericDuplicates(PropertyInfo info, string selector, IEnumerable<object> items)
-    {
-        var genericType = info.PropertyType.GetGenericArguments().FirstOrDefault() ?? throw new UnexpectedConditionException($"cannot get generic arguments of {info.Name}");
-    
-        var genericMethod = typeof(CSharpScript).GetMethods().Where(method => method.Name == "EvaluateAsync" && method.IsGenericMethod).SingleOrDefault()?
-            .MakeGenericMethod(new [] { typeof(Func<,>).MakeGenericType(genericType, typeof(object)) }) ?? throw new UnexpectedConditionException($"unable to access method CSharpScript.EvaluateAsync for {genericType}");
-
-        var task = genericMethod.Invoke(null, new object?[] { selector, null, null, null, CancellationToken.None });
-        var selectorDelegate = task?.GetType().GetProperty("Result")?.GetGetMethod()?.Invoke(task, Array.Empty<object?>()) ?? throw new UnexpectedConditionException($"failed to evaluate selector {selector} of {info.Name}");
-        return items.DuplicatesBy(x => (selectorDelegate as Delegate)?.DynamicInvoke(x)) ?? throw new UnexpectedConditionException($"failed to execute DuplicatesBy on {items} using selector {selectorDelegate}");
     }
 }
