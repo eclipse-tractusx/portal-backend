@@ -32,6 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
+/// <param name="AppSubscriptionUrl">App Subscription Url</param>
 public record OfferSubscriptionDetailData(
     Guid Id,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
@@ -39,7 +40,8 @@ public record OfferSubscriptionDetailData(
     string CompanyName,
     string? Bpn,
     IEnumerable<string> Contact,
-    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
+    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
+    string? AppSubscriptionUrl
 );
 
 public record SubscriptionTechnicalUserData(

@@ -201,7 +201,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 OfferName = os.Offer!.Name,
                 os.OfferId,
                 os.OfferSubscriptionStatusId,
-                os.CompanyServiceAccounts
+                os.CompanyServiceAccounts,
+                os.AppSubscriptionDetail!.AppSubscriptionUrl
             })
             .Select(x => new ValueTuple<bool, bool, OfferSubscriptionDetailData>(
                 true,
@@ -213,7 +214,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.OtherCompany!.Name,
                     x.OtherCompany!.BusinessPartnerNumber,
                     x.OtherCompany.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
-                    x.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))))))
+                    x.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
+                    x.AppSubscriptionUrl)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

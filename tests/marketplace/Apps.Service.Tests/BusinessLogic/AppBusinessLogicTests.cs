@@ -547,7 +547,7 @@ public class AppBusinessLogicTests
         // Arrange
         var offerId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
-        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+        var data = _fixture.Create<AppProviderSubscriptionDetailData>();
         var settings = new AppsSettings
         {
             CompanyAdminRoles = new[]
@@ -555,7 +555,7 @@ public class AppBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(data);
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), null!);
 
