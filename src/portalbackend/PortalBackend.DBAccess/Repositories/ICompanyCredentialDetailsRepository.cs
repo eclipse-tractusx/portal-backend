@@ -18,24 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public interface ICompanyDataBusinessLogic
+public interface ICompanyCredentialDetailsRepository
 {
-    Task<CompanyAddressDetailData> GetCompanyDetailsAsync(Guid companyId);
-
-    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(Guid companyId);
-
-    Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId);
-
-    Task RemoveCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId);
-
-    IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(Guid companyId, string? languageShortName);
-
-    Task CreateCompanyRoleAndConsentAgreementDetailsAsync((Guid UserId, Guid CompanyId) identity, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
-
-    IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationAsync(Guid companyId, string language);
+    /// <summary>
+    /// Gets the company credential details for the given company id
+    /// </summary>
+    /// <param name="companyId">Id of the company</param>
+    /// <param name="language">language short code for the use case name</param>
+    /// <returns>AsyncEnumerable of UseCaseParticipation</returns>
+    IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationForCompany(Guid companyId, string language);
 }

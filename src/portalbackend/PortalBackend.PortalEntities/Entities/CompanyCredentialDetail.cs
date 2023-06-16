@@ -19,41 +19,23 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
-using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class UseCase : IBaseEntity
+public class CompanyCredentialDetail : IBaseEntity
 {
-    private UseCase()
-    {
-        Name = null!;
-        Shortname = null!;
-        Agreements = new HashSet<Agreement>();
-        CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-        Apps = new HashSet<Offer>();
-        UseCaseDescriptions = new HashSet<UseCaseDescription>();
-    }
+    public Guid Id { get; set; }
+    public Guid CompanyId { get; set; }
+    public CredentialTypeId CredentialTypeId { get; set; }
+    public UseCaseParticipationStatusId UseCaseParticipationStatusId { get; set; }
+    public Guid DocumentId { get; set; }
+    public DateTimeOffset? ExpiryDate { get; set; }
 
-    public UseCase(Guid id, string name, string shortname) : this()
-    {
-        Id = id;
-        Name = name;
-        Shortname = shortname;
-    }
-
-    public Guid Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Name { get; set; }
-
-    [MaxLength(255)]
-    public string Shortname { get; set; }
-
-    // Navigation properties
+    // Navigation Properties
+    public virtual Company? Company { get; set; }
+    public virtual CredentialType? CredentialType { get; set; }
+    public virtual UseCaseParticipationStatus? UseCaseParticipationStatus { get; set; }
+    public virtual Document? Document { get; set; }
     public virtual CredentialAssignedUseCase? CredentialAssignedUseCase { get; private set; }
-    public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-    public virtual ICollection<Offer> Apps { get; private set; }
-    public virtual ICollection<UseCaseDescription> UseCaseDescriptions { get; private set; }
 }

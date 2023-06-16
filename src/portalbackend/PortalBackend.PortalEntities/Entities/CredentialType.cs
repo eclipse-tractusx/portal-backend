@@ -18,42 +18,32 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class UseCase : IBaseEntity
+public class CredentialType
 {
-    private UseCase()
+    private CredentialType()
     {
-        Name = null!;
-        Shortname = null!;
-        Agreements = new HashSet<Agreement>();
-        CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-        Apps = new HashSet<Offer>();
-        UseCaseDescriptions = new HashSet<UseCaseDescription>();
+        Label = null!;
+        CompanyCredentialDetails = new HashSet<CompanyCredentialDetail>();
     }
 
-    public UseCase(Guid id, string name, string shortname) : this()
+    public CredentialType(CredentialTypeId credentialTypeId) : this()
     {
-        Id = id;
-        Name = name;
-        Shortname = shortname;
+        Id = credentialTypeId;
+        Label = credentialTypeId.ToString();
     }
 
-    public Guid Id { get; private set; }
+    public CredentialTypeId Id { get; private set; }
 
     [MaxLength(255)]
-    public string Name { get; set; }
-
-    [MaxLength(255)]
-    public string Shortname { get; set; }
+    public string Label { get; private set; }
 
     // Navigation properties
-    public virtual CredentialAssignedUseCase? CredentialAssignedUseCase { get; private set; }
-    public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-    public virtual ICollection<Offer> Apps { get; private set; }
-    public virtual ICollection<UseCaseDescription> UseCaseDescriptions { get; private set; }
+    public virtual CredentialTypeAssignedKind? CredentialTypeAssignedKind { get; set; }
+
+    public virtual ICollection<CompanyCredentialDetail> CompanyCredentialDetails { get; private set; }
 }

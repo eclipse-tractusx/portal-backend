@@ -190,4 +190,8 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         await _portalRepositories.SaveAsync();
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationAsync(Guid companyId, string language) =>
+        _portalRepositories.GetInstance<ICompanyCredentialDetailsRepository>().GetUseCaseParticipationForCompany(companyId, language);
 }

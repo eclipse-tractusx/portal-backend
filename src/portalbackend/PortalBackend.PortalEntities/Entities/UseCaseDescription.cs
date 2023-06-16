@@ -18,42 +18,34 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class UseCase : IBaseEntity
+public class UseCaseDescription
 {
-    private UseCase()
+    private UseCaseDescription()
     {
-        Name = null!;
-        Shortname = null!;
-        Agreements = new HashSet<Agreement>();
-        CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-        Apps = new HashSet<Offer>();
-        UseCaseDescriptions = new HashSet<UseCaseDescription>();
+        LanguageShortName = null!;
+        Description = null!;
     }
 
-    public UseCase(Guid id, string name, string shortname) : this()
+    public UseCaseDescription(Guid useCaseId, string languageShortName, string description) : this()
     {
-        Id = id;
-        Name = name;
-        Shortname = shortname;
+        UseCaseId = useCaseId;
+        LanguageShortName = languageShortName;
+        Description = description;
     }
 
-    public Guid Id { get; private set; }
+    public Guid UseCaseId { get; private set; }
 
     [MaxLength(255)]
-    public string Name { get; set; }
+    public string LanguageShortName { get; set; }
 
     [MaxLength(255)]
-    public string Shortname { get; set; }
+    public string Description { get; set; }
 
     // Navigation properties
-    public virtual CredentialAssignedUseCase? CredentialAssignedUseCase { get; private set; }
-    public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-    public virtual ICollection<Offer> Apps { get; private set; }
-    public virtual ICollection<UseCaseDescription> UseCaseDescriptions { get; private set; }
+    public virtual UseCase? UseCase { get; private set; }
+    public virtual Language? Language { get; private set; }
 }

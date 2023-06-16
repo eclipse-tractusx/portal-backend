@@ -152,4 +152,19 @@ public class CompanyDataControllerTests
         A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(new(_identity.UserId, _identity.CompanyId), companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task GetUseCaseParticipation_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "en"))
+            .Returns(_fixture.CreateMany<UseCaseParticipation>(5).ToAsyncEnumerable());
+
+        // Act
+        var result = await _controller.GetUseCaseParticipation().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "en")).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
 }

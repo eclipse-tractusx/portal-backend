@@ -37,6 +37,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IConsentRepository _consentRepository;
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly ILanguageRepository _languageRepository;
+    private readonly ICompanyCredentialDetailsRepository _companyCredentialDetailsRepository;
     private readonly CompanyDataBusinessLogic _sut;
 
     public CompanyDataBusinessLogicTests()
@@ -51,11 +52,13 @@ public class CompanyDataBusinessLogicTests
         _consentRepository = A.Fake<IConsentRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
+        _companyCredentialDetailsRepository = A.Fake<ICompanyCredentialDetailsRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>()).Returns(_companyRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyCredentialDetailsRepository>()).Returns(_companyCredentialDetailsRepository);
         _sut = new CompanyDataBusinessLogic(_portalRepositories);
     }
 
@@ -636,6 +639,24 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"UseCaseId {useCaseId} is not available");
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetUseCaseParticipationAsync
+
+    [Fact]
+    public async Task GetUseCaseParticipationAsync_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _companyCredentialDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en"))
+            .Returns(_fixture.CreateMany<UseCaseParticipation>(5).ToAsyncEnumerable());
+
+        // Act
+        var result = await _sut.GetUseCaseParticipationAsync(_identity.CompanyId, "en").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
     }
 
     #endregion

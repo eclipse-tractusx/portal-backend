@@ -156,4 +156,22 @@ public class CompanyDataController : ControllerBase
         await this.WithUserIdAndCompanyId(identity => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(identity, companyRoleConsentDetails));
         return NoContent();
     }
+
+    /// <summary>
+    /// Gets the UseCaseParticipations for the own company
+    /// </summary>
+    /// <returns>All UseCaseParticipations of the own company</returns>
+    /// <remarks>Example: Get: api/administration/companydata/useCaseParticipation</remarks>
+    /// <response code="204">Created the Companyrole and Consent details.</response>
+    /// <response code="409">companyRole already exists</response>
+    /// <response code="409">All agreement need to get signed</response>
+    [HttpGet]
+    [Authorize(Roles = "view_use_case_participation")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("useCaseParticipation")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipation([FromQuery] string language = "en") =>
+        this.WithCompanyId(companyId => _logic.GetUseCaseParticipationAsync(companyId, language));
 }
