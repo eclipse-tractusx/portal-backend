@@ -50,7 +50,7 @@ public class CompanySsiDetailsRepositoryTests
         var result = await sut.GetUseCaseParticipationForCompany(_validCompanyId, "en").ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(3);
+        result.Should().HaveCount(2);
         result.Where(x => x.Description != null).Should().HaveCount(2).And.Satisfy(
             x => x.Description == "Traceability",
             x => x.Description == "Sustainability & CO2-Footprint");
