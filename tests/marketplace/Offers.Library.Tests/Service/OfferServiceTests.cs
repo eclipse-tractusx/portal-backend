@@ -2097,9 +2097,9 @@ public class OfferServiceTests
     }
 
     #endregion
-    
+
     #region GetAppSubscriptionDetailForProvider
-    
+
     [Theory]
     [InlineData(OfferTypeId.APP)]
     public async Task GetAppSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException(OfferTypeId offerTypeId)

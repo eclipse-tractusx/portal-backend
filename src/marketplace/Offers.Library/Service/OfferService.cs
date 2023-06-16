@@ -787,7 +787,6 @@ public class OfferService : IOfferService
     public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
     {
         var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
-
         return new ProviderSubscriptionDetailData(
             details.Id,
             details.OfferSubscriptionStatus,
@@ -797,12 +796,11 @@ public class OfferService : IOfferService
             details.Contact,
             details.TechnicalUserData);
     }
-    
+
     /// <inheritdoc />
     public async Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
     {
         var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
-        
         return new AppProviderSubscriptionDetailData(
             details.Id,
             details.OfferSubscriptionStatus,
