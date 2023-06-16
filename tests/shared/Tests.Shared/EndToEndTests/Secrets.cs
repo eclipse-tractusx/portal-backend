@@ -11,10 +11,10 @@ public class Secrets
     public string TechUserPassword { get; set; }
     public string InterfaceHealthCheckTechUserName { get; set; }
     public string InterfaceHealthCheckTechUserPassword { get; set; }
-    
     public string InterfaceHealthCheckTechUserNameInt { get; set; }
-    
     public string InterfaceHealthCheckTechUserPasswordInt { get; set; }
+    public string TestPortalUserName { get; set; }
+    public string TestPortalUserPassword { get; set; }
 
     public Secrets()
     {
@@ -31,5 +31,7 @@ public class Secrets
         InterfaceHealthCheckTechUserPassword = authFlow["InterfaceHealthCheckTechUserPassword"];
         InterfaceHealthCheckTechUserNameInt = authFlow["InterfaceHealthCheckTechUserNameInt"];
         InterfaceHealthCheckTechUserPasswordInt = authFlow["InterfaceHealthCheckTechUserPasswordInt"];
+        TestPortalUserName = authFlow["TestPortalUserName"];
+        TestPortalUserPassword = authFlow["TestPortalUserPassword"];
     }
 }
