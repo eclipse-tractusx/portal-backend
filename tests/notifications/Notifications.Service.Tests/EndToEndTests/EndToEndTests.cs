@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Notifications.Service.Tests.EndToEndTests;
+using Notifications.Service.Tests.RestAssured;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -9,10 +9,8 @@ using Tests.Shared.RestAssured.AuthFlow;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Notifications.Service.Tests.RestAssured;
+namespace Notifications.Service.Tests.EndToEndTests;
 
-[TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
-    "Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests")]
 public class EndToEndTests
 {
     private static readonly string BaseUrl = TestResources.BaseUrl;
@@ -23,27 +21,19 @@ public class EndToEndTests
     private static string? _username;
     private static readonly string TechCompanyName = TestResources.TechCompanyName;
     private static readonly string OfferId = TestResources.NotificationOfferId;
-    private static readonly Secrets Secrets = new ();
+    private static readonly Secrets Secrets = new();
 
-    [Theory]
-    [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario_HappyPathAssignUnassignCoreUserRoles(TestDataModel testEntry)
+    [Fact]
+    public async Task Scenario_HappyPathAssignUnassignCoreUserRoles()
     {
         await GetTechUserToken();
         _companyUserId = GetCompanyUserId();
 
-        ModifyCoreUserRoles_AssignRole(testEntry.rolesToAssign);
-        ModifyCoreUserRoles_UnAssignRole(testEntry.rolesToUnAssign);
-    }
+        var assignedRoles = GetUserAssignedRoles();
+        var roleToModify = GetRandomRoleToModify(assignedRoles);
 
-    private static IEnumerable<object> GetDataEntries()
-    {
-        var testDataEntries = TestDataHelper.GetTestData();
-        if (testDataEntries == null) throw new Exception("No test data was found");
-        foreach (var t in testDataEntries)
-        {
-            yield return new object[] { t };
-        }
+        ModifyCoreUserRoles_AssignRole(assignedRoles, roleToModify);
+        ModifyCoreUserRoles_UnAssignRole(assignedRoles, roleToModify);
     }
 
     private async Task GetTechUserToken()
@@ -52,49 +42,56 @@ public class EndToEndTests
             await new AuthFlow(TechCompanyName).GetAccessToken(Secrets.TechUserName, Secrets.TechUserPassword);
     }
 
-    //PUT: api/administration/user/owncompany/users/{companyUserId}/coreoffers/{offerId}/roles
-    private void ModifyCoreUserRoles_AssignRole(List<string> rolesToAssign)
+    //GET: api/administration/user/owncompany/roles/coreoffers
+    private string GetRandomRoleToModify(List<string> assignedRoles)
     {
-        List<string>? assignedRoles = GetUserAssignedRoles();
-        List<string> newRoles = new List<string>();
-        foreach (var role in rolesToAssign.Where(role => !assignedRoles.Contains(role)))
+        var newRoles = new List<string>();
+
+        var existingRoles = GetCoreOfferRolesNames();
+        foreach (var t in existingRoles)
         {
-            assignedRoles.Add(role);
-            newRoles.Add(role);
+            newRoles.AddRange(from t1 in assignedRoles where t != t1 select t);
         }
 
-        var body = JsonSerializer.Serialize(assignedRoles);
-        // Given
-        Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_techUserToken}")
-            .When()
-            .Body(body)
-            .Put($"{BaseUrl}{AdminEndPoint}/user/owncompany/users/{_companyUserId}/coreoffers/{OfferId}/roles")
-            .Then()
-            .StatusCode(200)
-            .And()
-            .Extract()
-            .Response();
-
-        Assert.True(CheckNotificationCreated(_username, NotificationTypeId.ROLE_UPDATE_CORE_OFFER, newRoles,
-            new List<string>()));
+        return newRoles.ElementAt(new Random().Next(0, newRoles.Count - 1));
     }
 
-    private void ModifyCoreUserRoles_UnAssignRole(List<string> rolesToUnAssign)
+    [Fact]
+    private List<string> GetCoreOfferRolesNames()
     {
-        List<string>? assignedRoles = GetUserAssignedRoles();
-        foreach (var role in rolesToUnAssign.Where(role => assignedRoles.Contains(role)))
+        var response = Given()
+            .DisableSslCertificateValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_techUserToken}")
+            .When()
+            .Get($"{BaseUrl}{AdminEndPoint}/user/owncompany/roles/coreoffers")
+            .Then()
+            .StatusCode(200)
+            .And()
+            .Extract()
+            .Response();
+
+        var data = DeserializeData<List<OfferRoleInfos>>(response.Content.ReadAsStringAsync().Result);
+        if (data == null) throw new Exception("Cannot fetch core user roles");
+        var roleNames = new List<string>();
+        foreach (var offerRoleInfo in data.Where(t => t.OfferId.ToString() == OfferId))
         {
-            assignedRoles.Remove(role);
+            roleNames = offerRoleInfo.RoleInfos.Select(t => t.RoleText).ToList();
         }
+
+        return roleNames;
+    }
+
+    //PUT: api/administration/user/owncompany/users/{companyUserId}/coreoffers/{offerId}/roles
+    private void ModifyCoreUserRoles_AssignRole(List<string> assignedRoles, string roleToModify)
+    {
+        assignedRoles.Add(roleToModify);
 
         var body = JsonSerializer.Serialize(assignedRoles);
         // Given
         Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_techUserToken}")
@@ -107,15 +104,39 @@ public class EndToEndTests
             .Extract()
             .Response();
 
-        Assert.True(CheckNotificationCreated(_username, NotificationTypeId.ROLE_UPDATE_CORE_OFFER, new List<string>(),
-            rolesToUnAssign));
+        Assert.True(CheckNotificationCreated(_username, NotificationTypeId.ROLE_UPDATE_CORE_OFFER, roleToModify,
+            ""));
+    }
+
+    private void ModifyCoreUserRoles_UnAssignRole(List<string> assignedRoles, string roleToModify)
+    {
+        assignedRoles.Remove(roleToModify);
+
+        var body = JsonSerializer.Serialize(assignedRoles);
+        // Given
+        Given()
+            .DisableSslCertificateValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_techUserToken}")
+            .When()
+            .Body(body)
+            .Put($"{BaseUrl}{AdminEndPoint}/user/owncompany/users/{_companyUserId}/coreoffers/{OfferId}/roles")
+            .Then()
+            .StatusCode(200)
+            .And()
+            .Extract()
+            .Response();
+
+        Assert.True(CheckNotificationCreated(_username, NotificationTypeId.ROLE_UPDATE_CORE_OFFER, "",
+            roleToModify));
     }
 
     //GET: api/administration/user/ownUser
     private string GetCompanyUserId()
     {
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_techUserToken}")
@@ -137,7 +158,7 @@ public class EndToEndTests
     private List<string>? GetUserAssignedRoles()
     {
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_techUserToken}")
@@ -154,18 +175,16 @@ public class EndToEndTests
     }
 
     private bool CheckNotificationCreated(string username, NotificationTypeId notificationTypeId,
-        List<string> addedRoles,
-        List<string> removedRoles)
+        string addedRole,
+        string removedRole)
     {
-        // Given
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_techUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/?page=0&size=10&sorting=DateDesc")
-            // .Then()
             .StatusCode(200)
             .Extract()
             .Body("$.content");
@@ -173,11 +192,7 @@ public class EndToEndTests
 
         var notificationContent = DeserializeData<NotificationContent>(data.First().Content);
         return data.First().TypeId == notificationTypeId && notificationContent?.username == username &&
-               notificationContent.removedRoles.Split(",", StringSplitOptions.RemoveEmptyEntries).OrderBy(x => x)
-                   .SequenceEqual(removedRoles.OrderBy(x => x)) && notificationContent.addedRoles
-                   .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                   .OrderBy(x => x)
-                   .SequenceEqual(addedRoles.OrderBy(x => x));
+               notificationContent.addedRoles == addedRole && notificationContent.removedRoles == removedRole;
     }
 
     private T? DeserializeData<T>(string jsonString)
