@@ -1,44 +1,45 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Tests.Shared.EndToEndTests;
 using Tests.Shared.RestAssured.AuthFlow;
+using Xunit;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
+namespace EndToEnd.Tests;
 
+[TestCaseOrderer("EndToEnd.Tests.AlphabeticalOrderer",
+    "EndToEnd.Tests")]
 public class SystemHealthCheckEndPointTests
 {
     private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/administration";
     private static readonly Secrets Secrets = new();
-    private static string? _operatorToken;
-    private static readonly string OperatorCompanyName = TestResources.OperatorCompanyName;
+    private static string? _portalUserToken;
+    private static readonly string PortalUserCompanyName = TestResources.PortalUserCompanyName;
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter() }
     };
-
-    public async Task GetOperatorToken()
+    
+    [Fact]
+    public async Task Test0_Setup_GetToken()
     {
-        _operatorToken =
-            await new AuthFlow(OperatorCompanyName).GetAccessToken(Secrets.OperatorUserName,
-                Secrets.OperatorUserPassword);
+        _portalUserToken = await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
+            Secrets.PortalUserPassword);
     }
 
     // GET: /api/administration/staticdata/usecases
     [Fact]
-    public async Task GetUseCaseData_ReturnsExpectedResult()
+    public void Test1_GetUseCaseData_ReturnsExpectedResult()
     {
-        await GetOperatorToken();
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/staticdata/usecases")
             .Then()
@@ -52,14 +53,13 @@ public class SystemHealthCheckEndPointTests
 
     //     GET: /api/administration/staticdata/languagetags
     [Fact]
-    public async Task GetAppLanguageTags_ReturnsExpectedResult()
+    public void Test2_GetAppLanguageTags_ReturnsExpectedResult()
     {
-        await GetOperatorToken();
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/staticdata/languagetags")
             .Then()
@@ -73,14 +73,13 @@ public class SystemHealthCheckEndPointTests
 
     //     GET: /api/administration/staticdata/licenseType
     [Fact]
-    public async Task GetAllLicenseTypes_ReturnsExpectedResult()
+    public void Test3_GetAllLicenseTypes_ReturnsExpectedResult()
     {
-        await GetOperatorToken();
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/staticdata/licenseType")
             .Then()
@@ -94,14 +93,13 @@ public class SystemHealthCheckEndPointTests
 
     //     GET: api/administration/user/owncompany/users
     [Fact]
-    public async Task GetCompanyUserData_ReturnsExpectedResult()
+    public void Test4_GetCompanyUserData_ReturnsExpectedResult()
     {
-        await GetOperatorToken();
         var response = Given()
             . DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/user/owncompany/users?page=0&size=5")
             .Then()
@@ -115,14 +113,13 @@ public class SystemHealthCheckEndPointTests
     
     //     GET: api/administration/companydata/ownCompanyDetails
     [Fact]
-    public async Task GetOwnCompanyDetails_ReturnsExpectedResult()
+    public void Test5_GetOwnCompanyDetails_ReturnsExpectedResult()
     {
-        await GetOperatorToken();
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {_operatorToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/companydata/ownCompanyDetails")
             .Then()
