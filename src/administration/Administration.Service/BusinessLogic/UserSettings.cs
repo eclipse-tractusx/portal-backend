@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -41,13 +43,16 @@ public class UserSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<UserStatusId> CompanyUserStatusIds { get; set; } = null!;
 
     /// <summary>
     /// Company User Status Id
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> UserAdminRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> UserAdminRoles { get; set; } = null!;
 }
 
 public class UserSetting
@@ -80,6 +85,8 @@ public static class UserSettingsExtension
         services.AddOptions<UserSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
+            .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

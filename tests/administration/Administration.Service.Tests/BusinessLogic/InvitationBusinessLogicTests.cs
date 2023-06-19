@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -259,9 +260,9 @@ public class InvitationBusinessLogicTests
     private void SetupFakes()
     {
         A.CallTo(() => _options.Value).Returns(_fixture.Build<InvitationSettings>()
-            .With(x => x.InvitedUserInitialRoles, new Dictionary<string, IEnumerable<string>>
+            .With(x => x.InvitedUserInitialRoles, new[]
             {
-                { _fixture.Create<string>(), _fixture.CreateMany<string>() }
+                new UserRoleConfig(_fixture.Create<string>(), _fixture.CreateMany<string>())
             })
             .Create());
 

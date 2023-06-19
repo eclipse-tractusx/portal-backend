@@ -254,6 +254,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             {
                 app.SalesManagerId = appRequestModel.SalesManagerId;
             }
+
             app.ContactEmail = appRequestModel.ContactEmail;
             app.ContactNumber = appRequestModel.ContactNumber;
             app.MarketingUrl = appRequestModel.ProviderUri;

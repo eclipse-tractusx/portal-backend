@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
@@ -28,13 +30,15 @@ public class OfferSubscriptionsProcessSettings
     /// IT Admin Roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ItAdminRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ItAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Service Manager Roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; set; } = null!;
 
     /// <summary>
     /// BasePortalAddress url required for subscription email 

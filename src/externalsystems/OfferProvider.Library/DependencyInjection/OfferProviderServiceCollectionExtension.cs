@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
@@ -33,6 +34,7 @@ public static class OfferProviderServiceCollectionExtension
     {
         services.AddOptions<OfferProviderSettings>()
             .Bind(configuration.GetSection("OfferProvider"))
+            .ValidateDistinctValues()
             .ValidateOnStart();
         services.AddTransient<LoggingHandler<OfferProviderService>>();
 

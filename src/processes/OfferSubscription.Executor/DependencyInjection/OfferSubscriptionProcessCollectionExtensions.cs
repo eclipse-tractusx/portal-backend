@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -33,6 +34,7 @@ public static class OfferSubscriptionProcessCollectionExtensions
     {
         services.AddOptions<OfferSubscriptionsProcessSettings>()
             .Bind(config.GetSection("OfferSubscriptionProcess"))
+            .ValidateDistinctValues()
             .ValidateOnStart();
 
         return services

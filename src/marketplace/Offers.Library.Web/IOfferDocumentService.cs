@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
@@ -38,5 +39,5 @@ public interface IOfferDocumentService
     /// <param name="offerTypeId"></param>
     /// <param name="uploadDocumentTypeIdSettings"></param>
     /// <param name="cancellationToken"></param>
-    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, IDictionary<DocumentTypeId, IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken);
+    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, CancellationToken cancellationToken);
 }

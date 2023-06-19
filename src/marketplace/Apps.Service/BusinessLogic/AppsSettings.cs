@@ -18,7 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -34,13 +37,16 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<string, IEnumerable<string>> CatenaAdminRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> CatenaAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Notification Type Id
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -59,45 +65,56 @@ public class AppsSettings
     /// Sales Manager roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> SalesManagerRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> SalesManagerRoles { get; set; } = null!;
 
     /// <summary>
     /// Roles to notify when a new subscription was created
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; set; } = null!;
 
     /// <summary>
     /// Offer Status Id
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
+
     /// <summary>
     /// Active App Company Admin Roles
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ActiveAppCompanyAdminRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ActiveAppCompanyAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Active App Notification Type Id
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Approve App Notification Type Id
     /// </summary>
     /// <value></value>
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ApproveAppUserRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ApproveAppUserRoles { get; set; } = null!;
 
     /// <summary>
     /// Max page size for pagination
@@ -109,13 +126,16 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> AppImageDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// IT Admin Roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ITAdminRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ITAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// UserManagementAddress url required for subscription email 
@@ -127,19 +147,24 @@ public class AppsSettings
     /// Document Type Id to be deleted
     /// </summary>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Document Type Id to be deleted
     /// </summary>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> SubmitAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Document Type Id and ContentType to be uploaded
     /// </summary>
     [Required]
-    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds { get; set; } = null!;
+    [DistinctValues("x => x.DocumentTypeId")]
+    public IEnumerable<UploadDocumentConfig> UploadAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Client to get the technical user profile client
@@ -150,7 +175,8 @@ public class AppsSettings
     /// Company Admin Roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> CompanyAdminRoles { get; set; } = null!;
 }
 
 /// <summary>
@@ -168,6 +194,8 @@ public static class AppsSettingsExtension
         services.AddOptions<AppsSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
+            .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

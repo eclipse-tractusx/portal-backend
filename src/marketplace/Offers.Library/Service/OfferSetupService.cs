@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -74,7 +75,7 @@ public class OfferSetupService : IOfferSetupService
         _technicalUserProfileService = technicalUserProfileService;
     }
 
-    public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string, IEnumerable<string>> serviceManagerRoles)
+    public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IEnumerable<UserRoleConfig> itAdminRoles, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> serviceManagerRoles)
     {
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await GetAndValidateOfferDetails(data.RequestId, identity.CompanyId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
@@ -312,7 +313,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     private async Task CreateNotifications(
-        IDictionary<string, IEnumerable<string>> itAdminRoles,
+        IEnumerable<UserRoleConfig> itAdminRoles,
         OfferTypeId offerTypeId,
         OfferSubscriptionTransferData offerDetails,
         Guid userId)
@@ -352,7 +353,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     private async Task SetNotificationsToDone(
-        IDictionary<string, IEnumerable<string>> serviceManagerRoles,
+        IEnumerable<UserRoleConfig> serviceManagerRoles,
         OfferTypeId offerTypeId,
         Guid offerId,
         Guid? salesManagerId)
@@ -478,7 +479,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IEnumerable<UserRoleConfig> itAdminRoles)
     {
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetTechnicalUserCreationData(offerSubscriptionId)
@@ -523,7 +524,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, IDictionary<string, IEnumerable<string>> serviceManagerRoles, string basePortalAddress)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IEnumerable<UserRoleConfig> itAdminRoles, IEnumerable<UserRoleConfig> serviceManagerRoles, string basePortalAddress)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(false);

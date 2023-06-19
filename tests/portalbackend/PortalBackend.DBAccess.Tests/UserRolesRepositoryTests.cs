@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Xunit.Extensions.AssemblyFixture;
@@ -135,6 +136,49 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         data.Should().HaveCount(9);
         data.Should().OnlyHaveUniqueItems();
+    }
+
+    #endregion
+
+    #region GetUserRolesByClientId
+
+    [Fact]
+    public async Task GetUserRoleDataUntrackedAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var userRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        data.Should().HaveCount(1);
+        var clientData = data.Single();
+        clientData.ClientClientId.Should().Be("Cl1-CX-Registration");
+        clientData.UserRoleText.Should().Be("Company Admin");
+    }
+
+    [Fact]
+    public async Task GetUserRoleDataUntrackedAsync_WithNotMatchingClient_ReturnsEmpty()
+    {
+        // Arrange
+        var userRoleConfig = new[]{
+            new UserRoleConfig("not-existing-client", new []
+            {
+                "Company Admin"
+            })};
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        data.Should().BeEmpty();
     }
 
     #endregion

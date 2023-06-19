@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -475,7 +476,7 @@ public class OfferServiceTests
         SetupValidateSalesManager();
 
         //null Act
-        async Task Act() => await _sut.ValidateSalesManager(Guid.NewGuid(), _identity.CompanyId, new Dictionary<string, IEnumerable<string>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.ValidateSalesManager(Guid.NewGuid(), _identity.CompanyId, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -489,7 +490,7 @@ public class OfferServiceTests
         SetupValidateSalesManager();
 
         // Act
-        async Task Act() => await _sut.ValidateSalesManager(_differentCompanyUserId, _identity.CompanyId, new Dictionary<string, IEnumerable<string>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.ValidateSalesManager(_differentCompanyUserId, _identity.CompanyId, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -503,7 +504,7 @@ public class OfferServiceTests
         SetupValidateSalesManager();
 
         // Act
-        async Task Act() => await _sut.ValidateSalesManager(_noSalesManagerUserId, _identity.CompanyId, new Dictionary<string, IEnumerable<string>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.ValidateSalesManager(_noSalesManagerUserId, _identity.CompanyId, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -610,7 +611,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).Returns((OfferReleaseData?)null);
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(notExistingOffer, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(notExistingOffer, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, Enumerable.Empty<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -629,7 +630,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -657,7 +658,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>(), submitAppDocumentTypeIds).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), submitAppDocumentTypeIds).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -678,7 +679,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -738,10 +739,10 @@ public class OfferServiceTests
             });
 
         // Act
-        await _sut.SubmitOfferAsync(offerId, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE }).ConfigureAwait(false);
+        await _sut.SubmitOfferAsync(offerId, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE }).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, _identity.UserId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, false)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, _identity.UserId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, false)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid, Action<Document>?, Action<Document>)>>._)).MustHaveHappenedOnceExactly();
         initial.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
         modified.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED);
@@ -765,7 +766,7 @@ public class OfferServiceTests
         var sut = new OfferService(_portalRepositories, null!, null!, _offerSetupService);
 
         // Act
-        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -789,7 +790,7 @@ public class OfferServiceTests
         var sut = new OfferService(_portalRepositories, null!, null!, _offerSetupService);
 
         // Act
-        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -831,18 +832,18 @@ public class OfferServiceTests
         {
             NotificationTypeId.APP_RELEASE_APPROVAL
         };
-        var approveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        var approveAppUserRoles = new[]
         {
-            { "catenax-portal", new [] { "Sales Manager" } }
+            new UserRoleConfig("catenax-portal", new [] { "Sales Manager" })
         };
 
         //Act
-        await _sut.ApproveOfferRequestAsync(offer.Id, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        await _sut.ApproveOfferRequestAsync(offer.Id, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offer.Id, OfferTypeId.APP)).MustHaveHappened();
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappened();
         A.CallTo(() => _createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         offer.OfferStatusId.Should().Be(OfferStatusId.ACTIVE);
         offer.DateReleased.Should().NotBeNull();
@@ -874,13 +875,13 @@ public class OfferServiceTests
         {
             NotificationTypeId.APP_RELEASE_APPROVAL
         };
-        var approveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        var approveAppUserRoles = new[]
         {
-            { "catenax-portal", new [] { "Sales Manager" } }
+            new UserRoleConfig("catenax-portal", new [] { "Sales Manager" })
         };
 
         //Act
-        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>());
+        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>());
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -901,13 +902,13 @@ public class OfferServiceTests
         {
             NotificationTypeId.APP_RELEASE_APPROVAL
         };
-        var approveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        var approveAppUserRoles = new[]
         {
-            { "catenax-portal", new [] { "Sales Manager" } }
+            new UserRoleConfig("catenax-portal", new [] { "Sales Manager" })
         };
 
         //Act
-        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>());
+        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>());
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -928,7 +929,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).Returns((OfferReleaseData?)null);
 
         // Act
-        async Task Act() => await _sut.SubmitServiceAsync(notExistingOffer, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitServiceAsync(notExistingOffer, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -946,7 +947,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
 
         // Act
-        async Task Act() => await _sut.SubmitServiceAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitServiceAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1010,10 +1011,10 @@ public class OfferServiceTests
             });
 
         // Act
-        await _sut.SubmitServiceAsync(offerId, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        await _sut.SubmitServiceAsync(offerId, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, _identity.UserId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, A<bool?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, _identity.UserId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid, Action<Document>?, Action<Document>)>>._)).MustHaveHappenedOnceExactly();
         initial.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
         modified.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED);
@@ -1036,7 +1037,7 @@ public class OfferServiceTests
             .Returns(((string?, OfferStatusId, Guid?, IEnumerable<DocumentStatusData>))default);
 
         // Act
-        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1054,7 +1055,7 @@ public class OfferServiceTests
             .Returns(("test", OfferStatusId.CREATED, Guid.NewGuid(), documentStatusData));
 
         // Act
-        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1073,7 +1074,7 @@ public class OfferServiceTests
             .Returns(((string?)null, OfferStatusId.IN_REVIEW, Guid.NewGuid(), documentStatusDatas));
 
         // Act
-        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1092,7 +1093,7 @@ public class OfferServiceTests
             .Returns(("test", OfferStatusId.IN_REVIEW, null, documentStatusDatas));
 
         // Act
-        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1107,8 +1108,8 @@ public class OfferServiceTests
         // Arrange
         var offer = _fixture.Create<Offer>();
         var offerId = _fixture.Create<Guid>();
-        var recipients = new Dictionary<string, IEnumerable<string>>() { { "Test", new[] { "Abc" } } };
-        var roleIds = _fixture.Create<IEnumerable<Guid>>();
+        var recipients = new[] { new UserRoleConfig("Test", new[] { "Abc" }) };
+        var roleIds = _fixture.CreateMany<Guid>();
         var documentStatusDatas = new DocumentStatusData[]
         {
             new(Guid.NewGuid(), DocumentStatusId.LOCKED),
@@ -1122,7 +1123,7 @@ public class OfferServiceTests
                 initializeParemeters?.Invoke(offer);
                 setOptionalParameters.Invoke(offer);
             });
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, A<Guid>._))
             .Returns(new (string Email, string? Firstname, string? Lastname)[] { new("test@email.com", "Test User 1", "cx-user-2") }.ToAsyncEnumerable());
@@ -1149,12 +1150,12 @@ public class OfferServiceTests
             });
 
         // Act
-        await _sut.DeclineOfferAsync(offerId, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, recipients, string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        await _sut.DeclineOfferAsync(offerId, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, recipients, string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
         offer.OfferStatusId.Should().Be(OfferStatusId.CREATED);
@@ -2020,9 +2021,9 @@ public class OfferServiceTests
         // Arrange
         var offerId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
             {
-                {"ClientTest", new[] {"Wrong"}}
+                new UserRoleConfig("ClientTest", new[] {"Wrong"})
             };
 
         // Act
@@ -2041,9 +2042,9 @@ public class OfferServiceTests
         // Arrange
         var offerId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
             {
-                {"ClientTest", new[] {"Test"}}
+                new UserRoleConfig("ClientTest", new[] {"Test"})
             };
         SetupGetSubscriptionDetailForProvider();
 
@@ -2063,9 +2064,9 @@ public class OfferServiceTests
         // Arrange
         var identity = _fixture.Create<IdentityData>();
         var subscriptionId = Guid.NewGuid();
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
         {
-            {"ClientTest", new[] {"Test"}}
+            new UserRoleConfig("ClientTest", new[] {"Test"})
         };
         SetupGetSubscriptionDetailForProvider();
 
@@ -2083,9 +2084,9 @@ public class OfferServiceTests
     public async Task GetSubscriptionDetailForProvider_WithValidData_ReturnsExpected(OfferTypeId offerTypeId)
     {
         // Arrange
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
         {
-            {"ClientTest", new[] {"Test"}}
+            new UserRoleConfig("ClientTest", new[] {"Test"})
         };
         SetupGetSubscriptionDetailForProvider();
 
@@ -2155,7 +2156,7 @@ public class OfferServiceTests
     private void SetupValidateSalesManager()
     {
         var roleIds = _fixture.CreateMany<Guid>(2);
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetRolesForCompanyUser(A<Guid>._, A<IEnumerable<Guid>>._, A<Guid>.That.Matches(x => x == _companyUser.Id)))
             .Returns((true, roleIds));
@@ -2235,7 +2236,7 @@ public class OfferServiceTests
 
     private IAsyncEnumerator<Guid> SetupServices()
     {
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .Returns(new[] { _companyUser.Id }.AsFakeIAsyncEnumerable(out var createNotificationsResultAsyncEnumerator));
 
@@ -2247,7 +2248,7 @@ public class OfferServiceTests
         var data = new OfferSubscriptionDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, "Test App", "Stark Industry", "BPN123456789",
             new[] { "tony@stark.com", "steven@strange.com" }, _fixture.CreateMany<SubscriptionTechnicalUserData>(5));
 
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x.ContainsKey("ClientTest"))))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.Any(y => y.ClientId == "ClientTest"))))
             .Returns(new[] { _validUserRoleId }.ToAsyncEnumerable());
 
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsAsync(_existingServiceId, A<Guid>._, _identity.CompanyId, A<OfferTypeId>._, A<IEnumerable<Guid>>._, A<bool>._))

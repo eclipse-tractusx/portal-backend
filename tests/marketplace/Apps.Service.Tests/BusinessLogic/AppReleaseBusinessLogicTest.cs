@@ -26,6 +26,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
@@ -108,9 +109,9 @@ public class AppReleaseBusinessLogicTest
             {
                 NotificationTypeId.APP_RELEASE_REQUEST
             },
-            ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            ActiveAppCompanyAdminRoles = new[]
             {
-                { ClientId, new [] { "Company Admin" } }
+                new UserRoleConfig(ClientId, new [] { "Company Admin" })
             }
         };
 
@@ -134,7 +135,6 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<string>();
         var appUserRoles = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(role, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
 
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<Guid>.That.IsEqualTo(_identity.CompanyId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP)))
@@ -267,7 +267,7 @@ public class AppReleaseBusinessLogicTest
         await _sut.AddAppAsync(data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.ValidateSalesManager(_companyUser.Id, _identity.CompanyId, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.ValidateSalesManager(_companyUser.Id, _identity.CompanyId, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>.That.Matches(x => x.All(y => y.appId == offerId))))
@@ -320,7 +320,7 @@ public class AppReleaseBusinessLogicTest
         await _sut.AddAppAsync(data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<Guid>._, A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<Guid>._, A<IEnumerable<UserRoleConfig>>._)).MustNotHaveHappened();
         A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
@@ -481,8 +481,9 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
-        _settings.UploadAppDocumentTypeIds = new Dictionary<DocumentTypeId, IEnumerable<string>>{
-                { DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
+        _settings.UploadAppDocumentTypeIds = new[] {
+            new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" })
+        };
 
         // Act
         await _sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
@@ -508,7 +509,7 @@ public class AppReleaseBusinessLogicTest
                     _identity.UserId,
                     OfferTypeId.APP,
                     A<IEnumerable<NotificationTypeId>>._,
-                    A<IDictionary<string, IEnumerable<string>>>._, A<IEnumerable<DocumentTypeId>>._))
+                    A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<DocumentTypeId>>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -681,10 +682,10 @@ public class AppReleaseBusinessLogicTest
         // Assert
         A.CallTo(() => _offerService.DeclineOfferAsync(appId, _identity.UserId, data,
             OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION,
-            A<IDictionary<string, IEnumerable<string>>>._,
+            A<IEnumerable<UserRoleConfig>>._,
             A<string>._,
             A<IEnumerable<NotificationTypeId>>._,
-            A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+            A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -797,9 +798,9 @@ public class AppReleaseBusinessLogicTest
 
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP,
                 A<IEnumerable<NotificationTypeId>>._,
-                A<IDictionary<string, IEnumerable<string>>>._,
+                A<IEnumerable<UserRoleConfig>>._,
                 A<IEnumerable<NotificationTypeId>>._,
-                A<IDictionary<string, IEnumerable<string>>>._))
+                A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }
 

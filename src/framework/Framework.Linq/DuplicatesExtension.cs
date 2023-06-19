@@ -18,22 +18,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using System.ComponentModel.DataAnnotations;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-
-public class ValidateEnumValueAttribute : ValidationAttribute
+public static class DuplicatesExtension
 {
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    public static IEnumerable<T> Duplicates<T>(this IEnumerable<T> source)
     {
-        var type = value?.GetType();
-        if (type is null || !type.IsEnum)
+        var buffer = new HashSet<T>();
+        foreach (var t in source)
         {
-            throw new UnexpectedConditionException($"invalid use of attribute ValidateEnumValue: {validationContext.MemberName}, value {validationContext.ObjectInstance} is of type {validationContext.ObjectType} which is not an Enum-type");
+            if (!buffer.Add(t))
+            {
+                yield return t;
+            }
         }
-        return Array.BinarySearch(type.GetEnumValues(), value) < 0
-            ? new ValidationResult($"{value} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}")
-            : null;
+    }
+
+    public static IEnumerable<T> DuplicatesBy<T, S>(this IEnumerable<T> source, Func<T, S> selector)
+    {
+        var buffer = new HashSet<S>();
+        foreach (var t in source)
+        {
+            if (!buffer.Add(selector(t)))
+            {
+                yield return t;
+            }
+        }
     }
 }

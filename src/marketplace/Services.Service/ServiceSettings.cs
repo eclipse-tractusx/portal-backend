@@ -18,6 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -32,19 +37,24 @@ public class ServiceSettings
     public int ApplicationsMaxPageSize { get; init; }
 
     [Required]
-    public IDictionary<string, IEnumerable<string>> CatenaAdminRoles { get; init; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> CatenaAdminRoles { get; init; } = null!;
 
     [Required]
-    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; init; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; init; } = null!;
 
     [Required]
-    public IDictionary<string, IEnumerable<string>> SalesManagerRoles { get; init; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> SalesManagerRoles { get; init; } = null!;
 
     /// <summary>
     /// Notification Type Id
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -64,16 +74,20 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; init; } = null!;
 
     /// <summary>
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ApproveServiceUserRoles { get; init; } = null!;
 
     [Required]
-    public IDictionary<string, IEnumerable<string>> ITAdminRoles { get; init; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ITAdminRoles { get; init; } = null!;
 
     /// <summary>
     /// UserManagementAddress url required for subscription email 
@@ -86,6 +100,8 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -93,6 +109,8 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 
     /// <summary>
@@ -100,6 +118,8 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -112,11 +132,29 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadServiceDocumentTypeIds { get; set; } = null!;
+    [DistinctValues("x => x.DocumentTypeId")]
+    public IEnumerable<UploadDocumentConfig> UploadServiceDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Company Admin Roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> CompanyAdminRoles { get; set; } = null!;
+}
+
+public static class ServiceSettingsExtension
+{
+    public static IServiceCollection ConfigureServiceSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<ServiceSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues()
+            .ValidateOnStart();
+        return services;
+    }
 }

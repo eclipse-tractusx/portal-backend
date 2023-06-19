@@ -21,6 +21,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
@@ -32,28 +34,36 @@ public class TemplateSettings
     /// </summary>        
     public const string Position = "MailingService";
 
-    public Dictionary<string, TemplateSetting> Templates { get; set; } = null!;
+    [DistinctValues("x => x.Name")]
+    public IEnumerable<TemplateInfo> Templates { get; set; } = null!;
 
     public bool Validate()
     {
         var validation = new ConfigurationValidation<TemplateSettings>()
             .NotNull(Templates, () => nameof(Templates));
 
-        return Templates.Values.All(t =>
+        return Templates.Select(x => x.Setting).All(t =>
         {
             validation.NotNullOrWhiteSpace(t.Subject, () => nameof(t.Subject));
             if (t.Body == null)
             {
                 validation.NotNull(t.EmailTemplateType, () => nameof(t.EmailTemplateType));
             }
+
             if (!t.EmailTemplateType.HasValue)
             {
                 validation.NotNullOrWhiteSpace(t.Body, () => nameof(t.Body));
             }
+
             return true;
         });
     }
 }
+
+/// <summary>
+/// Configuration for templated emails that a service can send.
+/// </summary>
+public record TemplateInfo(string Name, TemplateSetting Setting);
 
 /// <summary>
 /// Configuration for templated emails that a service can send.

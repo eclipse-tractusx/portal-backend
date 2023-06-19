@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -64,9 +65,9 @@ public class OfferDocumentServiceTests
     public async Task UploadDocumentAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         // Arrange
-        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
+        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
+            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
+            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
         var documentId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var documents = new List<Document>();
@@ -101,9 +102,9 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var id = _fixture.Create<Guid>();
-        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
+        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
+            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
+            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns(((bool, bool, bool))default);
@@ -122,9 +123,9 @@ public class OfferDocumentServiceTests
     public async Task UploadDocumentAsync_EmptyId_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         // Arrange
-        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
+        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
+            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
+            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
@@ -142,9 +143,9 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var id = _fixture.Create<Guid>();
-        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
+        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
+            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
+            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
         var file = FormFileHelper.GetFormFile("this is just a test", "", "application/pdf");
 
         // Act
@@ -162,9 +163,9 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var id = _fixture.Create<Guid>();
-        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
+        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
+            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
+            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "text/csv");
 
         // Act
@@ -172,7 +173,7 @@ public class OfferDocumentServiceTests
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"Document type {documentTypeId} is not supported. File with contentType :{string.Join(",", uploadDocumentTypeIdSettings.Where(x => x.Key == documentTypeId).Select(x => x.Value).First())} are allowed.");
+        ex.Message.Should().Be($"Document type {documentTypeId} is not supported. File with contentType :{string.Join(",", uploadDocumentTypeIdSettings.Where(x => x.DocumentTypeId == documentTypeId).Select(x => x.MediaTypes).First())} are allowed.");
     }
 
     [Theory]
@@ -182,9 +183,9 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var id = _fixture.Create<Guid>();
-        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
+        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
+            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
+            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
@@ -192,7 +193,7 @@ public class OfferDocumentServiceTests
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"documentType must be either: {string.Join(",", uploadDocumentTypeIdSettings.Keys)}");
+        ex.Message.Should().Be($"documentType must be either: {string.Join(",", uploadDocumentTypeIdSettings.Select(x => x.DocumentTypeId))}");
     }
 
     [Theory]
@@ -203,9 +204,9 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var identity = _fixture.Create<IdentityData>();
-        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
+        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
+            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
+            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns((true, false, true));

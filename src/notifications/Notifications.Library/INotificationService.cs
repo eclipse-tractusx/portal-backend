@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -36,7 +37,7 @@ public interface INotificationService
     /// <param name="notifications">combination of notification types with content of the notification</param>
     /// <param name="companyId">Id of the company to select the receiver users from</param>
     /// <param name="done"><c>true</c> if the notification is done, <c>false</c> if its not done, otherwise <c>null</c></param>
-    IAsyncEnumerable<Guid> CreateNotifications(IDictionary<string, IEnumerable<string>> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, Guid companyId, bool? done = null);
+    IAsyncEnumerable<Guid> CreateNotifications(IEnumerable<UserRoleConfig> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, Guid companyId, bool? done = null);
 
     /// <summary>
     /// Creates notifications for the given notification type ids with the given content.
@@ -46,7 +47,7 @@ public interface INotificationService
     /// <param name="creatorId">ID of the creator company user</param>
     /// <param name="notifications">combination of notification types with content of the notification</param>
     /// <param name="done"><c>true</c> if the notification is done, <c>false</c> if its not done, otherwise <c>null</c></param>
-    Task CreateNotifications(IDictionary<string, IEnumerable<string>> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, bool? done = null);
+    Task CreateNotifications(IEnumerable<UserRoleConfig> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, bool? done = null);
 
     /// <summary>
     /// Sets the given notifications to done
@@ -54,5 +55,5 @@ public interface INotificationService
     /// <param name="roles">Roles of the receivers</param>
     /// <param name="notificationTypeIds">the notification types that should be set to done</param>
     /// <param name="offerId">Id of the offer</param>
-    Task SetNotificationsForOfferToDone(IDictionary<string, IEnumerable<string>> roles, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId, IEnumerable<Guid>? additionalCompanyUserIds = null);
+    Task SetNotificationsForOfferToDone(IEnumerable<UserRoleConfig> roles, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId, IEnumerable<Guid>? additionalCompanyUserIds = null);
 }

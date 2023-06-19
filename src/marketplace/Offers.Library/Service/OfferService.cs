@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -285,7 +286,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task ValidateSalesManager(Guid salesManagerId, Guid companyId, IDictionary<string, IEnumerable<string>> salesManagerRoles)
+    public async Task ValidateSalesManager(Guid salesManagerId, Guid companyId, IEnumerable<UserRoleConfig> salesManagerRoles)
     {
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(salesManagerRoles).ToListAsync().ConfigureAwait(false);
@@ -336,7 +337,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task SubmitOfferAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds)
+    public async Task SubmitOfferAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds)
     {
         var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
 
@@ -362,7 +363,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task SubmitServiceAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task SubmitServiceAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles)
     {
         var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
         await SubmitAppServiceAsync(offerId, userId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
@@ -379,7 +380,7 @@ public class OfferService : IOfferService
         return offerDetails;
     }
 
-    private async Task SubmitAppServiceAsync(Guid offerId, Guid userId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
+    private async Task SubmitAppServiceAsync(Guid offerId, Guid userId, IEnumerable<NotificationTypeId> notificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles, OfferReleaseData offerDetails)
     {
         GetAndValidateOfferDetails(offerDetails);
         var pendingDocuments = offerDetails.DocumentDatas.Where(data => data.StatusId == DocumentStatusId.PENDING);
@@ -446,7 +447,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task ApproveOfferRequestAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task ApproveOfferRequestAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IEnumerable<UserRoleConfig> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var offerDetails = await offerRepository.GetOfferStatusDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
@@ -505,7 +506,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task DeclineOfferAsync(Guid offerId, Guid userId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task DeclineOfferAsync(Guid offerId, Guid userId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IEnumerable<UserRoleConfig> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var declineData = await offerRepository.GetOfferDeclineDataAsync(offerId, offerType).ConfigureAwait(false);
@@ -562,17 +563,18 @@ public class OfferService : IOfferService
         await SendMail(notificationRecipients, declineData.OfferName, basePortalAddress, data.Message, declineData.CompanyId.Value);
     }
 
-    private async Task SendMail(IDictionary<string, IEnumerable<string>> receiverUserRoles, string offerName, string basePortalAddress, string message, Guid companyId)
+    private async Task SendMail(IEnumerable<UserRoleConfig> receiverRoles, string offerName, string basePortalAddress, string message, Guid companyId)
     {
+        var receiverUserRoles = receiverRoles;
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
             .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
         {
             throw new ConfigurationException(
-                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
         }
 
         var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
@@ -782,7 +784,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
+    public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
     {
         var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
         return new ProviderSubscriptionDetailData(
@@ -796,7 +798,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
+    public async Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
     {
         var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Subscriber);
         return new SubscriberSubscriptionDetailData(
@@ -809,7 +811,7 @@ public class OfferService : IOfferService
     }
 
     private async Task<OfferSubscriptionDetailData> GetOfferSubscriptionDetailsInternal(Guid offerId, Guid subscriptionId, Guid companyId,
-        OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles, OfferCompanyRole offerCompanyRole)
+        OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, OfferCompanyRole offerCompanyRole)
     {
         var userRoleIds = await ValidateRoleData(contactUserRoles).ConfigureAwait(false);
 
@@ -830,17 +832,18 @@ public class OfferService : IOfferService
         return details;
     }
 
-    private async Task<IEnumerable<Guid>> ValidateRoleData(IDictionary<string, IEnumerable<string>> userRoles)
+    private async Task<IEnumerable<Guid>> ValidateRoleData(IEnumerable<UserRoleConfig> userRoles)
     {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
             .GetUserRoleIdsUntrackedAsync(userRoles)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (roleData.Count < userRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        if (roleData.Count < userRoles.Select(x => x.UserRoleNames).Sum(clientRoles => clientRoles.Count()))
         {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", userRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", userRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
         }
+
         return roleData;
     }
 

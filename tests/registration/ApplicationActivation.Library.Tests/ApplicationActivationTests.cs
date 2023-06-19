@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -120,7 +121,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _dateTimeProvider.Now).Returns(new DateTime(2022, 01, 01, 12, 0, 0));
         _settings.StartTime = TimeSpan.FromHours(4);
         _settings.EndTime = TimeSpan.FromHours(8);
-        SetupFakes(new Dictionary<string, IEnumerable<string>>(), Enumerable.Empty<UserRoleData>(), companyUserAssignedRole, companyUserAssignedBusinessPartner);
+        SetupFakes(Enumerable.Empty<UserRoleConfig>(), Enumerable.Empty<UserRoleData>(), companyUserAssignedRole, companyUserAssignedBusinessPartner);
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
@@ -151,9 +152,9 @@ public class ApplicationActivationTests
     public async Task HandleApplicationActivation_WithNotAllStepsInDone_ThrowsConflictException()
     {
         var roles = new[] { "Company Admin" };
-        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+        var clientRoleNames = new[]
         {
-            { ClientId, roles.AsEnumerable() }
+            new UserRoleConfig(ClientId, roles.AsEnumerable())
         };
         var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
@@ -187,9 +188,9 @@ public class ApplicationActivationTests
     {
         //Arrange
         var roles = new[] { "Company Admin" };
-        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+        var clientRoleNames = new[]
         {
-            { ClientId, roles.AsEnumerable() }
+            new UserRoleConfig(ClientId, roles.AsEnumerable())
         };
         var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
@@ -267,9 +268,9 @@ public class ApplicationActivationTests
     {
         //Arrange
         var roles = new[] { "Company Admin" };
-        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+        var clientRoleNames = new[]
         {
-            { ClientId, roles.AsEnumerable() }
+            new UserRoleConfig(ClientId, roles.AsEnumerable())
         };
         var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
@@ -608,7 +609,7 @@ public class ApplicationActivationTests
     #region Setup
 
     private void SetupFakes(
-        IDictionary<string, IEnumerable<string>> clientRoleNames,
+        IEnumerable<UserRoleConfig> clientRoleNames,
         IEnumerable<UserRoleData> userRoleData,
         IdentityAssignedRole companyUserAssignedRole,
         CompanyUserAssignedBusinessPartner companyUserAssignedBusinessPartner)
@@ -627,9 +628,9 @@ public class ApplicationActivationTests
         var businessPartnerNumbers = new[] { BusinessPartnerNumber }.AsEnumerable();
 
         _settings.ApplicationApprovalInitialRoles = clientRoleNames;
-        _settings.CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        _settings.CompanyAdminRoles = new[]
         {
-            { ClientId, new[] { "Company Admin" }.AsEnumerable() }
+            new UserRoleConfig(ClientId, new[] { "Company Admin" }.AsEnumerable())
         };
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
@@ -653,21 +654,20 @@ public class ApplicationActivationTests
         A.CallTo(() => _applicationRepository.GetEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id)))
             .Returns(Enumerable.Empty<EmailData>().ToAsyncEnumerable());
 
-        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames[ClientId].First())))
+        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.First(y => y.ClientId == ClientId).UserRoleNames.First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
             .Returns(userRoleData.ToAsyncEnumerable());
-
-        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == _settings.CompanyAdminRoles[ClientId].First())))
+        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.First(y => y.ClientId == ClientId).UserRoleNames.First() == _settings.CompanyAdminRoles.First(x => x.ClientId == ClientId).UserRoleNames.First())))
             .Returns(new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
 
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id))
             .Returns(companyInvitedUsers);
 
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1.ToString(), clientRoleNames))
-            .Returns(clientRoleNames.Select(x => (Client: x.Key, Roles: x.Value)).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2.ToString(), clientRoleNames))
-            .Returns(clientRoleNames.Select(x => (Client: x.Key, Roles: x.Value)).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3.ToString(), clientRoleNames))
-            .Returns(clientRoleNames.Select(x => (Client: x.Key, Roles: x.Value)).ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1.ToString(), A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
+            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2.ToString(), A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
+            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3.ToString(), A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
+            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1.ToString(), businessPartnerNumbers))
             .Returns(Task.CompletedTask);
@@ -701,9 +701,9 @@ public class ApplicationActivationTests
             }
         }
 
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .ReturnsLazily((
-                IDictionary<string, IEnumerable<string>> _,
+                IEnumerable<UserRoleConfig> _,
                 Guid? creatorId,
                 IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
                 Guid _,

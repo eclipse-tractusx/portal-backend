@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -96,9 +97,9 @@ public class ServiceBusinessLogicTests
         var serviceSettings = new ServiceSettings
         {
             ApplicationsMaxPageSize = 15,
-            ITAdminRoles = new Dictionary<string, IEnumerable<string>>
+            ITAdminRoles = new[]
             {
-                {"Cl2-CX-Portal", new[] {"IT Admin"}}
+                new UserRoleConfig("Cl2-CX-Portal", new[] {"IT Admin"})
             },
             SubmitServiceNotificationTypeIds = new List<NotificationTypeId>
             {
@@ -154,9 +155,9 @@ public class ServiceBusinessLogicTests
             .Returns(offerSubscriptionId);
         var serviceSettings = new ServiceSettings
         {
-            ServiceManagerRoles = new Dictionary<string, IEnumerable<string>>
+            ServiceManagerRoles = new[]
             {
-                { "portal", new [] { "ServiceManager" }}
+                new UserRoleConfig("portal", new [] { "ServiceManager" })
             },
             BasePortalAddress = "https://base-portal-address-test.de"
         };
@@ -416,7 +417,7 @@ public class ServiceBusinessLogicTests
             "IT Manager"
         };
         var responseData = new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcSecret", "sa1"), new ClientInfoData(_fixture.Create<string>(), "http://www.google.com"));
-        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), A<OfferTypeId>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IEnumerable<UserRoleConfig>>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(responseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var settings = _fixture.Create<ServiceSettings>();
@@ -525,12 +526,12 @@ public class ServiceBusinessLogicTests
         var data = _fixture.Create<ProviderSubscriptionDetailData>();
         var settings = new ServiceSettings
         {
-            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            CompanyAdminRoles = new[]
             {
-                {"ClientTest", new[] {"Test"}}
+                new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
         var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(settings));
 
@@ -554,12 +555,12 @@ public class ServiceBusinessLogicTests
         var data = _fixture.Create<SubscriberSubscriptionDetailData>();
         var settings = new ServiceSettings
         {
-            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            CompanyAdminRoles = new[]
             {
-                {"ClientTest", new[] {"Test"}}
+                new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
         var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(settings));
 
@@ -677,8 +678,7 @@ public class ServiceBusinessLogicTests
             .Returns((ConsentDetailData?)null);
 
         var userRoleData = _fixture.CreateMany<UserRoleData>(3);
-        A.CallTo(
-                () => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(userRoleData.ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(A<Guid>.That.Matches(x => x == _existingServiceId)))

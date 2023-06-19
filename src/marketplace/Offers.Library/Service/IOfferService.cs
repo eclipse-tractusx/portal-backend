@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -120,7 +121,7 @@ public interface IOfferService
     /// <param name="companyId">id of current users company</param>
     /// <param name="salesManagerRoles">the sales manager roles</param>
     /// <returns>Returns the company id of the user</returns>
-    Task ValidateSalesManager(Guid salesManagerId, Guid companyId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
+    Task ValidateSalesManager(Guid salesManagerId, Guid companyId, IEnumerable<UserRoleConfig> salesManagerRoles);
 
     void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<LocalizedDescription> updateDescriptions, IEnumerable<LocalizedDescription> existingDescriptions);
 
@@ -137,7 +138,7 @@ public interface IOfferService
     /// <param name="submitOfferNotificationTypeIds"></param>
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task ApproveOfferRequestAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task ApproveOfferRequestAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IEnumerable<UserRoleConfig> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles);
 
     /// <summary>
     /// Update offer status and create notification for App 
@@ -149,7 +150,7 @@ public interface IOfferService
     /// <param name="catenaAdminRoles">Company Admin Roles</param>
     /// <param name="submitAppDocumentTypeIds">Document Type Id</param>
     /// <returns></returns>
-    Task SubmitOfferAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
+    Task SubmitOfferAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
 
     /// <summary>
     /// Declines the given offer
@@ -163,7 +164,7 @@ public interface IOfferService
     /// <param name="basePortalAddress">the base portal address</param>
     /// <param name="submitOfferNotificationTypeIds">the submit notification notification type ids</param>
     /// <param name="catenaAdminRoles">The catena x admin roles</param>
-    Task DeclineOfferAsync(Guid offerId, Guid userId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task DeclineOfferAsync(Guid offerId, Guid userId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IEnumerable<UserRoleConfig> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles);
 
     /// <summary>
     /// Deactivate the given offerStatus by offerId and offerType
@@ -182,7 +183,7 @@ public interface IOfferService
     /// <param name="notificationTypeIds"></param>
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task SubmitServiceAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task SubmitServiceAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles);
 
     /// <summary>
     /// Get offer Document Content for given offertypeId by Id
@@ -233,7 +234,7 @@ public interface IOfferService
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles);
 
     /// <summary>
     /// Gets the information for the subscription for the subscriber
@@ -244,7 +245,7 @@ public interface IOfferService
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles);
 
     /// <summary>
     /// Gets the information of company Subscribed, Subscription Status for user by OfferType

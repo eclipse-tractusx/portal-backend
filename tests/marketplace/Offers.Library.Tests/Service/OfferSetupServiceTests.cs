@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -33,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using UserRoleConfig = Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration.UserRoleConfig;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
@@ -140,9 +142,9 @@ public class OfferSetupServiceTests
             A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
                 .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) });
         }
-        var serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
+        var serviceManagerRoles = new[]
         {
-            { "Cl2-CX-Portal", new [] { "Service Manager" } }
+            new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
         };
 
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
@@ -168,9 +170,9 @@ public class OfferSetupServiceTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
         {
-            { "Cl2-CX-Portal", new [] { "IT Admin" } }
+            new UserRoleConfig("Cl2-CX-Portal", new [] { "IT Admin" })
         };
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
@@ -222,7 +224,7 @@ public class OfferSetupServiceTests
             : NotificationTypeId.SERVICE_REQUEST;
         notifications.Should().HaveCount(1);
         A.CallTo(() => _notificationService.SetNotificationsForOfferToDone(
-                A<IDictionary<string, IEnumerable<string>>>._,
+                A<IEnumerable<UserRoleConfig>>._,
                 A<IEnumerable<NotificationTypeId>>.That.Matches(x =>
                     x.Count() == 1 && x.Single() == notificationTypeId),
                 _existingServiceId,
@@ -263,14 +265,9 @@ public class OfferSetupServiceTests
 
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
             .Returns(new AppInstance(appInstanceId, _existingServiceId, clientId));
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            { "Cl2-CX-Portal", new [] { "IT Admin" } }
-        };
-        var serviceManagerAdminRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            { "Cl2-CX-Portal", new [] { "Service Manager" } }
-        };
+
+        var companyAdminRoles = Enumerable.Repeat(new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" }), 1);
+        var serviceManagerAdminRoles = Enumerable.Repeat(new UserRoleConfig("Cl2-CX-Portal", new[] { "Service Manager" }), 1);
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
@@ -287,13 +284,13 @@ public class OfferSetupServiceTests
     {
         // Arrange
         SetupAutoSetup();
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
         {
-            { "Cl2-CX-Portal", new [] { "IT Admin" } }
+            new UserRoleConfig("Cl2-CX-Portal", new [] { "IT Admin" })
         };
-        var serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
+        var serviceManagerRoles = new[]
         {
-            { "Cl2-CX-Portal", new [] { "Service Manager" } }
+            new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
         };
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
@@ -314,13 +311,13 @@ public class OfferSetupServiceTests
     {
         // Arrange
         SetupAutoSetup(isSingleInstance: true);
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
         {
-            { "Cl2-CX-Portal", new [] { "IT Admin" } }
+            new UserRoleConfig("Cl2-CX-Portal", new [] { "IT Admin" })
         };
-        var serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
+        var serviceManagerRoles = new[]
         {
-            { "Cl2-CX-Portal", new [] { "Service Manager" } }
+            new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
         };
 
         var data = new OfferAutoSetupData(_offerIdWithMultipleInstances, "https://new-url.com/");
@@ -344,7 +341,7 @@ public class OfferSetupServiceTests
             .Returns((OfferSubscriptionTransferData?)null);
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -361,7 +358,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_validSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -377,7 +374,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), (Guid.NewGuid(), Guid.NewGuid()), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), (Guid.NewGuid(), Guid.NewGuid()), OfferTypeId.SERVICE, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -1016,7 +1013,7 @@ public class OfferSetupServiceTests
             .Create();
         A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
             .Returns(data);
-        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()) });
@@ -1030,7 +1027,7 @@ public class OfferSetupServiceTests
                 serviceAccountData,
                 serviceAccountId,
                 userRoleData));
-        var itAdminRoles = new Dictionary<string, IEnumerable<string>> { { "Test", new[] { "AdminRoles" } } };
+        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
 
         // Act
         var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles).ConfigureAwait(false);
@@ -1041,7 +1038,7 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == NotificationTypeId.TECHNICAL_USER_CREATION), CompanyUserCompanyId, null))
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == NotificationTypeId.TECHNICAL_USER_CREATION), CompanyUserCompanyId, null))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -1094,8 +1091,8 @@ public class OfferSetupServiceTests
             {
                 subscriptionProcessData.Remove(subscriptionProcessData.Single(x => x.OfferSubscriptionId == id));
             });
-        var itAdminRoles = new Dictionary<string, IEnumerable<string>> { { "Test", new[] { "AdminRoles" } } };
-        var serviceManagerRoles = new Dictionary<string, IEnumerable<string>> { { "Test", new[] { "ServiceManagerRoles" } } };
+        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
+        var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "ServiceManagerRoles" }), 1);
 
         // Act
         var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/").ConfigureAwait(false);
@@ -1117,7 +1114,7 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), CompanyUserCompanyId, null))
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), CompanyUserCompanyId, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, notificationTypeId, false, A<Action<Notification>>._))
             .MustHaveHappenedOnceExactly();
@@ -1161,7 +1158,7 @@ public class OfferSetupServiceTests
                     new(Guid.NewGuid(), "client1", "role2"),
                 }));
 
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
 

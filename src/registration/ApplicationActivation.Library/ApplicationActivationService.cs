@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Dependen
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -113,6 +114,7 @@ public class ApplicationActivationService : IApplicationActivationService
         if (assignedRoles != null)
         {
             var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+                .ToDictionary(x => x.ClientId, x => x.UserRoleNames)
                 .Select(initialClientRoles => (
                     client: initialClientRoles.Key,
                     roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
@@ -152,8 +154,8 @@ public class ApplicationActivationService : IApplicationActivationService
     {
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-        var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles).ConfigureAwait(false);
+        var approvalInitialRoles = _settings.ApplicationApprovalInitialRoles;
+        var initialRolesData = await GetRoleData(userRolesRepository, approvalInitialRoles).ConfigureAwait(false);
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
         var invitedUsersData = applicationRepository
@@ -166,7 +168,7 @@ public class ApplicationActivationService : IApplicationActivationService
             }
 
             assignedRoles = await _provisioningManager
-                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
+                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
                 .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
                 .ConfigureAwait(false);
 
@@ -255,15 +257,15 @@ public class ApplicationActivationService : IApplicationActivationService
             throw new ConflictException($"user(s) {string.Join(",", failedUserNames)} has no assigned email");
     }
 
-    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
+    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleConfig> roles)
     {
         var roleData = await userRolesRepository
             .GetUserRoleDataUntrackedAsync(roles)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (roleData.Count < roles.Sum(clientRoles => clientRoles.Value.Count()))
+        if (roleData.Count < roles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
         {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", roles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", roles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
         }
 
         return roleData;

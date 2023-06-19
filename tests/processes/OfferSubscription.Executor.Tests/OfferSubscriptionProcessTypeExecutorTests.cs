@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -60,10 +61,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
         _settings = new OfferSubscriptionsProcessSettings
         {
             BasePortalAddress = "https://test.com",
-            ItAdminRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                { "Portal", new []{ "ItAdmin", "Admin" }}
-            },
+            ItAdminRoles = Enumerable.Repeat(new UserRoleConfig("Portal", new[] { "ItAdmin", "Admin" }), 1)
         };
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
             .Returns(_offerSubscriptionRepository);
@@ -332,9 +330,9 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION }, ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IEnumerable<UserRoleConfig>>._))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _offerSetupService.ActivateSubscription(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._))
+        A.CallTo(() => _offerSetupService.ActivateSubscription(_subscriptionId, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._, A<string>._))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerProviderBusinessLogic.TriggerProviderCallback(_subscriptionId, A<CancellationToken>._))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, true, null));

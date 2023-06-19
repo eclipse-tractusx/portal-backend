@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -469,9 +470,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (userCreationInfo.Roles.Any())
         {
-            var clientRoles = new Dictionary<string, IEnumerable<string>> {
-                { _settings.KeycloakClientID, userCreationInfo.Roles }
-            };
+            var clientRoles = new[] { new UserRoleConfig(_settings.KeycloakClientID, userCreationInfo.Roles) };
             userRoleDatas = await _userProvisioningService.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
         }
 
