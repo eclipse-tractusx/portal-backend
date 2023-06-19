@@ -2102,11 +2102,10 @@ public class OfferServiceTests
         // Arrange
         var offerId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                {"ClientTest", new[] {"Wrong"}}
-            };
-
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("ClientTest", new[] {"Test"})
+        };
         // Act
         async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
@@ -2121,10 +2120,10 @@ public class OfferServiceTests
         // Arrange
         var offerId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                {"ClientTest", new[] {"Test"}}
-            };
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("ClientTest", new[] {"Test"})
+        };
         SetupGetSubscriptionDetailForProvider();
 
         // Act
@@ -2141,9 +2140,9 @@ public class OfferServiceTests
         // Arrange
         var identity = _fixture.Create<IdentityData>();
         var subscriptionId = Guid.NewGuid();
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
         {
-            {"ClientTest", new[] {"Test"}}
+            new UserRoleConfig("ClientTest", new[] {"Test"})
         };
         SetupGetSubscriptionDetailForProvider();
 
@@ -2159,9 +2158,9 @@ public class OfferServiceTests
     public async Task GetAppSubscriptionDetailForProvider_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        var companyAdminRoles = new[]
         {
-            {"ClientTest", new[] {"Test"}}
+            new UserRoleConfig("ClientTest", new[] {"Test"})
         };
         SetupGetSubscriptionDetailForProvider();
 

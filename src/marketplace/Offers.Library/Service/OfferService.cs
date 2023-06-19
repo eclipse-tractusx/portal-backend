@@ -798,7 +798,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
+    public async Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
     {
         var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
         return new AppProviderSubscriptionDetailData(

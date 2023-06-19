@@ -267,5 +267,5 @@ public interface IOfferService
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
+    Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles);
 }
