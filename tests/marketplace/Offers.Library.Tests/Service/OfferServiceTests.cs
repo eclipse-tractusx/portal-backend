@@ -2013,9 +2013,8 @@ public class OfferServiceTests
 
     #region GetSubscriptionDetailForProvider
 
-    [Theory]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException()
     {
         // Arrange
         var offerId = Guid.NewGuid();
@@ -2026,16 +2025,15 @@ public class OfferServiceTests
             };
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
         ex.Message.Should().Contain("invalid configuration, at least one of the configured roles does not exist in the database:");
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task GetSubscriptionDetailForProvider_WithNotExistingOffer_ThrowsNotFoundException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithNotExistingOffer_ThrowsNotFoundException()
     {
         // Arrange
         var offerId = Guid.NewGuid();
@@ -2047,16 +2045,15 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {offerId} of type {offerTypeId} does not exist");
+        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {offerId} of type {OfferTypeId.SERVICE} does not exist");
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task GetSubscriptionDetailForProvider_WithUserNotInProvidingCompany_ThrowsForbiddenException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithUserNotInProvidingCompany_ThrowsForbiddenException()
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
@@ -2068,16 +2065,15 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(_existingServiceId, subscriptionId, identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(_existingServiceId, subscriptionId, identity.CompanyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Contain($"Company {identity.CompanyId} is not part of the Provider company");
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task GetSubscriptionDetailForProvider_WithValidData_ReturnsExpected(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithValidData_ReturnsExpected()
     {
         // Arrange
         var companyAdminRoles = new[]
@@ -2087,7 +2083,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        var result = await _sut.GetSubscriptionDetailsForProviderAsync(_existingServiceId, Guid.NewGuid(), _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        var result = await _sut.GetSubscriptionDetailsForProviderAsync(_existingServiceId, Guid.NewGuid(), _identity.CompanyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         result.Name.Should().Be("Test App");
@@ -2100,9 +2096,8 @@ public class OfferServiceTests
 
     #region GetAppSubscriptionDetailForProvider
 
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    public async Task GetAppSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException()
     {
         // Arrange
         var offerId = Guid.NewGuid();
@@ -2113,16 +2108,15 @@ public class OfferServiceTests
             };
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
         ex.Message.Should().Contain("invalid configuration, at least one of the configured roles does not exist in the database:");
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    public async Task GetAppSubscriptionDetailForProvider_WithNotExistingOffer_ThrowsNotFoundException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProvider_WithNotExistingOffer_ThrowsNotFoundException()
     {
         // Arrange
         var offerId = Guid.NewGuid();
@@ -2134,16 +2128,15 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {offerId} of type {offerTypeId} does not exist");
+        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {offerId} of type {OfferTypeId.APP} does not exist");
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    public async Task GetAppSubscriptionDetailForProvider_WithUserNotInProvidingCompany_ThrowsForbiddenException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProvider_WithUserNotInProvidingCompany_ThrowsForbiddenException()
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
@@ -2155,16 +2148,15 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(_existingServiceId, subscriptionId, identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(_existingServiceId, subscriptionId, identity.CompanyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Contain($"Company {identity.CompanyId} is not part of the Provider company");
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    public async Task GetAppSubscriptionDetailForProvider_WithValidData_ReturnsExpected(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProvider_WithValidData_ReturnsExpected()
     {
         // Arrange
         var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
@@ -2174,7 +2166,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        var result = await _sut.GetAppSubscriptionDetailsForProviderAsync(_existingServiceId, Guid.NewGuid(), _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        var result = await _sut.GetAppSubscriptionDetailsForProviderAsync(_existingServiceId, Guid.NewGuid(), _identity.CompanyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         result.Name.Should().Be("Test App");
