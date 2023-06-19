@@ -14,7 +14,7 @@ using Tests.Shared.RestAssured.AuthFlow;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
+namespace EndToEnd.Tests;
 
 public static class RegistrationEndpointHelper
 {
@@ -39,7 +39,7 @@ public static class RegistrationEndpointHelper
     {
         // Given
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -80,7 +80,7 @@ public static class RegistrationEndpointHelper
     public static void SetApplicationStatus(string applicationStatus)
     {
         var status = (int)Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -98,7 +98,7 @@ public static class RegistrationEndpointHelper
     public static string GetApplicationStatus()
     {
         var applicationStatus = (string)Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -116,7 +116,7 @@ public static class RegistrationEndpointHelper
     private static List<InvitedUser> GetInvitedUsers()
     {
         var invitedUsers = (List<InvitedUser>)Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -193,7 +193,7 @@ public static class RegistrationEndpointHelper
         var body = JsonSerializer.Serialize(newCompanyDetailData, JsonSerializerOptions);
 
         Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -224,7 +224,7 @@ public static class RegistrationEndpointHelper
             var body = JsonSerializer.Serialize(newCompanyDetailData, JsonSerializerOptions);
 
             Given()
-                .RelaxedHttpsValidation()
+                .DisableSslCertificateValidation()
                 .Header(
                     "authorization",
                     $"Bearer {_userCompanyToken}")
@@ -252,7 +252,7 @@ public static class RegistrationEndpointHelper
 
         SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
         var result = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -282,7 +282,7 @@ public static class RegistrationEndpointHelper
 
         if (GetApplicationStatus() != CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString()) throw new Exception($"Application status is not fitting to the pre-requisite");
         var result = (int)Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -307,7 +307,7 @@ public static class RegistrationEndpointHelper
     {
         if (GetApplicationStatus() != CompanyApplicationStatusId.VERIFY.ToString()) throw new Exception($"Application status is not fitting to the pre-requisite");
         var status = (bool)Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -328,7 +328,7 @@ public static class RegistrationEndpointHelper
     public static CompanyApplicationDetails? GetApplicationDetails(string userCompanyName)
     {
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
@@ -350,7 +350,7 @@ public static class RegistrationEndpointHelper
     {
         // Given
         var data = (CompanyDetailData)Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
@@ -374,7 +374,7 @@ public static class RegistrationEndpointHelper
         Thread.Sleep(20000);
 
         Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -415,7 +415,7 @@ public static class RegistrationEndpointHelper
                     Secrets.PortalUserPassword);
 
             Given()
-                .RelaxedHttpsValidation()
+                .DisableSslCertificateValidation()
                 .Header(
                     "authorization",
                     $"Bearer {_portalUserToken}")
@@ -462,7 +462,7 @@ public static class RegistrationEndpointHelper
     private static string GetFirstApplicationId()
     {
         var applicationIDs = (List<CompanyApplicationData>)Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_userCompanyToken}")
@@ -487,7 +487,7 @@ public static class RegistrationEndpointHelper
     private static List<CompanyRoleConsentViewData> GetCompanyRolesAndConsents()
     {
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")

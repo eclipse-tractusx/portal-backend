@@ -1,34 +1,40 @@
 ﻿using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Tests.Shared.EndToEndTests;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Tests;
+using Xunit;
 using static RestAssured.Dsl;
 
-public class ClearinghouseEndToEndTests
+namespace EndToEnd.Tests;
+
+[Trait("InterfacePartnerHealthCheck", "SdFactory")]
+public class SdFactoryEndpointTests
 {
-    private static readonly string BaseUrl = TestResources.ClearingHouseUrl;
-    private static readonly string EndPoint = "/api/v1/validation ";
+    private static readonly string BaseUrl = TestResources.SdFactoryBaseUrl;
+    private static readonly string EndPoint = "/api/rel3/selfdescription";
+    private static readonly string WalletBaseUrl = TestResources.WalletBaseUrl;
+    private static readonly string WalletEndPoint = "/api/wallets";
+    private static string? _interfaceHealthCheckTechUserToken;
+    private static string? _bpn;
 
     private static readonly Secrets Secrets = new ();
 
     [Fact]
-    public void ClearinghouseInterfaceHealthCheck_ReturnsExpectedResult()
+    public void InterfaceHealthCheckSdDocCreation_ReturnsExpectedResult()
     {
-        string? _interfaceHealthCheckTechUserToken = RetrieveHealthCheckTechUserToken();
-        var response = Given()
+        RetrieveHealthCheckTechUserToken();
+        Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_interfaceHealthCheckTechUserToken}")
             .When()
             .Body(
-                "{\"callbackUrl\":\"https://portal-backend.dev.demo.catena-x.net/api/administration/registration/clearinghouse\",\"participantDetails\":{\"name\":\"SmokeTest CH\",\"city\":\"Stuttgart\",\"street\":\"Test Street\",\"bpn\":\"BPNL000SMOKE0011\",\"region\":\"Bavaria\",\"zipCode\":\"01108\",\"country\":\"Germany\",\"countryAlpha2Code\":\"DE\"},\"identityDetails\":{\"did\":\"did:sov:RPgthNMDkVdzYQhXzahh3P\",\"uniqueIds\":[{\"type\":\"local\",\"value\":\"HB8272819\",}]}}")
+                "{\"externalId\": \"TestAutomation\",\"type\": \"LegalPerson\",\"holder\": \"BPNL000000000000\",\"issuer\": \"CAXSDUMMYCATENAZZ\",\"registrationNumber\": [{\"type\": \"local\",\"value\": \"o12345678\"}], \"headquarterAddress.country\": \"DE\",\"legalAddress.country\": \"DE\",\"bpn\": \"BPNL000000000000\"}")
             .Post($"{BaseUrl}{EndPoint}")
             .Then()
-            .StatusCode(200);
+            .StatusCode(202);
     }
-    
-    private string? RetrieveHealthCheckTechUserToken()
+
+    private void RetrieveHealthCheckTechUserToken()
     {
         var formData = new[]
         {
@@ -37,9 +43,9 @@ public class ClearinghouseEndToEndTests
             new KeyValuePair<string, string>("scope", "openid"),
             new KeyValuePair<string, string>("client_id", Secrets.InterfaceHealthCheckTechUserNameInt),
         };
-      
-      
-        var interfaceHealthCheckTechUserToken = Given()
+
+
+        _interfaceHealthCheckTechUserToken = Given()
             .ContentType("application/x-www-form-urlencoded")
             .FormData(formData)
             .When()
@@ -49,8 +55,5 @@ public class ClearinghouseEndToEndTests
             .And()
             .Extract()
             .Body("$.access_token").ToString();
-        return interfaceHealthCheckTechUserToken;
     }
 }
-
-

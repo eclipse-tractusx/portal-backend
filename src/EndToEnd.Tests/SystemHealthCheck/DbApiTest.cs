@@ -4,10 +4,11 @@ using Tests.Shared.RestAssured.AuthFlow;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
-[TestCaseOrderer("Registration.Service.Tests.EndToEndTests.AlphabeticalOrderer",
-    "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
+namespace EndToEnd.Tests;
+
+[TestCaseOrderer("EndToEnd.Tests.AlphabeticalOrderer",
+    "EndToEnd.Tests")]
 public class DbApiTest
 {
     private readonly string _baseUrl = TestResources.BaseUrl;
@@ -43,6 +44,8 @@ public class DbApiTest
         var data = response.Content.ReadAsStringAsync().Result;
         Assert.NotNull(data);
         Assert.NotEmpty(data);
+        
+        Thread.Sleep(2000);
     }
 
 
@@ -64,6 +67,8 @@ public class DbApiTest
         var data = response.Content.ReadAsStringAsync().Result;
         Assert.NotNull(data);
         Assert.NotEmpty(data);
+        
+        Thread.Sleep(2000);
     }
 
     [Fact]
@@ -83,6 +88,8 @@ public class DbApiTest
         var data = response.Content.ReadAsStringAsync().Result;
         Assert.NotNull(data);
         Assert.NotEmpty(data);
+        
+        Thread.Sleep(2000);
     }
 
     [Fact]
@@ -101,6 +108,8 @@ public class DbApiTest
         var data = response.Content.ReadAsStringAsync().Result;
         Assert.NotNull(data);
         Assert.NotEmpty(data);
+        
+        Thread.Sleep(2000);
     }
 
     #endregion

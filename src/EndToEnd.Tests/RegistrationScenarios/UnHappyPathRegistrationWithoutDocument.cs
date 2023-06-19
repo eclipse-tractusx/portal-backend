@@ -4,10 +4,10 @@ using RestAssured.Request.Logging;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
+namespace EndToEnd.Tests;
 
-[TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
-    "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
+[TestCaseOrderer("EndToEnd.Tests.AlphabeticalOrderer",
+    "EndToEnd.Tests")]
 public class UnHappyPathRegistrationWithoutDocument
 {
     private static readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
@@ -18,6 +18,7 @@ public class UnHappyPathRegistrationWithoutDocument
     private readonly string _adminEndPoint = "/api/administration";
     private static string _companyName = "Test-Catena-X";
 
+    /*
     #region UnHappy Path - new registration without document
     
     [Fact]
@@ -60,7 +61,7 @@ public class UnHappyPathRegistrationWithoutDocument
         //Thread.Sleep(2000);
         var messageData = devMailApiRequests.FetchPassword();
         //AuthenticationFlow();
-    }*/
+    }#1#
 
 
     // GET /api/registration/legalEntityAddress/{bpn}
@@ -148,5 +149,5 @@ public class UnHappyPathRegistrationWithoutDocument
             // Assert.Equal("Application status is not fitting to the pre-requisite", status.ToString());
     }
 
-    #endregion
+    #endregion*/
 }

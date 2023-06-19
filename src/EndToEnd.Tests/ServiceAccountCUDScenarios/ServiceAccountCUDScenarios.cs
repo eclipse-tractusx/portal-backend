@@ -1,23 +1,28 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using Castle.Core.Internal;
+using Xunit;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndToEndTests;
+namespace EndToEnd.Tests;
 
-[TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndToEndTests.AlphabeticalOrderer",
-    "Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests")]
+[TestCaseOrderer("EndToEnd.Tests.AlphabeticalOrderer",
+    "EndToEnd.Tests")]
 public class ServiceAccountCUDScenarios
 {
     
     private static List<Guid> _createdServiceAccountIds = new List<Guid>();
     
+    [Fact]
+    private async Task Scenario0_GetTechUserToken()
+    {
+        await AdministrationEndpointHelper.GetOperatorToken();
+    }
+    
     //Scenario - Create a new service account
     [Theory]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario1_HappyPathCreateServiceAccount(string[] permissions)
+    public void Scenario1_HappyPathCreateServiceAccount(string[] permissions)
     {
-        await AdministrationEndpointHelper.GetOperatorToken();
-
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -59,9 +64,8 @@ public class ServiceAccountCUDScenarios
     //Scenario - Create a new service account and update the same
     [Theory]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario2_HappyPathCreateAndUpdateServiceAccount(string[] permissions)
+    public void Scenario2_HappyPathCreateAndUpdateServiceAccount(string[] permissions)
     {
-        await AdministrationEndpointHelper.GetOperatorToken();
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -87,10 +91,8 @@ public class ServiceAccountCUDScenarios
     //Scenario - Create a new service account and update the credentials
     [Theory]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario3_HappyPathCreateServiceAccountAndUpdateCredentials(string[] permissions)
+    public void Scenario3_HappyPathCreateServiceAccountAndUpdateCredentials(string[] permissions)
     {
-        await AdministrationEndpointHelper.GetOperatorToken();
-
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -118,9 +120,8 @@ public class ServiceAccountCUDScenarios
     //Scenario - Create and delete a new service account
     [Theory]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario4_HappyPathCreateAndDeleteServiceAccount(string[] permissions)
+    public void Scenario4_HappyPathCreateAndDeleteServiceAccount(string[] permissions)
     {
-        await AdministrationEndpointHelper.GetOperatorToken();
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -153,9 +154,8 @@ public class ServiceAccountCUDScenarios
     }
 
     [Fact]
-    public async Task Scenario5_Cleanup_DeleteCreatedServiceAccounts()
+    public void Scenario5_Cleanup_DeleteCreatedServiceAccounts()
     {
-        await AdministrationEndpointHelper.GetOperatorToken();
         foreach (var t in _createdServiceAccountIds)
             AdministrationEndpointHelper.DeleteServiceAccount(t.ToString());
     }
@@ -193,7 +193,7 @@ public class ServiceAccountCUDScenarios
     
     private static IEnumerable<object> GetDataEntries()
     {
-        var testDataEntries = TestDataHelper.GetTestData("TestDataServiceAccountCUDScenarios.json");
+        var testDataEntries = TestDataHelper.GetTestDataForServiceAccountCUDScenarios("TestDataServiceAccountCUDScenarios.json");
         foreach (var t in testDataEntries)
         {
             yield return new object[] { t };

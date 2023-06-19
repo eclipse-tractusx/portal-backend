@@ -10,7 +10,7 @@ using Tests.Shared.EndToEndTests;
 using Tests.Shared.RestAssured.AuthFlow;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndToEndTests;
+namespace EndToEnd.Tests;
 
 public static class AdministrationEndpointHelper
 {
@@ -38,7 +38,7 @@ public static class AdministrationEndpointHelper
         var serviceAccounts = new List<CompanyServiceAccountData>();
 
         var totalPagesStr = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
@@ -55,7 +55,7 @@ public static class AdministrationEndpointHelper
         for (var i = 0; i < totalPages; i++)
         {
             var response = Given()
-                .RelaxedHttpsValidation()
+                .DisableSslCertificateValidation()
                 .Header(
                     "authorization",
                     $"Bearer {_portalUserToken}")
@@ -89,7 +89,7 @@ public static class AdministrationEndpointHelper
         var serviceAccountCreationInfo =
             new ServiceAccountCreationInfo(techUserName, description, IamClientAuthMethod.SECRET, userRoleIds);
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
@@ -108,7 +108,7 @@ public static class AdministrationEndpointHelper
     public static void DeleteServiceAccount(string serviceAccountId)
     {
         Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
@@ -130,7 +130,7 @@ public static class AdministrationEndpointHelper
                 serviceAccountDetails.IamClientAuthMethod);
 
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
@@ -149,7 +149,7 @@ public static class AdministrationEndpointHelper
     public static ServiceAccountDetails? ResetServiceAccountCredentialsById(string serviceAccountId)
     {
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
@@ -167,7 +167,7 @@ public static class AdministrationEndpointHelper
     public static ServiceAccountDetails? GetServiceAccountDetailsById(string serviceAccountId)
     {
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
@@ -185,7 +185,7 @@ public static class AdministrationEndpointHelper
     private static List<UserRoleWithDescription>? GetAllServiceAccountRoles()
     {
         var response = Given()
-            .RelaxedHttpsValidation()
+            .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")

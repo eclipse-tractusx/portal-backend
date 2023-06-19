@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Notifications.Service.Tests.RestAssured;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -9,9 +8,9 @@ using Tests.Shared.RestAssured.AuthFlow;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Notifications.Service.Tests.EndToEndTests;
+namespace EndToEnd.Tests;
 
-public class EndToEndTests
+public class ModifyCoreUserRoleScenario
 {
     private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/notification";
@@ -56,7 +55,6 @@ public class EndToEndTests
         return newRoles.ElementAt(new Random().Next(0, newRoles.Count - 1));
     }
 
-    [Fact]
     private List<string> GetCoreOfferRolesNames()
     {
         var response = Given()

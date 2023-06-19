@@ -1,12 +1,13 @@
 ﻿using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Tests.Shared.EndToEndTests;
+using Xunit;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
+namespace EndToEnd.Tests;
 
+[Trait("InterfacePartnerHealthCheck", "Wallet")]
 public class WalletEndpointTests
 {
-    private static readonly string BaseUrl = TestResources.SdFactoryBaseUrl;
     private static readonly string EndPoint = "/api/rel3/selfdescription";
     private static readonly string WalletBaseUrl = TestResources.WalletBaseUrl;
     private static readonly string WalletEndPoint = "/api/wallets";

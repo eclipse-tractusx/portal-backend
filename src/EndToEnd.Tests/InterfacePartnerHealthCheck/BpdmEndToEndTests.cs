@@ -1,9 +1,11 @@
 ﻿using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Tests.Shared.EndToEndTests;
+using Xunit;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
+namespace EndToEnd.Tests;
 
+[Trait("InterfacePartnerHealthCheck", "BPDM")]
 public class BpdmEndToEndTests
 {
     private static readonly string BaseUrl = TestResources.BaseUrl;

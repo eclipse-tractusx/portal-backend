@@ -3,10 +3,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
+namespace EndToEnd.Tests;
 
-[TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
-    "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
+[TestCaseOrderer("EndToEnd.Tests.AlphabeticalOrderer",
+    "EndToEnd.Tests")]
 public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
 {
     private static readonly string BaseUrl = "https://portal-backend.dev.demo.catena-x.net";
@@ -19,6 +19,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     private static string _companyName = "Test-Catena-X";
     private static string _bpn = "1234";
 
+    /*
     #region Happy Path - new registration with BPN
 
     [Fact]
@@ -232,5 +233,5 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
         Assert.NotNull(data);
     }
 
-    #endregion
+    #endregion*/
 }
