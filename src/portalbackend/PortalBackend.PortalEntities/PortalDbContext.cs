@@ -84,7 +84,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
-    public virtual DbSet<CompanySsiDetail> CompanySsiDetails { get; set; } = default!;
     public virtual DbSet<CompanyIdentifier> CompanyIdentifiers { get; set; } = default!;
     public virtual DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
     public virtual DbSet<CompanyRoleAssignedRoleCollection> CompanyRoleAssignedRoleCollections { get; set; } = default!;
@@ -92,6 +91,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccount> CompanyServiceAccounts { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccountType> CompanyServiceAccountTypes { get; set; } = default!;
+    public virtual DbSet<CompanySsiDetail> CompanySsiDetails { get; set; } = default!;
+    public virtual DbSet<CompanySsiDetailStatus> CompanySsiDetailStatuses { get; set; } = default!;
     public virtual DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
@@ -150,12 +151,13 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UniqueIdentifier> UniqueIdentifiers { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
     public virtual DbSet<UseCaseDescription> UseCaseDescriptions { get; set; } = default!;
-    public virtual DbSet<UseCaseParticipationStatus> UseCaseParticipationStatus { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
     public virtual DbSet<UserRoleAssignedCollection> UserRoleAssignedCollections { get; set; } = default!;
     public virtual DbSet<UserRoleCollection> UserRoleCollections { get; set; } = default!;
     public virtual DbSet<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialExternalType> VerifiedCredentialExternalTypes { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialExternalTypeUseCaseDetail> VerifiedCredentialExternalTypeUseCaseDetails { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialType> VerifiedCredentialTypes { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeKind> VerifiedCredentialTypeKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; set; } = default!;
@@ -1190,9 +1192,14 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(t => t.VerifiedCredentialTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(c => c.UseCaseParticipationStatus)
+            entity.HasOne(c => c.CompanySsiDetailStatus)
                 .WithMany(c => c.CompanySsiDetails)
                 .HasForeignKey(t => t.CompanySsiDetailStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(c => c.VerifiedCredentialExternalTypeUseCaseDetail)
+                .WithMany(c => c.CompanySsiDetails)
+                .HasForeignKey(t => t.VerifiedCredentialExternalTypeUseCaseDetailId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(t => t.Document)
@@ -1228,11 +1235,11 @@ public class PortalDbContext : DbContext
                     .Select(e => new VerifiedCredentialTypeKind(e))
             );
 
-        modelBuilder.Entity<UseCaseParticipationStatus>()
+        modelBuilder.Entity<CompanySsiDetailStatus>()
             .HasData(
                 Enum.GetValues(typeof(CompanySsiDetailStatusId))
                     .Cast<CompanySsiDetailStatusId>()
-                    .Select(e => new UseCaseParticipationStatus(e))
+                    .Select(e => new CompanySsiDetailStatus(e))
             );
 
         modelBuilder.Entity<VerifiedCredentialTypeAssignedKind>(entity =>
@@ -1251,6 +1258,25 @@ public class PortalDbContext : DbContext
 
             entity.HasIndex(x => x.VerifiedCredentialTypeId)
                 .IsUnique(false);
+        });
+
+        modelBuilder.Entity<VerifiedCredentialExternalType>(entity =>
+        {
+            entity.HasOne(d => d.VerifiedCredentialType)
+                .WithOne(x => x.VerifiedCredentialExternalType)
+                .HasForeignKey<VerifiedCredentialExternalType>(d => d.VerifiedCredentialTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<VerifiedCredentialExternalTypeUseCaseDetail>(entity =>
+        {
+            entity.HasOne(d => d.VerifiedCredentialExternalType)
+                .WithMany(x => x.VerifiedCredentialExternalTypeUseCaseDetails)
+                .HasForeignKey(d => d.VerifiedCredentialExternalTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version })
+                .IsUnique(true);
         });
     }
 }

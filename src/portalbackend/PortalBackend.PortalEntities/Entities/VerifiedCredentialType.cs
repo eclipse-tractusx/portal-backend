@@ -44,6 +44,7 @@ public class VerifiedCredentialType
     public string Label { get; private set; }
 
     // Navigation properties
+    public virtual VerifiedCredentialExternalType? VerifiedCredentialExternalType { get; private set; }
     public virtual VerifiedCredentialTypeAssignedKind? VerifiedCredentialTypeAssignedKind { get; set; }
 
     public virtual VerifiedCredentialTypeAssignedUseCase? VerifiedCredentialTypeAssignedUseCase { get; private set; }

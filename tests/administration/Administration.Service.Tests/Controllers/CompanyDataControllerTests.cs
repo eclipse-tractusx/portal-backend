@@ -157,14 +157,29 @@ public class CompanyDataControllerTests
     public async Task GetUseCaseParticipation_WithValidRequest_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "en"))
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null))
             .Returns(_fixture.CreateMany<UseCaseParticipation>(5).ToAsyncEnumerable());
 
         // Act
-        var result = await _controller.GetUseCaseParticipation().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetUseCaseParticipation(null).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "en")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetUseCaseParticipation_WithLanguageExplicitlySet_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de"))
+            .Returns(_fixture.CreateMany<UseCaseParticipation>(5).ToAsyncEnumerable());
+
+        // Act
+        var result = await _controller.GetUseCaseParticipation("de").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de")).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 }

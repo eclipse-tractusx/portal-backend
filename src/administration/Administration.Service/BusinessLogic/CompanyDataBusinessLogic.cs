@@ -192,6 +192,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationAsync(Guid companyId, string language) =>
-        _portalRepositories.GetInstance<ICompanyCredentialDetailsRepository>().GetUseCaseParticipationForCompany(companyId, language);
+    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationAsync(Guid companyId, string? language) =>
+        _portalRepositories.GetInstance<ICompanyCredentialDetailsRepository>().GetUseCaseParticipationForCompany(companyId, language ?? Constants.DefaultLanguage);
 }

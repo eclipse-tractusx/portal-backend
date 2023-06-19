@@ -167,7 +167,7 @@ public class CompanyDataController : ControllerBase
     [Authorize(Roles = "view_use_case_participation")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("useCaseParticipation")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseParticipation>), StatusCodes.Status204NoContent)]
-    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipation([FromQuery] string language = "en") =>
+    [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseParticipation>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipation([FromQuery] string? language) =>
         this.WithCompanyId(companyId => _logic.GetUseCaseParticipationAsync(companyId, language));
 }

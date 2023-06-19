@@ -23,15 +23,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class UseCaseParticipationStatus
+public class CompanySsiDetailStatus
 {
-    private UseCaseParticipationStatus()
+    private CompanySsiDetailStatus()
     {
         Label = null!;
         CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
-    public UseCaseParticipationStatus(CompanySsiDetailStatusId companySsiDetailStatusId) : this()
+    public CompanySsiDetailStatus(CompanySsiDetailStatusId companySsiDetailStatusId) : this()
     {
         Id = companySsiDetailStatusId;
         Label = companySsiDetailStatusId.ToString();

@@ -31,10 +31,12 @@ public class CompanySsiDetail : IBaseEntity
     public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
     public Guid DocumentId { get; set; }
     public DateTimeOffset? ExpiryDate { get; set; }
+    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
 
     // Navigation Properties
     public virtual Company? Company { get; set; }
     public virtual VerifiedCredentialType? VerifiedCredentialType { get; set; }
-    public virtual UseCaseParticipationStatus? UseCaseParticipationStatus { get; set; }
+    public virtual CompanySsiDetailStatus? CompanySsiDetailStatus { get; set; }
     public virtual Document? Document { get; set; }
+    public VerifiedCredentialExternalTypeUseCaseDetail? VerifiedCredentialExternalTypeUseCaseDetail { get; private set; }
 }

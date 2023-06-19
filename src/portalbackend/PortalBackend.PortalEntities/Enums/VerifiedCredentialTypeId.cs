@@ -31,5 +31,14 @@ public enum VerifiedCredentialTypeId
     SUSTAINABILITY_FRAMEWORK = 2,
 
     [EnumMember(Value = "Dismantler Certificate")]
-    DISMANTLER_CERTIFICATE = 3
+    DISMANTLER_CERTIFICATE = 3,
+
+    [EnumMember(Value = "PCF Framework")]
+    PCF_FRAMEWORK = 4,
+
+    [EnumMember(Value = "Quality Framework")]
+    QUALITY_FRAMEWORK = 5,
+
+    [EnumMember(Value = "Behavior Twin Framework")]
+    BEHAVIOR_TWIN_FRAMEWORK = 6,
 }

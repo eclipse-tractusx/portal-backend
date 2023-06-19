@@ -30,6 +30,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "company_ssi_detail_statuses",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_company_ssi_detail_statuses", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "use_case_descriptions",
                 schema: "portal",
                 columns: table => new
@@ -53,19 +66,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalSchema: "portal",
                         principalTable: "use_cases",
                         principalColumn: "id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "use_case_participation_status",
-                schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false),
-                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_use_case_participation_status", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -95,40 +95,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "company_ssi_details",
+                name: "verified_credential_external_types",
                 schema: "portal",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false),
-                    company_ssi_detail_status_id = table.Column<int>(type: "integer", nullable: false),
-                    document_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    expiry_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "text", nullable: false),
+                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_ssi_details", x => x.id);
+                    table.PrimaryKey("pk_verified_credential_external_types", x => x.id);
                     table.ForeignKey(
-                        name: "fk_company_ssi_details_companies_company_id",
-                        column: x => x.company_id,
-                        principalSchema: "portal",
-                        principalTable: "companies",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_company_ssi_details_documents_document_id",
-                        column: x => x.document_id,
-                        principalSchema: "portal",
-                        principalTable: "documents",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_company_ssi_details_use_case_participation_status_use_case_pa",
-                        column: x => x.company_ssi_detail_status_id,
-                        principalSchema: "portal",
-                        principalTable: "use_case_participation_status",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_company_ssi_details_verified_credential_types_verified_cred",
+                        name: "fk_verified_credential_external_types_verified_credential_type",
                         column: x => x.verified_credential_type_id,
                         principalSchema: "portal",
                         principalTable: "verified_credential_types",
@@ -187,15 +166,80 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
+            migrationBuilder.CreateTable(
+                name: "verified_credential_external_type_use_case_details",
                 schema: "portal",
-                table: "document_types",
-                columns: new[] { "id", "label" },
-                values: new object[] { 14, "PRESENTATION" });
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    verified_credential_external_type_id = table.Column<int>(type: "integer", nullable: false),
+                    version = table.Column<string>(type: "text", nullable: false),
+                    template = table.Column<string>(type: "text", nullable: false),
+                    valid_from = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    expiry = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_verified_credential_external_type_use_case_details", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_verified_credential_external_type_use_case_details_verified",
+                        column: x => x.verified_credential_external_type_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_external_types",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "company_ssi_details",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false),
+                    company_ssi_detail_status_id = table.Column<int>(type: "integer", nullable: false),
+                    document_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    expiry_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    verified_credential_external_type_use_case_detail_id = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_company_ssi_details", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_company_ssi_details_companies_company_id",
+                        column: x => x.company_id,
+                        principalSchema: "portal",
+                        principalTable: "companies",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_ssi_details_company_ssi_detail_statuses_company_ssi",
+                        column: x => x.company_ssi_detail_status_id,
+                        principalSchema: "portal",
+                        principalTable: "company_ssi_detail_statuses",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_ssi_details_documents_document_id",
+                        column: x => x.document_id,
+                        principalSchema: "portal",
+                        principalTable: "documents",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_ssi_details_verified_credential_external_type_use_c",
+                        column: x => x.verified_credential_external_type_use_case_detail_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_external_type_use_case_details",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_ssi_details_verified_credential_types_verified_cred",
+                        column: x => x.verified_credential_type_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_types",
+                        principalColumn: "id");
+                });
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "use_case_participation_status",
+                table: "company_ssi_detail_statuses",
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
@@ -203,6 +247,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 2, "ACTIVE" },
                     { 3, "INACTIVE" }
                 });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "document_types",
+                columns: new[] { "id", "label" },
+                values: new object[] { 14, "PRESENTATION" });
 
             migrationBuilder.InsertData(
                 schema: "portal",
@@ -222,7 +272,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 {
                     { 1, "Traceability Framework" },
                     { 2, "Sustainability Framework" },
-                    { 3, "Dismantler Certificate" }
+                    { 3, "Dismantler Certificate" },
+                    { 4, "PCF Framework" },
+                    { 5, "Quality Framework" },
+                    { 6, "Behavior Twin Framework" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -245,6 +298,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "ix_company_ssi_details_verified_credential_external_type_use_c",
+                schema: "portal",
+                table: "company_ssi_details",
+                column: "verified_credential_external_type_use_case_detail_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_company_ssi_details_verified_credential_type_id",
                 schema: "portal",
                 table: "company_ssi_details",
@@ -255,6 +314,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "use_case_descriptions",
                 column: "language_short_name");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_verified_credential_external_type_use_case_details_verified",
+                schema: "portal",
+                table: "verified_credential_external_type_use_case_details",
+                columns: new[] { "verified_credential_external_type_id", "version" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_verified_credential_external_types_verified_credential_type",
+                schema: "portal",
+                table: "verified_credential_external_types",
+                column: "verified_credential_type_id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_verified_credential_type_assigned_kinds_verified_credential",
@@ -330,11 +403,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "use_case_participation_status",
+                name: "company_ssi_detail_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "verified_credential_external_type_use_case_details",
                 schema: "portal");
 
             migrationBuilder.DropTable(
                 name: "verified_credential_type_kinds",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "verified_credential_external_types",
                 schema: "portal");
 
             migrationBuilder.DropTable(

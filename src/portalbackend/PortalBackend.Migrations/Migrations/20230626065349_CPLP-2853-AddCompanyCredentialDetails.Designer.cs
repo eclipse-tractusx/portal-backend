@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230626065053_CPLP-2853-AddCompanyCredentialDetails")]
+    [Migration("20230626065349_CPLP-2853-AddCompanyCredentialDetails")]
     partial class CPLP2853AddCompanyCredentialDetails
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2229,6 +2229,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiry_date");
 
+                    b.Property<Guid?>("VerifiedCredentialExternalTypeUseCaseDetailId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("verified_credential_external_type_use_case_detail_id");
+
                     b.Property<int>("VerifiedCredentialTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("verified_credential_type_id");
@@ -2246,10 +2250,48 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsUnique()
                         .HasDatabaseName("ix_company_ssi_details_document_id");
 
+                    b.HasIndex("VerifiedCredentialExternalTypeUseCaseDetailId")
+                        .HasDatabaseName("ix_company_ssi_details_verified_credential_external_type_use_c");
+
                     b.HasIndex("VerifiedCredentialTypeId")
                         .HasDatabaseName("ix_company_ssi_details_verified_credential_type_id");
 
                     b.ToTable("company_ssi_details", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetailStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_ssi_detail_statuses");
+
+                    b.ToTable("company_ssi_detail_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "PENDING"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "ACTIVE"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "INACTIVE"
+                        });
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyStatus", b =>
@@ -4685,41 +4727,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("use_case_descriptions", "portal");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCaseParticipationStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_use_case_participation_status");
-
-                    b.ToTable("use_case_participation_status", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "PENDING"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "ACTIVE"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "INACTIVE"
-                        });
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4844,6 +4851,70 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("user_role_descriptions", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("label");
+
+                    b.Property<int>("VerifiedCredentialTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("verified_credential_type_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_verified_credential_external_types");
+
+                    b.HasIndex("VerifiedCredentialTypeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_verified_credential_external_types_verified_credential_type");
+
+                    b.ToTable("verified_credential_external_types", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("Expiry")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expiry");
+
+                    b.Property<string>("Template")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("template");
+
+                    b.Property<DateTimeOffset?>("ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_from");
+
+                    b.Property<int>("VerifiedCredentialExternalTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("verified_credential_external_type_id");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_verified_credential_external_type_use_case_details");
+
+                    b.HasIndex("VerifiedCredentialExternalTypeId", "Version")
+                        .IsUnique()
+                        .HasDatabaseName("ix_verified_credential_external_type_use_case_details_verified");
+
+                    b.ToTable("verified_credential_external_type_use_case_details", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", b =>
                 {
                     b.Property<int>("Id")
@@ -4876,6 +4947,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 3,
                             Label = "Dismantler Certificate"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "PCF Framework"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "Quality Framework"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Label = "Behavior Twin Framework"
                         });
                 });
 
@@ -5412,17 +5498,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_ssi_details_companies_company_id");
 
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCaseParticipationStatus", "UseCaseParticipationStatus")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetailStatus", "CompanySsiDetailStatus")
                         .WithMany("CompanySsiDetails")
                         .HasForeignKey("CompanySsiDetailStatusId")
                         .IsRequired()
-                        .HasConstraintName("fk_company_ssi_details_use_case_participation_status_use_case_pa");
+                        .HasConstraintName("fk_company_ssi_details_company_ssi_detail_statuses_company_ssi");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
                         .WithOne("CompanySsiDetail")
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetail", "DocumentId")
                         .IsRequired()
                         .HasConstraintName("fk_company_ssi_details_documents_document_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetail", "VerifiedCredentialExternalTypeUseCaseDetail")
+                        .WithMany("CompanySsiDetails")
+                        .HasForeignKey("VerifiedCredentialExternalTypeUseCaseDetailId")
+                        .HasConstraintName("fk_company_ssi_details_verified_credential_external_type_use_c");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", "VerifiedCredentialType")
                         .WithMany("CompanySsiDetails")
@@ -5432,9 +5523,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("Company");
 
+                    b.Navigation("CompanySsiDetailStatus");
+
                     b.Navigation("Document");
 
-                    b.Navigation("UseCaseParticipationStatus");
+                    b.Navigation("VerifiedCredentialExternalTypeUseCaseDetail");
 
                     b.Navigation("VerifiedCredentialType");
                 });
@@ -6241,6 +6334,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRole");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", "VerifiedCredentialType")
+                        .WithOne("VerifiedCredentialExternalType")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", "VerifiedCredentialTypeId")
+                        .IsRequired()
+                        .HasConstraintName("fk_verified_credential_external_types_verified_credential_type");
+
+                    b.Navigation("VerifiedCredentialType");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetail", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", "VerifiedCredentialExternalType")
+                        .WithMany("VerifiedCredentialExternalTypeUseCaseDetails")
+                        .HasForeignKey("VerifiedCredentialExternalTypeId")
+                        .IsRequired()
+                        .HasConstraintName("fk_verified_credential_external_type_use_case_details_verified");
+
+                    b.Navigation("VerifiedCredentialExternalType");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedKind", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", "VerifiedCredentialType")
@@ -6388,6 +6503,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", b =>
                 {
                     b.Navigation("CompanyServiceAccounts");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetailStatus", b =>
+                {
+                    b.Navigation("CompanySsiDetails");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyStatus", b =>
@@ -6656,11 +6776,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("VerifiedCredentialAssignedUseCase");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCaseParticipationStatus", b =>
-                {
-                    b.Navigation("CompanySsiDetails");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Navigation("IdentityAssignedRoles");
@@ -6675,9 +6790,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRoleCollectionDescriptions");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", b =>
+                {
+                    b.Navigation("VerifiedCredentialExternalTypeUseCaseDetails");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetail", b =>
+                {
+                    b.Navigation("CompanySsiDetails");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", b =>
                 {
                     b.Navigation("CompanySsiDetails");
+
+                    b.Navigation("VerifiedCredentialExternalType");
 
                     b.Navigation("VerifiedCredentialTypeAssignedKind");
 
