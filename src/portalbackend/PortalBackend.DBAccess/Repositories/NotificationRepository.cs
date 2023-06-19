@@ -140,6 +140,25 @@ public class NotificationRepository : INotificationRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
+    public Task<bool> CheckNotificationExistsForParam(Guid receiverId, NotificationTypeId notificationTypeId, string searchParam, string searchValue) =>
+        _dbContext.Notifications
+            .Where(n =>
+                n.ReceiverUserId == receiverId &&
+                n.NotificationTypeId == notificationTypeId &&
+                EF.Functions.ILike(n.Content!, $"%\"{searchParam}\":\"{searchValue}\"%"))
+            .AnyAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<(NotificationTypeId NotificationTypeId, Guid ReceiverId)> CheckNotificationsExistsForParam(IEnumerable<Guid> receiverIds, IEnumerable<NotificationTypeId> notificationTypeIds, string searchParam, string searchValue) =>
+        _dbContext.Notifications
+            .Where(n =>
+                receiverIds.Contains(n.ReceiverUserId) &&
+                notificationTypeIds.Contains(n.NotificationTypeId) &&
+                EF.Functions.ILike(n.Content!, $"%\"{searchParam}\":\"{searchValue}\"%"))
+            .Select(x => new ValueTuple<NotificationTypeId, Guid>(x.NotificationTypeId, x.ReceiverUserId))
+            .ToAsyncEnumerable();
+
+    /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetNotificationUpdateIds(IEnumerable<Guid> userRoleIds, IEnumerable<Guid>? companyUserIds, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId) =>
         _dbContext.CompanyUsers
             .Where(x =>

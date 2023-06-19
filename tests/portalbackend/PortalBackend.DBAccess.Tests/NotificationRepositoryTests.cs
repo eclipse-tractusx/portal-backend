@@ -432,6 +432,58 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region CheckNotificationsExistsForParam
+
+    [Fact]
+    public async Task CheckNotificationsExistsForParam_WithCorrectSearch_ReturnsTrue()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut
+            .CheckNotificationExistsForParam(new("ac1cf001-7fbc-1f2f-817f-bce058020001"), NotificationTypeId.APP_RELEASE_REQUEST, "offerId", "0fc768e5-d4cf-4d3d-a0db-379efedd60f5")
+            .ConfigureAwait(false);
+
+        // Assert
+        results.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckNotificationsExistsForParam_WithWrongOfferId_ReturnsFalse()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut
+            .CheckNotificationExistsForParam(new("ac1cf001-7fbc-1f2f-817f-bce058020001"), NotificationTypeId.APP_RELEASE_REQUEST, "offerId", "0fc768e5-d4cf-4d3d-a0db-379efedd6123")
+            .ConfigureAwait(false);
+
+        // Assert
+        results.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckNotificationsExistsForParam_WithMatchingReceiver_ReturnsReceiver()
+    {
+        // Arrange
+        var receiver = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001");
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut
+            .CheckNotificationsExistsForParam(new[] { receiver }, new[] { NotificationTypeId.APP_RELEASE_REQUEST }, "offerId", "0fc768e5-d4cf-4d3d-a0db-379efedd60f5")
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        // Assert
+        results.Should().ContainSingle();
+        results.Single().ReceiverId.Should().Be(receiver);
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<NotificationRepository> CreateSut()

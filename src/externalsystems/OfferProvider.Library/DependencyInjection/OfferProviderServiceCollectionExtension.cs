@@ -39,7 +39,7 @@ public static class OfferProviderServiceCollectionExtension
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<OfferProviderSettings>>();
         return services
-            .AddCustomHttpClientWithAuthentication<OfferProviderService>(string.Empty, settings.Value.KeycloakTokenAddress)
+            .AddCustomHttpClientWithAuthentication<OfferProviderService>(null, settings.Value.KeycloakTokenAddress)
             .AddTransient<IOfferProviderService, OfferProviderService>()
             .AddTransient<IOfferProviderBusinessLogic, OfferProviderBusinessLogic>();
     }

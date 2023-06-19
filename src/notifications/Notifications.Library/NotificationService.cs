@@ -59,6 +59,34 @@ public class NotificationService : INotificationService
     }
 
     /// <inheritdoc />
+    async IAsyncEnumerable<Guid> INotificationService.CreateNotificationsWithExistenceCheck(
+        IDictionary<string, IEnumerable<string>> receiverUserRoles,
+        Guid? creatorId,
+        IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
+        Guid companyId,
+        string searchParam,
+        string searchValue,
+        bool? done)
+    {
+        var roleData = await ValidateRoleData(receiverUserRoles);
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        var companyUserWithRoleIdForCompany = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData, companyId).ToListAsync().ConfigureAwait(false);
+
+        var existingNotifications = await notificationRepository.CheckNotificationsExistsForParam(companyUserWithRoleIdForCompany, notifications.Select(x => x.notificationTypeId), searchParam, searchValue).ToListAsync();
+        foreach (var receiver in companyUserWithRoleIdForCompany)
+        {
+            var existingReceiverNotifications = existingNotifications
+                .Where(x => x.ReceiverId == receiver)
+                .Select(x => x.NotificationTypeId);
+            var notificationsToCreate = notifications.ExceptBy(existingReceiverNotifications, x => x.notificationTypeId);
+            if (!notificationsToCreate.Any())
+                continue;
+            CreateNotification(receiver, creatorId, notificationsToCreate, notificationRepository, done);
+            yield return receiver;
+        }
+    }
+
+    /// <inheritdoc />
     async Task INotificationService.CreateNotifications(
         IDictionary<string, IEnumerable<string>> receiverUserRoles,
         Guid? creatorId,
