@@ -145,8 +145,7 @@ public class NotificationRepository : INotificationRepository
             .Where(n =>
                 n.ReceiverUserId == receiverId &&
                 n.NotificationTypeId == notificationTypeId &&
-                EF.Functions.ILike(n.Content!, $"%\"{searchParam}\":\"{searchValue}\"%")
-                )
+                EF.Functions.ILike(n.Content!, $"%\"{searchParam}\":\"{searchValue}\"%"))
             .AnyAsync();
 
     /// <inheritdoc />
@@ -155,10 +154,9 @@ public class NotificationRepository : INotificationRepository
             .Where(n =>
                 receiverIds.Contains(n.ReceiverUserId) &&
                 notificationTypeIds.Contains(n.NotificationTypeId) &&
-                EF.Functions.ILike(n.Content!, $"%\"{searchParam}\":\"{searchValue}\"%")
-            )
+                EF.Functions.ILike(n.Content!, $"%\"{searchParam}\":\"{searchValue}\"%"))
             .Select(x => new ValueTuple<NotificationTypeId, Guid>(x.NotificationTypeId, x.ReceiverUserId))
-        .ToAsyncEnumerable();
+            .ToAsyncEnumerable();
 
     /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetNotificationUpdateIds(IEnumerable<Guid> userRoleIds, IEnumerable<Guid>? companyUserIds, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId) =>

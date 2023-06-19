@@ -235,7 +235,7 @@ public class OfferSetupServiceTests
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         if (!isSingleInstance)
         {
-            A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
         }
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -1084,6 +1084,8 @@ public class OfferSetupServiceTests
         {
             new(offerSubscription.Id, "https://www.test.de")
         };
+        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
+            .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
             .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _companyUserCompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid()));
         A.CallTo(() => _notificationRepository.CheckNotificationExistsForParam(A<Guid>._, A<NotificationTypeId>._, A<string>._, A<string>._))
@@ -1123,6 +1125,7 @@ public class OfferSetupServiceTests
         result.processMessage.Should().BeNull();
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _companyUserCompanyId, A<string>._, offerSubscription.Id.ToString(), null))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, notificationTypeId, false, A<Action<Notification>>._))
             .MustHaveHappenedOnceExactly();
         if (string.IsNullOrWhiteSpace(requesterEmail))

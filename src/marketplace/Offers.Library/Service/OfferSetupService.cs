@@ -341,10 +341,9 @@ public class OfferSetupService : IOfferSetupService
             notifications,
             offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
 
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
         if (!userIdsOfNotifications.Contains(offerDetails.RequesterId))
         {
-            notificationRepository.CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
+            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
             {
                 notification.Content = notificationContent;
                 notification.CreatorUserId = creatorId;
@@ -378,7 +377,7 @@ public class OfferSetupService : IOfferSetupService
             {"url", basePortalAddress},
         };
         await _mailingService
-            .SendMails(requesterEmail, mailParams, new List<string> { $"{offerType.ToString().ToLower()}-subscription-activation" })
+            .SendMails(requesterEmail, mailParams, new[] { $"{offerType.ToString().ToLower()}-subscription-activation" })
             .ConfigureAwait(false);
     }
 
@@ -562,16 +561,18 @@ public class OfferSetupService : IOfferSetupService
         var notificationTypeId = offerDetails.OfferTypeId == OfferTypeId.APP
             ? NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION
             : NotificationTypeId.SERVICE_ACTIVATION;
-        var userIdsOfNotifications = await _notificationService.CreateNotificationsWithExistenceCheck(
-            itAdminRoles,
-            null,
-            new List<(string?, NotificationTypeId)>
-            {
-                (notificationContent, notificationTypeId)
-            },
-            offerDetails.CompanyId,
-            nameof(offerSubscriptionId),
-            offerSubscriptionId.ToString()).ToListAsync().ConfigureAwait(false);
+        var userIdsOfNotifications = await _notificationService
+                .CreateNotificationsWithExistenceCheck(
+                    itAdminRoles,
+                    null,
+                    new List<(string?, NotificationTypeId)>
+                    {
+                        (notificationContent, notificationTypeId)
+                    },
+                    offerDetails.CompanyId,
+                    nameof(offerSubscriptionId),
+                    offerSubscriptionId.ToString())
+                .ToListAsync().ConfigureAwait(false);
 
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
         if (!userIdsOfNotifications.Contains(offerDetails.RequesterId) &&

@@ -61,7 +61,7 @@ public static class VerifyProcessDataExtensions
             throw new UnexpectedConditionException($"processSteps should never have any other status than TODO here");
         }
 
-        if (processData.ProcessSteps.All(step => step.ProcessStepTypeId != processStepTypeId))
+        if (!processData.ProcessSteps.Any(step => step.ProcessStepTypeId == processStepTypeId))
         {
             throw new ConflictException($"{getProcessEntityName()}, process step {processStepTypeId} is not eligible to run");
         }
@@ -114,15 +114,19 @@ public static class ManualProcessStepDataExtensions
 
     private static IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)> ModifyStepStatusRange(IEnumerable<ProcessStep> steps, ProcessStepStatusId processStepStatusId)
     {
-        var firstStepId = steps.First().Id; // this value must not change as the result of the yield return would change.
+        var firstStep = steps.FirstOrDefault();
+
+        if (firstStep == null)
+            yield break;
+
         foreach (var step in steps)
         {
             yield return (
                 step.Id,
                 null,
-                ps => ps.ProcessStepStatusId = ps.Id != firstStepId
-                    ? ProcessStepStatusId.DUPLICATE
-                    : processStepStatusId);
+                ps => ps.ProcessStepStatusId = ps.Id == firstStep.Id
+                    ? processStepStatusId
+                    : ProcessStepStatusId.DUPLICATE);
         }
     }
 }
