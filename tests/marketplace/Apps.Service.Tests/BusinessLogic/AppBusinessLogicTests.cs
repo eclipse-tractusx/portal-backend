@@ -555,7 +555,7 @@ public class AppBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), null!);
 
