@@ -20,4 +20,22 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 
-public record UserRoleConfig(string ClientId, IEnumerable<string> UserRoleNames);
+public class UserRoleConfig
+{
+    public UserRoleConfig()
+    {
+        ClientId = null!;
+        UserRoleNames = null!;
+    }
+
+    public UserRoleConfig(string clientId, IEnumerable<string> userRoleNames)
+        : this()
+    {
+        ClientId = clientId;
+        UserRoleNames = userRoleNames;
+    }
+
+    public string ClientId { get; set; }
+
+    public IEnumerable<string> UserRoleNames { get; set; }
+}
