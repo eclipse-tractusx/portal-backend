@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -29,13 +30,17 @@ public class UploadDocumentConfig
         MediaTypes = null!;
     }
 
-    public UploadDocumentConfig(DocumentTypeId documentTypeId, IEnumerable<string> mediaTypes)
+    public UploadDocumentConfig(DocumentTypeId documentTypeId, IEnumerable<MediaTypeId> mediaTypes)
         : this()
     {
         DocumentTypeId = documentTypeId;
         MediaTypes = mediaTypes;
     }
 
+    [ValidateEnumValue]
     public DocumentTypeId DocumentTypeId { get; set; }
-    public IEnumerable<string> MediaTypes { get; set; }
+    
+    [EnumEnumeration]
+    [DistinctValues]
+    public IEnumerable<MediaTypeId> MediaTypes { get; set; }
 };

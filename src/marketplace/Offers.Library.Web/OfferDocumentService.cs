@@ -20,12 +20,12 @@
 
 using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Security.Cryptography;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 
@@ -60,10 +60,18 @@ public class OfferDocumentService : IOfferDocumentService
             throw new ControllerArgumentException($"documentType must be either: {string.Join(",", uploadDocumentTypeIdSettings.Select(x => x.DocumentTypeId))}");
         }
         // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
-        var documentContentType = document.ContentType;
-        if (!uploadContentTypeSettings.MediaTypes.Contains(documentContentType))
+        MediaTypeId mediaTypeId;
+        try
         {
-            throw new UnsupportedMediaTypeException($"Document type {documentTypeId} is not supported. File with contentType :{string.Join(",", uploadContentTypeSettings.MediaTypes)} are allowed.");
+            mediaTypeId  = document.ContentType.ParseMediaTypeId();
+        }
+        catch(UnsupportedMediaTypeException e)
+        {
+            throw new UnsupportedMediaTypeException($"Document type {documentTypeId}, {e.Message}. File with contentType :{string.Join(",", uploadContentTypeSettings.MediaTypes)} are allowed.");
+        }
+        if (!uploadContentTypeSettings.MediaTypes.Contains(mediaTypeId))
+        {
+            throw new UnsupportedMediaTypeException($"Document type {documentTypeId}, mediaType '{document.ContentType}' is not supported. File with contentType :{string.Join(",", uploadContentTypeSettings.MediaTypes)} are allowed.");
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -82,19 +90,9 @@ public class OfferDocumentService : IOfferDocumentService
             throw new ForbiddenException($"Company {identity.CompanyId} is not the provider company of {offerTypeId} {id}");
         }
 
-        var documentName = document.FileName;
-        using var sha512Hash = SHA512.Create();
-        using var ms = new MemoryStream((int)document.Length);
+        var (content, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
 
-        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-        var hash = sha512Hash.ComputeHash(ms);
-        var documentContent = ms.GetBuffer();
-        if (ms.Length != document.Length || documentContent.Length != document.Length)
-        {
-            throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
-        }
-
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentContentType.ParseMediaTypeId(), documentTypeId, x =>
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, content, hash, mediaTypeId, documentTypeId, x =>
         {
             x.CompanyUserId = identity.UserId;
         });
