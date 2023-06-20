@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Reflection;
 
@@ -33,7 +34,7 @@ public static class GenericSelectExtension
 
         try
         {
-            var task = genericMethod.Invoke(null, new object?[] { selector, null, null, null, CancellationToken.None });
+            var task = genericMethod.Invoke(null, new object?[] { selector, ScriptOptions.Default.WithReferences(type.Assembly), null, null, CancellationToken.None });
             return task?.GetType().GetProperty("Result")?.GetGetMethod()?.Invoke(task, Array.Empty<object?>()) as Delegate ?? throw new UnexpectedConditionException($"failed to evaluate selector {selector} for {type}");
         }
         catch (TargetInvocationException e)
