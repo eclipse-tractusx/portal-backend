@@ -62,9 +62,11 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
 
         var validationErrors = GetValidationErrors(options);
 
-        return validationErrors.Any() ?
-            ValidateOptionsResult.Fail(validationErrors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'.")) :
-            ValidateOptionsResult.Success;
+        return validationErrors.IfAny(
+            errors => errors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'."),
+            out var messages)
+                ? ValidateOptionsResult.Fail(messages)
+                : ValidateOptionsResult.Success;
     }
 
     private static IEnumerable<ValidationResult> GetValidationErrors(TOptions options)
@@ -100,9 +102,9 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
                     break;
             }
 
-            if (duplicates.Any())
+            if (duplicates.IfAny(dup => $"{string.Join(",", dup)} are duplicate values for {propertyInfo.Name}.", out var message))
             {
-                yield return new($"{string.Join(",", duplicates)} are duplicate values for {propertyInfo.Name}.", new[] { propertyInfo.Name });
+                yield return new(message, new[] { propertyInfo.Name });
             }
         }
     }

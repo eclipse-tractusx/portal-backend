@@ -44,4 +44,28 @@ public static class IfAnyExtension
 
         return false;
     }
+
+    public static bool IfAny<T, R>(this IEnumerable<T> source, Func<IEnumerable<T>, R> process, out R? returnValue) where R : class?
+    {
+        var enumerator = source.GetEnumerator();
+
+        IEnumerable<T> Iterate()
+        {
+            yield return enumerator.Current;
+
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+        }
+
+        if (enumerator.MoveNext())
+        {
+            returnValue = process(Iterate());
+            return true;
+        }
+
+        returnValue = null;
+        return false;
+    }
 }
