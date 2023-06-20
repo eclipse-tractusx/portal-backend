@@ -167,7 +167,7 @@ public interface IAppsBusinessLogic
     /// <param name="subscriptionId">Id of the subscription</param>
     /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, Guid companyId);
+    Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, Guid companyId);
 
     /// <summary>
     /// Gets the information for the subscription

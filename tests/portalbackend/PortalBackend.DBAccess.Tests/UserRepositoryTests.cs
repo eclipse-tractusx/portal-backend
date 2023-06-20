@@ -323,14 +323,14 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.CompanyName.Should().Be("Security Company");
         result.CompanyUserId.Should().Be("ac1cf001-7fbc-1f2f-817f-bce058019992");
-        result.Email.Should().Be("julia.jeroch@bmw.de");
+        result.Email.Should().Be("company.admin2@acme.corp");
         result.FirstName.Should().Be("Test User");
         result.BusinessPartnerNumbers.Should().BeEmpty();
         result.AdminDetails.Should().NotBeEmpty()
             .And.HaveCount(2)
             .And.Satisfy(
-                x => x.CompanyUserId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992") && x.Email == "julia.jeroch@bmw.de",
-                x => x.CompanyUserId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993") && x.Email == "julia.jeroch@bmw.de");
+                x => x.CompanyUserId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992") && x.Email == "company.admin2@acme.corp",
+                x => x.CompanyUserId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993") && x.Email == "it.admin2@acme.corp");
     }
 
     #endregion

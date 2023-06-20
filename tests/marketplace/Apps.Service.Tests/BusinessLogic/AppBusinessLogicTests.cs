@@ -542,12 +542,13 @@ public class AppBusinessLogicTests
     #region GetSubscriptionDetailForProvider
 
     [Fact]
-    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsException()
+    public async Task GetSubscriptionDetailForProvider_ReturnsExpected()
     {
         // Arrange
-        var offerId = _fixture.Create<Guid>();
-        var subscriptionId = _fixture.Create<Guid>();
-        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+        var appId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var data = _fixture.Create<AppProviderSubscriptionDetailData>();
         var settings = new AppsSettings
         {
             CompanyAdminRoles = new[]
@@ -555,15 +556,17 @@ public class AppBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), null!);
 
         // Act
-        var result = await sut.GetSubscriptionDetailForProvider(offerId, subscriptionId, _identity.CompanyId).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailForProvider(appId, subscriptionId, companyId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(data);
+        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -571,12 +574,12 @@ public class AppBusinessLogicTests
     #region GetSubscriptionDetailForSubscriber
 
     [Fact]
-    public async Task GetSubscriptionDetailForSubscriber_WithNotMatchingUserRoles_ThrowsException()
+    public async Task GetSubscriptionDetailForSubscriber_ReturnsExpected()
     {
         // Arrange
-        var offerId = _fixture.Create<Guid>();
-        var subscriptionId = _fixture.Create<Guid>();
-        var data = _fixture.Create<SubscriberSubscriptionDetailData>();
+        var appId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
         var settings = new AppsSettings
         {
             CompanyAdminRoles = new[]
@@ -584,15 +587,21 @@ public class AppBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
+
+        var data = _fixture.Create<SubscriberSubscriptionDetailData>();
+
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
+
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), null!);
 
         // Act
-        var result = await sut.GetSubscriptionDetailForSubscriber(offerId, subscriptionId, _identity.CompanyId).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailForSubscriber(appId, subscriptionId, companyId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(data);
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

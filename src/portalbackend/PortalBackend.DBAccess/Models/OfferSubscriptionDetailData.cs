@@ -22,28 +22,68 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
+public record SubscriptionTechnicalUserData(
+    Guid Id,
+    string Name,
+    IEnumerable<string> Permissions
+);
+
 /// <summary>
 /// Detail data for a offer subscription
 /// </summary>
 /// <param name="Id">Id of the Offer</param>
 /// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
 /// <param name="Name">Name of the Offer</param>
-/// <param name="CompanyName">When called from /provider name of the company subscribing the offer, otherwise the provider company's name</param>
+/// <param name="Customer">Name of the company subscribing the offer</param>
 /// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
-public record OfferSubscriptionDetailData(
+public record ProviderSubscriptionDetailData(
     Guid Id,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
-    string CompanyName,
+    string Customer,
     string? Bpn,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
 );
 
-public record SubscriptionTechnicalUserData(
+/// <summary>
+/// Detail data for a offer subscription
+/// </summary>
+/// <param name="Id">Id of the Offer</param>
+/// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
+/// <param name="Name">Name of the Offer</param>
+/// <param name="Customer">Name of the company subscribing the offer</param>
+/// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
+/// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
+/// <param name="TechnicalUserData">Information about the technical user</param>
+/// <param name="TenantUrl">Url of Tenant</param>
+public record AppProviderSubscriptionDetailData(
     Guid Id,
-    string Name,
-    IEnumerable<string> Permissions
+    OfferSubscriptionStatusId OfferSubscriptionStatus,
+    string? Name,
+    string Customer,
+    string? Bpn,
+    IEnumerable<string> Contact,
+    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
+    string? TenantUrl
+);
+
+/// <summary>
+/// Detail data for a offer subscription
+/// </summary>
+/// <param name="Id">Id of the Offer</param>
+/// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
+/// <param name="Name">Name of the Offer</param>
+/// <param name="Provider">The provider company's name</param>
+/// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
+/// <param name="TechnicalUserData">Information about the technical user</param>
+public record SubscriberSubscriptionDetailData(
+    Guid Id,
+    OfferSubscriptionStatusId OfferSubscriptionStatus,
+    string? Name,
+    string Provider,
+    IEnumerable<string> Contact,
+    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
 );

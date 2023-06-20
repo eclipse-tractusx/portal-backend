@@ -28,7 +28,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
@@ -2013,91 +2012,334 @@ public class OfferServiceTests
 
     #region GetSubscriptionDetailForProvider
 
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException()
     {
         // Arrange
         var offerId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyAdminRoles = new[]
-            {
-                new UserRoleConfig("ClientTest", new[] {"Wrong"})
-            };
+        var companyAdminRoles = _fixture.CreateMany<UserRoleConfig>().ToImmutableArray();
+
+        SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
         ex.Message.Should().Contain("invalid configuration, at least one of the configured roles does not exist in the database:");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .MustNotHaveHappened();
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task GetSubscriptionDetailForProvider_WithNotExistingOffer_ThrowsNotFoundException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithNotExistingOffer_ThrowsNotFoundException()
     {
         // Arrange
-        var offerId = Guid.NewGuid();
+        var serviceId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
             {
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             };
         SetupGetSubscriptionDetailForProvider();
 
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns(((bool, bool, ProviderSubscriptionDetailData))default);
+
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {offerId} of type {offerTypeId} does not exist");
+        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {serviceId} of type {OfferTypeId.SERVICE} does not exist");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task GetSubscriptionDetailForProvider_WithUserNotInProvidingCompany_ThrowsForbiddenException(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithUserNotInProvidingCompany_ThrowsForbiddenException()
     {
         // Arrange
-        var identity = _fixture.Create<IdentityData>();
+        var serviceId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
         };
         SetupGetSubscriptionDetailForProvider();
 
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns((true, false, _fixture.Create<ProviderSubscriptionDetailData>()));
+
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(_existingServiceId, subscriptionId, identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain($"Company {identity.CompanyId} is not part of the Provider company");
+        ex.Message.Should().Contain($"Company {companyId} is not part of the Provider company");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
     }
 
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task GetSubscriptionDetailForProvider_WithValidData_ReturnsExpected(OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithValidData_ReturnsExpected()
     {
         // Arrange
+        var serviceId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
         };
         SetupGetSubscriptionDetailForProvider();
 
+        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns((true, true, data));
         // Act
-        var result = await _sut.GetSubscriptionDetailsForProviderAsync(_existingServiceId, Guid.NewGuid(), _identity.CompanyId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+        var result = await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
-        result.Name.Should().Be("Test App");
-        result.Customer.Should().Be("Stark Industry");
-        result.Contact.Should().HaveCount(2);
-        result.TechnicalUserData.Should().HaveCount(5);
+        result.Should().Be(data);
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetAppSubscriptionDetailForProvider
+
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException()
+    {
+        // Arrange
+        var offerId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyAdminRoles = _fixture.CreateMany<UserRoleConfig>().ToImmutableArray();
+
+        SetupGetSubscriptionDetailForProvider();
+
+        // Act
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
+        ex.Message.Should().Contain("invalid configuration, at least one of the configured roles does not exist in the database:");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProvider_WithNotExistingOffer_ThrowsNotFoundException()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("ClientTest", new[] {"Test"})
+        };
+        SetupGetSubscriptionDetailForProvider();
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns(((bool, bool, AppProviderSubscriptionDetailData))default);
+
+        // Act
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {appId} of type {OfferTypeId.APP} does not exist");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProvider_WithUserNotInProvidingCompany_ThrowsForbiddenException()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("ClientTest", new[] {"Test"})
+        };
+        SetupGetSubscriptionDetailForProvider();
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns((true, false, _fixture.Create<AppProviderSubscriptionDetailData>()));
+
+        // Act
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Contain($"Company {companyId} is not part of the Provider company");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProvider_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("ClientTest", new[] {"Test"})
+        };
+        SetupGetSubscriptionDetailForProvider();
+
+        var data = _fixture.Create<AppProviderSubscriptionDetailData>();
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns((true, true, data));
+
+        // Act
+        var result = await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(data);
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetSubscriptionDetailsForSubscriber
+
+    [Fact]
+    public async Task GetSubscriptionDetailsForSubscriber_WithNotMatchingUserRoles_ThrowsConfigurationException()
+    {
+        // Arrange
+        var offerId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyAdminRoles = _fixture.CreateMany<UserRoleConfig>().ToImmutableArray();
+
+        SetupGetSubscriptionDetailForProvider();
+
+        // Act
+        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
+        ex.Message.Should().Contain("invalid configuration, at least one of the configured roles does not exist in the database:");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task GetSubscriptionDetailsForSubscriber_WithNotExistingOffer_ThrowsNotFoundException()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("ClientTest", new[] {"Test"})
+        };
+        SetupGetSubscriptionDetailForProvider();
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns(((bool, bool, SubscriberSubscriptionDetailData))default);
+
+        // Act
+        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {appId} of type {OfferTypeId.APP} does not exist");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetSubscriptionDetailsForSubscriber_WithUserNotInProvidingCompany_ThrowsForbiddenException()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("ClientTest", new[] {"Test"})
+        };
+        SetupGetSubscriptionDetailForProvider();
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns((true, false, _fixture.Create<SubscriberSubscriptionDetailData>()));
+
+        // Act
+        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Contain($"Company {companyId} is not part of the Subscriber company");
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetSubscriptionDetailsForSubscriber_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("ClientTest", new[] {"Test"})
+        };
+        SetupGetSubscriptionDetailForProvider();
+
+        var data = _fixture.Create<SubscriberSubscriptionDetailData>();
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
+            .Returns((true, true, data));
+
+        // Act
+        var result = await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(data);
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -2245,18 +2487,8 @@ public class OfferServiceTests
 
     private void SetupGetSubscriptionDetailForProvider()
     {
-        var data = new OfferSubscriptionDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, "Test App", "Stark Industry", "BPN123456789",
-            new[] { "tony@stark.com", "steven@strange.com" }, _fixture.CreateMany<SubscriptionTechnicalUserData>(5));
-
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.Any(y => y.ClientId == "ClientTest"))))
             .Returns(new[] { _validUserRoleId }.ToAsyncEnumerable());
-
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsAsync(_existingServiceId, A<Guid>._, _identity.CompanyId, A<OfferTypeId>._, A<IEnumerable<Guid>>._, A<bool>._))
-            .Returns(new ValueTuple<bool, bool, OfferSubscriptionDetailData>(true, true, data));
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsAsync(_existingServiceId, A<Guid>._, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId), A<OfferTypeId>._, A<IEnumerable<Guid>>._, A<bool>._))
-            .Returns(new ValueTuple<bool, bool, OfferSubscriptionDetailData>(true, false, data));
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<Guid>._, _identity.CompanyId, A<OfferTypeId>._, A<IEnumerable<Guid>>._, A<bool>._))
-            .Returns(new ValueTuple<bool, bool, OfferSubscriptionDetailData>(false, false, default!));
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);

@@ -29,7 +29,7 @@
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058019992",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "company.admin2@acme.corp",
     "firstname": "Test User",
     "lastlogin": null,
     "lastname": "company-admin-2",
@@ -38,7 +38,7 @@
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058019993",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "it.admin2@acme.corp",
     "firstname": "Test User",
     "lastlogin": null,
     "lastname": "it-admin-2",
@@ -47,7 +47,7 @@
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058019994",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "company.admin1@acme.corp",
     "firstname": "Test User",
     "lastlogin": null,
     "lastname": "Company Admin 1",
@@ -56,7 +56,7 @@
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "cxadmin@acme.corp",
     "firstname": "Test User",
     "lastlogin": null,
     "lastname": "CX Admin",
@@ -65,7 +65,7 @@
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058020005",
     "date_last_changed": "2022-10-01 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "service.provider@acme.corp",
     "firstname": "Service",
     "lastlogin": null,
     "lastname": "Provider",

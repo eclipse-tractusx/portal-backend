@@ -191,29 +191,79 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             )).ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool Exists, bool IsUserOfCompany, OfferSubscriptionDetailData Details)> GetSubscriptionDetailsAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds, bool forProvider) =>
+    public Task<(bool Exists, bool IsUserOfCompany, ProviderSubscriptionDetailData? Details)> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
         _context.OfferSubscriptions
+            .AsSplitQuery()
             .Where(os => os.Id == subscriptionId && os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId)
             .Select(os => new
             {
-                UserCompanyId = forProvider ? os.Offer!.ProviderCompanyId : os.CompanyId,
-                OtherCompany = forProvider ? os.Company : os.Offer!.ProviderCompany,
-                OfferName = os.Offer!.Name,
-                os.OfferId,
-                os.OfferSubscriptionStatusId,
-                os.CompanyServiceAccounts
+                IsProviderCompany = os.Offer!.ProviderCompanyId == userCompanyId,
+                Subscription = os,
+                Company = os.Company
             })
-            .Select(x => new ValueTuple<bool, bool, OfferSubscriptionDetailData>(
+            .Select(x => new ValueTuple<bool, bool, ProviderSubscriptionDetailData?>(
                 true,
-                x.UserCompanyId == userCompanyId,
-                new OfferSubscriptionDetailData(
-                    x.OfferId,
-                    x.OfferSubscriptionStatusId,
-                    x.OfferName,
-                    x.OtherCompany!.Name,
-                    x.OtherCompany!.BusinessPartnerNumber,
-                    x.OtherCompany.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
-                    x.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))))))
+                x.IsProviderCompany,
+                x.IsProviderCompany
+                    ? new ProviderSubscriptionDetailData(
+                        x.Subscription.OfferId,
+                        x.Subscription.OfferSubscriptionStatusId,
+                        x.Subscription.Offer!.Name,
+                        x.Company!.Name,
+                        x.Company.BusinessPartnerNumber,
+                        x.Company.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
+                        x.Subscription.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))))
+                    : null))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, bool IsUserOfCompany, AppProviderSubscriptionDetailData? Details)> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
+        _context.OfferSubscriptions
+            .AsSplitQuery()
+            .Where(os => os.Id == subscriptionId && os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId)
+            .Select(os => new
+            {
+                IsProviderCompany = os.Offer!.ProviderCompanyId == userCompanyId,
+                Subscription = os,
+                Company = os.Company
+            })
+            .Select(x => new ValueTuple<bool, bool, AppProviderSubscriptionDetailData?>(
+                true,
+                x.IsProviderCompany,
+                x.IsProviderCompany
+                    ? new AppProviderSubscriptionDetailData(
+                        x.Subscription.OfferId,
+                        x.Subscription.OfferSubscriptionStatusId,
+                        x.Subscription.Offer!.Name,
+                        x.Company!.Name,
+                        x.Company.BusinessPartnerNumber,
+                        x.Company.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
+                        x.Subscription.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
+                        x.Subscription.AppSubscriptionDetail!.AppSubscriptionUrl)
+                    : null))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, bool IsUserOfCompany, SubscriberSubscriptionDetailData? Details)> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
+        _context.OfferSubscriptions
+            .AsSplitQuery()
+            .Where(os => os.Id == subscriptionId && os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId)
+            .Select(os => new
+            {
+                IsSubscriberCompany = os.CompanyId == userCompanyId,
+                Subscription = os,
+                ProviderCompany = os.Offer!.ProviderCompany
+            })
+            .Select(x => new ValueTuple<bool, bool, SubscriberSubscriptionDetailData?>(
+                true,
+                x.IsSubscriberCompany,
+                x.IsSubscriberCompany
+                    ? new SubscriberSubscriptionDetailData(
+                        x.Subscription.OfferId,
+                        x.Subscription.OfferSubscriptionStatusId,
+                        x.Subscription.Offer!.Name,
+                        x.ProviderCompany!.Name,
+                        x.ProviderCompany.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
+                        x.Subscription.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))))
+                    : null))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
