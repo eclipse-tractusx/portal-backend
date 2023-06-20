@@ -43,7 +43,7 @@ public partial class ProvisioningManager
                     return (idOfClient, (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false)).Where(x => roleNames.Contains(x.Name)));
             }
         }
-        catch(KeycloakEntityNotFoundException)
+        catch (KeycloakEntityNotFoundException)
         {
             return (idOfClient, Enumerable.Empty<Role>());
         }
@@ -54,8 +54,9 @@ public partial class ProvisioningManager
             {
                 var (client, roleNames) = x;
                 var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
-                if (clientId == null || !roles.Any()) return;
-                
+                if (clientId == null || !roles.Any())
+                    return;
+
                 await _CentralIdp.DeleteClientRoleMappingsFromUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
             }
         )).ConfigureAwait(false);
@@ -70,7 +71,7 @@ public partial class ProvisioningManager
                 yield return (Client: client, Roles: Enumerable.Empty<string>());
                 continue;
             }
-            
+
             IEnumerable<string> assigned;
             try
             {

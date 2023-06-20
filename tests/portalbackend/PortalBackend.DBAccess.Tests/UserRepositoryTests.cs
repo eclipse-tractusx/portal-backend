@@ -35,9 +35,8 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     private const string ClientId = "technical_roles_management";
     private const string ValidIamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
     private const string ValidCompanyUserTxt = "ac1cf001-7fbc-1f2f-817f-bce058020006";
-    private readonly Guid _validCompanyUser = new (ValidCompanyUserTxt);
+    private readonly Guid _validCompanyUser = new(ValidCompanyUserTxt);
     private readonly Guid _validOfferId = new("ac1cf001-7fbc-1f2f-817f-bce0572c0007");
-    private readonly Guid _validCoreOfferId = new("9b957704-3505-4445-822c-d7ef80f27fcd");
 
     public UserRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -124,9 +123,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
             ValidIamUserId,
-            new [] { OfferSubscriptionStatusId.ACTIVE },
-            new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
-            new CompanyUserFilter(null, null, null, null, null))(0,15).ConfigureAwait(false);
+            new[] { OfferSubscriptionStatusId.ACTIVE },
+            new[] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -143,9 +142,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
             ValidIamUserId,
-            new [] { OfferSubscriptionStatusId.ACTIVE },
-            new [] { CompanyUserStatusId.INACTIVE },
-            new CompanyUserFilter(null, null, null, null, null))(0,15).ConfigureAwait(false);
+            new[] { OfferSubscriptionStatusId.ACTIVE },
+            new[] { CompanyUserStatusId.INACTIVE },
+            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -162,9 +161,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
             ValidIamUserId,
-            new [] { OfferSubscriptionStatusId.ACTIVE },
-            new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE, CompanyUserStatusId.DELETED },
-            new CompanyUserFilter(null, null, null, null, null))(0,15).ConfigureAwait(false);
+            new[] { OfferSubscriptionStatusId.ACTIVE },
+            new[] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE, CompanyUserStatusId.DELETED },
+            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -181,9 +180,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
             Guid.NewGuid().ToString(),
-            new [] { OfferSubscriptionStatusId.ACTIVE },
-            new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
-            new CompanyUserFilter(null, null, null, null, null))(0,15).ConfigureAwait(false);
+            new[] { OfferSubscriptionStatusId.ACTIVE },
+            new[] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -236,10 +235,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act        
         var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(ValidIamUserId, null).ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         result.Should().HaveCount(1);
     }
@@ -249,10 +248,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act        
         var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(string.Empty, null).ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         result.Should().BeEmpty();
     }
@@ -262,10 +261,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act        
         var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(string.Empty, _validCompanyUser).ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         result.Should().HaveCount(1);
     }
@@ -275,10 +274,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act        
         var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(ValidIamUserId, _validCompanyUser).ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         result.Should().HaveCount(1);
     }
@@ -292,35 +291,35 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var result = await sut
-            .GetCompanyUserWithRoleIdForCompany(new[] {new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")}, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
+            .GetCompanyUserWithRoleIdForCompany(new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
             .ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(1)
             .And.Contain(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
     }
-    
+
     [Fact]
     public async Task GetCompanyUserWithRoleIdForCompany_WithExistingUserForRole_WithoutCompanyId_ReturnsExpectedUserId()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var result = await sut
-            .GetCompanyUserWithRoleId(new[] {new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")})
+            .GetCompanyUserWithRoleId(new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") })
             .ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(3)
             .And.Contain(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
     }
-    
+
     #endregion
-    
+
     #region GetCompanyUserWithRoleIdForCompany
 
     [Fact]
@@ -328,12 +327,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var result = await sut
-            .GetCompanyUserEmailForCompanyAndRoleId(new[] {new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")}, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
+            .GetCompanyUserEmailForCompanyAndRoleId(new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
             .ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         result.Should().HaveCount(1)
             .And.Satisfy(
@@ -350,12 +349,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var result = await sut
             .GetCompanyBpnForIamUserAsync(ValidIamUserId)
             .ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBeNull();
         result.Should().Be("BPNL00000003CRHK");
@@ -387,9 +386,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetAppAssignedIamClientUserDataUntrackedAsync
 
     [Theory]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true,  true,  "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true,  "SDE with EDC", "User", "Active")]
-    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true,  false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true,  null,           "User", "Active")]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "not valid",    true,  true,  "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "SDE with EDC", "User", "Active")]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "SDE with EDC", "User", "Active")]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true, false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, null, "User", "Active")]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "not valid", true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "SDE with EDC", "User", "Active")]
     [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "deadbeef-dead-beef-dead-beefdeadbeef", ValidIamUserId, false, false, null, false, null, null, null)]
     public async Task GetAppAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, string iamUserId, bool found, bool validOffer, string resultIamUserId, bool sameCompany, string? offerName, string? firstName, string? lastName)
     {
@@ -419,9 +418,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetCoreOfferAssignedIamClientUserDataUntrackedAsync
 
     [Theory]
-    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true,  true,  "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true,  "User", "Active")]
-    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true,  false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true,  "User", "Active")]
-    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", "not valid",    true,  true,  "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "User", "Active")]
+    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "User", "Active")]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true, false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "User", "Active")]
+    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", "not valid", true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "User", "Active")]
     [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "deadbeef-dead-beef-dead-beefdeadbeef", ValidIamUserId, false, false, null, false, null, null)]
     public async Task GetCoreOfferAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, string iamUserId, bool found, bool validOffer, string resultIamUserId, bool sameCompany, string? firstName, string? lastName)
     {
@@ -446,7 +445,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region  GetUserDetails
 
     [Fact]
@@ -454,7 +453,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        var userRoleIds = new []{
+        var userRoleIds = new[]{
             new Guid("efc20368-9e82-46ff-b88f-6495b9810255"),
             new Guid("efc20368-9e82-46ff-b88f-6495b9810254")};
 

@@ -68,11 +68,13 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
-            line => {
-                var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.ProviderUserName, CsvHeaders.ProviderUserId, CsvHeaders.Roles }.Select(h => h.ToString());
+            line =>
+            {
+                var csvHeaders = new[] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.ProviderUserName, CsvHeaders.ProviderUserId, CsvHeaders.Roles }.Select(h => h.ToString());
                 CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
-            async line => {
+            async line =>
+            {
                 var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsSharedIdp);
                 ValidateUserCreationRoles(parsed.Roles);
                 return new UserCreationRoleDataIdpInfo(
@@ -100,7 +102,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
     }
 
-    async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (companyNameIdpAliasData.IsSharedIdp)
         {
@@ -127,19 +129,19 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             {
                 throw new UnexpectedConditionException("userCreationInfo should never be null here");
             }
-            if(result.Error != null || result.CompanyUserId == Guid.Empty || string.IsNullOrEmpty(userCreationInfo.Email))
+            if (result.Error != null || result.CompanyUserId == Guid.Empty || string.IsNullOrEmpty(userCreationInfo.Email))
             {
                 yield return result;
                 continue;
             }
 
-            var mailParameters = new Dictionary<string,string>()
+            var mailParameters = new Dictionary<string, string>()
             {
                 { "nameCreatedBy", nameCreatedBy },
                 { "url", _settings.Portal.BasePortalAddress },
             };
 
-            var mailTemplates = new [] { "NewUserOwnIdpTemplate" };
+            var mailTemplates = new[] { "NewUserOwnIdpTemplate" };
 
             Exception? mailError;
             try
@@ -147,7 +149,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                 await _mailingService.SendMails(userCreationInfo.Email, mailParameters, mailTemplates).ConfigureAwait(false);
                 mailError = null;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 mailError = e;
             }
@@ -171,8 +173,8 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         var email = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
         var providerUserName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.ProviderUserName);
         var providerUserId = isSharedIdp
-            ? CsvParser.NextStringItemIsNotNull(items,CsvHeaders.ProviderUserId)
-            : CsvParser.NextStringItemIsNotNullOrWhiteSpace(items,CsvHeaders.ProviderUserId);
+            ? CsvParser.NextStringItemIsNotNull(items, CsvHeaders.ProviderUserId)
+            : CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.ProviderUserId);
         var roles = CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, CsvHeaders.Roles).ToList();
         return (firstName, lastName, email, providerUserName, providerUserId, roles);
     }
@@ -193,11 +195,13 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
-            line => {
-                var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.Roles }.Select(h => h.ToString());
+            line =>
+            {
+                var csvHeaders = new[] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.Roles }.Select(h => h.ToString());
                 CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
-            async line => {
+            async line =>
+            {
                 var parsed = ParseUploadSharedIdpUsersCSVLine(line);
                 ValidateUserCreationRoles(parsed.Roles);
                 return new UserCreationRoleDataIdpInfo(

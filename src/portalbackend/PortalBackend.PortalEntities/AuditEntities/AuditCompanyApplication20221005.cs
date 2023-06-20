@@ -39,19 +39,19 @@ public class AuditCompanyApplication20221005 : IAuditEntityV1
     public DateTimeOffset DateCreated { get; set; }
 
     public CompanyApplicationStatusId ApplicationStatusId { get; set; }
-    
+
     public Guid CompanyId { get; set; }
-    
+
     public DateTimeOffset? DateLastChanged { get; set; }
 
     public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }
-    
+
     /// <inheritdoc />
     public AuditOperationId AuditV1OperationId { get; set; }
-    
+
     /// <inheritdoc />
     public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

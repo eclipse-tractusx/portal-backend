@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -36,19 +36,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Tests;
 
 public class ClearinghouseBusinessLogicTests
 {
-    private static readonly Guid IdWithoutBpn = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
-    private static readonly Guid IdWithApplicationCreated = new ("7a8f5cb6-6ad2-4b88-a765-ff1888fcedbe");
-    private static readonly Guid IdWithCustodianUnavailable = new ("beaa6de5-d411-4da8-850e-06047d3170be");
+    private static readonly Guid IdWithoutBpn = new("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
+    private static readonly Guid IdWithApplicationCreated = new("7a8f5cb6-6ad2-4b88-a765-ff1888fcedbe");
+    private static readonly Guid IdWithCustodianUnavailable = new("beaa6de5-d411-4da8-850e-06047d3170be");
 
-    private static readonly Guid IdWithBpn = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private const string ValidBpn = "BPNL123698762345";
     private const string ValidDid = "thisisavaliddid";
 
     private readonly IFixture _fixture;
-    
+
     private readonly IApplicationRepository _applicationRepository;
     private readonly IPortalRepositories _portalRepositories;
-    
+
     private readonly ClearinghouseBusinessLogic _logic;
     private readonly IClearinghouseService _clearinghouseService;
     private readonly IApplicationChecklistService _checklistService;
@@ -56,7 +56,7 @@ public class ClearinghouseBusinessLogicTests
 
     public ClearinghouseBusinessLogicTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
@@ -74,7 +74,7 @@ public class ClearinghouseBusinessLogicTests
             CallbackUrl = "https://api.com"
         }));
     }
-    
+
     #region HandleStartClearingHouse
 
     [Theory]
@@ -213,7 +213,7 @@ public class ClearinghouseBusinessLogicTests
     }
 
     #endregion
-    
+
     #region ProcessClearinghouseResponse
 
     [Fact]
@@ -259,16 +259,16 @@ public class ClearinghouseBusinessLogicTests
     }
 
     #endregion
-    
+
     #region Setup
-    
+
     private void SetupForHandleStartClearingHouse()
     {
         A.CallTo(() => _custodianBusinessLogic.GetWalletByBpnAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn || x == IdWithBpn || x == IdWithApplicationCreated), A<CancellationToken>._))
             .ReturnsLazily(() => new WalletData("Name", ValidBpn, ValidDid, DateTime.UtcNow, false, null));
         A.CallTo(() => _custodianBusinessLogic.GetWalletByBpnAsync(IdWithCustodianUnavailable, A<CancellationToken>._))
             .ReturnsLazily(() => (WalletData?)null);
-        A.CallTo(() => _custodianBusinessLogic.GetWalletByBpnAsync(A<Guid>.That.Not.Matches(x => x == IdWithoutBpn || x == IdWithBpn || x == IdWithApplicationCreated || x== IdWithCustodianUnavailable), A<CancellationToken>._))
+        A.CallTo(() => _custodianBusinessLogic.GetWalletByBpnAsync(A<Guid>.That.Not.Matches(x => x == IdWithoutBpn || x == IdWithBpn || x == IdWithApplicationCreated || x == IdWithCustodianUnavailable), A<CancellationToken>._))
             .ReturnsLazily(() => new WalletData("Name", ValidBpn, null, DateTime.UtcNow, false, null));
 
         var participantDetailsWithoutBpn = _fixture.Build<ParticipantDetails>()
@@ -309,10 +309,10 @@ public class ClearinghouseBusinessLogicTests
             });
 
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(
-                IdWithBpn, 
-                ApplicationChecklistEntryTypeId.CLEARING_HOUSE, 
-                A<IEnumerable<ApplicationChecklistEntryStatusId>>._, 
-                ProcessStepTypeId.END_CLEARING_HOUSE, 
+                IdWithBpn,
+                ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
+                ProcessStepTypeId.END_CLEARING_HOUSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>.Empty, new List<ProcessStep>()));

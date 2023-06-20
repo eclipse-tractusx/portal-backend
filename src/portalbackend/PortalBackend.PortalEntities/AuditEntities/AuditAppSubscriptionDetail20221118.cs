@@ -32,18 +32,18 @@ public class AuditAppSubscriptionDetail20221118 : IAuditEntityV1
     public Guid Id { get; set; }
     public Guid OfferSubscriptionId { get; set; }
     public Guid? AppInstanceId { get; set; }
-    
+
     [MaxLength(255)]
     public string? AppSubscriptionUrl { get; set; }
-    
-     public Guid? LastEditorId { get; set; }
+
+    public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }
-    
+
     /// <inheritdoc />
     public AuditOperationId AuditV1OperationId { get; set; }
-    
+
     /// <inheritdoc />
     public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

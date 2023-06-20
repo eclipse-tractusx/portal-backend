@@ -36,7 +36,7 @@ public interface ICustodianService
     /// <returns>Returns either the wallet for the bpn or null</returns>
     /// <exception cref="ServiceException"></exception>
     Task<WalletData> GetWalletByBpnAsync(string bpn, CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// Creates the wallet
     /// </summary>

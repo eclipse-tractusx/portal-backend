@@ -36,7 +36,7 @@ public class MediaType
         Id = mediaTypeId;
         Label = mediaTypeId.ToString();
     }
-    
+
     public MediaTypeId Id { get; private set; }
 
     [MaxLength(255)]

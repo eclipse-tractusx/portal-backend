@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,8 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
-public record ServiceProviderDetailData(string Url);
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjection;
 
-public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url);
+public static class ServiceLogicExtensions
+{
+    public static IServiceCollection AddServiceBusinessLogic(this IServiceCollection services, IConfiguration config)
+    {
+        services.AddOptions<ServiceSettings>()
+            .Bind(config.GetSection("Services"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>();
+    }
+}

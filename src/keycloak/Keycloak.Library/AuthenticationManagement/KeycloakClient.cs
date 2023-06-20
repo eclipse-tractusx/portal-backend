@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -70,7 +70,6 @@ public partial class KeycloakClient
             .AppendPathSegment(configurationId, true)
             .PutJsonAsync(authenticatorConfig)
             .ConfigureAwait(false);
-
 
     public async Task DeleteAuthenticatorConfigurationAsync(string realm, string configurationId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))

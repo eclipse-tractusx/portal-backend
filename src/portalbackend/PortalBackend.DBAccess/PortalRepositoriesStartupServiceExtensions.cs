@@ -35,7 +35,7 @@ public static class PortalRepositoriesStartupServiceExtensions
                     .UseNpgsql(configuration.GetConnectionString("PortalDB"))
                     .UsePostgreSqlTriggers())
             .AddHealthChecks()
-            .AddDbContextCheck<PortalDbContext>("PortalDbContext", tags: new [] { "portaldb" });
+            .AddDbContextCheck<PortalDbContext>("PortalDbContext", tags: new[] { "portaldb" });
         return services;
     }
 }

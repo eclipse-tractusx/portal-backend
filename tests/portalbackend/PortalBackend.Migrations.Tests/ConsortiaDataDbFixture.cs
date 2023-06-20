@@ -42,7 +42,7 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
                 Database = "test_db",
                 Username = "postgres",
                 Password = "postgres",
-                Environments = { {"Include Error Detail", "true"} }
+                Environments = { { "Include Error Detail", "true" } }
             })
             .WithImage("postgres")
             .WithCleanUp(true)
@@ -61,7 +61,7 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
     public PortalDbContext GetPortalDbContext()
     {
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
-        
+
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
@@ -78,9 +78,9 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
     {
         await _container.StartAsync()
             .ConfigureAwait(false);
-        
+
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
-        
+
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)

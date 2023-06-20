@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,26 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 /// <summary>
-/// Service to handle communication with the service provider details
+/// Business logic for handling service change-related operations. Includes persistence layer access.
 /// </summary>
-public interface IServiceProviderBusinessLogic
+public interface IServiceChangeBusinessLogic
 {
     /// <summary>
-    /// Gets the service provider company details
+    /// Deactivate Offer Status by serviceId
     /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <returns>The detail data</returns>
-    Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId);
-
-    /// <summary>
-    /// Sets service provider company details
-    /// </summary>
-    /// <param name="data">Detail data for the service provider</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
+    /// <param name="serviceId">Id of the service</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    public Task DeactivateOfferByServiceIdAsync(Guid serviceId, string iamUserId);
 }

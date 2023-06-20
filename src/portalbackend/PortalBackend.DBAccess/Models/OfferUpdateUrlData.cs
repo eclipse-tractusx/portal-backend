@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -31,7 +31,7 @@ public record OfferUpdateUrlData(
     OfferSubscriptionStatusId OfferSubscriptionStatusId,
     OfferUpdateUrlSubscriptionDetailData? SubscriptionDetailData);
 
-public record OfferUpdateUrlSubscriptionDetailData (
+public record OfferUpdateUrlSubscriptionDetailData(
     Guid DetailId,
     string? ClientClientId,
     string? SubscriptionUrl

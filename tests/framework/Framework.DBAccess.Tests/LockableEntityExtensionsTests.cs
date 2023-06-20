@@ -35,7 +35,7 @@ public class LockableEntityExtensionsTests
 
     public LockableEntityExtensionsTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
@@ -47,10 +47,10 @@ public class LockableEntityExtensionsTests
     }
 
     [Theory]
-    [InlineData(TimeFrame.NULL,TimeFrame.SOON,true)]
-    [InlineData(TimeFrame.SOON,TimeFrame.WITHIN,false)]
-    [InlineData(TimeFrame.SOON,TimeFrame.SOON,false)]
-    [InlineData(TimeFrame.SOON,TimeFrame.EXPIRED,false)]
+    [InlineData(TimeFrame.NULL, TimeFrame.SOON, true)]
+    [InlineData(TimeFrame.SOON, TimeFrame.WITHIN, false)]
+    [InlineData(TimeFrame.SOON, TimeFrame.SOON, false)]
+    [InlineData(TimeFrame.SOON, TimeFrame.EXPIRED, false)]
     public void TryLock_ReturnsExpected(TimeFrame initialTimeFrame, TimeFrame lockTimeFrame, bool expected)
     {
         // Arrange
@@ -95,8 +95,8 @@ public class LockableEntityExtensionsTests
     }
 
     [Theory]
-    [InlineData(TimeFrame.NULL,false)]
-    [InlineData(TimeFrame.SOON,true)]
+    [InlineData(TimeFrame.NULL, false)]
+    [InlineData(TimeFrame.SOON, true)]
     public void ReleaseLock_ReturnsExpected(TimeFrame initialTimeFrame, bool expected)
     {
         // Arrange
@@ -122,8 +122,8 @@ public class LockableEntityExtensionsTests
     }
 
     [Theory]
-    [InlineData(TimeFrame.NULL,false)]
-    [InlineData(TimeFrame.SOON,true)]
+    [InlineData(TimeFrame.NULL, false)]
+    [InlineData(TimeFrame.SOON, true)]
     public void IsLocked_ReturnsExpected(TimeFrame initialTimeFrame, bool expected)
     {
         // Arrange
@@ -142,12 +142,12 @@ public class LockableEntityExtensionsTests
     }
 
     [Theory]
-    [InlineData(TimeFrame.NULL,TimeFrame.WITHIN,false)]
-    [InlineData(TimeFrame.NULL,TimeFrame.SOON,false)]
-    [InlineData(TimeFrame.NULL,TimeFrame.EXPIRED,false)]
-    [InlineData(TimeFrame.SOON,TimeFrame.WITHIN,false)]
-    [InlineData(TimeFrame.SOON,TimeFrame.SOON,false)]
-    [InlineData(TimeFrame.SOON,TimeFrame.EXPIRED,true)]
+    [InlineData(TimeFrame.NULL, TimeFrame.WITHIN, false)]
+    [InlineData(TimeFrame.NULL, TimeFrame.SOON, false)]
+    [InlineData(TimeFrame.NULL, TimeFrame.EXPIRED, false)]
+    [InlineData(TimeFrame.SOON, TimeFrame.WITHIN, false)]
+    [InlineData(TimeFrame.SOON, TimeFrame.SOON, false)]
+    [InlineData(TimeFrame.SOON, TimeFrame.EXPIRED, true)]
     public void IsLockExpired_ReturnsExpected(TimeFrame initialTimeFrame, TimeFrame lockTimeFrame, bool expected)
     {
         // Arrange
@@ -175,7 +175,7 @@ public class LockableEntityExtensionsTests
         EXPIRED
     }
 
-    DateTimeOffset? GetDateTimeOffset(TimeFrame timeFrame) =>
+    private DateTimeOffset? GetDateTimeOffset(TimeFrame timeFrame) =>
         timeFrame switch
         {
             TimeFrame.NULL => null,
@@ -186,7 +186,7 @@ public class LockableEntityExtensionsTests
             _ => default
         };
 
-    class Entity : ILockableEntity
+    private class Entity : ILockableEntity
     {
         public Entity(Guid version, DateTimeOffset? lockExpiryDate)
         {

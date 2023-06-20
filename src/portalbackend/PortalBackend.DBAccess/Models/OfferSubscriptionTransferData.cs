@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -51,7 +51,7 @@ public record OfferSubscriptionTransferData(OfferSubscriptionStatusId Status,
     string? Bpn,
     string? RequesterEmail,
     string? RequesterFirstname,
-    string? RequesterLastname, 
+    string? RequesterLastname,
     (bool IsSingleInstance, string? InstanceUrl) InstanceData,
     IEnumerable<Guid> AppInstanceIds,
     Guid? SalesManagerId

@@ -33,7 +33,7 @@ public class RegistrationSettings
 
     [Required(AllowEmptyStrings = false)]
     public string KeycloakClientID { get; set; }
-    
+
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; set; }
 

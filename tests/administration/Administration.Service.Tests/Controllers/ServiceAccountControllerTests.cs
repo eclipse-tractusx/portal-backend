@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -69,7 +69,7 @@ public class ServiceAccountControllerTests
         result.Value.Should().BeOfType<ServiceAccountDetails>();
         (result.Value as ServiceAccountDetails)?.ServiceAccountId.Should().Be(serviceAccountId);
     }
-    
+
     [Fact]
     public async Task GetServiceAccountRolesAsync_CallsExpected()
     {

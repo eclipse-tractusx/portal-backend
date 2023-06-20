@@ -46,7 +46,10 @@ public class KeycloakSettings
         }
 
         if ((User != null && Password != null) ||
-            (ClientId != null && ClientSecret != null)) return;
+            (ClientId != null && ClientSecret != null))
+        {
+            return;
+        }
 
         new ConfigurationValidation<KeycloakSettings>()
             .NotNullOrWhiteSpace(User, () => nameof(User))

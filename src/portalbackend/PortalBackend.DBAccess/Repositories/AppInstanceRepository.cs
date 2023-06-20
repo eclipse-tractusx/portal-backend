@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -71,7 +71,7 @@ public class AppInstanceRepository : IAppInstanceRepository
             .AnyAsync();
 
     /// <inheritdoc />
-    public void RemoveAppInstanceAssignedServiceAccounts(Guid appInstanceId, IEnumerable<Guid> serviceAccountIds) => 
+    public void RemoveAppInstanceAssignedServiceAccounts(Guid appInstanceId, IEnumerable<Guid> serviceAccountIds) =>
         _portalDbContext.AppInstanceAssignedServiceAccounts
             .RemoveRange(serviceAccountIds.Select(x => new AppInstanceAssignedCompanyServiceAccount(appInstanceId, x)));
 }

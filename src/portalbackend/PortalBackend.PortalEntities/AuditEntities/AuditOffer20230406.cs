@@ -57,7 +57,7 @@ public class AuditOffer20230406 : IAuditEntityV1
     public Guid? ProviderCompanyId { get; set; }
 
     public OfferStatusId OfferStatusId { get; set; }
-    
+
     public LicenseTypeId LicenseTypeId { get; set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }

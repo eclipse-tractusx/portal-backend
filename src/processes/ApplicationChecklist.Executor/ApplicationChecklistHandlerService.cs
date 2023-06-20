@@ -30,7 +30,7 @@ using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 
-    /// <inheritdoc />
+/// <inheritdoc />
 public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerService
 {
     private readonly IBpdmBusinessLogic _bpdmBusinessLogic;
@@ -81,7 +81,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
     }
 
     /// <inheritdoc />
-    public bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId) =>_stepExecutions.ContainsKey(stepTypeId);
+    public bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId) => _stepExecutions.ContainsKey(stepTypeId);
 
     /// <inheritdoc />
     public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _stepExecutions.Keys;

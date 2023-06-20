@@ -24,11 +24,11 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using AuthorizationResource = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationResources.AuthorizationResource;
+using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
-using Flurl.Http;
+using AuthorizationResource = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationResources.AuthorizationResource;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -60,7 +60,7 @@ public partial class KeycloakClient
             .GetJsonAsync<AuthorizationPermission>()
             .ConfigureAwait(false);
 
-    public async Task<IEnumerable<AuthorizationPermission>> GetAuthorizationPermissionsAsync(string realm, string clientId, AuthorizationPermissionType? ofPermissionType = null, 
+    public async Task<IEnumerable<AuthorizationPermission>> GetAuthorizationPermissionsAsync(string realm, string clientId, AuthorizationPermissionType? ofPermissionType = null,
         int? first = null, int? max = null, string? name = null, string? resource = null, string? scope = null)
     {
         var queryParams = new Dictionary<string, object?>
@@ -81,7 +81,7 @@ public partial class KeycloakClient
 
         if (ofPermissionType.HasValue)
             request.AppendPathSegment(ofPermissionType.Value == AuthorizationPermissionType.Scope ? "/scope" : "/resource");
-        
+
         return await request
             .SetQueryParams(queryParams)
             .GetJsonAsync<IEnumerable<AuthorizationPermission>>()
@@ -112,7 +112,7 @@ public partial class KeycloakClient
             .AppendPathSegment(permissionId, true)
             .DeleteAsync()
             .ConfigureAwait(false);
-    
+
     public async Task<IEnumerable<Policy>> GetAuthorizationPermissionAssociatedPoliciesAsync(string realm, string clientId, string permissionId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
@@ -149,7 +149,7 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<AuthorizationResource>>()
             .ConfigureAwait(false);
 
-    #endregion 
+    #endregion
 
     #region Policy
     public async Task<RolePolicy> CreateRolePolicyAsync(string realm, string clientId, RolePolicy policy) =>
@@ -176,8 +176,8 @@ public partial class KeycloakClient
             .GetJsonAsync<RolePolicy>()
             .ConfigureAwait(false);
 
-    public async Task<IEnumerable<Policy>> GetAuthorizationPoliciesAsync(string realm, string clientId, 
-        int? first = null, int? max = null, 
+    public async Task<IEnumerable<Policy>> GetAuthorizationPoliciesAsync(string realm, string clientId,
+        int? first = null, int? max = null,
         string? name = null, string? resource = null,
         string? scope = null, bool? permission = null)
     {
@@ -202,8 +202,8 @@ public partial class KeycloakClient
             .ConfigureAwait(false);
     }
 
-    public async Task<IEnumerable<RolePolicy>> GetRolePoliciesAsync(string realm, string clientId, 
-        int? first = null, int? max = null, 
+    public async Task<IEnumerable<RolePolicy>> GetRolePoliciesAsync(string realm, string clientId,
+        int? first = null, int? max = null,
         string? name = null, string? resource = null,
         string? scope = null, bool? permission = null)
     {

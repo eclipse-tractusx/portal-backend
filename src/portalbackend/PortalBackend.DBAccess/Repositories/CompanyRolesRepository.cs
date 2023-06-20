@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -64,7 +64,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
         _dbContext.CompanyRoles
             .AsNoTracking()
             .Where(companyRole => companyRole.CompanyRoleRegistrationData!.IsRegistrationRole && companyRoleIds.Contains(companyRole.Id))
-            .Select(companyRole => new ValueTuple<CompanyRoleId,IEnumerable<Guid>>(
+            .Select(companyRole => new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(
                 companyRole.Id,
                 companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
             )).AsAsyncEnumerable();
@@ -91,9 +91,11 @@ public class CompanyRolesRepository : ICompanyRolesRepository
             .Select(companyRole => new
             {
                 Id = companyRole.Id,
-                Descriptions = companyRole.CompanyRoleDescriptions.Select(description => new {
+                Descriptions = companyRole.CompanyRoleDescriptions.Select(description => new
+                {
                     ShortName = description.LanguageShortName,
-                    Description = description.Description }),
+                    Description = description.Description
+                }),
                 Agreements = companyRole.AgreementAssignedCompanyRoles.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
             })
             .AsAsyncEnumerable())

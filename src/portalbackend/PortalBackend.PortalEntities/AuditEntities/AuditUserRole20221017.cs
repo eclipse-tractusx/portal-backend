@@ -35,14 +35,14 @@ public class AuditUserRole20221017 : IAuditEntityV1
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
-    
+
     public Guid Id { get; private set; }
 
     [Column("user_role")]
     public string UserRoleText { get; set; }
 
     public Guid OfferId { get; set; }
-    
+
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
     /// <inheritdoc />

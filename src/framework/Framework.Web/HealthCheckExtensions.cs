@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Builder;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Net.Mime;
 using System.Text.Json;
@@ -30,12 +30,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class HealthCheckExtensions
 {
-    private static readonly JsonSerializerOptions _serializerOptions = new ()
-        {
-            WriteIndented = false,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
+    private static readonly JsonSerializerOptions _serializerOptions = new()
+    {
+        WriteIndented = false,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 
     private static Task WriteResponse(
         HttpContext context,
@@ -43,18 +43,20 @@ public static class HealthCheckExtensions
     {
         context.Response.ContentType = MediaTypeNames.Application.Json;
         return context.Response.WriteAsync(JsonSerializer.Serialize(
-            new {
+            new
+            {
                 Status = report.Status.ToString(),
                 Duration = report.TotalDuration,
                 Info = report.Entries
-                    .Select(e => new {
-                            Key = e.Key,
-                            Description = e.Value.Description,
-                            Duration = e.Value.Duration,
-                            Status = Enum.GetName<HealthStatus>(e.Value.Status),
-                            Error = e.Value.Exception?.Message,
-                            Data = e.Value.Data
-                        })
+                    .Select(e => new
+                    {
+                        Key = e.Key,
+                        Description = e.Value.Description,
+                        Duration = e.Value.Duration,
+                        Status = Enum.GetName<HealthStatus>(e.Value.Status),
+                        Error = e.Value.Exception?.Message,
+                        Data = e.Value.Data
+                    })
             },
             _serializerOptions));
     }
@@ -69,7 +71,7 @@ public static class HealthCheckExtensions
             }
             foreach (var configured in settings)
             {
-                app.MapHealthChecks(configured.Path, new ()
+                app.MapHealthChecks(configured.Path, new()
                 {
                     Predicate = registration => configured.Tags != null && configured.Tags.Intersect(registration.Tags).Any(),
                     ResponseWriter = WriteResponse

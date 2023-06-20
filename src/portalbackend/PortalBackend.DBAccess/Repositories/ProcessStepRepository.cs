@@ -57,6 +57,22 @@ public class ProcessStepRepository : IProcessStepRepository
         modify(step);
     }
 
+    public void AttachAndModifyProcessSteps(IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)> processStepIdsInitializeModifyData)
+    {
+        var stepModifyData = processStepIdsInitializeModifyData.Select(data =>
+            {
+                var step = new ProcessStep(data.ProcessStepId, default, default, Guid.Empty, default);
+                data.Initialize?.Invoke(step);
+                return (Step: step, data.Modify);
+            }).ToList();
+        _context.AttachRange(stepModifyData.Select(data => data.Step));
+        stepModifyData.ForEach(data =>
+            {
+                data.Step.DateLastChanged = DateTimeOffset.UtcNow;
+                data.Modify(data.Step);
+            });
+    }
+
     public IAsyncEnumerable<Process> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds, DateTimeOffset lockExpiryDate) =>
         _context.Processes
             .AsNoTracking()
@@ -74,7 +90,7 @@ public class ProcessStepRepository : IProcessStepRepository
                 step.ProcessStepStatusId == ProcessStepStatusId.TODO)
             .OrderBy(step => step.ProcessStepTypeId)
             .Select(step =>
-                new ValueTuple<Guid,ProcessStepTypeId>(
+                new ValueTuple<Guid, ProcessStepTypeId>(
                     step.Id,
                     step.ProcessStepTypeId))
             .AsAsyncEnumerable();

@@ -31,7 +31,7 @@ public class RegistrationSettings
     }
 
     public int ApplicationsMaxPageSize { get; set; }
-    
+
     /// <summary>
     /// Document Type Id
     /// </summary>

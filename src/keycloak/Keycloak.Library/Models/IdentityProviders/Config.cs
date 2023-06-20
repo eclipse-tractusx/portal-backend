@@ -53,7 +53,7 @@ public class Config
     [JsonProperty("clientAssertionSigningAlg")]
     public string? ClientAssertionSigningAlg { get; set; }
     [JsonProperty("syncMode")]
-    public string SyncMode{ get; set; }
+    public string SyncMode { get; set; }
     [JsonProperty("validateSignature")]
     public string ValidateSignature { get; set; }
     [JsonProperty("userInfoUrl")]

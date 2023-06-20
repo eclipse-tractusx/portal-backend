@@ -61,7 +61,7 @@ public class Config
     [JsonProperty("userattributelocality")]
     public string UserAttributeLocality { get; set; }
     [JsonProperty("included.client.audience")]
-    public string IncludedClientAudience {get; set; }
+    public string IncludedClientAudience { get; set; }
     [JsonProperty("multivalued")]
     public string Multivalued { get; set; }
 }

@@ -58,10 +58,11 @@ public class AwaitAllIAsyncEnumerableExtensionTests
 
         async IAsyncEnumerable<string> CreateSut()
         {
-            int n = 0;
+            var n = 0;
             foreach (var x in data)
             {
-                if (n == 3) throw new Exception(message);
+                if (n == 3)
+                    throw new Exception(message);
                 yield return x;
                 n++;
             }
@@ -73,7 +74,11 @@ public class AwaitAllIAsyncEnumerableExtensionTests
 
         var sut = CreateSut();
 
-        await foreach (var item in sut.CatchingAsync(exception => { error = exception; return Task.CompletedTask; }))
+        await foreach (var item in sut.CatchingAsync(exception =>
+        {
+            error = exception;
+            return Task.CompletedTask;
+        }))
         {
             items.Add(item);
         }
@@ -94,10 +99,11 @@ public class AwaitAllIAsyncEnumerableExtensionTests
 
         async IAsyncEnumerable<Guid> CreateSut()
         {
-            int n = 0;
+            var n = 0;
             foreach (var x in data)
             {
-                if (n == 3) throw new Exception(message);
+                if (n == 3)
+                    throw new Exception(message);
                 yield return x;
                 n++;
             }
@@ -109,7 +115,11 @@ public class AwaitAllIAsyncEnumerableExtensionTests
 
         var sut = CreateSut();
 
-        await foreach (var item in sut.CatchingAsync(exception => { error = exception; return Task.CompletedTask; }))
+        await foreach (var item in sut.CatchingAsync(exception =>
+        {
+            error = exception;
+            return Task.CompletedTask;
+        }))
         {
             items.Add(item);
         }

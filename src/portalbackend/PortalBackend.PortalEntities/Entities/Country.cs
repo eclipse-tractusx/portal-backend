@@ -43,7 +43,7 @@ public class Country
     }
 
     [Key]
-    [StringLength(2,MinimumLength = 2)]
+    [StringLength(2, MinimumLength = 2)]
     [JsonPropertyName("alpha2code")]
     public string Alpha2Code { get; private set; }
 

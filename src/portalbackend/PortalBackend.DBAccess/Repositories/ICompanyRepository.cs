@@ -64,19 +64,20 @@ public interface ICompanyRepository
     /// Checks whether the iamUser is assigned to the company and the company exists
     /// </summary>
     /// <param name="iamUserId">IAm User Id</param>
-    /// <param name="companyRoleId">The company Role</param>
+    /// <param name="companyRoleIds">The company Roles</param>
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
-    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, CompanyRoleId companyRoleId);
+    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, IEnumerable<CompanyRoleId> companyRoleIds);
 
     Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(string iamUserId);
-    
+
     /// <summary>
     /// Creates service provider company details
     /// </summary>
     /// <param name="companyId">Id of the company</param>
     /// <param name="dataUrl">Url for the service provider</param>
+    /// <param name="setOptionalParameter">action to set optional parameter</param>
     /// <returns>Returns the newly created entity</returns>
-    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl);
+    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter = null);
 
     /// <summary>
     /// Gets the service provider company details data
@@ -85,7 +86,7 @@ public interface ICompanyRepository
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details data</returns>
     Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId);
-    
+
     /// <summary>
     /// Updates the service provider company details
     /// </summary>
@@ -115,7 +116,7 @@ public interface ICompanyRepository
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="useCaseId">Id of the UseCase</param>
     /// <returns>Returns the CompanyActive Status, companyAssigendUeseCase Id and CompanyId</returns>
-    Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus , Guid CompanyId)> GetCompanyStatusAndUseCaseIdAsync(string iamUserId, Guid useCaseId);
+    Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, Guid CompanyId)> GetCompanyStatusAndUseCaseIdAsync(string iamUserId, Guid useCaseId);
 
     /// <summary>
     /// creates the companyAssigendUeseCase record
@@ -148,7 +149,7 @@ public interface ICompanyRepository
     /// </summary>
     /// <param name="companyRoleIds">Id of the CompanyRole</param>
     /// <returns>Returns the AgreementAssignedCompanyRoles Data</returns>
-    IAsyncEnumerable<(Guid AgreementId, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync (IEnumerable<CompanyRoleId> companyRoleIds);
+    IAsyncEnumerable<(Guid AgreementId, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync(IEnumerable<CompanyRoleId> companyRoleIds);
 
     /// <summary>
     /// Gets the the CompanyStatus Data

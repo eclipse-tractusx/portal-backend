@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -33,7 +33,7 @@ public class UseCase : IBaseEntity
         CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
         Apps = new HashSet<Offer>();
     }
-    
+
     public UseCase(Guid id, string name, string shortname) : this()
     {
         Id = id;

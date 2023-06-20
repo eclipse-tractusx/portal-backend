@@ -46,7 +46,7 @@ public record ServiceDetailsData(
     /// Provider of the offer.
     /// </summary>
     string Provider,
-    
+
     /// <summary>
     /// Descriptions of the offer.
     /// </summary>
@@ -57,7 +57,7 @@ public record ServiceDetailsData(
     /// </summary>
     IEnumerable<DocumentTypeData> Documents,
 
-     /// <summary>
+    /// <summary>
     /// Uri to provider's marketing presence.
     /// </summary>
     string? ProviderUri,
@@ -71,17 +71,17 @@ public record ServiceDetailsData(
     /// Phone number of the app's primary contact.
     /// </summary>
     string? ContactNumber,
-    
+
     /// <summary>
     /// Offer Status Id
     /// </summary>
     OfferStatusId OfferStatusId,
-    
+
     /// <summary>
     /// License Type Id
     /// </summary>
     LicenseTypeId LicenseTypeId,
-    
+
     ///<summary>
     /// Technical User Profile
     ///</summary>

@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers;
@@ -69,7 +70,7 @@ public class ServiceControllerTest
         Assert.IsType<Pagination.Response<ServiceOverviewData>>(result);
         result.Content.Should().HaveCount(5);
     }
-        
+
     [Fact]
     public async Task AddServiceSubscriptionWithConsent_ReturnsExpectedId()
     {
@@ -106,7 +107,7 @@ public class ServiceControllerTest
         Assert.IsType<ServiceDetailResponse>(result);
         result.Should().Be(serviceDetailData);
     }
-        
+
     [Fact]
     public async Task GetSubscriptionDetail_ReturnsExpectedId()
     {
@@ -140,7 +141,7 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetServiceAgreement(ServiceId)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
-        
+
     [Fact]
     public async Task GetServiceAgreementConsentDetail_ReturnsExpected()
     {
@@ -157,18 +158,21 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetServiceConsentDetailDataAsync(consentId)).MustHaveHappenedOnceExactly();
         result.CompanyName.Should().Be("Test Company");
     }
-        
+
     [Fact]
     public async Task AutoSetupService_ReturnsExpected()
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
+        var userRoleData = new List<string>();
+        userRoleData.Add("Sales Manager");
+        userRoleData.Add("IT Manager");
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
         var responseData = new OfferAutoSetupResponseData(
-            new TechnicalUserInfoData(Guid.NewGuid(), "abcPW", "sa1"),
-            new ClientInfoData(Guid.NewGuid().ToString())
+            new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"),
+            new ClientInfoData(Guid.NewGuid().ToString(), "http://www.google.com")
         );
-        A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
+        A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x == IamUserId)))
             .Returns(responseData);
 
         //Act
@@ -179,7 +183,7 @@ public class ServiceControllerTest
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
     }
-      
+
     [Theory]
     [InlineData(null)]
     [InlineData("c714b905-9d2a-4cf3-b9f7-10be4eeddfc8")]
@@ -208,35 +212,50 @@ public class ServiceControllerTest
         var documentId = _fixture.Create<Guid>();
         var content = _fixture.Create<byte[]>();
         var fileName = _fixture.Create<string>();
-        
-        A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._))
-            .Returns((content,"image/png",fileName));
+
+        A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._))
+            .Returns((content, "image/png", fileName));
 
         //Act
-        var result = await this._controller.GetServiceDocumentContentAsync(serviceId,documentId,CancellationToken.None).ConfigureAwait(false);
+        var result = await this._controller.GetServiceDocumentContentAsync(serviceId, documentId, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         result.ContentType.Should().Be("image/png");
         result.FileDownloadName.Should().Be(fileName);
         result.Should().BeOfType<FileContentResult>();
     }
 
-     [Fact]
+    [Fact]
     public async Task GetCompanyProvidedServiceStatusDataAsync_ReturnsExpectedCount()
     {
         //Arrange
         var data = _fixture.CreateMany<AllOfferStatusData>(5);
         var paginationResponse = new Pagination.Response<AllOfferStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15,IamUserId, null, null,null))
+        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15, IamUserId, null, null, null))
             .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetCompanyProvidedServiceStatusDataAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15,IamUserId, null, null,null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15, IamUserId, null, null, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task StartAutoSetupProcess_ReturnsExpected()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
+
+        //Act
+        var result = await this._controller.StartAutoSetupServiceProcess(data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.StartAutoSetupAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 
     [Fact]
@@ -274,4 +293,25 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, IamUserId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
+
+    #region GetCompanySubscribedServiceSubscriptionStatusesForCurrentUserAsync
+
+    [Fact]
+    public async Task GetCompanySubscribedServiceSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
+        var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._))
+            .Returns(pagination);
+
+        //Act
+        var result = await this._controller.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(3).And.ContainInOrder(data);
+    }
+
+    #endregion
 }

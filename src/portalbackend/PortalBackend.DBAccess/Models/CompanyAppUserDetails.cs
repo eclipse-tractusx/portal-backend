@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public class CompanyAppUserDetails
 {
-    public CompanyAppUserDetails(Guid companyUserId, CompanyUserStatusId companyUserStatusId,IEnumerable<string> roles)
+    public CompanyAppUserDetails(Guid companyUserId, CompanyUserStatusId companyUserStatusId, IEnumerable<string> roles)
     {
         CompanyUserId = companyUserId;
         CompanyUserStatusId = companyUserStatusId;

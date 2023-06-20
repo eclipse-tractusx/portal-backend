@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Concurrent;
-using System.Reflection;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.JsonHelper;
+using System.Collections.Concurrent;
+using System.Reflection;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
@@ -71,7 +71,8 @@ public static class SeederHelper
         var envPath = env == null ? null : $".{env}";
         var path = Path.Combine(location, @"Seeder/Data", $"{fileName}{envPath}.json");
         logger.LogInformation("Looking for file {Path}", path);
-        if (!File.Exists(path)) return new List<T>();
+        if (!File.Exists(path))
+            return new List<T>();
 
         var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
         var list = JsonSerializer.Deserialize<List<T>>(data, options);

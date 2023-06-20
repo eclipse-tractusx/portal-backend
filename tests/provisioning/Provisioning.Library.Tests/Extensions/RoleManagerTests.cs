@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -62,12 +62,12 @@ public class RoleManagerTests
             "test"
         };
         using var httpTest = new HttpTest();
-        httpTest.RespondWithJson(new { access_token = "123"})
-            .RespondWithJson(new []{new Client { Id = clientId}})
-            .RespondWithJson(new { access_token = "123"})
+        httpTest.RespondWithJson(new { access_token = "123" })
+            .RespondWithJson(new[] { new Client { Id = clientId } })
+            .RespondWithJson(new { access_token = "123" })
             .RespondWithJson(new List<Role>())
-            .RespondWithJson(new { access_token = "123"});
-        
+            .RespondWithJson(new { access_token = "123" });
+
         // Act
         await _sut.AddRolesToClientAsync(ValidClientName, roles).ConfigureAwait(false);
 
@@ -86,12 +86,12 @@ public class RoleManagerTests
             "test"
         };
         using var httpTest = new HttpTest();
-        httpTest.RespondWithJson(new { access_token = "123"})
-            .RespondWithJson(new []{new Client { Id = clientId}})
-            .RespondWithJson(new { access_token = "123"})
-            .RespondWithJson(new []{ new Role{ Name = "123" }})
-            .RespondWithJson(new { access_token = "123"});
-        
+        httpTest.RespondWithJson(new { access_token = "123" })
+            .RespondWithJson(new[] { new Client { Id = clientId } })
+            .RespondWithJson(new { access_token = "123" })
+            .RespondWithJson(new[] { new Role { Name = "123" } })
+            .RespondWithJson(new { access_token = "123" });
+
         // Act
         await _sut.AddRolesToClientAsync(ValidClientName, roles).ConfigureAwait(false);
 
@@ -110,11 +110,10 @@ public class RoleManagerTests
         };
         var client = "notvalid";
         var httpTest = new HttpTest();
-        httpTest.RespondWithJson(new { access_token = "123"}).RespondWithJson(new List<Client>());
+        httpTest.RespondWithJson(new { access_token = "123" }).RespondWithJson(new List<Client>());
 
         // Act
         async Task Act() => await _sut.AddRolesToClientAsync("notvalid", roles).ConfigureAwait(false);
-        
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

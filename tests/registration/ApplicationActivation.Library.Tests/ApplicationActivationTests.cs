@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -72,7 +72,7 @@ public class ApplicationActivationTests
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -86,8 +86,8 @@ public class ApplicationActivationTests
         _settings = A.Fake<ApplicationActivationSettings>();
 
         var options = A.Fake<IOptions<ApplicationActivationSettings>>();
-        
-        _settings.WelcomeNotificationTypeIds = new []
+
+        _settings.WelcomeNotificationTypeIds = new[]
         {
             NotificationTypeId.WELCOME,
             NotificationTypeId.WELCOME_USE_CASES,
@@ -96,7 +96,7 @@ public class ApplicationActivationTests
             NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION
         };
 
-        _settings.ClientToRemoveRolesOnActivation = new []
+        _settings.ClientToRemoveRolesOnActivation = new[]
         {
             "remove-id"
         };
@@ -108,7 +108,7 @@ public class ApplicationActivationTests
 
         _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _mailingService, _dateTimeProvider, options);
     }
-    
+
     #region HandleApplicationActivation
 
     [Fact]
@@ -150,12 +150,12 @@ public class ApplicationActivationTests
     [Fact]
     public async Task HandleApplicationActivation_WithNotAllStepsInDone_ThrowsConflictException()
     {
-        var roles = new [] { "Company Admin" };
+        var roles = new[] { "Company Admin" };
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
             { ClientId, roles.AsEnumerable() }
         };
-        var userRoleData = new UserRoleData [] { new(UserRoleId, ClientId, "Company Admin") };
+        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
         var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
@@ -186,12 +186,12 @@ public class ApplicationActivationTests
     public async Task HandleApplicationActivation_WithMidnightRun_ApprovesRequestAndCreatesNotifications()
     {
         //Arrange
-        var roles = new [] { "Company Admin" };
+        var roles = new[] { "Company Admin" };
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
             { ClientId, roles.AsEnumerable() }
         };
-        var userRoleData = new UserRoleData [] { new(UserRoleId, ClientId, "Company Admin") };
+        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
         var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
@@ -243,8 +243,8 @@ public class ApplicationActivationTests
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new [] { "remove-id" }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._,A<IEnumerable<Guid>>.That.IsSameSequenceAs(new [] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("1", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("2", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
@@ -266,12 +266,12 @@ public class ApplicationActivationTests
     public async Task HandleApplicationActivation_WithCompanyAdminUser_ApprovesRequestAndCreatesNotifications()
     {
         //Arrange
-        var roles = new [] { "Company Admin" };
+        var roles = new[] { "Company Admin" };
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
             { ClientId, roles.AsEnumerable() }
         };
-        var userRoleData = new UserRoleData [] { new(UserRoleId, ClientId, "Company Admin") };
+        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
         var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
@@ -320,8 +320,8 @@ public class ApplicationActivationTests
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new [] { "remove-id" }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._,A<IEnumerable<Guid>>.That.IsSameSequenceAs(new [] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("1", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("2", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
@@ -357,7 +357,7 @@ public class ApplicationActivationTests
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
         ex.Message.Should().Be($"BusinessPartnerNumber (bpn) for CompanyApplications {Guid.Empty} company {Guid.Empty} is empty");
@@ -383,7 +383,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .Returns(((Guid,string,string?,IEnumerable<string>))default);
+            .Returns(((Guid, string, string?, IEnumerable<string>))default);
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -421,7 +421,7 @@ public class ApplicationActivationTests
     #endregion
 
     #region Validate ApplicationActivationSettings
-    
+
     [Fact]
     public void ApplicationActivationSettingsValidate_WithValidValues_ReturnsTrue()
     {
@@ -431,20 +431,20 @@ public class ApplicationActivationTests
             StartTime = new TimeSpan(1, 0, 0),
             EndTime = new TimeSpan(12, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
         //Assert
         result.Should().BeTrue();
     }
-    
+
     [Fact]
     public void ApplicationActivationSettingsValidate_WithoutStartAndEndTime_ReturnsTrue()
     {
         //Arrange
         var settings = new ApplicationActivationSettings();
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -460,7 +460,7 @@ public class ApplicationActivationTests
         {
             StartTime = new TimeSpan(1, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -476,7 +476,7 @@ public class ApplicationActivationTests
         {
             EndTime = new TimeSpan(1, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -493,7 +493,7 @@ public class ApplicationActivationTests
             StartTime = new TimeSpan(22, 0, 0),
             EndTime = new TimeSpan(6, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -510,7 +510,7 @@ public class ApplicationActivationTests
             StartTime = new TimeSpan(1, 5, 0, 0),
             EndTime = new TimeSpan(2, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -527,7 +527,7 @@ public class ApplicationActivationTests
             StartTime = new TimeSpan(1, 0, 0),
             EndTime = new TimeSpan(1, 2, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -544,7 +544,7 @@ public class ApplicationActivationTests
             StartTime = new TimeSpan(26, 0, 0),
             EndTime = new TimeSpan(2, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -561,7 +561,7 @@ public class ApplicationActivationTests
             StartTime = new TimeSpan(2, 0, 0),
             EndTime = new TimeSpan(25, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -578,7 +578,7 @@ public class ApplicationActivationTests
             StartTime = new TimeSpan(-2, 0, 0),
             EndTime = new TimeSpan(14, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -595,7 +595,7 @@ public class ApplicationActivationTests
             StartTime = new TimeSpan(14, 0, 0),
             EndTime = new TimeSpan(-2, 0, 0)
         };
-        
+
         //Act
         var result = ApplicationActivationSettings.Validate(settings);
 
@@ -604,9 +604,9 @@ public class ApplicationActivationTests
     }
 
     #endregion
-    
+
     #region Setup
-    
+
     private void SetupFakes(
         IDictionary<string, IEnumerable<string>> clientRoleNames,
         IEnumerable<UserRoleData> userRoleData,
@@ -618,13 +618,13 @@ public class ApplicationActivationTests
             .With(u => u.Name, CompanyName)
             .Create();
 
-        var companyInvitedUsers = new CompanyInvitedUserData []
+        var companyInvitedUsers = new CompanyInvitedUserData[]
         {
             new(CompanyUserId1, CentralUserId1.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
             new(CompanyUserId2, CentralUserId2.ToString(), Enumerable.Repeat(BusinessPartnerNumber, 1), Enumerable.Repeat(UserRoleId, 1)),
             new(CompanyUserId3, CentralUserId3.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
         }.ToAsyncEnumerable();
-        var businessPartnerNumbers = new string [] { BusinessPartnerNumber }.AsEnumerable();
+        var businessPartnerNumbers = new string[] { BusinessPartnerNumber }.AsEnumerable();
 
         _settings.ApplicationApprovalInitialRoles = clientRoleNames;
         _settings.CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
@@ -633,7 +633,7 @@ public class ApplicationActivationTests
         };
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new []{ IdpAlias }));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
             .Returns((IdWithoutBpn, null!, null, Enumerable.Empty<string>()));
 
@@ -642,7 +642,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
             .Returns((IdWithoutBpn, company.Name, null));
 
-        var welcomeEmailData = new EmailData []
+        var welcomeEmailData = new EmailData[]
         {
             new (CompanyUserId1, "Stan", "Lee", "stan@lee.com"),
             new (CompanyUserId2, "Tony", "Stark", "tony@stark.com"),
@@ -657,7 +657,7 @@ public class ApplicationActivationTests
             .Returns(userRoleData.ToAsyncEnumerable());
 
         A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == _settings.CompanyAdminRoles[ClientId].First())))
-            .Returns(new UserRoleData [] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
+            .Returns(new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
 
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id))
             .Returns(companyInvitedUsers);
@@ -703,9 +703,9 @@ public class ApplicationActivationTests
 
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .ReturnsLazily((
-                IDictionary<string,IEnumerable<string>> _, 
-                Guid? creatorId, 
-                IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, 
+                IDictionary<string, IEnumerable<string>> _,
+                Guid? creatorId,
+                IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
                 Guid _,
                 bool? done) =>
             {
@@ -720,7 +720,7 @@ public class ApplicationActivationTests
                     };
                     _notifications.Add(notification);
                 }
-                return CreateNotificationsUserIds(new [] {
+                return CreateNotificationsUserIds(new[] {
                     CompanyUserId1,
                     CompanyUserId2,
                     CompanyUserId3
@@ -730,7 +730,7 @@ public class ApplicationActivationTests
 
     private void SetupForDelete()
     {
-        var userData = new (Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds) []
+        var userData = new (Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds)[]
         {
             new (CompanyUserId1, "1", new [] {CompanyUserRoleId}),
             new (CompanyUserId2, "2", new [] {CompanyUserRoleId}),
@@ -740,10 +740,10 @@ public class ApplicationActivationTests
             ( "remove-id", new [] { ( CompanyUserRoleId, "Company Admin" ) } )
         };
 
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new [] { "remove-id" })))
+        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
             .Returns(userRoles.ToAsyncEnumerable());
 
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._,A<IEnumerable<Guid>>.That.IsSameSequenceAs(new [] { CompanyUserRoleId })))
+        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId })))
             .Returns(userData.ToAsyncEnumerable());
     }
 

@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class AppLanguage
 {
-    private AppLanguage() 
+    private AppLanguage()
     {
         LanguageShortName = string.Empty;
     }
