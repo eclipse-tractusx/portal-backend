@@ -98,7 +98,8 @@ public class DistinctValuesValidation<TOptions> : IValidateOptions<TOptions> whe
                     GetDelegate(attribute.Selector, propertyInfo);
                     continue;
                 default:
-                    duplicates = items.DuplicatesBy(x => GetDelegate(attribute.Selector, propertyInfo).DynamicInvoke(x));
+                    var selector = GetDelegate(attribute.Selector, propertyInfo);
+                    duplicates = items.DuplicatesBy(x => selector.DynamicInvoke(x));
                     break;
             }
 
