@@ -24,7 +24,11 @@ on:
     branches: [ main, dev, tests/CPLP-2513/ReportPortal ]
   pull_request:
     types: [ opened, synchronize, reopened ]
-  workflow_dispatch:
+    schedule:
+    # Once a day
+      - cron: "0 0 * * *"
+    workflow_dispatch:
+    # Trigger manually
 
 jobs:
   build:
