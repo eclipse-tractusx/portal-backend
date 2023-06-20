@@ -133,7 +133,7 @@ public class ValidationTests
             !r.Skipped &&
             !r.Succeeded &&
             r.Failed &&
-            r.FailureMessage == "DataAnnotation validation failed for members: 'StringProperty' with the error: 'foo are duplicate values for StringProperty.'.; DataAnnotation validation failed for members: 'TypedProperty' with the error: '[foo, value3] are duplicate values for TypedProperty.'."
+            r.FailureMessage == "DataAnnotation validation failed for members: 'StringProperty' with the error: 'foo are duplicate values for StringProperty.'.; DataAnnotation validation failed for members: 'TypedProperty' with the error: 'Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+DistinctValuesTypedPropery are duplicate values for TypedProperty.'."
         );
     }
 
@@ -160,7 +160,7 @@ public class ValidationTests
 
         // Assert
         result.Should().NotBeNull().And.Match<UnexpectedConditionException>(r =>
-            r.Message == "invalid selector x => x.Foo for type System.Collections.Generic.KeyValuePair`2[System.String,System.String]");
+            r.Message == "invalid selector x => x.Foo for type Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+DistinctValuesTypedPropery");
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class ValidationTests
 
         // Assert
         result.Should().NotBeNull().And.Match<UnexpectedConditionException>(r =>
-            r.Message == "invalid selector x => x.Foo for type System.Collections.Generic.KeyValuePair`2[System.String,System.String]");
+            r.Message == "invalid selector x => x.Foo for type Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+DistinctValuesTypedPropery");
     }
 
     #endregion
