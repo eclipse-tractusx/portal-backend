@@ -36,19 +36,25 @@ public class ValidationTests
 
     #region DistinctValuesValidation
 
+    public class DistinctValuesTypedPropery
+    {
+        public string Key { get; set; } = null!;
+        public string Value { get; set; } = null!;
+    }
+
     public class DistinctValuesTestSettings
     {
         [DistinctValues]
         public IEnumerable<string> StringProperty { get; set; } = null!;
 
         [DistinctValues("x => x.Key")]
-        public IEnumerable<KeyValuePair<string, string>> TypedProperty { get; set; } = null!;
+        public IEnumerable<DistinctValuesTypedPropery> TypedProperty { get; set; } = null!;
     }
 
     public class InvalidDistinctValuesTestSettings
     {
         [DistinctValues("x => x.Foo")]
-        public IEnumerable<KeyValuePair<string, string>> InvalidProperty { get; set; } = null!;
+        public IEnumerable<DistinctValuesTypedPropery> InvalidProperty { get; set; } = null!;
     }
 
     [Fact]
@@ -58,10 +64,10 @@ public class ValidationTests
         var settings = new DistinctValuesTestSettings()
         {
             StringProperty = new[] { "foo", "bar", "baz" },
-            TypedProperty = new[] {
-                new KeyValuePair<string, string>("foo", "value1"),
-                new KeyValuePair<string, string>("bar", "value2"),
-                new KeyValuePair<string, string>("baz", "value3")
+            TypedProperty = new DistinctValuesTypedPropery[] {
+                new () { Key = "foo", Value = "value1"},
+                new () { Key = "bar", Value = "value2"},
+                new () { Key = "baz", Value = "value3"}
             }
         };
 
@@ -109,10 +115,10 @@ public class ValidationTests
         var settings = new DistinctValuesTestSettings()
         {
             StringProperty = new[] { "foo", "bar", "foo" },
-            TypedProperty = new[] {
-                new KeyValuePair<string, string>("foo", "value1"),
-                new KeyValuePair<string, string>("bar", "value2"),
-                new KeyValuePair<string, string>("foo", "value3")
+            TypedProperty = new DistinctValuesTypedPropery[] {
+                new () { Key = "foo", Value = "value1"},
+                new () { Key = "bar", Value = "value2"},
+                new () { Key = "foo", Value = "value3"}
             }
         };
         var name = _fixture.Create<string>();
@@ -137,10 +143,10 @@ public class ValidationTests
         // Arrange
         var settings = new InvalidDistinctValuesTestSettings()
         {
-            InvalidProperty = new[] {
-                new KeyValuePair<string, string>("foo", "value1"),
-                new KeyValuePair<string, string>("bar", "value2"),
-                new KeyValuePair<string, string>("foo", "value3")
+            InvalidProperty = new DistinctValuesTypedPropery[] {
+                new () { Key = "foo", Value = "value1"},
+                new () { Key = "bar", Value = "value2"},
+                new () { Key = "foo", Value = "value3"}
             }
         };
         var name = _fixture.Create<string>();
