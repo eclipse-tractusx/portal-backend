@@ -86,7 +86,7 @@ public interface IOfferSubscriptionsRepository
     IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid userId);
 
     /// <summary>
-    /// Gets the needed details for the offer subscription
+    /// Gets the offer details for the offer subscription for a provider company user
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <param name="subscriptionId">Id of the subscription</param>
@@ -94,7 +94,29 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="userRoleIds">Ids of the user roles the contacts should be in</param>
     /// <returns>Returns details for the offer subscription</returns>
-    Task<(bool Exists, bool IsUserOfCompany, OfferSubscriptionDetailData Details)> GetSubscriptionDetailsAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds, bool forProvider);
+    Task<(bool Exists, bool IsUserOfCompany, ProviderSubscriptionDetailData? Details)> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds);
+
+    /// <summary>
+    /// Gets the app details for the offer subscription for a provider company user
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="userCompanyId">Id of the user company</param>
+    /// <param name="offerTypeId">Offer type</param>
+    /// <param name="userRoleIds">Ids of the user roles the contacts should be in</param>
+    /// <returns>Returns details for the offer subscription</returns>
+    Task<(bool Exists, bool IsUserOfCompany, AppProviderSubscriptionDetailData? Details)> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds);
+
+    /// <summary>
+    /// Gets the offer details for the offer subscription for a subscribing company user
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="userCompanyId">Id of the user company</param>
+    /// <param name="offerTypeId">Offer type</param>
+    /// <param name="userRoleIds">Ids of the user roles the contacts should be in</param>
+    /// <returns>Returns details for the offer subscription</returns>
+    Task<(bool Exists, bool IsUserOfCompany, SubscriberSubscriptionDetailData? Details)> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds);
 
     /// <summary>
     /// Get the data to update the subscription url

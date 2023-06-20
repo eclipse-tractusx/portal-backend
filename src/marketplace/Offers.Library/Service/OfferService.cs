@@ -784,54 +784,23 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
-    {
-        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
-        return new ProviderSubscriptionDetailData(
-            details.Id,
-            details.OfferSubscriptionStatus,
-            details.Name,
-            details.CompanyName,
-            details.Bpn,
-            details.Contact,
-            details.TechnicalUserData);
-    }
+    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles) =>
+        GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetSubscriptionDetailsForProviderAsync);
 
     /// <inheritdoc />
-    public async Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
-    {
-        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
-        return new AppProviderSubscriptionDetailData(
-            details.Id,
-            details.OfferSubscriptionStatus,
-            details.Name,
-            details.CompanyName,
-            details.Bpn,
-            details.Contact,
-            details.TechnicalUserData,
-            details.AppSubscriptionUrl);
-    }
+    public Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles) =>
+        GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAppSubscriptionDetailsForProviderAsync);
 
     /// <inheritdoc />
-    public async Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
-    {
-        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Subscriber);
-        return new SubscriberSubscriptionDetailData(
-            details.Id,
-            details.OfferSubscriptionStatus,
-            details.Name,
-            details.CompanyName,
-            details.Contact,
-            details.TechnicalUserData);
-    }
+    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles) =>
+        GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Subscriber, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetSubscriptionDetailsForSubscriberAsync);
 
-    private async Task<OfferSubscriptionDetailData> GetOfferSubscriptionDetailsInternal(Guid offerId, Guid subscriptionId, Guid companyId,
-        OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, OfferCompanyRole offerCompanyRole)
+    private async Task<R> GetOfferSubscriptionDetailsInternal<R>(Guid offerId, Guid subscriptionId, Guid companyId,
+        OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, OfferCompanyRole offerCompanyRole, Func<Guid, Guid, Guid, OfferTypeId, IEnumerable<Guid>, Task<(bool, bool, R?)>> query)
     {
         var userRoleIds = await ValidateRoleData(contactUserRoles).ConfigureAwait(false);
 
-        var (exists, isUserOfCompany, details) = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetSubscriptionDetailsAsync(offerId, subscriptionId, companyId, offerTypeId, userRoleIds, offerCompanyRole == OfferCompanyRole.Provider)
+        var (exists, isUserOfCompany, details) = await query(offerId, subscriptionId, companyId, offerTypeId, userRoleIds)
             .ConfigureAwait(false);
 
         if (!exists)
@@ -844,6 +813,10 @@ public class OfferService : IOfferService
             throw new ForbiddenException($"Company {companyId} is not part of the {offerCompanyRole} company");
         }
 
+        if (details == null)
+        {
+            throw new UnexpectedConditionException($"details for offer {offerId}, subscription {subscriptionId}, company {companyId}, offerType {offerTypeId}, should never be null here");
+        }
         return details;
     }
 

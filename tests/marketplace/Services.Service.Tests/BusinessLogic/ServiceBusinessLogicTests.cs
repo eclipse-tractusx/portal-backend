@@ -550,8 +550,9 @@ public class ServiceBusinessLogicTests
     public async Task GetSubscriptionDetailForSubscriber_WithNotMatchingUserRoles_ThrowsException()
     {
         // Arrange
-        var offerId = _fixture.Create<Guid>();
-        var subscriptionId = _fixture.Create<Guid>();
+        var offerId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
         var data = _fixture.Create<SubscriberSubscriptionDetailData>();
         var settings = new ServiceSettings
         {
@@ -560,15 +561,18 @@ public class ServiceBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
+
         var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(settings));
 
         // Act
-        var result = await sut.GetSubscriptionDetailForSubscriber(offerId, subscriptionId, _identity.CompanyId).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailForSubscriber(offerId, subscriptionId, companyId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(data);
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, companyId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
