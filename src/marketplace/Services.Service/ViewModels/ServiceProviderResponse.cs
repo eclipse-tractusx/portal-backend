@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -41,15 +41,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="ServiceTypeIds">ids of the service types</param>
 /// <param name="TechnicalUserProfile">ids of the service types</param>
 public record ServiceProviderResponse(
-    string? Title, 
-    Guid LeadPictureId, 
-    IEnumerable<LocalizedDescription> Descriptions, 
-    IEnumerable<OfferAgreement> Agreements, 
-    string? Price, 
-    IEnumerable<Guid> Images, 
-    string? ProviderUri, 
-    string? ContactEmail, 
-    string? ContactNumber, 
+    string? Title,
+    Guid LeadPictureId,
+    IEnumerable<LocalizedDescription> Descriptions,
+    IEnumerable<OfferAgreement> Agreements,
+    string? Price,
+    IEnumerable<Guid> Images,
+    string? ProviderUri,
+    string? ContactEmail,
+    string? ContactNumber,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
     Guid? SalesManagerId,
     IEnumerable<ServiceTypeId> ServiceTypeIds,

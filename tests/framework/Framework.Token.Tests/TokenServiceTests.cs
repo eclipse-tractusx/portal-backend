@@ -38,7 +38,7 @@ public class TokenServiceTests
 
     public TokenServiceTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());

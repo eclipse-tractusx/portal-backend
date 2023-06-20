@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -44,7 +44,7 @@ public class Company : IBaseEntity
         CompanyIdentifiers = new HashSet<CompanyIdentifier>();
         CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
     }
-    
+
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
     {
         Id = id;
@@ -74,7 +74,7 @@ public class Company : IBaseEntity
 
     // Navigation properties
     public virtual Address? Address { get; set; }
-    
+
     public virtual ProviderCompanyDetail? ProviderCompanyDetail { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Offer> BoughtOffers { get; private set; }

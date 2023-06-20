@@ -39,7 +39,7 @@ public interface IConsentRepository
     /// <param name="setupOptionalFields">Action to setup the optional fields of the consent</param>
     /// <returns>Returns the newly created consent</returns>
     Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields = null);
-    
+
     /// <summary>
     /// Remove the given consents from the database
     /// </summary>
@@ -68,7 +68,7 @@ public interface IConsentRepository
     /// <param name="consentIds">Collection of consets that should be updated</param>
     /// <param name="setOptionalParameter">Action that will be applied to all consents</param>
     void AttachAndModifiesConsents(IEnumerable<Guid> consentIds, Action<Consent> setOptionalParameter);
-    
+
     IEnumerable<Consent> AddAttachAndModifyOfferConsents(IEnumerable<AppAgreementConsentStatus> initialItems, IEnumerable<AgreementConsentStatus> modifyItems, Guid offerId, Guid companyId, Guid companyUserId, DateTimeOffset utcNow);
 
     IEnumerable<Consent> AddAttachAndModifyConsents(IEnumerable<ConsentStatusDetails> initialItems, IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> modifyItems, Guid companyId, Guid companyUserId, DateTimeOffset utcNow);

@@ -31,7 +31,7 @@ public class CompanyUserAssignedRole : IAuditableV1
         CompanyUserId = companyUserId;
         UserRoleId = userRoleId;
     }
-    
+
     public Guid CompanyUserId { get; private set; }
     public Guid UserRoleId { get; private set; }
 

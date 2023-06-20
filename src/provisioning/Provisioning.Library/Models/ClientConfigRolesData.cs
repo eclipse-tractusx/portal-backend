@@ -35,5 +35,5 @@ public class ClientConfigRolesData
     public string Name { get; set; }
     public string Description { get; set; }
     public IamClientAuthMethod IamClientAuthMethod { get; set; }
-    public IDictionary<string,IEnumerable<string>> ClientRoles { get; set; }
+    public IDictionary<string, IEnumerable<string>> ClientRoles { get; set; }
 }

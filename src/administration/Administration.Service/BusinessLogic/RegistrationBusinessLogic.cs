@@ -27,13 +27,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -46,11 +46,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private static readonly Regex bpnRegex = new (@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public RegistrationBusinessLogic(
-        IPortalRepositories portalRepositories, 
-        IOptions<RegistrationSettings> configuration, 
+        IPortalRepositories portalRepositories,
+        IOptions<RegistrationSettings> configuration,
         IMailingService mailingService,
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
@@ -196,7 +196,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
         }
-        
+
         return UpdateCompanyBpnInternal(applicationId, bpn);
     }
 
@@ -231,16 +231,16 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
-                new [] {
+                new[] {
                     ApplicationChecklistEntryStatusId.TO_DO,
                     ApplicationChecklistEntryStatusId.IN_PROGRESS,
                     ApplicationChecklistEntryStatusId.FAILED
                 },
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
-                entryTypeIds: new [] {
+                entryTypeIds: new[] {
                     ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION
                 },
-                processStepTypeIds: new [] {
+                processStepTypeIds: new[] {
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
@@ -249,14 +249,14 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 })
             .ConfigureAwait(false);
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null, 
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
             c => { c.BusinessPartnerNumber = bpn; });
 
         var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED;
 
         _checklistService.SkipProcessSteps(
             context,
-            new [] {
+            new[] {
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                 ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
@@ -268,14 +268,14 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
-                : new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET });
+                : new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken)
-    { 
+    {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
@@ -283,7 +283,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (result.Count > 1)
         {
-            throw new ConflictException($"more than one companyApplication in status SUBMITTED found for BPN {data.BusinessPartnerNumber} [{string.Join(", ",result)}]");
+            throw new ConflictException($"more than one companyApplication in status SUBMITTED found for BPN {data.BusinessPartnerNumber} [{string.Join(", ", result)}]");
         }
         await _clearinghouseBusinessLogic.ProcessEndClearinghouse(result.Single(), data, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -304,8 +304,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .OrderBy(x => x.TypeId)
             .Select(x =>
                 new ChecklistDetails(
-                    x.TypeId, 
-                    x.StatusId, 
+                    x.TypeId,
+                    x.StatusId,
                     x.Comment,
                     data.ProcessStepTypeIds.Intersect(x.TypeId.GetManualTriggerProcessStepIds())));
     }
@@ -332,9 +332,9 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 entryTypeId,
-                new [] { ApplicationChecklistEntryStatusId.FAILED },
+                new[] { ApplicationChecklistEntryStatusId.FAILED },
                 processStepTypeId,
-                processStepTypeIds: new [] { nextProcessStepTypeId })
+                processStepTypeIds: new[] { nextProcessStepTypeId })
             .ConfigureAwait(false);
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
@@ -343,7 +343,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             {
                 item.ApplicationChecklistEntryStatusId = checklistEntryStatusId;
             },
-            new [] { nextProcessStepTypeId });
+            new[] { nextProcessStepTypeId });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -373,10 +373,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
-                new [] { ApplicationChecklistEntryStatusId.TO_DO },
+                new[] { ApplicationChecklistEntryStatusId.TO_DO },
                 ProcessStepTypeId.VERIFY_REGISTRATION,
-                new [] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER },
-                new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET })
+                new[] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER },
+                new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET })
             .ConfigureAwait(false);
 
         var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE;
@@ -388,7 +388,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
             },
             businessPartnerSuccess
-                ? new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET }
+                ? new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET }
                 : null);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -408,13 +408,13 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
-                new [] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE },
+                new[] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE },
                 ProcessStepTypeId.DECLINE_APPLICATION,
                 null,
-                new [] { ProcessStepTypeId.VERIFY_REGISTRATION, })
+                new[] { ProcessStepTypeId.VERIFY_REGISTRATION, })
             .ConfigureAwait(false);
 
-        _checklistService.SkipProcessSteps(context, new [] { ProcessStepTypeId.VERIFY_REGISTRATION });
+        _checklistService.SkipProcessSteps(context, new[] { ProcessStepTypeId.VERIFY_REGISTRATION });
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
@@ -445,7 +445,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ConflictException("No comment set.");
         }
-        
+
         await foreach (var user in _portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
@@ -462,29 +462,29 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 { "declineComment", comment}
             };
 
-            await _mailingService.SendMails(user.Email, mailParameters, new [] { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
+            await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
         }
     }
 
     private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
-     {
-        switch(companyApplicationStatusFilter)
+    {
+        switch (companyApplicationStatusFilter)
         {
-            case CompanyApplicationStatusFilter.Closed :
-            {
-                return new [] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
-            }
-            case CompanyApplicationStatusFilter.InReview :
-            {
-                return new [] { CompanyApplicationStatusId.SUBMITTED };  
-            }
-            default :
-            {
-                return new [] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };                 
-            }
-        }  
+            case CompanyApplicationStatusFilter.Closed:
+                {
+                    return new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+                }
+            case CompanyApplicationStatusFilter.InReview:
+                {
+                    return new[] { CompanyApplicationStatusId.SUBMITTED };
+                }
+            default:
+                {
+                    return new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+                }
+        }
     }
-    
+
     /// <inheritdoc />
     public async Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId)
     {

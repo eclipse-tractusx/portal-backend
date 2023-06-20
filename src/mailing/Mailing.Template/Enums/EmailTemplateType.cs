@@ -76,7 +76,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
         /// </summary>
         [Path("registration_declined.html")]
         PortalRegistrationDecline,
-        
+
         /// <summary>
         /// Email template for notifying app providers of subscription requests.
         /// </summary>
@@ -88,25 +88,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
         /// </summary>
         [Path("appprovider_subscription_activation.html")]
         AppSubscriptionActivation,
-        
+
         /// <summary>
         /// Email template for notifying service providers of subscription requests.
         /// </summary>
         [Path("serviceprovider_subscription_request.html")]
         ServiceSubscriptionRequest,
-        
+
         /// <summary>
         /// Email template for notifying requester of subscription activations.
         /// </summary>
         [Path("serviceprovider_subscription_activation.html")]
         ServiceSubscriptionActivation,
-        
+
         /// <summary>
         /// Email template for notifying about decline of an app.
         /// </summary>
         [Path("app_request_decline.html")]
         AppRequestDecline,
-        
+
         /// <summary>
         /// Email template for notifying about decline of an service.
         /// </summary>

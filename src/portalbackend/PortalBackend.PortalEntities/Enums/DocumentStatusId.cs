@@ -29,12 +29,12 @@ public enum DocumentStatusId
     /// The document is pending
     /// </summary>
     PENDING = 1,
-    
+
     /// <summary>
     /// The document is locked for changes
     /// </summary>
     LOCKED = 2,
-    
+
     /// <summary>
     /// The document was deleted by the user
     /// </summary>

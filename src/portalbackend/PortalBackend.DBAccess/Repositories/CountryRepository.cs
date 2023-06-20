@@ -45,7 +45,7 @@ public class CountryRepository : ICountryRepository
         _portalDbContext.Countries
             .AsNoTracking()
             .Where(country => country.Alpha2Code == alpha2Code)
-            .Select(country => new ValueTuple<bool,IEnumerable<UniqueIdentifierId>>(
+            .Select(country => new ValueTuple<bool, IEnumerable<UniqueIdentifierId>>(
                 true,
                 country.CountryAssignedIdentifiers
                     .Where(assignedIdentifier => uniqueIdentifierIds.Contains(assignedIdentifier.UniqueIdentifierId))

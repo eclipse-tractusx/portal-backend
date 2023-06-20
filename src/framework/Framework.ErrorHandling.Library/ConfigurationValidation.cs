@@ -24,7 +24,7 @@ public class ConfigurationValidation<TSettings>
 {
     public ConfigurationValidation<TSettings> NotNull(object? item, Func<string> getItemName)
     {
-        if(item == null)
+        if (item == null)
         {
             throw new ConfigurationException($"{typeof(TSettings).Name}: {getItemName()} must not be null");
         }
@@ -33,7 +33,7 @@ public class ConfigurationValidation<TSettings>
 
     public ConfigurationValidation<TSettings> NotDefault(object item, Func<string> getItemName)
     {
-        if(item == default)
+        if (item == default)
         {
             throw new ConfigurationException($"{typeof(TSettings).Name}: {getItemName()} must not be null");
         }
@@ -42,7 +42,7 @@ public class ConfigurationValidation<TSettings>
 
     public ConfigurationValidation<TSettings> NotNullOrEmpty(string? item, Func<string> getItemName)
     {
-        if(string.IsNullOrEmpty(item))
+        if (string.IsNullOrEmpty(item))
         {
             throw new ConfigurationException($"{typeof(TSettings).Name}: {getItemName()} must not be null or empty");
         }
@@ -51,7 +51,7 @@ public class ConfigurationValidation<TSettings>
 
     public ConfigurationValidation<TSettings> NotNullOrWhiteSpace(string? item, Func<string> getItemName)
     {
-        if(string.IsNullOrWhiteSpace(item))
+        if (string.IsNullOrWhiteSpace(item))
         {
             throw new ConfigurationException($"{typeof(TSettings).Name}: {getItemName()} must not be null or whitespace");
         }

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 #nullable disable
 
@@ -135,7 +135,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
             migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
             migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4");
-            
+
             migrationBuilder.UpdateData(
                 schema: "portal",
                 table: "document_types",
@@ -288,7 +288,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalTable: "process_steps",
                         principalColumn: "id");
                 });
-            
+
             migrationBuilder.Sql("INSERT INTO portal.application_assigned_process_steps (company_application_id, process_step_id) SELECT applications.id,steps.id FROM portal.company_applications AS applications JOIN portal.process_steps AS steps ON applications.checklist_process_id = steps.process_id;");
 
             migrationBuilder.CreateTable(

@@ -23,10 +23,10 @@ using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
@@ -43,8 +43,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     private const string IamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
     private readonly Guid _validServiceId = new("ac1cf001-7fbc-1f2f-817f-bce0000c0001");
     private readonly Guid _validAppId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
-    private readonly Guid _validTechnicalUserProfile = new("8a0cd2e0-ceb6-43db-8753-84f1b4238f00");
-    
+
     public TechnicalUserProfileRepositoryTests(TestDbFixture testDbFixture)
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -308,7 +307,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     #endregion
 
     #region Setup
-    
+
     private async Task<(TechnicalUserProfileRepository, PortalDbContext)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

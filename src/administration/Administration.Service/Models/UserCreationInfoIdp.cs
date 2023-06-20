@@ -29,8 +29,8 @@ public record UserCreationInfoIdp(
     [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
     [property: JsonPropertyName("firstName")]
     string FirstName,
-    
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]    
+
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
     [property: JsonPropertyName("lastName")]
     string LastName,
 

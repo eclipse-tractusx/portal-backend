@@ -22,9 +22,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -62,11 +62,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     {
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
-        if(!useCaseDetails.IsActiveCompanyStatus)
+        if (!useCaseDetails.IsActiveCompanyStatus)
         {
             throw new ConflictException("Company Status is Incorrect");
         }
-        if(useCaseDetails.IsUseCaseIdExists)
+        if (useCaseDetails.IsUseCaseIdExists)
         {
             return false;
         }
@@ -80,11 +80,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     {
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
-        if(!useCaseDetails.IsActiveCompanyStatus)
+        if (!useCaseDetails.IsActiveCompanyStatus)
         {
             throw new ConflictException("Company Status is Incorrect");
         }
-        if(!useCaseDetails.IsUseCaseIdExists)
+        if (!useCaseDetails.IsUseCaseIdExists)
         {
             throw new ConflictException($"UseCaseId {useCaseId} is not available");
         }
@@ -101,11 +101,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var companyData = await companyRepositories.GetCompanyStatusDataAsync(iamUserId).ConfigureAwait(false);
-        if(companyData == default)
+        if (companyData == default)
         {
             throw new NotFoundException($"User {iamUserId} is not associated with any company");
         }
-        if(!companyData.IsActive)
+        if (!companyData.IsActive)
         {
             throw new ConflictException("Company Status is Incorrect");
         }
@@ -136,11 +136,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var result = await companyRepositories.GetCompanyRolesDataAsync(iamUserId, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
-        if(result == default)
+        if (result == default)
         {
             throw new ForbiddenException($"user {iamUserId} is not associated with any company");
         }
-        if(!result.IsCompanyActive)
+        if (!result.IsCompanyActive)
         {
             throw new ConflictException("Company Status is Incorrect");
         }
@@ -150,7 +150,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
         if (result.CompanyRoleIds.Any())
         {
-            throw new ConflictException($"companyRoles [{string.Join(", ",result.CompanyRoleIds)}] are already assigned to company {result.CompanyId}");
+            throw new ConflictException($"companyRoles [{string.Join(", ", result.CompanyRoleIds)}] are already assigned to company {result.CompanyId}");
         }
 
         var agreementAssignedRoleData = await companyRepositories.GetAgreementAssignedRolesDataAsync(companyRoleConsentDetails.Select(x => x.CompanyRole))

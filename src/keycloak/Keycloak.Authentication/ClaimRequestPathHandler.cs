@@ -33,21 +33,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
             _claim = claim;
             _parameter = parameter;
         }
-        public bool IsSuccess(IDictionary<string,object> routeValues, IEnumerable<Claim> claims)
+        public bool IsSuccess(IDictionary<string, object> routeValues, IEnumerable<Claim> claims)
         {
             var routeValue = routeValues[_parameter];
-            if (routeValue == null) return false;
-            var claim = claims.SingleOrDefault( x => x.Type == _claim );
-            if (claim == null) return false;
+            if (routeValue == null)
+                return false;
+            var claim = claims.SingleOrDefault(x => x.Type == _claim);
+            if (claim == null)
+                return false;
             return claim.Value.Equals(routeValue);
         }
     }
 
     public class ClaimRequestPathHandler : AuthorizationHandler<ClaimRequestPathRequirement>
     {
-        private IHttpContextAccessor _contextAccessor;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public ClaimRequestPathHandler (IHttpContextAccessor contextAccessor)
+        public ClaimRequestPathHandler(IHttpContextAccessor contextAccessor)
         {
             _contextAccessor = contextAccessor;
         }

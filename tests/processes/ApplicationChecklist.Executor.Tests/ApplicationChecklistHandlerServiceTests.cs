@@ -42,9 +42,9 @@ public class ChecklistHandlerServiceTests
 
     public ChecklistHandlerServiceTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b =>_fixture.Behaviors.Remove(b));
+            .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _bpdmBusinessLogic = A.Fake<IBpdmBusinessLogic>();
@@ -69,7 +69,7 @@ public class ChecklistHandlerServiceTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Guid.NewGuid(),
             stepTypeId,
-            _fixture.Create<IDictionary<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
+            _fixture.Create<IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
             _fixture.CreateMany<ProcessStepTypeId>());
 
         var error = new TestException();
@@ -92,7 +92,7 @@ public class ChecklistHandlerServiceTests
         execution.ProcessFunc(context, CancellationToken.None);
 
         // Assert process-func
-        switch(stepTypeId)
+        switch (stepTypeId)
         {
             case ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH:
                 A.CallTo(() => _bpdmBusinessLogic.PushLegalEntity(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -124,7 +124,7 @@ public class ChecklistHandlerServiceTests
         execution.ErrorFunc?.Invoke(error, context, CancellationToken.None);
 
         // Assert error-func
-        switch(stepTypeId)
+        switch (stepTypeId)
         {
             case ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH:
                 execution.ErrorFunc.Should().NotBeNull();
@@ -177,7 +177,7 @@ public class ChecklistHandlerServiceTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Guid.NewGuid(),
             stepTypeId,
-            _fixture.Create<IDictionary<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
+            _fixture.Create<IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
             _fixture.CreateMany<ProcessStepTypeId>());
 
         var sut = CreateSut();

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -90,7 +90,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL },
+            new[] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL },
             null,
             true,
             null);
@@ -99,7 +99,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandlePullLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
-        
+
         if (result == default)
         {
             throw new UnexpectedConditionException($"CompanyApplication {context.ApplicationId} does not exist");
@@ -111,7 +111,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 
         if (string.IsNullOrEmpty(legalEntity.Bpn))
         {
-            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false, null);
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null);
         }
 
         // TODO: clarify whether it should be an error if businessPartnerNumber has been set locally while bpdm-answer was outstanding
@@ -119,7 +119,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
             companyId,
-            company => 
+            company =>
             {
                 company.BusinessPartnerNumber = data.BusinessPartnerNumber;
             },
@@ -135,8 +135,8 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
-                : new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET },
-            new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL },
+                : new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET },
+            new[] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL },
             true,
             null);
     }

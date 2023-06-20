@@ -19,19 +19,19 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Runtime.CompilerServices;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 public class ProcessExecutor : IProcessExecutor
 {
-    private readonly ImmutableDictionary<ProcessTypeId,IProcessTypeExecutor> _executors; 
+    private readonly ImmutableDictionary<ProcessTypeId, IProcessTypeExecutor> _executors;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly ILogger<ProcessExecutor> _logger;
 
@@ -88,7 +88,7 @@ public class ProcessExecutor : IProcessExecutor
                 (modified, resultStepStatusId, scheduleStepTypeIds, skipStepTypeIds, processMessage) = await executor.ExecuteProcessStep(stepTypeId, context.AllSteps.Keys, cancellationToken).ConfigureAwait(false);
                 success = true;
             }
-            catch(Exception e) when (e is not SystemException)
+            catch (Exception e) when (e is not SystemException)
             {
                 resultStepStatusId = ProcessStepStatusId.FAILED;
                 processMessage = $"{e.GetType()}: {e.Message}";
@@ -125,7 +125,7 @@ public class ProcessExecutor : IProcessExecutor
         }
         foreach (var newStep in _processStepRepository.CreateProcessStepRange(newStepTypeIds.Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.ProcessId))))
         {
-            context.AllSteps.Add(newStep.ProcessStepTypeId, new [] { newStep.Id });
+            context.AllSteps.Add(newStep.ProcessStepTypeId, new[] { newStep.Id });
             if (context.Executor.IsExecutableStepTypeId(newStep.ProcessStepTypeId))
             {
                 context.ExecutableStepTypeIds.Add(newStep.ProcessStepTypeId);
@@ -180,7 +180,7 @@ public class ProcessExecutor : IProcessExecutor
 
     private sealed record ProcessContext(
         Guid ProcessId,
-        IDictionary<ProcessStepTypeId,IEnumerable<Guid>> AllSteps,
+        IDictionary<ProcessStepTypeId, IEnumerable<Guid>> AllSteps,
         ProcessStepTypeSet ExecutableStepTypeIds,
         IProcessTypeExecutor Executor
     );
@@ -189,7 +189,8 @@ public class ProcessExecutor : IProcessExecutor
     {
         private readonly HashSet<ProcessStepTypeId> _items;
 
-        public ProcessStepTypeSet(IEnumerable<ProcessStepTypeId> items){
+        public ProcessStepTypeSet(IEnumerable<ProcessStepTypeId> items)
+        {
             _items = new HashSet<ProcessStepTypeId>(items);
         }
 

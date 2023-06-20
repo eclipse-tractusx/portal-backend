@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Newtonsoft.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 

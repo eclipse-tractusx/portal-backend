@@ -81,12 +81,12 @@ public class UserBusinessLogic : IUserBusinessLogic
         var noUserNameAndEmail = userList.Where(user => string.IsNullOrEmpty(user.userName) && string.IsNullOrEmpty(user.eMail));
         if (noUserNameAndEmail.Any())
         {
-            throw new ControllerArgumentException($"userName and eMail must not both be empty '{string.Join(", ", noUserNameAndEmail.Select(user => string.Join(" ", new []{ user.firstName, user.lastName }.Where(x => x != null))))}'");
+            throw new ControllerArgumentException($"userName and eMail must not both be empty '{string.Join(", ", noUserNameAndEmail.Select(user => string.Join(" ", new[] { user.firstName, user.lastName }.Where(x => x != null))))}'");
         }
         var noRoles = userList.Where(user => !user.Roles.Any());
         if (noRoles.Any())
         {
-            throw new ControllerArgumentException($"at least one role must be specified for users '{string.Join(", ", noRoles.Select(user => user.userName ?? user.eMail ))}'");
+            throw new ControllerArgumentException($"at least one role must be specified for users '{string.Join(", ", noRoles.Select(user => user.userName ?? user.eMail))}'");
         }
         return CreateOwnCompanyUsersInternalAsync(userList, iamUserId);
     }
@@ -115,7 +115,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
-        await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
+        await foreach (var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
         {
             var email = emailData[userName];
 
@@ -137,7 +137,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             {
                 await _mailingService.SendMails(email, mailParameters, new List<string> { "NewUserTemplate", "NewUserPasswordTemplate" }).ConfigureAwait(false);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", email, userName);
             }
@@ -177,16 +177,16 @@ public class UserBusinessLogic : IUserBusinessLogic
                     roleDatas,
                     userCreationInfo.UserName,
                     userCreationInfo.UserId
-                ),1).ToAsyncEnumerable())
+                ), 1).ToAsyncEnumerable())
             .FirstAsync()
             .ConfigureAwait(false);
 
-        if(result.Error != null)
+        if (result.Error != null)
         {
             throw result.Error;
         }
 
-        var mailParameters = new Dictionary<string,string>()
+        var mailParameters = new Dictionary<string, string>()
         {
             { "companyName", displayName },
             { "nameCreatedBy", nameCreatedBy },
@@ -194,8 +194,8 @@ public class UserBusinessLogic : IUserBusinessLogic
         };
 
         var mailTemplates = companyNameIdpAliasData.IsSharedIdp
-            ? new [] { "NewUserTemplate", "NewUserPasswordTemplate" }
-            : new [] { "NewUserOwnIdpTemplate" };
+            ? new[] { "NewUserTemplate", "NewUserPasswordTemplate" }
+            : new[] { "NewUserOwnIdpTemplate" };
 
         if (companyNameIdpAliasData.IsSharedIdp)
         {
@@ -206,7 +206,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             await _mailingService.SendMails(userCreationInfo.Email, mailParameters, mailTemplates).ConfigureAwait(false);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", userCreationInfo.Email, userCreationInfo.UserName);
         }
@@ -215,7 +215,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
         string adminUserId,
-        int page, 
+        int page,
         int size,
         Guid? companyUserId = null,
         string? userEntityId = null,
@@ -224,7 +224,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         string? email = null
         )
     {
-        
+
         var companyUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserQuery(
             adminUserId,
             companyUserId,
@@ -248,11 +248,11 @@ public class UserBusinessLogic : IUserBusinessLogic
                     companyUser.Id,
                     companyUser.CompanyUserStatusId,
                     companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
-                    {
-                        FirstName = companyUser.Firstname,
-                        LastName = companyUser.Lastname,
-                        Email = companyUser.Email
-                    })
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email
+                })
                 .AsAsyncEnumerable()));
     }
 
@@ -378,7 +378,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");
         }
-        await DeleteUserInternalAsync(sharedIdpAlias,accountData,companyUserId).ConfigureAwait(false);
+        await DeleteUserInternalAsync(sharedIdpAlias, accountData, companyUserId).ConfigureAwait(false);
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -461,7 +461,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     private async Task<bool> CanResetPassword(string userId)
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         var userInfo = (await _provisioningDbAccess.GetUserPasswordResetInfo(userId).ConfigureAwait(false))
             ?? _provisioningDbAccess.CreateUserPasswordResetInfo(userId, now, 0);
@@ -508,16 +508,16 @@ public class UserBusinessLogic : IUserBusinessLogic
             _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersPaginationSourceAsync(
                 appId,
                 iamUserId,
-                new [] { OfferSubscriptionStatusId.ACTIVE },
-                new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+                new[] { OfferSubscriptionStatusId.ACTIVE },
+                new[] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
                 filter));
-    
+
     public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId)
     {
         var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber).ConfigureAwait(false);
-        
+
         if (userWithBpn == default)
         {
             throw new NotFoundException($"user {companyUserId} does not exist");
@@ -539,7 +539,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
 
         userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
-        
+
         await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(userWithBpn.UserEntityId, businessPartnerNumber).ConfigureAwait(false);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);

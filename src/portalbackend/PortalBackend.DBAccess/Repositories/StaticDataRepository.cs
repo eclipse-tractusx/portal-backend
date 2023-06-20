@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -72,26 +72,26 @@ public class StaticDataRepository : IStaticDataRepository
                    true
                 ))
             .SingleOrDefaultAsync();
-    
+
     public Task<(bool IsValidCountry, IEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> Identifiers)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code) =>
         _dbContext.Countries
             .AsNoTracking()
             .Where(country => country.Alpha2Code == countryAlpha2Code)
-            .Select(country => new ValueTuple<bool,IEnumerable<(BpdmIdentifierId,UniqueIdentifierId)>>(
+            .Select(country => new ValueTuple<bool, IEnumerable<(BpdmIdentifierId, UniqueIdentifierId)>>(
                 true,
                 country.CountryAssignedIdentifiers
                     .Where(identifier => identifier.BpdmIdentifierId != null && bpdmIdentifierIds.Contains(identifier.BpdmIdentifierId.Value))
-                    .Select(identifier => new ValueTuple<BpdmIdentifierId,UniqueIdentifierId>(identifier.BpdmIdentifierId!.Value, identifier.UniqueIdentifierId))))
+                    .Select(identifier => new ValueTuple<BpdmIdentifierId, UniqueIdentifierId>(identifier.BpdmIdentifierId!.Value, identifier.UniqueIdentifierId))))
             .SingleOrDefaultAsync();
-    
+
     ///<inheritdoc />
-    public IAsyncEnumerable<ServiceTypeData> GetServiceTypeData()=>
+    public IAsyncEnumerable<ServiceTypeData> GetServiceTypeData() =>
         _dbContext.ServiceTypes.AsNoTracking()
             .Select(serviceType => new ServiceTypeData((int)serviceType.Id, serviceType.Label))
             .AsAsyncEnumerable();
-    
+
     ///<inheritdoc />
-    public IAsyncEnumerable<LicenseTypeData> GetLicenseTypeData()=>
+    public IAsyncEnumerable<LicenseTypeData> GetLicenseTypeData() =>
         _dbContext.LicenseTypes.AsNoTracking()
             .Select(licenseType => new LicenseTypeData((int)licenseType.Id, licenseType.Label))
             .AsAsyncEnumerable();

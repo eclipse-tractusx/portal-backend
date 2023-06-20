@@ -60,7 +60,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions
             A.CallTo(() => ((IAsyncEnumerable<T>)fakeDbSet).GetAsyncEnumerator(A<CancellationToken>._)).ReturnsLazily(_ => itemAsyncEnum.GetAsyncEnumerator());
         }
 
-        private static void SetupCollectionDbSet<T>(DbSet<T> fakeDbSet, ICollection<T> items) where T: class
+        private static void SetupCollectionDbSet<T>(DbSet<T> fakeDbSet, ICollection<T> items) where T : class
         {
             A.CallTo(() => fakeDbSet.Add(A<T>._)).Invokes((T newItem) => items.Add(newItem));
             A.CallTo(() => fakeDbSet.AddAsync(A<T>._, A<CancellationToken>._)).Invokes((T newItem, CancellationToken token) => items.Add(newItem));

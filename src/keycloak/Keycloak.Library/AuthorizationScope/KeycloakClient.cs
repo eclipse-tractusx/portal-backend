@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -41,7 +41,7 @@ public partial class KeycloakClient
             .PostJsonAsync(scope)
             .ConfigureAwait(false);
 
-    public async Task<IEnumerable<AuthorizationScope>> GetAuthorizationScopesAsync(string realm, string? resourceServerId = null, 
+    public async Task<IEnumerable<AuthorizationScope>> GetAuthorizationScopesAsync(string realm, string? resourceServerId = null,
         bool deep = false, int? first = null, int? max = null, string? name = null)
     {
         var queryParams = new Dictionary<string, object?>
@@ -51,7 +51,7 @@ public partial class KeycloakClient
             [nameof(max)] = max,
             [nameof(name)] = name,
         };
-        
+
         return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)

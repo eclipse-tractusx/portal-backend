@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -38,7 +38,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 public class AppChangeController : ControllerBase
 {
     private readonly IAppChangeBusinessLogic _businessLogic;
-    
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -47,7 +47,7 @@ public class AppChangeController : ControllerBase
     {
         _businessLogic = businessLogic;
     }
-    
+
     /// <summary>
     /// update app roles and related description for "active" owned app offers
     /// </summary>
@@ -67,7 +67,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles)=>
+    public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
         await this.WithIamUserId(iamUserId => _businessLogic.AddActiveAppUserRoleAsync(appId, userRoles, iamUserId)).ConfigureAwait(false);
 
     /// <summary>
@@ -126,7 +126,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId,  [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
         await this.WithIamUserId(iamUserId => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
         return NoContent();
@@ -136,7 +136,7 @@ public class AppChangeController : ControllerBase
     /// Deactivate the OfferStatus By appId
     /// </summary>
     /// <param name="appId" example="3c77a395-a7e7-40f2-a519-ac16498e0a79">Id of the app that should be deactive</param>
-    /// <remarks>Example: PUT: /api/apps/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp</remarks>
+    /// <remarks>Example: PUT: /api/apps/appchanges/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp</remarks>
     /// <response code="204">The App Successfully Deactivated</response>
     /// <response code="400">invalid or user does not exist.</response>
     /// <response code="404">If app does not exists.</response>
@@ -152,7 +152,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _businessLogic.DeactivateOfferByAppIdAsync(appId,userId)).ConfigureAwait(false);
+        await this.WithIamUserId(userId => _businessLogic.DeactivateOfferByAppIdAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 

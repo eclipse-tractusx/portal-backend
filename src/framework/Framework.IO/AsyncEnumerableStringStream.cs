@@ -44,13 +44,13 @@ public sealed class AsyncEnumerableStringStream : Stream
         get { throw new NotSupportedException(); }
         set { throw new NotSupportedException(); }
     }
-    public override long Seek (long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
+    public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
     public override void Flush() => throw new NotSupportedException();
-    public override int Read(byte [] buffer, int offset, int count) => throw new NotSupportedException();
-    public override void Write(byte [] buffer, int offset, int count) => throw new NotSupportedException();
+    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     public override void SetLength(long value) => throw new NotSupportedException();
 
-    public override async ValueTask<int> ReadAsync (Memory<byte> buffer, CancellationToken cancellationToken = default)
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
         var written = _stream.Read(buffer.Span);
         while (buffer.Length - written > 0 && await _enumerator.MoveNextAsync(cancellationToken).ConfigureAwait(false))

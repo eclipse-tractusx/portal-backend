@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -35,10 +35,10 @@ public class BpdmBusinessLogicTests
 {
     #region Initialization
 
-    private static readonly Guid IdWithBpn = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
-    private static readonly Guid IdWithStateCreated = new ("bda6d1b5-042e-493a-894c-11f3a89c12b1");
-    private static readonly Guid IdWithoutZipCode = new ("beaa6de5-d411-4da8-850e-06047d3170be");
-    private static readonly Guid ValidCompanyId = new ("abf990f8-0c27-43dc-bbd0-b1bce964d8f4");
+    private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly Guid IdWithStateCreated = new("bda6d1b5-042e-493a-894c-11f3a89c12b1");
+    private static readonly Guid IdWithoutZipCode = new("beaa6de5-d411-4da8-850e-06047d3170be");
+    private static readonly Guid ValidCompanyId = new("abf990f8-0c27-43dc-bbd0-b1bce964d8f4");
     private const string ValidCompanyName = "valid company";
 
     private readonly IFixture _fixture;
@@ -49,7 +49,7 @@ public class BpdmBusinessLogicTests
 
     public BpdmBusinessLogicTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
@@ -238,7 +238,7 @@ public class BpdmBusinessLogicTests
     #endregion
 
     #region HandlePullLegalEntity
-    
+
     [Fact]
     public async Task HandlePullLegalEntity_WithoutExistingApplication_ThrowsUnexpectedConditionException()
     {
@@ -260,7 +260,7 @@ public class BpdmBusinessLogicTests
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be($"CompanyApplication {applicationId} does not exist");
     }
-    
+
     [Fact]
     public async Task HandlePullLegalEntity_WithoutLegalEntity_ThrowsConflictException()
     {
@@ -368,9 +368,9 @@ public class BpdmBusinessLogicTests
     }
 
     #endregion
-    
+
     #region Setup
-    
+
     private void SetupFakesForTrigger()
     {
         var validData = _fixture.Build<BpdmData>()

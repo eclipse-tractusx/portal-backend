@@ -31,10 +31,10 @@
       <ProjectReference Include="..\..\framework\Framework.HttpClient\Framework.HttpClient.csproj" />
       <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
       <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
       <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
+      <ProjectReference Include="..\..\processes\OfferSubscription.Library\OfferSubscription.Library.csproj" />
       <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     </ItemGroup>
 

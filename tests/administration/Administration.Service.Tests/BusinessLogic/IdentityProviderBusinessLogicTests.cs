@@ -75,20 +75,20 @@ public class IdentityProviderBusinessLogicTests
         _encoding = _fixture.Create<Encoding>();
 
         _csvSettings = new IdentityProviderCsvSettings
-            {
-                Charset = "",
-                Encoding = _encoding,
-                FileName = _fixture.Create<string>(),
-                ContentType = "text/csv",
-                Separator = ",",
-                HeaderUserId = "UserId",
-                HeaderFirstName = "FirstName",
-                HeaderLastName = "LastName",
-                HeaderEmail = "Email",
-                HeaderProviderAlias = "ProviderAlias",
-                HeaderProviderUserId = "ProviderUserId",
-                HeaderProviderUserName = "ProviderUserName"
-            };
+        {
+            Charset = "",
+            Encoding = _encoding,
+            FileName = _fixture.Create<string>(),
+            ContentType = "text/csv",
+            Separator = ",",
+            HeaderUserId = "UserId",
+            HeaderFirstName = "FirstName",
+            HeaderLastName = "LastName",
+            HeaderEmail = "Email",
+            HeaderProviderAlias = "ProviderAlias",
+            HeaderProviderUserId = "ProviderUserId",
+            HeaderProviderUserName = "ProviderUserName"
+        };
     }
 
     #region UploadOwnCompanyUsersIdentityProviderLinkDataAsync
@@ -100,16 +100,16 @@ public class IdentityProviderBusinessLogicTests
 
         var users = _fixture.CreateMany<TestUserData>(numUsers).ToList();
 
-        var lines = new [] { HeaderLine() }.Concat(users.Select(u => NextLine(u)));
+        var lines = new[] { HeaderLine() }.Concat(users.Select(u => NextLine(u)));
 
-        SetupFakes(users,lines);
+        SetupFakes(users, lines);
 
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers);
@@ -117,11 +117,11 @@ public class IdentityProviderBusinessLogicTests
         result.Total.Should().Be(numUsers);
         result.Errors.Should().BeEmpty();
 
-        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._,A<IdentityProviderLink>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._,A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, A<Action<CompanyUser>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -132,9 +132,9 @@ public class IdentityProviderBusinessLogicTests
 
         var users = _fixture.CreateMany<TestUserData>(numUsers).ToList();
 
-        var lines = new [] { HeaderLine() }.Concat(users.Select(u => NextLine(u)));
+        var lines = new[] { HeaderLine() }.Concat(users.Select(u => NextLine(u)));
 
-        SetupFakes(users,lines);
+        SetupFakes(users, lines);
 
         A.CallTo(() => _document.ContentType).Returns(_fixture.Create<string>());
 
@@ -143,7 +143,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"Only contentType {_csvSettings.ContentType} files are allowed.");
@@ -156,18 +156,18 @@ public class IdentityProviderBusinessLogicTests
 
         var users = _fixture.CreateMany<TestUserData>(numUsers).ToList();
 
-        var lines = new [] { HeaderLine() }.Concat(users.Select(u => NextLine(u)));
+        var lines = new[] { HeaderLine() }.Concat(users.Select(u => NextLine(u)));
 
         var iamUserId = _fixture.Create<string>();
 
-        SetupFakes(users,lines);
+        SetupFakes(users, lines);
 
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
             _provisioningManager,
             _options);
 
-        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,iamUserId,CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"user {iamUserId} is not associated with a company");
@@ -193,7 +193,7 @@ public class IdentityProviderBusinessLogicTests
             unchanged.OtherIdpUserName
         );
 
-        var users = new [] {
+        var users = new[] {
             _fixture.Create<TestUserData>(),
             _fixture.Create<TestUserData>(),
             unchanged,
@@ -201,20 +201,20 @@ public class IdentityProviderBusinessLogicTests
             _fixture.Create<TestUserData>()
         };
 
-        var lines = new [] { HeaderLine() }.Concat(users.Select((user,index) => NextLine(index == 2 ? changed : user)));
+        var lines = new[] { HeaderLine() }.Concat(users.Select((user, index) => NextLine(index == 2 ? changed : user)));
 
-        SetupFakes(users,lines);
+        SetupFakes(users, lines);
 
         var changedEmailResult = (string?)null;
         var lastEditorId = (Guid?)null;
 
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._))
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, A<Action<CompanyUser>>._))
             .Invokes(x =>
             {
                 var companyUserId = x.Arguments.Get<Guid>("companyUserId")!;
                 var setOptionalParameters = x.Arguments.Get<Action<CompanyUser>>("setOptionalParameters");
 
-                var companyUser = new CompanyUser(companyUserId,Guid.Empty,default!,default!,Guid.Empty);
+                var companyUser = new CompanyUser(companyUserId, Guid.Empty, default!, default!, Guid.Empty);
                 setOptionalParameters?.Invoke(companyUser);
                 changedEmailResult = companyUser.Email;
                 lastEditorId = companyUser.LastEditorId;
@@ -226,19 +226,19 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(1);
-        result.Unchanged.Should().Be(numUsers-1);
+        result.Unchanged.Should().Be(numUsers - 1);
         result.Error.Should().Be(0);
         result.Total.Should().Be(numUsers);
         result.Errors.Should().BeEmpty();
 
-        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._,A<IdentityProviderLink>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._,A<string>._,A<string>._,A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._,A<string>._,A<string>._,A<string>._,A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, A<Action<CompanyUser>>._)).MustHaveHappenedOnceExactly();
 
         changedEmailResult.Should().NotBeNull();
         changedEmailResult.Should().Be(changedEmail);
@@ -265,7 +265,7 @@ public class IdentityProviderBusinessLogicTests
             unchanged.OtherIdpUserName
         );
 
-        var users = new [] {
+        var users = new[] {
             _fixture.Create<TestUserData>(),
             _fixture.Create<TestUserData>(),
             unchanged,
@@ -273,29 +273,29 @@ public class IdentityProviderBusinessLogicTests
             _fixture.Create<TestUserData>()
         };
 
-        var lines = new [] { HeaderLine() }.Concat(users.Select((user,index) => NextLine(index == 2 ? changed : user)));
+        var lines = new[] { HeaderLine() }.Concat(users.Select((user, index) => NextLine(index == 2 ? changed : user)));
 
-        SetupFakes(users,lines);
+        SetupFakes(users, lines);
 
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
-        result.Unchanged.Should().Be(numUsers-1);
+        result.Unchanged.Should().Be(numUsers - 1);
         result.Error.Should().Be(1);
         result.Total.Should().Be(numUsers);
         result.Errors.Should().HaveCount(1);
         result.Errors.Single().Should().Be($"line: 3, message: unexpected update of shared identityProviderLink, alias '{_sharedIdpAlias}', companyUser '{changed.CompanyUserId}', providerUserId: '{changed.SharedIdpUserId}', providerUserName: '{changed.SharedIdpUserName}'");
 
-        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._,A<IdentityProviderLink>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._,A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, A<Action<CompanyUser>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -317,7 +317,7 @@ public class IdentityProviderBusinessLogicTests
             _fixture.Create<string>()
         );
 
-        var users = new [] {
+        var users = new[] {
             _fixture.Create<TestUserData>(),
             _fixture.Create<TestUserData>(),
             unchanged,
@@ -325,28 +325,28 @@ public class IdentityProviderBusinessLogicTests
             _fixture.Create<TestUserData>()
         };
 
-        var lines = new [] { HeaderLine() }.Concat(users.Select((user,index) => NextLine(index == 2 ? changed : user)));
+        var lines = new[] { HeaderLine() }.Concat(users.Select((user, index) => NextLine(index == 2 ? changed : user)));
 
-        SetupFakes(users,lines);
+        SetupFakes(users, lines);
 
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(1);
-        result.Unchanged.Should().Be(numUsers-1);
+        result.Unchanged.Should().Be(numUsers - 1);
         result.Error.Should().Be(0);
         result.Total.Should().Be(numUsers);
         result.Errors.Should().HaveCount(0);
 
-        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._,A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._,A<IdentityProviderLink>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._,A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, A<Action<CompanyUser>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -368,7 +368,7 @@ public class IdentityProviderBusinessLogicTests
             unchanged.OtherIdpUserName
         );
 
-        var users = new [] {
+        var users = new[] {
             _fixture.Create<TestUserData>(),
             _fixture.Create<TestUserData>(),
             unchanged,
@@ -376,29 +376,29 @@ public class IdentityProviderBusinessLogicTests
             _fixture.Create<TestUserData>()
         };
 
-        var lines = new [] { HeaderLine() }.Concat(users.Select((user,index) => NextLine(index == 2 ? unknown : user)));
+        var lines = new[] { HeaderLine() }.Concat(users.Select((user, index) => NextLine(index == 2 ? unknown : user)));
 
-        SetupFakes(users,lines);
+        SetupFakes(users, lines);
 
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
-        result.Unchanged.Should().Be(numUsers-1);
+        result.Unchanged.Should().Be(numUsers - 1);
         result.Error.Should().Be(1);
         result.Total.Should().Be(numUsers);
         result.Errors.Should().HaveCount(1);
         result.Errors.Single().Should().Be($"line: 3, message: unexpected value of UserId: '{unknown.CompanyUserId}'");
 
-        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._,A<IdentityProviderLink>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._,A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, A<Action<CompanyUser>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -417,11 +417,11 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
 
         A.CallTo(() => _userRepository.GetOwnCompanyAndCompanyUserId(A<string>.That.Not.IsEqualTo(_iamUserId))).Returns(
-            ((Guid companyId,Guid companyUserId))default);
+            ((Guid companyId, Guid companyUserId))default);
         A.CallTo(() => _userRepository.GetOwnCompanyAndCompanyUserId(A<string>.That.IsEqualTo(_iamUserId))).Returns(
             (companyId: _companyId, companyUserId: _companyUserId));
 
-        A.CallTo(() => _userRepository.GetUserEntityDataAsync(A<Guid>._,A<Guid>._)).ReturnsLazily((Guid companyUserId, Guid _) =>
+        A.CallTo(() => _userRepository.GetUserEntityDataAsync(A<Guid>._, A<Guid>._)).ReturnsLazily((Guid companyUserId, Guid _) =>
             userData.Where(d => d.CompanyUserId == companyUserId)
                 .Select(d =>
                     (
@@ -434,18 +434,18 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.Not.IsEqualTo(_companyId))).Returns(
             Enumerable.Empty<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)>().ToAsyncEnumerable());
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.IsEqualTo(_companyId))).Returns(
-            new [] {
+            new[] {
                 (IdentityProviderId: _sharedIdentityProviderId, CategoryId: IdentityProviderCategoryId.KEYCLOAK_SHARED, Alias: _sharedIdpAlias),
                 (IdentityProviderId: _otherIdentityProviderId, CategoryId: IdentityProviderCategoryId.KEYCLOAK_OIDC, Alias: _otherIdpAlias),
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._)).ReturnsLazily((IdentityProviderCategoryId categoryId) =>
-            new IdentityProvider(_sharedIdentityProviderId,categoryId,_fixture.Create<DateTimeOffset>()));
+            new IdentityProvider(_sharedIdentityProviderId, categoryId, _fixture.Create<DateTimeOffset>()));
 
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).ReturnsLazily((string userEntityId) =>
         {
             var user = userData.First(u => u.UserEntityId == userEntityId);
-            return new [] {
+            return new[] {
                 new IdentityProviderLink(
                     _sharedIdpAlias,
                     user.SharedIdpUserId,
@@ -462,7 +462,7 @@ public class IdentityProviderBusinessLogicTests
 
     private string HeaderLine()
     {
-        return string.Join(",", new [] {
+        return string.Join(",", new[] {
             _csvSettings.HeaderUserId,
             _csvSettings.HeaderFirstName,
             _csvSettings.HeaderLastName,
@@ -478,7 +478,7 @@ public class IdentityProviderBusinessLogicTests
 
     private string NextLine(TestUserData userData)
     {
-        return string.Join(",", new [] {
+        return string.Join(",", new[] {
             userData.CompanyUserId.ToString(),
             userData.FirstName,
             userData.LastName,

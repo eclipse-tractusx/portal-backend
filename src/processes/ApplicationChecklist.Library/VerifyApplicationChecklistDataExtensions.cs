@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -62,7 +62,7 @@ public static class VerifyApplicationChecklistDataExtensions
 
         if (checklistData.ProcessSteps == null || checklistData.ProcessSteps.Any(step => !processStepStatusIds.Contains(step.ProcessStepStatusId)))
         {
-            throw new UnexpectedConditionException($"processSteps should never have other status then {string.Join(",", processStepStatusIds)} here");
+            throw new UnexpectedConditionException($"processSteps should never have other status than {string.Join(",", processStepStatusIds)} here");
         }
 
         if (!checklistData.Checklist.Any(entry => entry.TypeId == entryTypeId && entryStatusIds.Contains(entry.StatusId)))
@@ -70,7 +70,7 @@ public static class VerifyApplicationChecklistDataExtensions
             throw new ConflictException($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ", entryStatusIds)}");
         }
     }
-    
+
     public static IApplicationChecklistService.ManualChecklistProcessStepData CreateManualChecklistProcessStepData(this VerifyChecklistData checklistData, Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStep processStep) =>
         new IApplicationChecklistService.ManualChecklistProcessStepData(applicationId, checklistData.Process!, processStep.Id, entryTypeId, checklistData.Checklist!.ToImmutableDictionary(entry => entry.TypeId, entry => entry.StatusId), checklistData.ProcessSteps!);
 }

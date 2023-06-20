@@ -101,7 +101,7 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(SubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<SubscriptionDetailData> GetSubscriptionDetail([FromRoute] Guid subscriptionId) => 
+    public Task<SubscriptionDetailData> GetSubscriptionDetail([FromRoute] Guid subscriptionId) =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailAsync(subscriptionId, iamUserId));
 
     /// <summary>
@@ -117,7 +117,7 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<ServiceDetailResponse> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") => 
+    public Task<ServiceDetailResponse> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!, iamUserId));
 
     /// <summary>
@@ -132,7 +132,7 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(ConsentDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<ConsentDetailData> GetServiceAgreementConsentDetail([FromRoute] Guid serviceConsentId) => 
+    public Task<ConsentDetailData> GetServiceAgreementConsentDetail([FromRoute] Guid serviceConsentId) =>
         _serviceBusinessLogic.GetServiceConsentDetailDataAsync(serviceConsentId);
 
     /// <summary>
@@ -155,6 +155,7 @@ public class ServicesController : ControllerBase
     /// <response code="200">Returns the service agreement data.</response>
     /// <response code="400">Offer Subscription is pending or not the providing company.</response>
     /// <response code="404">Offer Subscription not found.</response>
+    [Obsolete("Will be removed in the future, please use /start-autoSetup in the future")]
     [HttpPost]
     [Route("autoSetup")]
     [Authorize(Roles = "activate_subscription")]
@@ -164,6 +165,24 @@ public class ServicesController : ControllerBase
     public async Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data)
         => await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AutoSetupServiceAsync(data, iamUserId));
 
+    /// <summary>
+    /// Auto setup the app
+    /// </summary>
+    /// <remarks>Example: POST: /api/apps/start-autoSetup</remarks>
+    /// <response code="200">Returns the app agreement data.</response>
+    /// <response code="400">Offer Subscription is pending or not the providing company.</response>
+    /// <response code="404">Offer Subscription not found.</response>
+    [HttpPost]
+    [Route("start-autoSetup")]
+    [Authorize(Roles = "activate_subscription")]
+    [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> StartAutoSetupServiceProcess([FromBody] OfferAutoSetupData data)
+    {
+        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.StartAutoSetupAsync(data, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
     /// <summary>
     /// Retrieves subscription statuses of provided services of the currently logged in user's company.
     /// </summary>
@@ -202,7 +221,7 @@ public class ServicesController : ControllerBase
         var (content, contentType, fileName) = await _serviceBusinessLogic.GetServiceDocumentContentAsync(serviceId, documentId, cancellationToken).ConfigureAwait(false);
         return File(content, contentType, fileName);
     }
-    
+
     /// <summary>
     /// Retrieves all in review status service in the marketplace .
     /// </summary>
@@ -219,7 +238,7 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(Pagination.Response<AllOfferStatusData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? offerName = null, [FromQuery] ServiceStatusIdFilter? statusId = null) =>
-        this.WithIamUserId(userId =>_serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, userId, sorting, offerName, statusId));
+        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, userId, sorting, offerName, statusId));
 
     /// <summary>
     /// Retrieves the details of a subscription
@@ -256,4 +275,18 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, iamUserId));
+
+    /// <summary>
+    /// Retrieves subscription statuses of services.
+    /// </summary>
+    /// <remarks>Example: GET: /api/services/subscribed/subscription-status</remarks>
+    /// <response code="200">Returns list of applicable service subscription statuses.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    [HttpGet]
+    [Route("subscribed/subscription-status")]
+    [Authorize(Roles = "view_subscription")]
+    [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size, userId));
 }

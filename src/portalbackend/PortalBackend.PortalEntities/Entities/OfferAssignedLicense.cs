@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferAssignedLicense
 {
-    private OfferAssignedLicense() {}
+    private OfferAssignedLicense() { }
 
     public OfferAssignedLicense(Guid offerId, Guid offerLicenseId)
     {

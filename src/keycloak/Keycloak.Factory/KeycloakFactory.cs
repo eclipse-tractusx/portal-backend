@@ -18,15 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
-using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 public class KeycloakFactory : IKeycloakFactory
 {
-    readonly KeycloakSettingsMap _Settings;
+    private readonly KeycloakSettingsMap _Settings;
     public KeycloakFactory(IOptions<KeycloakSettingsMap> settings)
     {
         _Settings = settings.Value;

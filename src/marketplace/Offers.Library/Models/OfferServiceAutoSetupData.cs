@@ -38,12 +38,14 @@ public record OfferAutoSetupResponseData(TechnicalUserInfoData? TechnicalUserInf
 /// Technical User information
 /// </summary>
 /// <param name="TechnicalUserId">Id of the created technical user</param>
+/// <param name="TechnicalUserPermissions">Permisssion of the created technical user</param>
 /// <param name="TechnicalUserSecret">User secret for the created user</param>
 /// <param name="TechnicalClientId">User secret for the created user</param>
-public record TechnicalUserInfoData(Guid TechnicalUserId, string? TechnicalUserSecret, string? TechnicalClientId);
+public record TechnicalUserInfoData(Guid TechnicalUserId, IEnumerable<string> TechnicalUserPermissions, string? TechnicalUserSecret, string? TechnicalClientId);
 
 /// <summary>
 /// Client infos
 /// </summary>
 /// <param name="ClientId">Id of the created client</param>
-public record ClientInfoData(string ClientId);
+/// <param name="ClientUrl">Url of the created client</param>
+public record ClientInfoData(string ClientId, string ClientUrl);

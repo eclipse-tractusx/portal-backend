@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Flurl.Http;
 using Flurl.Http.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
@@ -43,7 +43,7 @@ public class UntrustedCertHttpClientFactory : DefaultHttpClientFactory
         var httpClientHander = handler as HttpClientHandler;
         if (httpClientHander != null)
         {
-            httpClientHander.ServerCertificateCustomValidationCallback = (_,_,_,_) => true;
+            httpClientHander.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
         }
         else
         {

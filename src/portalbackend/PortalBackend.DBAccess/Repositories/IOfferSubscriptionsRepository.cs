@@ -20,8 +20,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -39,12 +39,6 @@ public interface IOfferSubscriptionsRepository
     /// <param name="requesterId">id of the user that requested the subscription of the app</param>
     /// <param name="creatorId">id of the creator</param>
     OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId);
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="iamUserId"></param>
-    IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
 
     /// <summary>
     /// Gets the provided offer subscription statuses for the user and given company
@@ -80,9 +74,9 @@ public interface IOfferSubscriptionsRepository
     /// <returns>Returns the offer details.</returns>
     Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId);
 
-    public Task<(Guid offerSubscriptionId, OfferSubscriptionStatusId offerSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
-    
-    void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters);
+    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId, Process? Process, IEnumerable<ProcessStepTypeId>? ProcessStepTypeIds)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
+
+    OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters);
 
     /// <summary>
     /// Gets all business app data for the given userId
@@ -119,4 +113,31 @@ public interface IOfferSubscriptionsRepository
     /// <param name="initialize">Initializes the entity</param>
     /// <param name="setParameters">Updates the fields</param>
     void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters);
+
+    /// <summary>
+    /// Gets the Service offer subscription statuses for the user
+    /// </summary>
+    /// <param name="iamUserId">Id of user of the Providercompany</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
+    /// <param name="documentTypeId">Id of the document type</param>
+    /// <returns>Returns a func with skip, take and the pagination of the source</returns>
+    Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="processId">Id of the process</param>
+    /// <returns>Returns offer subscription process data</returns>
+    Task<Guid> GetOfferSubscriptionDataForProcessIdAsync(Guid processId);
+
+    Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId);
+    Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId);
+    Task<(bool IsValidSubscriptionId, bool IsActive)> IsActiveOfferSubscription(Guid offerSubscriptionId);
+    Task<VerifyProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<OfferSubscriptionClientCreationData?> GetClientCreationData(Guid offerSubscriptionId);
+    Task<OfferSubscriptionTechnicalUserCreationData?> GetTechnicalUserCreationData(Guid offerSubscriptionId);
+    Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId);
+    OfferSubscriptionProcessData CreateOfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl);
+    void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionId);
+    IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId);
 }

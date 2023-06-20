@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -53,7 +53,7 @@ public class AgreementRepository : IAgreementRepository
             .Where(x => x.AgreementAssignedOffers.Any(offer => offer.Offer!.OfferTypeId == offerTypeId && offer.OfferId == offerId))
             .Select(x => new AgreementData(x.Id, x.Name))
             .AsAsyncEnumerable();
-    
+
     public IAsyncEnumerable<AgreementDocumentData> GetAgreementsForCompanyRolesUntrackedAsync() =>
         _context.Agreements
             .AsNoTracking()
@@ -68,8 +68,8 @@ public class AgreementRepository : IAgreementRepository
     public IAsyncEnumerable<AgreementDocumentData> GetAgreementDataForOfferType(OfferTypeId offerTypeId) =>
         _context.Agreements
             .AsNoTracking()
-            .Where(agreement=>agreement.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId))
-            .Select(agreement=> new AgreementDocumentData(
+            .Where(agreement => agreement.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId))
+            .Select(agreement => new AgreementDocumentData(
                 agreement.Id,
                 agreement.Name,
                 agreement.DocumentId
@@ -80,9 +80,9 @@ public class AgreementRepository : IAgreementRepository
     public Task<(OfferAgreementConsent OfferAgreementConsent, bool IsProviderCompany)> GetOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
-            .Where(offer=>offer.Id == offerId && 
+            .Where(offer => offer.Id == offerId &&
                 offer.OfferTypeId == offerTypeId)
-            .Select(offer=> new ValueTuple<OfferAgreementConsent,bool>(
+            .Select(offer => new ValueTuple<OfferAgreementConsent, bool>(
                 new OfferAgreementConsent(
                     offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AgreementConsentStatus(
                     consentAssignedOffer.Consent!.AgreementId,
@@ -90,18 +90,18 @@ public class AgreementRepository : IAgreementRepository
                 offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
             ))
             .SingleOrDefaultAsync();
-    
+
     ///<inheritdoc/>
     public Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(offer=>offer.Id == appId &&
+            .Where(offer => offer.Id == appId &&
                 offer.OfferStatusId == statusId &&
                 offer.OfferTypeId == offerTypeId)
-            .Select(offer=> new ValueTuple<OfferAgreementConsentUpdate,bool>(
+            .Select(offer => new ValueTuple<OfferAgreementConsentUpdate, bool>(
                 new OfferAgreementConsentUpdate(
-                    offer.ProviderCompany!.CompanyUsers.Select(companyUser=>companyUser.Id).SingleOrDefault(),
+                    offer.ProviderCompany!.CompanyUsers.Select(companyUser => companyUser.Id).SingleOrDefault(),
                     offer.ProviderCompany.Id,
                     offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AppAgreementConsentStatus(
                         consentAssignedOffer.Consent!.AgreementId,

@@ -72,8 +72,7 @@ public static class FlurlRequestExtensions
 
     public static async Task<IFlurlRequest> WithAuthenticationAsync(this IFlurlRequest request, Func<Task<string>>? getTokenAsync, string url, string realm, string? userName, string? password, string? clientSecret, string? clientId)
     {
-        string? token = null;
-
+        string? token;
         if (getTokenAsync != null)
         {
             token = await getTokenAsync().ConfigureAwait(false);

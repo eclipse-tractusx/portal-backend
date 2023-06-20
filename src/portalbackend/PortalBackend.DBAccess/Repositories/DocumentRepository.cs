@@ -39,7 +39,7 @@ public class DocumentRepository : IDocumentRepository
     {
         this._dbContext = dbContext;
     }
-    
+
     /// <inheritdoc />
     public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields)
     {
@@ -63,7 +63,7 @@ public class DocumentRepository : IDocumentRepository
             .AsNoTracking()
             .Where(x => x.Id == documentId)
             .Select(document => ((Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser))
-                new (document.Id,
+                new(document.Id,
                     document.DocumentStatusId,
                     document.Consents.Select(consent => consent.Id),
                     document.CompanyUser!.IamUser!.UserEntityId == iamUserId))
@@ -73,13 +73,14 @@ public class DocumentRepository : IDocumentRepository
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
-            .Select(application => new {
+            .Select(application => new
+            {
                 IsApplicationAssignedUser = application.Invitations.Any(invitation => invitation.CompanyUser!.IamUser!.UserEntityId == iamUserId),
                 Invitations = application.Invitations
             })
-            .Select(x => new ValueTuple<bool,IEnumerable<UploadDocuments>>(
+            .Select(x => new ValueTuple<bool, IEnumerable<UploadDocuments>>(
                 x.IsApplicationAssignedUser,
-                x.Invitations.SelectMany(invitation => 
+                x.Invitations.SelectMany(invitation =>
                     invitation.CompanyUser!.Documents
                         .Where(document => x.IsApplicationAssignedUser && document.DocumentTypeId == documentTypeId)
                         .Select(document =>
@@ -100,7 +101,8 @@ public class DocumentRepository : IDocumentRepository
     public Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId) =>
         this._dbContext.Documents
             .Where(x => x.Id == documentId)
-            .Select(x => new {
+            .Select(x => new
+            {
                 Document = x,
                 IsUserInSameCompany = x.CompanyUser!.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
             })
@@ -131,7 +133,8 @@ public class DocumentRepository : IDocumentRepository
         _dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
-            .Select(document => new {
+            .Select(document => new
+            {
                 Document = document,
                 Applications = document.CompanyUser!.Company!.CompanyApplications
             })
@@ -185,11 +188,13 @@ public class DocumentRepository : IDocumentRepository
     public Task<OfferDocumentContentData?> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
         _dbContext.Documents
             .Where(document => document.Id == documentId)
-            .Select(document => new {
+            .Select(document => new
+            {
                 Offer = document.Offers.SingleOrDefault(offer => offer.Id == offerId),
                 Document = document
             })
-            .Select(x => new {
+            .Select(x => new
+            {
                 IsValidDocumentType = documentTypeIds.Contains(x.Document.DocumentTypeId),
                 IsDocumentLinkedToOffer = x.Offer != null,
                 IsValidOfferType = x.Offer!.OfferTypeId == offerTypeId,
@@ -211,13 +216,15 @@ public class DocumentRepository : IDocumentRepository
     public Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetOfferDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
         _dbContext.Documents
             .Where(document => document.Id == documentId)
-            .Select(document => new {
+            .Select(document => new
+            {
                 Offers = document.Offers,
                 Document = document
             })
-            .Select(x => new {
+            .Select(x => new
+            {
                 IsOfferAssignedDocument = x.Offers.Any(),
-                OfferData =  x.Offers.Select(o => new ValueTuple<OfferStatusId, Guid, bool>(o.OfferStatusId, o.Id, o.OfferTypeId == offerTypeId)),
+                OfferData = x.Offers.Select(o => new ValueTuple<OfferStatusId, Guid, bool>(o.OfferStatusId, o.Id, o.OfferTypeId == offerTypeId)),
                 IsDocumentTypeMatch = documentTypeIds.Contains(x.Document.DocumentTypeId),
                 DocumentStatus = x.Document.DocumentStatusId,
                 IsProviderCompanyUser = x.Document.CompanyUser!.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
@@ -231,13 +238,13 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void RemoveDocuments(IEnumerable<Guid> documentIds) => 
-        _dbContext.Documents.RemoveRange(documentIds.Select(documentId=> new Document(documentId, null!, null!, null!, default, default, default, default)));
+    public void RemoveDocuments(IEnumerable<Guid> documentIds) =>
+        _dbContext.Documents.RemoveRange(documentIds.Select(documentId => new Document(documentId, null!, null!, null!, default, default, default, default)));
 
     public Task<(byte[] Content, string FileName, bool IsDocumentTypeMatch, MediaTypeId MediaTypeId)> GetDocumentAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
         this._dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new ValueTuple<byte[], string, bool, MediaTypeId>(x.DocumentContent, x.DocumentName, documentTypeIds.Contains(x.DocumentTypeId), x.MediaTypeId))
             .SingleOrDefaultAsync();
-    
+
 }

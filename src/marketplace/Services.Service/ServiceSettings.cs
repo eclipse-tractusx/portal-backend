@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -32,14 +32,14 @@ public class ServiceSettings
     public int ApplicationsMaxPageSize { get; init; }
 
     [Required]
-    public IDictionary<string,IEnumerable<string>> CatenaAdminRoles { get; init; } = null!;
-    
-    [Required]
-    public IDictionary<string,IEnumerable<string>> ServiceManagerRoles { get; init; } = null!;
+    public IDictionary<string, IEnumerable<string>> CatenaAdminRoles { get; init; } = null!;
 
     [Required]
-    public IDictionary<string,IEnumerable<string>> SalesManagerRoles { get; init; } = null!;
-    
+    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; init; } = null!;
+
+    [Required]
+    public IDictionary<string, IEnumerable<string>> SalesManagerRoles { get; init; } = null!;
+
     /// <summary>
     /// Notification Type Id
     /// </summary>
@@ -73,7 +73,7 @@ public class ServiceSettings
     public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
 
     [Required]
-    public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; init; } = null!;
+    public IDictionary<string, IEnumerable<string>> ITAdminRoles { get; init; } = null!;
 
     /// <summary>
     /// UserManagementAddress url required for subscription email 
@@ -86,7 +86,7 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds{ get; init; } = null!;
+    public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds { get; init; } = null!;
 
     /// <summary>
     /// Offer Status Ids
@@ -100,37 +100,23 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds{ get; init; } = null!;
+    public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; init; } = null!;
 
     /// <summary>
     /// Client to get the technical user profile client
     /// </summary>
     public string TechnicalUserProfileClient { get; set; } = null!;
 
-   /// <summary>
+    /// <summary>
     /// Document Type Id and ContentType to be uploaded
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadServiceDocumentTypeIds {get; set;} = null!;
+    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadServiceDocumentTypeIds { get; set; } = null!;
 
-   /// <summary>
-   /// Company Admin Roles
-   /// </summary>
+    /// <summary>
+    /// Company Admin Roles
+    /// </summary>
     [Required]
     public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
-}
-
-public static class ServiceSettingsExtension
-{
-    public static IServiceCollection ConfigureServiceSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<ServiceSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
 }

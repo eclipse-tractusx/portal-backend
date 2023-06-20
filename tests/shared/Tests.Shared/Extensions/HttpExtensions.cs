@@ -41,7 +41,7 @@ public static class HttpExtensions
         content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
         return content;
     }
-    
+
     public static HttpContent ToFormContent(this string stringContent, string contentType)
     {
         HttpContent content = new StringContent(stringContent);

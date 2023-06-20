@@ -19,13 +19,13 @@
  ********************************************************************************/
 // See https://aka.ms/new-console-template for more information
 
-using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
+using System.Reflection;
 
 Console.WriteLine("Starting process");
 try
@@ -39,11 +39,11 @@ try
                     .MigrationsHistoryTable("__efmigrations_history_provisioning", "public")))
                 .AddDatabaseInitializer<ProvisioningDbContext>(hostContext.Configuration.GetSection("Seeding"));
         });
-    
+
     var host = builder.Build();
 
     await host.Services.InitializeDatabasesAsync();
-    
+
     // We don't actually run anything here. The magic happens in InitializeDatabasesAsync
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))

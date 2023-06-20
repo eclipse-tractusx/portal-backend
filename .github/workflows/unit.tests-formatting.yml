@@ -17,13 +17,17 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-name: Unit-Tests
+name: Unit-Tests and Formatting
 
 on:
   push:
     branches: [ main, dev ]
   pull_request:
+<<<<<<<< HEAD:.github/workflows/unit-and-api.tests.yml
     types: [ opened, synchronize, reopened ]
+========
+    types: [opened, synchronize, reopened]
+>>>>>>>> upstream/main:.github/workflows/unit.tests-formatting.yml
   workflow_dispatch:
 
 jobs:
@@ -40,10 +44,14 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dotnet-format
+        run: dotnet tool install -g dotnet-format
       - name: Install dependencies
         run: dotnet restore src
       - name: Build
         run: dotnet build src --configuration Release --no-restore
+      - name: Check Format
+        run: dotnet format src --verify-no-changes --no-restore
       - name: Test
         env:
           companyUserId: ${{ secrets.COMPANY_USER_ID }}

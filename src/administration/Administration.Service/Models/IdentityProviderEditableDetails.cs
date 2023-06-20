@@ -27,7 +27,7 @@ public record IdentityProviderEditableDetails(string displayName)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IdentityProviderEditableDetailsOidc? oidc { get; init; } = null;
-    
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IdentityProviderEditableDetailsSaml? saml { get; init; } = null;
 }

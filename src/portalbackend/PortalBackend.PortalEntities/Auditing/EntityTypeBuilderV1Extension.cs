@@ -31,9 +31,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 public static class EntityTypeBuilderV1Extension
 {
-    public static EntityTypeBuilder<TEntity> HasAuditV1Triggers<TEntity,TAuditEntity>(this EntityTypeBuilder<TEntity> builder) where TEntity : class, IAuditableV1 where TAuditEntity : class, IAuditEntityV1
+    public static EntityTypeBuilder<TEntity> HasAuditV1Triggers<TEntity, TAuditEntity>(this EntityTypeBuilder<TEntity> builder) where TEntity : class, IAuditableV1 where TAuditEntity : class, IAuditEntityV1
     {
-        var auditEntityAttribute = (AuditEntityV1Attribute?) Attribute.GetCustomAttribute(typeof(TEntity), typeof(AuditEntityV1Attribute));
+        var auditEntityAttribute = (AuditEntityV1Attribute?)Attribute.GetCustomAttribute(typeof(TEntity), typeof(AuditEntityV1Attribute));
         if (auditEntityAttribute == null)
         {
             throw new ConfigurationException($"{nameof(TEntity)} must be annotated with {nameof(AuditEntityV1Attribute)}");
@@ -44,7 +44,7 @@ public static class EntityTypeBuilderV1Extension
         {
             throw new ConfigurationException($"{typeof(TEntity).Name} attribute {typeof(AuditEntityV1Attribute).Name} configured AuditEntityType {auditEntityType.Name} doesn't match {typeof(TAuditEntity).Name}");
         }
-        
+
         var sourceProperties = new List<PropertyInfo>();
         if (typeof(IBaseEntity).IsAssignableFrom(typeof(TEntity)))
         {
@@ -76,40 +76,40 @@ public static class EntityTypeBuilderV1Extension
 
         return builder.AfterInsert(trigger => trigger
                             .Action(action => action
-                                .Insert(CreateNewAuditEntityExpression<TEntity,TAuditEntity>(sourceProperties, insertEditorProperty ?? lastEditorProperty))))
+                                .Insert(CreateNewAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, insertEditorProperty ?? lastEditorProperty))))
                         .AfterUpdate(trigger => trigger
                             .Action(action => action
-                                .Insert(CreateUpdateAuditEntityExpression<TEntity,TAuditEntity>(sourceProperties, lastEditorProperty))))
+                                .Insert(CreateUpdateAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, lastEditorProperty))))
                         .AfterDelete(trigger => trigger
                             .Action(action => action
-                                .Insert(CreateDeleteAuditEntityExpression<TEntity,TAuditEntity>(sourceProperties, lastEditorProperty))));
+                                .Insert(CreateDeleteAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, lastEditorProperty))));
     }
 
-    private static Expression<Func<TEntity,TAuditEntity>> CreateNewAuditEntityExpression<TEntity,TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty)
+    private static Expression<Func<TEntity, TAuditEntity>> CreateNewAuditEntityExpression<TEntity, TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty)
     {
         var newValue = Expression.Parameter(typeof(TEntity), "newEntity");
 
-        return Expression.Lambda<Func<TEntity,TAuditEntity>>(
+        return Expression.Lambda<Func<TEntity, TAuditEntity>>(
             CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.INSERT, newValue, lastEditorProperty),
             newValue);
     }
 
-    private static Expression<Func<TEntity,TEntity,TAuditEntity>> CreateUpdateAuditEntityExpression<TEntity,TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty)
+    private static Expression<Func<TEntity, TEntity, TAuditEntity>> CreateUpdateAuditEntityExpression<TEntity, TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty)
     {
         var oldEntity = Expression.Parameter(typeof(TEntity), "oldEntity");
         var newEntity = Expression.Parameter(typeof(TEntity), "newEntity");
 
-        return Expression.Lambda<Func<TEntity,TEntity,TAuditEntity>>(
+        return Expression.Lambda<Func<TEntity, TEntity, TAuditEntity>>(
             CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.UPDATE, newEntity, lastEditorProperty),
             oldEntity,
             newEntity);
     }
 
-    private static Expression<Func<TEntity,TAuditEntity>> CreateDeleteAuditEntityExpression<TEntity,TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty)
+    private static Expression<Func<TEntity, TAuditEntity>> CreateDeleteAuditEntityExpression<TEntity, TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty)
     {
         var deletedEntity = Expression.Parameter(typeof(TEntity), "deletedEntity");
 
-        return Expression.Lambda<Func<TEntity,TAuditEntity>>(
+        return Expression.Lambda<Func<TEntity, TAuditEntity>>(
             CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.DELETE, deletedEntity, lastEditorProperty),
             deletedEntity);
     }
@@ -120,7 +120,7 @@ public static class EntityTypeBuilderV1Extension
             .Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1Id.ToString())[0], Expression.New(typeof(Guid))))
             .Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1OperationId.ToString())[0], Expression.Constant(auditOperationId)))
             .Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1DateLastChanged.ToString())[0], Expression.New(typeof(DateTimeOffset))));
-        
+
         if (lastEditorProperty != null)
         {
             memberBindings = memberBindings.Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1LastEditorId.ToString())[0], Expression.Property(entity, lastEditorProperty)));
@@ -139,7 +139,7 @@ public static class EntityTypeBuilderV1Extension
         }
         catch (Exception e)
         {
-            throw new ArgumentException($"{member.DeclaringType?.Name}.{member.Name} is not assignable from {expression}, {e.Message}",e);
+            throw new ArgumentException($"{member.DeclaringType?.Name}.{member.Name} is not assignable from {expression}, {e.Message}", e);
         }
     }
 }

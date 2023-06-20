@@ -90,8 +90,9 @@ public class ApplicationRepository : IApplicationRepository
     public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId) =>
         _dbContext.CompanyApplications
             .Where(application => application.Id == applicationId)
-            .Select(application => new {
-                Application = application, 
+            .Select(application => new
+            {
+                Application = application,
                 CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault(),
                 Documents = application.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents).Where(Doc => Doc.DocumentStatusId != DocumentStatusId.LOCKED)
             })
@@ -109,7 +110,7 @@ public class ApplicationRepository : IApplicationRepository
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
                 (applicationStatusIds == null || applicationStatusIds.Contains(application.ApplicationStatusId)));
 
-    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync (Guid applicationId, string iamUserId, Guid? companyId = null) =>
+    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, string iamUserId, Guid? companyId = null) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId &&
@@ -135,14 +136,14 @@ public class ApplicationRepository : IApplicationRepository
                     .Select(companyUser => companyUser.Id)
                     .SingleOrDefault(),
                 application.Company.CompanyIdentifiers
-                    .Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value))))
+                    .Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
             .SingleOrDefaultAsync();
 
     public Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(companyApplication => companyApplication.Id == applicationId)
-            .Select(x => new ValueTuple<bool,Guid,bool>(
+            .Select(x => new ValueTuple<bool, Guid, bool>(
                 true,
                 x.CompanyId,
                 x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED))
@@ -243,7 +244,7 @@ public class ApplicationRepository : IApplicationRepository
                             x.CompanyUser!.Firstname,
                             x.CompanyUser.Lastname,
                             x.CompanyUser.Email)),
-                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value))))
+                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
@@ -253,11 +254,12 @@ public class ApplicationRepository : IApplicationRepository
             .AsSplitQuery()
             .Where(application =>
                 application.Id == applicationId)
-            .Select(application => new {
+            .Select(application => new
+            {
                 IsSameCompanyUser = application.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId),
                 Company = application.Company
             })
-            .Select(x => new ValueTuple<bool,bool,RegistrationData?>(
+            .Select(x => new ValueTuple<bool, bool, RegistrationData?>(
                 true,
                 x.IsSameCompanyUser,
                 x.IsSameCompanyUser ? new RegistrationData(
@@ -275,15 +277,15 @@ public class ApplicationRepository : IApplicationRepository
                     x.Company.Address.Country!.CountryNameDe,
                     x.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
                     x.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
-                        .Select(consent => new ValueTuple<Guid,ConsentStatusId>(
+                        .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
                             consent.AgreementId, consent.ConsentStatusId)),
                     x.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents.Where(document => documentTypes.Contains(document.DocumentTypeId)).Select(document => document.DocumentName)),
-                    x.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value)))
+                    x.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value)))
                     : null))
             .SingleOrDefaultAsync();
 
-     /// <inheritdoc />
-    public Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId) => 
+    /// <inheritdoc />
+    public Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(a => a.Id == applicationId)
@@ -292,7 +294,7 @@ public class ApplicationRepository : IApplicationRepository
                 x.ApplicationChecklistEntries.Select(ace => ace.ApplicationChecklistEntryTypeId)))
             .SingleOrDefaultAsync();
 
-     /// <inheritdoc />
+    /// <inheritdoc />
     public Task<(CompanyApplicationStatusId ApplicationStatusId, ApplicationChecklistEntryStatusId RegistrationVerificationStatusId)> GetApplicationStatusWithChecklistTypeStatusAsync(Guid applicationId, ApplicationChecklistEntryTypeId checklistEntryTypeId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
@@ -317,7 +319,7 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(ca => ca.Id == applicationId)
-            .Select(ca => new { ca.ApplicationStatusId, ca.Company, ca.Company!.Address, ca.Company.CompanyIdentifiers})
+            .Select(ca => new { ca.ApplicationStatusId, ca.Company, ca.Company!.Address, ca.Company.CompanyIdentifiers })
             .Select(ca => new ClearinghouseData(
                 ca.ApplicationStatusId,
                 new ParticipantDetails(
@@ -345,7 +347,7 @@ public class ApplicationRepository : IApplicationRepository
     public Task<(Guid CompanyId, BpdmData BpdmData)> GetBpdmDataForApplicationAsync(Guid applicationId) =>
         _dbContext.Companies.AsNoTracking()
             .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(company => new ValueTuple<Guid,BpdmData>(
+            .Select(company => new ValueTuple<Guid, BpdmData>(
                 company.Id,
                 new BpdmData(
                     company!.Name,
@@ -361,7 +363,7 @@ public class ApplicationRepository : IApplicationRepository
                         company.Address.Country!.CountryAssignedIdentifiers.Where(cai => cai.BpdmIdentifierId != null),
                         companyIdentifier => companyIdentifier.UniqueIdentifierId,
                         countryAssignedIdentifier => countryAssignedIdentifier.UniqueIdentifierId,
-                        (companyIdentifier,countryAssignedIdentifier) => new ValueTuple<BpdmIdentifierId,string>(countryAssignedIdentifier.BpdmIdentifierId!.Value, companyIdentifier.Value)))))
+                        (companyIdentifier, countryAssignedIdentifier) => new ValueTuple<BpdmIdentifierId, string>(countryAssignedIdentifier.BpdmIdentifierId!.Value, companyIdentifier.Value)))))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -388,7 +390,7 @@ public class ApplicationRepository : IApplicationRepository
                     x.ProcessSteps
                         .Select(ps => ps.ProcessStepTypeId)))
             .SingleOrDefaultAsync();
-    
+
     /// <summary>
     /// Gets the company id for the submitted application
     /// </summary>
@@ -397,6 +399,6 @@ public class ApplicationRepository : IApplicationRepository
     public Task<(Guid CompanyId, string CompanyName)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(x => new ValueTuple<Guid,string>(x.CompanyId, x.Company!.Name))
+            .Select(x => new ValueTuple<Guid, string>(x.CompanyId, x.Company!.Name))
             .SingleOrDefaultAsync();
 }

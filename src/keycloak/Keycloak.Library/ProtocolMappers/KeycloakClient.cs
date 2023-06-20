@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -114,4 +114,4 @@ public partial class KeycloakClient
             .AppendPathSegment("/protocol-mappers/models")
             .PostJsonAsync(protocolMapperRepresentation)
             .ConfigureAwait(false);
-}        
+}

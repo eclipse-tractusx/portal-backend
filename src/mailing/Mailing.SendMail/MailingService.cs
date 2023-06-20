@@ -27,7 +27,7 @@ public class MailingService : IMailingService
     private readonly ITemplateManager _templateManager;
     private readonly ISendMail _sendMail;
 
-    public MailingService( ITemplateManager templateManager, ISendMail sendMail)
+    public MailingService(ITemplateManager templateManager, ISendMail sendMail)
     {
         _templateManager = templateManager;
         _sendMail = sendMail;
@@ -35,7 +35,7 @@ public class MailingService : IMailingService
 
     public async Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates)
     {
-        foreach(var temp in templates)
+        foreach (var temp in templates)
         {
             var email = await _templateManager.ApplyTemplateAsync(temp, parameters).ConfigureAwait(false);
             await _sendMail.Send("Notifications@catena-x.net", recipient, email.Subject, email.Body, email.isHtml).ConfigureAwait(false);

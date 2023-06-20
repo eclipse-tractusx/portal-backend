@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
@@ -77,6 +77,6 @@ public record OfferAgreement(Guid? Id, string? Name, string? ConsentStatus);
 /// <summary>
 /// Model for Document
 /// </summary>
-/// <param name="documentId"></param>
-/// <param name="documentName"></param>
-public record DocumentData(Guid documentId, string documentName);
+/// <param name="DocumentId"></param>
+/// <param name="DocumentName"></param>
+public record DocumentData(Guid DocumentId, string DocumentName);

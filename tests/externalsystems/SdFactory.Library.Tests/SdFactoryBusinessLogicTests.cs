@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -34,7 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
 public class SdFactoryBusinessLogicTests
 {
     #region Initialization
-    
+
     private const string CountryCode = "DE";
     private const string Bpn = "BPNL000000000009";
     private static readonly Guid ApplicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
@@ -85,9 +85,9 @@ public class SdFactoryBusinessLogicTests
     }
 
     #endregion
-    
+
     #region Register Connector
-    
+
     [Fact]
     public async Task RegisterConnectorAsync_ExpectedServiceCallIsMade()
     {
@@ -104,9 +104,9 @@ public class SdFactoryBusinessLogicTests
     }
 
     #endregion
-    
+
     #region StartSelfDescriptionRegistration
-    
+
     [Fact]
     public async Task StartSelfDescriptionRegistration_WithValidData_CompanyIsUpdated()
     {
@@ -191,9 +191,9 @@ public class SdFactoryBusinessLogicTests
     }
 
     #endregion
-    
+
     #region ProcessFinishSelfDescriptionLp
-    
+
     [Fact]
     public async Task ProcessFinishSelfDescriptionLp_ConfirmWithValidData_CompanyIsUpdated()
     {
@@ -216,7 +216,7 @@ public class SdFactoryBusinessLogicTests
 
         applicationChecklistEntry.Comment.Should().BeNull();
         applicationChecklistEntry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        
+
         _documents.Should().HaveCount(1);
         var document = _documents.Single();
         document.DocumentName.Should().Be($"SelfDescription_LegalPerson.json");
@@ -262,7 +262,7 @@ public class SdFactoryBusinessLogicTests
 
         applicationChecklistEntry.Comment.Should().Be("test message");
         applicationChecklistEntry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
-        
+
         _documents.Should().BeEmpty();
     }
 
@@ -330,9 +330,9 @@ public class SdFactoryBusinessLogicTests
     }
 
     #endregion
-    
+
     #region ProcessFinishSelfDescriptionLp
-    
+
     [Fact]
     public async Task ProcessFinishSelfDescriptionLpForConnector_ConfirmWithValidData_CompanyIsUpdated()
     {
@@ -347,7 +347,7 @@ public class SdFactoryBusinessLogicTests
 
         // Assert
         A.CallTo(() => _documentRepository.CreateDocument("SelfDescription_Connector.json", A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
-        
+
         _documents.Should().HaveCount(1);
         var document = _documents.Single();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, null, A<Action<Connector>>._))
@@ -377,7 +377,7 @@ public class SdFactoryBusinessLogicTests
         var connector = new Connector(Guid.NewGuid(), "con-air", "de", "https://one-url.com");
         var data = new SelfDescriptionResponseData(connector.Id, SelfDescriptionStatus.Failed, "test message", null);
         SetupForProcessFinishForConnector(connector);
-        
+
         // Act
         await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
 
@@ -393,7 +393,7 @@ public class SdFactoryBusinessLogicTests
     {
         // Arrange
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Failed, null, null);
-        
+
         // Act
         async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
 
@@ -403,7 +403,7 @@ public class SdFactoryBusinessLogicTests
     }
 
     #endregion
-    
+
     #region GetSdUniqueIdentifierValue
 
     [Theory]
@@ -416,7 +416,7 @@ public class SdFactoryBusinessLogicTests
     {
         // Act
         var result = uiId.GetSdUniqueIdentifierValue();
-        
+
         // Assert
         result.Should().Be(expectedValue);
     }
@@ -426,19 +426,19 @@ public class SdFactoryBusinessLogicTests
     {
         // Assert
         const UniqueIdentifierId id = default;
-        
+
         // Act
         string Act() => id.GetSdUniqueIdentifierValue();
 
         // Assert
-        var ex = Assert.Throws<ArgumentOutOfRangeException>((Func<string>) Act);
+        var ex = Assert.Throws<ArgumentOutOfRangeException>((Func<string>)Act);
         ex.ParamName.Should().Be("uniqueIdentifierId");
     }
 
     #endregion
-    
+
     #region Setup
-    
+
     private void SetupForProcessFinish(Company company, ApplicationChecklistEntry applicationChecklistEntry)
     {
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, null, A<Action<Company>>._))
@@ -449,10 +449,10 @@ public class SdFactoryBusinessLogicTests
             });
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
-                new[] {ApplicationChecklistEntryStatusId.IN_PROGRESS},
+                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
                 null,
-                new[] {ProcessStepTypeId.START_SELF_DESCRIPTION_LP}))
+                new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP }))
             .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _process, Guid.NewGuid(),
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
                 ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>.Empty,
@@ -477,7 +477,7 @@ public class SdFactoryBusinessLogicTests
                 _documents.Add(document);
             })
             .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
-        
+
         A.CallTo(() =>
                 _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._))
             .Invokes((Guid _, Action<Company>? init, Action<Company> modify) =>
@@ -486,7 +486,7 @@ public class SdFactoryBusinessLogicTests
                 modify.Invoke(company);
             });
     }
-    
+
     private void SetupForProcessFinishForConnector(Connector connector)
     {
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, null, A<Action<Connector>>._))
@@ -506,6 +506,6 @@ public class SdFactoryBusinessLogicTests
             })
             .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
     }
-    
+
     #endregion
 }

@@ -19,10 +19,10 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
@@ -37,7 +37,7 @@ public class JwtBearerConfigurationHealthCheck : IHealthCheck
         {
             options.BackchannelHttpHandler = new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = (_,_,_,_) => true
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
             };
         }
         _configurationManager = options.BackchannelHttpHandler == null

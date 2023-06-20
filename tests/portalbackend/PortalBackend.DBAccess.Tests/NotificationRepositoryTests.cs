@@ -75,9 +75,9 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region AttachAndModifyNotification
-    
+
     [Fact]
     public async Task AttachAndModifyNotification_WithExistingNotification_UpdatesStatus()
     {
@@ -100,11 +100,11 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntity.State.Should().Be(EntityState.Modified);
         changedEntity.Entity.Should().BeOfType<Notification>().Which.IsRead.Should().Be(true);
     }
-    
+
     #endregion
 
     #region AttachAndModifyNotifications
-    
+
     [Fact]
     public async Task AttachAndModifyNotifications_WithExistingNotification_UpdatesStatus()
     {
@@ -129,11 +129,11 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             .And.AllBeOfType<Notification>()
             .And.AllSatisfy(x => ((Notification)x).IsRead.Should().BeTrue());
     }
-    
+
     #endregion
 
     #region Delete Notification
-    
+
     [Fact]
     public async Task DeleteNotification_WithExistingNotification_RemovesNotification()
     {
@@ -154,7 +154,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetAllAsDetailsByUserIdUntracked
 
     [Fact]
@@ -164,7 +164,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -180,7 +180,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, NotificationSorting.DateAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, NotificationSorting.DateAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -195,7 +195,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, NotificationSorting.DateDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, NotificationSorting.DateDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -210,7 +210,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -225,7 +225,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -241,7 +241,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, null, null)(0, 15)
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, null, false, null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
@@ -258,7 +258,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, null, null)(0, 15)
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, null, false, null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
@@ -274,7 +274,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, null, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -289,7 +289,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION, null, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -304,7 +304,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, NotificationTopicId.INFO, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -326,7 +326,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut
             .GetNotificationByIdAndIamUserIdUntrackedAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), IamUserId)
             .ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBeNull();
         result.IsUserReceiver.Should().BeTrue();
@@ -334,7 +334,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetNotificationCount
 
     [Fact]
@@ -368,7 +368,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetCountDetailsForUser
 
     [Fact]
@@ -389,7 +389,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region CheckNotificationExistsByIdAndIamUserId
-    
+
     [Fact]
     public async Task CheckNotificationExistsByIdAndIamUserId_ReturnsExpectedCount()
     {
@@ -405,15 +405,15 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.IsUserReceiver.Should().BeTrue();
         results.IsNotificationExisting.Should().BeTrue();
     }
-    
+
     #endregion
 
     #region GetUpdateData
 
     [Theory]
-    [InlineData(new [] { "efc20368-9e82-46ff-b88f-6495b9810253" }, null)]
-    [InlineData(new [] { "efc20368-9e82-46ff-b88f-6495b9810253" }, new [] { "ac1cf001-7fbc-1f2f-817f-bce058020001" })]
-    [InlineData(new string [] { }, new [] { "ac1cf001-7fbc-1f2f-817f-bce058020001" })]
+    [InlineData(new[] { "efc20368-9e82-46ff-b88f-6495b9810253" }, null)]
+    [InlineData(new[] { "efc20368-9e82-46ff-b88f-6495b9810253" }, new[] { "ac1cf001-7fbc-1f2f-817f-bce058020001" })]
+    [InlineData(new string[] { }, new[] { "ac1cf001-7fbc-1f2f-817f-bce058020001" })]
     public async Task GetUpdateData_ReturnsExpectedCount(IEnumerable<string> roleIds, IEnumerable<string>? userIds)
     {
         // Arrange
@@ -421,7 +421,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetNotificationUpdateIds(roleIds.Select(x => new Guid(x)), userIds == null ? null : userIds.Select(x => new Guid(x)), new [] { NotificationTypeId.APP_RELEASE_REQUEST }, new Guid("0fc768e5-d4cf-4d3d-a0db-379efedd60f5"))
+            .GetNotificationUpdateIds(roleIds.Select(x => new Guid(x)), userIds == null ? null : userIds.Select(x => new Guid(x)), new[] { NotificationTypeId.APP_RELEASE_REQUEST }, new Guid("0fc768e5-d4cf-4d3d-a0db-379efedd60f5"))
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -431,22 +431,22 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region Setup
-    
+
     private async Task<NotificationRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new NotificationRepository(context);
         return sut;
     }
-    
+
     private async Task<(NotificationRepository repo, PortalDbContext context)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new NotificationRepository(context);
         return (sut, context);
     }
-    
+
     #endregion
 }

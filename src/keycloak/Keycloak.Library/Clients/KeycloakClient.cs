@@ -24,13 +24,13 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientScopes;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
-using Flurl.Http;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -138,11 +138,11 @@ public partial class KeycloakClient
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/default-client-scopes/")
             .AppendPathSegment(clientScopeId, true)
-            .PutAsync(new StringContent(""))                                               
-            .ConfigureAwait(false);                                                            
-                                                                                                
+            .PutAsync(new StringContent(""))
+            .ConfigureAwait(false);
+
     public async Task DeleteDefaultClientScopeAsync(string realm, string clientId, string clientScopeId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))                                                 
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
@@ -241,7 +241,7 @@ public partial class KeycloakClient
             .AppendPathSegment(providerId, true)
             .GetStringAsync()
             .ConfigureAwait(false);
-    
+
     public async Task<ManagementPermission> GetClientAuthorizationPermissionsInitializedAsync(string realm, string clientId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
@@ -252,7 +252,7 @@ public partial class KeycloakClient
             .GetJsonAsync<ManagementPermission>()
             .ConfigureAwait(false);
 
-    public async Task<ManagementPermission> SetClientAuthorizationPermissionsInitializedAsync(string realm, string clientId, ManagementPermission managementPermission) => 
+    public async Task<ManagementPermission> SetClientAuthorizationPermissionsInitializedAsync(string realm, string clientId, ManagementPermission managementPermission) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
@@ -270,11 +270,11 @@ public partial class KeycloakClient
             .AppendPathSegment("/clients/")
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/nodes")
-            .PostJsonAsync(formParams)                                               
-            .ConfigureAwait(false);                                                            
-                                                                                                
+            .PostJsonAsync(formParams)
+            .ConfigureAwait(false);
+
     public async Task UnregisterClientClusterNodeAsync(string realm, string clientId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))                                                 
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
@@ -315,7 +315,7 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<UserSession>>()
             .ConfigureAwait(false);
     }
-    
+
     public async Task<IEnumerable<ClientScope>> GetOptionalClientScopesAsync(string realm, string clientId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
@@ -334,11 +334,11 @@ public partial class KeycloakClient
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/optional-client-scopes/")
             .AppendPathSegment(clientScopeId, true)
-            .PutAsync(new StringContent(""))                                               
-            .ConfigureAwait(false);                                                            
-                                                                                                
+            .PutAsync(new StringContent(""))
+            .ConfigureAwait(false);
+
     public async Task DeleteOptionalClientScopeAsync(string realm, string clientId, string clientScopeId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))                                                 
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
@@ -402,7 +402,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/clients/")
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/test-nodes-available")
-            .GetJsonAsync<GlobalRequestResult>()                                               
+            .GetJsonAsync<GlobalRequestResult>()
             .ConfigureAwait(false);
 
     public async Task<IEnumerable<UserSession>> GetClientUserSessionsAsync(string realm, string clientId, int? first = null, int? max = null)

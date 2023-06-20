@@ -29,7 +29,7 @@ public enum NotificationTopicId
     /// Notification is just an information for the user
     /// </summary>
     INFO = 1,
-    
+
     /// <summary>
     /// Notification that requires an action
     /// </summary>
