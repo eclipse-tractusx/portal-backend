@@ -33,7 +33,7 @@ public class GeneralHttpErrorHandler
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
 
-    private static readonly IImmutableDictionary<HttpStatusCode, MetaData> Metadata = new Dictionary<HttpStatusCode, MetaData>
+    private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = new Dictionary<HttpStatusCode, MetaData>
     {
         { HttpStatusCode.BadRequest, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.1", "One or more validation errors occurred.") },
         { HttpStatusCode.Conflict, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.8", "The resorce is in conflict with the current request.") },

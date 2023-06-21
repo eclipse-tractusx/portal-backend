@@ -19,10 +19,10 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Builder;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Serilog;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class WebApplicationBuildRunner
 {
@@ -42,6 +42,7 @@ public static class WebApplicationBuildRunner
                 .AddDefaultServices<TProgram>(builder.Configuration, version);
 
             configureBuilder(builder);
+
             builder.Build().CreateApp<TProgram>(path, version, builder.Environment).Run();
         }
         catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
