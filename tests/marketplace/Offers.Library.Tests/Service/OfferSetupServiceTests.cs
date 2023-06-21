@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -33,7 +34,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using UserRoleConfig = Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration.UserRoleConfig;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
@@ -41,7 +41,6 @@ public class OfferSetupServiceTests
 {
     private const string Bpn = "CAXSDUMMYCATENAZZ";
     private const string IamUserId = "9aae7a3b-b188-4a42-b46b-fb2ea5f47668";
-    private const string CompanyName = "Catena";
     private static readonly Guid CompanyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
 
     private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, CompanyUserCompanyId);
@@ -265,8 +264,14 @@ public class OfferSetupServiceTests
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
             .Returns(new AppInstance(appInstanceId, _existingServiceId, clientId));
 
-        var companyAdminRoles = Enumerable.Repeat(new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" }), 1);
-        var serviceManagerAdminRoles = Enumerable.Repeat(new UserRoleConfig("Cl2-CX-Portal", new[] { "Service Manager" }), 1);
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" })
+        };
+        var serviceManagerAdminRoles = new[]
+        {
+            new UserRoleConfig("Cl2-CX-Portal", new[] { "Service Manager" })
+        };
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
@@ -283,7 +288,10 @@ public class OfferSetupServiceTests
     {
         // Arrange
         SetupAutoSetup(OfferTypeId.APP);
-        var companyAdminRoles = Enumerable.Repeat(new UserRoleConfig("Cl2-CX-Portal", new[] {"IT Admin"}), 1);
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" })
+        };
         var serviceManagerRoles = new[]
         {
             new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
@@ -307,7 +315,10 @@ public class OfferSetupServiceTests
     {
         // Arrange
         SetupAutoSetup(OfferTypeId.APP, isSingleInstance: true);
-        var companyAdminRoles = Enumerable.Repeat(new UserRoleConfig("Cl2-CX-Portal", new[] {"IT Admin"}), 1);
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" })
+        };
         var serviceManagerRoles = new[]
         {
             new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
@@ -1189,7 +1200,7 @@ public class OfferSetupServiceTests
                 _pendingSubscriptionId,
                 _companyUserWithoutMailCompanyId,
                 A<OfferTypeId>._))
-            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, 
+            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true,
                 "Company", _identity.CompanyId, _identity.UserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
@@ -1198,7 +1209,7 @@ public class OfferSetupServiceTests
                 _pendingSubscriptionId,
                 _identity.CompanyId,
                 A<OfferTypeId>._))
-            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, "Company", _identity.CompanyId, 
+            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, "Company", _identity.CompanyId,
                 _identity.UserId,
                 _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),

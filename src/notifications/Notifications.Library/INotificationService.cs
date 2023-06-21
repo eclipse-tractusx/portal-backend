@@ -42,6 +42,16 @@ public interface INotificationService
     /// <summary>
     /// Creates notifications for the given notification type ids with the given content.
     /// The receiver of the notification will be retrieved by the given roles for the given clients.
+    /// </summary>
+    /// <param name="receiverUserRoles">UserRoles for specified clients</param>
+    /// <param name="creatorId">ID of the creator company user</param>
+    /// <param name="notifications">combination of notification types with content of the notification</param>
+    /// <param name="done"><c>true</c> if the notification is done, <c>false</c> if its not done, otherwise <c>null</c></param>
+    Task CreateNotifications(IEnumerable<UserRoleConfig> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, bool? done = null);
+
+    /// <summary>
+    /// Creates notifications for the given notification type ids with the given content.
+    /// The receiver of the notification will be retrieved by the given roles for the given clients.
     /// Each notification will be checked if the given notification already exists, if so the notification will not be created a second time.
     /// </summary>
     /// <param name="receiverUserRoles">UserRoles for specified clients</param>
@@ -52,16 +62,6 @@ public interface INotificationService
     /// <param name="searchValue">Value that will be searched for the given param</param>
     /// <param name="done"><c>true</c> if the notification is done, <c>false</c> if its not done, otherwise <c>null</c></param>
     IAsyncEnumerable<Guid> CreateNotificationsWithExistenceCheck(IEnumerable<UserRoleConfig> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, Guid companyId, string searchParam, string searchValue, bool? done = null);
-
-    /// <summary>
-    /// Creates notifications for the given notification type ids with the given content.
-    /// The receiver of the notification will be retrieved by the given roles for the given clients.
-    /// </summary>
-    /// <param name="receiverUserRoles">UserRoles for specified clients</param>
-    /// <param name="creatorId">ID of the creator company user</param>
-    /// <param name="notifications">combination of notification types with content of the notification</param>
-    /// <param name="done"><c>true</c> if the notification is done, <c>false</c> if its not done, otherwise <c>null</c></param>
-    Task CreateNotifications(IEnumerable<UserRoleConfig> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, bool? done = null);
 
     /// <summary>
     /// Sets the given notifications to done
