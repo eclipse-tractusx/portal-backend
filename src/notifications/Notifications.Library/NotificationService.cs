@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -71,6 +72,34 @@ public class NotificationService : INotificationService
         await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleId(roleData))
         {
             CreateNotification(receiver, creatorId, notifications, notificationRepository, done);
+        }
+    }
+
+    /// <inheritdoc />
+    async IAsyncEnumerable<Guid> INotificationService.CreateNotificationsWithExistenceCheck(
+        IEnumerable<UserRoleConfig> receiverUserRoles,
+        Guid? creatorId,
+        IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
+        Guid companyId,
+        string searchParam,
+        string searchValue,
+        bool? done)
+    {
+        var roleData = await ValidateRoleData(receiverUserRoles);
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        var companyUserWithRoleIdForCompany = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData, companyId).ToListAsync().ConfigureAwait(false);
+
+        var existingNotifications = await notificationRepository.CheckNotificationsExistsForParam(companyUserWithRoleIdForCompany, notifications.Select(x => x.notificationTypeId), searchParam, searchValue).ToListAsync();
+        foreach (var receiver in companyUserWithRoleIdForCompany)
+        {
+            var existingReceiverNotifications = existingNotifications
+                .Where(x => x.ReceiverId == receiver)
+                .Select(x => x.NotificationTypeId);
+            var notificationsToCreate = notifications.ExceptBy(existingReceiverNotifications, x => x.notificationTypeId);
+            if (notificationsToCreate.IfAny(toCreate => CreateNotification(receiver, creatorId, toCreate, notificationRepository, done)))
+            {
+                yield return receiver;
+            }
         }
     }
 

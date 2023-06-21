@@ -2,17 +2,17 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 1.5.0-RC1
+## 1.5.0
 
 ### Change
 * Services Service
-  * added technical user profile information with userRoles in endpoint GET /services/{serviceId}
+  * added technical user profile information incl assigned userRoles for endpoint GET /services/{serviceId}
   * endpoint validation of POST /api/services/servicerelease/addservice enhanced ('serviceType' and 'title' set to mandatory)
   * endpoint logic of PUT: /api/services/servicerelease/{serviceId}/declineService enhanced by setting documents in status "ACTIVE" to "PENDING" when declining a service
   * endpoint response of POST: /api/services/autoSetup enhanced to include 'endpoint URL' (if applicable), as well as 'technicalUserProfile'
   * endpoint response of GET: /api/services/provided/subscription-status enhanced by including a true/false flag for 'technicalUser'
 * Apps Service
-  * added technical user profile information with userRoles in endpoint GET /apps/{appId}
+  * added technical user profile information incl userRoles for endpoint GET /apps/{appId}
   * endpoint logic of PUT: /api/apps/appreleaseprocess/{appId}/declineApp enhanced by setting documents in status "ACTIVE" to "PENDING" when declining an app
   * endpoint response of POST: /api/apps/autoSetup enhanced to include 'endpoint URL' (if applicable), as well as 'technicalUserProfile'
   * endpoint response of GET: /api/apps/provided/subscription-status enhanced by including a true/false flag for 'technicalUser'
@@ -38,6 +38,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Bugfix
 * Registration Service
   * exception handling of Post: /api/registration/application/{applicationId}/submitRegistration updated in case of registration has an incorrect status
+* DB Migration
+  * added seeding data to link the role collection "CX Participant" with the technical user roles "BPDM Pool", "Connector User", "Dataspace Discovery", "Identity Wallet Management"
 
 ## 1.4.0
 

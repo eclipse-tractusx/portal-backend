@@ -97,7 +97,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// </summary>
     /// <param name="offerSubscriptionId" example="22dbc488-8f90-40b4-9fbd-ea0b246e827b">Id of the offer subscription that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/subscriptionconfiguration/offer-subscription/{offerSubscriptionId}
+    /// Example: POST: api/administration/subscriptionconfiguration/process/offer-subscription/{offerSubscriptionId}
     /// <response code="200">Returns the process steps.</response>
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
@@ -115,7 +115,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// </summary>
     /// <param name="offerSubscriptionId" example="22dbc488-8f90-40b4-9fbd-ea0b246e827b">Id of the offer subscription that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/subscriptionconfiguration/offer-subscription/{offerSubscriptionId}/retrigger-provider
+    /// Example: POST: api/administration/subscriptionconfiguration/process/offer-subscription/{offerSubscriptionId}/retrigger-provider
     /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
@@ -136,7 +136,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// </summary>
     /// <param name="offerSubscriptionId" example="22dbc488-8f90-40b4-9fbd-ea0b246e827b">Id of the offer subscription that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/subscriptionconfiguration/offer-subscription/{offerSubscriptionId}/retrigger-create-client
+    /// Example: POST: api/administration/subscriptionconfiguration/process/offer-subscription/{offerSubscriptionId}/retrigger-create-client
     /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
@@ -157,12 +157,12 @@ public class SubscriptionConfigurationController : ControllerBase
     /// </summary>
     /// <param name="offerSubscriptionId" example="22dbc488-8f90-40b4-9fbd-ea0b246e827b">Id of the offer subscription that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/subscriptionconfiguration/offer-subscription/{offerSubscriptionId}/retrigger-create-technical-user
+    /// Example: POST: api/administration/subscriptionconfiguration/process/offer-subscription/{offerSubscriptionId}/retrigger-create-technical-user
     /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
     [HttpPost]
-    [Authorize(Roles = "retrigger_subscriptionn")]
+    [Authorize(Roles = "retrigger_subscription")]
     [Route("process/offer-subscription/{offerSubscriptionId}/retrigger-create-technical-user")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -178,7 +178,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// </summary>
     /// <param name="offerSubscriptionId" example="22dbc488-8f90-40b4-9fbd-ea0b246e827b">Id of the offer subscription that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/subscriptionconfiguration/offer-subscription/{offerSubscriptionId}/retrigger-provider-callback
+    /// Example: POST: api/administration/subscriptionconfiguration/process/offer-subscription/{offerSubscriptionId}/retrigger-provider-callback
     /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the OfferSubscription is not in status ACTIVE or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>

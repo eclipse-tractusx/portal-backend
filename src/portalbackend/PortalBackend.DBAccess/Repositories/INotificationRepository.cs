@@ -98,4 +98,24 @@ public interface INotificationRepository
     /// <param name="offerId">id of the offer to get the notifications for</param>
     /// <returns>List of the notification ids that should be updated</returns>
     IAsyncEnumerable<Guid> GetNotificationUpdateIds(IEnumerable<Guid> userRoleIds, IEnumerable<Guid>? companyUserIds, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId);
+
+    /// <summary>
+    /// Checks if a notification is existing for a company user and a specific search param
+    /// </summary>
+    /// <param name="receiverId">Id of the receiver</param>
+    /// <param name="notificationTypeId">Id of the notification type</param>
+    /// <param name="searchParam">The value of the notifications content that should be searched</param>
+    /// <param name="searchValue">The value of the search Param</param>
+    /// <returns>Returns true if a notification exists</returns>
+    Task<bool> CheckNotificationExistsForParam(Guid receiverId, NotificationTypeId notificationTypeId, string searchParam, string searchValue);
+
+    /// <summary>
+    /// Checks if notifications are existing for company users, notificationTypeIds and a specific search param
+    /// </summary>
+    /// <param name="receiverIds">Id of the receivers</param>
+    /// <param name="notificationTypeIds">Id of the notification types</param>
+    /// <param name="searchParam">The value of the notifications content that should be searched</param>
+    /// <param name="searchValue">The value of the search Param</param>
+    /// <returns>Returns the existing notification typeIds for the receiver</returns>
+    IAsyncEnumerable<(NotificationTypeId NotificationTypeId, Guid ReceiverId)> CheckNotificationsExistsForParam(IEnumerable<Guid> receiverIds, IEnumerable<NotificationTypeId> notificationTypeIds, string searchParam, string searchValue);
 }
