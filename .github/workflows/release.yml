@@ -452,6 +452,29 @@ jobs:
       - name: Set env
         run: echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get tags
+        run: git fetch --tags --force
+
+      - name: Check for previous release candidate version
+        id: rc-check
+        run: |
+          rc=$(git tag -l "${{ env.REF_NAME }}-RC*")
+          if [[ -n "$rc" ]]; then
+            echo "rc=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine branch to update in portal-cd
+        id: cd-branch
+        run: |
+          if [[ ${{ steps.rc-check.outputs.rc }} == 'true' ]]; then
+            echo "branch=release-candidate" >> $GITHUB_OUTPUT
+          else
+            echo "branch=dev" >> $GITHUB_OUTPUT
+          fi
+
       - name: Get token
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v2
@@ -469,5 +492,5 @@ jobs:
             --url https://api.github.com/repos/eclipse-tractusx/portal-cd/actions/workflows/portal-backend-release-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"dev", "inputs": { "new-image":"${{ github.ref_name }}" }}' \
+            --data '{"ref":"${{ steps.cd-branch.outputs.branch }}", "inputs": { "new-image":"${{ github.ref_name }}" }}' \
             --fail
