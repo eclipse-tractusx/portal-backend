@@ -18,6 +18,40 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Microsoft.Extensions.Configuration;
+using Serilog;
+using Serilog.Core;
+using Serilog.Formatting.Json;
 
-public record ServiceTypeData(int ServiceTypeId, string Name);
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+
+public static class LoggingExtensions
+{
+    public static Logger CreateLogger(IConfiguration? config)
+    {
+        var loggerConfig = new LoggerConfiguration();
+        if (config is not null)
+        {
+            loggerConfig.ReadFrom.Configuration(config);
+        }
+
+        return loggerConfig.Enrich.FromLogContext()
+            .WriteTo.Console(new JsonFormatter())
+            .CreateLogger();
+    }
+
+    /// <summary>
+    /// Creates a static logger
+    /// </summary>
+    /// <remarks>
+    /// This should only be used for logging in the Program.cs
+    /// For all other logging use ILogger
+    /// </remarks>
+    public static void EnsureInitialized()
+    {
+        if (Log.Logger is Logger)
+            return;
+
+        Log.Logger = CreateLogger(null);
+    }
+}

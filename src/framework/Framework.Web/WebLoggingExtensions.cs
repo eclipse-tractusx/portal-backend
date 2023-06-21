@@ -18,6 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
 
-public record ServiceTypeData(int ServiceTypeId, string Name);
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+
+public static class WebLoggingExtensions
+{
+    public static void AddLogging(this IHostBuilder host, IConfiguration config)
+    {
+        host.UseSerilog((_, configuration) =>
+        {
+            configuration
+                .WriteTo.Console(new JsonFormatter())
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .ReadFrom.Configuration(config)
+                .Enrich.WithCorrelationIdHeader("X-Request-Id");
+        });
+    }
+}

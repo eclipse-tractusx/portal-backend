@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Authorization
