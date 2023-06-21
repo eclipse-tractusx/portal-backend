@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -61,7 +62,7 @@ WebApplicationBuildRunner
         builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
         builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
         builder.Services.AddTransient<INotificationService, NotificationService>();
-        builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogic>();
+        builder.Services.AddCompanyDataService(builder.Configuration.GetSection("CompanyData"));
 
         builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
             .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));

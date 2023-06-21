@@ -24,7 +24,7 @@ using System.Net.Mime;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
-public static class ContentTypeMapperExtensions
+public static class MediaTypeIdExtensions
 {
     public static string MapToMediaType(this MediaTypeId mediaTypeId)
     {
@@ -62,5 +62,13 @@ public static class ContentTypeMapperExtensions
             MediaTypeNames.Application.Octet => MediaTypeId.OCTET,
             _ => throw new UnsupportedMediaTypeException($"mediaType '{mediaType}' is not supported")
         };
+    }
+
+    public static void CheckDocumentContent(this MediaTypeId mediaTypeId, IEnumerable<MediaTypeId> validMediaTypes)
+    {
+        if (!validMediaTypes.Contains(mediaTypeId))
+        {
+            throw new UnsupportedMediaTypeException($"Document type not supported. File must match contentTypes :{string.Join(",", validMediaTypes.Select(x => x.MapToMediaType()))} are allowed.");
+        }
     }
 }
