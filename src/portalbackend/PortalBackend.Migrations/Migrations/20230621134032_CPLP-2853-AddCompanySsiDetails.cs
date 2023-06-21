@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -28,6 +28,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "audit_company_ssi_detail20230621",
+                schema: "portal",
+                columns: table => new
+                {
+                    audit_v1id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false),
+                    company_ssi_detail_status_id = table.Column<int>(type: "integer", nullable: false),
+                    document_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    creator_user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    expiry_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    verified_credential_external_type_use_case_detail_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_v1last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_v1operation_id = table.Column<int>(type: "integer", nullable: false),
+                    audit_v1date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_audit_company_ssi_detail20230621", x => x.audit_v1id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "company_ssi_detail_statuses",
                 schema: "portal",
@@ -198,9 +224,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     verified_credential_type_id = table.Column<int>(type: "integer", nullable: false),
                     company_ssi_detail_status_id = table.Column<int>(type: "integer", nullable: false),
                     document_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    creator_user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     expiry_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     verified_credential_external_type_use_case_detail_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    creator_user_id = table.Column<Guid>(type: "uuid", nullable: false)
+                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -377,6 +406,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "verified_credential_type_id",
                 unique: true);
 
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_COMPANYSSIDETAIL() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_ssi_detail20230621 (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.company_id, \r\n  OLD.verified_credential_type_id, \r\n  OLD.company_ssi_detail_status_id, \r\n  OLD.document_id, \r\n  OLD.date_created, \r\n  OLD.creator_user_id, \r\n  OLD.expiry_date, \r\n  OLD.verified_credential_external_type_use_case_detail_id, \r\n  OLD.date_last_changed, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYSSIDETAIL AFTER DELETE\r\nON portal.company_ssi_details\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_COMPANYSSIDETAIL();");
+
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_ssi_detail20230621 (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.company_id, \r\n  NEW.verified_credential_type_id, \r\n  NEW.company_ssi_detail_status_id, \r\n  NEW.document_id, \r\n  NEW.date_created, \r\n  NEW.creator_user_id, \r\n  NEW.expiry_date, \r\n  NEW.verified_credential_external_type_use_case_detail_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL AFTER INSERT\r\nON portal.company_ssi_details\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL();");
+
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_ssi_detail20230621 (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.company_id, \r\n  NEW.verified_credential_type_id, \r\n  NEW.company_ssi_detail_status_id, \r\n  NEW.document_id, \r\n  NEW.date_created, \r\n  NEW.creator_user_id, \r\n  NEW.expiry_date, \r\n  NEW.verified_credential_external_type_use_case_detail_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL AFTER UPDATE\r\nON portal.company_ssi_details\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL();");
+        
             migrationBuilder.Sql(@"CREATE FUNCTION portal.is_credential_type_use_case(vc_type_id integer)
                 RETURNS BOOLEAN
                 LANGUAGE plpgsql
@@ -441,6 +476,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.Sql("DROP FUNCTION portal.is_credential_type_use_case;");
             migrationBuilder.Sql("DROP FUNCTION portal.is_external_type_use_case;");
+
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_DELETE_COMPANYSSIDETAIL() CASCADE;");
+
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL() CASCADE;");
+
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL() CASCADE;");
+
+            migrationBuilder.DropTable(
+                name: "audit_company_ssi_detail20230621",
+                schema: "portal");
 
             migrationBuilder.DropTable(
                 name: "company_ssi_details",
