@@ -63,9 +63,9 @@ public class OfferDocumentService : IOfferDocumentService
         MediaTypeId mediaTypeId;
         try
         {
-            mediaTypeId  = document.ContentType.ParseMediaTypeId();
+            mediaTypeId = document.ContentType.ParseMediaTypeId();
         }
-        catch(UnsupportedMediaTypeException e)
+        catch (UnsupportedMediaTypeException e)
         {
             throw new UnsupportedMediaTypeException($"Document type {documentTypeId}, {e.Message}. File with contentType :{string.Join(",", uploadContentTypeSettings.MediaTypes)} are allowed.");
         }

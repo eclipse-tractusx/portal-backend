@@ -39,7 +39,7 @@ public class UploadDocumentConfig
 
     [ValidateEnumValue]
     public DocumentTypeId DocumentTypeId { get; set; }
-    
+
     [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<MediaTypeId> MediaTypes { get; set; }
