@@ -24,11 +24,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record UseCaseParticipation
 (
-    Guid CredentialId,
+    Guid? CredentialId,
     VerifiedCredentialTypeId CredentialType,
     string? UseCase,
     string? Description,
-    CompanySsiDetailStatusId ParticipationStatus,
+    CompanySsiDetailStatusId? ParticipationStatus,
     DateTimeOffset? ExpiryDate,
-    DocumentData Document
+    DocumentData? Document,
+    ExternalTypeDetailData? ExternalTypeDetailData
 );
