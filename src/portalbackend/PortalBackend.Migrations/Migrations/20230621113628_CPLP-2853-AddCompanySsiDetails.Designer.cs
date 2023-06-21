@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230619124850_CPLP-2853-AddCompanySsiDetails")]
+    [Migration("20230621113628_CPLP-2853-AddCompanySsiDetails")]
     partial class CPLP2853AddCompanySsiDetails
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2221,6 +2221,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("integer")
                         .HasColumnName("company_ssi_detail_status_id");
 
+                    b.Property<Guid>("CreatorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("creator_user_id");
+
                     b.Property<Guid>("DocumentId")
                         .HasColumnType("uuid")
                         .HasColumnName("document_id");
@@ -2245,6 +2249,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasIndex("CompanySsiDetailStatusId")
                         .HasDatabaseName("ix_company_ssi_details_company_ssi_detail_status_id");
+
+                    b.HasIndex("CreatorUserId")
+                        .HasDatabaseName("ix_company_ssi_details_creator_user_id");
 
                     b.HasIndex("DocumentId")
                         .IsUnique()
@@ -3673,6 +3680,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 23,
                             Label = "SUBSCRIPTION_URL_UPDATE"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Label = "CREDENTIAL_APPROVAL"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Label = "CREDENTIAL_REJECTED"
                         });
                 });
 
@@ -4876,7 +4893,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("template");
 
-                    b.Property<DateTimeOffset?>("ValidFrom")
+                    b.Property<DateTimeOffset>("ValidFrom")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("valid_from");
 
@@ -5488,6 +5505,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_ssi_details_company_ssi_detail_statuses_company_ssi");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CreatorUser")
+                        .WithMany("CompanySsiDetails")
+                        .HasForeignKey("CreatorUserId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_ssi_details_company_users_creator_user_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
                         .WithOne("CompanySsiDetail")
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetail", "DocumentId")
@@ -5508,6 +5531,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Company");
 
                     b.Navigation("CompanySsiDetailStatus");
+
+                    b.Navigation("CreatorUser");
 
                     b.Navigation("Document");
 
@@ -6482,6 +6507,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
                 {
+                    b.Navigation("CompanySsiDetails");
+
                     b.Navigation("CompanyUserAssignedBusinessPartners");
 
                     b.Navigation("Consents");

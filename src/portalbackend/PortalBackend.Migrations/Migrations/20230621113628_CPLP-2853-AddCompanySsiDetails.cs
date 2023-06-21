@@ -174,7 +174,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     verified_credential_external_type_id = table.Column<int>(type: "integer", nullable: false),
                     version = table.Column<string>(type: "text", nullable: false),
                     template = table.Column<string>(type: "text", nullable: false),
-                    valid_from = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    valid_from = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     expiry = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -199,7 +199,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     company_ssi_detail_status_id = table.Column<int>(type: "integer", nullable: false),
                     document_id = table.Column<Guid>(type: "uuid", nullable: false),
                     expiry_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    verified_credential_external_type_use_case_detail_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    verified_credential_external_type_use_case_detail_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    creator_user_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -215,6 +216,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         column: x => x.company_ssi_detail_status_id,
                         principalSchema: "portal",
                         principalTable: "company_ssi_detail_statuses",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_ssi_details_company_users_creator_user_id",
+                        column: x => x.creator_user_id,
+                        principalSchema: "portal",
+                        principalTable: "company_users",
                         principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_company_ssi_details_documents_document_id",
@@ -255,6 +262,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
+                table: "notification_type",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 24, "CREDENTIAL_APPROVAL" },
+                    { 25, "CREDENTIAL_REJECTED" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
                 table: "verified_credential_type_kinds",
                 columns: new[] { "id", "label" },
                 values: new object[,]
@@ -288,6 +305,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "company_ssi_details",
                 column: "company_ssi_detail_status_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_ssi_details_creator_user_id",
+                schema: "portal",
+                table: "company_ssi_details",
+                column: "creator_user_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_company_ssi_details_document_id",
@@ -460,6 +483,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "document_types",
                 keyColumn: "id",
                 keyValue: 14);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "notification_type",
+                keyColumn: "id",
+                keyValue: 24);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "notification_type",
+                keyColumn: "id",
+                keyValue: 25);
         }
     }
 }
