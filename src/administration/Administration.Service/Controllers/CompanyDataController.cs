@@ -167,7 +167,21 @@ public class CompanyDataController : ControllerBase
     [Authorize(Roles = "view_use_case_participation")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("useCaseParticipation")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseParticipation>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipation([FromQuery] string? language) =>
+    [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseParticipationData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<UseCaseParticipationData> GetUseCaseParticipation([FromQuery] string? language) =>
         this.WithCompanyId(companyId => _logic.GetUseCaseParticipationAsync(companyId, language));
+
+    /// <summary>
+    /// Gets the Ssi certifications for the own company
+    /// </summary>
+    /// <returns>All ssi certifications of the own company</returns>
+    /// <remarks>Example: Get: api/administration/companydata/certificates</remarks>
+    /// <response code="200">Returns a collection of certificates.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("certificates")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<SsiCertificateData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<SsiCertificateData> GetSsiCertificationData() =>
+        this.WithCompanyId(companyId => _logic.GetSsiCertificatesAsync(companyId));
 }

@@ -650,10 +650,28 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         A.CallTo(() => _companyCredentialDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en"))
-            .Returns(_fixture.CreateMany<UseCaseParticipation>(5).ToAsyncEnumerable());
+            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5).ToAsyncEnumerable());
 
         // Act
         var result = await _sut.GetUseCaseParticipationAsync(_identity.CompanyId, "en").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
+    }
+
+    #endregion
+
+    #region GetSsiCertificates
+
+    [Fact]
+    public async Task GetSsiCertificates_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _companyCredentialDetailsRepository.GetSsiCertificates(_identity.CompanyId))
+            .Returns(_fixture.CreateMany<SsiCertificateData>(5).ToAsyncEnumerable());
+
+        // Act
+        var result = await _sut.GetSsiCertificatesAsync(_identity.CompanyId).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);

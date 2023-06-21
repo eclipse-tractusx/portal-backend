@@ -192,6 +192,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationAsync(Guid companyId, string? language) =>
+    public IAsyncEnumerable<UseCaseParticipationData> GetUseCaseParticipationAsync(Guid companyId, string? language) =>
         _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetUseCaseParticipationForCompany(companyId, language ?? Constants.DefaultLanguage);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<SsiCertificateData> GetSsiCertificatesAsync(Guid companyId) =>
+        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetSsiCertificates(companyId);
 }

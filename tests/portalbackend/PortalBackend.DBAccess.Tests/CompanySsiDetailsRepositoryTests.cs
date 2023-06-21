@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
@@ -54,9 +55,31 @@ public class CompanySsiDetailsRepositoryTests
         result.Where(x => x.Description != null).Should().HaveCount(2).And.Satisfy(
             x => x.Description == "Traceability",
             x => x.Description == "Sustainability & CO2-Footprint");
-        result.Where(x => x.CredentialId != null).Should().HaveCount(2).And.Satisfy(
-            x => x.CredentialId == new Guid("9f5b9934-4014-4099-91e9-7b1aee696b03"),
-            x => x.CredentialId == new Guid("9f5b9934-4014-4099-91e9-7b1aee696b04"));
+        var traceability = result.Single(x => x.CredentialType == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
+        traceability.VerifiedCredentials.Should().HaveCount(2).And.Satisfy(
+            x => x.ExternalDetailData.Version == "1.0.0" && x.SsiDetailData != null && x.SsiDetailData.ParticipationStatus == CompanySsiDetailStatusId.PENDING,
+            x => x.ExternalDetailData.Version == "2.0.0" && x.SsiDetailData == null);
+    }
+
+    #endregion
+
+    #region GetDetailsForCompany
+
+    [Fact]
+    public async Task GetSsiCertificates_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetSsiCertificates(_validCompanyId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle();
+        var certificate = result.Single();
+        certificate.CredentialType.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+        certificate.SsiDetailData.Should().NotBeNull();
+        certificate.SsiDetailData!.ParticipationStatus.Should().Be(CompanySsiDetailStatusId.PENDING);
     }
 
     #endregion

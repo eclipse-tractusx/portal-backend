@@ -22,14 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record UseCaseParticipation
+public record SsiCertificateData
 (
-    Guid? CredentialId,
     VerifiedCredentialTypeId CredentialType,
-    string? UseCase,
-    string? Description,
-    CompanySsiDetailStatusId? ParticipationStatus,
-    DateTimeOffset? ExpiryDate,
-    DocumentData? Document,
-    ExternalTypeDetailData? ExternalTypeDetailData
+    CompanySsiDetailData? SsiDetailData
 );

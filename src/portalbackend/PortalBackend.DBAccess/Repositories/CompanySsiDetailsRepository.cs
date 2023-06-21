@@ -39,31 +39,63 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationForCompany(Guid companyId, string language) =>
+    public IAsyncEnumerable<UseCaseParticipationData> GetUseCaseParticipationForCompany(Guid companyId, string language) =>
         _context.VerifiedCredentialTypes
             .Where(x => x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.USE_CASE)
             .AsSplitQuery()
-            .Select(vc => new
+            .Select(x => new
             {
-                Detail = vc.CompanySsiDetails.SingleOrDefault(c => c.CompanyId == companyId && c.VerifiedCredentialTypeId == vc.Id && c.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE),
-                Type = vc
+                UseCase = x.VerifiedCredentialTypeAssignedUseCase!.UseCase,
+                TypeId = x.Id,
+                ExternalTypeDetails = x.VerifiedCredentialExternalType!.VerifiedCredentialExternalTypeUseCaseDetails,
             })
-            .Select(x => new UseCaseParticipation(
-                x.Detail == null ? null : x.Detail.Id,
-                x.Type.Id,
-                x.Type.VerifiedCredentialTypeAssignedUseCase!.UseCase!.Name,
-                x.Type.VerifiedCredentialTypeAssignedUseCase.UseCase.UseCaseDescriptions
+            .Select(x => new UseCaseParticipationData(
+                x.UseCase!.Name,
+                x.UseCase.UseCaseDescriptions
                     .Where(ucd => ucd.LanguageShortName == language).Select(ucd => ucd.Description).SingleOrDefault(),
-                x.Detail!.CompanySsiDetailStatusId,
-                x.Detail!.ExpiryDate,
-                x.Detail == null ? null : new DocumentData(x.Detail.Document!.Id, x.Detail.Document!.DocumentName),
-                x.Detail != null && x.Detail.VerifiedCredentialExternalTypeUseCaseDetail != null ? new ExternalTypeDetailData(
-                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.Id,
-                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.VerifiedCredentialExternalTypeId,
-                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.Version,
-                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.Template,
-                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.ValidFrom,
-                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.Expiry) : null
+                x.TypeId,
+                x.ExternalTypeDetails.Select(y =>
+                    new CompanySsiExternalTypeDetailData(
+                        new ExternalTypeDetailData(
+                            y.Id,
+                            y.VerifiedCredentialExternalTypeId,
+                            y.Version,
+                            y.Template,
+                            y.ValidFrom,
+                            y.Expiry),
+                        y.CompanySsiDetails.SingleOrDefault(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE) == null ?
+                            null :
+                            new CompanySsiDetailData(
+                                y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).Id,
+                                y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).CompanySsiDetailStatusId,
+                                y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).ExpiryDate,
+                                new DocumentData(
+                                    y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).Document!.Id,
+                                    y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).Document!.DocumentName))
+                ))
+            ))
+            .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<SsiCertificateData> GetSsiCertificates(Guid companyId) =>
+        _context.VerifiedCredentialTypes
+            .Where(x => x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
+            .AsSplitQuery()
+            .Select(x => new
+            {
+                TypeId = x.Id,
+                SsiDetails = x.CompanySsiDetails.SingleOrDefault(y => y.VerifiedCredentialTypeId == x.Id && y.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE && y.CompanyId == companyId)
+            })
+            .Select(x => new SsiCertificateData(
+                x.TypeId,
+                x.SsiDetails == null ? null : new CompanySsiDetailData(
+                        x.SsiDetails.Id,
+                        x.SsiDetails.CompanySsiDetailStatusId,
+                        x.SsiDetails.ExpiryDate,
+                        x.SsiDetails.Document == null ?
+                            null :
+                            new DocumentData(x.SsiDetails.Document!.Id, x.SsiDetails.Document.DocumentName)
+                    )
             ))
             .ToAsyncEnumerable();
 }
