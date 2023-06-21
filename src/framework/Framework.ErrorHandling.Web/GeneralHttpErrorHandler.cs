@@ -21,8 +21,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Serilog.Context;
+using System.Collections.Immutable;
 using System.Net;
 using System.Text.Json;
 
@@ -33,7 +33,7 @@ public class GeneralHttpErrorHandler
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
 
-    private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = new Dictionary<HttpStatusCode, MetaData>()
+    private static readonly IImmutableDictionary<HttpStatusCode, MetaData> Metadata = new Dictionary<HttpStatusCode, MetaData>
     {
         { HttpStatusCode.BadRequest, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.1", "One or more validation errors occurred.") },
         { HttpStatusCode.Conflict, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.8", "The resorce is in conflict with the current request.") },
@@ -43,7 +43,7 @@ public class GeneralHttpErrorHandler
         { HttpStatusCode.BadGateway, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.3", "Error accessing external resource.") },
         { HttpStatusCode.ServiceUnavailable, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.4", "Service is currently unavailable.") },
         { HttpStatusCode.InternalServerError, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1", "The server encountered an unexpected condition.") }
-    };
+    }.ToImmutableDictionary();
 
     public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger)
     {

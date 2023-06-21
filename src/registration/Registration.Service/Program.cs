@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
@@ -27,42 +26,22 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
-using Serilog;
 
 var VERSION = "v2";
 
-LoggingExtensions.EnsureInitialized();
-Log.Information("Starting the application");
-try
-{
-    var builder = WebApplication.CreateBuilder(args);
-    builder.Host.AddLogging(builder.Configuration);
+WebApplicationBuildRunner
+    .BuildAndRunWebApplication<Program>(args, "registration", VERSION, builder =>
+    {
+        builder.Services
+            .AddMailingAndTemplateManager(builder.Configuration)
+            .AddPortalRepositories(builder.Configuration)
+            .AddProvisioningManager(builder.Configuration);
 
-    builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                    .AddMailingAndTemplateManager(builder.Configuration)
-                    .AddPortalRepositories(builder.Configuration)
-                    .AddProvisioningManager(builder.Configuration);
+        builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
-    builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
+        builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
+            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-    builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
-                    .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
-
-    builder.Services.AddApplicationChecklistCreation();
-    builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
-
-    builder.Build()
-        .CreateApp<Program>("registration", VERSION, builder.Environment)
-        .Run();
-}
-catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
-{
-    LoggingExtensions.EnsureInitialized();
-    Log.Fatal(ex, "Unhandled exception");
-}
-finally
-{
-    LoggingExtensions.EnsureInitialized();
-    Log.Information("Server Shutting down");
-    Log.CloseAndFlush();
-}
+        builder.Services.AddApplicationChecklistCreation();
+        builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
+    });

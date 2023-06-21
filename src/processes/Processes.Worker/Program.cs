@@ -33,10 +33,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.D
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
 
+LoggingExtensions.EnsureInitialized();
+Log.Information("Building worker");
 try
 {
-    LoggingExtensions.EnsureInitialized();
-    Log.Information("Building worker");
     var host = Host
         .CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
@@ -85,12 +85,10 @@ try
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
-    LoggingExtensions.EnsureInitialized();
     Log.Fatal(ex, "Unhandled exception");
 }
 finally
 {
-    LoggingExtensions.EnsureInitialized();
     Log.Information("Server Shutting down");
     Log.CloseAndFlush();
 }
