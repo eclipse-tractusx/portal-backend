@@ -436,10 +436,7 @@ public class NotificationServiceTests
     public async Task CreateNotificationsWithExistenceCheck_WithSingleUserRoleAndOneNotificationTypeId_CreatesOneNotification()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            { ClientId, new []{ "Company Admin" } }
-        };
+        var userRoles = Enumerable.Repeat(new UserRoleConfig(ClientId, new[] {"Company Admin"}), 1);
         var notificationContent = new
         {
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
@@ -463,10 +460,7 @@ public class NotificationServiceTests
     public async Task CreateNotificationsWithExistenceCheck_WithAlreadyExistingNotification_CreatesNone()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            { ClientId, new []{ "CX Admin" } }
-        };
+        var userRoles = Enumerable.Repeat(new UserRoleConfig(ClientId, new[] {"CX Admin"}), 1);
         var notificationContent = new
         {
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",

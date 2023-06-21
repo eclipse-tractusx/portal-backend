@@ -61,7 +61,7 @@ public class NotificationService : INotificationService
 
     /// <inheritdoc />
     async IAsyncEnumerable<Guid> INotificationService.CreateNotificationsWithExistenceCheck(
-        IDictionary<string, IEnumerable<string>> receiverUserRoles,
+        IEnumerable<UserRoleConfig> receiverUserRoles,
         Guid? creatorId,
         IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
         Guid companyId,

@@ -119,7 +119,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, "test", "test", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.OWN);
+        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
         var createNotificationsEnumerator = SetupAutoSetup(offerTypeId, offerSubscription, isSingleInstance, companyServiceAccount);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
@@ -243,7 +243,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, "test", "test", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.OWN);
+        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
         SetupAutoSetup(OfferTypeId.APP, offerSubscription, false, companyServiceAccount);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
@@ -283,10 +283,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         SetupAutoSetup(OfferTypeId.APP);
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            new UserRoleConfig("Cl2-CX-Portal", new [] { "IT Admin" })
-        };
+        var companyAdminRoles = Enumerable.Repeat(new UserRoleConfig("Cl2-CX-Portal", new[] {"IT Admin"}), 1);
         var serviceManagerRoles = new[]
         {
             new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
@@ -310,10 +307,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         SetupAutoSetup(OfferTypeId.APP, isSingleInstance: true);
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            new UserRoleConfig("Cl2-CX-Portal", new [] { "IT Admin" })
-        };
+        var companyAdminRoles = Enumerable.Repeat(new UserRoleConfig("Cl2-CX-Portal", new[] {"IT Admin"}), 1);
         var serviceManagerRoles = new[]
         {
             new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
@@ -1079,10 +1073,10 @@ public class OfferSetupServiceTests
         {
             new(offerSubscription.Id, "https://www.test.de")
         };
-        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
+        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _companyUserCompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid()));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _identity.CompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid()));
         A.CallTo(() => _notificationRepository.CheckNotificationExistsForParam(A<Guid>._, A<NotificationTypeId>._, A<string>._, A<string>._))
             .Returns(false);
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscription.Id, A<Action<OfferSubscription>>._))
@@ -1118,7 +1112,7 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
-        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _companyUserCompanyId, A<string>._, offerSubscription.Id.ToString(), null))
+        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _identity.CompanyId, A<string>._, offerSubscription.Id.ToString(), null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, notificationTypeId, false, A<Action<Notification>>._))
@@ -1186,9 +1180,8 @@ public class OfferSetupServiceTests
                 _validSubscriptionId,
                 _identity.CompanyId,
                 A<OfferTypeId>._))
-            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, _companyUser.Id,
-                Guid.Empty,
-                _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, offerTypeId, "Test Service",
+            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, true, "Company",
+                _identity.CompanyId, _identity.UserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
@@ -1196,9 +1189,8 @@ public class OfferSetupServiceTests
                 _pendingSubscriptionId,
                 _companyUserWithoutMailCompanyId,
                 A<OfferTypeId>._))
-            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
-                Guid.Empty,
-                _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, offerTypeId, "Test Service",
+            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, 
+                "Company", _identity.CompanyId, _identity.UserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
@@ -1206,9 +1198,9 @@ public class OfferSetupServiceTests
                 _pendingSubscriptionId,
                 _identity.CompanyId,
                 A<OfferTypeId>._))
-            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
-                Guid.Empty,
-                string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, offerTypeId, "Test Service",
+            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, "Company", _identity.CompanyId, 
+                _identity.UserId,
+                _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
@@ -1216,9 +1208,8 @@ public class OfferSetupServiceTests
                 _offerIdWithMultipleInstances,
                 _identity.CompanyId,
                 A<OfferTypeId>._))
-            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
-                Guid.Empty,
-                string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, offerTypeId, "Test Service",
+            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, "Company",
+                _identity.CompanyId, _identity.UserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, null),
                 Enumerable.Empty<Guid>(),
                 null));
@@ -1231,16 +1222,14 @@ public class OfferSetupServiceTests
                 _pendingSubscriptionId,
                 A<Guid>.That.Not.Matches(x => x == _identity.CompanyId || x == _companyUserWithoutMailCompanyId),
                 A<OfferTypeId>._))
-            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, Guid.Empty,
-                Guid.Empty,
-                string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, OfferTypeId.APP, "Test Service",
+            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, false, string.Empty,
+                Guid.NewGuid(), Guid.NewGuid(), _existingServiceId, OfferTypeId.APP, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 null));
 
         return createNotificationsEnumerator;
     }
-
     private void SetupCreateSingleInstance(AppInstance? appInstance = null)
     {
         SetupServices();

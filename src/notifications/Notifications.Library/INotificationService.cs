@@ -51,7 +51,7 @@ public interface INotificationService
     /// <param name="searchParam">Parameter in the notifications content to search for</param>
     /// <param name="searchValue">Value that will be searched for the given param</param>
     /// <param name="done"><c>true</c> if the notification is done, <c>false</c> if its not done, otherwise <c>null</c></param>
-    IAsyncEnumerable<Guid> CreateNotificationsWithExistenceCheck(IDictionary<string, IEnumerable<string>> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, Guid companyId, string searchParam, string searchValue, bool? done = null);
+    IAsyncEnumerable<Guid> CreateNotificationsWithExistenceCheck(IEnumerable<UserRoleConfig> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, Guid companyId, string searchParam, string searchValue, bool? done = null);
 
     /// <summary>
     /// Creates notifications for the given notification type ids with the given content.
