@@ -16,7 +16,7 @@ public class VerifiedCredentialExternalTypeUseCaseDetail : IBaseEntity
     public VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId { get; set; }
     public string Version { get; set; }
     public string Template { get; set; }
-    public DateTimeOffset? ValidFrom { get; set; }
+    public DateTimeOffset ValidFrom { get; set; }
     public DateTimeOffset? Expiry { get; set; }
 
     public virtual VerifiedCredentialExternalType? VerifiedCredentialExternalType { get; private set; }

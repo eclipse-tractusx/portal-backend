@@ -42,6 +42,7 @@ public class CompanyUser : IBaseEntity, IAuditableV1
         Notifications = new HashSet<Notification>();
         CreatedNotifications = new HashSet<Notification>();
         RequestedSubscriptions = new HashSet<OfferSubscription>();
+        CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
     /// <inheritdoc />
@@ -73,4 +74,5 @@ public class CompanyUser : IBaseEntity, IAuditableV1
     public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
     public virtual ICollection<OfferSubscription> RequestedSubscriptions { get; private set; }
+    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

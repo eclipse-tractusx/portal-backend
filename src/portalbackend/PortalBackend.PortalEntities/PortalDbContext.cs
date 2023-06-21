@@ -1202,6 +1202,11 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(t => t.VerifiedCredentialExternalTypeUseCaseDetailId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
+            entity.HasOne(c => c.CreatorUser)
+                .WithMany(c => c.CompanySsiDetails)
+                .HasForeignKey(t => t.CreatorUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
             entity.HasOne(t => t.Document)
                 .WithOne(o => o.CompanySsiDetail)
                 .HasForeignKey<CompanySsiDetail>(t => t.DocumentId)

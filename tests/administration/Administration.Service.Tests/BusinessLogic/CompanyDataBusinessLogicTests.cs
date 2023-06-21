@@ -37,7 +37,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IConsentRepository _consentRepository;
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly ILanguageRepository _languageRepository;
-    private readonly ICompanyCredentialDetailsRepository _companyCredentialDetailsRepository;
+    private readonly ICompanySsiDetailsRepository _companyCredentialDetailsRepository;
     private readonly CompanyDataBusinessLogic _sut;
 
     public CompanyDataBusinessLogicTests()
@@ -52,13 +52,13 @@ public class CompanyDataBusinessLogicTests
         _consentRepository = A.Fake<IConsentRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
-        _companyCredentialDetailsRepository = A.Fake<ICompanyCredentialDetailsRepository>();
+        _companyCredentialDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>()).Returns(_companyRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<ICompanyCredentialDetailsRepository>()).Returns(_companyCredentialDetailsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanySsiDetailsRepository>()).Returns(_companyCredentialDetailsRepository);
         _sut = new CompanyDataBusinessLogic(_portalRepositories);
     }
 

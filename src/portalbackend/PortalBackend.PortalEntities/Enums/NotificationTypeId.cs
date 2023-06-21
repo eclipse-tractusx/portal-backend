@@ -138,5 +138,15 @@ public enum NotificationTypeId
     /// <summary>
     /// Notification when the url of a subscription is changed
     /// </summary>
-    SUBSCRIPTION_URL_UPDATE = 23
+    SUBSCRIPTION_URL_UPDATE = 23,
+
+    /// <summary>
+    /// Notification when a credential got approved
+    /// </summary>
+    CREDENTIAL_APPROVAL = 24,
+
+    /// <summary>
+    /// Notification when a credential got rejected
+    /// </summary>
+    CREDENTIAL_REJECTED = 25
 }

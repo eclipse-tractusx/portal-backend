@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class CompanySsiDetailsRepository : ICompanyCredentialDetailsRepository
+public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
 {
     private readonly PortalDbContext _context;
 
@@ -39,19 +40,30 @@ public class CompanySsiDetailsRepository : ICompanyCredentialDetailsRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationForCompany(Guid companyId, string language) =>
-        _context.CompanySsiDetails
-            .Where(x =>
-                x.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE &&
-                x.CompanyId == companyId &&
-                x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.USE_CASE)
+        _context.VerifiedCredentialTypes
+            .Where(x => x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.USE_CASE)
+            .AsSplitQuery()
+            .Select(vc => new
+            {
+                Detail = vc.CompanySsiDetails.SingleOrDefault(c => c.CompanyId == companyId && c.VerifiedCredentialTypeId == vc.Id && c.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE),
+                Type = vc
+            })
             .Select(x => new UseCaseParticipation(
-                    x.Id,
-                    x.VerifiedCredentialTypeId,
-                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedUseCase!.UseCase!.Name,
-                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedUseCase.UseCase.UseCaseDescriptions.Where(ucd => ucd.LanguageShortName == language).Select(ucd => ucd.Description).SingleOrDefault(),
-                    x.CompanySsiDetailStatusId,
-                    x.ExpiryDate,
-                    new DocumentData(x.Document!.Id, x.Document!.DocumentName)
-                ))
+                x.Detail == null ? null : x.Detail.Id,
+                x.Type.Id,
+                x.Type.VerifiedCredentialTypeAssignedUseCase!.UseCase!.Name,
+                x.Type.VerifiedCredentialTypeAssignedUseCase.UseCase.UseCaseDescriptions
+                    .Where(ucd => ucd.LanguageShortName == language).Select(ucd => ucd.Description).SingleOrDefault(),
+                x.Detail!.CompanySsiDetailStatusId,
+                x.Detail!.ExpiryDate,
+                x.Detail == null ? null : new DocumentData(x.Detail.Document!.Id, x.Detail.Document!.DocumentName),
+                x.Detail != null && x.Detail.VerifiedCredentialExternalTypeUseCaseDetail != null ? new ExternalTypeDetailData(
+                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.Id,
+                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.VerifiedCredentialExternalTypeId,
+                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.Version,
+                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.Template,
+                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.ValidFrom,
+                    x.Detail.VerifiedCredentialExternalTypeUseCaseDetail.Expiry) : null
+            ))
             .ToAsyncEnumerable();
 }

@@ -18,17 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public interface ICompanyCredentialDetailsRepository
-{
-    /// <summary>
-    /// Gets the company credential details for the given company id
-    /// </summary>
-    /// <param name="companyId">Id of the company</param>
-    /// <param name="language">language short code for the use case name</param>
-    /// <returns>AsyncEnumerable of UseCaseParticipation</returns>
-    IAsyncEnumerable<UseCaseParticipation> GetUseCaseParticipationForCompany(Guid companyId, string language);
-}
+public record ExternalTypeDetailData(
+    Guid Id,
+    VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId,
+    string Version,
+    string Template,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? Expiry
+);

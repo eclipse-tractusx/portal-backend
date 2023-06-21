@@ -32,11 +32,13 @@ public class CompanySsiDetail : IBaseEntity
     public Guid DocumentId { get; set; }
     public DateTimeOffset? ExpiryDate { get; set; }
     public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
+    public Guid CreatorUserId { get; set; }
 
     // Navigation Properties
     public virtual Company? Company { get; set; }
     public virtual VerifiedCredentialType? VerifiedCredentialType { get; set; }
     public virtual CompanySsiDetailStatus? CompanySsiDetailStatus { get; set; }
     public virtual Document? Document { get; set; }
-    public VerifiedCredentialExternalTypeUseCaseDetail? VerifiedCredentialExternalTypeUseCaseDetail { get; private set; }
+    public virtual VerifiedCredentialExternalTypeUseCaseDetail? VerifiedCredentialExternalTypeUseCaseDetail { get; set; }
+    public virtual CompanyUser? CreatorUser { get; set; }
 }

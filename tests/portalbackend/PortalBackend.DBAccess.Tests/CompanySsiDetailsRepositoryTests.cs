@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class CompanySsiDetailsRepositoryTests
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    private readonly Guid _validCompanyId = new("ac861325-bc54-4583-bcdc-9e9f2a38ff84");
+    private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
 
     public CompanySsiDetailsRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -50,10 +50,13 @@ public class CompanySsiDetailsRepositoryTests
         var result = await sut.GetUseCaseParticipationForCompany(_validCompanyId, "en").ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(2);
+        result.Should().HaveCount(5);
         result.Where(x => x.Description != null).Should().HaveCount(2).And.Satisfy(
             x => x.Description == "Traceability",
             x => x.Description == "Sustainability & CO2-Footprint");
+        result.Where(x => x.CredentialId != null).Should().HaveCount(2).And.Satisfy(
+            x => x.CredentialId == new Guid("9f5b9934-4014-4099-91e9-7b1aee696b03"),
+            x => x.CredentialId == new Guid("9f5b9934-4014-4099-91e9-7b1aee696b04"));
     }
 
     #endregion
