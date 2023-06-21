@@ -114,16 +114,19 @@ public static class ManualProcessStepDataExtensions
 
     private static IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)> ModifyStepStatusRange(IEnumerable<ProcessStep> steps, ProcessStepStatusId processStepStatusId)
     {
-        var firstModified = false;
+        var firstStep = steps.FirstOrDefault();
+
+        if (firstStep == null)
+            yield break;
+
         foreach (var step in steps)
         {
             yield return (
                 step.Id,
                 null,
-                step => step.ProcessStepStatusId = firstModified
-                    ? ProcessStepStatusId.DUPLICATE
-                    : processStepStatusId);
-            firstModified = true;
+                ps => ps.ProcessStepStatusId = ps.Id == firstStep.Id
+                    ? processStepStatusId
+                    : ProcessStepStatusId.DUPLICATE);
         }
     }
 }

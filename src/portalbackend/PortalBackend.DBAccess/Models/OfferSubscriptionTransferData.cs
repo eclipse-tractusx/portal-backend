@@ -31,6 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="CompanyId">Id of the company</param>
 /// <param name="RequesterId">Id of the requester for the offer subscription</param>
 /// <param name="OfferId">Id of the offer</param>
+/// <param name="OfferTypeId">Id of the offer type</param>
 /// <param name="OfferName">Name of the offer</param>
 /// <param name="Bpn">Bpn of the app company</param>
 /// <param name="RequesterEmail">Email address of the requesting company user</param>
@@ -46,6 +47,7 @@ public record OfferSubscriptionTransferData(
     Guid CompanyId,
     Guid RequesterId,
     Guid OfferId,
+    OfferTypeId OfferTypeId,
     string? OfferName,
     string? Bpn,
     string? RequesterEmail,

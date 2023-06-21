@@ -175,14 +175,14 @@ public class ServicesController : ControllerBase
     /// Auto setup the app
     /// </summary>
     /// <remarks>Example: POST: /api/apps/start-autoSetup</remarks>
-    /// <response code="200">Returns the app agreement data.</response>
+    /// <response code="204">The auto setup has successfully been started.</response>
     /// <response code="400">Offer Subscription is pending or not the providing company.</response>
     /// <response code="404">Offer Subscription not found.</response>
     [HttpPost]
     [Route("start-autoSetup")]
     [Authorize(Roles = "activate_subscription")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> StartAutoSetupServiceProcess([FromBody] OfferAutoSetupData data)
