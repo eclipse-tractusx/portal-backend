@@ -66,8 +66,8 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
-            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
         var documentId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var documents = new List<Document>();
@@ -103,8 +103,8 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
-            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns(((bool, bool, bool))default);
@@ -124,8 +124,8 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
-            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
@@ -144,8 +144,8 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
-            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
         var file = FormFileHelper.GetFormFile("this is just a test", "", "application/pdf");
 
         // Act
@@ -164,16 +164,36 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
-            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
-        var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "text/csv");
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+        var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "image/svg+xml");
 
         // Act
         async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"Document type {documentTypeId} is not supported. File with contentType :{string.Join(",", uploadDocumentTypeIdSettings.Where(x => x.DocumentTypeId == documentTypeId).Select(x => x.MediaTypes).First())} are allowed.");
+        ex.Message.Should().Be($"Document type {documentTypeId}, mediaType 'image/svg+xml' is not supported. File with contentType :{string.Join(",", uploadDocumentTypeIdSettings.Where(x => x.DocumentTypeId == documentTypeId).Select(x => x.MediaTypes).First())} are allowed.");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
+    public async Task UploadDocumentAsync_contentType_ThrowsUnsupportedMediaTypeException1(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    {
+        // Arrange
+        var id = _fixture.Create<Guid>();
+        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+        var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "foo/bar");
+
+        // Act
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"Document type {documentTypeId}, mediaType 'foo/bar' is not supported. File with contentType :{string.Join(",", uploadDocumentTypeIdSettings.Where(x => x.DocumentTypeId == documentTypeId).Select(x => x.MediaTypes).First())} are allowed.");
     }
 
     [Theory]
@@ -184,8 +204,8 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
-            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
@@ -205,8 +225,8 @@ public class OfferDocumentServiceTests
         var id = _fixture.Create<Guid>();
         var identity = _fixture.Create<IdentityData>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, new[] { "application/pdf" }), 1)
-            : Enumerable.Repeat(new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new[] { "application/pdf" }), 1);
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns((true, false, true));

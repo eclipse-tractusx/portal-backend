@@ -482,7 +482,7 @@ public class AppReleaseBusinessLogicTest
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         _settings.UploadAppDocumentTypeIds = new[] {
-            new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" })
+            new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new []{ MediaTypeId.PDF })
         };
 
         // Act
