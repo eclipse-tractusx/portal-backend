@@ -23,7 +23,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -106,5 +109,41 @@ public class CustodianService : ICustodianService
                 HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CustomErrorHandling).ConfigureAwait(false);
 
         return result.StatusCode == HttpStatusCode.Conflict ? $"{bpn} already has a membership" : "Membership Credential successfully created";
+    }
+
+    /// <inheritdoc />
+    public async Task TriggerFrameworkAsync(string bpn, UseCaseDetailData useCaseDetailData, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+
+        var requestBody = new CustodianFrameworkRequest
+        (
+            bpn,
+            useCaseDetailData.VerifiedCredentialExternalTypeId.GetEnumValue(),
+            useCaseDetailData.Template,
+            useCaseDetailData.Version
+        );
+        var json = JsonSerializer.Serialize(requestBody);
+        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+        await httpClient.PostAsync("/api/credentials/issuer/framework", stringContent, cancellationToken)
+            .CatchingIntoServiceExceptionFor("framework-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task TriggerDismantlerAsync(string bpn, VerifiedCredentialTypeId credentialTypeId, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+
+        var requestBody = new CustodianDismantlerRequest
+        (
+            bpn,
+            credentialTypeId.GetEnumValue()
+        );
+        var json = JsonSerializer.Serialize(requestBody);
+        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+        await httpClient.PostAsync("/api/credentials/issuer/dismantler", stringContent, cancellationToken)
+            .CatchingIntoServiceExceptionFor("dismantler-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 }

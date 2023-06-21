@@ -18,12 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public static class DateTimeProviderExtensions
+/// <summary>
+/// Possible sorting options for the <see cref="CompanySsiDetail"/> pagination
+/// </summary>
+public enum CompanySsiDetailSorting
 {
-    public static IServiceCollection AddDateTimeProvider(this IServiceCollection services) =>
-        services.AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
+    /// <summary>
+    /// Ascending by company
+    /// </summary>
+    CompanyAsc = 1,
+
+    /// <summary>
+    /// Descending by company
+    /// </summary>
+    CompanyDesc = 2,
 }

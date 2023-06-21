@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -77,4 +78,16 @@ public interface ICompanySsiDetailsRepository
     /// <param name="credentialTypeId">Id of the credentialTypeId</param>
     /// <returns><c>true</c> if the tpye is a certificate, otherwise <c>false</c></returns>
     Task<bool> CheckSsiCertificateType(VerifiedCredentialTypeId credentialTypeId);
+
+    /// <summary>
+    /// Gets all credential details
+    /// </summary>
+    /// <param name="companySsiDetailStatusId">The status of the details</param>
+    /// <param name="sorting">the sorting</param>
+    /// <returns>Returns data to create the pagination</returns>
+    Func<int, int, Task<Pagination.Source<CredentialDetailData>?>> GetAllCredentialDetails(CompanySsiDetailStatusId? companySsiDetailStatusId, CompanySsiDetailSorting sorting);
+
+    Task<(bool exists, SsiApprovalData data)> GetSsiApprovalData(Guid credentialId);
+    Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetDetailStatus(Guid credentialId);
+    void AttachAndModify(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields);
 }

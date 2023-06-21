@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -226,5 +227,33 @@ public class CompanyDataControllerTests
 
         // Assert
         A.CallTo(() => _logic.CreateSsiCertificate(A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ApproveCredential_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var credentialId = Guid.NewGuid();
+
+        // Act
+        await _controller.ApproveCredential(credentialId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.ApproveCredential(_identity.UserId, credentialId, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RejectCredentialWithValidData_CallsExpected()
+    {
+        // Arrange
+        var credentialId = Guid.NewGuid();
+
+        // Act
+        await _controller.RejectCredential(credentialId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.RejectCredential(_identity.UserId, credentialId))
+            .MustHaveHappenedOnceExactly();
     }
 }

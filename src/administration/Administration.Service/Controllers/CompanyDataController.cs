@@ -161,8 +161,8 @@ public class CompanyDataController : ControllerBase
     /// <summary>
     /// Gets the UseCaseParticipations for the own company
     /// </summary>
-    /// <returns>All UseCaseParticipations of the own company</returns>
     /// <remarks>Example: Get: api/administration/companydata/useCaseParticipation</remarks>
+    /// <returns>All UseCaseParticipations of the own company</returns>
     /// <response code="200">Returns a collection of UseCaseParticipation.</response>
     [HttpGet]
     [Authorize(Roles = "view_use_case_participation")]
@@ -225,6 +225,64 @@ public class CompanyDataController : ControllerBase
     public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)
     {
         await this.WithUserIdAndCompanyId(identity => _logic.CreateSsiCertificate(identity, data, cancellationToken)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    ///     Gets all outstanding, existing and inactive credentials
+    /// </summary>
+    /// <remarks>Example: Get: /api/administration/companydata/credentials/</remarks>
+    /// <param name="page">The page to get</param>
+    /// <param name="size">Amount of entries</param>
+    /// <param name="companySsiDetailStatusId">OPTIONAL: Filter for the status</param>
+    /// <param name="sorting">Defines the sorting of the list</param>
+    /// <response code="200">Collection of the credentials.</response>
+    [HttpGet]
+    [Authorize(Roles = "admin_credential_decision")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Route("credentials", Name = nameof(GetCredentials))]
+    [ProducesResponseType(typeof(IEnumerable<CredentialDetailData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<CredentialDetailData>> GetCredentials(
+        [FromQuery] int page = 0,
+        [FromQuery] int size = 15,
+        [FromQuery] CompanySsiDetailStatusId? companySsiDetailStatusId = null,
+        [FromQuery] CompanySsiDetailSorting? sorting = null) =>
+        _logic.GetCredentials(page, size, companySsiDetailStatusId, sorting);
+
+    /// <summary>
+    /// Approves the given credential
+    /// </summary>
+    /// <remarks>Example: PUT: api/administration/companydata/credentials/{credentialId}/approval</remarks>
+    /// <param name="credentialId">Id of the entry that should be approved</param>
+    /// <param name="cts">Cancellation Token</param>
+    /// <returns>No Content</returns>
+    /// <response code="204">Successfully approved the credentials.</response>
+    [HttpPut]
+    [Authorize(Roles = "admin_credential_decision")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Route("credentials/{credentialId}/approval")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<NoContentResult> ApproveCredential([FromRoute] Guid credentialId, CancellationToken cts)
+    {
+        await this.WithUserId(userId => _logic.ApproveCredential(userId, credentialId, cts)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Creates the ssiCertificate
+    /// </summary>
+    /// <remarks>Example: PUT: api/administration/companydata/credentials/{credentialId}/reject</remarks>
+    /// <param name="credentialId">Id of the entry that should be approved</param>
+    /// <returns>No Content</returns>
+    /// <response code="204">Successfully rejected the credentials.</response>
+    [HttpPost]
+    [Authorize(Roles = "admin_credential_decision")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Route("credentials/{credentialId}/reject")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<NoContentResult> RejectCredential([FromRoute] Guid credentialId)
+    {
+        await this.WithUserId(userId => _logic.RejectCredential(userId, credentialId)).ConfigureAwait(false);
         return NoContent();
     }
 }

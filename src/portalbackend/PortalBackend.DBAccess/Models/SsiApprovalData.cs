@@ -18,12 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public static class DateTimeProviderExtensions
-{
-    public static IServiceCollection AddDateTimeProvider(this IServiceCollection services) =>
-        services.AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
-}
+public record SsiApprovalData(
+    CompanySsiDetailStatusId Status,
+    VerifiedCredentialTypeId Type,
+    VerifiedCredentialTypeKindId Kind,
+    string CompanyName,
+    string? Bpn,
+    DateTimeOffset? ExpiryDate,
+    UseCaseDetailData? UseCaseDetailData,
+    SsiRequesterData RequesterData
+);
+
+public record UseCaseDetailData(
+    VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId,
+    string Template,
+    string Version
+);
+
+public record SsiRequesterData(
+    Guid RequesterId,
+    string? RequesterEmail,
+    string? Firstname,
+    string? Lastname
+);

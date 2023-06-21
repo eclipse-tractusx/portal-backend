@@ -29,6 +29,7 @@
     <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
     <ProjectReference Include="..\Framework.Cors\Framework.Cors.csproj" />
+    <ProjectReference Include="..\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
     <ProjectReference Include="..\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
     <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
     <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" />

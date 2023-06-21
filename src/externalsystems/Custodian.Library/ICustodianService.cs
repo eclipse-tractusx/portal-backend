@@ -20,6 +20,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
@@ -52,4 +54,20 @@ public interface ICustodianService
     /// <param name="bpn">bpn of the company</param>
     /// <param name="cancellationToken">CancellationToken</param>
     Task<string> SetMembership(string bpn, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Issue a verifiable credential for a use case
+    /// </summary>
+    /// <param name="bpn">BusinessPartnerNumber of the company to issue the credentials for</param>
+    /// <param name="useCaseDetailData">Additional data needed for the endpoint</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task TriggerFrameworkAsync(string bpn, UseCaseDetailData useCaseDetailData, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Issue a verifiable credential for a dismantler
+    /// </summary>
+    /// <param name="bpn">BusinessPartnerNumber of the company to issue the credentials for</param>
+    /// <param name="credentialTypeId">The credential type id</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task TriggerDismantlerAsync(string bpn, VerifiedCredentialTypeId credentialTypeId, CancellationToken cancellationToken);
 }
