@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -95,8 +96,21 @@ public class CustodianService : ICustodianService
         var json = JsonSerializer.Serialize(requestBody);
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-        await httpClient.PostAsync("/api/credentials/issuer/membership", stringContent, cancellationToken)
-            .CatchingIntoServiceExceptionFor("custodian-membership-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+        try
+        {
+            await httpClient.PostAsync("/api/credentials/issuer/membership", stringContent, cancellationToken)
+                .CatchingIntoServiceExceptionFor("custodian-membership-post",
+                    HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+        }
+        catch (ServiceException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                return $"{bpn} already has a membership"; // The bpn was already set, may occur when the mail sending previously failed
+            }
+
+            throw;
+        }
 
         return "Membership Credential successfully created";
     }

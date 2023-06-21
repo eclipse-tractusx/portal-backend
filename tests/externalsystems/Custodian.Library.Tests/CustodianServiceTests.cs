@@ -219,8 +219,28 @@ public class CustodianServiceTests
         result.Should().Be("Membership Credential successfully created");
     }
 
+    [Fact]
+    public async Task SetMembership_WithConflict_DoesNotThrowException()
+    {
+        // Arrange
+        const string bpn = "123";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.Conflict);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
+            .Returns(httpClient);
+        var sut = new CustodianService(_tokenService, _options);
+
+        // Act
+        var result = await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be($"{bpn} already has a membership");
+    }
+
     [Theory]
-    [InlineData(HttpStatusCode.Conflict, "{ \"message\": \"Membership already exists!\" }", "call to external system custodian-membership-post failed with statuscode 409")]
     [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-membership-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-membership-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-membership-post failed with statuscode 403")]
