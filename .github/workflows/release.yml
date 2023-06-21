@@ -461,9 +461,11 @@ jobs:
       - name: Check for previous release candidate version
         id: rc-check
         run: |
-          rc=$(git tag -l "${{ env.REF_NAME }}-RC*")
+          rc=$(git tag -l "${{ github.ref_name }}-RC*")
           if [[ -n "$rc" ]]; then
             echo "rc=true" >> $GITHUB_OUTPUT
+          else
+            echo "rc=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Determine branch to update in portal-cd
