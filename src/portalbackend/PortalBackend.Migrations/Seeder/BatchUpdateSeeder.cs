@@ -55,14 +55,13 @@ public class BatchUpdateSeeder : ICustomSeeder
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Start BaseEntityBatch Seeder");
-        await SeedTable<Language>(
-            "languages",
-            x => x.ShortName,
-            x => x.dbEntity.LongNameDe != x.dataEntity.LongNameDe || x.dbEntity.LongNameEn != x.dataEntity.LongNameEn,
+        await SeedTable<LanguageLongName>(
+            "language_long_names",
+            x => new { x.ShortName, x.LanguageShortName },
+            x => x.dbEntity.LongName != x.dataEntity.LongName,
             (dbEntity, entity) =>
             {
-                dbEntity.LongNameDe = entity.LongNameDe;
-                dbEntity.LongNameEn = entity.LongNameEn;
+                dbEntity.LongName = entity.LongName;
             }, cancellationToken).ConfigureAwait(false);
 
         await SeedTable<CompanyRoleDescription>(
