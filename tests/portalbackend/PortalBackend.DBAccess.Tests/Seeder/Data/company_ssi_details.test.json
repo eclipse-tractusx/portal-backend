@@ -6,7 +6,8 @@
     "company_ssi_detail_status_id": 1,
     "document_id": "e020787d-1e04-4c0b-9c06-bd1cd44724b1",
     "expiry_date": null,
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2023-06-01 00:00:00.000000 +00:00"
   },
   {
     "id": "9f5b9934-4014-4099-91e9-7b1aee696b04",
@@ -15,7 +16,8 @@
     "company_ssi_detail_status_id": 1,
     "document_id": "5adbdf90-c6ef-47a5-b596-2f00a731c39b",
     "expiry_date": null,
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2023-06-01 00:00:00.000000 +00:00"
   },
   {
     "id": "9f5b9934-4014-4099-91e9-7b1aee696b05",
@@ -24,6 +26,7 @@
     "company_ssi_detail_status_id": 1,
     "document_id": "5adbdf90-c6ef-47a5-b596-2f00a731c39a",
     "expiry_date": null,
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2023-06-01 00:00:00.000000 +00:00"
   }
 ]

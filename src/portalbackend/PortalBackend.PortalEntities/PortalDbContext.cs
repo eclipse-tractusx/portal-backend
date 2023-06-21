@@ -67,6 +67,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
+    public virtual DbSet<AuditCompanySsiDetail20230621> AuditCompanySsiDetail20230621 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20230522> AuditCompanyUser20230523 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230405> AuditConnector20230405 { get; set; } = default!;
@@ -1211,6 +1212,8 @@ public class PortalDbContext : DbContext
                 .WithOne(o => o.CompanySsiDetail)
                 .HasForeignKey<CompanySsiDetail>(t => t.DocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+            
+            entity.HasAuditV1Triggers<CompanySsiDetail, AuditCompanySsiDetail20230621>();
         });
 
         modelBuilder.Entity<VerifiedCredentialTypeAssignedUseCase>(entity =>
