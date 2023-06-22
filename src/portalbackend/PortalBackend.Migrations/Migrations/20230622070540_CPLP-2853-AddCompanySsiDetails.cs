@@ -316,11 +316,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 values: new object[,]
                 {
                     { 1, "Traceability Framework" },
-                    { 2, "Sustainability Framework" },
-                    { 3, "Dismantler Certificate" },
-                    { 4, "PCF Framework" },
-                    { 5, "Quality Framework" },
-                    { 6, "Behavior Twin Framework" }
+                    { 2, "PCF Framework" },
+                    { 3, "Behavior Twin Framework" },
+                    { 4, "Dismantler Certificate" }
                 });
 
             migrationBuilder.CreateIndex(
