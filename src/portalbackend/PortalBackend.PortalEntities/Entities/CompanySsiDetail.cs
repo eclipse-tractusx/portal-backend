@@ -30,7 +30,7 @@ public class CompanySsiDetail : IAuditableV1, IBaseEntity
     private CompanySsiDetail() { }
 
     public CompanySsiDetail(Guid id, Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid documentId, Guid creatorUserId, DateTimeOffset dateCreated)
-        :this()
+        : this()
     {
         Id = id;
         CompanyId = companyId;

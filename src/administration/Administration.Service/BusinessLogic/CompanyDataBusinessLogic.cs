@@ -277,7 +277,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         await HandleSsiCreationAsync(identity, credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, companyCredentialDetailsRepository, cts).ConfigureAwait(false);
     }
-    
+
     private async Task HandleSsiCreationAsync(
         (Guid UserId, Guid CompanyId) identity,
         VerifiedCredentialTypeId credentialTypeId,
