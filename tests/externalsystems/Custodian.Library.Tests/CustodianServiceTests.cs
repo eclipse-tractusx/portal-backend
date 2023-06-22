@@ -224,7 +224,7 @@ public class CustodianServiceTests
     {
         // Arrange
         const string bpn = "123";
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.Conflict);
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.Conflict, new StringContent(JsonSerializer.Serialize(new MembershipErrorResponse("Credential of type MembershipCredential is already exists "))));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -241,7 +241,7 @@ public class CustodianServiceTests
     }
 
     [Theory]
-    [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-membership-post failed with statuscode 400")]
+    [InlineData(HttpStatusCode.BadRequest, "{ \"title\": \"Credential of type MembershipCredential is already exists \" }", "call to external system custodian-membership-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-membership-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-membership-post failed with statuscode 403")]
     public async Task SetMembership_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string? content, string message)

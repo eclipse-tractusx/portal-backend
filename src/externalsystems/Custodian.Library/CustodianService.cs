@@ -31,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
 public class CustodianService : ICustodianService
 {
-    private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly ITokenService _tokenService;
     private readonly CustodianSettings _settings;
 
@@ -79,7 +79,7 @@ public class CustodianService : ICustodianService
         const string walletUrl = "/api/wallets";
 
         async ValueTask<string?> CreateErrorMessage(HttpContent errorContent) =>
-            (await JsonSerializer.DeserializeAsync<WalletErrorResponse>(errorContent.ReadAsStream(cancellationToken), _options, cancellationToken).ConfigureAwait(false))?.Message;
+            (await JsonSerializer.DeserializeAsync<WalletErrorResponse>(errorContent.ReadAsStream(cancellationToken), Options, cancellationToken).ConfigureAwait(false))?.Message;
 
         var result = await httpClient.PostAsync(walletUrl, stringContent, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
@@ -96,22 +96,37 @@ public class CustodianService : ICustodianService
         var json = JsonSerializer.Serialize(requestBody);
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-        try
+        async ValueTask<HttpResponseMessage> CustomErrorHandling(HttpResponseMessage msg, HttpAsyncResponseMessageExtension.RecoverOptions recoverOptions)
         {
-            await httpClient.PostAsync("/api/credentials/issuer/membership", stringContent, cancellationToken)
-                .CatchingIntoServiceExceptionFor("custodian-membership-post",
-                    HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
-        }
-        catch (ServiceException ex)
-        {
-            if (ex.StatusCode == HttpStatusCode.Conflict)
+            if (msg.StatusCode == HttpStatusCode.Conflict)
             {
-                return $"{bpn} already has a membership"; // The bpn was already set, may occur when the mail sending previously failed
+                try
+                {
+                    var errorResponse = await JsonSerializer.DeserializeAsync<MembershipErrorResponse>(
+                        await msg.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                        Options,
+                        cancellationToken
+                    ).ConfigureAwait(false);
+                    var errorTitle = errorResponse?.Title.Trim();
+                    if (errorTitle == "Credential of type MembershipCredential is already exists")
+                    {
+                        return msg;
+                    }
+                }
+                catch (Exception)
+                {
+                    throw new ServiceException($"call to external system custodian-membership-post failed with statuscode {(int)msg.StatusCode}", msg.StatusCode,
+                        (recoverOptions & HttpAsyncResponseMessageExtension.RecoverOptions.RESPONSE_RECEIVED) == HttpAsyncResponseMessageExtension.RecoverOptions.RESPONSE_RECEIVED);
+                }
             }
 
-            throw;
+            throw new ServiceException($"call to external system custodian-membership-post failed with statuscode {(int)msg.StatusCode}", msg.StatusCode,
+                (recoverOptions & HttpAsyncResponseMessageExtension.RecoverOptions.RESPONSE_RECEIVED) == HttpAsyncResponseMessageExtension.RecoverOptions.RESPONSE_RECEIVED);
         }
+        var result = await httpClient.PostAsync("/api/credentials/issuer/membership", stringContent, cancellationToken)
+            .CatchingIntoServiceExceptionFor("custodian-membership-post",
+                HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, customErrorHandling: CustomErrorHandling).ConfigureAwait(false);
 
-        return "Membership Credential successfully created";
+        return result.StatusCode == HttpStatusCode.Conflict ? $"{bpn} already has a membership" : "Membership Credential successfully created";
     }
 }
