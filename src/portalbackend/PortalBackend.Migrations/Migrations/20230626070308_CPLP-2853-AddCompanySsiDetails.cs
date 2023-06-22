@@ -25,7 +25,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP2853AddCompanyCredentialDetails : Migration
+    public partial class CPLP2853AddCompanySsiDetails : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -410,10 +410,71 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_ssi_detail20230621 (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.company_id, \r\n  NEW.verified_credential_type_id, \r\n  NEW.company_ssi_detail_status_id, \r\n  NEW.document_id, \r\n  NEW.date_created, \r\n  NEW.creator_user_id, \r\n  NEW.expiry_date, \r\n  NEW.verified_credential_external_type_use_case_detail_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL AFTER INSERT\r\nON portal.company_ssi_details\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL();");
 
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_ssi_detail20230621 (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.company_id, \r\n  NEW.verified_credential_type_id, \r\n  NEW.company_ssi_detail_status_id, \r\n  NEW.document_id, \r\n  NEW.date_created, \r\n  NEW.creator_user_id, \r\n  NEW.expiry_date, \r\n  NEW.verified_credential_external_type_use_case_detail_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL AFTER UPDATE\r\nON portal.company_ssi_details\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL();");
+        
+            migrationBuilder.Sql(@"CREATE FUNCTION portal.is_credential_type_use_case(vc_type_id integer)
+                RETURNS BOOLEAN
+                LANGUAGE plpgsql
+                AS
+                $$
+                BEGIN
+                    RETURN EXISTS (
+                        SELECT 1
+                        FROM portal.verified_credential_types
+                        WHERE Id = vc_type_id
+                            AND vc_type_id IN (
+                                SELECT verified_credential_type_id
+                                FROM portal.verified_credential_type_assigned_kinds
+                                WHERE verified_credential_type_kind_id = '1'
+                            )
+                    );
+                END;
+                $$");
+
+            migrationBuilder.Sql(@"
+                ALTER TABLE portal.verified_credential_type_assigned_use_cases
+                ADD CONSTRAINT CK_VCTypeAssignedUseCase_VerifiedCredentialType_UseCase 
+                    CHECK (portal.is_credential_type_use_case(verified_credential_type_id))");
+
+            migrationBuilder.Sql(@"CREATE FUNCTION portal.is_external_type_use_case(verified_credential_external_type_use_case_detail_id UUID)
+                RETURNS BOOLEAN
+                LANGUAGE plpgsql
+                AS
+                $$
+                BEGIN
+                    IF verified_credential_external_type_use_case_detail_id IS NULL THEN
+                        RETURN TRUE;
+                    END IF;
+                    RETURN EXISTS (
+                        SELECT 1
+                        FROM portal.verified_credential_external_type_use_case_details
+                        WHERE Id = verified_credential_external_type_use_case_detail_id
+                            AND verified_credential_external_type_id IN (
+                                SELECT verified_credential_external_type_id
+                                FROM portal.verified_credential_external_types
+                                WHERE verified_credential_type_id IN (
+                                    SELECT verified_credential_type_id
+                                    FROM portal.verified_credential_type_assigned_kinds
+                                    WHERE verified_credential_type_kind_id = '1'
+                                )
+                            )
+                    );
+                END;
+                $$");
+
+            migrationBuilder.Sql(@"
+                ALTER TABLE portal.company_ssi_details
+                ADD CONSTRAINT CK_VC_ExternalType_DetailId_UseCase 
+                    CHECK (portal.is_external_type_use_case(verified_credential_external_type_use_case_detail_id))");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("ALTER TABLE portal.verified_credential_type_assigned_use_cases DROP CONSTRAINT IF EXISTS CK_VCTypeAssignedUseCase_VerifiedCredentialType_UseCase;");
+            migrationBuilder.Sql("ALTER TABLE portal.company_ssi_details DROP CONSTRAINT IF EXISTS CK_VC_ExternalType_DetailId_UseCase;");
+
+            migrationBuilder.Sql("DROP FUNCTION portal.is_credential_type_use_case;");
+            migrationBuilder.Sql("DROP FUNCTION portal.is_external_type_use_case;");
+
             migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_DELETE_COMPANYSSIDETAIL() CASCADE;");
 
             migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL() CASCADE;");

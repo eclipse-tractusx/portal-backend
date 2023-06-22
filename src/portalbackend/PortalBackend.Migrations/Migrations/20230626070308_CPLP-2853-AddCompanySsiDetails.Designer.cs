@@ -32,8 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230626070050_CPLP-2853-AddCompanyCredentialDetails")]
-    partial class CPLP2853AddCompanyCredentialDetails
+    [Migration("20230626070308_CPLP-2853-AddCompanySsiDetails")]
+    partial class CPLP2853AddCompanySsiDetails
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
