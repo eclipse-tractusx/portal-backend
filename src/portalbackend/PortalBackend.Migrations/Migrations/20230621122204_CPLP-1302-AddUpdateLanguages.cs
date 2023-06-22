@@ -28,16 +28,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "long_name_de",
-                schema: "portal",
-                table: "languages");
-
-            migrationBuilder.DropColumn(
-                name: "long_name_en",
-                schema: "portal",
-                table: "languages");
-
             migrationBuilder.CreateTable(
                 name: "language_long_names",
                 schema: "portal",
@@ -63,18 +53,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "language_long_names",
                 column: "language_short_name");
-            migrationBuilder.Sql("INSERT INTO portal.language_long_names (short_name,long_name, 'de') SELECT short_name, long_name_de FROM portal.languages");
-            migrationBuilder.Sql("INSERT INTO portal.language_long_names (short_name,long_name, 'en') SELECT short_name, long_name_en FROM portal.languages");
+            migrationBuilder.Sql("INSERT INTO portal.language_long_names (short_name,long_name, language_short_name) SELECT short_name, long_name_de, 'de' FROM portal.languages");
+            migrationBuilder.Sql("INSERT INTO portal.language_long_names (short_name,long_name, language_short_name) SELECT short_name, long_name_en, 'en' FROM portal.languages");
+
+            migrationBuilder.DropColumn(
+                name: "long_name_de",
+                schema: "portal",
+                table: "languages");
+
+            migrationBuilder.DropColumn(
+                name: "long_name_en",
+                schema: "portal",
+                table: "languages");
 
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("INSERT INTO portal.languages (long_name_de, long_name_en) SELECT long_name_de, long_name FROM portal.language_long_names");
-            migrationBuilder.DropTable(
-                name: "language_long_names",
-                schema: "portal");
-
             migrationBuilder.AddColumn<string>(
                 name: "long_name_de",
                 schema: "portal",
@@ -92,6 +87,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 maxLength: 255,
                 nullable: false,
                 defaultValue: "");
+            migrationBuilder.Sql("INSERT INTO portal.languages (long_name_de, long_name_en) select l1.long_name as long_name_de, l2.long_name as long_name_en from language_long_names l1 join language_long_names l2 on l1.shortname=l2.shortname where l1.language_short_name ='de' and l2.language_short_name ='en'");
+            migrationBuilder.DropTable(
+                name: "language_long_names",
+                schema: "portal");
         }
     }
 }
