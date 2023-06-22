@@ -31,10 +31,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 /// <param name="TopicId">OPTIONAL: The topic of the notifications</param>
 /// <param name="OnlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
 /// <param name="Sorting">Kind of sorting for the notifications</param>
+/// <param name="DoneState">Kind of sorting for the notifications</param>
 public record NotificationFilters(
     bool? IsRead,
     NotificationTypeId? TypeId,
     NotificationTopicId? TopicId,
     bool OnlyDueDate,
-    NotificationSorting? Sorting
+    NotificationSorting? Sorting,
+    bool? DoneState
 );
