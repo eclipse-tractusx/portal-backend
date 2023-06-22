@@ -137,7 +137,7 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
     {
         return ex switch
         {
-            ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, null, null),
+            ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, ex.Message, null),
             FlurlHttpException { StatusCode: { } } flurlHttpException when RecoverableStatusCodes.Contains(flurlHttpException.StatusCode.Value) => (ProcessStepStatusId.TODO, ex.Message, null),
             _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep())
         };

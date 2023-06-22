@@ -30,23 +30,21 @@ using Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjection;
 
 var VERSION = "v2";
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuildRunner
+    .BuildAndRunWebApplication<Program>(args, "services", VERSION, builder =>
+    {
+        builder.Services
+            .AddMailingAndTemplateManager(builder.Configuration)
+            .AddPortalRepositories(builder.Configuration)
+            .AddProvisioningManager(builder.Configuration);
 
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddMailingAndTemplateManager(builder.Configuration)
-    .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration);
+        builder.Services.AddTransient<INotificationService, NotificationService>();
+        builder.Services
+            .AddServiceBusinessLogic(builder.Configuration)
+            .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
+            .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
+            .AddTechnicalUserProfile()
+            .AddOfferDocumentServices();
 
-builder.Services.AddTransient<INotificationService, NotificationService>();
-builder.Services
-    .AddServiceBusinessLogic(builder.Configuration)
-    .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
-    .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
-    .AddTechnicalUserProfile()
-    .AddOfferDocumentServices();
-
-builder.Services.AddOfferServices();
-
-builder.Build()
-    .CreateApp<Program>("services", VERSION, builder.Environment)
-    .Run();
+        builder.Services.AddOfferServices();
+    });

@@ -20,16 +20,17 @@
 
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 
 public class ErrorResponse
 {
-    public ErrorResponse(string type, string title, int status, IDictionary<string, IEnumerable<string>> errors)
+    public ErrorResponse(string type, string title, int status, IDictionary<string, IEnumerable<string>> errors, string errorId)
     {
         Type = type;
         Title = title;
         Status = status;
         Errors = errors;
+        ErrorId = errorId;
     }
 
     [JsonPropertyName("type")]
@@ -43,4 +44,7 @@ public class ErrorResponse
 
     [JsonPropertyName("errors")]
     public IDictionary<string, IEnumerable<string>> Errors { get; set; }
+
+    [JsonPropertyName("errorId")]
+    public string ErrorId { get; set; }
 }

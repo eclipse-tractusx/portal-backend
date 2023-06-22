@@ -32,50 +32,48 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 var VERSION = "v2";
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuildRunner
+    .BuildAndRunWebApplication<Program>(args, "administration", VERSION, builder =>
+    {
+        builder.Services
+            .AddMailingAndTemplateManager(builder.Configuration)
+            .AddPortalRepositories(builder.Configuration)
+            .AddProvisioningManager(builder.Configuration);
 
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddMailingAndTemplateManager(builder.Configuration)
-                .AddPortalRepositories(builder.Configuration)
-                .AddProvisioningManager(builder.Configuration);
+        builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
-builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
+        builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>()
+            .ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
 
-builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>()
-                .ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
+        builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
+            .AddTransient<IUserUploadBusinessLogic, UserUploadBusinessLogic>()
+            .AddTransient<IUserRolesBusinessLogic, UserRolesBusinessLogic>()
+            .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
 
-builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
-                .AddTransient<IUserUploadBusinessLogic, UserUploadBusinessLogic>()
-                .AddTransient<IUserRolesBusinessLogic, UserRolesBusinessLogic>()
-                .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
+        builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
+            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
-                .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
+        builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>()
+            .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
 
-builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>()
-                .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
+        builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>()
+            .ConfigureDocumentSettings(builder.Configuration.GetSection("Document"));
+        builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
+        builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
+        builder.Services.AddTransient<INotificationService, NotificationService>();
+        builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogic>();
 
-builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>()
-                .ConfigureDocumentSettings(builder.Configuration.GetSection("Document"));
-builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
-builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
-builder.Services.AddTransient<INotificationService, NotificationService>();
-builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogic>();
+        builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
+            .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
-builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
-                .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
+        builder.Services.AddDapsService(builder.Configuration)
+                        .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
+                        .AddOfferSubscriptionProcess();
 
-builder.Services.AddDapsService(builder.Configuration)
-                .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
-                .AddOfferSubscriptionProcess();
+        builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
+            .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
-builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
-                .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
+        builder.Services.AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>();
 
-builder.Services.AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>();
-
-builder.Services.AddProvisioningDBAccess(builder.Configuration);
-
-builder.Build()
-    .CreateApp<Program>("administration", VERSION, builder.Environment)
-    .Run();
+        builder.Services.AddProvisioningDBAccess(builder.Configuration);
+    });

@@ -282,8 +282,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken);
 
     /// <inheritdoc />
-    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, Guid companyId) =>
-        _offerService.GetSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, _settings.CompanyAdminRoles);
+    public Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, Guid companyId) =>
+        _offerService.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, _settings.CompanyAdminRoles);
 
     /// <inheritdoc />
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, Guid companyId) =>

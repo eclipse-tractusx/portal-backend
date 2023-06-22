@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -35,7 +36,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
@@ -208,19 +208,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ForbiddenException($"The users company is not assigned with application {applicationId}");
         }
 
-        var documentName = document.FileName;
-        using var sha256 = SHA256.Create();
-        using var ms = new MemoryStream((int)document.Length);
+        var mediaTypeId = document.ContentType.ParseMediaTypeId();
+        var (content, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
 
-        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-        var hash = sha256.ComputeHash(ms);
-        var documentContent = ms.GetBuffer();
-        if (ms.Length != document.Length || documentContent.Length != document.Length)
-        {
-            throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
-        }
-
-        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, document.ContentType.ParseMediaTypeId(), documentTypeId, doc =>
+        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, content, hash, mediaTypeId, documentTypeId, doc =>
         {
             doc.CompanyUserId = identity.UserId;
         });

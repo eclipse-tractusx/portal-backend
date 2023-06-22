@@ -149,7 +149,6 @@ public class BatchInsertSeeder : ICustomSeeder
                 .Select(t => t.t.d).ToList();
             _logger.LogInformation("Seeding {DataCount} {TableName}", data.Count, typeName);
             await _context.Set<T>().AddRangeAsync(data, cancellationToken).ConfigureAwait(false);
-
             _logger.LogInformation("Seeded {TableName}", typeName);
         }
     }

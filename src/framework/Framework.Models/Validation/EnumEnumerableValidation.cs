@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
@@ -63,11 +64,13 @@ public class EnumEnumerableValidation<TOptions> : IValidateOptions<TOptions> whe
             return ValidateOptionsResult.Skip;
         }
 
-        var validationResults = GetValidationErrors(options);
+        var validationErrors = GetValidationErrors(options);
 
-        return validationResults.Any() ?
-            ValidateOptionsResult.Fail(validationResults.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'.").ToList()) :
-            ValidateOptionsResult.Success;
+        return validationErrors.IfAny(
+            errors => errors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'."),
+            out var messages)
+                ? ValidateOptionsResult.Fail(messages)
+                : ValidateOptionsResult.Success;
     }
 
     private IEnumerable<ValidationResult> GetValidationErrors(TOptions options)
@@ -91,9 +94,11 @@ public class EnumEnumerableValidation<TOptions> : IValidateOptions<TOptions> whe
             }
 
             var notMatchingValues = configuredValues.Except(propertyType.GetEnumNames());
-            if (notMatchingValues.Any())
+            if (notMatchingValues.IfAny(
+                values => $"{string.Join(",", values)} is not a valid value for {propertyType}. Valid values are: {string.Join(", ", propertyType.GetEnumNames())}",
+                out var message))
             {
-                yield return new($"{string.Join(",", notMatchingValues)} is not a valid value for {propertyType}. Valid values are: {string.Join(", ", propertyType.GetEnumNames())}", new[] { propertyInfo.Name });
+                yield return new(message, new[] { propertyInfo.Name });
             }
         }
     }

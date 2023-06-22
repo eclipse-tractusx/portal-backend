@@ -90,6 +90,9 @@ public static class StartupServiceExtensions
         services.AddHealthChecks()
             .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new[] { "keycloak" });
 
+        // This is needed for Serilog to access the request id
+        services.AddHttpContextAccessor();
+
         return services;
     }
 }

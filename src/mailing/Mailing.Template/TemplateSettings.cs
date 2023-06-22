@@ -21,7 +21,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
 
@@ -63,7 +62,11 @@ public class TemplateSettings
 /// <summary>
 /// Configuration for templated emails that a service can send.
 /// </summary>
-public record TemplateInfo(string Name, TemplateSetting Setting);
+public class TemplateInfo
+{
+    public string Name { get; set; } = null!;
+    public TemplateSetting Setting { get; set; } = default!;
+};
 
 /// <summary>
 /// Configuration for templated emails that a service can send.
@@ -95,6 +98,7 @@ public static class TemplateSettingsExtention
         services.AddOptions<TemplateSettings>()
             .Bind(section)
             .Validate(x => x.Validate())
+            .ValidateDistinctValues()
             .ValidateOnStart();
         return services;
     }

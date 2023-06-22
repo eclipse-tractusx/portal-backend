@@ -542,7 +542,7 @@ public class ServiceReleaseBusinessLogicTest
         {
             UploadServiceDocumentTypeIds = new[]
             {
-                new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" })
+                new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new []{ MediaTypeId.PDF })
             }
         };
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(settings));
