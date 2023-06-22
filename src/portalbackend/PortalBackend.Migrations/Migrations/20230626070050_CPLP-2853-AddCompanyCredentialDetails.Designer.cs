@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230626065826_CPLP-2853-AddCompanyCredentialDetails")]
+    [Migration("20230626070050_CPLP-2853-AddCompanyCredentialDetails")]
     partial class CPLP2853AddCompanyCredentialDetails
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -5044,27 +5044,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 2,
-                            Label = "Sustainability Framework"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "Dismantler Certificate"
-                        },
-                        new
-                        {
-                            Id = 4,
                             Label = "PCF Framework"
                         },
                         new
                         {
-                            Id = 5,
-                            Label = "Quality Framework"
+                            Id = 3,
+                            Label = "Behavior Twin Framework"
                         },
                         new
                         {
-                            Id = 6,
-                            Label = "Behavior Twin Framework"
+                            Id = 4,
+                            Label = "Dismantler Certificate"
                         });
                 });
 

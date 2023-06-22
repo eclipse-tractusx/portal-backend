@@ -27,18 +27,12 @@ public enum VerifiedCredentialTypeId
     [EnumMember(Value = "Traceability Framework")]
     TRACEABILITY_FRAMEWORK = 1,
 
-    [EnumMember(Value = "Sustainability Framework")]
-    SUSTAINABILITY_FRAMEWORK = 2,
-
-    [EnumMember(Value = "Dismantler Certificate")]
-    DISMANTLER_CERTIFICATE = 3,
-
     [EnumMember(Value = "PCF Framework")]
-    PCF_FRAMEWORK = 4,
-
-    [EnumMember(Value = "Quality Framework")]
-    QUALITY_FRAMEWORK = 5,
+    PCF_FRAMEWORK = 2,
 
     [EnumMember(Value = "Behavior Twin Framework")]
-    BEHAVIOR_TWIN_FRAMEWORK = 6,
+    BEHAVIOR_TWIN_FRAMEWORK = 3,
+
+    [EnumMember(Value = "Dismantler Certificate")]
+    DISMANTLER_CERTIFICATE = 4,
 }
