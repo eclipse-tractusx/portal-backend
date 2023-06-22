@@ -2,6 +2,12 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.5.1
+
+### Bugfix
+* Marketplace Service:  POST: /api/apps/autoSetup fixed mailing for subscription activation
+* Services Service:  POST: /api/services/autoSetup fixed mailing for subscription activation
+
 ## 1.5.0
 
 ### Change
