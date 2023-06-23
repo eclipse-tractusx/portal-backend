@@ -55,8 +55,8 @@ public class StaticDataRepository : IStaticDataRepository
                     lang.ShortName,
                     new LanguageDataLongNames
                     (
-                         lang.LongNameDe,
-                         lang.LongNameEn
+                         lang.LanguageLongNames.Where(x => x.LanguageShortName == "de").SingleOrDefault()!.LongName,
+                         lang.LanguageLongNames.Where(x => x.LanguageShortName == "en").SingleOrDefault()!.LongName
                     )
                 ))
             .AsAsyncEnumerable();

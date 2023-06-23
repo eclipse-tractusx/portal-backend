@@ -30,8 +30,8 @@ public static class BaseSeed
     {
         dbContext.Languages.AddRange(new List<Language>
         {
-            new ("de", "deutsch", "german"),
-            new ("en", "englisch", "english")
+            new ("de"),
+            new ("en")
         });
 
         dbContext.Countries.AddRange(new List<Country>
