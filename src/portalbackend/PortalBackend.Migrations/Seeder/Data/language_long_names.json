@@ -22,7 +22,7 @@
   {
       "short_name": "fr",
       "language_short_name": "de",
-      "long_name_en": "franzoesisch"
+      "long_name": "franzoesisch"
   },
   {
       "short_name": "ru",
@@ -62,7 +62,7 @@
   {
       "short_name": "fr",
       "language_short_name": "en",
-      "long_name_en": "french"
+      "long_name": "french"
   },
   {
       "short_name": "ru",
