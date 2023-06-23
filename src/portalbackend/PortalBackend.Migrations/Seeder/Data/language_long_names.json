@@ -1,0 +1,82 @@
+[
+  {
+      "short_name": "de",
+      "language_short_name": "de",
+      "long_name": "deutsch"
+  },
+  {
+      "short_name": "en",
+      "language_short_name": "de",
+      "long_name": "englisch"
+  },
+  {
+      "short_name": "pt",
+      "language_short_name": "de",
+      "long_name": "portugisisch"
+  },
+  {
+      "short_name": "es",
+      "language_short_name": "de",
+      "long_name": "spanisch"
+  },
+  {
+      "short_name": "fr",
+      "language_short_name": "de",
+      "long_name_en": "franzoesisch"
+  },
+  {
+      "short_name": "ru",
+      "language_short_name": "de",
+      "long_name": "russisch"
+  },
+  {
+      "short_name": "jp",
+      "language_short_name": "de",
+      "long_name": "japanisch"
+  },
+  {
+      "short_name": "cn",
+      "language_short_name": "de",
+      "long_name": "chinesisch"
+  },
+  {
+      "short_name": "de",
+      "language_short_name": "en",
+      "long_name": "german"
+  },
+  {
+      "short_name": "en",
+      "language_short_name": "en",
+      "long_name": "english"
+  },
+  {
+      "short_name": "pt",
+      "language_short_name": "en",
+      "long_name": "portuguese"
+  },
+  {
+      "short_name": "es",
+      "language_short_name": "en",
+      "long_name": "spanish"
+  },
+  {
+      "short_name": "fr",
+      "language_short_name": "en",
+      "long_name_en": "french"
+  },
+  {
+      "short_name": "ru",
+      "language_short_name": "en",
+      "long_name": "russian"
+  },
+  {
+      "short_name": "jp",
+      "language_short_name": "en",
+      "long_name": "japanese"
+  },
+  {
+      "short_name": "cn",
+      "language_short_name": "en",
+      "long_name": "chinese"
+  }
+]
