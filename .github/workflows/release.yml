@@ -455,8 +455,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Check for hotfix version
+        id: hf-check
+        run: |
+          hf=$(git ls-remote --heads origin "hotfix/${{ github.ref_name }}*")
+          if [[ -n "$hf" ]]; then
+            echo "hf=true" >> $GITHUB_OUTPUT
+          else
+            echo "hf=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Get tags
         run: git fetch --tags --force
+        if: steps.hf-check.outputs.hf == 'false'
 
       - name: Check for previous release candidate version
         id: rc-check
@@ -467,6 +478,7 @@ jobs:
           else
             echo "rc=false" >> $GITHUB_OUTPUT
           fi
+        if: steps.hf-check.outputs.hf == 'false'
 
       - name: Determine branch to update in portal-cd
         id: cd-branch
@@ -476,6 +488,7 @@ jobs:
           else
             echo "branch=dev" >> $GITHUB_OUTPUT
           fi
+        if: steps.hf-check.outputs.hf == 'false'
 
       - name: Get token
         id: get_workflow_token
@@ -483,6 +496,7 @@ jobs:
         with:
           application_id: ${{ secrets.ORG_PORTAL_DISPATCH_APPID }}
           application_private_key: ${{ secrets.ORG_PORTAL_DISPATCH_KEY }}
+        if: steps.hf-check.outputs.hf == 'false'
 
       - name: Trigger workflow
         id: call_action
@@ -496,3 +510,4 @@ jobs:
             --header "Accept: application/vnd.github.v3+json" \
             --data '{"ref":"${{ steps.cd-branch.outputs.branch }}", "inputs": { "new-image":"${{ github.ref_name }}" }}' \
             --fail
+        if: steps.hf-check.outputs.hf == 'false'
