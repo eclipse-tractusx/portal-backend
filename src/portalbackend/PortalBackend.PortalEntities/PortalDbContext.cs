@@ -118,6 +118,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Invitation> Invitations { get; set; } = default!;
     public virtual DbSet<InvitationStatus> InvitationStatuses { get; set; } = default!;
     public virtual DbSet<Language> Languages { get; set; } = default!;
+    public virtual DbSet<LanguageLongName> LanguageLongNames { get; set; } = default!;
     public virtual DbSet<LicenseType> LicenseTypes { get; set; } = default!;
     public virtual DbSet<MediaType> MediaTypes { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
@@ -956,6 +957,23 @@ public class PortalDbContext : DbContext
         {
             entity.Property(e => e.ShortName)
                 .IsFixedLength();
+        });
+
+        modelBuilder.Entity<LanguageLongName>(entity =>
+        {
+            entity.HasKey(e => new { e.ShortName, e.LanguageShortName });
+            entity.Property(e => e.ShortName)
+                .IsFixedLength();
+            entity.Property(e => e.LanguageShortName)
+                .IsFixedLength();
+            entity.HasOne(e => e.Language)
+                .WithMany(e => e.LanguageLongNames)
+                .HasForeignKey(e => e.ShortName)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(e => e.LongNameLanguage)
+                .WithMany(e => e.LanguageLongNameLanguages)
+                .HasForeignKey(e => e.LanguageShortName)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Notification>(entity =>

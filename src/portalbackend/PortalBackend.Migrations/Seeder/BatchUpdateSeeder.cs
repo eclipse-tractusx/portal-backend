@@ -55,14 +55,13 @@ public class BatchUpdateSeeder : ICustomSeeder
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Start BaseEntityBatch Seeder");
-        await SeedTable<Language>(
-            "languages",
-            x => x.ShortName,
-            x => x.dbEntity.LongNameDe != x.dataEntity.LongNameDe || x.dbEntity.LongNameEn != x.dataEntity.LongNameEn,
+        await SeedTable<LanguageLongName>(
+            "language_long_names",
+            x => new { x.ShortName, x.LanguageShortName },
+            x => x.dbEntity.LongName != x.dataEntity.LongName,
             (dbEntity, entity) =>
             {
-                dbEntity.LongNameDe = entity.LongNameDe;
-                dbEntity.LongNameEn = entity.LongNameEn;
+                dbEntity.LongName = entity.LongName;
             }, cancellationToken).ConfigureAwait(false);
 
         await SeedTable<CompanyRoleDescription>(
@@ -115,15 +114,15 @@ public class BatchUpdateSeeder : ICustomSeeder
         {
             var typeName = typeof(T).Name;
             var entriesForUpdate = data
-                .Join(_context.Set<T>(), keySelector, keySelector, (dataEntry, dbEntry) => new ValueTuple<T, T>(dataEntry, dbEntry))
+                .Join(_context.Set<T>(), keySelector, keySelector, (dataEntry, dbEntry) => (DataEntry: dataEntry, DbEntry: dbEntry))
                 .Where(whereClause.Invoke)
                 .ToList();
             if (entriesForUpdate.Any())
             {
                 _logger.LogInformation("Started to Update {EntryCount} entries of {TableName}", entriesForUpdate.Count, typeName);
-                foreach (var dbEntry in entriesForUpdate)
+                foreach (var entry in entriesForUpdate)
                 {
-                    updateEntries.Invoke(dbEntry.Item1, dbEntry.Item2);
+                    updateEntries.Invoke(entry.DbEntry, entry.DataEntry);
                 }
                 _logger.LogInformation("Updated {TableName}", typeName);
             }

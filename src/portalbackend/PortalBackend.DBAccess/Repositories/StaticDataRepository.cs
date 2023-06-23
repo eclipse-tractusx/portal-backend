@@ -53,11 +53,7 @@ public class StaticDataRepository : IStaticDataRepository
             .Select(lang => new LanguageData
                 (
                     lang.ShortName,
-                    new LanguageDataLongNames
-                    (
-                         lang.LongNameDe,
-                         lang.LongNameEn
-                    )
+                    lang.LanguageLongNames.Select(x => new LanguageDataLongName(x.LanguageShortName, x.LongName))
                 ))
             .AsAsyncEnumerable();
 

@@ -18,20 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.ComponentModel.DataAnnotations;
 
-/// <summary>
-/// Model for LanguageData
-/// </summary>
-/// <param name="LanguageShortName">Language Short Name</param>
-/// <param name="LanguageLongNames">Language Long Name</param>
-/// <returns></returns>
-public record LanguageData(string LanguageShortName, IEnumerable<LanguageDataLongName> LanguageLongNames);
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-/// <summary>
-/// Model for LanguageDataLongNames
-/// </summary>
-/// <param name="Language">language</param>
-/// <param name="LongDescription">long Description</param>
-/// <returns></returns>
-public record LanguageDataLongName(string Language, string LongDescription);
+public class LanguageLongName
+{
+    public LanguageLongName(string shortName, string languageShortName, string longName)
+    {
+        ShortName = shortName;
+        LanguageShortName = languageShortName;
+        LongName = longName;
+    }
+
+    [StringLength(2, MinimumLength = 2)]
+    public string ShortName { get; private set; }
+
+    [StringLength(2, MinimumLength = 2)]
+    public string LanguageShortName { get; private set; }
+    public string LongName { get; set; }
+
+    // Navigation properties
+    public virtual Language? Language { get; private set; }
+    public virtual Language? LongNameLanguage { get; private set; }
+}

@@ -57,6 +57,7 @@ public class BatchInsertSeeder : ICustomSeeder
     {
         _logger.LogInformation("Start BaseEntityBatch Seeder");
         await SeedTable<Language>("languages", x => x.ShortName, cancellationToken).ConfigureAwait(false);
+        await SeedTable<LanguageLongName>("language_long_names", x => new { x.ShortName, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedBaseEntity(cancellationToken);
 
         await SeedTable<AgreementAssignedCompanyRole>("agreement_assigned_company_roles", x => new { x.AgreementId, x.CompanyRoleId }, cancellationToken).ConfigureAwait(false);
