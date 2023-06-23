@@ -972,7 +972,6 @@ public class PortalDbContext : DbContext
                   .OnDelete(DeleteBehavior.ClientSetNull);
         });
         
-
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.Property(x => x.DueDate)
