@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -94,7 +94,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 nullable: false,
                 defaultValue: "");
 
-            migrationBuilder.Sql("INSERT INTO portal.languages (long_name_de, long_name_en) select l1.long_name as long_name_de, l2.long_name as long_name_en from language_long_names l1 join language_long_names l2 on l1.shortname=l2.shortname where l1.language_short_name ='de' and l2.language_short_name ='en'");
+            migrationBuilder.Sql("UPDATE portal.languages AS languages SET long_name_de=subquery.long_name FROM (SELECT short_name, long_name FROM portal.language_long_names WHERE language_short_name='de') AS subquery WHERE languages.short_name = subquery.short_name");
+            migrationBuilder.Sql("UPDATE portal.languages AS languages SET long_name_en=subquery.long_name FROM (SELECT short_name, long_name FROM portal.language_long_names WHERE language_short_name='en') AS subquery WHERE languages.short_name = subquery.short_name");
 
             migrationBuilder.DropTable(
                 name: "language_long_names",

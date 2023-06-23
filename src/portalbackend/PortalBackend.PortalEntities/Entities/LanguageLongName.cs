@@ -37,6 +37,8 @@ public class LanguageLongName
     [StringLength(2, MinimumLength = 2)]
     public string LanguageShortName { get; private set; }
     public string LongName { get; set; }
+
+    // Navigation properties
     public virtual Language? Language { get; private set; }
     public virtual Language? LongNameLanguage { get; private set; }
 }
