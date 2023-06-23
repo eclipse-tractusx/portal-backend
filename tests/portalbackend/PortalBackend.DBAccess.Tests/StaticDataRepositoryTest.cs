@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -127,19 +128,33 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         results.Should().HaveCount(2);
     }
 
+    #region GetAllLanguages
+
     [Fact]
-    public async Task GetAllLanguage_ReturnsExpectedResult()
+    public async Task GetAllLanguages_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNull();
-        results.Should().BeOfType<List<Models.LanguageData>>();
+        result.Should().HaveCount(10).And.Satisfy(
+            x => x.languageShortName == "cn" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "chinesisch"), new("en", "chinese") }),
+            x => x.languageShortName == "de" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "deutsch"), new("en", "german"), new("xx", "german_xx") }),
+            x => x.languageShortName == "en" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "englisch"), new("en", "english"), new("xx", "english_xx") }),
+            x => x.languageShortName == "es" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "spanisch"), new("en", "spanish") }),
+            x => x.languageShortName == "fr" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "franzoesisch"), new("en", "french") }),
+            x => x.languageShortName == "jp" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "japanisch"), new("en", "japanese") }),
+            x => x.languageShortName == "pt" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "portugisisch"), new("en", "portuguese") }),
+            x => x.languageShortName == "ru" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "russisch"), new("en", "russian") }),
+            x => x.languageShortName == "xx" && x.languageLongNames.OrderBy(ln => ln.language).SequenceEqual(new LanguageDataLongName[] { new("de", "xx_german"), new("en", "xx_english"), new("xx", "xx_xx") }),
+            x => x.languageShortName == "yy" && x.languageLongNames.Count() == 0
+        );
     }
+
+    #endregion
 
     #region setup
 

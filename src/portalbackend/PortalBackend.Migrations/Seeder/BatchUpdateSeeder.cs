@@ -114,15 +114,15 @@ public class BatchUpdateSeeder : ICustomSeeder
         {
             var typeName = typeof(T).Name;
             var entriesForUpdate = data
-                .Join(_context.Set<T>(), keySelector, keySelector, (dataEntry, dbEntry) => new ValueTuple<T, T>(dataEntry, dbEntry))
+                .Join(_context.Set<T>(), keySelector, keySelector, (dataEntry, dbEntry) => (DataEntry: dataEntry, DbEntry: dbEntry))
                 .Where(whereClause.Invoke)
                 .ToList();
             if (entriesForUpdate.Any())
             {
                 _logger.LogInformation("Started to Update {EntryCount} entries of {TableName}", entriesForUpdate.Count, typeName);
-                foreach (var dbEntry in entriesForUpdate)
+                foreach (var entry in entriesForUpdate)
                 {
-                    updateEntries.Invoke(dbEntry.Item1, dbEntry.Item2);
+                    updateEntries.Invoke(entry.DbEntry, entry.DataEntry);
                 }
                 _logger.LogInformation("Updated {TableName}", typeName);
             }

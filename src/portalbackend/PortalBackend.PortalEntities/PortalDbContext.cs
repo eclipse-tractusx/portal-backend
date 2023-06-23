@@ -962,16 +962,20 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<LanguageLongName>(entity =>
         {
             entity.HasKey(e => new { e.ShortName, e.LanguageShortName });
+            entity.Property(e => e.ShortName)
+                .IsFixedLength();
+            entity.Property(e => e.LanguageShortName)
+                .IsFixedLength();
             entity.HasOne(e => e.Language)
-                  .WithMany(e => e.LanguageLongNames)
-                  .HasForeignKey(e => e.ShortName)
-                  .OnDelete(DeleteBehavior.ClientSetNull);
-            entity.HasOne(e => e.Language)
-                  .WithMany(e => e.LanguageLongNames)
-                  .HasForeignKey(e => e.LanguageShortName)
-                  .OnDelete(DeleteBehavior.ClientSetNull);
+                .WithMany(e => e.LanguageLongNames)
+                .HasForeignKey(e => e.ShortName)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(e => e.LongNameLanguage)
+                .WithMany(e => e.LanguageLongNameLanguages)
+                .HasForeignKey(e => e.LanguageShortName)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
-        
+
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.Property(x => x.DueDate)

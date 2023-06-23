@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -48,10 +49,10 @@ public class StaticDataBusinessLogicTest
     {
         // Arrange
         var data = _fixture.Build<LicenseTypeData>()
-                            .With(x => x.LicenseTypeId, 1)
-                            .With(x => x.Name, LicenseTypeId.COTS.ToString())
-                            .CreateMany()
-                            .ToAsyncEnumerable();
+                        .With(x => x.LicenseTypeId, 1)
+                        .With(x => x.Name, LicenseTypeId.COTS.ToString())
+                        .CreateMany()
+                        .ToAsyncEnumerable();
 
         A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
             .Returns(data);
@@ -66,5 +67,25 @@ public class StaticDataBusinessLogicTest
         result.Should().BeOfType<List<LicenseTypeData>>();
         result.FirstOrDefault()!.LicenseTypeId.Should().Be(1);
         result.FirstOrDefault()!.Name.Should().Be(LicenseTypeId.COTS.ToString());
+    }
+
+    [Fact]
+    public async Task GetAllLanguages_ReturnsExpectedResult()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<LanguageData>(3).ToImmutableArray();
+
+        A.CallTo(() => _staticDataRepository.GetAllLanguage())
+            .Returns(data.ToAsyncEnumerable());
+
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+
+        // Act
+        var result = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo((() => _staticDataRepository.GetAllLanguage()))
+            .MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(3).And.ContainInOrder(data);
     }
 }

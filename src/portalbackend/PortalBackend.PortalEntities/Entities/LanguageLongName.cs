@@ -38,4 +38,5 @@ public class LanguageLongName
     public string LanguageShortName { get; private set; }
     public string LongName { get; set; }
     public virtual Language? Language { get; private set; }
+    public virtual Language? LongNameLanguage { get; private set; }
 }
