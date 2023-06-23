@@ -127,7 +127,7 @@ public class CustodianService : ICustodianService
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
         await httpClient.PostAsync("/api/credentials/issuer/framework", stringContent, cancellationToken)
-            .CatchingIntoServiceExceptionFor("framework-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+            .CatchingIntoServiceExceptionFor("custodian-framework-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -144,6 +144,6 @@ public class CustodianService : ICustodianService
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
         await httpClient.PostAsync("/api/credentials/issuer/dismantler", stringContent, cancellationToken)
-            .CatchingIntoServiceExceptionFor("dismantler-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+            .CatchingIntoServiceExceptionFor("custodian-dismantler-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 }

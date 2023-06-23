@@ -93,6 +93,12 @@
 	 <None Update="EmailTemplates\new_user_account_ownidp.html">
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
+	 <None Update="EmailTemplates\verified_credential_approved.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\verified_credential_declined.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
   </ItemGroup>
 
 <ItemGroup>

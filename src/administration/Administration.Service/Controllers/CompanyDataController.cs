@@ -275,7 +275,7 @@ public class CompanyDataController : ControllerBase
     /// <param name="credentialId">Id of the entry that should be approved</param>
     /// <returns>No Content</returns>
     /// <response code="204">Successfully rejected the credentials.</response>
-    [HttpPost]
+    [HttpPut]
     [Authorize(Roles = "admin_credential_decision")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("credentials/{credentialId}/reject")]

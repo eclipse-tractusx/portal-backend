@@ -88,6 +88,6 @@ public interface ICompanySsiDetailsRepository
     Func<int, int, Task<Pagination.Source<CredentialDetailData>?>> GetAllCredentialDetails(CompanySsiDetailStatusId? companySsiDetailStatusId, CompanySsiDetailSorting sorting);
 
     Task<(bool exists, SsiApprovalData data)> GetSsiApprovalData(Guid credentialId);
-    Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetDetailStatus(Guid credentialId);
+    Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetSsiRejectionData(Guid credentialId);
     void AttachAndModify(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields);
 }

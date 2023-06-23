@@ -180,34 +180,40 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     public Task<(bool exists, SsiApprovalData data)> GetSsiApprovalData(Guid credentialId) =>
         _context.CompanySsiDetails
             .Where(x => x.Id == credentialId)
+            .Select(x => new
+            {
+                Detail = x,
+                Version = x.VerifiedCredentialExternalTypeUseCaseDetailVersion,
+                Creator = x.CreatorUser
+            })
             .Select(x => new ValueTuple<bool, SsiApprovalData>(
                     true,
                     new SsiApprovalData(
-                        x.CompanySsiDetailStatusId,
-                        x.VerifiedCredentialTypeId,
-                        x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId,
-                        x.Company!.Name,
-                        x.Company.BusinessPartnerNumber,
-                        x.ExpiryDate,
-                        x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId != VerifiedCredentialTypeKindId.USE_CASE ?
+                        x.Detail.CompanySsiDetailStatusId,
+                        x.Detail.VerifiedCredentialTypeId,
+                        x.Detail.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId,
+                        x.Detail.Company!.Name,
+                        x.Detail.Company.BusinessPartnerNumber,
+                        x.Detail.ExpiryDate,
+                        x.Detail.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId != VerifiedCredentialTypeKindId.USE_CASE ?
                             null :
                             new UseCaseDetailData(
-                                    x.VerifiedCredentialExternalTypeUseCaseDetailVersion!.VerifiedCredentialExternalTypeId,
-                                    x.VerifiedCredentialExternalTypeUseCaseDetailVersion!.Template,
-                                    x.VerifiedCredentialExternalTypeUseCaseDetailVersion.Version
+                                    x.Version!.VerifiedCredentialExternalTypeId,
+                                    x.Version.Template,
+                                    x.Version.Version
                                 ),
                         new SsiRequesterData(
-                            x.CreatorUserId,
-                            x.CreatorUser!.Email,
-                            x.CreatorUser.Firstname,
-                            x.CreatorUser.Lastname
+                            x.Detail.CreatorUserId,
+                            x.Creator!.Email,
+                            x.Creator.Firstname,
+                            x.Creator.Lastname
                         )
                     )
                 ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetDetailStatus(Guid credentialId) =>
+    public Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetSsiRejectionData(Guid credentialId) =>
         _context.CompanySsiDetails
             .Where(x => x.Id == credentialId)
             .Select(x => new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(true, x.CompanySsiDetailStatusId, x.VerifiedCredentialTypeId, x.CreatorUserId, x.CreatorUser!.Email, x.CreatorUser.Firstname, x.CreatorUser.Lastname))

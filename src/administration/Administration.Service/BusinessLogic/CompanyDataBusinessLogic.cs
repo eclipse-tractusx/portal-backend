@@ -338,6 +338,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new NotFoundException($"CompanySsiDetail {credentialId} does not exists");
         }
 
+        if (data.Status != CompanySsiDetailStatusId.PENDING)
+        {
+            throw new ConflictException($"Credential {credentialId} must be {CompanySsiDetailStatusId.PENDING}");
+        }
+
         if (string.IsNullOrWhiteSpace(data.Bpn))
         {
             throw new UnexpectedConditionException($"Bpn should be set for company {data.CompanyName}");
@@ -386,7 +391,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 { "requestName", data.Type.GetEnumValue() },
                 { "companyName", data.CompanyName },
                 { "credentialType", data.Type.GetEnumValue() },
-                {"expiryDate", data.ExpiryDate == null ? string.Empty : data.ExpiryDate.Value.ToString("o", CultureInfo.InvariantCulture)}
+                { "expiryDate", data.ExpiryDate == null ? string.Empty : data.ExpiryDate.Value.ToString("o", CultureInfo.InvariantCulture) }
             };
 
             await _mailingService.SendMails(data.RequesterData.RequesterEmail, mailParameters, Enumerable.Repeat("CredentialApproval", 1)).ConfigureAwait(false);
@@ -397,10 +402,15 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     public async Task RejectCredential(Guid userId, Guid credentialId)
     {
         var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
-        var (exists, status, type, requesterId, requesterEmail, requesterFirstname, requesterLastname) = await companySsiRepository.GetDetailStatus(credentialId).ConfigureAwait(false);
+        var (exists, status, type, requesterId, requesterEmail, requesterFirstname, requesterLastname) = await companySsiRepository.GetSsiRejectionData(credentialId).ConfigureAwait(false);
         if (!exists)
         {
             throw new NotFoundException($"CompanySsiDetail {credentialId} does not exists");
+        }
+
+        if (status != CompanySsiDetailStatusId.PENDING)
+        {
+            throw new ConflictException($"Credential {credentialId} must be {CompanySsiDetailStatusId.PENDING}");
         }
 
         var content = JsonSerializer.Serialize(new { Type = type, CredentialId = credentialId }, Options);

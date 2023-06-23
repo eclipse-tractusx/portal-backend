@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -46,10 +47,9 @@ public class CompanyDataBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly INotificationRepository _notificationRepository;
     private readonly ICompanyRolesRepository _companyRolesRepository;
-    private readonly ICompanySsiDetailsRepository _companySsiDetailsRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly ILanguageRepository _languageRepository;
-    private readonly ICompanySsiDetailsRepository _companyCredentialDetailsRepository;
+    private readonly ICompanySsiDetailsRepository _companySsiDetailsRepository;
     private readonly IMailingService _mailingService;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -71,7 +71,7 @@ public class CompanyDataBusinessLogicTests
         _documentRepository = A.Fake<IDocumentRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
-        _companyCredentialDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
+        _companySsiDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
 
         _mailingService = A.Fake<IMailingService>();
         _custodianService = A.Fake<ICustodianService>();
@@ -79,13 +79,13 @@ public class CompanyDataBusinessLogicTests
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>()).Returns(_companyRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanySsiDetailsRepository>()).Returns(_companySsiDetailsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
 
-        var options = Options.Create(new CompanyDataSettings { UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF } });
+        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF } });
         _sut = new CompanyDataBusinessLogic(_portalRepositories, _mailingService, _custodianService, _dateTimeProvider, options);
     }
 
@@ -973,6 +973,27 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region GetCredentials
+
+    [Fact]
+    public async Task GetCredentials_WithFilter_ReturnsList()
+    {
+        // Arrange
+        var credentials = _fixture.Build<CredentialDetailData>().CreateMany(3);
+        var paging = (int skip, int take) => Task.FromResult(new Pagination.Source<CredentialDetailData>(credentials.Count(), credentials.Skip(skip).Take(take)));
+
+        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(CompanySsiDetailStatusId.ACTIVE, A<CompanySsiDetailSorting>._))!
+            .Returns(paging);
+
+        // Act
+        var result = await _sut.GetCredentials(0, 15, CompanySsiDetailStatusId.ACTIVE, CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
+
+        // Assert
+        result.Content.Should().HaveCount(credentials.Count());
+    }
+
+    #endregion
+
     #region ApproveCredential
 
     [Fact]
@@ -980,7 +1001,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var notExistingId = Guid.NewGuid();
-        A.CallTo(() => _companyCredentialDetailsRepository.GetSsiApprovalData(notExistingId))
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(notExistingId))
             .Returns(new ValueTuple<bool, SsiApprovalData>());
         async Task Act() => await _sut.ApproveCredential(_identity.CompanyId, notExistingId, CancellationToken.None).ConfigureAwait(false);
 
@@ -989,6 +1010,80 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Theory]
+    [InlineData(CompanySsiDetailStatusId.ACTIVE)]
+    [InlineData(CompanySsiDetailStatusId.INACTIVE)]
+    public async Task ApproveCredential_WithStatusNotPending_ThrowsConflictException(CompanySsiDetailStatusId statusId)
+    {
+        // Arrange
+        var alreadyActiveId = Guid.NewGuid();
+        var approvalData = _fixture.Build<SsiApprovalData>()
+            .With(x => x.Status, statusId)
+            .Create();
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
+            .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
+        async Task Act() => await _sut.ApproveCredential(_identity.CompanyId, alreadyActiveId, CancellationToken.None).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"Credential {alreadyActiveId} must be {CompanySsiDetailStatusId.PENDING}");
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task ApproveCredential_WithBpnNotSetActiveSsiDetail_ThrowsConflictException()
+    {
+        // Arrange
+        var alreadyActiveId = Guid.NewGuid();
+        var approvalData = _fixture.Build<SsiApprovalData>()
+            .With(x => x.Status, CompanySsiDetailStatusId.PENDING)
+            .With(x => x.Bpn, (string?)null)
+            .With(x => x.CompanyName, "Test Company")
+            .Create();
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
+            .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
+        async Task Act() => await _sut.ApproveCredential(_identity.CompanyId, alreadyActiveId, CancellationToken.None).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"Bpn should be set for company {approvalData.CompanyName}");
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task ApproveCredential_WithoutExternalDetailSet_ThrowsConflictException()
+    {
+        // Arrange
+        var alreadyActiveId = Guid.NewGuid();
+        var approvalData = _fixture.Build<SsiApprovalData>()
+            .With(x => x.Status, CompanySsiDetailStatusId.PENDING)
+            .With(x => x.Bpn, "test")
+            .With(x => x.CompanyName, "Test Company")
+            .With(x => x.Kind, VerifiedCredentialTypeKindId.USE_CASE)
+            .With(x => x.UseCaseDetailData, (UseCaseDetailData?)null)
+            .Create();
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
+            .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
+        async Task Act() => await _sut.ApproveCredential(_identity.CompanyId, alreadyActiveId, CancellationToken.None).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1033,7 +1128,7 @@ public class CompanyDataBusinessLogicTests
 
         var detail = new CompanySsiDetail(_validCredentialId, _identity.CompanyId, typeId, CompanySsiDetailStatusId.PENDING, Guid.NewGuid(), requesterId, DateTimeOffset.Now);
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companyCredentialDetailsRepository.GetSsiApprovalData(_validCredentialId))
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(_validCredentialId))
             .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
         A.CallTo(() => _notificationRepository.CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_APPROVAL, false, A<Action<Notification>?>._))
             .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
@@ -1042,7 +1137,7 @@ public class CompanyDataBusinessLogicTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        A.CallTo(() => _companyCredentialDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
+        A.CallTo(() => _companySsiDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
             .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
             {
                 initialize?.Invoke(detail);
@@ -1119,7 +1214,7 @@ public class CompanyDataBusinessLogicTests
 
         var detail = new CompanySsiDetail(_validCredentialId, _identity.CompanyId, typeId, CompanySsiDetailStatusId.PENDING, Guid.NewGuid(), requesterId, DateTimeOffset.Now);
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companyCredentialDetailsRepository.GetSsiApprovalData(_validCredentialId))
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(_validCredentialId))
             .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
         A.CallTo(() => _notificationRepository.CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_APPROVAL, false, A<Action<Notification>?>._))
             .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
@@ -1128,7 +1223,7 @@ public class CompanyDataBusinessLogicTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        A.CallTo(() => _companyCredentialDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
+        A.CallTo(() => _companySsiDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
             .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
             {
                 initialize?.Invoke(detail);
@@ -1176,7 +1271,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var notExistingId = Guid.NewGuid();
-        A.CallTo(() => _companyCredentialDetailsRepository.GetDetailStatus(notExistingId))
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(notExistingId))
             .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>());
         async Task Act() => await _sut.RejectCredential(_identity.CompanyId, notExistingId).ConfigureAwait(false);
 
@@ -1185,6 +1280,27 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialRejected")))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Theory]
+    [InlineData(CompanySsiDetailStatusId.ACTIVE)]
+    [InlineData(CompanySsiDetailStatusId.INACTIVE)]
+    public async Task RejectCredential_WithNotPendingSsiDetail_ThrowsNotFoundException(CompanySsiDetailStatusId status)
+    {
+        // Arrange
+        var alreadyInactiveId = Guid.NewGuid();
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(alreadyInactiveId))
+            .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(true, status, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, Guid.NewGuid(), null, null, null));
+        async Task Act() => await _sut.RejectCredential(_identity.CompanyId, alreadyInactiveId).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"Credential {alreadyInactiveId} must be {CompanySsiDetailStatusId.PENDING}");
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialRejected")))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1200,7 +1316,7 @@ public class CompanyDataBusinessLogicTests
         var notifications = new List<Notification>();
         var detail = new CompanySsiDetail(_validCredentialId, _identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, CompanySsiDetailStatusId.PENDING, Guid.NewGuid(), requesterId, DateTimeOffset.Now);
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companyCredentialDetailsRepository.GetDetailStatus(_validCredentialId))
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(_validCredentialId))
             .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(true, CompanySsiDetailStatusId.PENDING, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, requesterId, recipientMail, "Tony", "Stark"));
         A.CallTo(() => _notificationRepository.CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_REJECTED, false, A<Action<Notification>?>._))
             .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
@@ -1210,7 +1326,7 @@ public class CompanyDataBusinessLogicTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        A.CallTo(() => _companyCredentialDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
+        A.CallTo(() => _companySsiDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
             .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
             {
                 initialize?.Invoke(detail);
@@ -1245,7 +1361,7 @@ public class CompanyDataBusinessLogicTests
         var notifications = new List<Notification>();
         var detail = new CompanySsiDetail(_validCredentialId, _identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, CompanySsiDetailStatusId.PENDING, Guid.NewGuid(), requesterId, DateTimeOffset.UtcNow);
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companyCredentialDetailsRepository.GetDetailStatus(_validCredentialId))
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(_validCredentialId))
             .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(true, CompanySsiDetailStatusId.PENDING, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, requesterId, null, null, null));
         A.CallTo(() => _notificationRepository.CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_REJECTED, false, A<Action<Notification>>._))
             .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
@@ -1254,7 +1370,7 @@ public class CompanyDataBusinessLogicTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        A.CallTo(() => _companyCredentialDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
+        A.CallTo(() => _companySsiDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
             .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
             {
                 initialize?.Invoke(detail);
