@@ -26,12 +26,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="languageShortName">Language Short Name</param>
 /// <param name="languageLongNames">Language Long Name</param>
 /// <returns></returns>
-public record LanguageData(string languageShortName, LanguageDataLongNames languageLongNames);
+public record LanguageData(string languageShortName, IEnumerable<LanguageDataLongNames> languageLongNames);
 
 /// <summary>
 /// Model for LanguageDataLongNames
 /// </summary>
-/// <param name="de">German Language</param>
-/// <param name="en">English Language</param>
+/// <param name="language">language</param>
+/// <param name="longDescription">long Description</param>
 /// <returns></returns>
-public record LanguageDataLongNames(string de, string en);
+public record LanguageDataLongNames(string language, string longDescription);

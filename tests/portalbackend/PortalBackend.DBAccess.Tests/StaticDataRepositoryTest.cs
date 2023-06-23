@@ -127,6 +127,20 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         results.Should().HaveCount(2);
     }
 
+    [Fact]
+    public async Task GetAllLanguage_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results.Should().BeOfType<List<Models.LanguageData>>();
+    }
+
     #region setup
 
     private async Task<StaticDataRepository> CreateSut()
