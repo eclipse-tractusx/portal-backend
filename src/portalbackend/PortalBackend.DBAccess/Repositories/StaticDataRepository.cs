@@ -53,7 +53,7 @@ public class StaticDataRepository : IStaticDataRepository
             .Select(lang => new LanguageData
                 (
                     lang.ShortName,
-                    lang.LanguageLongNames.Select(x=> new LanguageDataLongNames(x.LanguageShortName, x.LongName))
+                    lang.LanguageLongNames.Where(x=>x.ShortName ==lang.ShortName).Select(x=> new LanguageDataLongNames(x.LanguageShortName, x.LongName))
                 ))
             .AsAsyncEnumerable();
 
