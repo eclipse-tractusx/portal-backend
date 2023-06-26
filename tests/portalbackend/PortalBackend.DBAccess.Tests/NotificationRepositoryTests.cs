@@ -312,6 +312,27 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.NotificationTopic == NotificationTopicId.INFO));
     }
 
+    [Theory]
+    [InlineData(null, 6)]
+    [InlineData(true, 3)]
+    [InlineData(false, 2)]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithDoneState_ReturnsExpectedNotificationDetailData(bool? doneState, int count)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, null, doneState)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results!.Data.Should().HaveCount(count);
+        if (doneState.HasValue)
+        {
+            results!.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.Done == doneState.Value));
+        }
+    }
+
     #endregion
 
     #region GetNotificationByIdAndIamUserId

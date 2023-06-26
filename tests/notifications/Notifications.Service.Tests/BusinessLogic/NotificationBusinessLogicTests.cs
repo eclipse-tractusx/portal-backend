@@ -170,6 +170,26 @@ public class NotificationBusinessLogicTests
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
     }
 
+    [Fact]
+    public async Task GetNotifications_WithFilters_CallsExpected()
+    {
+        // Arrange
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 20
+        }));
+
+        var userId = Guid.NewGuid();
+        var filter = _fixture.Create<NotificationFilters>();
+
+        // Act
+        var result = await sut.GetNotificationsAsync(0, 20, userId, filter).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(userId, filter.IsRead, filter.TypeId, filter.TopicId, filter.OnlyDueDate, filter.Sorting, filter.DoneState))
+            .MustHaveHappenedOnceExactly();
+    }
+
     #endregion
 
     #region Get Notification Details
