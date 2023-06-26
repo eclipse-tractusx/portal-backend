@@ -30,7 +30,6 @@ The project maintains the following source code repositories in the GitHub organ
 - https://github.com/eclipse-tractusx/portal-cd
 - https://github.com/eclipse-tractusx/portal-iam
 
-
 ## Third-party Content
 
 This project leverages the following third party content.
