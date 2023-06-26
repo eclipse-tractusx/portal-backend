@@ -158,11 +158,10 @@ public class CompanyDataControllerTests
     {
         // Arrange
         A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null))
-            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5).ToAsyncEnumerable());
+            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
 
         // Act
-        var list = await _controller.GetUseCaseParticipation(null).ConfigureAwait(false);
-        var result = await list.ToListAsync();
+        var result = await _controller.GetUseCaseParticipation(null).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null)).MustHaveHappenedOnceExactly();
@@ -174,11 +173,10 @@ public class CompanyDataControllerTests
     {
         // Arrange
         A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de"))
-            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5).ToAsyncEnumerable());
+            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
 
         // Act
-        var list = await _controller.GetUseCaseParticipation("de").ConfigureAwait(false);
-        var result = await list.ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetUseCaseParticipation("de").ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de")).MustHaveHappenedOnceExactly();
@@ -190,11 +188,10 @@ public class CompanyDataControllerTests
     {
         // Arrange
         A.CallTo(() => _logic.GetSsiCertificatesAsync(_identity.CompanyId))
-            .Returns(_fixture.CreateMany<SsiCertificateData>(5).ToAsyncEnumerable());
+            .Returns(_fixture.CreateMany<SsiCertificateData>(5));
 
         // Act
-        var list = await _controller.GetSsiCertificationData().ConfigureAwait(false);
-        var result = await list.ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetSsiCertificationData().ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.GetSsiCertificatesAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();

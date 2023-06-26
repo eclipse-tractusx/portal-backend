@@ -656,7 +656,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
 
         // Act
-        var result = await (await _sut.GetUseCaseParticipationAsync(_identity.CompanyId, "en").ConfigureAwait(false)).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetUseCaseParticipationAsync(_identity.CompanyId, "en").ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);
@@ -673,10 +673,10 @@ public class CompanyDataBusinessLogicTests
             .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.GetUseCaseParticipationAsync(_identity.CompanyId, "en").ConfigureAwait(false);
+        var Act = () => _sut.GetUseCaseParticipationAsync(_identity.CompanyId, "en");
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         ex.Message.Should().Be("There should only be one pending or active ssi detail be assigned");
     }
 
@@ -692,7 +692,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(_fixture.Build<SsiCertificateTransferData>().With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(1)).CreateMany(5).ToAsyncEnumerable());
 
         // Act
-        var result = await (await _sut.GetSsiCertificatesAsync(_identity.CompanyId).ConfigureAwait(false)).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetSsiCertificatesAsync(_identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);
