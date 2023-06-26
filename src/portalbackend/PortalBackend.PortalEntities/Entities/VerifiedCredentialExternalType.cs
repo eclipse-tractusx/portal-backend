@@ -5,18 +5,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class VerifiedCredentialExternalType
 {
-    private VerifiedCredentialExternalType()
-    {
-        Label = null!;
-        VerifiedCredentialTypeAssignedExternalTypes = new HashSet<VerifiedCredentialTypeAssignedExternalType>();
-        VerifiedCredentialExternalTypeUseCaseDetailVersions = new HashSet<VerifiedCredentialExternalTypeUseCaseDetailVersion>();
-    }
-
     public VerifiedCredentialExternalType(VerifiedCredentialExternalTypeId id)
-     : this()
     {
         Id = id;
         Label = id.ToString();
+
+        VerifiedCredentialTypeAssignedExternalTypes = new HashSet<VerifiedCredentialTypeAssignedExternalType>();
+        VerifiedCredentialExternalTypeUseCaseDetailVersions = new HashSet<VerifiedCredentialExternalTypeUseCaseDetailVersion>();
     }
 
     public VerifiedCredentialExternalTypeId Id { get; private set; }

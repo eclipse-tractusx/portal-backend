@@ -31,10 +31,11 @@ public class VerifiedCredentialType
         CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
-    public VerifiedCredentialType(VerifiedCredentialTypeId verifiedCredentialTypeId) : this()
+    public VerifiedCredentialType(VerifiedCredentialTypeId verifiedCredentialTypeId)
     {
         Id = verifiedCredentialTypeId;
         Label = verifiedCredentialTypeId.ToString();
+        CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
     public VerifiedCredentialTypeId Id { get; private set; }

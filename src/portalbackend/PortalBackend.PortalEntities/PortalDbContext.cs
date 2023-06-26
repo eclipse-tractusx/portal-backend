@@ -1167,6 +1167,34 @@ public class PortalDbContext : DbContext
                 });
         });
 
+        modelBuilder.Entity<VerifiedCredentialType>()
+            .HasData(
+                Enum.GetValues(typeof(VerifiedCredentialTypeId))
+                    .Cast<VerifiedCredentialTypeId>()
+                    .Select(e => new VerifiedCredentialType(e))
+            );
+
+        modelBuilder.Entity<VerifiedCredentialTypeKind>()
+            .HasData(
+                Enum.GetValues(typeof(VerifiedCredentialTypeKindId))
+                    .Cast<VerifiedCredentialTypeKindId>()
+                    .Select(e => new VerifiedCredentialTypeKind(e))
+            );
+
+        modelBuilder.Entity<CompanySsiDetailStatus>()
+            .HasData(
+                Enum.GetValues(typeof(CompanySsiDetailStatusId))
+                    .Cast<CompanySsiDetailStatusId>()
+                    .Select(e => new CompanySsiDetailStatus(e))
+            );
+
+        modelBuilder.Entity<VerifiedCredentialExternalType>()
+            .HasData(
+                Enum.GetValues(typeof(VerifiedCredentialExternalTypeId))
+                    .Cast<VerifiedCredentialExternalTypeId>()
+                    .Select(e => new VerifiedCredentialExternalType(e))
+            );
+
         modelBuilder.Entity<UseCaseDescription>(entity =>
         {
             entity.HasKey(e => new { e.UseCaseId, e.LanguageShortName });
@@ -1230,27 +1258,6 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<VerifiedCredentialTypeAssignedUseCase>(c => c.UseCaseId);
         });
 
-        modelBuilder.Entity<VerifiedCredentialType>()
-            .HasData(
-                Enum.GetValues(typeof(VerifiedCredentialTypeId))
-                    .Cast<VerifiedCredentialTypeId>()
-                    .Select(e => new VerifiedCredentialType(e))
-            );
-
-        modelBuilder.Entity<VerifiedCredentialTypeKind>()
-            .HasData(
-                Enum.GetValues(typeof(VerifiedCredentialTypeKindId))
-                    .Cast<VerifiedCredentialTypeKindId>()
-                    .Select(e => new VerifiedCredentialTypeKind(e))
-            );
-
-        modelBuilder.Entity<CompanySsiDetailStatus>()
-            .HasData(
-                Enum.GetValues(typeof(CompanySsiDetailStatusId))
-                    .Cast<CompanySsiDetailStatusId>()
-                    .Select(e => new CompanySsiDetailStatus(e))
-            );
-
         modelBuilder.Entity<VerifiedCredentialTypeAssignedKind>(entity =>
         {
             entity.HasKey(e => new { e.VerifiedCredentialTypeId, e.VerifiedCredentialTypeKindId });
@@ -1268,13 +1275,6 @@ public class PortalDbContext : DbContext
             entity.HasIndex(x => x.VerifiedCredentialTypeId)
                 .IsUnique(false);
         });
-
-        modelBuilder.Entity<VerifiedCredentialExternalType>()
-            .HasData(
-                Enum.GetValues(typeof(VerifiedCredentialExternalTypeId))
-                    .Cast<VerifiedCredentialExternalTypeId>()
-                    .Select(e => new VerifiedCredentialExternalType(e))
-            );
 
         modelBuilder.Entity<VerifiedCredentialTypeAssignedExternalType>(entity =>
         {
@@ -1291,42 +1291,6 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<VerifiedCredentialTypeAssignedKind>(entity =>
-        {
-            entity.HasKey(e => new { e.VerifiedCredentialTypeId, e.VerifiedCredentialTypeKindId });
-
-            entity.HasOne(d => d.VerifiedCredentialTypeKind)
-                .WithMany(x => x.VerifiedCredentialTypeAssignedKinds)
-                .HasForeignKey(d => d.VerifiedCredentialTypeKindId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.VerifiedCredentialType)
-                .WithOne(x => x.VerifiedCredentialTypeAssignedKind)
-                .HasForeignKey<VerifiedCredentialTypeAssignedKind>(d => d.VerifiedCredentialTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasIndex(x => x.VerifiedCredentialTypeId)
-                .IsUnique(false);
-        });
-
-        modelBuilder.Entity<VerifiedCredentialTypeAssignedKind>(entity =>
-        {
-            entity.HasKey(e => new { e.VerifiedCredentialTypeId, e.VerifiedCredentialTypeKindId });
-
-            entity.HasOne(d => d.VerifiedCredentialTypeKind)
-                .WithMany(x => x.VerifiedCredentialTypeAssignedKinds)
-                .HasForeignKey(d => d.VerifiedCredentialTypeKindId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.VerifiedCredentialType)
-                .WithOne(x => x.VerifiedCredentialTypeAssignedKind)
-                .HasForeignKey<VerifiedCredentialTypeAssignedKind>(d => d.VerifiedCredentialTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasIndex(x => x.VerifiedCredentialTypeId)
-                .IsUnique(false);
-        });
-
         modelBuilder.Entity<VerifiedCredentialExternalTypeUseCaseDetailVersion>(entity =>
         {
             entity.HasOne(d => d.VerifiedCredentialExternalType)
@@ -1334,8 +1298,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.VerifiedCredentialExternalTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version })
-                .IsUnique(true);
+            entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version });
         });
     }
 }

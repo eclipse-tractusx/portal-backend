@@ -31,7 +31,8 @@ public class CompanySsiDetailStatus
         CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
-    public CompanySsiDetailStatus(CompanySsiDetailStatusId companySsiDetailStatusId) : this()
+    public CompanySsiDetailStatus(CompanySsiDetailStatusId companySsiDetailStatusId)
+        : this()
     {
         Id = companySsiDetailStatusId;
         Label = companySsiDetailStatusId.ToString();

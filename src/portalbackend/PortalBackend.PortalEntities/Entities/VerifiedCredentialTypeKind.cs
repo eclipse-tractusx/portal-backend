@@ -31,10 +31,12 @@ public class VerifiedCredentialTypeKind
         VerifiedCredentialTypeAssignedKinds = new HashSet<VerifiedCredentialTypeAssignedKind>();
     }
 
-    public VerifiedCredentialTypeKind(VerifiedCredentialTypeKindId verifiedCredentialTypeKindId) : this()
+    public VerifiedCredentialTypeKind(VerifiedCredentialTypeKindId verifiedCredentialTypeKindId)
+        : this()
     {
         Id = verifiedCredentialTypeKindId;
         Label = verifiedCredentialTypeKindId.ToString();
+        VerifiedCredentialTypeAssignedKinds = new HashSet<VerifiedCredentialTypeAssignedKind>();
     }
 
     public VerifiedCredentialTypeKindId Id { get; private set; }

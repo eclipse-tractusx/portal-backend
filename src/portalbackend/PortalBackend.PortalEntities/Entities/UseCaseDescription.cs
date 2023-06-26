@@ -24,17 +24,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class UseCaseDescription
 {
-    private UseCaseDescription()
-    {
-        UseCaseId = default!;
-        LanguageShortName = null!;
-        Description = null!;
-    }
-
-    public UseCaseDescription(Guid useCaseId, string languageShortName) : this()
+    public UseCaseDescription(Guid useCaseId, string languageShortName, string description)
     {
         UseCaseId = useCaseId;
         LanguageShortName = languageShortName;
+        Description = description;
     }
 
     public Guid UseCaseId { get; private set; }
