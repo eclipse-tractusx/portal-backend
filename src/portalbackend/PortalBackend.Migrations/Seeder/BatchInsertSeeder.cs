@@ -144,7 +144,7 @@ public class BatchInsertSeeder : ICustomSeeder
     private async Task SeedTable<T>(string fileName, Func<T, object> keySelector, CancellationToken cancellationToken) where T : class
     {
         _logger.LogInformation("Start seeding {Filename}", fileName);
-        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, _settings.DataPaths, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
         _logger.LogInformation("Found {ElementCount} data", data.Count);
         if (data.Any())
         {
