@@ -61,6 +61,7 @@ public class NotificationController : ControllerBase
     /// <param name="notificationTopicId">OPTIONAL: Topic of the notifications</param>
     /// <param name="onlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
     /// <param name="sorting">Defines the sorting of the list</param>
+    /// <param name="doneState">Defines the done state</param>
     /// <response code="200">Collection of the unread notifications for the user.</response>
     /// <response code="400">NotificationType or NotificationStatus don't exist.</response>
     [HttpGet]
@@ -76,8 +77,9 @@ public class NotificationController : ControllerBase
         [FromQuery] NotificationTypeId? notificationTypeId = null,
         [FromQuery] NotificationTopicId? notificationTopicId = null,
         [FromQuery] bool onlyDueDate = false,
-        [FromQuery] NotificationSorting? sorting = null) =>
-        this.WithUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting)));
+        [FromQuery] NotificationSorting? sorting = null,
+        [FromQuery] bool? doneState = null) =>
+        this.WithUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState)));
 
     /// <summary>
     ///     Gets a notification for the logged in user

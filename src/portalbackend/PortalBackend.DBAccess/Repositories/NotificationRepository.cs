@@ -70,7 +70,7 @@ public class NotificationRepository : INotificationRepository
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting) =>
+    public Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting, bool? doneState) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -80,7 +80,8 @@ public class NotificationRepository : INotificationRepository
                     (!isRead.HasValue || notification.IsRead == isRead.Value) &&
                     (!typeId.HasValue || notification.NotificationTypeId == typeId.Value) &&
                     (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value) &&
-                    (!onlyDueDate || notification.DueDate.HasValue))
+                    (!onlyDueDate || notification.DueDate.HasValue) &&
+                    (!doneState.HasValue || notification.Done == doneState.Value))
                 .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {

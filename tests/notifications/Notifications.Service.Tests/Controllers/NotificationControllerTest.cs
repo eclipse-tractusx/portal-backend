@@ -57,15 +57,16 @@ public class NotificationControllerTest
         var topicId = _fixture.Create<NotificationTopicId?>();
         var onlyDueDate = _fixture.Create<bool>();
         var sorting = _fixture.Create<NotificationSorting?>();
+        var doneState = _fixture.Create<bool?>();
         var paginationResponse = new Pagination.Response<NotificationDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<NotificationDetailData>(5));
         A.CallTo(() => _logic.GetNotificationsAsync(A<int>._, A<int>._, A<Guid>._, A<NotificationFilters>._))
             .ReturnsLazily(() => paginationResponse);
 
         //Act
-        var result = await this._controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting).ConfigureAwait(false);
+        var result = await this._controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting, doneState: doneState).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<Guid>._, A<NotificationFilters>.That.Matches(x => x.IsRead == isRead && x.TypeId == typeId && x.TopicId == topicId && x.OnlyDueDate == onlyDueDate && x.Sorting == sorting))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<Guid>._, A<NotificationFilters>.That.Matches(x => x.IsRead == isRead && x.TypeId == typeId && x.TopicId == topicId && x.OnlyDueDate == onlyDueDate && x.Sorting == sorting && x.DoneState == doneState))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<NotificationDetailData>>(result);
         result.Content.Should().HaveCount(5);
     }
