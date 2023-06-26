@@ -39,63 +39,67 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<UseCaseParticipationData> GetUseCaseParticipationForCompany(Guid companyId, string language) =>
+    public IAsyncEnumerable<UseCaseParticipationTransferData> GetUseCaseParticipationForCompany(Guid companyId, string language) =>
         _context.VerifiedCredentialTypes
             .Where(x => x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.USE_CASE)
-            .AsSplitQuery()
             .Select(x => new
             {
                 UseCase = x.VerifiedCredentialTypeAssignedUseCase!.UseCase,
                 TypeId = x.Id,
-                ExternalTypeDetails = x.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType.VerifiedCredentialExternalTypeUseCaseDetailVersions,
+                ExternalTypeDetails = x.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType!.VerifiedCredentialExternalTypeUseCaseDetailVersions,
             })
-            .Select(x => new UseCaseParticipationData(
+            .Select(x => new UseCaseParticipationTransferData(
                 x.UseCase!.Name,
                 x.UseCase.UseCaseDescriptions
                     .Where(ucd => ucd.LanguageShortName == language).Select(ucd => ucd.Description).SingleOrDefault(),
                 x.TypeId,
-                x.ExternalTypeDetails.Select(y =>
-                    new CompanySsiExternalTypeDetailData(
+                x.ExternalTypeDetails.Select(y => new
+                {
+                    Version = y,
+                    Detail = y.CompanySsiDetails.Where(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE && ssi.VerifiedCredentialExternalTypeUseCaseDetailId == y.Id).Take(2)
+                })
+                    .Select(y =>
+                    new CompanySsiExternalTypeDetailTransferData(
                         new ExternalTypeDetailData(
-                            y.Id,
-                            y.VerifiedCredentialExternalTypeId,
-                            y.Version,
-                            y.Template,
-                            y.ValidFrom,
-                            y.Expiry),
-                        y.CompanySsiDetails.SingleOrDefault(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE) == null ?
-                            null :
-                            new CompanySsiDetailData(
-                                y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).Id,
-                                y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).CompanySsiDetailStatusId,
-                                y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).ExpiryDate,
+                            y.Version.Id,
+                            y.Version.VerifiedCredentialExternalTypeId,
+                            y.Version.Version,
+                            y.Version.Template,
+                            y.Version.ValidFrom,
+                            y.Version.Expiry),
+                        y.Detail.Select(d =>
+                            new CompanySsiDetailTransferData(
+                                d.Id,
+                                d.CompanySsiDetailStatusId,
+                                d.ExpiryDate,
                                 new DocumentData(
-                                    y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).Document!.Id,
-                                    y.CompanySsiDetails.Single(ssi => ssi.CompanyId == companyId && ssi.VerifiedCredentialTypeId == x.TypeId && ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE).Document!.DocumentName))
-                ))
+                                    d.Document!.Id,
+                                    d.Document!.DocumentName))
+                            )
+                    ))
             ))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<SsiCertificateData> GetSsiCertificates(Guid companyId) =>
+    public IAsyncEnumerable<SsiCertificateTransferData> GetSsiCertificates(Guid companyId) =>
         _context.VerifiedCredentialTypes
             .Where(x => x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
-            .AsSplitQuery()
             .Select(x => new
             {
                 TypeId = x.Id,
-                SsiDetails = x.CompanySsiDetails.SingleOrDefault(y => y.VerifiedCredentialTypeId == x.Id && y.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE && y.CompanyId == companyId)
+                SsiDetails = x.CompanySsiDetails.Where(y => y.VerifiedCredentialTypeId == x.Id && y.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE && y.CompanyId == companyId).Take(2)
             })
-            .Select(x => new SsiCertificateData(
+            .Select(x => new SsiCertificateTransferData(
                 x.TypeId,
-                x.SsiDetails == null ? null : new CompanySsiDetailData(
-                        x.SsiDetails.Id,
-                        x.SsiDetails.CompanySsiDetailStatusId,
-                        x.SsiDetails.ExpiryDate,
-                        x.SsiDetails.Document == null ?
+                x.SsiDetails.Select(d =>
+                    new CompanySsiDetailTransferData(
+                       d.Id,
+                        d.CompanySsiDetailStatusId,
+                        d.ExpiryDate,
+                        d.Document == null ?
                             null :
-                            new DocumentData(x.SsiDetails.Document!.Id, x.SsiDetails.Document.DocumentName)
+                            new DocumentData(d.Document!.Id, d.Document.DocumentName)
                     )
-            ))
+            )))
             .ToAsyncEnumerable();
 }

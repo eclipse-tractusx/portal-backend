@@ -4,6 +4,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface ICompanySsiDetailsRepository
 {
-    IAsyncEnumerable<UseCaseParticipationData> GetUseCaseParticipationForCompany(Guid companyId, string language);
-    IAsyncEnumerable<SsiCertificateData> GetSsiCertificates(Guid companyId);
+    IAsyncEnumerable<UseCaseParticipationTransferData> GetUseCaseParticipationForCompany(Guid companyId, string language);
+    IAsyncEnumerable<SsiCertificateTransferData> GetSsiCertificates(Guid companyId);
 }

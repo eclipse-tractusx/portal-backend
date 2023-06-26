@@ -168,7 +168,7 @@ public class CompanyDataController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("useCaseParticipation")]
     [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseParticipationData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<UseCaseParticipationData> GetUseCaseParticipation([FromQuery] string? language) =>
+    public Task<IAsyncEnumerable<UseCaseParticipationData>> GetUseCaseParticipation([FromQuery] string? language) =>
         this.WithCompanyId(companyId => _logic.GetUseCaseParticipationAsync(companyId, language));
 
     /// <summary>
@@ -181,7 +181,7 @@ public class CompanyDataController : ControllerBase
     [Authorize(Roles = "view_certificates")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificates")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<SsiCertificateData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<SsiCertificateData> GetSsiCertificationData() =>
+    [ProducesResponseType(typeof(IAsyncEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
+    public Task<IAsyncEnumerable<SsiCertificateData>> GetSsiCertificationData() =>
         this.WithCompanyId(companyId => _logic.GetSsiCertificatesAsync(companyId));
 }

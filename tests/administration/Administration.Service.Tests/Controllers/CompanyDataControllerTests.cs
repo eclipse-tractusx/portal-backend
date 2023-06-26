@@ -161,7 +161,8 @@ public class CompanyDataControllerTests
             .Returns(_fixture.CreateMany<UseCaseParticipationData>(5).ToAsyncEnumerable());
 
         // Act
-        var result = await _controller.GetUseCaseParticipation(null).ToListAsync().ConfigureAwait(false);
+        var list = await _controller.GetUseCaseParticipation(null).ConfigureAwait(false);
+        var result = await list.ToListAsync();
 
         // Assert
         A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null)).MustHaveHappenedOnceExactly();
@@ -176,7 +177,8 @@ public class CompanyDataControllerTests
             .Returns(_fixture.CreateMany<UseCaseParticipationData>(5).ToAsyncEnumerable());
 
         // Act
-        var result = await _controller.GetUseCaseParticipation("de").ToListAsync().ConfigureAwait(false);
+        var list = await _controller.GetUseCaseParticipation("de").ConfigureAwait(false);
+        var result = await list.ToListAsync().ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de")).MustHaveHappenedOnceExactly();
@@ -191,7 +193,8 @@ public class CompanyDataControllerTests
             .Returns(_fixture.CreateMany<SsiCertificateData>(5).ToAsyncEnumerable());
 
         // Act
-        var result = await _controller.GetSsiCertificationData().ToListAsync().ConfigureAwait(false);
+        var list = await _controller.GetSsiCertificationData().ConfigureAwait(false);
+        var result = await list.ToListAsync().ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.GetSsiCertificatesAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();

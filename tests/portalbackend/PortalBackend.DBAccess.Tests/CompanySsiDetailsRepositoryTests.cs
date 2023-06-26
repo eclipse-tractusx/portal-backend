@@ -58,8 +58,8 @@ public class CompanySsiDetailsRepositoryTests
             x => x.Description == "Quality Management");
         var traceability = result.Single(x => x.CredentialType == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
         traceability.VerifiedCredentials.Should().HaveCount(2).And.Satisfy(
-            x => x.ExternalDetailData.Version == "1.0.0" && x.SsiDetailData != null && x.SsiDetailData.ParticipationStatus == CompanySsiDetailStatusId.PENDING,
-            x => x.ExternalDetailData.Version == "2.0.0" && x.SsiDetailData == null);
+            x => x.ExternalDetailData.Version == "1.0.0" && x.SsiDetailData.Single().ParticipationStatus == CompanySsiDetailStatusId.PENDING,
+            x => x.ExternalDetailData.Version == "2.0.0" && !x.SsiDetailData.Any());
     }
 
     #endregion
@@ -80,7 +80,7 @@ public class CompanySsiDetailsRepositoryTests
         var certificate = result.Single();
         certificate.CredentialType.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
         certificate.SsiDetailData.Should().NotBeNull();
-        certificate.SsiDetailData!.ParticipationStatus.Should().Be(CompanySsiDetailStatusId.PENDING);
+        certificate.SsiDetailData.Single().ParticipationStatus.Should().Be(CompanySsiDetailStatusId.PENDING);
     }
 
     #endregion

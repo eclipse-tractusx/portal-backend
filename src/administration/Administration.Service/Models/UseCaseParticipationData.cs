@@ -18,12 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record SsiCertificateData
+public record UseCaseParticipationData
 (
+    string? UseCase,
+    string? Description,
     VerifiedCredentialTypeId CredentialType,
+    IEnumerable<CompanySsiExternalTypeDetailData> VerifiedCredentials
+);
+
+public record CompanySsiExternalTypeDetailData
+(
+    ExternalTypeDetailData ExternalDetailData,
     CompanySsiDetailData? SsiDetailData
+);
+
+public record CompanySsiDetailData
+(
+    Guid CredentialId,
+    CompanySsiDetailStatusId ParticipationStatus,
+    DateTimeOffset? ExpiryDate,
+    DocumentData? Document
 );
