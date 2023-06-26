@@ -21,6 +21,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
+COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY src/ src/
 WORKDIR /src/marketplace/Apps.Service
 RUN dotnet build "Apps.Service.csproj" -c Release -o /app/build
