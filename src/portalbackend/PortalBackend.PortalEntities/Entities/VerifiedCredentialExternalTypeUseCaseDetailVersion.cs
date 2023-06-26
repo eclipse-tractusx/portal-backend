@@ -3,9 +3,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class VerifiedCredentialExternalTypeUseCaseDetail : IBaseEntity
+public class VerifiedCredentialExternalTypeUseCaseDetailVersion : IBaseEntity
 {
-    public VerifiedCredentialExternalTypeUseCaseDetail()
+    public VerifiedCredentialExternalTypeUseCaseDetailVersion()
     {
         Version = null!;
         Template = null!;
@@ -19,6 +19,6 @@ public class VerifiedCredentialExternalTypeUseCaseDetail : IBaseEntity
     public DateTimeOffset ValidFrom { get; set; }
     public DateTimeOffset? Expiry { get; set; }
 
-    public virtual VerifiedCredentialExternalType VerifiedCredentialExternalType { get; private set; }
+    public virtual VerifiedCredentialExternalType? VerifiedCredentialExternalType { get; private set; }
     public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

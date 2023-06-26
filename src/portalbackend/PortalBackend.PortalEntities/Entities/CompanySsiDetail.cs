@@ -45,6 +45,6 @@ public class CompanySsiDetail : IAuditableV1, IBaseEntity
     public virtual VerifiedCredentialType? VerifiedCredentialType { get; set; }
     public virtual CompanySsiDetailStatus? CompanySsiDetailStatus { get; set; }
     public virtual Document? Document { get; set; }
-    public virtual VerifiedCredentialExternalTypeUseCaseDetail? VerifiedCredentialExternalTypeUseCaseDetail { get; set; }
+    public virtual VerifiedCredentialExternalTypeUseCaseDetailVersion? VerifiedCredentialExternalTypeUseCaseDetailVersion { get; set; }
     public virtual CompanyUser? CreatorUser { get; set; }
 }

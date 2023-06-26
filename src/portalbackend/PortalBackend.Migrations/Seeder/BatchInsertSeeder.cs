@@ -97,7 +97,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<VerifiedCredentialTypeAssignedKind>("verified_credential_type_assigned_kinds", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialTypeKindId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<UseCaseDescription>("use_case_descriptions", x => new { x.UseCaseId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<VerifiedCredentialTypeAssignedUseCase>("verified_credential_type_assigned_use_cases", x => new { x.VerifiedCredentialTypeId, x.UseCaseId }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<VerifiedCredentialExternalType>("verified_credential_external_types", x => x.VerifiedCredentialTypeId, cancellationToken).ConfigureAwait(false);
+        await SeedTable<VerifiedCredentialTypeAssignedExternalType>("verified_credential_type_assigned_external_types", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialExternalTypeId }, cancellationToken).ConfigureAwait(false);
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
@@ -133,7 +133,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<AppInstanceSetup>("app_instance_setups", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<TechnicalUserProfile>("technical_user_profiles", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<CompanySsiDetail>("company_ssi_details", cancellationToken).ConfigureAwait(false);
-        await SeedTableForBaseEntity<VerifiedCredentialExternalTypeUseCaseDetail>("verified_credential_external_type_use_case_details", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions", cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity

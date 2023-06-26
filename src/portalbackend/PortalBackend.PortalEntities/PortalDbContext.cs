@@ -158,8 +158,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialExternalType> VerifiedCredentialExternalTypes { get; set; } = default!;
-    public virtual DbSet<VerifiedCredentialExternalTypeUseCaseDetail> VerifiedCredentialExternalTypeUseCaseDetails { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialExternalTypeUseCaseDetailVersion> VerifiedCredentialExternalTypeUseCaseDetailVersions { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialType> VerifiedCredentialTypes { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialTypeAssignedExternalType> VerifiedCredentialTypeAssignedExternalTypes { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeKind> VerifiedCredentialTypeKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedUseCase> VerifiedCredentialTypeAssignedUseCases { get; set; } = default!;
@@ -1198,7 +1199,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(t => t.CompanySsiDetailStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(c => c.VerifiedCredentialExternalTypeUseCaseDetail)
+            entity.HasOne(c => c.VerifiedCredentialExternalTypeUseCaseDetailVersion)
                 .WithMany(c => c.CompanySsiDetails)
                 .HasForeignKey(t => t.VerifiedCredentialExternalTypeUseCaseDetailId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
@@ -1268,18 +1269,68 @@ public class PortalDbContext : DbContext
                 .IsUnique(false);
         });
 
-        modelBuilder.Entity<VerifiedCredentialExternalType>(entity =>
+        modelBuilder.Entity<VerifiedCredentialExternalType>()
+            .HasData(
+                Enum.GetValues(typeof(VerifiedCredentialExternalTypeId))
+                    .Cast<VerifiedCredentialExternalTypeId>()
+                    .Select(e => new VerifiedCredentialExternalType(e))
+            );
+
+        modelBuilder.Entity<VerifiedCredentialTypeAssignedExternalType>(entity =>
         {
+            entity.HasKey(e => new { e.VerifiedCredentialTypeId, e.VerifiedCredentialExternalTypeId });
+
             entity.HasOne(d => d.VerifiedCredentialType)
-                .WithOne(x => x.VerifiedCredentialExternalType)
-                .HasForeignKey<VerifiedCredentialExternalType>(d => d.VerifiedCredentialTypeId)
+                .WithOne(x => x.VerifiedCredentialTypeAssignedExternalType)
+                .HasForeignKey<VerifiedCredentialTypeAssignedExternalType>(d => d.VerifiedCredentialTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.VerifiedCredentialExternalType)
+                .WithMany(x => x.VerifiedCredentialTypeAssignedExternalTypes)
+                .HasForeignKey(d => d.VerifiedCredentialExternalTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<VerifiedCredentialExternalTypeUseCaseDetail>(entity =>
+        modelBuilder.Entity<VerifiedCredentialTypeAssignedKind>(entity =>
+        {
+            entity.HasKey(e => new { e.VerifiedCredentialTypeId, e.VerifiedCredentialTypeKindId });
+
+            entity.HasOne(d => d.VerifiedCredentialTypeKind)
+                .WithMany(x => x.VerifiedCredentialTypeAssignedKinds)
+                .HasForeignKey(d => d.VerifiedCredentialTypeKindId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.VerifiedCredentialType)
+                .WithOne(x => x.VerifiedCredentialTypeAssignedKind)
+                .HasForeignKey<VerifiedCredentialTypeAssignedKind>(d => d.VerifiedCredentialTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasIndex(x => x.VerifiedCredentialTypeId)
+                .IsUnique(false);
+        });
+
+        modelBuilder.Entity<VerifiedCredentialTypeAssignedKind>(entity =>
+        {
+            entity.HasKey(e => new { e.VerifiedCredentialTypeId, e.VerifiedCredentialTypeKindId });
+
+            entity.HasOne(d => d.VerifiedCredentialTypeKind)
+                .WithMany(x => x.VerifiedCredentialTypeAssignedKinds)
+                .HasForeignKey(d => d.VerifiedCredentialTypeKindId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.VerifiedCredentialType)
+                .WithOne(x => x.VerifiedCredentialTypeAssignedKind)
+                .HasForeignKey<VerifiedCredentialTypeAssignedKind>(d => d.VerifiedCredentialTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasIndex(x => x.VerifiedCredentialTypeId)
+                .IsUnique(false);
+        });
+
+        modelBuilder.Entity<VerifiedCredentialExternalTypeUseCaseDetailVersion>(entity =>
         {
             entity.HasOne(d => d.VerifiedCredentialExternalType)
-                .WithMany(x => x.VerifiedCredentialExternalTypeUseCaseDetails)
+                .WithMany(x => x.VerifiedCredentialExternalTypeUseCaseDetailVersions)
                 .HasForeignKey(d => d.VerifiedCredentialExternalTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 

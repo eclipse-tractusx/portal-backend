@@ -8,23 +8,23 @@ public class VerifiedCredentialExternalType
     private VerifiedCredentialExternalType()
     {
         Label = null!;
-        VerifiedCredentialTypeId = default!;
+        VerifiedCredentialTypeAssignedExternalTypes = new HashSet<VerifiedCredentialTypeAssignedExternalType>();
+        VerifiedCredentialExternalTypeUseCaseDetailVersions = new HashSet<VerifiedCredentialExternalTypeUseCaseDetailVersion>();
     }
 
-    public VerifiedCredentialExternalType(VerifiedCredentialExternalTypeId id, VerifiedCredentialTypeId verifiedCredentialTypeId) : this()
+    public VerifiedCredentialExternalType(VerifiedCredentialExternalTypeId id)
+     : this()
     {
         Id = id;
-        Label = id.GetEnumValue();
-        VerifiedCredentialTypeId = verifiedCredentialTypeId;
+        Label = id.ToString();
     }
 
     public VerifiedCredentialExternalTypeId Id { get; private set; }
 
     public string Label { get; private set; }
 
-    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
-
     // Navigation properties
-    public virtual VerifiedCredentialType? VerifiedCredentialType { get; private set; }
-    public virtual ICollection<VerifiedCredentialExternalTypeUseCaseDetail> VerifiedCredentialExternalTypeUseCaseDetails { get; private set; }
+    public virtual ICollection<VerifiedCredentialTypeAssignedExternalType> VerifiedCredentialTypeAssignedExternalTypes { get; private set; }
+
+    public virtual ICollection<VerifiedCredentialExternalTypeUseCaseDetailVersion> VerifiedCredentialExternalTypeUseCaseDetailVersions { get; private set; }
 }

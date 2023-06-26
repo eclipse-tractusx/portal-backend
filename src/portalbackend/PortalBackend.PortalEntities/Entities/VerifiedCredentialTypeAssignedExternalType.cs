@@ -19,34 +19,29 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class VerifiedCredentialType
+public class VerifiedCredentialTypeAssignedExternalType
 {
-    private VerifiedCredentialType()
+    public VerifiedCredentialTypeAssignedExternalType(VerifiedCredentialTypeId verifiedCredentialTypeId, VerifiedCredentialExternalTypeId verifiedCredentialExternalTypeId)
     {
-        Label = null!;
-        CompanySsiDetails = new HashSet<CompanySsiDetail>();
+        VerifiedCredentialTypeId = verifiedCredentialTypeId;
+        VerifiedCredentialExternalTypeId = verifiedCredentialExternalTypeId;
     }
 
-    public VerifiedCredentialType(VerifiedCredentialTypeId verifiedCredentialTypeId) : this()
-    {
-        Id = verifiedCredentialTypeId;
-        Label = verifiedCredentialTypeId.ToString();
-    }
+    /// <summary>
+    /// Id of the credential type.
+    /// </summary>
+    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; private set; }
 
-    public VerifiedCredentialTypeId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
+    /// <summary>
+    /// Id of the credential type kind.
+    /// </summary>
+    public VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId { get; private set; }
 
     // Navigation properties
-    public virtual VerifiedCredentialTypeAssignedExternalType? VerifiedCredentialTypeAssignedExternalType { get; private set; }
-    public virtual VerifiedCredentialTypeAssignedKind? VerifiedCredentialTypeAssignedKind { get; set; }
+    public virtual VerifiedCredentialType? VerifiedCredentialType { get; private set; }
 
-    public virtual VerifiedCredentialTypeAssignedUseCase? VerifiedCredentialTypeAssignedUseCase { get; private set; }
-
-    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
+    public virtual VerifiedCredentialExternalType? VerifiedCredentialExternalType { get; private set; }
 }

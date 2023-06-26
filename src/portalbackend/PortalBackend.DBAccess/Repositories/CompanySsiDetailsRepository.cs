@@ -47,7 +47,7 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
             {
                 UseCase = x.VerifiedCredentialTypeAssignedUseCase!.UseCase,
                 TypeId = x.Id,
-                ExternalTypeDetails = x.VerifiedCredentialExternalType!.VerifiedCredentialExternalTypeUseCaseDetails,
+                ExternalTypeDetails = x.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType.VerifiedCredentialExternalTypeUseCaseDetailVersions,
             })
             .Select(x => new UseCaseParticipationData(
                 x.UseCase!.Name,

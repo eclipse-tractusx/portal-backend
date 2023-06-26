@@ -1,23 +1,3 @@
-/********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
- *
- * See the NOTICE file(s) distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ********************************************************************************/
-
 using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 
@@ -95,6 +75,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
+                name: "verified_credential_external_types",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_verified_credential_external_types", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "verified_credential_type_kinds",
                 schema: "portal",
                 columns: table => new
@@ -121,19 +114,47 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "verified_credential_external_types",
+                name: "verified_credential_external_type_use_case_detail_versions",
                 schema: "portal",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false),
-                    label = table.Column<string>(type: "text", nullable: false),
-                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false)
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    verified_credential_external_type_id = table.Column<int>(type: "integer", nullable: false),
+                    version = table.Column<string>(type: "text", nullable: false),
+                    template = table.Column<string>(type: "text", nullable: false),
+                    valid_from = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    expiry = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_verified_credential_external_types", x => x.id);
+                    table.PrimaryKey("pk_verified_credential_external_type_use_case_detail_versions", x => x.id);
                     table.ForeignKey(
-                        name: "fk_verified_credential_external_types_verified_credential_type",
+                        name: "fk_verified_credential_external_type_use_case_detail_versions_",
+                        column: x => x.verified_credential_external_type_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_external_types",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "verified_credential_type_assigned_external_types",
+                schema: "portal",
+                columns: table => new
+                {
+                    verified_credential_type_id = table.Column<int>(type: "integer", nullable: false),
+                    verified_credential_external_type_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_verified_credential_type_assigned_external_types", x => new { x.verified_credential_type_id, x.verified_credential_external_type_id });
+                    table.ForeignKey(
+                        name: "fk_verified_credential_type_assigned_external_types_verified_c",
+                        column: x => x.verified_credential_external_type_id,
+                        principalSchema: "portal",
+                        principalTable: "verified_credential_external_types",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_verified_credential_type_assigned_external_types_verified_c1",
                         column: x => x.verified_credential_type_id,
                         principalSchema: "portal",
                         principalTable: "verified_credential_types",
@@ -193,29 +214,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "verified_credential_external_type_use_case_details",
-                schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    verified_credential_external_type_id = table.Column<int>(type: "integer", nullable: false),
-                    version = table.Column<string>(type: "text", nullable: false),
-                    template = table.Column<string>(type: "text", nullable: false),
-                    valid_from = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    expiry = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_verified_credential_external_type_use_case_details", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_verified_credential_external_type_use_case_details_verified",
-                        column: x => x.verified_credential_external_type_id,
-                        principalSchema: "portal",
-                        principalTable: "verified_credential_external_types",
-                        principalColumn: "id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "company_ssi_details",
                 schema: "portal",
                 columns: table => new
@@ -263,7 +261,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         name: "fk_company_ssi_details_verified_credential_external_type_use_c",
                         column: x => x.verified_credential_external_type_use_case_detail_id,
                         principalSchema: "portal",
-                        principalTable: "verified_credential_external_type_use_case_details",
+                        principalTable: "verified_credential_external_type_use_case_detail_versions",
                         principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_company_ssi_details_verified_credential_types_verified_cred",
@@ -302,6 +300,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
+                table: "verified_credential_external_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "TRACEABILITY_CREDENTIAL" },
+                    { 2, "PCF_CREDENTIAL" },
+                    { 3, "BEHAVIOR_TWIN_CREDENTIAL" },
+                    { 4, "VEHICLE_DISMANTLE" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
                 table: "verified_credential_type_kinds",
                 columns: new[] { "id", "label" },
                 values: new object[,]
@@ -316,10 +326,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
-                    { 1, "Traceability Framework" },
-                    { 2, "PCF Framework" },
-                    { 3, "Behavior Twin Framework" },
-                    { 4, "Dismantler Certificate" }
+                    { 1, "TRACEABILITY_FRAMEWORK" },
+                    { 2, "PCF_FRAMEWORK" },
+                    { 3, "BEHAVIOR_TWIN_FRAMEWORK" },
+                    { 4, "DISMANTLER_CERTIFICATE" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -366,16 +376,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "language_short_name");
 
             migrationBuilder.CreateIndex(
-                name: "ix_verified_credential_external_type_use_case_details_verified",
+                name: "ix_verified_credential_external_type_use_case_detail_versions_",
                 schema: "portal",
-                table: "verified_credential_external_type_use_case_details",
+                table: "verified_credential_external_type_use_case_detail_versions",
                 columns: new[] { "verified_credential_external_type_id", "version" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_verified_credential_external_types_verified_credential_type",
+                name: "ix_verified_credential_type_assigned_external_types_verified_c",
                 schema: "portal",
-                table: "verified_credential_external_types",
+                table: "verified_credential_type_assigned_external_types",
+                column: "verified_credential_external_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_verified_credential_type_assigned_external_types_verified_c1",
+                schema: "portal",
+                table: "verified_credential_type_assigned_external_types",
                 column: "verified_credential_type_id",
                 unique: true);
 
@@ -446,11 +462,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     END IF;
                     RETURN EXISTS (
                         SELECT 1
-                        FROM portal.verified_credential_external_type_use_case_details
-                        WHERE Id = verified_credential_external_type_use_case_detail_id
-                            AND verified_credential_external_type_id IN (
+                            FROM portal.verified_credential_external_type_use_case_detail_versions
+                            WHERE Id = verified_credential_external_type_use_case_detail_id
+                              AND verified_credential_external_type_id IN (
                                 SELECT verified_credential_external_type_id
-                                FROM portal.verified_credential_external_types
+                                FROM portal.verified_credential_type_assigned_external_types
                                 WHERE verified_credential_type_id IN (
                                     SELECT verified_credential_type_id
                                     FROM portal.verified_credential_type_assigned_kinds
@@ -494,6 +510,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
+                name: "verified_credential_type_assigned_external_types",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
                 name: "verified_credential_type_assigned_kinds",
                 schema: "portal");
 
@@ -506,7 +526,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "verified_credential_external_type_use_case_details",
+                name: "verified_credential_external_type_use_case_detail_versions",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -514,11 +534,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "verified_credential_external_types",
+                name: "verified_credential_types",
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "verified_credential_types",
+                name: "verified_credential_external_types",
                 schema: "portal");
 
             migrationBuilder.DeleteData(
