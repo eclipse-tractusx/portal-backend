@@ -31,9 +31,10 @@ public static class OfferSubscriptionProcessCollectionExtensions
 {
     public static IServiceCollection AddOfferSubscriptionProcessExecutor(this IServiceCollection services, IConfiguration config)
     {
+        var section = config.GetSection("OfferSubscriptionProcess");
         services.AddOptions<OfferSubscriptionsProcessSettings>()
-            .Bind(config.GetSection("OfferSubscriptionProcess"))
-            .ValidateDistinctValues()
+            .Bind(section)
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
 
         return services
