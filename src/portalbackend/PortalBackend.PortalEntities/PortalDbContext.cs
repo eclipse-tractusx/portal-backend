@@ -1212,7 +1212,7 @@ public class PortalDbContext : DbContext
                 .WithOne(o => o.CompanySsiDetail)
                 .HasForeignKey<CompanySsiDetail>(t => t.DocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            
+
             entity.HasAuditV1Triggers<CompanySsiDetail, AuditCompanySsiDetail20230621>();
         });
 
