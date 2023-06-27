@@ -247,13 +247,12 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     /// <inheritdoc />
     public async Task CreateUseCaseParticipation((Guid UserId, Guid CompanyId) identity, UseCaseParticipationCreationData data, CancellationToken cts)
     {
-        var (verifiedCredentialExternalTypeDetailId, document) = data;
+        var (verifiedCredentialExternalTypeDetailId, credentialTypeId, document) = data;
         var documentContentType = document.ContentType.ParseMediaTypeId();
         documentContentType.CheckDocumentContent(_settings.UseCaseParticipationMediaTypes);
 
         var companyCredentialDetailsRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
-        var (exists, credentialTypeId) = await companyCredentialDetailsRepository.GetCredentialTypeIdForExternalTypeDetailId(verifiedCredentialExternalTypeDetailId);
-        if (!exists)
+        if (!await companyCredentialDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(verifiedCredentialExternalTypeDetailId, credentialTypeId))
         {
             throw new ControllerArgumentException($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
         }

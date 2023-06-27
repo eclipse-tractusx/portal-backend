@@ -205,7 +205,7 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), file);
+        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
         await _controller.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);

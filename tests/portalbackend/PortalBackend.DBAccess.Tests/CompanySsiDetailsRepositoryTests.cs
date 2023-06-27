@@ -179,11 +179,10 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCredentialTypeIdForExternalTypeDetailId(detailId).ConfigureAwait(false);
+        var result = await sut.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(detailId, typeId).ConfigureAwait(false);
 
         // Assert
-        result.Exists.Should().Be(exists);
-        result.CredentialTypeId.Should().Be(typeId);
+        result.Should().Be(exists);
     }
 
     #endregion

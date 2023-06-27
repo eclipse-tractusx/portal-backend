@@ -67,8 +67,9 @@ public interface ICompanySsiDetailsRepository
     /// Checks whether the given externalTypeDetail exists and returns the CredentialTypeId
     /// </summary>
     /// <param name="verifiedCredentialExternalTypeUseCaseDetailId">Id of vc external type use case detail id</param>
+    /// <param name="verifiedCredentialTypeId">Id of the vc type</param>
     /// <returns>Returns a valueTuple with identifiers if the externalTypeUseCaseDetailId exists and the corresponding credentialTypeId</returns>
-    Task<(bool Exists, VerifiedCredentialTypeId CredentialTypeId)> GetCredentialTypeIdForExternalTypeDetailId(Guid verifiedCredentialExternalTypeUseCaseDetailId);
+    Task<bool> CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(Guid verifiedCredentialExternalTypeUseCaseDetailId, VerifiedCredentialTypeId verifiedCredentialTypeId);
 
     /// <summary>
     /// Checks whether the given credentialTypeId is a <see cref="VerifiedCredentialTypeKindId"/> Certificate

@@ -732,7 +732,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PNG.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, file);
+        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
         async Task Act() => await _sut.CreateUseCaseParticipation((_identity.UserId, _identity.CompanyId), data, CancellationToken.None).ConfigureAwait(false);
@@ -749,7 +749,7 @@ public class CompanyDataBusinessLogicTests
         SetupCreateUseCaseParticipation();
         var verifiedCredentialExternalTypeDetailId = Guid.NewGuid();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(verifiedCredentialExternalTypeDetailId, file);
+        var data = new UseCaseParticipationCreationData(verifiedCredentialExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
         async Task Act() => await _sut.CreateUseCaseParticipation((_identity.UserId, _identity.CompanyId), data, CancellationToken.None).ConfigureAwait(false);
@@ -765,7 +765,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         SetupCreateUseCaseParticipation();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, file);
+        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
 
         A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, _traceabilityExternalTypeDetailId))
             .Returns(true);
@@ -784,7 +784,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         SetupCreateUseCaseParticipation();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, file);
+        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
         var documentId = Guid.NewGuid();
         var documents = new List<Document>();
         var ssiDetails = new List<CompanySsiDetail>();
@@ -940,10 +940,10 @@ public class CompanyDataBusinessLogicTests
 
     private void SetupCreateUseCaseParticipation()
     {
-        A.CallTo(() => _companySsiDetailsRepository.GetCredentialTypeIdForExternalTypeDetailId(_traceabilityExternalTypeDetailId))
-            .Returns((true, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK));
-        A.CallTo(() => _companySsiDetailsRepository.GetCredentialTypeIdForExternalTypeDetailId(A<Guid>.That.Not.Matches(x => x == _traceabilityExternalTypeDetailId)))
-            .Returns((false, default));
+        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK))
+            .Returns(true);
+        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(A<Guid>.That.Not.Matches(x => x == _traceabilityExternalTypeDetailId), A<VerifiedCredentialTypeId>._))
+            .Returns(false);
     }
 
     private void SetupCreateSsiCertificate()

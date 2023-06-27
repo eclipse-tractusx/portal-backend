@@ -129,13 +129,11 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                 (verifiedCredentialExternalTypeUseCaseDetailId == null || x.VerifiedCredentialExternalTypeUseCaseDetailId == verifiedCredentialExternalTypeUseCaseDetailId));
 
     /// <inheritdoc />
-    public Task<(bool Exists, VerifiedCredentialTypeId CredentialTypeId)> GetCredentialTypeIdForExternalTypeDetailId(Guid verifiedCredentialExternalTypeUseCaseDetailId) =>
+    public Task<bool> CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(Guid verifiedCredentialExternalTypeUseCaseDetailId, VerifiedCredentialTypeId verifiedCredentialTypeId) =>
         _context.VerifiedCredentialExternalTypeUseCaseDetailVersions
-            .Where(x => x.Id == verifiedCredentialExternalTypeUseCaseDetailId)
-            .Select(x => new ValueTuple<bool, VerifiedCredentialTypeId>(
-                true,
-                x.VerifiedCredentialExternalType.VerifiedCredentialTypeId))
-            .SingleOrDefaultAsync();
+            .AnyAsync(x =>
+                x.Id == verifiedCredentialExternalTypeUseCaseDetailId &&
+                x.VerifiedCredentialExternalType!.VerifiedCredentialTypeAssignedExternalTypes.Any(y => y.VerifiedCredentialTypeId == verifiedCredentialTypeId));
 
     /// <inheritdoc />
     public Task<bool> CheckSsiCertificateType(VerifiedCredentialTypeId credentialTypeId) =>
