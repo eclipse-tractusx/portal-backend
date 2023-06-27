@@ -69,6 +69,30 @@ public class CompanySsiDetailsRepositoryTests
 
     #endregion
 
+    #region GetAllCredentialDetails
+
+    [Fact]
+    public async Task GetAllCredentialDetails_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetAllCredentialDetails(null, CompanySsiDetailSorting.CompanyAsc)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Count.Should().Be(3);
+        result.Data.Should().HaveCount(3);
+        result.Data.Should().AllSatisfy(x => x.CompanyId.Should().Be(_validCompanyId))
+            .And.Satisfy(
+                x => x.CredentialType == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK,
+                x => x.CredentialType == VerifiedCredentialTypeId.PCF_FRAMEWORK,
+                x => x.CredentialType == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+    }
+
+    #endregion
+
     #region GetSsiCertificates
 
     [Fact]

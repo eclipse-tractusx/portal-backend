@@ -152,7 +152,7 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
             take,
             _context.CompanySsiDetails.AsNoTracking()
                 .Where(c => !companySsiDetailStatusId.HasValue || c.CompanySsiDetailStatusId == companySsiDetailStatusId.Value)
-                .GroupBy(c => c.Id),
+                .GroupBy(c => c.CompanyId),
             sorting switch
             {
                 CompanySsiDetailSorting.CompanyAsc => (IEnumerable<CompanySsiDetail> details) => details.OrderBy(c => c.Company!.Name),
@@ -167,13 +167,15 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                 c.CompanySsiDetailStatusId,
                 c.ExpiryDate,
                 new DocumentData(c.Document!.Id, c.Document!.DocumentName),
-                new ExternalTypeDetailData(
-                    c.VerifiedCredentialExternalTypeUseCaseDetailVersion!.Id,
-                    c.VerifiedCredentialExternalTypeUseCaseDetailVersion.VerifiedCredentialExternalTypeId,
-                    c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Version,
-                    c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Template,
-                    c.VerifiedCredentialExternalTypeUseCaseDetailVersion.ValidFrom,
-                    c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Expiry)))
+                c.VerifiedCredentialExternalTypeUseCaseDetailVersion == null ?
+                    null :
+                    new ExternalTypeDetailData(
+                        c.VerifiedCredentialExternalTypeUseCaseDetailVersion!.Id,
+                        c.VerifiedCredentialExternalTypeUseCaseDetailVersion.VerifiedCredentialExternalTypeId,
+                        c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Version,
+                        c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Template,
+                        c.VerifiedCredentialExternalTypeUseCaseDetailVersion.ValidFrom,
+                        c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Expiry)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
