@@ -220,7 +220,7 @@ public class CompanyDataController : ControllerBase
     [Authorize(Roles = "add_ssi_certificate")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("ssiCertificate")]
+    [Route("certificates")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cts)
     {
