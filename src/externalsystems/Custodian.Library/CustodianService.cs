@@ -22,8 +22,10 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
@@ -46,15 +48,13 @@ public class CustodianService : ICustodianService
     {
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        var result = await httpClient.GetAsync($"/api/wallets/{bpn}", cancellationToken)
+        var result = await httpClient.GetAsync("/api/wallets".AppendToPathEncoded(bpn), cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-get", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
-        using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var walletData = await JsonSerializer
-                .DeserializeAsync<WalletData>(responseStream, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            var walletData = await result.Content.ReadFromJsonAsync<WalletData>(Options, cancellationToken).ConfigureAwait(false);
+
             if (walletData == null)
             {
                 throw new ServiceException("Couldn't resolve wallet data from the service");
@@ -78,8 +78,8 @@ public class CustodianService : ICustodianService
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
         const string walletUrl = "/api/wallets";
 
-        async ValueTask<string?> CreateErrorMessage(HttpContent errorContent) =>
-            (await JsonSerializer.DeserializeAsync<WalletErrorResponse>(errorContent.ReadAsStream(cancellationToken), Options, cancellationToken).ConfigureAwait(false))?.Message;
+        async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
+            (false, (await errorResponse.Content.ReadFromJsonAsync<WalletErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Message);
 
         var result = await httpClient.PostAsync(walletUrl, stringContent, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
@@ -96,36 +96,14 @@ public class CustodianService : ICustodianService
         var json = JsonSerializer.Serialize(requestBody);
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-        async ValueTask<HttpResponseMessage> CustomErrorHandling(HttpResponseMessage msg, HttpAsyncResponseMessageExtension.RecoverOptions recoverOptions)
-        {
-            if (msg.StatusCode == HttpStatusCode.Conflict)
-            {
-                try
-                {
-                    var errorResponse = await JsonSerializer.DeserializeAsync<MembershipErrorResponse>(
-                        await msg.Content.ReadAsStreamAsync().ConfigureAwait(false),
-                        Options,
-                        cancellationToken
-                    ).ConfigureAwait(false);
-                    var errorTitle = errorResponse?.Title.Trim();
-                    if (errorTitle == "Credential of type MembershipCredential is already exists")
-                    {
-                        return msg;
-                    }
-                }
-                catch (Exception)
-                {
-                    throw new ServiceException($"call to external system custodian-membership-post failed with statuscode {(int)msg.StatusCode}", msg.StatusCode,
-                        (recoverOptions & HttpAsyncResponseMessageExtension.RecoverOptions.RESPONSE_RECEIVED) == HttpAsyncResponseMessageExtension.RecoverOptions.RESPONSE_RECEIVED);
-                }
-            }
+        async ValueTask<(bool, string?)> CustomErrorHandling(HttpResponseMessage errorResponse) => (
+            errorResponse.StatusCode == HttpStatusCode.Conflict &&
+                (await errorResponse.Content.ReadFromJsonAsync<MembershipErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Title.Trim() == "Credential of type MembershipCredential is already exists",
+            null);
 
-            throw new ServiceException($"call to external system custodian-membership-post failed with statuscode {(int)msg.StatusCode}", msg.StatusCode,
-                (recoverOptions & HttpAsyncResponseMessageExtension.RecoverOptions.RESPONSE_RECEIVED) == HttpAsyncResponseMessageExtension.RecoverOptions.RESPONSE_RECEIVED);
-        }
         var result = await httpClient.PostAsync("/api/credentials/issuer/membership", stringContent, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-membership-post",
-                HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, customErrorHandling: CustomErrorHandling).ConfigureAwait(false);
+                HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CustomErrorHandling).ConfigureAwait(false);
 
         return result.StatusCode == HttpStatusCode.Conflict ? $"{bpn} already has a membership" : "Membership Credential successfully created";
     }

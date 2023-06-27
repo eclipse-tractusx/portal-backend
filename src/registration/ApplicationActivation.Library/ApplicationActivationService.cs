@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -79,7 +80,7 @@ public class ApplicationActivationService : IApplicationActivationService
         return HandleApplicationActivationInternal(context, cancellationToken);
     }
 
-    private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cts)
+    private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(false);
@@ -111,38 +112,23 @@ public class ApplicationActivationService : IApplicationActivationService
         });
 
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll(cts).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll(cancellationToken).ConfigureAwait(false);
 
-        var resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cts).ConfigureAwait(false);
+        var resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(false);
 
-        if (assignedRoles == null)
+        if (assignedRoles != null)
         {
-            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
-                ProcessStepStatusId.DONE,
-                entry =>
-                {
-                    entry.Comment = resultMessage;
-                    entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
-                },
-                null,
-                Enum.GetValues<ProcessStepTypeId>().Except(new[] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
-                true,
-                null);
+            var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+                .Select(initialClientRoles => (
+                    initialClientRoles.ClientId,
+                    Roles: initialClientRoles.UserRoleNames.Except(assignedRoles[initialClientRoles.ClientId])))
+                .Where(clientRoles => clientRoles.Roles.Any());
+
+            unassignedClientRoles.IfAny(unassigned =>
+                throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassigned.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.Roles)}]"))}"));
         }
 
-        var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
-            .ToDictionary(x => x.ClientId, x => x.UserRoleNames)
-            .Select(initialClientRoles => (
-                client: initialClientRoles.Key,
-                roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
-            .Where(clientRoles => clientRoles.roles.Any())
-            .ToList();
-
-        if (unassignedClientRoles.Any())
-        {
-            throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
-        }
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry =>

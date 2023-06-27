@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 public static class HttpAsyncResponseMessageExtension
 {
-    public static async Task<HttpResponseMessage> CatchingIntoServiceExceptionFor(this Task<HttpResponseMessage> response, string systemName, RecoverOptions recoverOptions = RecoverOptions.None, Func<HttpContent, ValueTask<string?>>? createErrorMessage = null, Func<HttpResponseMessage, RecoverOptions, ValueTask<HttpResponseMessage>>? customErrorHandling = null)
+    public static async ValueTask<HttpResponseMessage> CatchingIntoServiceExceptionFor(this Task<HttpResponseMessage> response, string systemName, RecoverOptions recoverOptions = RecoverOptions.None, Func<HttpResponseMessage, ValueTask<(bool Ignore, string? Message)>>? handleErrorResponse = null)
     {
         try
         {
@@ -34,17 +34,14 @@ public static class HttpAsyncResponseMessageExtension
                 return message;
             }
 
-            if (customErrorHandling != null)
-            {
-                return await customErrorHandling(message, recoverOptions).ConfigureAwait(false);
-            }
-
             string? errorMessage;
             try
             {
-                errorMessage = (int)message.StatusCode < 500 && createErrorMessage != null
-                    ? await createErrorMessage(message.Content).ConfigureAwait(false)
-                    : null;
+                (var ignore, errorMessage) = (int)message.StatusCode < 500 && handleErrorResponse != null
+                    ? await handleErrorResponse(message).ConfigureAwait(false)
+                    : (false, null);
+                if (ignore)
+                    return message;
             }
             catch (Exception)
             {
