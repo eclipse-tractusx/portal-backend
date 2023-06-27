@@ -18,20 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
-public record CustodianFrameworkRequest(
-    [property: JsonPropertyName("holderIdentifier")] string HolderIdentifier,
-    [property: JsonPropertyName("type"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialExternalTypeId>))] VerifiedCredentialExternalTypeId Type,
-    [property: JsonPropertyName("contract-template")] string Template,
-    [property: JsonPropertyName("contract-version")] string Version
-);
+public class EnumMemberConverter<T> : JsonConverter<T> where T : struct, Enum
+{
+    /// <inheritdoc />
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+        Enum.TryParse(reader.GetString(), out T enumValue) ?
+            enumValue :
+            default;
 
-public record CustodianDismantlerRequest(
-    [property: JsonPropertyName("bpn")] string Bpn,
-    [property: JsonPropertyName("activityType"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialTypeId>))] VerifiedCredentialTypeId Type
-);
+    /// <inheritdoc />
+    public override void Write(
+        Utf8JsonWriter writer,
+        T value,
+        JsonSerializerOptions options) =>
+        writer.WriteStringValue(value.GetEnumValue());
+}

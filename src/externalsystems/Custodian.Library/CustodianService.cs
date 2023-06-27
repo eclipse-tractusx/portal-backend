@@ -77,7 +77,7 @@ public class CustodianService : ICustodianService
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
 
         var requestBody = new { name = name, bpn = bpn };
-        var json = JsonSerializer.Serialize(requestBody);
+        var json = JsonSerializer.Serialize(requestBody, Options);
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
         const string walletUrl = "/api/wallets";
 
@@ -119,11 +119,11 @@ public class CustodianService : ICustodianService
         var requestBody = new CustodianFrameworkRequest
         (
             bpn,
-            useCaseDetailData.VerifiedCredentialExternalTypeId.GetEnumValue(),
+            useCaseDetailData.VerifiedCredentialExternalTypeId,
             useCaseDetailData.Template,
             useCaseDetailData.Version
         );
-        var json = JsonSerializer.Serialize(requestBody);
+        var json = JsonSerializer.Serialize(requestBody, Options);
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
         await httpClient.PostAsync("/api/credentials/issuer/framework", stringContent, cancellationToken)
@@ -138,7 +138,7 @@ public class CustodianService : ICustodianService
         var requestBody = new CustodianDismantlerRequest
         (
             bpn,
-            credentialTypeId.GetEnumValue()
+            credentialTypeId
         );
         var json = JsonSerializer.Serialize(requestBody);
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
