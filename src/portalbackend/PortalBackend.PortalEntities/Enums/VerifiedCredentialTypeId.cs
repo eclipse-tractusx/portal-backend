@@ -18,22 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Runtime.Serialization;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum DocumentTypeId
+public enum VerifiedCredentialTypeId
 {
-    CX_FRAME_CONTRACT = 1,
-    COMMERCIAL_REGISTER_EXTRACT = 2,
-    APP_CONTRACT = 3,
-    CONFORMITY_APPROVAL_REGISTRATION = 4,
-    ADDITIONAL_DETAILS = 5,
-    APP_LEADIMAGE = 6,
-    APP_IMAGE = 7,
-    SELF_DESCRIPTION = 8,
-    APP_TECHNICAL_INFORMATION = 9,
-    CONFORMITY_APPROVAL_CONNECTOR = 10,
-    CONFORMITY_APPROVAL_BUSINESS_APPS = 11,
-    CONFORMITY_APPROVAL_SERVICES = 12,
-    SERVICE_LEADIMAGE = 13,
-    PRESENTATION = 14
+    [EnumMember(Value = "Traceability Framework")]
+    TRACEABILITY_FRAMEWORK = 1,
+
+    [EnumMember(Value = "PCF Framework")]
+    PCF_FRAMEWORK = 2,
+
+    [EnumMember(Value = "Behavior Twin Framework")]
+    BEHAVIOR_TWIN_FRAMEWORK = 3,
+
+    [EnumMember(Value = "Dismantler Certificate")]
+    DISMANTLER_CERTIFICATE = 4,
 }

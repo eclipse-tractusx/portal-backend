@@ -319,5 +319,8 @@
     <Content Update="Seeder\Data\offer_assigned_privacy_policies.test.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
+    <Content Update="Seeder\Data\verified_credential_external_type_use_case_details.test.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
   </ItemGroup>
 </Project>

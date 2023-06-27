@@ -18,22 +18,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 
-public enum DocumentTypeId
+public static class CatchingIntoExtension
 {
-    CX_FRAME_CONTRACT = 1,
-    COMMERCIAL_REGISTER_EXTRACT = 2,
-    APP_CONTRACT = 3,
-    CONFORMITY_APPROVAL_REGISTRATION = 4,
-    ADDITIONAL_DETAILS = 5,
-    APP_LEADIMAGE = 6,
-    APP_IMAGE = 7,
-    SELF_DESCRIPTION = 8,
-    APP_TECHNICAL_INFORMATION = 9,
-    CONFORMITY_APPROVAL_CONNECTOR = 10,
-    CONFORMITY_APPROVAL_BUSINESS_APPS = 11,
-    CONFORMITY_APPROVAL_SERVICES = 12,
-    SERVICE_LEADIMAGE = 13,
-    PRESENTATION = 14
+    public static R CatchingInto<T, R, E>(this IEnumerable<T> source, Func<IEnumerable<T>, R> transform, Func<E, Exception> error) where E : Exception
+    {
+        try
+        {
+            return transform(source);
+        }
+        catch (E e)
+        {
+            throw error(e);
+        }
+    }
 }

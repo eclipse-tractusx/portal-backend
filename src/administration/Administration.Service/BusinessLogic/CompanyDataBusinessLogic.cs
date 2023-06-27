@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -190,4 +191,50 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         await _portalRepositories.SaveAsync();
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipationAsync(Guid companyId, string? language) =>
+        await _portalRepositories
+            .GetInstance<ICompanySsiDetailsRepository>()
+            .GetUseCaseParticipationForCompany(companyId, language ?? Constants.DefaultLanguage)
+            .Select(x => new UseCaseParticipationData(
+                x.UseCase,
+                x.Description,
+                x.CredentialType,
+                x.VerifiedCredentials
+                    .Select(y =>
+                        new CompanySsiExternalTypeDetailData(
+                            y.ExternalDetailData,
+                            y.SsiDetailData.CatchingInto(
+                                data => data
+                                    .Select(d => new CompanySsiDetailData(
+                                        d.CredentialId,
+                                        d.ParticipationStatus,
+                                        d.ExpiryDate,
+                                        d.Document))
+                                    .SingleOrDefault(),
+                                (InvalidOperationException _) => new ConflictException("There should only be one pending or active ssi detail be assigned"))))
+                    .ToList()))
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync(Guid companyId) =>
+        await _portalRepositories
+            .GetInstance<ICompanySsiDetailsRepository>()
+            .GetSsiCertificates(companyId)
+            .Select(x => new SsiCertificateData(
+                x.CredentialType,
+                x.SsiDetailData.CatchingInto(
+                    data => data
+                        .Select(d => new CompanySsiDetailData(
+                            d.CredentialId,
+                            d.ParticipationStatus,
+                            d.ExpiryDate,
+                            d.Document))
+                        .SingleOrDefault(),
+                    (InvalidOperationException _) => new ConflictException("There should only be one pending or active ssi detail be assigned")
+                )))
+            .ToListAsync()
+            .ConfigureAwait(false);
 }

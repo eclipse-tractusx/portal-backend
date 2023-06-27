@@ -18,42 +18,37 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class UseCase : IBaseEntity
+public class AuditCompanySsiDetail20230621 : IAuditEntityV1
 {
-    private UseCase()
-    {
-        Name = null!;
-        Shortname = null!;
-        Agreements = new HashSet<Agreement>();
-        CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-        Apps = new HashSet<Offer>();
-        UseCaseDescriptions = new HashSet<UseCaseDescription>();
-    }
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
 
-    public UseCase(Guid id, string name, string shortname) : this()
-    {
-        Id = id;
-        Name = name;
-        Shortname = shortname;
-    }
+    public Guid Id { get; set; }
+    public Guid CompanyId { get; set; }
+    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
+    public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
+    public Guid DocumentId { get; set; }
+    public DateTimeOffset DateCreated { get; private set; }
+    public Guid CreatorUserId { get; set; }
+    public DateTimeOffset? ExpiryDate { get; set; }
+    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
+    public DateTimeOffset? DateLastChanged { get; set; }
+    public Guid? LastEditorId { get; set; }
 
-    public Guid Id { get; private set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
 
-    [MaxLength(255)]
-    public string Name { get; set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
 
-    [MaxLength(255)]
-    public string Shortname { get; set; }
-
-    // Navigation properties
-    public virtual VerifiedCredentialTypeAssignedUseCase? VerifiedCredentialAssignedUseCase { get; private set; }
-    public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-    public virtual ICollection<Offer> Apps { get; private set; }
-    public virtual ICollection<UseCaseDescription> UseCaseDescriptions { get; private set; }
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }
