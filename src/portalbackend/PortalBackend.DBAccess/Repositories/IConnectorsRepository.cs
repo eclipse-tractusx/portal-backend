@@ -113,5 +113,5 @@ public interface IConnectorsRepository
     /// Delete connector by Id
     /// </summary>
     /// <param name="connectorId"></param>
-    void DeleteConnectorDetails(Guid connectorId);
+    void DeleteConnector(Guid connectorId);
 }
