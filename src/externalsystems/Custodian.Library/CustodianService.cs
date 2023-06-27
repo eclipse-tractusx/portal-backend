@@ -98,7 +98,7 @@ public class CustodianService : ICustodianService
 
         async ValueTask<(bool, string?)> CustomErrorHandling(HttpResponseMessage errorResponse) => (
             errorResponse.StatusCode == HttpStatusCode.Conflict &&
-                (await errorResponse.Content.ReadFromJsonAsync<MembershipErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Title.Trim() == "Credential of type MembershipCredential is already exists",
+                (await errorResponse.Content.ReadFromJsonAsync<MembershipErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Title.Trim() == _settings.MembershipErrorMessage,
             null);
 
         var result = await httpClient.PostAsync("/api/credentials/issuer/membership", stringContent, cancellationToken)

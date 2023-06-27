@@ -45,6 +45,7 @@ public class CustodianServiceTests
 
         _options = Options.Create(new CustodianSettings
         {
+            MembershipErrorMessage = "Credential of type MembershipCredential is already exists",
             Password = "passWord",
             Scope = "test",
             Username = "user@name",
