@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
@@ -34,22 +35,30 @@ public class DapsService : IDapsService
     private const string BaseSecurityProfile = "BASE_SECURITY_PROFILE";
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly ITokenService _tokenService;
+    private readonly ILogger<DapsService> _logger;
     private readonly DapsSettings _settings;
 
     /// <summary>
     /// Creates a new instance of <see cref="DapsService"/>
     /// </summary>
     /// <param name="tokenService"></param>
+    /// <param name="logger"></param>
     /// <param name="options"></param>
-    public DapsService(ITokenService tokenService, IOptions<DapsSettings> options)
+    public DapsService(ITokenService tokenService, ILogger<DapsService> logger, IOptions<DapsSettings> options)
     {
         _tokenService = tokenService;
+        _logger = logger;
         _settings = options.Value;
     }
 
     /// <inheritdoc />
     public Task<DapsResponse?> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
     {
+        if (!CheckDapsIsActive("daps-post"))
+        {
+            return Task.FromResult<DapsResponse?>(null);
+        }
+
         connectorUrl.EnsureValidHttpUrl(() => nameof(connectorUrl));
         return HandleRequest(clientName, connectorUrl, businessPartnerNumber, formFile, cancellationToken);
     }
@@ -72,9 +81,15 @@ public class DapsService : IDapsService
         return await result.Content.ReadFromJsonAsync<DapsResponse>(Options, cancellationToken)
             .ConfigureAwait(false);
     }
+
     /// <inheritdoc />
     public async Task<bool> DeleteDapsClient(string dapsClientId, CancellationToken cancellationToken)
     {
+        if (!CheckDapsIsActive("daps-delete"))
+        {
+            return true;
+        }
+
         var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
         await httpClient.DeleteAsync(dapsClientId, cancellationToken)
             .CatchingIntoServiceExceptionFor("daps-delete", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
@@ -86,11 +101,28 @@ public class DapsService : IDapsService
     public async Task<bool> UpdateDapsConnectorUrl(string dapsClientId, string connectorUrl, string businessPartnerNumber,
         CancellationToken cancellationToken)
     {
+        if (!CheckDapsIsActive("daps-update"))
+        {
+            return true;
+        }
+
         var dapsUpdate = new DapsUpdateData(connectorUrl.AppendToPathEncoded(businessPartnerNumber));
         var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
         await httpClient.PutAsJsonAsync(dapsClientId, dapsUpdate, cancellationToken)
             .CatchingIntoServiceExceptionFor("daps-update", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         return true;
+    }
+
+    private bool CheckDapsIsActive(string callType)
+    {
+        if (_settings.IsActive)
+        {
+            return true;
+        }
+
+        _logger.LogInformation($"{callType} call skipped due to daps is disabled");
+        return false;
+
     }
 }

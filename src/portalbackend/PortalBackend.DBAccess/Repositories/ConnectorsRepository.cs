@@ -173,6 +173,6 @@ public class ConnectorsRepository : IConnectorsRepository
             ))
             .SingleOrDefaultAsync();
 
-    public void DeleteConnectorDetails(Guid connectorId) =>
+    public void DeleteConnector(Guid connectorId) =>
         _context.Connectors.Remove(new Connector(connectorId, null!, null!, null!));
 }
