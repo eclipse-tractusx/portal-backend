@@ -169,8 +169,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         using var sha512Hash = SHA512.Create();
         using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = true });
-        var jsonDocument = JsonDocument.Parse(data.Content!);
-        jsonDocument.WriteTo(writer);
+        data.Content!.WriteTo(writer);
 
         await writer.FlushAsync(cancellationToken);
         var documentContent = ms.ToArray();

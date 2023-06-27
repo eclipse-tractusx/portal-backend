@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Text;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -243,7 +244,7 @@ public class RegistrationControllerTest
     public async Task ProcessClearinghouseSelfDescription_ReturnsExpectedResult()
     {
         // Arrange
-        var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
+        var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
         A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, A<CancellationToken>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
