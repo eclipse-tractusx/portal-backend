@@ -25,6 +25,8 @@ COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY /src/portalbackend /src/portalbackend
 COPY /src/framework/Framework.DBAccess /src/framework/Framework.DBAccess
 COPY /src/framework/Framework.Logging /src/framework/Framework.Logging
+COPY /src/framework/Framework.Models /src/framework/Framework.Models
+COPY /src/framework/Framework.Linq /src/framework/Framework.Linq
 COPY /src/framework/Framework.ErrorHandling.Library /src/framework/Framework.ErrorHandling.Library
 COPY /src/framework/Framework.BaseDependencies /src/framework/Framework.BaseDependencies
 COPY /src/framework/Framework.Seeding /src/framework/Framework.Seeding
