@@ -83,11 +83,10 @@ public interface ICompanySsiDetailsRepository
     /// Gets all credential details
     /// </summary>
     /// <param name="companySsiDetailStatusId">The status of the details</param>
-    /// <param name="sorting">the sorting</param>
     /// <returns>Returns data to create the pagination</returns>
-    Func<int, int, Task<Pagination.Source<CredentialDetailData>?>> GetAllCredentialDetails(CompanySsiDetailStatusId? companySsiDetailStatusId, CompanySsiDetailSorting sorting);
+    IQueryable<CompanySsiDetail> GetAllCredentialDetails(CompanySsiDetailStatusId? companySsiDetailStatusId);
 
     Task<(bool exists, SsiApprovalData data)> GetSsiApprovalData(Guid credentialId);
     Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetSsiRejectionData(Guid credentialId);
-    void AttachAndModify(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields);
+    void AttachAndModifyCompanySsiDetails(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields);
 }

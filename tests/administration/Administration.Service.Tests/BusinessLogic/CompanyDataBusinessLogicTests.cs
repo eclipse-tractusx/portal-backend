@@ -979,11 +979,19 @@ public class CompanyDataBusinessLogicTests
     public async Task GetCredentials_WithFilter_ReturnsList()
     {
         // Arrange
-        var credentials = _fixture.Build<CredentialDetailData>().CreateMany(3);
-        var paging = (int skip, int take) => Task.FromResult(new Pagination.Source<CredentialDetailData>(credentials.Count(), credentials.Skip(skip).Take(take)));
-
-        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(CompanySsiDetailStatusId.ACTIVE, A<CompanySsiDetailSorting>._))!
-            .Returns(paging);
+        var verificationCredentialType = _fixture.Build<VerifiedCredentialType>()
+            .With(x => x.VerifiedCredentialTypeAssignedUseCase, new VerifiedCredentialTypeAssignedUseCase(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, Guid.NewGuid())
+            {
+                UseCase = new UseCase(Guid.NewGuid(), "test", "name")
+            })
+            .Create();
+        var data = _fixture.Build<CompanySsiDetail>()
+            .With(x => x.VerifiedCredentialType, verificationCredentialType)
+            .With(x => x.Document, new Document(Guid.NewGuid(), null!, null!, "test-doc.pdf", MediaTypeId.PDF, default, default, default))
+            .CreateMany(3);
+        var credentials = new AsyncEnumerableStub<CompanySsiDetail>(data);
+        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(CompanySsiDetailStatusId.ACTIVE))!
+            .Returns(credentials.AsQueryable());
 
         // Act
         var result = await _sut.GetCredentials(0, 15, CompanySsiDetailStatusId.ACTIVE, CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
@@ -1137,7 +1145,7 @@ public class CompanyDataBusinessLogicTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        A.CallTo(() => _companySsiDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
+        A.CallTo(() => _companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
             .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
             {
                 initialize?.Invoke(detail);
@@ -1223,7 +1231,7 @@ public class CompanyDataBusinessLogicTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        A.CallTo(() => _companySsiDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
+        A.CallTo(() => _companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
             .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
             {
                 initialize?.Invoke(detail);
@@ -1326,7 +1334,7 @@ public class CompanyDataBusinessLogicTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        A.CallTo(() => _companySsiDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
+        A.CallTo(() => _companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
             .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
             {
                 initialize?.Invoke(detail);
@@ -1370,7 +1378,7 @@ public class CompanyDataBusinessLogicTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        A.CallTo(() => _companySsiDetailsRepository.AttachAndModify(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
+        A.CallTo(() => _companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
             .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
             {
                 initialize?.Invoke(detail);

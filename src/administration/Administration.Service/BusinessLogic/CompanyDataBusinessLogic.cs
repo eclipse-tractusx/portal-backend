@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
@@ -32,8 +33,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -324,9 +327,46 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, CompanySsiDetailSorting? sorting) =>
-        Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, _portalRepositories.GetInstance<ICompanySsiDetailsRepository>()
-            .GetAllCredentialDetails(companySsiDetailStatusId, sorting ?? CompanySsiDetailSorting.CompanyAsc));
+    public Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, CompanySsiDetailSorting? sorting)
+    {
+        var query = _portalRepositories
+            .GetInstance<ICompanySsiDetailsRepository>()
+            .GetAllCredentialDetails(companySsiDetailStatusId);
+        var pageSorting = sorting ?? CompanySsiDetailSorting.CompanyAsc;
+        query = pageSorting switch
+        {
+            CompanySsiDetailSorting.CompanyAsc => query.OrderBy(c => c.Company!.Name),
+            CompanySsiDetailSorting.CompanyDesc => query.OrderByDescending(c => c.Company!.Name),
+            _ => query
+        };
+
+        return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
+            new Pagination.AsyncSource<CredentialDetailData>
+            (
+                query.CountAsync(),
+                query
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(c => new CredentialDetailData(
+                        c.Id,
+                        c.CompanyId,
+                        c.VerifiedCredentialTypeId,
+                        c.VerifiedCredentialType!.VerifiedCredentialTypeAssignedUseCase!.UseCase!.Name,
+                        c.CompanySsiDetailStatusId,
+                        c.ExpiryDate,
+                        new DocumentData(c.Document!.Id, c.Document!.DocumentName),
+                        c.VerifiedCredentialExternalTypeUseCaseDetailVersion == null
+                            ? null
+                            : new ExternalTypeDetailData(
+                                c.VerifiedCredentialExternalTypeUseCaseDetailVersion!.Id,
+                                c.VerifiedCredentialExternalTypeUseCaseDetailVersion.VerifiedCredentialExternalTypeId,
+                                c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Version,
+                                c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Template,
+                                c.VerifiedCredentialExternalTypeUseCaseDetailVersion.ValidFrom,
+                                c.VerifiedCredentialExternalTypeUseCaseDetailVersion.Expiry))
+                    ).AsAsyncEnumerable()
+            ));
+    }
 
     /// <inheritdoc />
     public async Task ApproveCredential(Guid userId, Guid credentialId, CancellationToken cancellationToken)
@@ -360,7 +400,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             n.Content = content;
         });
 
-        companySsiRepository.AttachAndModify(credentialId, c =>
+        companySsiRepository.AttachAndModifyCompanySsiDetails(credentialId, c =>
             {
                 c.CompanySsiDetailStatusId = data.Status;
             },
@@ -420,7 +460,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 n.Content = content;
             });
 
-        companySsiRepository.AttachAndModify(credentialId, c =>
+        companySsiRepository.AttachAndModifyCompanySsiDetails(credentialId, c =>
             {
                 c.CompanySsiDetailStatusId = status;
             },

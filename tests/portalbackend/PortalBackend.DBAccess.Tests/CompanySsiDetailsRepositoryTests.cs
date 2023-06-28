@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -78,17 +79,19 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllCredentialDetails(null, CompanySsiDetailSorting.CompanyAsc)(0, 15).ConfigureAwait(false);
+        var result = await sut.GetAllCredentialDetails(null).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(3);
-        result.Data.Should().HaveCount(3);
-        result.Data.Should().AllSatisfy(x => x.CompanyId.Should().Be(_validCompanyId))
+        result.Count.Should().Be(4);
+        result.Should().HaveCount(4);
+        result.Where(x => x.CompanyId == _validCompanyId).Should().HaveCount(3)
             .And.Satisfy(
-                x => x.CredentialType == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK,
-                x => x.CredentialType == VerifiedCredentialTypeId.PCF_FRAMEWORK,
-                x => x.CredentialType == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.PCF_FRAMEWORK,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+        result.Where(x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).Should().ContainSingle()
+            .And.Satisfy(x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
     }
 
     #endregion
@@ -114,17 +117,17 @@ public class CompanySsiDetailsRepositoryTests
 
     #endregion
 
-    #region AttachAndModify
+    #region AttachAndModifyCompanySsiDetails
 
     [Fact]
-    public async Task AttachAndModify_WithValidData_ReturnsExpected()
+    public async Task AttachAndModifyCompanySsiDetails_WithValidData_ReturnsExpected()
     {
         // Arrange
         var now = DateTimeOffset.UtcNow;
         var (sut, context) = await CreateSutWithContext();
 
         // Act
-        sut.AttachAndModify(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), null, ssi =>
+        sut.CreateSsiDetails(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), null, ssi =>
             {
                 ssi.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
             });
@@ -140,37 +143,6 @@ public class CompanySsiDetailsRepositoryTests
         ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
     }
     
-    #endregion
-    
-    #region AttachAndModify
-
-    [Fact]
-    public async Task CreateCredentialDetails_WithNoChanges_ReturnsExpected()
-    {
-        // Arrange
-        var now = DateTimeOffset.UtcNow;
-        var (sut, context) = await CreateSutWithContext();
-
-        // Act
-        sut.AttachAndModify(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), ssi =>
-        {
-            ssi.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
-        }, ssi =>
-        {
-            ssi.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
-        });
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeFalse();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<CompanySsiDetail>();
-        var ssiDetail = changedEntries.Single().Entity as CompanySsiDetail;
-        ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
-    }
-
     #endregion
 
     #region CheckSsiDetailsExistsForCompany
@@ -320,6 +292,61 @@ public class CompanySsiDetailsRepositoryTests
 
         // Assert
         result.Should().Be(default);
+    }
+
+    #endregion
+
+    #region CreateCredentialDetails
+
+    [Fact]
+    public async Task CreateCredentialDetails_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var now = DateTimeOffset.UtcNow;
+        var (sut, context) = await CreateSutWithContext();
+
+        // Act
+        sut.AttachAndModifyCompanySsiDetails(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), null, ssi =>
+            {
+                ssi.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
+            });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<CompanySsiDetail>();
+        var ssiDetail = changedEntries.Single().Entity as CompanySsiDetail;
+        ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
+    }
+
+    [Fact]
+    public async Task CreateCredentialDetails_WithNoChanges_ReturnsExpected()
+    {
+        // Arrange
+        var now = DateTimeOffset.UtcNow;
+        var (sut, context) = await CreateSutWithContext();
+
+        // Act
+        sut.AttachAndModifyCompanySsiDetails(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), ssi =>
+        {
+            ssi.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
+        }, ssi =>
+        {
+            ssi.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeFalse();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<CompanySsiDetail>();
+        var ssiDetail = changedEntries.Single().Entity as CompanySsiDetail;
+        ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
     }
 
     #endregion
