@@ -45,7 +45,7 @@ public static class SeederHelper
         }
 
         var data = new ConcurrentBag<T>();
-        var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, Options, cancellationToken))).ConfigureAwait(false);
+        var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, cancellationToken))).ConfigureAwait(false);
         foreach (var entry in results.SelectMany(item => item))
         {
             data.Add(entry);
@@ -57,7 +57,7 @@ public static class SeederHelper
         };
         await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
         {
-            var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, Options, ct, env))).ConfigureAwait(false);
+            var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, ct, env))).ConfigureAwait(false);
             foreach (var entry in results.SelectMany(item => item))
             {
                 data.Add(entry);
@@ -67,7 +67,7 @@ public static class SeederHelper
         return data.ToList();
     }
 
-    private static async Task<List<T>> GetDataFromFile<T>(ILogger logger, string fileName, string location, string dataPath, JsonSerializerOptions options, CancellationToken cancellationToken, string? env = null) where T : class
+    private static async Task<List<T>> GetDataFromFile<T>(ILogger logger, string fileName, string location, string dataPath, CancellationToken cancellationToken, string? env = null) where T : class
     {
         var envPath = env == null ? null : $".{env}";
         var path = Path.Combine(location, dataPath, $"{fileName}{envPath}.json");
@@ -76,7 +76,7 @@ public static class SeederHelper
             return new List<T>();
 
         var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-        var list = JsonSerializer.Deserialize<List<T>>(data, options);
+        var list = JsonSerializer.Deserialize<List<T>>(data, Options);
         return list ?? new List<T>();
     }
 }
