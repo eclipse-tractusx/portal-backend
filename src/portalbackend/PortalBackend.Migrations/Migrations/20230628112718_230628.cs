@@ -766,9 +766,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
-                    { 21, "ROLE_UPDATE_CORE_OFFER" },
-                    { 22, "ROLE_UPDATE_APP_OFFER" },
-                    { 23, "SUBSCRIPTION_URL_UPDATE" },
                     { 24, "CREDENTIAL_APPROVAL" },
                     { 25, "CREDENTIAL_REJECTED" }
                 });
