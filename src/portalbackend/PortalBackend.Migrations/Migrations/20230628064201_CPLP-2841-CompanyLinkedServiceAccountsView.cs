@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
- 
+
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -58,7 +58,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"DROP VIEW [IF EXISTS] CompanyLinkedServiceAccount");
-            
         }
     }
 }
