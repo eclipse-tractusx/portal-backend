@@ -68,7 +68,7 @@ public static class MediaTypeIdExtensions
     {
         if (!validMediaTypes.Contains(mediaTypeId))
         {
-            throw new UnsupportedMediaTypeException($"Document type not supported. File must match contentTypes :{string.Join(",", validMediaTypes.Select(x => x.MapToMediaType()))} are allowed.");
+            throw new UnsupportedMediaTypeException($"Document type not supported. File must match contentTypes :{string.Join(",", validMediaTypes.Select(x => x.MapToMediaType()))}");
         }
     }
 }
