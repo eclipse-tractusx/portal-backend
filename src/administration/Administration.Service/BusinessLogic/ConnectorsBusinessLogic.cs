@@ -82,7 +82,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                             c.Id,
                             c.TypeId,
                             c.StatusId,
-                            c.DapsRegistrationSuccessful,
                             c.HostId,
                             c.Host!.Name,
                             c.SelfDescriptionDocumentId,

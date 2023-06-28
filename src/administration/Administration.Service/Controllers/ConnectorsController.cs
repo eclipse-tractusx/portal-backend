@@ -206,9 +206,10 @@ public class ConnectorsController : ControllerBase
     /// <response code="404">Connector was not found.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     /// <response code="403">user does not belong to company of companyUserId.</response>
+    [Obsolete("this endpoint will be removed in the near future")]
     [HttpPost]
     [Route("trigger-daps/{connectorId:guid}")]
-    [Authorize(Roles = "add_connectors")]
+    [Authorize(Roles = "notexistingrole")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
