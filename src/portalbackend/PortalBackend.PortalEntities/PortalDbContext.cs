@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEnti
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -164,6 +165,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<VerifiedCredentialTypeKind> VerifiedCredentialTypeKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedUseCase> VerifiedCredentialTypeAssignedUseCases { get; set; } = default!;
+    public virtual DbSet<CompaniesLinkedServiceAccount> CompaniesLinkedServiceAccounts { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -1309,5 +1311,8 @@ public class PortalDbContext : DbContext
             entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version })
                 .IsUnique();
         });
+        modelBuilder.Entity<CompaniesLinkedServiceAccount>()
+             .ToView(nameof(CompaniesLinkedServiceAccounts))
+             .HasKey(t => t.ServiceAccountId);
     }
 }
