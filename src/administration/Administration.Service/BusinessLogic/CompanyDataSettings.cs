@@ -56,7 +56,7 @@ public static class CompanyDataSettingsExtensions
     {
         services.AddOptions<CompanyDataSettings>()
             .Bind(section)
-            .ValidateDistinctValues()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }
