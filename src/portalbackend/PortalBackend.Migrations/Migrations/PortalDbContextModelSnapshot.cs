@@ -5024,7 +5024,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasName("pk_verified_credential_external_type_use_case_detail_versions");
 
                     b.HasIndex("VerifiedCredentialExternalTypeId", "Version")
-                        .IsUnique()
                         .HasDatabaseName("ix_verified_credential_external_type_use_case_detail_versions_");
 
                     b.ToTable("verified_credential_external_type_use_case_detail_versions", "portal");
