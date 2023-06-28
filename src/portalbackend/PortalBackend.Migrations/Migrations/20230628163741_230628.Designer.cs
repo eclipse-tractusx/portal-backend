@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230628143027_230628")]
+    [Migration("20230628163741_230628")]
     partial class _230628
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
