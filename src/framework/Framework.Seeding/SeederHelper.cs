@@ -29,14 +29,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 public static class SeederHelper
 {
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        PropertyNamingPolicy = new SnakeCaseNamingPolicy(),
+        Converters = { new JsonDateTimeOffsetConverter() }
+    };
+
     public static async Task<IList<T>> GetSeedData<T>(ILogger logger, string fileName, IEnumerable<string> dataPaths, CancellationToken cancellationToken, params string[] additionalEnvironments) where T : class
     {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = new SnakeCaseNamingPolicy()
-        };
-        options.Converters.Add(new JsonDateTimeOffsetConverter());
-
         var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         logger.LogInformation("Looking for files at {Location}", location);
         if (location == null)
@@ -45,7 +45,7 @@ public static class SeederHelper
         }
 
         var data = new ConcurrentBag<T>();
-        var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, options, cancellationToken))).ConfigureAwait(false);
+        var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, Options, cancellationToken))).ConfigureAwait(false);
         foreach (var entry in results.SelectMany(item => item))
         {
             data.Add(entry);
@@ -57,7 +57,7 @@ public static class SeederHelper
         };
         await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
         {
-            var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, options, ct, env))).ConfigureAwait(false);
+            var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, Options, ct, env))).ConfigureAwait(false);
             foreach (var entry in results.SelectMany(item => item))
             {
                 data.Add(entry);
