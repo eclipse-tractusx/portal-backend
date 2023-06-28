@@ -1298,7 +1298,8 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.VerifiedCredentialExternalTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version });
+            entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version })
+                .IsUnique();
         });
     }
 }

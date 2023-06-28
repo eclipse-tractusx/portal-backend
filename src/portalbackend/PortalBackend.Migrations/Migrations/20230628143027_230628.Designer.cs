@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230628112718_230628")]
+    [Migration("20230628143027_230628")]
     partial class _230628
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -5026,6 +5026,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasName("pk_verified_credential_external_type_use_case_detail_versions");
 
                     b.HasIndex("VerifiedCredentialExternalTypeId", "Version")
+                        .IsUnique()
                         .HasDatabaseName("ix_verified_credential_external_type_use_case_detail_versions_");
 
                     b.ToTable("verified_credential_external_type_use_case_detail_versions", "portal");
