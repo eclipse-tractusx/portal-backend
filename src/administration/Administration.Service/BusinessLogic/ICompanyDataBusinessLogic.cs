@@ -36,4 +36,8 @@ public interface ICompanyDataBusinessLogic
     IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(Guid companyId, string? languageShortName);
 
     Task CreateCompanyRoleAndConsentAgreementDetailsAsync((Guid UserId, Guid CompanyId) identity, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
+
+    Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipationAsync(Guid companyId, string? language);
+
+    Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync(Guid companyId);
 }

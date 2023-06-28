@@ -32,6 +32,7 @@ public class UseCase : IBaseEntity
         Agreements = new HashSet<Agreement>();
         CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
         Apps = new HashSet<Offer>();
+        UseCaseDescriptions = new HashSet<UseCaseDescription>();
     }
 
     public UseCase(Guid id, string name, string shortname) : this()
@@ -50,7 +51,9 @@ public class UseCase : IBaseEntity
     public string Shortname { get; set; }
 
     // Navigation properties
+    public virtual VerifiedCredentialTypeAssignedUseCase? VerifiedCredentialAssignedUseCase { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
     public virtual ICollection<Offer> Apps { get; private set; }
+    public virtual ICollection<UseCaseDescription> UseCaseDescriptions { get; private set; }
 }

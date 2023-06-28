@@ -152,4 +152,49 @@ public class CompanyDataControllerTests
         A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(new(_identity.UserId, _identity.CompanyId), companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task GetUseCaseParticipation_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null))
+            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
+
+        // Act
+        var result = await _controller.GetUseCaseParticipation(null).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetUseCaseParticipation_WithLanguageExplicitlySet_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de"))
+            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
+
+        // Act
+        var result = await _controller.GetUseCaseParticipation("de").ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de")).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetSsiCertificationData_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _logic.GetSsiCertificatesAsync(_identity.CompanyId))
+            .Returns(_fixture.CreateMany<SsiCertificateData>(5));
+
+        // Act
+        var result = await _controller.GetSsiCertificationData().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetSsiCertificatesAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
 }

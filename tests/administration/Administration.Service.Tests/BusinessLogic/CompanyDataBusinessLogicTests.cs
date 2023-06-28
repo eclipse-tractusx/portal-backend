@@ -37,6 +37,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IConsentRepository _consentRepository;
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly ILanguageRepository _languageRepository;
+    private readonly ICompanySsiDetailsRepository _companyCredentialDetailsRepository;
     private readonly CompanyDataBusinessLogic _sut;
 
     public CompanyDataBusinessLogicTests()
@@ -51,11 +52,13 @@ public class CompanyDataBusinessLogicTests
         _consentRepository = A.Fake<IConsentRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
+        _companyCredentialDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>()).Returns(_companyRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanySsiDetailsRepository>()).Returns(_companyCredentialDetailsRepository);
         _sut = new CompanyDataBusinessLogic(_portalRepositories);
     }
 
@@ -636,6 +639,78 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"UseCaseId {useCaseId} is not available");
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetUseCaseParticipationAsync
+
+    [Fact]
+    public async Task GetUseCaseParticipationAsync_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var verifiedCredentials = _fixture.Build<CompanySsiExternalTypeDetailTransferData>()
+            .With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(1))
+            .CreateMany(5);
+        A.CallTo(() => _companyCredentialDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en"))
+            .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
+
+        // Act
+        var result = await _sut.GetUseCaseParticipationAsync(_identity.CompanyId, "en").ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetUseCaseParticipationAsync_WithMultipleSsiDetailData_ReturnsExpected()
+    {
+        // Arrange
+        var verifiedCredentials = _fixture.Build<CompanySsiExternalTypeDetailTransferData>()
+            .With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(2))
+            .CreateMany(4);
+        A.CallTo(() => _companyCredentialDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en"))
+            .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
+
+        // Act
+        var Act = () => _sut.GetUseCaseParticipationAsync(_identity.CompanyId, "en");
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("There should only be one pending or active ssi detail be assigned");
+    }
+
+    #endregion
+
+    #region GetSsiCertificates
+
+    [Fact]
+    public async Task GetSsiCertificates_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _companyCredentialDetailsRepository.GetSsiCertificates(_identity.CompanyId))
+            .Returns(_fixture.Build<SsiCertificateTransferData>().With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(1)).CreateMany(5).ToAsyncEnumerable());
+
+        // Act
+        var result = await _sut.GetSsiCertificatesAsync(_identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetSsiCertificates_WithMultipleSsiDetailData_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _companyCredentialDetailsRepository.GetSsiCertificates(_identity.CompanyId))
+            .Returns(_fixture.Build<SsiCertificateTransferData>().With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(2)).CreateMany(5).ToAsyncEnumerable());
+
+        // Act
+        async Task Act() => await _sut.GetSsiCertificatesAsync(_identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("There should only be one pending or active ssi detail be assigned");
     }
 
     #endregion

@@ -67,6 +67,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
+    public virtual DbSet<AuditCompanySsiDetail20230621> AuditCompanySsiDetail20230621 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20230522> AuditCompanyUser20230523 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230405> AuditConnector20230405 { get; set; } = default!;
@@ -91,6 +92,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccount> CompanyServiceAccounts { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccountType> CompanyServiceAccountTypes { get; set; } = default!;
+    public virtual DbSet<CompanySsiDetail> CompanySsiDetails { get; set; } = default!;
+    public virtual DbSet<CompanySsiDetailStatus> CompanySsiDetailStatuses { get; set; } = default!;
     public virtual DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
@@ -118,6 +121,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Invitation> Invitations { get; set; } = default!;
     public virtual DbSet<InvitationStatus> InvitationStatuses { get; set; } = default!;
     public virtual DbSet<Language> Languages { get; set; } = default!;
+    public virtual DbSet<LanguageLongName> LanguageLongNames { get; set; } = default!;
     public virtual DbSet<LicenseType> LicenseTypes { get; set; } = default!;
     public virtual DbSet<MediaType> MediaTypes { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
@@ -147,11 +151,19 @@ public class PortalDbContext : DbContext
     public virtual DbSet<TechnicalUserProfileAssignedUserRole> TechnicalUserProfileAssignedUserRoles { get; set; } = default!;
     public virtual DbSet<UniqueIdentifier> UniqueIdentifiers { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
+    public virtual DbSet<UseCaseDescription> UseCaseDescriptions { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
     public virtual DbSet<UserRoleAssignedCollection> UserRoleAssignedCollections { get; set; } = default!;
     public virtual DbSet<UserRoleCollection> UserRoleCollections { get; set; } = default!;
     public virtual DbSet<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialExternalType> VerifiedCredentialExternalTypes { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialExternalTypeUseCaseDetailVersion> VerifiedCredentialExternalTypeUseCaseDetailVersions { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialType> VerifiedCredentialTypes { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialTypeAssignedExternalType> VerifiedCredentialTypeAssignedExternalTypes { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialTypeKind> VerifiedCredentialTypeKinds { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialTypeAssignedUseCase> VerifiedCredentialTypeAssignedUseCases { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -958,6 +970,23 @@ public class PortalDbContext : DbContext
                 .IsFixedLength();
         });
 
+        modelBuilder.Entity<LanguageLongName>(entity =>
+        {
+            entity.HasKey(e => new { e.ShortName, e.LanguageShortName });
+            entity.Property(e => e.ShortName)
+                .IsFixedLength();
+            entity.Property(e => e.LanguageShortName)
+                .IsFixedLength();
+            entity.HasOne(e => e.Language)
+                .WithMany(e => e.LanguageLongNames)
+                .HasForeignKey(e => e.ShortName)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(e => e.LongNameLanguage)
+                .WithMany(e => e.LanguageLongNameLanguages)
+                .HasForeignKey(e => e.LanguageShortName)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.Property(x => x.DueDate)
@@ -1091,12 +1120,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.OfferId, e.PrivacyPolicyId });
 
             entity.HasOne(d => d.Offer)
-                .WithMany(p => p!.OfferAssignedPrivacyPolicies)
+                .WithMany(p => p.OfferAssignedPrivacyPolicies)
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.PrivacyPolicy)
-                .WithMany(p => p!.OfferAssignedPrivacyPolicies)
+                .WithMany(p => p.OfferAssignedPrivacyPolicies)
                 .HasForeignKey(d => d.PrivacyPolicyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -1136,6 +1165,140 @@ public class PortalDbContext : DbContext
                 {
                     tu.HasKey(x => new { x.TechnicalUserProfileId, x.UserRoleId });
                 });
+        });
+
+        modelBuilder.Entity<VerifiedCredentialType>()
+            .HasData(
+                Enum.GetValues(typeof(VerifiedCredentialTypeId))
+                    .Cast<VerifiedCredentialTypeId>()
+                    .Select(e => new VerifiedCredentialType(e))
+            );
+
+        modelBuilder.Entity<VerifiedCredentialTypeKind>()
+            .HasData(
+                Enum.GetValues(typeof(VerifiedCredentialTypeKindId))
+                    .Cast<VerifiedCredentialTypeKindId>()
+                    .Select(e => new VerifiedCredentialTypeKind(e))
+            );
+
+        modelBuilder.Entity<CompanySsiDetailStatus>()
+            .HasData(
+                Enum.GetValues(typeof(CompanySsiDetailStatusId))
+                    .Cast<CompanySsiDetailStatusId>()
+                    .Select(e => new CompanySsiDetailStatus(e))
+            );
+
+        modelBuilder.Entity<VerifiedCredentialExternalType>()
+            .HasData(
+                Enum.GetValues(typeof(VerifiedCredentialExternalTypeId))
+                    .Cast<VerifiedCredentialExternalTypeId>()
+                    .Select(e => new VerifiedCredentialExternalType(e))
+            );
+
+        modelBuilder.Entity<UseCaseDescription>(entity =>
+        {
+            entity.HasKey(e => new { e.UseCaseId, e.LanguageShortName });
+
+            entity.HasOne(d => d.UseCase)
+                .WithMany(p => p.UseCaseDescriptions)
+                .HasForeignKey(d => d.UseCaseId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Language)
+                .WithMany(p => p.UseCases)
+                .HasForeignKey(d => d.LanguageShortName)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<CompanySsiDetail>(entity =>
+        {
+            entity.HasOne(c => c.Company)
+                .WithMany(c => c.CompanySsiDetails)
+                .HasForeignKey(t => t.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(c => c.VerifiedCredentialType)
+                .WithMany(c => c.CompanySsiDetails)
+                .HasForeignKey(t => t.VerifiedCredentialTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(c => c.CompanySsiDetailStatus)
+                .WithMany(c => c.CompanySsiDetails)
+                .HasForeignKey(t => t.CompanySsiDetailStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(c => c.VerifiedCredentialExternalTypeUseCaseDetailVersion)
+                .WithMany(c => c.CompanySsiDetails)
+                .HasForeignKey(t => t.VerifiedCredentialExternalTypeUseCaseDetailId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(c => c.CreatorUser)
+                .WithMany(c => c.CompanySsiDetails)
+                .HasForeignKey(t => t.CreatorUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(t => t.Document)
+                .WithOne(o => o.CompanySsiDetail)
+                .HasForeignKey<CompanySsiDetail>(t => t.DocumentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<CompanySsiDetail, AuditCompanySsiDetail20230621>();
+        });
+
+        modelBuilder.Entity<VerifiedCredentialTypeAssignedUseCase>(entity =>
+        {
+            entity.HasKey(x => new { x.VerifiedCredentialTypeId, x.UseCaseId });
+
+            entity.HasOne(c => c.VerifiedCredentialType)
+                .WithOne(c => c.VerifiedCredentialTypeAssignedUseCase)
+                .HasForeignKey<VerifiedCredentialTypeAssignedUseCase>(c => c.VerifiedCredentialTypeId);
+
+            entity.HasOne(c => c.UseCase)
+                .WithOne(c => c.VerifiedCredentialAssignedUseCase)
+                .HasForeignKey<VerifiedCredentialTypeAssignedUseCase>(c => c.UseCaseId);
+        });
+
+        modelBuilder.Entity<VerifiedCredentialTypeAssignedKind>(entity =>
+        {
+            entity.HasKey(e => new { e.VerifiedCredentialTypeId, e.VerifiedCredentialTypeKindId });
+
+            entity.HasOne(d => d.VerifiedCredentialTypeKind)
+                .WithMany(x => x.VerifiedCredentialTypeAssignedKinds)
+                .HasForeignKey(d => d.VerifiedCredentialTypeKindId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.VerifiedCredentialType)
+                .WithOne(x => x.VerifiedCredentialTypeAssignedKind)
+                .HasForeignKey<VerifiedCredentialTypeAssignedKind>(d => d.VerifiedCredentialTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasIndex(x => x.VerifiedCredentialTypeId)
+                .IsUnique(false);
+        });
+
+        modelBuilder.Entity<VerifiedCredentialTypeAssignedExternalType>(entity =>
+        {
+            entity.HasKey(e => new { e.VerifiedCredentialTypeId, e.VerifiedCredentialExternalTypeId });
+
+            entity.HasOne(d => d.VerifiedCredentialType)
+                .WithOne(x => x.VerifiedCredentialTypeAssignedExternalType)
+                .HasForeignKey<VerifiedCredentialTypeAssignedExternalType>(d => d.VerifiedCredentialTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.VerifiedCredentialExternalType)
+                .WithMany(x => x.VerifiedCredentialTypeAssignedExternalTypes)
+                .HasForeignKey(d => d.VerifiedCredentialExternalTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<VerifiedCredentialExternalTypeUseCaseDetailVersion>(entity =>
+        {
+            entity.HasOne(d => d.VerifiedCredentialExternalType)
+                .WithMany(x => x.VerifiedCredentialExternalTypeUseCaseDetailVersions)
+                .HasForeignKey(d => d.VerifiedCredentialExternalTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version });
         });
     }
 }

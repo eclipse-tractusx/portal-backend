@@ -7,7 +7,6 @@ TestResults/
 .git
 .github
 .gitignore
-LICENSE
 
 # directories
 **/bin/
@@ -17,3 +16,4 @@ LICENSE
 # files
 Dockerfile*
 **/*.md
+!NOTICE.md

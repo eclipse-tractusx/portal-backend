@@ -57,6 +57,7 @@ public class BatchInsertSeeder : ICustomSeeder
     {
         _logger.LogInformation("Start BaseEntityBatch Seeder");
         await SeedTable<Language>("languages", x => x.ShortName, cancellationToken).ConfigureAwait(false);
+        await SeedTable<LanguageLongName>("language_long_names", x => new { x.ShortName, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedBaseEntity(cancellationToken);
 
         await SeedTable<AgreementAssignedCompanyRole>("agreement_assigned_company_roles", x => new { x.AgreementId, x.CompanyRoleId }, cancellationToken).ConfigureAwait(false);
@@ -93,6 +94,10 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<OfferAssignedPrivacyPolicy>("offer_assigned_privacy_policies", x => new { x.OfferId, x.PrivacyPolicyId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<AppInstanceAssignedCompanyServiceAccount>("app_instance_assigned_company_service_accounts", x => new { x.AppInstanceId, x.CompanyServiceAccountId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<TechnicalUserProfileAssignedUserRole>("technical_user_profile_assigned_user_roles", x => new { x.TechnicalUserProfileId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<VerifiedCredentialTypeAssignedKind>("verified_credential_type_assigned_kinds", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialTypeKindId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<UseCaseDescription>("use_case_descriptions", x => new { x.UseCaseId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<VerifiedCredentialTypeAssignedUseCase>("verified_credential_type_assigned_use_cases", x => new { x.VerifiedCredentialTypeId, x.UseCaseId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<VerifiedCredentialTypeAssignedExternalType>("verified_credential_type_assigned_external_types", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialExternalTypeId }, cancellationToken).ConfigureAwait(false);
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
@@ -127,6 +132,8 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<Process>("processes", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<AppInstanceSetup>("app_instance_setups", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<TechnicalUserProfile>("technical_user_profiles", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<CompanySsiDetail>("company_ssi_details", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions", cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity

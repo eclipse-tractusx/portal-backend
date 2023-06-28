@@ -156,4 +156,32 @@ public class CompanyDataController : ControllerBase
         await this.WithUserIdAndCompanyId(identity => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(identity, companyRoleConsentDetails));
         return NoContent();
     }
+
+    /// <summary>
+    /// Gets the UseCaseParticipations for the own company
+    /// </summary>
+    /// <returns>All UseCaseParticipations of the own company</returns>
+    /// <remarks>Example: Get: api/administration/companydata/useCaseParticipation</remarks>
+    /// <response code="200">Returns a collection of UseCaseParticipation.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_use_case_participation")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("useCaseParticipation")]
+    [ProducesResponseType(typeof(IEnumerable<UseCaseParticipationData>), StatusCodes.Status200OK)]
+    public Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipation([FromQuery] string? language) =>
+        this.WithCompanyId(companyId => _logic.GetUseCaseParticipationAsync(companyId, language));
+
+    /// <summary>
+    /// Gets the Ssi certifications for the own company
+    /// </summary>
+    /// <returns>All ssi certifications of the own company</returns>
+    /// <remarks>Example: Get: api/administration/companydata/certificates</remarks>
+    /// <response code="200">Returns a collection of certificates.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("certificates")]
+    [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
+    public Task<IEnumerable<SsiCertificateData>> GetSsiCertificationData() =>
+        this.WithCompanyId(companyId => _logic.GetSsiCertificatesAsync(companyId));
 }

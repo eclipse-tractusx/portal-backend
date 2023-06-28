@@ -86,7 +86,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _identity.UserId, new NotificationFilters(status, null, null, false, null)).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, _identity.UserId, new NotificationFilters(status, null, null, false, null, null)).ConfigureAwait(false);
 
         // Assert
         var expectedCount = status ?
@@ -109,7 +109,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _identity.UserId, new NotificationFilters(null, null, null, false, sorting)).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, _identity.UserId, new NotificationFilters(null, null, null, false, sorting, null)).ConfigureAwait(false);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(_notificationDetails.Count());
@@ -129,7 +129,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var results = await sut.GetNotificationsAsync(1, 3, _identity.UserId, new NotificationFilters(null, null, null, false, null)).ConfigureAwait(false);
+        var results = await sut.GetNotificationsAsync(1, 3, _identity.UserId, new NotificationFilters(null, null, null, false, null, null)).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -149,7 +149,7 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(0, 20, _identity.UserId, new NotificationFilters(null, null, null, false, null));
+        var Act = () => sut.GetNotificationsAsync(0, 20, _identity.UserId, new NotificationFilters(null, null, null, false, null, null));
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -164,10 +164,30 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(-1, 15, _identity.UserId, new NotificationFilters(null, null, null, false, null));
+        var Act = () => sut.GetNotificationsAsync(-1, 15, _identity.UserId, new NotificationFilters(null, null, null, false, null, null));
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task GetNotifications_WithFilters_CallsExpected()
+    {
+        // Arrange
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 20
+        }));
+
+        var userId = Guid.NewGuid();
+        var filter = _fixture.Create<NotificationFilters>();
+
+        // Act
+        var result = await sut.GetNotificationsAsync(0, 20, userId, filter).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(userId, filter.IsRead, filter.TypeId, filter.TopicId, filter.OnlyDueDate, filter.Sorting, filter.DoneState))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -452,11 +472,11 @@ public class NotificationBusinessLogicTests
         var readPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_readNotificationDetails.Count(), _readNotificationDetails.Skip(skip).Take(take)));
         var notificationsPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails.Skip(skip).Take(take)));
 
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, false, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, false, null, null, false, A<NotificationSorting>._, null))
             .Returns(unreadPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, true, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, true, null, null, false, A<NotificationSorting>._, null))
             .Returns(readPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, null, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, null, null, null, false, A<NotificationSorting>._, null))
             .Returns(notificationsPaging);
     }
 
