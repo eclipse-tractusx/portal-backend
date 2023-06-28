@@ -106,7 +106,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
         if (confirm)
         {
-            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(false);
+            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data.Content!, cancellationToken).ConfigureAwait(false);
             _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
                 c => { c.SelfDescriptionDocumentId = documentId; });
         }
@@ -131,7 +131,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         Guid? documentId = null;
         if (confirm)
         {
-            documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(false);
+            documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data.Content!, cancellationToken).ConfigureAwait(false);
         }
         _portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
         {
@@ -164,12 +164,12 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         return confirm;
     }
 
-    private async Task<Guid> ProcessDocument(SdFactoryResponseModelTitle title, SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    private async Task<Guid> ProcessDocument(SdFactoryResponseModelTitle title, JsonDocument content, CancellationToken cancellationToken)
     {
         using var sha512Hash = SHA512.Create();
         using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = true });
-        data.Content!.WriteTo(writer);
+        content.WriteTo(writer);
 
         await writer.FlushAsync(cancellationToken);
         var documentContent = ms.ToArray();
