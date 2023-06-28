@@ -30,12 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 public abstract class BaseOptionEnumerableValidation<TOptions> : IValidateOptions<TOptions> where TOptions : class
 {
-    protected ImmutableArray<Type> IgnoreTypes = new List<Type>
-    {
+    protected static ImmutableArray<Type> IgnoreTypes = ImmutableArray.Create(
         typeof(String),
         typeof(Boolean),
-        typeof(Decimal),
-    }.ToImmutableArray();
+        typeof(Decimal));
 
     protected readonly IConfiguration Section;
 
@@ -82,7 +80,7 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : IValidateOption
         type.GetProperties()
             .ExceptBy(IgnoreTypes, prop => prop.PropertyType)
             .Where(prop => !prop.PropertyType.IsEnum)
-            .SelectMany(property => 
+            .SelectMany(property =>
                 ValidateAttribute(configSection, property, property.Name)
                     .Concat(CheckPropertiesOfProperty(configSection, property, property.Name)));
 
