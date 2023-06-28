@@ -28,13 +28,16 @@ using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
-public abstract class BaseOptionEnumerableValidation<TOptions> : IValidateOptions<TOptions> where TOptions : class
+public abstract class SharedBaseOptionEnumerableValidation
 {
-    protected static ImmutableArray<Type> IgnoreTypes = ImmutableArray.Create(
+    protected static readonly ImmutableArray<Type> IgnoreTypes = ImmutableArray.Create(
         typeof(String),
         typeof(Boolean),
         typeof(Decimal));
+}
 
+public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptionEnumerableValidation, IValidateOptions<TOptions> where TOptions : class
+{
     protected readonly IConfiguration Section;
 
     /// <summary>
