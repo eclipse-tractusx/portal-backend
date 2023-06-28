@@ -57,6 +57,11 @@ public class ValidationTests
         public IEnumerable<DistinctValuesTypedPropery> InvalidProperty { get; set; } = null!;
     }
 
+    public class WrappedDistinctValuesTestSettings
+    {
+        public DistinctValuesTestSettings TestSettings { get; set; } = null!;
+    }
+
     [Fact]
     public void DistinctValuesValidation_Distinct_ReturnsExpected()
     {
@@ -233,6 +238,52 @@ public class ValidationTests
             r.Message == "invalid selector x => x.Foo for type Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+DistinctValuesTypedPropery");
     }
 
+    [Fact]
+    public void DistinctValuesValidation_WrappedDuplicates_ReturnsExpected()
+    {
+        // Arrange
+        const string configuration = @"
+        {
+            ""TestSettings"": {
+                ""StringProperty"": [
+                    ""foo"",
+                    ""bar"",
+                    ""foo""
+                ],
+                ""TypedProperty"": [
+                    {
+                        ""Key"": ""foo"",
+                        ""Value"": ""value1""
+                    },
+                    {
+                        ""Key"": ""bar"",
+                        ""Value"": ""value2""
+                    },
+                    {
+                        ""Key"": ""foo"",
+                        ""Value"": ""value3""
+                    }
+                ]   
+            }
+        }";
+        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+        var settings = config.Get<WrappedDistinctValuesTestSettings>();
+        var name = _fixture.Create<string>();
+
+        var sut = new DistinctValuesValidation<WrappedDistinctValuesTestSettings>(name, config);
+
+        // Act
+        var result = sut.Validate(name, settings);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
+            !r.Skipped &&
+            !r.Succeeded &&
+            r.Failed &&
+            r.FailureMessage == "DataAnnotation validation failed for members: 'StringProperty' with the error: 'foo are duplicate values for StringProperty.'.; DataAnnotation validation failed for members: 'TypedProperty' with the error: 'Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+DistinctValuesTypedPropery are duplicate values for TypedProperty.'."
+        );
+    }
+
     #endregion
 
     #region EnumEnumerableValidation
@@ -256,10 +307,9 @@ public class ValidationTests
         public IEnumerable<string> InvalidProperty { get; set; } = null!;
     }
 
-    public class InvalidNonEnumerableTestSettings
+    public class WrapperInvalidEnumEnumerableTestSettings
     {
-        [EnumEnumeration]
-        public TestEnum InvalidProperty { get; set; } = default;
+        public EnumEnumerableTestSettings EnumValue { get; set; } = null!;
     }
 
     [Fact]
@@ -352,6 +402,40 @@ public class ValidationTests
         // Assert
         result.Should().NotBeNull().And.Match<UnexpectedConditionException>(r =>
             r.Message == "InvalidProperty must be of type IEnumerable<Enum> but is IEnumerable<System.String>"
+        );
+    }
+
+    [Fact]
+    public void EnumEnumerableValidation_WithWrappedInvalidProperty_ThrowsExpected()
+    {
+        // Arrange
+        const string appSettings = @"
+        {
+            ""EnumValue"": {
+                ""EnumProperty"": [
+                    ""Foo"",
+                    ""Bar"",
+                    ""Extra""
+                ]
+            }
+        }";
+
+        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(appSettings))).Build();
+        var name = _fixture.Create<string>();
+
+        var sut = new EnumEnumerableValidation<WrapperInvalidEnumEnumerableTestSettings>(name, config);
+
+        var settings = config.Get<WrapperInvalidEnumEnumerableTestSettings>();
+
+        // Act
+        var result = sut.Validate(name, settings);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
+            !r.Skipped &&
+            !r.Succeeded &&
+            r.Failed &&
+            r.FailureMessage == "DataAnnotation validation failed for members: 'EnumProperty' with the error: 'Extra is not a valid value for Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+TestEnum in section EnumValue:EnumProperty. Valid values are: Foo, Bar, Baz'."
         );
     }
 

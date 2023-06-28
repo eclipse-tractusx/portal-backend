@@ -78,54 +78,29 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : IValidateOption
                 : ValidateOptionsResult.Success;
     }
 
-    private IEnumerable<ValidationResult> GetValidationErrors(Type type, IConfiguration configSection)
-    {
-        var validationResults = new List<ValidationResult>();
-        foreach (var property in type
-                     .GetProperties()
-                     .Where(prop =>
-                         !IgnoreTypes.Contains(prop.PropertyType) &&
-                         !prop.PropertyType.IsEnum))
-        {
-            var propertyName = property.Name;
-            validationResults.AddRange(ValidateAttribute(configSection, property, propertyName));
-            validationResults.AddRange(CheckPropertiesOfProperty(configSection, property, propertyName));
-        }
-
-        foreach (var validationResult in validationResults)
-        {
-            yield return validationResult;
-        }
-    }
+    private IEnumerable<ValidationResult> GetValidationErrors(Type type, IConfiguration configSection) =>
+        type.GetProperties()
+            .ExceptBy(IgnoreTypes, prop => prop.PropertyType)
+            .Where(prop => !prop.PropertyType.IsEnum)
+            .SelectMany(property => 
+                ValidateAttribute(configSection, property, property.Name)
+                    .Concat(CheckPropertiesOfProperty(configSection, property, property.Name)));
 
     protected abstract IEnumerable<ValidationResult> ValidateAttribute(IConfiguration config, PropertyInfo property, string propertyName);
 
-    private IEnumerable<ValidationResult> CheckPropertiesOfProperty(IConfiguration configSection, PropertyInfo property, string propertyName)
-    {
-        var validationResults = new List<ValidationResult>();
-        if (property.PropertyType.IsClass)
+    private IEnumerable<ValidationResult> CheckPropertiesOfProperty(IConfiguration configSection, PropertyInfo property, string propertyName) =>
+        property.PropertyType switch
         {
-            validationResults.AddRange(GetValidationErrors(property.PropertyType, configSection.GetSection(propertyName)));
-        }
-        else if (property.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
-        {
-            var propertyType = property.PropertyType.GetGenericArguments().FirstOrDefault();
-            if (propertyType == null || IgnoreTypes.Contains(propertyType) || propertyType.IsEnum)
-                yield break;
-
-            // Validate each item of the enumerable
-            var listValues = (IEnumerable)configSection.GetSection(propertyName).Get(property.PropertyType);
-            if (listValues != null)
-            {
-                var errors = Enumerable.Range(0, listValues.ToIEnumerable().Count())
-                    .SelectMany(i => GetValidationErrors(propertyType, configSection.GetSection($"{propertyName}:{i}")));
-                validationResults.AddRange(errors);
-            }
-        }
-
-        foreach (var validationResult in validationResults)
-        {
-            yield return validationResult;
-        }
-    }
+            var x when x.IsClass => GetValidationErrors(property.PropertyType, configSection.GetSection(propertyName)),
+            var x when x.GetInterfaces().Contains(typeof(IEnumerable)) &&
+                       x.GetGenericArguments()
+                           .Where(type => !type.IsEnum)
+                           .Except(IgnoreTypes)
+                           .IfAny(genericTypes => genericTypes.First(), out var genericType) =>
+                (configSection.GetSection(propertyName).Get(property.PropertyType) as IEnumerable)
+                ?.ToIEnumerable()
+                .Select((_, i) => configSection.GetSection($"{propertyName}:{i}"))
+                .SelectMany(section => GetValidationErrors(genericType!, section)),
+            _ => null
+        } ?? Enumerable.Empty<ValidationResult>();
 }
