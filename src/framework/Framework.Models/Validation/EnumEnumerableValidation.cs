@@ -22,7 +22,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
@@ -30,76 +32,45 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 /// Implementation of <see cref="IValidateOptions{TOptions}"/> that uses DataAnnotation's <see cref="Validator"/> for validation.
 /// </summary>
 /// <typeparam name="TOptions">The instance being validated.</typeparam>
-public class EnumEnumerableValidation<TOptions> : IValidateOptions<TOptions> where TOptions : class
+public class EnumEnumerableValidation<TOptions> : BaseOptionEnumerableValidation<TOptions> where TOptions : class
 {
-    private readonly IConfiguration _section;
-
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="name">The name of the option.</param>
     /// <param name="section"></param>
     public EnumEnumerableValidation(string name, IConfiguration section)
+        : base(name, section)
     {
-        Name = name;
-        _section = section;
     }
 
-    /// <summary>
-    /// The options name.
-    /// </summary>
-    public string Name { get; }
-
-    /// <summary>
-    /// Validates a specific named options instance (or all when <paramref name="name"/> is null).
-    /// </summary>
-    /// <param name="name">The name of the options instance being validated.</param>
-    /// <param name="options">The options instance.</param>
-    /// <returns>The <see cref="ValidateOptionsResult"/> result.</returns>
-    public ValidateOptionsResult Validate(string? name, TOptions options)
+    protected override IEnumerable<ValidationResult> ValidateAttribute(IConfiguration config, PropertyInfo property, string propertyName)
     {
-        // Null name is used to configure all named options.
-        if (name == null || name != Name)
+        if (!Attribute.IsDefined(property, typeof(EnumEnumerationAttribute)))
+            yield break;
+
+        var section = config.GetSection(propertyName);
+        var configuredValues = section.Get<IEnumerable<string>>();
+        if (!property.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
         {
-            return ValidateOptionsResult.Skip;
+            throw new UnexpectedConditionException(
+                $"Attribute EnumEnumeration is applied to property {propertyName} which is not an IEnumerable type ({property.PropertyType})");
         }
 
-        var validationErrors = GetValidationErrors(options);
-
-        return validationErrors.IfAny(
-            errors => errors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'."),
-            out var messages)
-                ? ValidateOptionsResult.Fail(messages)
-                : ValidateOptionsResult.Success;
-    }
-
-    private IEnumerable<ValidationResult> GetValidationErrors(TOptions options)
-    {
-        foreach (var propertyInfo in options.GetType()
-                        .GetProperties()
-                        .Where(prop => Attribute.IsDefined(prop, typeof(EnumEnumerationAttribute))))
+        var propertyType = property.PropertyType.GetGenericArguments().FirstOrDefault();
+        if (propertyType is not { IsEnum: true })
         {
-            var configuredValues = new List<string>();
-            _section.GetSection(propertyInfo.Name).Bind(configuredValues);
+            throw new UnexpectedConditionException(
+                $"{propertyName} must be of type IEnumerable<Enum> but is IEnumerable<{propertyType}>");
+        }
 
-            if (!propertyInfo.PropertyType.GetInterfaces().Contains(typeof(System.Collections.IEnumerable)))
-            {
-                throw new UnexpectedConditionException($"Attribute EnumEnumeration is applied to property {propertyInfo.Name} which is not an IEnumerable type ({propertyInfo.PropertyType})");
-            }
-
-            var propertyType = propertyInfo.PropertyType.GetGenericArguments().FirstOrDefault();
-            if (propertyType is not { IsEnum: true })
-            {
-                throw new UnexpectedConditionException($"{propertyInfo.Name} must be of type IEnumerable<Enum> but is IEnumerable<{propertyType}>");
-            }
-
-            var notMatchingValues = configuredValues.Except(propertyType.GetEnumNames());
-            if (notMatchingValues.IfAny(
-                values => $"{string.Join(",", values)} is not a valid value for {propertyType}. Valid values are: {string.Join(", ", propertyType.GetEnumNames())}",
+        var notMatchingValues = configuredValues.Except(propertyType.GetEnumNames());
+        if (notMatchingValues.IfAny(
+                values =>
+                    $"{string.Join(",", values)} is not a valid value for {propertyType} in section {section.Path}. Valid values are: {string.Join(", ", propertyType.GetEnumNames())}",
                 out var message))
-            {
-                yield return new(message, new[] { propertyInfo.Name });
-            }
+        {
+            yield return new ValidationResult(message, new[] { propertyName });
         }
     }
 }

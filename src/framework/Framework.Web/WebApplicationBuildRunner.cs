@@ -47,10 +47,12 @@ public static class WebApplicationBuildRunner
         }
         catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
         {
+            LoggingExtensions.EnsureInitialized();
             Log.Fatal(ex, "Unhandled exception");
         }
         finally
         {
+            LoggingExtensions.EnsureInitialized();
             Log.Information("Server Shutting down");
             Log.CloseAndFlush();
         }
