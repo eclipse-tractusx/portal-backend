@@ -158,11 +158,8 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, (Guid UserId, Guid CompanyId) identity, IFormFile document, CancellationToken cancellationToken)
     {
         var appLeadImageContentTypes = new[] { MediaTypeId.JPEG, MediaTypeId.PNG };
-        var documentContentType = MediaTypeIdExtensions.ParseMediaTypeId(document.ContentType);
-        if (!appLeadImageContentTypes.Contains(documentContentType))
-        {
-            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", appLeadImageContentTypes)} are allowed.");
-        }
+        var documentContentType = document.ContentType.ParseMediaTypeId();
+        documentContentType.CheckDocumentContent(appLeadImageContentTypes);
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, identity.CompanyId, OfferTypeId.APP).ConfigureAwait(false);

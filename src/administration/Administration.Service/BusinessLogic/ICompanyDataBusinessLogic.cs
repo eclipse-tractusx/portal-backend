@@ -42,6 +42,6 @@ public interface ICompanyDataBusinessLogic
 
     Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync(Guid companyId);
 
-    Task CreateUseCaseParticipation((Guid UserId, Guid CompanyId) identity, UseCaseParticipationCreationData data, CancellationToken cts);
-    Task CreateSsiCertificate((Guid UserId, Guid CompanyId) identity, SsiCertificateCreationData data, CancellationToken cts);
+    Task CreateUseCaseParticipation((Guid UserId, Guid CompanyId) identity, UseCaseParticipationCreationData data, CancellationToken cancellationToken);
+    Task CreateSsiCertificate((Guid UserId, Guid CompanyId) identity, SsiCertificateCreationData data, CancellationToken cancellationToken);
 }

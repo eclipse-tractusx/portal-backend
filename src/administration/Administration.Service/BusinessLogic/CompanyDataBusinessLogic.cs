@@ -245,7 +245,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             .ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task CreateUseCaseParticipation((Guid UserId, Guid CompanyId) identity, UseCaseParticipationCreationData data, CancellationToken cts)
+    public async Task CreateUseCaseParticipation((Guid UserId, Guid CompanyId) identity, UseCaseParticipationCreationData data, CancellationToken cancellationToken)
     {
         var (verifiedCredentialExternalTypeDetailId, credentialTypeId, document) = data;
         var documentContentType = document.ContentType.ParseMediaTypeId();
@@ -257,11 +257,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
         }
 
-        await HandleSsiCreationAsync(identity, credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, companyCredentialDetailsRepository, cts).ConfigureAwait(false);
+        await HandleSsiCreationAsync(identity, credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType, companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task CreateSsiCertificate((Guid UserId, Guid CompanyId) identity, SsiCertificateCreationData data, CancellationToken cts)
+    public async Task CreateSsiCertificate((Guid UserId, Guid CompanyId) identity, SsiCertificateCreationData data, CancellationToken cancellationToken)
     {
         var (credentialTypeId, document) = data;
         var documentContentType = document.ContentType.ParseMediaTypeId();
@@ -274,7 +274,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException($"{credentialTypeId} is not assigned to a certificate");
         }
 
-        await HandleSsiCreationAsync(identity, credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, companyCredentialDetailsRepository, cts).ConfigureAwait(false);
+        await HandleSsiCreationAsync(identity, credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, documentContentType, companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task HandleSsiCreationAsync(
@@ -283,17 +283,18 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         VerifiedCredentialTypeKindId kindId,
         Guid? verifiedCredentialExternalTypeDetailId,
         IFormFile document,
+        MediaTypeId mediaTypeId,
         ICompanySsiDetailsRepository companyCredentialDetailsRepository,
-        CancellationToken cts)
+        CancellationToken cancellationToken)
     {
         if (await companyCredentialDetailsRepository.CheckSsiDetailsExistsForCompany(identity.CompanyId, credentialTypeId, kindId, verifiedCredentialExternalTypeDetailId).ConfigureAwait(false))
         {
             throw new ControllerArgumentException("Credential request already existing");
         }
 
-        var (documentContent, hash) = await document.GetContentAndHash(cts).ConfigureAwait(false);
+        var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
         var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
-            hash, document.ContentType.ParseMediaTypeId(), DocumentTypeId.PRESENTATION, x =>
+            hash, mediaTypeId, DocumentTypeId.PRESENTATION, x =>
             {
                 x.CompanyUserId = identity.UserId;
                 x.DocumentStatusId = DocumentStatusId.PENDING;

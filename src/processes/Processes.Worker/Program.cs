@@ -70,17 +70,17 @@ try
         .Build();
     Log.Information("Building worker completed");
 
-    var cts = new CancellationTokenSource();
+    var cancellationToken = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>
     {
         Log.Information("Canceling...");
-        cts.Cancel();
+        cancellationToken.Cancel();
         e.Cancel = true;
     };
 
     Log.Information("Start processing");
     var workerInstance = host.Services.GetRequiredService<ProcessExecutionService>();
-    await workerInstance.ExecuteAsync(cts.Token).ConfigureAwait(false);
+    await workerInstance.ExecuteAsync(cancellationToken.Token).ConfigureAwait(false);
     Log.Information("Execution finished shutting down");
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))

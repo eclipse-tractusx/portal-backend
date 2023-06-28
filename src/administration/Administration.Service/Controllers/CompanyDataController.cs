@@ -190,7 +190,7 @@ public class CompanyDataController : ControllerBase
     /// Creates the useCaseParticipation
     /// </summary>
     /// <param name="data">The type and document</param>
-    /// <param name="cts">Cancellation Token</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>The id of the created use case participation</returns>
     /// <remarks>Example: POST: api/administration/companydata/useCaseParticipation</remarks>
     /// <response code="204">Successfully created the use case particiation.</response>
@@ -201,9 +201,9 @@ public class CompanyDataController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("useCaseParticipation")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<NoContentResult> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cts)
+    public async Task<NoContentResult> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken)
     {
-        await this.WithUserIdAndCompanyId(identity => _logic.CreateUseCaseParticipation(identity, data, cts)).ConfigureAwait(false);
+        await this.WithUserIdAndCompanyId(identity => _logic.CreateUseCaseParticipation(identity, data, cancellationToken)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -211,7 +211,7 @@ public class CompanyDataController : ControllerBase
     /// Creates the ssiCertificate
     /// </summary>
     /// <param name="data">The type and document</param>
-    /// <param name="cts">Cancellation Token</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>The id of the created use case participation</returns>
     /// <remarks>Example: POST: api/administration/companydata/ssiCertificate</remarks>
     /// <response code="204">Successfully created the ssi certificate.</response>
@@ -222,9 +222,9 @@ public class CompanyDataController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificates")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cts)
+    public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)
     {
-        await this.WithUserIdAndCompanyId(identity => _logic.CreateSsiCertificate(identity, data, cts)).ConfigureAwait(false);
+        await this.WithUserIdAndCompanyId(identity => _logic.CreateSsiCertificate(identity, data, cancellationToken)).ConfigureAwait(false);
         return NoContent();
     }
 }
