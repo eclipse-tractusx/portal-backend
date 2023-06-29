@@ -2,13 +2,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 public class SeederSettings
 {
+    public SeederSettings()
+    {
+        TestDataEnvironments = null!;
+        DataPaths = null!;
+    }
+
     /// <summary>
     /// Configurable paths where to check for the seeding data
     /// </summary>
-    public List<string> DataPaths { get; set; } = new();
+    public IEnumerable<string> DataPaths { get; set; }
 
     /// <summary>
     /// Configurable environments for the testdata
     /// </summary>
-    public List<string> TestDataEnvironments { get; set; } = new();
+    public IEnumerable<string> TestDataEnvironments { get; set; }
 }
