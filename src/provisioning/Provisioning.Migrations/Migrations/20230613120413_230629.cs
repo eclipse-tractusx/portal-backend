@@ -24,10 +24,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
-    public partial class CPLP2553AlignUsers : Migration
+    public partial class _230629 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE FROM provisioning.user_password_resets;");
+
             migrationBuilder.DropPrimaryKey(
                 name: "pk_user_password_resets",
                 schema: "provisioning",
@@ -55,6 +57,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE FROM provisioning.user_password_resets;");
+
             migrationBuilder.DropPrimaryKey(
                 name: "pk_user_password_resets",
                 schema: "provisioning",
