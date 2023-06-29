@@ -20,7 +20,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
@@ -31,7 +30,6 @@ internal class CustomSeederRunner
 {
     private readonly ICustomSeeder[] _seeders;
     private readonly ILogger<CustomSeederRunner> _logger;
-    private readonly SeederSettings _settings;
 
     /// <summary>
     /// Creates a new instance of <see cref="CustomSeederRunner"/>
@@ -39,9 +37,8 @@ internal class CustomSeederRunner
     /// </summary>
     /// <param name="serviceProvider">The service provider with the CustomSeeder registrations</param>
     /// <param name="logger">Logger</param>
-    /// <param name="options">The options</param>
-    public CustomSeederRunner(IServiceProvider serviceProvider, ILogger<CustomSeederRunner> logger, IOptions<SeederSettings> options) =>
-        (_seeders, _logger, _settings) = (serviceProvider.GetServices<ICustomSeeder>().ToArray(), logger, options.Value);
+    public CustomSeederRunner(IServiceProvider serviceProvider, ILogger<CustomSeederRunner> logger) =>
+        (_seeders, _logger) = (serviceProvider.GetServices<ICustomSeeder>().ToArray(), logger);
 
     /// <summary>
     /// Executes all registered seeders in the order they have defined
@@ -50,12 +47,6 @@ internal class CustomSeederRunner
     public async Task RunSeedersAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Found {SeederCount} custom seeder", _seeders.Length);
-        if (!_settings.DataPaths.Any())
-        {
-            _logger.LogInformation("There a no data paths configured, therefore no seeding will be executed");
-            return;
-        }
-
         foreach (var seeder in _seeders.OrderBy(x => x.Order))
         {
             await seeder.ExecuteAsync(cancellationToken);
