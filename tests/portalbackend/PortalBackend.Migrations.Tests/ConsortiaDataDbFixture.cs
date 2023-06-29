@@ -89,10 +89,10 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
         var context = new PortalDbContext(optionsBuilder.Options);
         await context.Database.MigrateAsync();
 
-        var seederOptions = Options.Create(new SeederSettings 
+        var seederOptions = Options.Create(new SeederSettings
         {
-            TestDataEnvironments = new [] { "consortia" },
-            DataPaths = new [] { "Seeder/Data" } 
+            TestDataEnvironments = new[] { "consortia" },
+            DataPaths = new[] { "Seeder/Data" }
         });
         var insertSeeder = new BatchInsertSeeder(context,
             LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchInsertSeeder>(),
