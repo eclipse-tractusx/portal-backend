@@ -31,8 +31,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
     [DbContext(typeof(ProvisioningDbContext))]
-    [Migration("20230613120413_CPLP-2553-AlignUsers")]
-    partial class CPLP2553AlignUsers
+    [Migration("20230613120413_230629")]
+    partial class _230629
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
