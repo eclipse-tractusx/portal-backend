@@ -29,7 +29,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 public static class SeederHelper
 {
-    public static async Task<IList<T>> GetSeedData<T>(ILogger logger, string fileName, CancellationToken cancellationToken, params string[] additionalEnvironments) where T : class
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        PropertyNamingPolicy = new SnakeCaseNamingPolicy(),
+        Converters = { new JsonDateTimeOffsetConverter() }
+    };
+
+    public static async Task<IList<T>> GetSeedData<T>(ILogger logger, string fileName, IEnumerable<string> dataPaths, CancellationToken cancellationToken, params string[] additionalEnvironments) where T : class
     {
         var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         logger.LogInformation("Looking for files at {Location}", location);
@@ -39,8 +45,8 @@ public static class SeederHelper
         }
 
         var data = new ConcurrentBag<T>();
-        foreach (var entry in await GetDataFromFile<T>(logger, fileName, location, cancellationToken)
-                     .ConfigureAwait(false))
+        var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, cancellationToken))).ConfigureAwait(false);
+        foreach (var entry in results.SelectMany(item => item))
         {
             data.Add(entry);
         }
@@ -51,7 +57,8 @@ public static class SeederHelper
         };
         await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
         {
-            foreach (var entry in await GetDataFromFile<T>(logger, fileName, location, ct, env).ConfigureAwait(false))
+            var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, ct, env))).ConfigureAwait(false);
+            foreach (var entry in results.SelectMany(item => item))
             {
                 data.Add(entry);
             }
@@ -60,22 +67,16 @@ public static class SeederHelper
         return data.ToList();
     }
 
-    private static async Task<List<T>> GetDataFromFile<T>(ILogger logger, string fileName, string location, CancellationToken cancellationToken, string? env = null) where T : class
+    private static async Task<List<T>> GetDataFromFile<T>(ILogger logger, string fileName, string location, string dataPath, CancellationToken cancellationToken, string? env = null) where T : class
     {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = new SnakeCaseNamingPolicy()
-        };
-        options.Converters.Add(new JsonDateTimeOffsetConverter());
-
         var envPath = env == null ? null : $".{env}";
-        var path = Path.Combine(location, @"Seeder/Data", $"{fileName}{envPath}.json");
+        var path = Path.Combine(location, dataPath, $"{fileName}{envPath}.json");
         logger.LogInformation("Looking for file {Path}", path);
         if (!File.Exists(path))
             return new List<T>();
 
         var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-        var list = JsonSerializer.Deserialize<List<T>>(data, options);
+        var list = JsonSerializer.Deserialize<List<T>>(data, Options);
         return list ?? new List<T>();
     }
 }

@@ -52,12 +52,11 @@ public static class ConnectorsSettingsExtensions
 {
     public static IServiceCollection ConfigureConnectorsSettings(
         this IServiceCollection services,
-        IConfigurationSection section
-        )
+        IConfigurationSection section)
     {
         services.AddOptions<ConnectorsSettings>()
             .Bind(section)
-            .ValidateDistinctValues()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }

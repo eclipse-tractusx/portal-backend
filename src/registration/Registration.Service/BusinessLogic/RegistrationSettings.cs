@@ -84,7 +84,7 @@ public static class RegistrationSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }

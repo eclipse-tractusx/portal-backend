@@ -55,6 +55,12 @@ public class BatchInsertSeeder : ICustomSeeder
     /// <inheritdoc />
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        if (!_settings.DataPaths.Any())
+        {
+            _logger.LogInformation("There a no data paths configured, therefore the {SeederName} will be skipped", nameof(BatchUpdateSeeder));
+            return;
+        }
+
         _logger.LogInformation("Start BaseEntityBatch Seeder");
         await SeedTable<Language>("languages", x => x.ShortName, cancellationToken).ConfigureAwait(false);
         await SeedTable<LanguageLongName>("language_long_names", x => new { x.ShortName, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
@@ -144,7 +150,7 @@ public class BatchInsertSeeder : ICustomSeeder
     private async Task SeedTable<T>(string fileName, Func<T, object> keySelector, CancellationToken cancellationToken) where T : class
     {
         _logger.LogInformation("Start seeding {Filename}", fileName);
-        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, _settings.DataPaths, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
         _logger.LogInformation("Found {ElementCount} data", data.Count);
         if (data.Any())
         {

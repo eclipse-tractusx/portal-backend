@@ -49,9 +49,9 @@ public static class SettingValidation
     /// <param name="optionsBuilder">The options builder to add the services to.</param>
     /// <param name="section">The current configuration section</param>
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
-    public static OptionsBuilder<TOptions> ValidateDistinctValues<TOptions>(this OptionsBuilder<TOptions> optionsBuilder) where TOptions : class
+    public static OptionsBuilder<TOptions> ValidateDistinctValues<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section) where TOptions : class
     {
-        optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name));
+        optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name, section));
         return optionsBuilder;
     }
 }
