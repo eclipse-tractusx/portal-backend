@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 public static class HttpAsyncResponseMessageExtension
 {
-    public static async ValueTask<HttpResponseMessage> CatchingIntoServiceExceptionFor(this Task<HttpResponseMessage> response, string systemName, RecoverOptions recoverOptions = RecoverOptions.None, Func<HttpResponseMessage, ValueTask<(bool Ignore, string? Message)>>? handleErrorResponse = null)
+    public static async ValueTask<HttpResponseMessage> CatchingIntoServiceExceptionFor(this Task<HttpResponseMessage> response, string systemName, RecoverOptions recoverOptions = RecoverOptions.None, Func<HttpResponseMessage, ValueTask<(bool Ignore, string? Message, bool? Recoverable)>>? handleErrorResponse = null)
     {
         try
         {
@@ -34,12 +34,13 @@ public static class HttpAsyncResponseMessageExtension
                 return message;
             }
 
+            bool? recoverable = null;
             string? errorMessage;
             try
             {
-                (var ignore, errorMessage) = (int)message.StatusCode < 500 && handleErrorResponse != null
+                (var ignore, errorMessage, recoverable) = (int)message.StatusCode < 500 && handleErrorResponse != null
                     ? await handleErrorResponse(message).ConfigureAwait(false)
-                    : (false, null);
+                    : (false, null, null);
                 if (ignore)
                     return message;
             }
@@ -53,7 +54,7 @@ public static class HttpAsyncResponseMessageExtension
                     ? $"call to external system {systemName} failed with statuscode {(int)message.StatusCode}"
                     : $"call to external system {systemName} failed with statuscode {(int)message.StatusCode} - Message: {errorMessage}",
                 message.StatusCode,
-                (recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
+                (recoverable != null && recoverable.Value) || (recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
         }
         catch (HttpRequestException e)
         {

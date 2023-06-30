@@ -33,12 +33,11 @@ public class BpdmService : IBpdmService
 {
     private readonly ITokenService _tokenService;
     private readonly BpdmServiceSettings _settings;
-    private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
-    static BpdmService()
+    private static readonly JsonSerializerOptions Options = new()
     {
-        _options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
-    }
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter(allowIntegerValues: false) }
+    };
 
     public BpdmService(ITokenService tokenService, IOptions<BpdmServiceSettings> options)
     {
@@ -122,7 +121,7 @@ public class BpdmService : IBpdmService
             )
         };
 
-        await httpClient.PutAsJsonAsync("/api/catena/input/legal-entities", requestData, _options, cancellationToken)
+        await httpClient.PutAsJsonAsync("/api/catena/input/legal-entities", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }
@@ -130,18 +129,29 @@ public class BpdmService : IBpdmService
     public async Task<BpdmLegalEntityData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
+     
+        async ValueTask<(bool Ignore, string? Message, bool? Recoverable)> CreateErrorMessage(HttpResponseMessage errorResponse)
+        {
+            var errorMessages = (await errorResponse.Content
+                .ReadFromJsonAsync<FetchInputLegalEntityErrorResponse>(Options, cancellationToken)
+                .ConfigureAwait(false))?.Errors.Where(x => x.ErrorCode == "SharingProcessError").Select(x => x.Message);
+            return errorMessages == null || !errorMessages.Any()
+                ? (false, null, true)
+                : (false, string.Join(",", errorMessages), null);
+        }
+
         var result = await httpClient.GetAsync($"/api/catena/input/legal-entities/{externalId}", cancellationToken)
-            .CatchingIntoServiceExceptionFor("bpdm-get-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+            .CatchingIntoServiceExceptionFor("bpdm-get-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
         await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmLegalEntityData>(
                 responseStream,
-                _options,
+                Options,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
             if (legalEntityResponse?.ExternalId == null)
             {
-                throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
+                throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
             }
             return legalEntityResponse;
         }
