@@ -53,7 +53,7 @@ public static class InvitationSettingsExtension
         services.AddOptions<InvitationSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
-            .ValidateDistinctValues()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }

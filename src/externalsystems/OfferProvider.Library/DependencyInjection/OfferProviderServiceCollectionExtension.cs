@@ -32,9 +32,10 @@ public static class OfferProviderServiceCollectionExtension
 {
     public static IServiceCollection AddOfferProviderService(this IServiceCollection services, IConfiguration configuration)
     {
+        var configSection = configuration.GetSection("OfferProvider");
         services.AddOptions<OfferProviderSettings>()
-            .Bind(configuration.GetSection("OfferProvider"))
-            .ValidateDistinctValues()
+            .Bind(configSection)
+            .ValidateDistinctValues(configSection)
             .ValidateOnStart();
         services.AddTransient<LoggingHandler<OfferProviderService>>();
 

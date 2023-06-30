@@ -98,7 +98,7 @@ public static class TemplateSettingsExtention
         services.AddOptions<TemplateSettings>()
             .Bind(section)
             .Validate(x => x.Validate())
-            .ValidateDistinctValues()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }

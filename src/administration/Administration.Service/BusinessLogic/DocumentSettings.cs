@@ -49,7 +49,7 @@ public static class DocumentSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }

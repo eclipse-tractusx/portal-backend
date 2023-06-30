@@ -57,23 +57,42 @@ public class ValidationTests
         public IEnumerable<DistinctValuesTypedPropery> InvalidProperty { get; set; } = null!;
     }
 
+    public class WrappedDistinctValuesTestSettings
+    {
+        public DistinctValuesTestSettings TestSettings { get; set; } = null!;
+    }
+
     [Fact]
     public void DistinctValuesValidation_Distinct_ReturnsExpected()
     {
         // Arrange
-        var settings = new DistinctValuesTestSettings()
+        const string configuration = @"
         {
-            StringProperty = new[] { "foo", "bar", "baz" },
-            TypedProperty = new DistinctValuesTypedPropery[] {
-                new () { Key = "foo", Value = "value1"},
-                new () { Key = "bar", Value = "value2"},
-                new () { Key = "baz", Value = "value3"}
-            }
-        };
-
+            ""StringProperty"": [
+                ""foo"",
+                ""bar"",
+                ""baz""
+            ],
+            ""TypedProperty"": [
+                {
+                    ""Key"": ""foo"",
+                    ""Value"": ""value1""
+                },
+                {
+                    ""Key"": ""bar"",
+                    ""Value"": ""value2""
+                },
+                {
+                    ""Key"": ""baz"",
+                    ""Value"": ""value3""
+                }
+            ]
+        }";
+        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+        var settings = config.Get<DistinctValuesTestSettings>();
         var name = _fixture.Create<string>();
 
-        var sut = new DistinctValuesValidation<DistinctValuesTestSettings>(name);
+        var sut = new DistinctValuesValidation<DistinctValuesTestSettings>(name, config);
 
         // Act
         var result = sut.Validate(name, settings);
@@ -91,10 +110,16 @@ public class ValidationTests
     public void DistinctValuesValidation_Missing_ReturnsExpected()
     {
         // Arrange
+        const string configuration = @"
+        {
+            ""StringProperty"": [],
+            ""TypedProperty"": []
+        }";
+        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
         var settings = new DistinctValuesTestSettings();
         var name = _fixture.Create<string>();
 
-        var sut = new DistinctValuesValidation<DistinctValuesTestSettings>(name);
+        var sut = new DistinctValuesValidation<DistinctValuesTestSettings>(name, config);
 
         // Act
         var result = sut.Validate(name, settings);
@@ -112,18 +137,33 @@ public class ValidationTests
     public void DistinctValuesValidation_Duplicates_ReturnsExpected()
     {
         // Arrange
-        var settings = new DistinctValuesTestSettings()
+        const string configuration = @"
         {
-            StringProperty = new[] { "foo", "bar", "foo" },
-            TypedProperty = new DistinctValuesTypedPropery[] {
-                new () { Key = "foo", Value = "value1"},
-                new () { Key = "bar", Value = "value2"},
-                new () { Key = "foo", Value = "value3"}
-            }
-        };
+            ""StringProperty"": [
+                ""foo"",
+                ""bar"",
+                ""foo""
+            ],
+            ""TypedProperty"": [
+                {
+                    ""Key"": ""foo"",
+                    ""Value"": ""value1""
+                },
+                {
+                    ""Key"": ""bar"",
+                    ""Value"": ""value2""
+                },
+                {
+                    ""Key"": ""foo"",
+                    ""Value"": ""value3""
+                }
+            ]
+        }";
+        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+        var settings = config.Get<DistinctValuesTestSettings>();
         var name = _fixture.Create<string>();
 
-        var sut = new DistinctValuesValidation<DistinctValuesTestSettings>(name);
+        var sut = new DistinctValuesValidation<DistinctValuesTestSettings>(name, config);
 
         // Act
         var result = sut.Validate(name, settings);
@@ -141,17 +181,28 @@ public class ValidationTests
     public void DistinctValuesValidation_InvalidProperty_ThrowsExpected()
     {
         // Arrange
-        var settings = new InvalidDistinctValuesTestSettings()
+        const string configuration = @"
         {
-            InvalidProperty = new DistinctValuesTypedPropery[] {
-                new () { Key = "foo", Value = "value1"},
-                new () { Key = "bar", Value = "value2"},
-                new () { Key = "foo", Value = "value3"}
-            }
-        };
+            ""InvalidProperty"": [
+                {
+                    ""Key"": ""foo"",
+                    ""Value"": ""value1""
+                },
+                {
+                    ""Key"": ""bar"",
+                    ""Value"": ""value2""
+                },
+                {
+                    ""Key"": ""foo"",
+                    ""Value"": ""value3""
+                }
+            ]
+        }";
+        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+        var settings = config.Get<InvalidDistinctValuesTestSettings>();
         var name = _fixture.Create<string>();
 
-        var sut = new DistinctValuesValidation<InvalidDistinctValuesTestSettings>(name);
+        var sut = new DistinctValuesValidation<InvalidDistinctValuesTestSettings>(name, config);
 
         var Act = () => sut.Validate(name, settings);
 
@@ -167,10 +218,15 @@ public class ValidationTests
     public void DistinctValuesValidation_EmptyInvalidProperty_ThrowsExpected()
     {
         // Arrange
+        const string configuration = @"
+        {
+            ""InvalidProperty"": []
+        }";
+        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
         var settings = new InvalidDistinctValuesTestSettings();
         var name = _fixture.Create<string>();
 
-        var sut = new DistinctValuesValidation<InvalidDistinctValuesTestSettings>(name);
+        var sut = new DistinctValuesValidation<InvalidDistinctValuesTestSettings>(name, config);
 
         var Act = () => sut.Validate(name, settings);
 
@@ -180,6 +236,52 @@ public class ValidationTests
         // Assert
         result.Should().NotBeNull().And.Match<UnexpectedConditionException>(r =>
             r.Message == "invalid selector x => x.Foo for type Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+DistinctValuesTypedPropery");
+    }
+
+    [Fact]
+    public void DistinctValuesValidation_WrappedDuplicates_ReturnsExpected()
+    {
+        // Arrange
+        const string configuration = @"
+        {
+            ""TestSettings"": {
+                ""StringProperty"": [
+                    ""foo"",
+                    ""bar"",
+                    ""foo""
+                ],
+                ""TypedProperty"": [
+                    {
+                        ""Key"": ""foo"",
+                        ""Value"": ""value1""
+                    },
+                    {
+                        ""Key"": ""bar"",
+                        ""Value"": ""value2""
+                    },
+                    {
+                        ""Key"": ""foo"",
+                        ""Value"": ""value3""
+                    }
+                ]   
+            }
+        }";
+        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+        var settings = config.Get<WrappedDistinctValuesTestSettings>();
+        var name = _fixture.Create<string>();
+
+        var sut = new DistinctValuesValidation<WrappedDistinctValuesTestSettings>(name, config);
+
+        // Act
+        var result = sut.Validate(name, settings);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
+            !r.Skipped &&
+            !r.Succeeded &&
+            r.Failed &&
+            r.FailureMessage == "DataAnnotation validation failed for members: 'StringProperty' with the error: 'foo are duplicate values for StringProperty.'.; DataAnnotation validation failed for members: 'TypedProperty' with the error: 'Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+DistinctValuesTypedPropery are duplicate values for TypedProperty.'."
+        );
     }
 
     #endregion
@@ -205,10 +307,9 @@ public class ValidationTests
         public IEnumerable<string> InvalidProperty { get; set; } = null!;
     }
 
-    public class InvalidNonEnumerableTestSettings
+    public class WrapperInvalidEnumEnumerableTestSettings
     {
-        [EnumEnumeration]
-        public TestEnum InvalidProperty { get; set; } = default;
+        public EnumEnumerableTestSettings EnumValue { get; set; } = null!;
     }
 
     [Fact]
@@ -270,7 +371,7 @@ public class ValidationTests
             !r.Skipped &&
             !r.Succeeded &&
             r.Failed &&
-            r.FailureMessage == "DataAnnotation validation failed for members: 'EnumProperty' with the error: 'Extra is not a valid value for Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+TestEnum. Valid values are: Foo, Bar, Baz'."
+            r.FailureMessage == "DataAnnotation validation failed for members: 'EnumProperty' with the error: 'Extra is not a valid value for Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+TestEnum in section EnumProperty. Valid values are: Foo, Bar, Baz'."
         );
     }
 
@@ -305,29 +406,36 @@ public class ValidationTests
     }
 
     [Fact]
-    public void EnumEnumerableValidation_NonEnumerable_ThrowsExpected()
+    public void EnumEnumerableValidation_WithWrappedInvalidProperty_ThrowsExpected()
     {
         // Arrange
-        var appSettings = @"
+        const string appSettings = @"
         {
-            ""InvalidProperty"": ""Foo""
+            ""EnumValue"": {
+                ""EnumProperty"": [
+                    ""Foo"",
+                    ""Bar"",
+                    ""Extra""
+                ]
+            }
         }";
 
         var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(appSettings))).Build();
         var name = _fixture.Create<string>();
 
-        var sut = new EnumEnumerableValidation<InvalidNonEnumerableTestSettings>(name, config);
+        var sut = new EnumEnumerableValidation<WrapperInvalidEnumEnumerableTestSettings>(name, config);
 
-        var settings = config.Get<InvalidNonEnumerableTestSettings>();
-
-        var Act = () => sut.Validate(name, settings);
+        var settings = config.Get<WrapperInvalidEnumEnumerableTestSettings>();
 
         // Act
-        var result = Assert.Throws<UnexpectedConditionException>(Act);
+        var result = sut.Validate(name, settings);
 
         // Assert
-        result.Should().NotBeNull().And.Match<UnexpectedConditionException>(r =>
-            r.Message == "Attribute EnumEnumeration is applied to property InvalidProperty which is not an IEnumerable type (Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+TestEnum)"
+        result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
+            !r.Skipped &&
+            !r.Succeeded &&
+            r.Failed &&
+            r.FailureMessage == "DataAnnotation validation failed for members: 'EnumProperty' with the error: 'Extra is not a valid value for Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests.ValidationTests+TestEnum in section EnumValue:EnumProperty. Valid values are: Foo, Bar, Baz'."
         );
     }
 
