@@ -106,7 +106,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             {
                 dbEntry.Value = entry.Value;
             }, cancellationToken).ConfigureAwait(false);
-        
+
         await SeedTable<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions",
             x => x.Id,
             x => x.dataEntity.Template != x.dbEntity.Template || x.dataEntity.Expiry != x.dbEntity.Expiry || x.dataEntity.ValidFrom != x.dbEntity.ValidFrom,
