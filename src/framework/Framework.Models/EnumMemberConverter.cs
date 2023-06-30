@@ -18,6 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -26,10 +29,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 public class EnumMemberConverter<T> : JsonConverter<T> where T : struct, Enum
 {
     /// <inheritdoc />
-    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-        Enum.TryParse(reader.GetString(), out T enumValue) ?
-            enumValue :
-            default;
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var jsonValue = reader.GetString();
+        var values = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(x => x.GetCustomAttribute<EnumMemberAttribute>(false)?.Value == jsonValue)
+            .Select(x => (T?)x.GetValue(null) ?? default);
+
+        if (values.Count() > 1)
+        {
+            throw new UnexpectedConditionException($"There should only be one EnumMember of {typeof(T)} configured for value '{jsonValue}'");
+        }
+
+        return values.Any() ? values.Single() : default;
+    }
 
     /// <inheritdoc />
     public override void Write(

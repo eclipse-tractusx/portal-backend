@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -74,17 +73,14 @@ public class CustodianService : ICustodianService
     /// <inhertidoc />
     public async Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
     {
-        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
-
-        var requestBody = new { name = name, bpn = bpn };
-        var json = JsonSerializer.Serialize(requestBody, Options);
-        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
         const string walletUrl = "/api/wallets";
+        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+        var requestBody = new { name = name, bpn = bpn };
 
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
             (false, (await errorResponse.Content.ReadFromJsonAsync<WalletErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Message);
 
-        var result = await httpClient.PostAsync(walletUrl, stringContent, cancellationToken)
+        var result = await httpClient.PostAsJsonAsync(walletUrl, requestBody, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
 
         return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -94,17 +90,14 @@ public class CustodianService : ICustodianService
     public async Task<string> SetMembership(string bpn, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
-
         var requestBody = new { bpn = bpn };
-        var json = JsonSerializer.Serialize(requestBody);
-        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
         async ValueTask<(bool, string?)> CustomErrorHandling(HttpResponseMessage errorResponse) => (
             errorResponse.StatusCode == HttpStatusCode.Conflict &&
                 (await errorResponse.Content.ReadFromJsonAsync<MembershipErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Title.Trim() == _settings.MembershipErrorMessage,
             null);
 
-        var result = await httpClient.PostAsync("/api/credentials/issuer/membership", stringContent, cancellationToken)
+        var result = await httpClient.PostAsJsonAsync("/api/credentials/issuer/membership", requestBody, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-membership-post",
                 HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CustomErrorHandling).ConfigureAwait(false);
 
@@ -123,10 +116,8 @@ public class CustodianService : ICustodianService
             useCaseDetailData.Template,
             useCaseDetailData.Version
         );
-        var json = JsonSerializer.Serialize(requestBody, Options);
-        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-        await httpClient.PostAsync("/api/credentials/issuer/framework", stringContent, cancellationToken)
+        await httpClient.PostAsJsonAsync("/api/credentials/issuer/framework", requestBody, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-framework-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 
@@ -140,10 +131,8 @@ public class CustodianService : ICustodianService
             bpn,
             credentialTypeId
         );
-        var json = JsonSerializer.Serialize(requestBody);
-        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-        await httpClient.PostAsync("/api/credentials/issuer/dismantler", stringContent, cancellationToken)
+        await httpClient.PostAsJsonAsync("/api/credentials/issuer/dismantler", requestBody, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-dismantler-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 }
