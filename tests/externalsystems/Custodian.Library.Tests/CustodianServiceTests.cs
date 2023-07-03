@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Tests;
@@ -295,7 +296,14 @@ public class CustodianServiceTests
         await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        true.Should().BeTrue(); // One Assert is needed - just checking for no exception
+        httpMessageHandlerMock.RequestMessage.Should().Match<HttpRequestMessage>(x =>
+            x.Content is JsonContent &&
+            (x.Content as JsonContent)!.ObjectType == typeof(CustodianFrameworkRequest) &&
+            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.HolderIdentifier == bpn &&
+            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.Type == data.VerifiedCredentialExternalTypeId &&
+            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.Template == data.Template &&
+            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.Version == data.Version
+        );
     }
 
     [Theory]

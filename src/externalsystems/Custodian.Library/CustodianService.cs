@@ -28,7 +28,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;

@@ -314,11 +314,9 @@ public class CompanySsiDetailsRepositoryTests
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<CompanySsiDetail>();
-        var ssiDetail = changedEntries.Single().Entity as CompanySsiDetail;
-        ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanySsiDetail>()
+            .And.Match<CompanySsiDetail>(x => x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE);
     }
 
     [Fact]
@@ -341,11 +339,9 @@ public class CompanySsiDetailsRepositoryTests
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeFalse();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<CompanySsiDetail>();
-        var ssiDetail = changedEntries.Single().Entity as CompanySsiDetail;
-        ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanySsiDetail>()
+            .And.Match<CompanySsiDetail>(x => x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE);
     }
 
     #endregion

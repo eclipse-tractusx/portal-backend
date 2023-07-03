@@ -32,22 +32,20 @@ public class EnumMemberConverter<T> : JsonConverter<T> where T : struct, Enum
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var jsonValue = reader.GetString();
-        var values = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(x => x.GetCustomAttribute<EnumMemberAttribute>(false)?.Value == jsonValue)
-            .Select(x => (T?)x.GetValue(null) ?? default);
-
-        if (values.Count() > 1)
+        try
         {
-            throw new UnexpectedConditionException($"There should only be one EnumMember of {typeof(T)} configured for value '{jsonValue}'");
+            return typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)
+                .Where(x => x.GetCustomAttribute<EnumMemberAttribute>(false)?.Value == jsonValue)
+                .Select(x => (T?)x.GetValue(null) ?? default)
+                .SingleOrDefault();
         }
-
-        return values.Any() ? values.Single() : default;
+        catch (InvalidOperationException)
+        {
+            throw new UnexpectedConditionException($"There must only be one EnumMember of {typeof(T)} configured for value '{jsonValue}'");
+        }
     }
 
     /// <inheritdoc />
-    public override void Write(
-        Utf8JsonWriter writer,
-        T value,
-        JsonSerializerOptions options) =>
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) =>
         writer.WriteStringValue(value.GetEnumValue());
 }
