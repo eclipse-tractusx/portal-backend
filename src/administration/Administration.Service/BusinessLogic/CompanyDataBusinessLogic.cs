@@ -249,15 +249,15 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     {
         var (verifiedCredentialExternalTypeDetailId, credentialTypeId, document) = data;
         var documentContentType = document.ContentType.ParseMediaTypeId();
-        documentContentType.CheckDocumentContent(_settings.UseCaseParticipationMediaTypes);
+        documentContentType.CheckDocumentContentType(_settings.UseCaseParticipationMediaTypes);
 
         var companyCredentialDetailsRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
-        if (!await companyCredentialDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(verifiedCredentialExternalTypeDetailId, credentialTypeId))
+        if (!await companyCredentialDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(verifiedCredentialExternalTypeDetailId, credentialTypeId).ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
         }
 
-        await HandleSsiCreationAsync(identity, credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType, companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
+        await HandleSsiCreationAsync(identity, new (credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -265,28 +265,24 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     {
         var (credentialTypeId, document) = data;
         var documentContentType = document.ContentType.ParseMediaTypeId();
-        documentContentType.CheckDocumentContent(_settings.SsiCertificateMediaTypes);
+        documentContentType.CheckDocumentContentType(_settings.SsiCertificateMediaTypes);
 
         var companyCredentialDetailsRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
-        var checkResult = await companyCredentialDetailsRepository.CheckSsiCertificateType(credentialTypeId);
-        if (!checkResult)
+        if (!await companyCredentialDetailsRepository.CheckSsiCertificateType(credentialTypeId).ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"{credentialTypeId} is not assigned to a certificate");
         }
 
-        await HandleSsiCreationAsync(identity, credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, documentContentType, companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
+        await HandleSsiCreationAsync(identity, new (credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task HandleSsiCreationAsync(
         (Guid UserId, Guid CompanyId) identity,
-        VerifiedCredentialTypeId credentialTypeId,
-        VerifiedCredentialTypeKindId kindId,
-        Guid? verifiedCredentialExternalTypeDetailId,
-        IFormFile document,
-        MediaTypeId mediaTypeId,
+        (VerifiedCredentialTypeId CredentialTypeId, VerifiedCredentialTypeKindId kindId, Guid? VerifiedCredentialExternalTypeDetailId, IFormFile Document, MediaTypeId MediaTypeId) creationData,
         ICompanySsiDetailsRepository companyCredentialDetailsRepository,
         CancellationToken cancellationToken)
     {
+        var (credentialTypeId, kindId, verifiedCredentialExternalTypeDetailId, document, mediaTypeId) = creationData;
         if (await companyCredentialDetailsRepository.CheckSsiDetailsExistsForCompany(identity.CompanyId, credentialTypeId, kindId, verifiedCredentialExternalTypeDetailId).ConfigureAwait(false))
         {
             throw new ControllerArgumentException("Credential request already existing");

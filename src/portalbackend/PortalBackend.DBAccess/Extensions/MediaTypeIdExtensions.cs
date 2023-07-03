@@ -64,7 +64,7 @@ public static class MediaTypeIdExtensions
         };
     }
 
-    public static void CheckDocumentContent(this MediaTypeId mediaTypeId, IEnumerable<MediaTypeId> validMediaTypes)
+    public static void CheckDocumentContentType(this MediaTypeId mediaTypeId, IEnumerable<MediaTypeId> validMediaTypes)
     {
         if (!validMediaTypes.Contains(mediaTypeId))
         {

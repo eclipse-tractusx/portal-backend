@@ -159,7 +159,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     {
         var appLeadImageContentTypes = new[] { MediaTypeId.JPEG, MediaTypeId.PNG };
         var documentContentType = document.ContentType.ParseMediaTypeId();
-        documentContentType.CheckDocumentContent(appLeadImageContentTypes);
+        documentContentType.CheckDocumentContentType(appLeadImageContentTypes);
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, identity.CompanyId, OfferTypeId.APP).ConfigureAwait(false);
