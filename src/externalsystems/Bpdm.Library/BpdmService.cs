@@ -126,33 +126,36 @@ public class BpdmService : IBpdmService
         return true;
     }
 
-    public async Task<BpdmLegalEntityData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken)
+    public async Task<BpdmLegalEntityOutputData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
-     
-        async ValueTask<(bool Ignore, string? Message, bool? Recoverable)> CreateErrorMessage(HttpResponseMessage errorResponse)
-        {
-            var errorMessages = (await errorResponse.Content
-                .ReadFromJsonAsync<FetchInputLegalEntityErrorResponse>(Options, cancellationToken)
-                .ConfigureAwait(false))?.Errors.Where(x => x.ErrorCode == "SharingProcessError").Select(x => x.Message);
-            return errorMessages == null || !errorMessages.Any()
-                ? (false, null, true)
-                : (false, string.Join(",", errorMessages), null);
-        }
 
-        var result = await httpClient.GetAsync($"/api/catena/input/legal-entities/{externalId}", cancellationToken)
-            .CatchingIntoServiceExceptionFor("bpdm-get-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
+        var data = Enumerable.Repeat(externalId, 1);
+        var result = await httpClient.PostAsJsonAsync("/api/catena/output/legal-entities/search", data, Options, cancellationToken)
+            .CatchingIntoServiceExceptionFor("bpdm-search-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmLegalEntityData>(
+            var paginationResponse = await JsonSerializer.DeserializeAsync<PageOutputResponseBpdmLegalEntityData>(
                 responseStream,
                 Options,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (legalEntityResponse?.ExternalId == null)
+            if (paginationResponse == null || (paginationResponse.Content == null && paginationResponse.Errors == null))
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
             }
+
+            if (paginationResponse.Errors.Any())
+            {
+                throw new ServiceException($"The external system bpdm responded with errors {string.Join(";", paginationResponse.Errors.Select(x => $"ErrorCode: {x.ErrorCode}, ErrorMessage: {x.Message}"))}");
+            }
+
+            if (paginationResponse.Content!.Count(x => x.ExternalId == externalId) != 1)
+            {
+                throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
+            }
+
+            var legalEntityResponse = paginationResponse.Content!.Single(x => x.ExternalId == externalId);
             return legalEntityResponse;
         }
         catch (JsonException je)

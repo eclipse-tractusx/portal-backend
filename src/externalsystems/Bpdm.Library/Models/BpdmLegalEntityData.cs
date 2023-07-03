@@ -49,26 +49,95 @@ public record BpdmName(
     string Language
 );
 
+public record BpdmLegalForm
+(
+    string TechnicalKey,
+    string Name,
+    string Url,
+    string MainAbbreviation,
+    BpdmLanguage Language,
+    IEnumerable<BpdmCategory> Categories
+);
+
+public record BpdmLanguage
+(
+    string TechnicalKey,
+    string Name
+);
+
+public record BpdmCategory
+(
+    string Name,
+    string Url
+);
+
 public record BpdmStatus(
     string OfficialDenotation,
     DateTimeOffset ValidFrom,
     DateTimeOffset ValidUntil,
-    string Type
+    BpdmType Type
 );
 
 public record BpdmProfileClassification(
     string Value,
     string Code,
-    string Type
+    BpdmProfileClassificationType Type
+);
+
+public record BpdmProfileClassificationType
+(
+    string Name,
+    string Url
+);
+
+public record BpdmType
+(
+    string TechnicalKey,
+    string Name,
+    string Url
 );
 
 public record BpdmBankAccount(
-    IEnumerable<int> TrustScores,
-    string Currency,
+    IEnumerable<float> TrustScores,
+    BpdmCurrency Currency,
     string InternationalBankAccountIdentifier,
     string InternationalBankIdentifier,
     string NationalBankAccountIdentifier,
     string NationalBankIdentifier
+);
+
+public record BpdmCurrency
+(
+    string TechnicalKey,
+    string Name
+);
+
+public record BpdmRoles
+(
+    string TechnicalKey,
+    string Name
+);
+
+public record BpdmReations
+(
+    BpdmRelationClass RelationClass,
+    BpdmRelationType Type,
+    string StartNode,
+    string EndNode,
+    DateTimeOffset StartedAt,
+    DateTimeOffset EndedAt
+);
+
+public record BpdmRelationClass
+(
+    string TechnicalKey,
+    string Name
+);
+
+public record BpdmRelationType
+(
+    string TechnicalKey,
+    string Name
 );
 
 public record BpdmLegalAddress(
@@ -137,3 +206,4 @@ public record BpdmGeographicCoordinates(
     int Latitude,
     int Altitude
 );
+
