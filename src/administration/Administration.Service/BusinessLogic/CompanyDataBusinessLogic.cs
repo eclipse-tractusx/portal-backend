@@ -257,7 +257,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
         }
 
-        await HandleSsiCreationAsync(identity, new (credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
+        await HandleSsiCreationAsync(identity, new(credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -273,7 +273,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException($"{credentialTypeId} is not assigned to a certificate");
         }
 
-        await HandleSsiCreationAsync(identity, new (credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
+        await HandleSsiCreationAsync(identity, new(credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task HandleSsiCreationAsync(
