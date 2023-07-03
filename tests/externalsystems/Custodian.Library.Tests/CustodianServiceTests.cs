@@ -358,7 +358,12 @@ public class CustodianServiceTests
         await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        true.Should().BeTrue(); // One Assert is needed - just checking for no exception
+        httpMessageHandlerMock.RequestMessage.Should().Match<HttpRequestMessage>(x =>
+            x.Content is JsonContent &&
+            (x.Content as JsonContent)!.ObjectType == typeof(CustodianDismantlerRequest) &&
+            ((x.Content as JsonContent)!.Value as CustodianDismantlerRequest)!.Bpn == bpn &&
+            ((x.Content as JsonContent)!.Value as CustodianDismantlerRequest)!.Type == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE
+        );
     }
 
     [Theory]

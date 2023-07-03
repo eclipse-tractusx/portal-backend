@@ -330,10 +330,9 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         var query = _portalRepositories
             .GetInstance<ICompanySsiDetailsRepository>()
             .GetAllCredentialDetails(companySsiDetailStatusId);
-        var pageSorting = sorting ?? CompanySsiDetailSorting.CompanyAsc;
-        var sortedQuery = pageSorting switch
+        var sortedQuery = sorting switch
         {
-            CompanySsiDetailSorting.CompanyAsc => query.OrderBy(c => c.Company!.Name),
+            CompanySsiDetailSorting.CompanyAsc or null => query.OrderBy(c => c.Company!.Name),
             CompanySsiDetailSorting.CompanyDesc => query.OrderByDescending(c => c.Company!.Name),
             _ => query
         };
