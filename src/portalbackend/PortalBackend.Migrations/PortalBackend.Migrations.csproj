@@ -64,6 +64,9 @@
     </Content>
     <None Remove="Seeder\Data" />
     <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
+    <Content Update="Seeder\Data\verified_credential_external_type_use_case_detail_versions.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations" />
