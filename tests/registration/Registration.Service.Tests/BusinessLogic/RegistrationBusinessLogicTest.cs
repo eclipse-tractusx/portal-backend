@@ -469,7 +469,7 @@ public class RegistrationBusinessLogicTest
             null!);
 
         var uniqueIdData = uniqueIdentifierIds.Zip(values, (id, value) => new CompanyUniqueIdData(id, value));
-        var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null, null, null, null, null, null, uniqueIdData);
+        var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null, null, null, null, null, uniqueIdData);
 
         // Act
         async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<Guid>()).ConfigureAwait(false);
@@ -495,7 +495,7 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null, null, null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
+        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null, null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
             .ReturnsLazily(() => (CompanyApplicationDetailData?)null);
@@ -517,7 +517,7 @@ public class RegistrationBusinessLogicTest
         var identity = _fixture.Build<IdentityData>()
             .With(x => x.CompanyId, companyId)
             .Create();
-        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null, null, null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
+        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null, null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
 
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -618,7 +618,6 @@ public class RegistrationBusinessLogicTest
             .With(x => x.AddressId, (Guid?)null)
             .With(x => x.City, (string)null!)
             .With(x => x.CountryAlpha2Code, (string)null!)
-            .With(x => x.CountryNameDe, (string)null!)
             .With(x => x.Region, (string)null!)
             .With(x => x.Streetadditional, (string)null!)
             .With(x => x.Streetname, (string)null!)
@@ -2307,8 +2306,7 @@ public class RegistrationBusinessLogicTest
             x.StreetName == data.StreetName &&
             x.StreetNumber == data.StreetNumber &&
             x.ZipCode == data.ZipCode &&
-            x.CountryAlpha2Code == data.CountryAlpha2Code &&
-            x.CountryDe == data.CountryDe);
+            x.CountryAlpha2Code == data.CountryAlpha2Code);
         result.CompanyRoleIds.Should().HaveSameCount(data.CompanyRoleIds);
         result.CompanyRoleIds.Should().ContainInOrder(data.CompanyRoleIds);
         result.AgreementConsentStatuses.Should().HaveSameCount(data.AgreementConsentStatuses);

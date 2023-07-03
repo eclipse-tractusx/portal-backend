@@ -275,7 +275,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             result.Streetadditional,
             result.Streetnumber,
             result.Zipcode,
-            result.CountryNameDe,
             result.UniqueIds.Select(id => new CompanyUniqueIdData(id.UniqueIdentifierId, id.Value))
         );
     }
@@ -793,7 +792,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             data.StreetNumber,
             data.ZipCode,
             data.CountryAlpha2Code,
-            data.CountryDe,
             data.CompanyRoleIds,
             data.AgreementConsentStatuses.Select(consentStatus => new AgreementConsentStatusForRegistrationData(consentStatus.AgreementId, consentStatus.ConsentStatusId)),
             data.DocumentNames.Select(name => new RegistrationDocumentNames(name)),

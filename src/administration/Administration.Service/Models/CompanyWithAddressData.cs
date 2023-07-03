@@ -37,7 +37,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 /// <param name="StreetAdditional"></param>
 /// <param name="StreetNumber"></param>
 /// <param name="ZipCode"></param>
-/// <param name="CountryDe"></param>
 /// <param name="AgreementsRoleData"></param>
 /// <param name="InvitedUserData"></param>
 /// <param name="UniqueIds"></param>
@@ -55,7 +54,6 @@ public record CompanyWithAddressData(
     string StreetAdditional,
     string StreetNumber,
     string ZipCode,
-    string CountryDe,
     [property: JsonPropertyName("companyRoles")] IEnumerable<AgreementsRoleData> AgreementsRoleData,
     [property: JsonPropertyName("companyUser")] IEnumerable<InvitedUserData> InvitedUserData,
     IEnumerable<IdentifierData> UniqueIds
