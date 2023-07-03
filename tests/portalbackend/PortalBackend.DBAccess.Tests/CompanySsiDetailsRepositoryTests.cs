@@ -57,9 +57,10 @@ public class CompanySsiDetailsRepositoryTests
             x => x.Description == "Sustainability & CO2-Footprint",
             x => x.Description == "Quality Management");
         var traceability = result.Single(x => x.CredentialType == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
-        traceability.VerifiedCredentials.Should().HaveCount(2).And.Satisfy(
+        traceability.VerifiedCredentials.Should().HaveCount(3).And.Satisfy(
             x => x.ExternalDetailData.Version == "1.0.0" && x.SsiDetailData.Single().ParticipationStatus == CompanySsiDetailStatusId.PENDING,
-            x => x.ExternalDetailData.Version == "2.0.0" && !x.SsiDetailData.Any());
+            x => x.ExternalDetailData.Version == "2.0.0" && !x.SsiDetailData.Any(),
+            x => x.ExternalDetailData.Version == "3.0.0" && !x.SsiDetailData.Any());
     }
 
     #endregion
