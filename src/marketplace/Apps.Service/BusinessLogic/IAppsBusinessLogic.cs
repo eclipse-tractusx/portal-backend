@@ -115,9 +115,9 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Unsubscribes an app for the current users company.
     /// </summary>
-    /// <param name="appId">ID of the app to unsubscribe from.</param>
+    /// <param name="subscriptionId">ID of the subscription to unsubscribe from.</param>
     /// <param name="companyId">Id of the users company that initiated app unsubscription.</param>
-    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, Guid companyId);
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId, Guid companyId);
 
     /// <summary>
     /// Retrieve Company Owned App Data
