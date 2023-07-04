@@ -70,6 +70,9 @@ public static class FakeIAsyncEnumerableExtensions
         A.CallTo(() => fakeEnumerator.Current)
             .ReturnsLazily(() => (enumerator ?? throw new InvalidOperationException()).Current);
 
+        A.CallTo(() => fakeEnumerator.Reset())
+            .Invokes(() => (enumerator ?? throw new InvalidOperationException()).Reset());
+
         outEnumerator = fakeEnumerator;
         return fakeEnumerable;
     }

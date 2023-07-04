@@ -144,5 +144,156 @@ public class IfAnyTests
         elements.Should().HaveCount(2).And.ContainInOrder(new[] { data[1], data[3] });
     }
 
+    [Fact]
+    public void IfAny_ReturnsSelectedBeingIteratedTwice_ReturnsExpected()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<(string First, string Second)>(5).ToImmutableArray();
+
+        // Act
+        var result = data.IfAny(data => data.Skip(1).Take(3).Select(x => x.First), out var selected);
+
+        // Assert
+        result.Should().BeTrue();
+        selected.Should().NotBeNull();
+
+        // Act
+        var firstRun = selected!.ToImmutableArray();
+
+        // Assert
+        firstRun.Should().HaveCount(3).And.ContainInOrder(data[1].First, data[2].First, data[3].First);
+
+        // Act
+        var secondRun = selected!.ToImmutableArray();
+
+        // Assert
+        secondRun.Should().HaveCount(3).And.ContainInOrder(data[1].First, data[2].First, data[3].First);
+    }
+
+    public class ResetableEnumerable<T> : IEnumerable<T>
+    {
+        private readonly T[] _items;
+
+        public ResetableEnumerable(IEnumerable<T> items)
+        {
+            _items = items.ToArray();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public IEnumerator<T> GetEnumerator() => new ResetableEnumerator<T>(_items);
+    }
+
+    public class ResetableEnumerator<T> : IEnumerator<T>
+    {
+        private readonly T[] _items;
+
+        public ResetableEnumerator(T[] items)
+        {
+            _items = items;
+        }
+
+        // Enumerators are positioned before the first element
+        // until the first MoveNext() call.
+        private int position = -1;
+
+        public bool MoveNext()
+        {
+            position++;
+            return (position < _items.Length);
+        }
+
+        public void Reset()
+        {
+            position = -1;
+        }
+
+        object System.Collections.IEnumerator.Current
+        {
+            get
+            {
+                return Current!;
+            }
+        }
+
+        public T Current
+        {
+            get
+            {
+                try
+                {
+                    return _items[position];
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    [Fact]
+    public void IfAny_ReturnsSelectedBeingReset_ReturnsExpected()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<string>(3).ToImmutableArray();
+        var resetable = new ResetableEnumerable<string>(data);
+        var sut = resetable.AsFakeIEnumerable(out var enumerator);
+
+        // Act
+        var result = sut.IfAny(data => data, out var selected);
+
+        // Assert
+        result.Should().BeTrue();
+        selected.Should().NotBeNull();
+
+        A.CallTo(() => sut.GetEnumerator())
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => enumerator.MoveNext())
+            .MustHaveHappenedOnceExactly();
+
+        // Act
+        var result_enumerator = selected!.GetEnumerator();
+
+        // Assert
+        result_enumerator.MoveNext().Should().BeTrue();
+        result_enumerator.Current.Should().Be(data[0]);
+        result_enumerator.MoveNext().Should().BeTrue();
+        result_enumerator.Current.Should().Be(data[1]);
+        result_enumerator.MoveNext().Should().BeTrue();
+        result_enumerator.Current.Should().Be(data[2]);
+        result_enumerator.MoveNext().Should().BeFalse();
+
+        A.CallTo(() => sut.GetEnumerator())
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => enumerator.MoveNext())
+            .MustHaveHappened(4, Times.Exactly);
+        A.CallTo(() => enumerator.Reset())
+            .MustNotHaveHappened();
+
+        // Act
+        result_enumerator.Reset();
+
+        // Assert
+        result_enumerator.MoveNext().Should().BeTrue();
+        result_enumerator.Current.Should().Be(data[0]);
+        result_enumerator.MoveNext().Should().BeTrue();
+        result_enumerator.Current.Should().Be(data[1]);
+        result_enumerator.MoveNext().Should().BeTrue();
+        result_enumerator.Current.Should().Be(data[2]);
+        result_enumerator.MoveNext().Should().BeFalse();
+
+        A.CallTo(() => sut.GetEnumerator())
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => enumerator.MoveNext())
+            .MustHaveHappened(8, Times.Exactly);
+        A.CallTo(() => enumerator.Reset())
+            .MustHaveHappenedOnceExactly();
+    }
+
     #endregion
 }
