@@ -116,20 +116,16 @@ public class CompanySsiDetailsRepositoryTests
 
     #endregion
 
-    #region AttachAndModifyCompanySsiDetails
+    #region CreateSsiDetails
 
     [Fact]
-    public async Task AttachAndModifyCompanySsiDetails_WithValidData_ReturnsExpected()
+    public async Task CreateSsiDetails_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var now = DateTimeOffset.UtcNow;
         var (sut, context) = await CreateSutWithContext();
 
         // Act
-        sut.CreateSsiDetails(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), null, ssi =>
-            {
-                ssi.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
-            });
+        sut.CreateSsiDetails(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, new Guid("00000000-0000-0000-0000-000000000001"), CompanySsiDetailStatusId.PENDING, _userId, null);
 
         // Assert
         var changeTracker = context.ChangeTracker;
@@ -139,9 +135,9 @@ public class CompanySsiDetailsRepositoryTests
         changedEntries.Should().HaveCount(1);
         changedEntries.Single().Entity.Should().BeOfType<CompanySsiDetail>();
         var ssiDetail = changedEntries.Single().Entity as CompanySsiDetail;
-        ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
+        ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.PENDING);
     }
-    
+
     #endregion
 
     #region CheckSsiDetailsExistsForCompany
@@ -229,7 +225,7 @@ public class CompanySsiDetailsRepositoryTests
     }
 
     #endregion
-    
+
     #region GetSsiApprovalData
 
     [Fact]
