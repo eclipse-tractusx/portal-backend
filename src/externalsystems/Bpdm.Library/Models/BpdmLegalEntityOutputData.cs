@@ -21,7 +21,7 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 public record PageOutputResponseBpdmLegalEntityData(
-    IEnumerable<BpdmLegalEntityOutputData> Content,
+    IEnumerable<BpdmLegalEntityOutputData>? Content,
     IEnumerable<BpdmErrorInfo> Errors
 );
 

@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -133,30 +134,27 @@ public class BpdmService : IBpdmService
         var data = Enumerable.Repeat(externalId, 1);
         var result = await httpClient.PostAsJsonAsync("/api/catena/output/legal-entities/search", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-search-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
-        await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        ;
         try
         {
-            var paginationResponse = await JsonSerializer.DeserializeAsync<PageOutputResponseBpdmLegalEntityData>(
-                responseStream,
-                Options,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (paginationResponse == null || (paginationResponse.Content == null && paginationResponse.Errors == null))
+            var paginationResponse = await result.Content
+                .ReadFromJsonAsync<PageOutputResponseBpdmLegalEntityData>(Options, cancellationToken)
+                .ConfigureAwait(false);
+            if (paginationResponse?.Content == null || paginationResponse.Errors == null)
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
             }
 
-            if (paginationResponse.Errors.Any())
+            paginationResponse.Errors.IfAny(errors =>
+                throw new ServiceException($"The external system bpdm responded with errors {string.Join(";", errors.Select(x => $"ErrorCode: {x.ErrorCode}, ErrorMessage: {x.Message}"))}"));
+            try
             {
-                throw new ServiceException($"The external system bpdm responded with errors {string.Join(";", paginationResponse.Errors.Select(x => $"ErrorCode: {x.ErrorCode}, ErrorMessage: {x.Message}"))}");
+                return paginationResponse.Content.Single(x => x.ExternalId == externalId);
             }
-
-            if (paginationResponse.Content!.Count(x => x.ExternalId == externalId) != 1)
+            catch (InvalidOperationException)
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
             }
-
-            var legalEntityResponse = paginationResponse.Content!.Single(x => x.ExternalId == externalId);
-            return legalEntityResponse;
         }
         catch (JsonException je)
         {

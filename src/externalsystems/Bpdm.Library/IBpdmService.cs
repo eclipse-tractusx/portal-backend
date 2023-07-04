@@ -19,8 +19,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
