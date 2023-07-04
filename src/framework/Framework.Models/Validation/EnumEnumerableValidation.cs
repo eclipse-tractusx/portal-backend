@@ -51,6 +51,9 @@ public class EnumEnumerableValidation<TOptions> : BaseOptionEnumerableValidation
 
         var section = config.GetSection(propertyName);
         var configuredValues = section.Get<IEnumerable<string>>();
+        if (configuredValues == null)
+            yield break;
+
         if (!property.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
         {
             throw new UnexpectedConditionException(

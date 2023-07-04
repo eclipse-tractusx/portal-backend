@@ -36,6 +36,7 @@ public class CompanyDataSettings
     /// The media types that are allowed for the uploaded document for use case participation
     /// </summary>
     [Required]
+    [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<MediaTypeId> UseCaseParticipationMediaTypes { get; set; }
 
@@ -43,6 +44,7 @@ public class CompanyDataSettings
     /// The media types that are allowed for the uploaded document for ssi certificate
     /// </summary>
     [Required]
+    [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<MediaTypeId> SsiCertificateMediaTypes { get; set; }
 }
@@ -57,6 +59,7 @@ public static class CompanyDataSettingsExtensions
         services.AddOptions<CompanyDataSettings>()
             .Bind(section)
             .ValidateDistinctValues(section)
+            .ValidateEnumEnumeration(section)
             .ValidateOnStart();
         return services;
     }
