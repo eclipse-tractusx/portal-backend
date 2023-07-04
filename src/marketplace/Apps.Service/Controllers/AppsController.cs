@@ -223,7 +223,7 @@ public class AppsController : ControllerBase
     /// Activates a pending app subscription.
     /// </summary>
     /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to activate.</param>
-    /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/supscription/company/74BA5AEF-1CC7-495F-ABAA-CF87840FA6E2/activate</remarks>
+    /// <remarks>Example: PUT: /api/apps/supscription/{subscriptiondId}/activate</remarks>
     /// <response code="204">App subscription was successfully activated.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
@@ -250,7 +250,7 @@ public class AppsController : ControllerBase
     /// Unsubscribes an app from the current user's company's subscriptions.
     /// </summary>
     /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to unsubscribe from.</param>
-    /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/unsubscribe</remarks>
+    /// <remarks>Example: PUT: /api/apps/{subscriptionId}/unsubscribe</remarks>
     /// <response code="204">The app was successfully unsubscribed from.</response>
     /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
     /// <response code="404">App does not exist.</response>
