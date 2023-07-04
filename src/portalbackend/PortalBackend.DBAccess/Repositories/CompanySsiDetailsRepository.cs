@@ -197,7 +197,7 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     /// <inheritdoc />
     public void AttachAndModifyCompanySsiDetails(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields)
     {
-        var entity = new CompanySsiDetail(id, default, default, default, default, default, default);
+        var entity = new CompanySsiDetail(id, Guid.Empty, default, default, Guid.Empty, Guid.Empty, default);
         initialize?.Invoke(entity);
         _context.Attach(entity);
         updateFields.Invoke(entity);

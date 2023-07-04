@@ -1183,6 +1183,48 @@ public class CompanyDataBusinessLogicTests
         detail.DateLastChanged.Should().Be(now);
     }
 
+    [Fact]
+    public async Task ApproveCredential_WithInvalidCredentialType_ThrowsException()
+    {
+        // Arrange
+        const string recipientMail = "test@mail.com";
+        var now = DateTimeOffset.UtcNow;
+        var requesterId = Guid.NewGuid();
+        var useCaseData = new UseCaseDetailData(
+            VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL,
+            "test",
+            "1.0.0"
+        );
+
+        var bpn = "BPNL00000001TEST";
+        var data = new SsiApprovalData(
+            CompanySsiDetailStatusId.PENDING,
+            default,
+            VerifiedCredentialTypeKindId.USE_CASE,
+            "Stark Industries",
+            bpn,
+            null,
+            useCaseData,
+            new SsiRequesterData(
+                requesterId,
+                recipientMail,
+                "Tony",
+                "Stark"
+            )
+        );
+
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(_validCredentialId))
+            .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
+
+        // Act
+        async Task Act() => await _sut.ApproveCredential(_identity.UserId, _validCredentialId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("VerifiedCredentialType 0 does not exists");
+    }
+
     [Theory]
     [InlineData(VerifiedCredentialTypeKindId.USE_CASE, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK)]
     [InlineData(VerifiedCredentialTypeKindId.CERTIFICATE, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)]

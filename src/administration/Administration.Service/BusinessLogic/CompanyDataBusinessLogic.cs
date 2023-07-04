@@ -390,6 +390,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ConflictException("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
         }
 
+        var typeValue = data.Type.GetEnumValue() ?? throw new UnexpectedConditionException($"VerifiedCredentialType {data.Type.ToString()} does not exists");
         var content = JsonSerializer.Serialize(new { Type = data.Type, CredentialId = credentialId }, Options);
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(data.RequesterData.RequesterId, NotificationTypeId.CREDENTIAL_APPROVAL, false, n =>
         {
@@ -428,9 +429,9 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : data.RequesterData.RequesterEmail },
-                { "requestName", data.Type.GetEnumValue() },
+                { "requestName", typeValue },
                 { "companyName", data.CompanyName },
-                { "credentialType", data.Type.GetEnumValue() },
+                { "credentialType", typeValue },
                 { "expiryDate", data.ExpiryDate == null ? string.Empty : data.ExpiryDate.Value.ToString("o", CultureInfo.InvariantCulture) }
             };
 
