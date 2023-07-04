@@ -1894,9 +1894,7 @@ public class OfferServiceTests
                     x.Any(y => y.Item1 == newProfileId && y.Item2 == userRole2Id) &&
                     x.Any(y => y.Item1 == technicalUserProfile1 && y.Item2 == userRole2Id))))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _technicalUserProfileRepository.RemoveTechnicalUserProfiles(A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 1 && x.Contains(technicalUserProfile2))))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _technicalUserProfileRepository.RemoveTechnicalUserProfiles(A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 1 && x.Contains(technicalUserProfile3))))
+        A.CallTo(() => _technicalUserProfileRepository.RemoveTechnicalUserProfiles(A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2 && x.Contains(technicalUserProfile2) && x.Contains(technicalUserProfile3))))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }

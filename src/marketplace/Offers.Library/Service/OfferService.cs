@@ -779,18 +779,10 @@ public class OfferService : IOfferService
         technicalUserProfileRepository.RemoveTechnicalUserProfiles(
             offerProfileData.ProfileData
                 .ExceptBy(
-                    data.Where(x => x.TechnicalUserProfileId != null)
+                    data.Where(x => x.TechnicalUserProfileId != null && x.UserRoleIds.Any())
                         .Select(x => x.TechnicalUserProfileId!.Value),
                     x => x.TechnicalUserProfileId)
                 .Select(x => x.TechnicalUserProfileId));
-
-        technicalUserProfileRepository.RemoveTechnicalUserProfiles(
-            offerProfileData.ProfileData.Join(data,
-                profile => profile.TechnicalUserProfileId,
-                techData => techData.TechnicalUserProfileId,
-                (profile, techData) => (profile, techData))
-                .Where(x => x.profile.UserRoleIds.Count() == 0 && x.techData.UserRoleIds.Count() == 0)
-                .Select(x => x.profile.TechnicalUserProfileId));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
