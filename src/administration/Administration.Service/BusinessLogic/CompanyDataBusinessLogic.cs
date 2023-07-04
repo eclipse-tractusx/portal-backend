@@ -453,7 +453,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             throw new ConflictException($"Credential {credentialId} must be {CompanySsiDetailStatusId.PENDING}");
         }
-
+        var typeValue = type.GetEnumValue() ?? throw new UnexpectedConditionException($"VerifiedCredentialType {type.ToString()} does not exists");
         var content = JsonSerializer.Serialize(new { Type = type, CredentialId = credentialId }, Options);
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_REJECTED, false, n =>
             {
@@ -480,7 +480,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : requesterEmail },
-                { "requestName", type.GetEnumValue() }
+                { "requestName", typeValue }
             };
 
             await _mailingService.SendMails(requesterEmail, mailParameters, Enumerable.Repeat("CredentialRejected", 1)).ConfigureAwait(false);
