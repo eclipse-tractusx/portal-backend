@@ -134,7 +134,6 @@ public class BpdmService : IBpdmService
         var data = Enumerable.Repeat(externalId, 1);
         var result = await httpClient.PostAsJsonAsync("/api/catena/output/legal-entities/search", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-search-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
-        ;
         try
         {
             var paginationResponse = await result.Content

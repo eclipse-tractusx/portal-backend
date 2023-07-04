@@ -69,16 +69,13 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
         {
             return ValidateOptionsResult.Skip;
         }
-
         var validationErrors = GetValidationErrors(options.GetType(), Section);
-
         return validationErrors.IfAny(
             errors => errors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'."),
             out var messages)
                 ? ValidateOptionsResult.Fail(messages)
                 : ValidateOptionsResult.Success;
     }
-
     private IEnumerable<ValidationResult> GetValidationErrors(Type type, IConfiguration configSection) =>
         type.GetProperties()
             .ExceptBy(IgnoreTypes, prop => prop.PropertyType)
@@ -89,22 +86,20 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
 
     protected abstract IEnumerable<ValidationResult> ValidateAttribute(IConfiguration config, PropertyInfo property, string propertyName);
 
-    private IEnumerable<ValidationResult> CheckPropertiesOfProperty(IConfiguration configSection, PropertyInfo property, string propertyName)
-    {
-        var x = (property.PropertyType is var x1 && x1.IsClass
-            ?
-            GetValidationErrors(property.PropertyType, configSection.GetSection(propertyName)) :
-            property.PropertyType is var x2 && (x2.GetInterfaces().Contains(typeof(IEnumerable)) &&
-                                                  x2.GetGenericArguments()
-                                                      .Where(type => !type.IsEnum)
-                                                      .Except(IgnoreTypes)
-                                                      .IfAny(genericTypes => genericTypes.First(), out var genericType))
-                ? (configSection.GetSection(propertyName).Get(property.PropertyType) as IEnumerable)
+    private IEnumerable<ValidationResult> CheckPropertiesOfProperty(IConfiguration configSection, PropertyInfo property, string propertyName) =>
+        property.PropertyType switch
+        {
+            var x when x.IsClass => GetValidationErrors(property.PropertyType, configSection.GetSection(propertyName)),
+            var x when x.GetInterfaces().Contains(typeof(IEnumerable)) &&
+                       x.GetGenericArguments()
+                           .Where(type => !type.IsEnum)
+                           .Except(IgnoreTypes)
+                           .IfAny(genericTypes => genericTypes.First(), out var genericType) =>
+                (configSection.GetSection(propertyName).Get(property.PropertyType) as IEnumerable)
                 ?.ToIEnumerable()
                 .Select((_, i) => configSection.GetSection($"{propertyName}:{i}"))
-                .SelectMany(section => GetValidationErrors(genericType!, section))
-                : null) ?? Enumerable.Empty<ValidationResult>();
-
-        return x;
-    }
+                .SelectMany(section => GetValidationErrors(genericType!, section)),
+            _ => null
+        } ?? Enumerable.Empty<ValidationResult>();
+}
 }
