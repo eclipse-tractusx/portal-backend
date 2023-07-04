@@ -18,12 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -33,14 +36,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly CompanyDataSettings _settings;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="portalRepositories"></param>
-    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories)
+    /// <param name="options"></param>
+    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, IOptions<CompanyDataSettings> options)
     {
         _portalRepositories = portalRepositories;
+        _settings = options.Value;
     }
 
     /// <inheritdoc/>
@@ -237,4 +243,67 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 )))
             .ToListAsync()
             .ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task CreateUseCaseParticipation((Guid UserId, Guid CompanyId) identity, UseCaseParticipationCreationData data, CancellationToken cancellationToken)
+    {
+        var (verifiedCredentialExternalTypeDetailId, credentialTypeId, document) = data;
+        var documentContentType = document.ContentType.ParseMediaTypeId();
+        documentContentType.CheckDocumentContentType(_settings.UseCaseParticipationMediaTypes);
+
+        var companyCredentialDetailsRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
+        if (!await companyCredentialDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(verifiedCredentialExternalTypeDetailId, credentialTypeId).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
+        }
+
+        await HandleSsiCreationAsync(identity, new(credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task CreateSsiCertificate((Guid UserId, Guid CompanyId) identity, SsiCertificateCreationData data, CancellationToken cancellationToken)
+    {
+        var (credentialTypeId, document) = data;
+        var documentContentType = document.ContentType.ParseMediaTypeId();
+        documentContentType.CheckDocumentContentType(_settings.SsiCertificateMediaTypes);
+
+        var companyCredentialDetailsRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
+        if (!await companyCredentialDetailsRepository.CheckSsiCertificateType(credentialTypeId).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"{credentialTypeId} is not assigned to a certificate");
+        }
+
+        await HandleSsiCreationAsync(identity, new(credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task HandleSsiCreationAsync(
+        (Guid UserId, Guid CompanyId) identity,
+        (VerifiedCredentialTypeId CredentialTypeId, VerifiedCredentialTypeKindId kindId, Guid? VerifiedCredentialExternalTypeDetailId, IFormFile Document, MediaTypeId MediaTypeId) creationData,
+        ICompanySsiDetailsRepository companyCredentialDetailsRepository,
+        CancellationToken cancellationToken)
+    {
+        var (credentialTypeId, kindId, verifiedCredentialExternalTypeDetailId, document, mediaTypeId) = creationData;
+        if (await companyCredentialDetailsRepository.CheckSsiDetailsExistsForCompany(identity.CompanyId, credentialTypeId, kindId, verifiedCredentialExternalTypeDetailId).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException("Credential request already existing");
+        }
+
+        var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
+            hash, mediaTypeId, DocumentTypeId.PRESENTATION, x =>
+            {
+                x.CompanyUserId = identity.UserId;
+                x.DocumentStatusId = DocumentStatusId.PENDING;
+            });
+
+        companyCredentialDetailsRepository.CreateSsiDetails(identity.CompanyId, credentialTypeId, doc.Id, CompanySsiDetailStatusId.PENDING, identity.UserId, details =>
+            {
+                if (verifiedCredentialExternalTypeDetailId != null)
+                {
+                    details.VerifiedCredentialExternalTypeUseCaseDetailId = verifiedCredentialExternalTypeDetailId;
+                }
+            });
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }

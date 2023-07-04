@@ -18,8 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -109,4 +111,35 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                     .Take(2)
              ))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public CompanySsiDetail CreateSsiDetails(Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, Guid docId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid userId, Action<CompanySsiDetail>? setOptionalFields)
+    {
+        var detail = new CompanySsiDetail(Guid.NewGuid(), companyId, verifiedCredentialTypeId, companySsiDetailStatusId, docId, userId, DateTimeOffset.UtcNow);
+        setOptionalFields?.Invoke(detail);
+        return _context.CompanySsiDetails.Add(detail).Entity;
+    }
+
+    /// <inheritdoc />
+    public Task<bool> CheckSsiDetailsExistsForCompany(Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, VerifiedCredentialTypeKindId kindId, Guid? verifiedCredentialExternalTypeUseCaseDetailId) =>
+        _context.CompanySsiDetails
+            .AnyAsync(x =>
+                x.CompanyId == companyId &&
+                x.VerifiedCredentialTypeId == verifiedCredentialTypeId &&
+                x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == kindId &&
+                (verifiedCredentialExternalTypeUseCaseDetailId == null || x.VerifiedCredentialExternalTypeUseCaseDetailId == verifiedCredentialExternalTypeUseCaseDetailId));
+
+    /// <inheritdoc />
+    public Task<bool> CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(Guid verifiedCredentialExternalTypeUseCaseDetailId, VerifiedCredentialTypeId verifiedCredentialTypeId) =>
+        _context.VerifiedCredentialExternalTypeUseCaseDetailVersions
+            .AnyAsync(x =>
+                x.Id == verifiedCredentialExternalTypeUseCaseDetailId &&
+                x.VerifiedCredentialExternalType!.VerifiedCredentialTypeAssignedExternalTypes.Any(y => y.VerifiedCredentialTypeId == verifiedCredentialTypeId));
+
+    /// <inheritdoc />
+    public Task<bool> CheckSsiCertificateType(VerifiedCredentialTypeId credentialTypeId) =>
+        _context.VerifiedCredentialTypeAssignedKinds
+            .AnyAsync(x =>
+                x.VerifiedCredentialTypeId == credentialTypeId &&
+                x.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE);
 }

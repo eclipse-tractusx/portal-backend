@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -184,4 +185,46 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
     public Task<IEnumerable<SsiCertificateData>> GetSsiCertificationData() =>
         this.WithCompanyId(companyId => _logic.GetSsiCertificatesAsync(companyId));
+
+    /// <summary>
+    /// Creates the useCaseParticipation
+    /// </summary>
+    /// <param name="data">The type and document</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>The id of the created use case participation</returns>
+    /// <remarks>Example: POST: api/administration/companydata/useCaseParticipation</remarks>
+    /// <response code="204">Successfully created the use case particiation.</response>
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    [Authorize(Roles = "add_use_case_participation")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("useCaseParticipation")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<NoContentResult> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken)
+    {
+        await this.WithUserIdAndCompanyId(identity => _logic.CreateUseCaseParticipation(identity, data, cancellationToken)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Creates the ssiCertificate
+    /// </summary>
+    /// <param name="data">The type and document</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>The id of the created use case participation</returns>
+    /// <remarks>Example: POST: api/administration/companydata/ssiCertificate</remarks>
+    /// <response code="204">Successfully created the ssi certificate.</response>
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    [Authorize(Roles = "add_ssi_certificate")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("certificates")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)
+    {
+        await this.WithUserIdAndCompanyId(identity => _logic.CreateSsiCertificate(identity, data, cancellationToken)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

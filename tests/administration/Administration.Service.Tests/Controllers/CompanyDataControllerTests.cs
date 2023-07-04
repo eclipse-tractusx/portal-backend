@@ -21,8 +21,10 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
@@ -196,5 +198,33 @@ public class CompanyDataControllerTests
         // Assert
         A.CallTo(() => _logic.GetSsiCertificatesAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task CreateUseCaseParticipation_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
+
+        // Act
+        await _controller.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.CreateUseCaseParticipation(A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task CreateSsiCertificate_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
+
+        // Act
+        await _controller.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.CreateSsiCertificate(A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 }

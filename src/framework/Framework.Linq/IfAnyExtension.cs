@@ -22,23 +22,73 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 
 public static class IfAnyExtension
 {
+    private sealed class IfAnyEnumerable<T> : IEnumerable<T>
+    {
+        private readonly IEnumerable<T> _source;
+        private readonly IEnumerator<T> _enumerator;
+        private bool isFirst;
+
+        public IfAnyEnumerable(IEnumerable<T> source, IEnumerator<T> enumerator)
+        {
+            _source = source;
+            _enumerator = enumerator;
+            isFirst = true;
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            if (isFirst)
+            {
+                isFirst = false;
+                return new IfAnyEnumerator<T>(_enumerator);
+            }
+            return _source.GetEnumerator();
+        }
+    }
+
+    private sealed class IfAnyEnumerator<T> : IEnumerator<T>
+    {
+        private readonly IEnumerator<T> _enumerator;
+        private bool isFirst;
+
+        public IfAnyEnumerator(IEnumerator<T> enumerator)
+        {
+            _enumerator = enumerator;
+            isFirst = true;
+        }
+
+        public T Current => _enumerator.Current;
+
+        object System.Collections.IEnumerator.Current => (_enumerator as System.Collections.IEnumerator).Current;
+
+        public bool MoveNext()
+        {
+            if (isFirst)
+            {
+                isFirst = false;
+                return true;
+            }
+            return _enumerator.MoveNext();
+        }
+
+        public void Reset()
+        {
+            isFirst = false;
+            _enumerator.Reset();
+        }
+
+        public void Dispose() => _enumerator.Dispose();
+    }
+
     public static bool IfAny<T>(this IEnumerable<T> source, Action<IEnumerable<T>> action)
     {
         var enumerator = source.GetEnumerator();
 
-        IEnumerable<T> Iterate()
-        {
-            yield return enumerator.Current;
-
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
-        }
-
         if (enumerator.MoveNext())
         {
-            action(Iterate());
+            action(new IfAnyEnumerable<T>(source, enumerator));
             return true;
         }
 
@@ -49,19 +99,9 @@ public static class IfAnyExtension
     {
         var enumerator = source.GetEnumerator();
 
-        IEnumerable<T> Iterate()
-        {
-            yield return enumerator.Current;
-
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
-        }
-
         if (enumerator.MoveNext())
         {
-            returnValue = process(Iterate());
+            returnValue = process(new IfAnyEnumerable<T>(source, enumerator));
             return true;
         }
 

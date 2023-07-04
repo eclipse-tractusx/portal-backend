@@ -27,6 +27,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditCompanySsiDetail20230621))]
 public class CompanySsiDetail : IAuditableV1, IBaseEntity
 {
+    private CompanySsiDetail() { }
+
+    public CompanySsiDetail(Guid id, Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid documentId, Guid creatorUserId, DateTimeOffset dateCreated)
+        : this()
+    {
+        Id = id;
+        CompanyId = companyId;
+        VerifiedCredentialTypeId = verifiedCredentialTypeId;
+        CompanySsiDetailStatusId = companySsiDetailStatusId;
+        DocumentId = documentId;
+        CreatorUserId = creatorUserId;
+        DateCreated = dateCreated;
+    }
+
     public Guid Id { get; set; }
     public Guid CompanyId { get; set; }
     public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
