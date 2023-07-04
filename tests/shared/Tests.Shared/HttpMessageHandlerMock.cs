@@ -39,6 +39,8 @@ public class HttpMessageHandlerMock : HttpMessageHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
+        RequestMessage = request;
+
         if (_ex != null)
         {
             throw _ex;
@@ -52,4 +54,6 @@ public class HttpMessageHandlerMock : HttpMessageHandler
 
         return Task.FromResult(httpResponseMessage);
     }
+
+    public HttpRequestMessage? RequestMessage { get; private set; } = null;
 }

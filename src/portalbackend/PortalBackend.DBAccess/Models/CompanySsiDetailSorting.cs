@@ -18,18 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Reflection;
-using System.Runtime.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public static class EnumExtensions
+/// <summary>
+/// Possible sorting options for the <see cref="CompanySsiDetail"/> pagination
+/// </summary>
+public enum CompanySsiDetailSorting
 {
-    public static string? GetEnumValue(this Enum value) =>
-        value.GetType()
-            .GetTypeInfo()
-            .DeclaredMembers
-            .SingleOrDefault(x => x.Name == value.ToString())
-            ?.GetCustomAttribute<EnumMemberAttribute>(false)
-            ?.Value;
+    /// <summary>
+    /// Ascending by company
+    /// </summary>
+    CompanyAsc = 1,
+
+    /// <summary>
+    /// Descending by company
+    /// </summary>
+    CompanyDesc = 2,
 }

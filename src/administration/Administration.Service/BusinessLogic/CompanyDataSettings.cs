@@ -47,6 +47,11 @@ public class CompanyDataSettings
     [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<MediaTypeId> SsiCertificateMediaTypes { get; set; }
+
+    /// <summary>
+    /// The maximum page size
+    /// </summary>
+    public int MaxPageSize { get; set; }
 }
 
 public static class CompanyDataSettingsExtensions

@@ -18,18 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Reflection;
-using System.Runtime.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public static class EnumExtensions
-{
-    public static string? GetEnumValue(this Enum value) =>
-        value.GetType()
-            .GetTypeInfo()
-            .DeclaredMembers
-            .SingleOrDefault(x => x.Name == value.ToString())
-            ?.GetCustomAttribute<EnumMemberAttribute>(false)
-            ?.Value;
-}
+public record SsiApprovalData(
+    CompanySsiDetailStatusId Status,
+    VerifiedCredentialTypeId Type,
+    VerifiedCredentialTypeKindId Kind,
+    string CompanyName,
+    string? Bpn,
+    DateTimeOffset? ExpiryDate,
+    UseCaseDetailData? UseCaseDetailData,
+    SsiRequesterData RequesterData
+);
+
+public record UseCaseDetailData(
+    VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId,
+    string Template,
+    string Version
+);
+
+public record SsiRequesterData(
+    Guid RequesterId,
+    string? RequesterEmail,
+    string? Firstname,
+    string? Lastname
+);

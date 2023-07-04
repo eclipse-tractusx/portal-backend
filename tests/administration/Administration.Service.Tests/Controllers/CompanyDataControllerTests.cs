@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -226,5 +227,50 @@ public class CompanyDataControllerTests
 
         // Assert
         A.CallTo(() => _logic.CreateSsiCertificate(A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ApproveCredential_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var credentialId = Guid.NewGuid();
+
+        // Act
+        await _controller.ApproveCredential(credentialId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.ApproveCredential(_identity.UserId, credentialId, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RejectCredentialWithValidData_CallsExpected()
+    {
+        // Arrange
+        var credentialId = Guid.NewGuid();
+
+        // Act
+        await _controller.RejectCredential(credentialId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.RejectCredential(_identity.UserId, credentialId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetCredentials_CallsExpected()
+    {
+        // Arrange
+        var paginationResponse = new Pagination.Response<CredentialDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CredentialDetailData>(5));
+        A.CallTo(() => _logic.GetCredentials(A<int>._, A<int>._, A<CompanySsiDetailStatusId>._, A<CompanySsiDetailSorting>._))
+            .ReturnsLazily(() => paginationResponse);
+
+        //Act
+        var result = await this._controller.GetCredentials(companySsiDetailStatusId: CompanySsiDetailStatusId.ACTIVE, sorting: CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCredentials(0, 15, A<CompanySsiDetailStatusId>._, A<CompanySsiDetailSorting>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CredentialDetailData>>(result);
+        result.Content.Should().HaveCount(5);
     }
 }

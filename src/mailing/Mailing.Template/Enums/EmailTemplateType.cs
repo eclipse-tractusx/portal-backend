@@ -118,5 +118,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
         /// </summary>
         [Path("new_user_account_ownidp.html")]
         NewUserAccountOwnIdp,
+
+        /// <summary>
+        /// Email template for credential approvals
+        /// </summary>
+        [Path("verified_credential_approved.html")]
+        CredentialApproval,
+
+        /// <summary>
+        /// Email template for credential rejection
+        /// </summary>
+        [Path("verified_credential_declined.html")]
+        CredentialRejected
     }
 }

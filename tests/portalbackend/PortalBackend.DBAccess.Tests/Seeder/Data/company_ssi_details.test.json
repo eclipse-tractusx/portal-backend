@@ -30,5 +30,16 @@
     "expiry_date": null,
     "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "date_created": "2023-06-01 00:00:00.000000 +00:00"
+  },
+  {
+    "id": "9f5b9934-4014-4099-91e9-7b1aee696b06",
+    "company_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd",
+    "verified_credential_type_id": 1,
+    "company_ssi_detail_status_id": 1,
+    "document_id": "3291cae8-3c7b-4862-8cec-93ea0dc8c61e",
+    "expiry_date": null,
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2023-06-01 00:00:00.000000 +00:00",
+    "verified_credential_external_type_use_case_detail_id": "1268a76a-ca19-4dd8-b932-01f24071d560"
   }
 ]

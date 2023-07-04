@@ -47,7 +47,7 @@ public class VerifiedCredentialType
     public virtual VerifiedCredentialTypeAssignedExternalType? VerifiedCredentialTypeAssignedExternalType { get; private set; }
     public virtual VerifiedCredentialTypeAssignedKind? VerifiedCredentialTypeAssignedKind { get; set; }
 
-    public virtual VerifiedCredentialTypeAssignedUseCase? VerifiedCredentialTypeAssignedUseCase { get; private set; }
+    public virtual VerifiedCredentialTypeAssignedUseCase? VerifiedCredentialTypeAssignedUseCase { get; set; }
 
     public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

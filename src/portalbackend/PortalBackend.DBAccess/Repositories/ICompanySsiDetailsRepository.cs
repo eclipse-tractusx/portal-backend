@@ -77,4 +77,15 @@ public interface ICompanySsiDetailsRepository
     /// <param name="credentialTypeId">Id of the credentialTypeId</param>
     /// <returns><c>true</c> if the tpye is a certificate, otherwise <c>false</c></returns>
     Task<bool> CheckSsiCertificateType(VerifiedCredentialTypeId credentialTypeId);
+
+    /// <summary>
+    /// Gets all credential details
+    /// </summary>
+    /// <param name="companySsiDetailStatusId">The status of the details</param>
+    /// <returns>Returns data to create the pagination</returns>
+    IQueryable<CompanySsiDetail> GetAllCredentialDetails(CompanySsiDetailStatusId? companySsiDetailStatusId);
+
+    Task<(bool exists, SsiApprovalData data)> GetSsiApprovalData(Guid credentialId);
+    Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetSsiRejectionData(Guid credentialId);
+    void AttachAndModifyCompanySsiDetails(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields);
 }

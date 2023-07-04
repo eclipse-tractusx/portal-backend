@@ -18,18 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Reflection;
-using System.Runtime.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 
-public static class EnumExtensions
-{
-    public static string? GetEnumValue(this Enum value) =>
-        value.GetType()
-            .GetTypeInfo()
-            .DeclaredMembers
-            .SingleOrDefault(x => x.Name == value.ToString())
-            ?.GetCustomAttribute<EnumMemberAttribute>(false)
-            ?.Value;
-}
+public record CustodianFrameworkRequest(
+    [property: JsonPropertyName("holderIdentifier")] string HolderIdentifier,
+    [property: JsonPropertyName("type"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialExternalTypeId>))] VerifiedCredentialExternalTypeId Type,
+    [property: JsonPropertyName("contract-template")] string Template,
+    [property: JsonPropertyName("contract-version")] string Version
+);
+
+public record CustodianDismantlerRequest(
+    [property: JsonPropertyName("bpn")] string Bpn,
+    [property: JsonPropertyName("activityType"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialTypeId>))] VerifiedCredentialTypeId Type
+);

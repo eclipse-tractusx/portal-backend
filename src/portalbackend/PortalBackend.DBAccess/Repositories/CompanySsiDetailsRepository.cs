@@ -142,4 +142,64 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
             .AnyAsync(x =>
                 x.VerifiedCredentialTypeId == credentialTypeId &&
                 x.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE);
+
+    /// <inheritdoc />
+    public IQueryable<CompanySsiDetail> GetAllCredentialDetails(CompanySsiDetailStatusId? companySsiDetailStatusId) =>
+        _context.CompanySsiDetails.AsNoTracking()
+            .Where(c =>
+                !companySsiDetailStatusId.HasValue ||
+                c.CompanySsiDetailStatusId == companySsiDetailStatusId.Value);
+
+    /// <inheritdoc />
+    public Task<(bool exists, SsiApprovalData data)> GetSsiApprovalData(Guid credentialId) =>
+        _context.CompanySsiDetails
+            .Where(x => x.Id == credentialId)
+            .Select(x => new ValueTuple<bool, SsiApprovalData>(
+                true,
+                new SsiApprovalData(
+                    x.CompanySsiDetailStatusId,
+                    x.VerifiedCredentialTypeId,
+                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId,
+                    x.Company!.Name,
+                    x.Company.BusinessPartnerNumber,
+                    x.ExpiryDate,
+                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId != VerifiedCredentialTypeKindId.USE_CASE ?
+                        null :
+                        new UseCaseDetailData(
+                            x.VerifiedCredentialExternalTypeUseCaseDetailVersion!.VerifiedCredentialExternalTypeId,
+                            x.VerifiedCredentialExternalTypeUseCaseDetailVersion.Template,
+                            x.VerifiedCredentialExternalTypeUseCaseDetailVersion.Version
+                        ),
+                    new SsiRequesterData(
+                        x.CreatorUserId,
+                        x.CreatorUser!.Email,
+                        x.CreatorUser.Firstname,
+                        x.CreatorUser.Lastname
+                    )
+                )
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetSsiRejectionData(Guid credentialId) =>
+        _context.CompanySsiDetails
+            .Where(x => x.Id == credentialId)
+            .Select(x => new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(
+                true,
+                x.CompanySsiDetailStatusId,
+                x.VerifiedCredentialTypeId,
+                x.CreatorUserId,
+                x.CreatorUser!.Email,
+                x.CreatorUser.Firstname,
+                x.CreatorUser.Lastname))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void AttachAndModifyCompanySsiDetails(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields)
+    {
+        var entity = new CompanySsiDetail(id, Guid.Empty, default, default, Guid.Empty, Guid.Empty, default);
+        initialize?.Invoke(entity);
+        _context.Attach(entity);
+        updateFields.Invoke(entity);
+    }
 }
