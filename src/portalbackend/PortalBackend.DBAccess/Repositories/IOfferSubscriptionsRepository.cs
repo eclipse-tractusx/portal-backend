@@ -50,9 +50,9 @@ public interface IOfferSubscriptionsRepository
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
     Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId);
 
-    Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, Guid userCompanyId);
+    Task<(OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, Guid AppId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
 
-    Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, Guid userCompanyId);
+    Task<(OfferSubscriptionStatusId offerSubscriptionStatusId, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
 
     Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId);
 
@@ -74,14 +74,14 @@ public interface IOfferSubscriptionsRepository
     /// <returns>Returns the offer details.</returns>
     Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckProviderCompany(Guid offerSubscriptionId, Guid providerCompanyId, OfferTypeId offerTypeId);
 
-    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId, Process? Process, IEnumerable<ProcessStepTypeId>? ProcessStepTypeIds)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
+    public Task<bool> CheckPendingOrActiveSubscriptionExists(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
     OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters);
 
     /// <summary>
     /// Gets all business app data for the given userId
     /// </summary>
-    /// <param name="iamUserId">Id of the user to get the app data for.</param>
+    /// <param name="userId">Id of the user to get the app data for.</param>
     /// <returns>Returns an IAsyncEnumerable of app data</returns>
     IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid userId);
 

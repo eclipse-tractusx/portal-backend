@@ -213,14 +213,13 @@ public class AppsControllerTests
     public async Task ActivateCompanyAppSubscriptionAsync_ReturnsNoContent()
     {
         //Arrange
-        var appId = _fixture.Create<Guid>();
-        var companyId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.ActivateCompanyAppSubscriptionAsync(appId, companyId).ConfigureAwait(false);
+        var result = await this._controller.ActivateCompanyAppSubscriptionAsync(subscriptionId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, companyId, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ActivateOwnCompanyProvidedAppSubscriptionAsync(subscriptionId, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

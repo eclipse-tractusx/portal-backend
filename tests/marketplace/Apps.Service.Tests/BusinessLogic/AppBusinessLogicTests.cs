@@ -349,14 +349,14 @@ public class AppBusinessLogicTests
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync_WithNotExistingApp_ThrowsNotFoundException()
     {
         // Arrange
-        var notExistingAppId = _fixture.Create<Guid>();
-        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(notExistingAppId, A<Guid>._, _identity.CompanyId))
-            .Returns(((Guid, OfferSubscriptionStatusId, Guid, string?, bool, RequesterData))default);
+        var notExistingSubscriptionId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(notExistingSubscriptionId, _identity.CompanyId))
+            .Returns(((OfferSubscriptionStatusId, Guid, Guid, string?, bool, RequesterData))default);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(notExistingAppId, Guid.NewGuid(), (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(notExistingSubscriptionId, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -367,11 +367,11 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
+        var subscriptionId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(subscriptionId, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .Returns((
-                Guid.Empty,
                 default,
+                Guid.Empty,
                 Guid.Empty,
                 "app 1",
                 false,
@@ -380,7 +380,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), (identity.UserId, identity.CompanyId)).ConfigureAwait(false);
+        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(subscriptionId, (identity.UserId, identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -392,14 +392,17 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var offerSubscription = _fixture.Create<OfferSubscription>();
+        var offerSubscriptionId = _fixture.Create<Guid>();
         var companyId = _fixture.Create<Guid>();
-        offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
-        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, companyId, _identity.CompanyId))
+        var offerSubscription = _fixture.Build<OfferSubscription>()
+            .With(x => x.OfferSubscriptionStatusId, OfferSubscriptionStatusId.ACTIVE)
+            .With(x => x.Id, offerSubscriptionId)
+            .Create();
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(offerSubscriptionId, _identity.CompanyId))
             .Returns((
-                offerSubscription.Id,
                 offerSubscription.OfferSubscriptionStatusId,
                 offerSubscription.RequesterId,
+                appId,
                 "app 1",
                 true,
                 new RequesterData(string.Empty, string.Empty, string.Empty)));
@@ -407,11 +410,11 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, companyId, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(offerSubscriptionId, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"subscription for app {appId}, company {companyId} is not in status PENDING");
+        ex.Message.Should().Be($"subscription {offerSubscriptionId} is not in status PENDING");
     }
 
     [Fact]
@@ -421,11 +424,11 @@ public class AppBusinessLogicTests
         var appId = _fixture.Create<Guid>();
         var offerSubscription = _fixture.Create<OfferSubscription>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
-        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, _identity.CompanyId))
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(offerSubscription.Id, _identity.CompanyId))
             .Returns((
-                offerSubscription.Id,
                 offerSubscription.OfferSubscriptionStatusId,
                 offerSubscription.RequesterId,
+                appId,
                 "app 1",
                 true,
                 new RequesterData(string.Empty, string.Empty, string.Empty)));
@@ -433,7 +436,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(offerSubscription.Id, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false, A<Action<Notification>?>._)).MustHaveHappenedOnceExactly();
@@ -447,11 +450,11 @@ public class AppBusinessLogicTests
         var appId = _fixture.Create<Guid>();
         var offerSubscription = _fixture.Create<OfferSubscription>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
-        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, _identity.CompanyId))
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(offerSubscription.Id, _identity.CompanyId))
             .Returns((
-                offerSubscription.Id,
                 offerSubscription.OfferSubscriptionStatusId,
                 offerSubscription.RequesterId,
+                appId,
                 "app 1",
                 true,
                 new RequesterData("test@email.com", "tony", "gilbert")));
@@ -459,7 +462,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), _mailingService);
 
         // Act
-        await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(offerSubscription.Id, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false, A<Action<Notification>?>._)).MustHaveHappenedOnceExactly();

@@ -220,10 +220,9 @@ public class AppsController : ControllerBase
         _appsBusinessLogic.GetAppAgreement(appId);
 
     /// <summary>
-    /// Activates a pending app subscription for an app provided by the current user's company.
+    /// Activates a pending app subscription.
     /// </summary>
-    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to activate subscription for.</param>
-    /// <param name="companyId" example="74BA5AEF-1CC7-495F-ABAA-CF87840FA6E2">ID of the company to activate subscription for.</param>
+    /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to activate.</param>
     /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/supscription/company/74BA5AEF-1CC7-495F-ABAA-CF87840FA6E2/activate</remarks>
     /// <response code="204">App subscription was successfully activated.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
@@ -232,7 +231,7 @@ public class AppsController : ControllerBase
     /// <response code="500">Internal Server Error.</response>
     [Obsolete("This endpoint is not used anymore")]
     [HttpPut]
-    [Route("{appId}/subscription/company/{companyId}/activate")]
+    [Route("/subscription/{subscriptionId}/activate")]
     [Authorize(Roles = "activate_subscription")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
@@ -241,30 +240,30 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromRoute] Guid companyId)
+    public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid subscriptionId)
     {
-        await this.WithUserIdAndCompanyId(identity => _appsBusinessLogic.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, companyId, identity)).ConfigureAwait(false);
+        await this.WithUserIdAndCompanyId(identity => _appsBusinessLogic.ActivateOwnCompanyProvidedAppSubscriptionAsync(subscriptionId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
     /// <summary>
     /// Unsubscribes an app from the current user's company's subscriptions.
     /// </summary>
-    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to unsubscribe from.</param>
+    /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to unsubscribe from.</param>
     /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/unsubscribe</remarks>
     /// <response code="204">The app was successfully unsubscribed from.</response>
     /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
     /// <response code="404">App does not exist.</response>
     [HttpPut]
-    [Route("{appId}/unsubscribe")]
+    [Route("{subscriptionId}/unsubscribe")]
     [Authorize(Roles = "unsubscribe_apps")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UnsubscribeCompanyAppSubscriptionAsync([FromRoute] Guid appId)
+    public async Task<IActionResult> UnsubscribeCompanyAppSubscriptionAsync([FromRoute] Guid subscriptionId)
     {
-        await this.WithCompanyId(companyId => _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(appId, companyId)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(subscriptionId, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 
