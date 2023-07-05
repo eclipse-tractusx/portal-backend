@@ -32,6 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executo
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
 
 LoggingExtensions.EnsureInitialized();
 Log.Information("Building worker");
@@ -42,11 +44,6 @@ try
         .ConfigureServices((hostContext, services) =>
         {
             services
-                .AddLogging(builder =>
-                {
-                    var logger = LoggingExtensions.CreateLogger(hostContext.Configuration);
-                    builder.AddSerilog(logger);
-                })
                 .AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
                 .AddOfferSubscriptionProcessExecutor(hostContext.Configuration)
@@ -66,7 +63,13 @@ try
                 FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
             }
         })
-        .UseSerilog()
+        .UseSerilog((hostContext, configuration) =>
+        {
+            configuration
+                .WriteTo.Console(new JsonFormatter())
+                .ReadFrom.Configuration(hostContext.Configuration);
+
+        })
         .Build();
     Log.Information("Building worker completed");
 

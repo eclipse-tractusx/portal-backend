@@ -28,6 +28,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
 using System.Reflection;
 
 LoggingExtensions.EnsureInitialized();
@@ -38,17 +40,19 @@ try
         .ConfigureServices((hostContext, services) =>
         {
             services
-                .AddLogging(builder =>
-                {
-                    var logger = LoggingExtensions.CreateLogger(hostContext.Configuration);
-                    builder.AddSerilog(logger);
-                })
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
                         x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
                             .MigrationsHistoryTable("__efmigrations_history_portal"))
                         .UsePostgreSqlTriggers())
                 .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
+        })
+        .UseSerilog((hostContext, configuration) =>
+        {
+            configuration
+                .WriteTo.Console(new JsonFormatter())
+                .ReadFrom.Configuration(hostContext.Configuration);
+
         });
 
     var host = builder.Build();
@@ -57,7 +61,7 @@ try
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
-    Log.Fatal(ex, "Unhandled exception");
+    Log.Fatal("Unhandled exception {Exception}", ex);
     throw;
 }
 finally

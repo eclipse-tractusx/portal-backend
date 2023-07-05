@@ -18,28 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Core;
+using Serilog.Events;
 using Serilog.Formatting.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 public static class LoggingExtensions
 {
-    public static Logger CreateLogger(IConfiguration? config)
-    {
-        var loggerConfig = new LoggerConfiguration();
-        if (config is not null)
-        {
-            loggerConfig = loggerConfig.ReadFrom.Configuration(config);
-        }
-
-        return loggerConfig.Enrich.FromLogContext()
-            .WriteTo.Console(new JsonFormatter())
-            .CreateLogger();
-    }
-
     /// <summary>
     /// Creates a static logger
     /// </summary>
@@ -52,6 +39,10 @@ public static class LoggingExtensions
         if (Log.Logger is Logger)
             return;
 
-        Log.Logger = CreateLogger(null);
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .WriteTo.Console(new JsonFormatter())
+            .CreateBootstrapLogger();
     }
 }
