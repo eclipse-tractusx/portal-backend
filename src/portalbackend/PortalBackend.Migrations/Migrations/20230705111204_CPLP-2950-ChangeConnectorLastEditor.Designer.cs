@@ -22,6 +22,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -31,9 +32,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230705111204_CPLP-2950-ChangeConnectorLastEditor")]
+    partial class CPLP2950ChangeConnectorLastEditor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6360,14 +6362,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfileAssignedUserRole", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfile", "TechnicalUserProfile")
-                        .WithMany("TechnicalUserProfileAssignedUserRoles")
+                        .WithMany()
                         .HasForeignKey("TechnicalUserProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_technical_user_profile_assigned_user_roles_technical_user_p");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
-                        .WithMany("TechnicalUserProfileAssignedUserRole")
+                        .WithMany()
                         .HasForeignKey("UserRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_technical_user_profile_assigned_user_roles_user_roles_user_r");
 
@@ -6902,11 +6906,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ServiceDetails");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfile", b =>
-                {
-                    b.Navigation("TechnicalUserProfileAssignedUserRoles");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", b =>
                 {
                     b.Navigation("CompanyIdentifiers");
@@ -6928,8 +6927,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Navigation("IdentityAssignedRoles");
-
-                    b.Navigation("TechnicalUserProfileAssignedUserRole");
 
                     b.Navigation("UserRoleDescriptions");
                 });

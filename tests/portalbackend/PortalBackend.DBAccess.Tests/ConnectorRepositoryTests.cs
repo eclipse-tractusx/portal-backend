@@ -71,6 +71,29 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Single().Entity.Should().BeOfType<Connector>().Which.Name.Should().Be("Test connector");
     }
 
+    [Fact]
+    public async Task CreateConnector_WithServiceAccount_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = sut.CreateConnector("Test connector", "de", "https://www.test.de", con =>
+        {
+            con.ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+            con.LastEditorId = new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2");
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        result.Name.Should().Be("Test connector");
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<Connector>().Which.Name.Should().Be("Test connector");
+    }
+
     #endregion
 
     #region AttachAndModify
