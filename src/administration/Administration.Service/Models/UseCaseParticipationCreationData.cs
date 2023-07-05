@@ -25,12 +25,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 public record UseCaseParticipationCreationData
 (
     Guid VerifiedCredentialExternalTypeDetailId,
-    VerifiedCredentialTypeId CredentialTypeId,
+    VerifiedCredentialTypeId CredentialType,
     IFormFile Document
 );
 
 public record SsiCertificateCreationData
 (
-    VerifiedCredentialTypeId CredentialTypeId,
+    VerifiedCredentialTypeId CredentialType,
     IFormFile Document
 );

@@ -196,7 +196,7 @@ public class CompanyDataController : ControllerBase
     /// <response code="204">Successfully created the use case particiation.</response>
     [HttpPost]
     [Consumes("multipart/form-data")]
-    [Authorize(Roles = "add_use_case_participation")]
+    [Authorize(Roles = "request_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("useCaseParticipation")]
@@ -217,7 +217,7 @@ public class CompanyDataController : ControllerBase
     /// <response code="204">Successfully created the ssi certificate.</response>
     [HttpPost]
     [Consumes("multipart/form-data")]
-    [Authorize(Roles = "add_ssi_certificate")]
+    [Authorize(Roles = "request_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificates")]
@@ -238,7 +238,7 @@ public class CompanyDataController : ControllerBase
     /// <param name="sorting">Defines the sorting of the list</param>
     /// <response code="200">Collection of the credentials.</response>
     [HttpGet]
-    [Authorize(Roles = "admin_credential_decision")]
+    [Authorize(Roles = "decision_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("credentials", Name = nameof(GetCredentials))]
     [ProducesResponseType(typeof(IEnumerable<CredentialDetailData>), StatusCodes.Status200OK)]
@@ -258,7 +258,7 @@ public class CompanyDataController : ControllerBase
     /// <returns>No Content</returns>
     /// <response code="204">Successfully approved the credentials.</response>
     [HttpPut]
-    [Authorize(Roles = "admin_credential_decision")]
+    [Authorize(Roles = "decision_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("credentials/{credentialId}/approval")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -276,7 +276,7 @@ public class CompanyDataController : ControllerBase
     /// <returns>No Content</returns>
     /// <response code="204">Successfully rejected the credentials.</response>
     [HttpPut]
-    [Authorize(Roles = "admin_credential_decision")]
+    [Authorize(Roles = "decision_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("credentials/{credentialId}/reject")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
