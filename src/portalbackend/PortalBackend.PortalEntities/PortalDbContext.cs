@@ -1158,13 +1158,21 @@ public class PortalDbContext : DbContext
                 .WithMany(o => o.TechnicalUserProfiles)
                 .HasForeignKey(t => t.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        });
 
-            entity.HasMany(t => t.UserRoles)
-                .WithMany(u => u.TechnicalUserProfiles)
-                .UsingEntity<TechnicalUserProfileAssignedUserRole>(tu =>
-                {
-                    tu.HasKey(x => new { x.TechnicalUserProfileId, x.UserRoleId });
-                });
+        modelBuilder.Entity<TechnicalUserProfileAssignedUserRole>(entity =>
+        {
+            entity.HasKey(e => new { e.TechnicalUserProfileId, e.UserRoleId });
+
+            entity.HasOne(d => d.TechnicalUserProfile)
+                .WithMany(p => p!.TechnicalUserProfileAssignedUserRoles)
+                .HasForeignKey(d => d.TechnicalUserProfileId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.UserRole)
+                .WithMany(p => p!.TechnicalUserProfileAssignedUserRole)
+                .HasForeignKey(d => d.UserRoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<VerifiedCredentialType>()

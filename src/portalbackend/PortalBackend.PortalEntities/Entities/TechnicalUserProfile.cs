@@ -26,7 +26,7 @@ public class TechnicalUserProfile : IBaseEntity
 {
     private TechnicalUserProfile()
     {
-        UserRoles = new HashSet<UserRole>();
+        TechnicalUserProfileAssignedUserRoles = new HashSet<TechnicalUserProfileAssignedUserRole>();
     }
 
     public TechnicalUserProfile(Guid id, Guid offerId)
@@ -42,5 +42,5 @@ public class TechnicalUserProfile : IBaseEntity
 
     public virtual Offer? Offer { get; private set; }
 
-    public virtual ICollection<UserRole> UserRoles { get; private set; }
+    public virtual ICollection<TechnicalUserProfileAssignedUserRole> TechnicalUserProfileAssignedUserRoles { get; private set; }
 }
