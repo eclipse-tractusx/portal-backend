@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -27,6 +29,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 public static class LoggingExtensions
 {
+    /// <summary>
+    /// Adds the default Serilog Configuration to the log
+    /// </summary>
+    /// <param name="host">The applications host</param>
+    /// <param name="extendLogging">The possibility to extend the configuration</param>
+    public static IHostBuilder AddLogging(this IHostBuilder host, Action<LoggerConfiguration, IConfiguration>? extendLogging = null) =>
+        host.UseSerilog((context, configuration) =>
+        {
+            configuration
+                .WriteTo.Console(new JsonFormatter())
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .ReadFrom.Configuration(context.Configuration);
+            extendLogging?.Invoke(configuration, context.Configuration);
+        });
+
     /// <summary>
     /// Creates a static logger
     /// </summary>

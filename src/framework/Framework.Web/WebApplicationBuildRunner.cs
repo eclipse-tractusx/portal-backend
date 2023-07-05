@@ -18,7 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Flurl.Util;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Serilog;
 
@@ -37,7 +39,23 @@ public static class WebApplicationBuildRunner
         try
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Host.AddLogging(builder.Configuration);
+
+            void ExtendLoggingForWeb(LoggerConfiguration configuration, IConfiguration config)
+            {
+                configuration.Enrich.WithCorrelationIdHeader("X-Request-Id");
+                var healthCheckPaths = config.GetSection("HealthChecks").Get<IEnumerable<HealthCheckSettings>>()?.Select(x => x.Path);
+                if (healthCheckPaths != null)
+                {
+                    configuration
+                        .Filter.ByExcluding(le =>
+                        {
+                            return le.Properties.TryGetValue("RequestPath", out var logProperty) &&
+                                   logProperty.ToKeyValuePairs().Any(x => healthCheckPaths.Contains(x.Value));
+                        });
+                }
+            }
+
+            builder.Host.AddLogging(ExtendLoggingForWeb);
             builder.Services
                 .AddDefaultServices<TProgram>(builder.Configuration, version);
 

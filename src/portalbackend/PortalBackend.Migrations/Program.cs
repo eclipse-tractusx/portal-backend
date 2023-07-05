@@ -36,7 +36,7 @@ LoggingExtensions.EnsureInitialized();
 Log.Information("Starting process");
 try
 {
-    var builder = Host.CreateDefaultBuilder(args)
+    var host = Host.CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
         {
             services
@@ -47,15 +47,8 @@ try
                         .UsePostgreSqlTriggers())
                 .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
         })
-        .UseSerilog((hostContext, configuration) =>
-        {
-            configuration
-                .WriteTo.Console(new JsonFormatter())
-                .ReadFrom.Configuration(hostContext.Configuration);
-
-        });
-
-    var host = builder.Build();
+        .AddLogging()
+        .Build();
 
     await host.Services.InitializeDatabasesAsync(); // We don't actually run anything here. The magic happens in InitializeDatabasesAsync
 }

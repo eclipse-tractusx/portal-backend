@@ -27,15 +27,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Json;
 using System.Reflection;
 
 LoggingExtensions.EnsureInitialized();
 Log.Information("Starting process");
 try
 {
-    var builder = Host.CreateDefaultBuilder(args)
+    var host = Host.CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
         {
             services.AddDbContext<ProvisioningDbContext>(o =>
@@ -44,14 +42,8 @@ try
                     .MigrationsHistoryTable("__efmigrations_history_provisioning", "public")))
                 .AddDatabaseInitializer<ProvisioningDbContext>(hostContext.Configuration.GetSection("Seeding"));
         })
-        .UseSerilog((hostContext, configuration) =>
-        {
-            configuration
-                .WriteTo.Console(new JsonFormatter())
-                .ReadFrom.Configuration(hostContext.Configuration);
-        });
-
-    var host = builder.Build();
+        .AddLogging()
+        .Build();
 
     await host.Services.InitializeDatabasesAsync(); // We don't actually run anything here. The magic happens in InitializeDatabasesAsync
 }

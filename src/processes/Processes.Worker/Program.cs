@@ -63,13 +63,7 @@ try
                 FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
             }
         })
-        .UseSerilog((hostContext, configuration) =>
-        {
-            configuration
-                .WriteTo.Console(new JsonFormatter())
-                .ReadFrom.Configuration(hostContext.Configuration);
-
-        })
+        .AddLogging()
         .Build();
     Log.Information("Building worker completed");
 
