@@ -28,6 +28,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Xunit;
@@ -75,6 +77,13 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
             services.EnsureDbCreated();
             services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
         });
+    }
+
+    /// <inheritdoc />
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        builder.AddLogging();
+        return base.CreateHost(builder);
     }
 
     public async Task InitializeAsync() => await _container.StartAsync();
