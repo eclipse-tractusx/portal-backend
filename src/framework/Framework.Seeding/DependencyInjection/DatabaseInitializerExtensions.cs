@@ -35,18 +35,14 @@ public static class DatabaseInitializerExtensions
             .InitializeDatabasesAsync(cancellationToken);
     }
 
-    public static IServiceCollection AddDatabaseInitializer<TDbContext>(this IServiceCollection services, IConfigurationSection section) where TDbContext : DbContext
-    {
-        services.AddOptions<SeederSettings>()
-            .Bind(section);
-
-        return services
+    public static IServiceCollection AddDatabaseInitializer<TDbContext>(this IServiceCollection services, IConfigurationSection section) where TDbContext : DbContext =>
+        services
+            .ConfigureSeederSettings(section)
             .AddTransient<IDatabaseInitializer, DatabaseInitializer<TDbContext>>()
             .AddTransient<DbInitializer<TDbContext>>()
             .AddTransient<DbSeeder>()
             .AddServices(typeof(ICustomSeeder), ServiceLifetime.Transient)
             .AddTransient<CustomSeederRunner>();
-    }
 
     private static IServiceCollection AddServices(this IServiceCollection services, Type interfaceType, ServiceLifetime lifetime)
     {
