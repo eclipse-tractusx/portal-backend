@@ -89,7 +89,7 @@ public interface INotificationRepository
     /// </summary>
     /// <param name="companyUserId">id of the user</param>
     /// <returns>Returns the notification count details</returns>
-    IAsyncEnumerable<(bool IsRead, bool? Done, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(Guid companyUserId);
+    IAsyncEnumerable<(bool IsRead, bool? Done, NotificationTopicId? NotificationTopicId, int Count)> GetCountDetailsForUserAsync(Guid companyUserId);
 
     /// <summary>
     /// Gets the notification ids that should be updated
