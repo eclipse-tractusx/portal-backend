@@ -735,6 +735,10 @@ public class OfferService : IOfferService
     /// <inheritdoc />
     public async Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, Guid companyId, string technicalUserProfileClient)
     {
+        if (data.Any(x => x.TechnicalUserProfileId == null && !x.UserRoleIds.Any()))
+        {
+            throw new ControllerArgumentException("Technical User Profiles and Role IDs both should not be empty.");
+        }
         var technicalUserProfileRepository = _portalRepositories.GetInstance<ITechnicalUserProfileRepository>();
         var offerProfileData = await technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, companyId).ConfigureAwait(false);
         var roles = await _portalRepositories.GetInstance<IUserRolesRepository>()
@@ -775,7 +779,7 @@ public class OfferService : IOfferService
         technicalUserProfileRepository.RemoveTechnicalUserProfiles(
             offerProfileData.ProfileData
                 .ExceptBy(
-                    data.Where(x => x.TechnicalUserProfileId != null)
+                    data.Where(x => x.TechnicalUserProfileId != null && x.UserRoleIds.Any())
                         .Select(x => x.TechnicalUserProfileId!.Value),
                     x => x.TechnicalUserProfileId)
                 .Select(x => x.TechnicalUserProfileId));

@@ -1837,13 +1837,16 @@ public class OfferServiceTests
 
     #region UpdateTechnicalUserProfiles
 
-    [Fact]
-    public async Task UpdateTechnicalUserProfiles_ReturnsExpectedResult()
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task UpdateTechnicalUserProfiles_ReturnsExpectedResult(OfferTypeId offerTypeId)
     {
         // Arrange
         var offerId = _fixture.Create<Guid>();
         var technicalUserProfile1 = _fixture.Create<Guid>();
         var technicalUserProfile2 = _fixture.Create<Guid>();
+        var technicalUserProfile3 = _fixture.Create<Guid>();
         var newProfileId = _fixture.Create<Guid>();
         var userRole1Id = _fixture.Create<Guid>();
         var userRole2Id = _fixture.Create<Guid>();
@@ -1858,13 +1861,15 @@ public class OfferServiceTests
             {
                 userRole2Id
             }),
+            new TechnicalUserProfileData(technicalUserProfile3, Enumerable.Empty<Guid>())
         };
         var profileData = new (Guid, IEnumerable<Guid>)[]
         {
             (technicalUserProfile1, new[] {userRole1Id}),                 // to update
-            (technicalUserProfile2, new[] {userRole1Id, userRole2Id})     // to delete
+            (technicalUserProfile2, new[] {userRole1Id, userRole2Id}),    // to delete
+            (technicalUserProfile3, Enumerable.Empty<Guid>())
         };
-        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, OfferTypeId.SERVICE, _identity.CompanyId))
+        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _identity.CompanyId))
             .Returns(new OfferProfileData(true, new[] { ServiceTypeId.DATASPACE_SERVICE }, profileData));
         A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
@@ -1872,7 +1877,7 @@ public class OfferServiceTests
             .Returns(new TechnicalUserProfile(newProfileId, offerId));
 
         // Act
-        await _sut.UpdateTechnicalUserProfiles(offerId, OfferTypeId.SERVICE, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _technicalUserProfileRepository.CreateTechnicalUserProfile(A<Guid>._, offerId))
@@ -1889,13 +1894,15 @@ public class OfferServiceTests
                     x.Any(y => y.Item1 == newProfileId && y.Item2 == userRole2Id) &&
                     x.Any(y => y.Item1 == technicalUserProfile1 && y.Item2 == userRole2Id))))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _technicalUserProfileRepository.RemoveTechnicalUserProfiles(A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 1 && x.Contains(technicalUserProfile2))))
+        A.CallTo(() => _technicalUserProfileRepository.RemoveTechnicalUserProfiles(A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2 && x.Contains(technicalUserProfile2) && x.Contains(technicalUserProfile3))))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
-    [Fact]
-    public async Task UpdateTechnicalUserProfiles_WithNotExistingRoles_ThrowsException()
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task UpdateTechnicalUserProfiles_WithNotExistingRoles_ThrowsException(OfferTypeId offerTypeId)
     {
         // Arrange
         var offerId = _fixture.Create<Guid>();
@@ -1911,21 +1918,23 @@ public class OfferServiceTests
                 missingRoleId
             }),
         };
-        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, OfferTypeId.SERVICE, _identity.CompanyId))
+        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _identity.CompanyId))
             .Returns(new OfferProfileData(true, new[] { ServiceTypeId.DATASPACE_SERVICE }, Enumerable.Empty<(Guid TechnicalUserProfileId, IEnumerable<Guid> UserRoleIds)>()));
         A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, OfferTypeId.SERVICE, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Roles {missingRoleId} do not exist");
     }
 
-    [Fact]
-    public async Task UpdateTechnicalUserProfiles_ForConsultancyService_ThrowsException()
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task UpdateTechnicalUserProfiles_ForConsultancyService_ThrowsException(OfferTypeId offerTypeId)
     {
         // Arrange
         var offerId = _fixture.Create<Guid>();
@@ -1939,21 +1948,23 @@ public class OfferServiceTests
                 userRole2Id,
             }),
         };
-        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, OfferTypeId.SERVICE, _identity.CompanyId))
+        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _identity.CompanyId))
             .Returns(new OfferProfileData(true, new[] { ServiceTypeId.CONSULTANCE_SERVICE }, Enumerable.Empty<(Guid TechnicalUserProfileId, IEnumerable<Guid> UserRoleIds)>()));
         A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, OfferTypeId.SERVICE, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Technical User Profiles can't be set for CONSULTANCE_SERVICE");
     }
 
-    [Fact]
-    public async Task UpdateTechnicalUserProfiles_WithUserNotInProvidingCompany_ThrowsException()
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task UpdateTechnicalUserProfiles_WithUserNotInProvidingCompany_ThrowsException(OfferTypeId offerTypeId)
     {
         // Arrange
         var offerId = _fixture.Create<Guid>();
@@ -1967,21 +1978,23 @@ public class OfferServiceTests
                 userRole2Id,
             }),
         };
-        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, OfferTypeId.SERVICE, _identity.CompanyId))
+        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _identity.CompanyId))
             .Returns(new OfferProfileData(false, new[] { ServiceTypeId.DATASPACE_SERVICE }, Enumerable.Empty<(Guid TechnicalUserProfileId, IEnumerable<Guid> UserRoleIds)>()));
         A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, OfferTypeId.SERVICE, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be($"Company {_identity.CompanyId} is not the providing company");
     }
 
-    [Fact]
-    public async Task UpdateTechnicalUserProfiles_WithoutOffer_ThrowsException()
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task UpdateTechnicalUserProfiles_WithoutOffer_ThrowsException(OfferTypeId offerTypeId)
     {
         // Arrange
         var offerId = _fixture.Create<Guid>();
@@ -1995,19 +2008,38 @@ public class OfferServiceTests
                 userRole2Id,
             }),
         };
-        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, OfferTypeId.SERVICE, _identity.CompanyId))
+        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _identity.CompanyId))
             .Returns((OfferProfileData?)null);
         A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, OfferTypeId.SERVICE, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Offer SERVICE {offerId} does not exist");
+        ex.Message.Should().Be($"Offer {offerTypeId} {offerId} does not exist");
     }
 
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task UpdateTechnicalUserProfiles_WithoutTechnicalUserProfileAndUserRole_ThrowsException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var data = new[]
+        {
+            new TechnicalUserProfileData(null, Enumerable.Empty<Guid>())
+        };
+
+        // Act
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("Technical User Profiles and Role IDs both should not be empty.");
+    }
     #endregion
 
     #region GetSubscriptionDetailForProvider
