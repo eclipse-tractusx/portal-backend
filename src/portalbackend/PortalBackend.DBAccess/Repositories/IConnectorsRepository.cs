@@ -114,4 +114,6 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="connectorId"></param>
     void DeleteConnector(Guid connectorId);
+
+    ConnectorAssignedOfferSubscription CreateConnectorAssignedSubscriptions(Guid connectorId, Guid subscriptionId);
 }

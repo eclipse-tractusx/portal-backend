@@ -468,4 +468,19 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.ProcessStepStatusId,
                 x.Message))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<(bool Exists, bool IsOfferProvider, bool OfferSubscriptionAlreadyLinked, OfferSubscriptionStatusId OfferSubscriptionStatus, Guid? SelfDescriptionDocumentId, Guid CompanyId, string? ProviderBpn)> CheckOfferSubscriptionWithOfferProvider(Guid subscriptionId, Guid offerProvidingCompanyId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == subscriptionId)
+            .Select(os => new ValueTuple<bool, bool, bool, OfferSubscriptionStatusId, Guid?, Guid, string?>(
+                true,
+                os.Offer!.ProviderCompanyId == offerProvidingCompanyId,
+                os.ConnectorAssignedOfferSubscriptions.Any(),
+                os.OfferSubscriptionStatusId,
+                os.Company!.SelfDescriptionDocumentId,
+                os.CompanyId,
+                os.Company.BusinessPartnerNumber
+            ))
+            .SingleOrDefaultAsync();
 }

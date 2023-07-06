@@ -100,6 +100,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; set; } = default!;
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
+    public virtual DbSet<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConnectorClientDetail> ConnectorClientDetails { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
     public virtual DbSet<ConnectorType> ConnectorTypes { get; set; } = default!;
@@ -166,6 +167,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedUseCase> VerifiedCredentialTypeAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompaniesLinkedServiceAccount> CompanyLinkedServiceAccounts { get; set; } = default!;
+
+    public virtual DbSet<OfferSubscriptionView> OfferSubscriptionView { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -1314,5 +1317,24 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<CompaniesLinkedServiceAccount>()
              .ToView("company_linked_service_accounts", "portal")
              .HasKey(t => t.ServiceAccountId);
+
+        modelBuilder.Entity<ConnectorAssignedOfferSubscription>(entity =>
+        {
+            entity.HasKey(e => new { e.ConnectorId, e.OfferSubscriptionId });
+
+            entity.HasOne(d => d.Connector)
+                .WithMany(x => x.ConnectorAssignedOfferSubscriptions)
+                .HasForeignKey(d => d.ConnectorId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.OfferSubscription)
+                .WithMany(x => x.ConnectorAssignedOfferSubscriptions)
+                .HasForeignKey(d => d.OfferSubscriptionId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<OfferSubscriptionView>()
+            .ToView("offer_subscription_view", "portal")
+            .HasNoKey();
     }
 }

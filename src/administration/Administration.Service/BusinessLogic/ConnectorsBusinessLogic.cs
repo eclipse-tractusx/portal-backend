@@ -163,37 +163,60 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             result.SelfDescriptionDocumentId.Value,
             certificate,
             identity.UserId,
+            null,
             cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
-        var (name, connectorUrl, location, providerBpn, certificate, technicalUserId) = connectorInputModel;
+        var (name, connectorUrl, location, subscriptionId, certificate, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location).ConfigureAwait(false);
 
-        var result = await _portalRepositories
-            .GetInstance<ICompanyRepository>()
-            .GetCompanyIdAndSelfDescriptionDocumentByBpnAsync(providerBpn)
+        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .CheckOfferSubscriptionWithOfferProvider(subscriptionId, identity.CompanyId)
             .ConfigureAwait(false);
 
-        if (result == default)
+        if (!result.Exists)
         {
-            throw new ControllerArgumentException($"Company {providerBpn} does not exist", nameof(providerBpn));
+            throw new NotFoundException($"OfferSubscription {subscriptionId} does not exist");
+        }
+
+        if (!result.IsOfferProvider)
+        {
+            throw new ForbiddenException("Company is not the provider of the offer");
+        }
+
+        if (result.OfferSubscriptionAlreadyLinked)
+        {
+            throw new UnexpectedConditionException("OfferSubscription is already linked to a connector");
+        }
+
+        if (result.OfferSubscriptionStatus != OfferSubscriptionStatusId.ACTIVE &&
+            result.OfferSubscriptionStatus != OfferSubscriptionStatusId.PENDING)
+        {
+            throw new UnexpectedConditionException($"The offer subscription must be either {OfferSubscriptionStatusId.ACTIVE} or {OfferSubscriptionStatusId.PENDING}");
         }
 
         if (result.SelfDescriptionDocumentId is null)
         {
             throw new UnexpectedConditionException($"provider company {result.CompanyId} has no self description document");
         }
+
+        if (string.IsNullOrWhiteSpace(result.ProviderBpn))
+        {
+            throw new UnexpectedConditionException($"The bpn of compay {result.CompanyId} must be set");
+        }
+
         await ValidateTechnicalUser(technicalUserId, result.CompanyId).ConfigureAwait(false);
 
         var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, result.CompanyId, identity.CompanyId, technicalUserId);
         return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
-            providerBpn,
+            result.ProviderBpn,
             result.SelfDescriptionDocumentId!.Value,
             certificate,
             identity.UserId,
+            subscriptionId,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -225,7 +248,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         string businessPartnerNumber,
         Guid selfDescriptionDocumentId,
         IFormFile? file,
-        Guid? userId,
+        Guid companyUserId,
+        Guid? subscriptionId,
         CancellationToken cancellationToken)
     {
         var (name, connectorUrl, type, location, provider, host, technicalUserId) = connectorInputModel;
@@ -240,13 +264,18 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.ProviderId = provider;
                 connector.HostId = host;
                 connector.TypeId = type;
-                connector.LastEditorId = userId;
+                connector.LastEditorId = companyUserId;
                 connector.DateLastChanged = DateTimeOffset.UtcNow;
                 if (technicalUserId != null)
                 {
                     connector.CompanyServiceAccountId = technicalUserId;
                 }
             });
+
+        if (subscriptionId != null)
+        {
+            connectorsRepository.CreateConnectorAssignedSubscriptions(createdConnector.Id, subscriptionId.Value);
+        }
 
         DapsResponse? response = null;
         if (file is not null)

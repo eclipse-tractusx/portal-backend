@@ -37,8 +37,9 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// </summary>
     public OfferSubscription()
     {
-        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
-        this.CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+        ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
+        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+        ConnectorAssignedOfferSubscriptions = new HashSet<ConnectorAssignedOfferSubscription>();
     }
 
     /// <summary>
@@ -131,6 +132,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
 
     public virtual OfferSubscriptionProcessData? OfferSubscriptionProcessData { get; private set; }
 
+    public virtual ICollection<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; private set; }
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
     public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
 }

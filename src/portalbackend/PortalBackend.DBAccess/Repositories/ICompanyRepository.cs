@@ -49,13 +49,6 @@ public interface ICompanyRepository
     Task<(string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetBpnAndTechnicalUserRoleIds(Guid companyId, string technicalUserClientId);
 
     /// <summary>
-    /// Checks the bpn for existence and returns the associated CompanyId
-    /// </summary>
-    /// <param name="businessPartnerNumber">The business partner number</param>
-    /// <returns>the company id or guid empty if not found</returns>
-    Task<(Guid CompanyId, Guid? SelfDescriptionDocumentId)> GetCompanyIdAndSelfDescriptionDocumentByBpnAsync(string businessPartnerNumber);
-
-    /// <summary>
     /// Get all member companies bpn
     /// </summary>
     /// <returns> Business partner numbers of all active companies</returns>

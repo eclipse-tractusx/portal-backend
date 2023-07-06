@@ -106,14 +106,6 @@ public class CompanyRepository : ICompanyRepository
                 company!.CompanyAssignedRoles.SelectMany(car => car.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == technicalUserClientId)).Select(ur => ur.Id)).Distinct()))
             .SingleOrDefaultAsync();
 
-    /// <inheritdoc />
-    public Task<(Guid CompanyId, Guid? SelfDescriptionDocumentId)> GetCompanyIdAndSelfDescriptionDocumentByBpnAsync(string businessPartnerNumber) =>
-        _context.Companies
-        .AsNoTracking()
-        .Where(company => company.BusinessPartnerNumber == businessPartnerNumber)
-        .Select(company => new ValueTuple<Guid, Guid?>(company.Id, company.SelfDescriptionDocumentId))
-        .SingleOrDefaultAsync();
-
     public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
         _context.Companies
             .AsNoTracking()
