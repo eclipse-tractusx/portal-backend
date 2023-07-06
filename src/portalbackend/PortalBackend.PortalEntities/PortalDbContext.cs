@@ -165,7 +165,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<VerifiedCredentialTypeKind> VerifiedCredentialTypeKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedUseCase> VerifiedCredentialTypeAssignedUseCases { get; set; } = default!;
-    public virtual DbSet<CompaniesLinkedServiceAccount> CompaniesLinkedServiceAccounts { get; set; } = default!;
+    public virtual DbSet<CompaniesLinkedServiceAccount> CompanyLinkedServiceAccounts { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -1312,7 +1312,7 @@ public class PortalDbContext : DbContext
                 .IsUnique();
         });
         modelBuilder.Entity<CompaniesLinkedServiceAccount>()
-             .ToView(nameof(CompaniesLinkedServiceAccounts))
+             .ToView(nameof(CompanyLinkedServiceAccounts))
              .HasKey(t => t.ServiceAccountId);
     }
 }

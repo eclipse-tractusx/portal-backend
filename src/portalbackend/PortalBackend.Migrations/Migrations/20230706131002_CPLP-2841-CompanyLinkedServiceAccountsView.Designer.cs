@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230628064201_CPLP-2841-CompanyLinkedServiceAccountsView")]
+    [Migration("20230706131002_CPLP-2841-CompanyLinkedServiceAccountsView")]
     partial class CPLP2841CompanyLinkedServiceAccountsView
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -5026,6 +5026,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasName("pk_verified_credential_external_type_use_case_detail_versions");
 
                     b.HasIndex("VerifiedCredentialExternalTypeId", "Version")
+                        .IsUnique()
                         .HasDatabaseName("ix_verified_credential_external_type_use_case_detail_versions_");
 
                     b.ToTable("verified_credential_external_type_use_case_detail_versions", "portal");
@@ -5168,6 +5169,27 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                             Id = 2,
                             Label = "CERTIFICATE"
                         });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompaniesLinkedServiceAccount", b =>
+                {
+                    b.Property<Guid>("ServiceAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_account_id");
+
+                    b.Property<Guid>("Owner")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner");
+
+                    b.Property<Guid?>("Provider")
+                        .HasColumnType("uuid")
+                        .HasColumnName("provider");
+
+                    b.HasKey("ServiceAccountId");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("CompaniesLinkedServiceAccounts");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>

@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-
+ 
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"CREATE OR REPLACE VIEW CompanyLinkedServiceAccount AS
+             migrationBuilder.Sql(@"CREATE OR REPLACE VIEW CompanyLinkedServiceAccounts AS
                SELECT
                csa.id AS service_account_id,
                i.company_id as owners,
@@ -53,11 +53,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                JOIN portal.identities i ON csa.id = i.id
                WHERE csa.company_service_account_type_id = 2
             ");
+  
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"DROP VIEW [IF EXISTS] CompanyLinkedServiceAccount");
+            migrationBuilder.Sql(@"DROP VIEW [IF EXISTS] CompanyLinkedServiceAccounts");
         }
     }
 }
