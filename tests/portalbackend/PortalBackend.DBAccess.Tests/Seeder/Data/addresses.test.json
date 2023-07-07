@@ -58,5 +58,17 @@
     "streetnumber": "6",
     "zipcode": "00001",
     "country_alpha2code": "DE"
+  },
+  {
+    "id": "86da3e1c-a634-1234-ad44-988074612999",
+    "date_created": "2022-03-24 18:01:33.435000 +00:00",
+    "date_last_changed": "2022-03-24 18:01:33.435000 +00:00",
+    "city": "Munich",
+    "region": null,
+    "streetadditional": null,
+    "streetname": "Street",
+    "streetnumber": "6",
+    "zipcode": "00001",
+    "country_alpha2code": "DE"
   }
 ]

@@ -926,6 +926,53 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetConnectorOfferSubscriptionData
+
+    [Fact]
+    public async Task GetConnectorOfferSubscriptionData_WithoutFilter_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorOfferSubscriptionData(null, new Guid("41fd2ab8-7123-4546-9bef-a388d91b2999")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(3)
+            .And.Satisfy(
+                x => x.SubscriptionId == new Guid("014afd09-e51a-4ecf-83ab-a5380d9af832"),
+                x => x.SubscriptionId == new Guid("92be9d79-4064-422c-bdc8-a12ca7d26e5d"),
+                x => x.SubscriptionId == new Guid("ed6065b1-0902-4d5e-9470-33a716022a1a"));
+    }
+
+    [Fact]
+    public async Task GetConnectorOfferSubscriptionData_WithConnectorIdSet_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorOfferSubscriptionData(true, new Guid("41fd2ab8-7123-4546-9bef-a388d91b2999")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(2).And.AllSatisfy(x => x.ConnectorIds.Should().NotBeNullOrEmpty());
+    }
+
+    [Fact]
+    public async Task GetConnectorOfferSubscriptionData_WithoutConnectorIdSet_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorOfferSubscriptionData(false, new Guid("41fd2ab8-7123-4546-9bef-a388d91b2999")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1).And.AllSatisfy(x => x.ConnectorIds.Should().BeEmpty());
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(IOfferSubscriptionsRepository, PortalDbContext)> CreateSut()

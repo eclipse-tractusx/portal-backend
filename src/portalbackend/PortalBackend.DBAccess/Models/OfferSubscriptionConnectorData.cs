@@ -18,20 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class ConnectorAssignedOfferSubscription
-{
-    public ConnectorAssignedOfferSubscription(Guid connectorId, Guid offerSubscriptionId)
-    {
-        ConnectorId = connectorId;
-        OfferSubscriptionId = offerSubscriptionId;
-    }
-
-    public Guid ConnectorId { get; set; }
-    public Guid OfferSubscriptionId { get; set; }
-
-    // Navigation properties
-    public virtual Connector? Connector { get; set; }
-    public virtual OfferSubscription? OfferSubscription { get; set; }
-}
+public record OfferSubscriptionConnectorData(
+    Guid SubscriptionId,
+    string CustomerName,
+    string? OfferName,
+    IEnumerable<Guid> ConnectorIds
+);

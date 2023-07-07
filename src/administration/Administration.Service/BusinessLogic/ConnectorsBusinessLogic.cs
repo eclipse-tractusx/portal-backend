@@ -524,4 +524,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet, Guid companyId) =>
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetConnectorOfferSubscriptionData(connectorIdSet, companyId);
 }

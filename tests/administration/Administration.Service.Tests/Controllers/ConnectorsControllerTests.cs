@@ -223,4 +223,19 @@ public class ConnectorsControllerTests
         A.CallTo(() => _logic.UpdateConnectorUrl(connectorId, data, new(_identity.UserId, _identity.CompanyId), A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task GetConnectorOfferSubscriptionData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var offerSubscriptionData = _fixture.CreateMany<OfferSubscriptionConnectorData>(5);
+        A.CallTo(() => _logic.GetConnectorOfferSubscriptionData(null, _identity.CompanyId))
+            .Returns(offerSubscriptionData.ToAsyncEnumerable());
+
+        // Act
+        var result = await this._controller.GetConnectorOfferSubscriptionData(null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
+    }
 }

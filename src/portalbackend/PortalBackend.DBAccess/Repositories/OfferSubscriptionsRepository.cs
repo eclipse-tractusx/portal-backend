@@ -483,4 +483,19 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 os.Company.BusinessPartnerNumber
             ))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet, Guid companyId) =>
+        _context.OfferSubscriptions
+            .Where(os =>
+                os.Offer!.ProviderCompanyId == companyId &&
+                (os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE || os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING) &&
+                (!connectorIdSet.HasValue || (connectorIdSet.Value ? os.ConnectorAssignedOfferSubscriptions.Any() : !os.ConnectorAssignedOfferSubscriptions.Any())))
+            .Select(os => new OfferSubscriptionConnectorData(
+                os.Id,
+                os.Company!.Name,
+                os.Offer!.Name,
+                os.ConnectorAssignedOfferSubscriptions.Select(c => c.ConnectorId)
+            ))
+            .ToAsyncEnumerable();
 }

@@ -48,5 +48,15 @@
     "company_status_id": 1,
     "address_id": "86da3e1c-a634-41a6-ad44-9880746123e4",
     "self_description_document_id": null
+  },
+  {
+    "id": "41fd2ab8-7123-4546-9bef-a388d91b2999",
+    "date_created": "2022-03-24 18:01:33.438000 +00:00",
+    "business_partner_number": "BPNL00000001TEST",
+    "name": "Test Company",
+    "shortname": "Test Company",
+    "company_status_id": 2,
+    "address_id": "86da3e1c-a634-1234-ad44-988074612999",
+    "self_description_document_id": null
   }
 ]

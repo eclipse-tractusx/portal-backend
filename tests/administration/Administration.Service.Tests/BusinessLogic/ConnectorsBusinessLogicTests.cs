@@ -973,6 +973,25 @@ public class ConnectorsBusinessLogicTests
         ex.Message.Should().Be($"Incorrect BPN [{bpns[0]}] attribute value");
     }
 
+    #region GetConnectorOfferSubscriptionData
+
+    [Fact]
+    public async Task GetConnectorOfferSubscriptionData_ReturnsList()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<OfferSubscriptionConnectorData>(5);
+        A.CallTo(() => _offerSubscriptionRepository.GetConnectorOfferSubscriptionData(null, _identity.CompanyId))!
+            .Returns(data.ToAsyncEnumerable());
+
+        // Act
+        var result = await _logic.GetConnectorOfferSubscriptionData(null, _identity.CompanyId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(data.Count());
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositoryMethods()
