@@ -292,7 +292,7 @@ public class CompanyDataBusinessLogicTests
         }.ToAsyncEnumerable();
 
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
-            .Returns((true, true, new []{ CompanyRoleId.SERVICE_PROVIDER }, consentStatusDetails));
+            .Returns((true, true, new[] { CompanyRoleId.SERVICE_PROVIDER }, consentStatusDetails));
 
         A.CallTo(() => _companyRepository.GetAgreementAssignedRolesDataAsync(A<IEnumerable<CompanyRoleId>>._))
             .Returns(agreementData);
