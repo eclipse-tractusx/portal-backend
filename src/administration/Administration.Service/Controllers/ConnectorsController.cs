@@ -242,7 +242,7 @@ public class ConnectorsController : ControllerBase
     }
 
     /// <summary>
-    /// post list of bpn and empty body to Retrieve available company connector.
+    /// post list of bpns or an empty array to retrieve available company connector.
     /// </summary>
     /// <param name="bpns" example="BPNL00000003CRHK">Single or List of Business Partner Number of the company.</param>
     /// <remarks>Example: POST: /api/administration/connectors/discovery</remarks>
