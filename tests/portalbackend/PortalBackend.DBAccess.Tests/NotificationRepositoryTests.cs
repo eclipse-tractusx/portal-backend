@@ -87,6 +87,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         sut.AttachAndModifyNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), notification =>
         {
+            notification.IsRead = false;
+        },
+        notification =>
+        {
             notification.IsRead = true;
         });
 

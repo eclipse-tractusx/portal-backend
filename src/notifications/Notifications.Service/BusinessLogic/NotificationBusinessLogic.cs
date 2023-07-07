@@ -87,12 +87,17 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task SetNotificationStatusAsync(Guid userId, Guid notificationId, bool isRead)
     {
-        await CheckNotificationExistsAndValidateReceiver(notificationId, userId).ConfigureAwait(false);
+        var isReadFlag = await CheckNotificationExistsAndValidateReceiver(notificationId, userId).ConfigureAwait(false);
 
         _portalRepositories.GetInstance<INotificationRepository>().AttachAndModifyNotification(notificationId, notification =>
-        {
-            notification.IsRead = isRead;
-        });
+            {
+                notification.IsRead = isReadFlag;
+            },
+            notification =>
+            {
+                notification.IsRead = isRead;
+            });
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -105,7 +110,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task CheckNotificationExistsAndValidateReceiver(Guid notificationId, Guid userId)
+    private async Task<bool> CheckNotificationExistsAndValidateReceiver(Guid notificationId, Guid userId)
     {
         var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, userId).ConfigureAwait(false);
         if (result == default || !result.IsNotificationExisting)
@@ -116,5 +121,6 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         {
             throw new ForbiddenException("The user is not the receiver of the notification");
         }
+        return result.isRead;
     }
 }
