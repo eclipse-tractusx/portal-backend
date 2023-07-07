@@ -42,12 +42,15 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     /// <inheritdoc />
     public IAsyncEnumerable<UseCaseParticipationTransferData> GetUseCaseParticipationForCompany(Guid companyId, string language) =>
         _context.VerifiedCredentialTypes
-            .Where(types => types.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.USE_CASE)
+            .Where(types => types.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId ==
+                            VerifiedCredentialTypeKindId.USE_CASE)
             .Select(types => new
             {
                 UseCase = types.VerifiedCredentialTypeAssignedUseCase!.UseCase,
                 TypeId = types.Id,
-                ExternalTypeDetails = types.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType!.VerifiedCredentialExternalTypeUseCaseDetailVersions,
+                ExternalTypeDetails =
+                    types.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType!
+                        .VerifiedCredentialExternalTypeUseCaseDetailVersions,
             })
             .Select(x => new UseCaseParticipationTransferData(
                 x.UseCase!.Name,

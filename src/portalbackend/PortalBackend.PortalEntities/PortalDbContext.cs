@@ -1316,7 +1316,7 @@ public class PortalDbContext : DbContext
         });
         modelBuilder.Entity<CompaniesLinkedServiceAccount>()
              .ToView("company_linked_service_accounts", "portal")
-             .HasKey(t => t.ServiceAccountId);
+             .HasNoKey();
 
         modelBuilder.Entity<ConnectorAssignedOfferSubscription>(entity =>
         {
