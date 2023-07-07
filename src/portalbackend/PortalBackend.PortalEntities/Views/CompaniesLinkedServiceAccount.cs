@@ -23,6 +23,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views
 public class CompaniesLinkedServiceAccount
 {
     public Guid ServiceAccountId { get; set; }
-    public Guid Owner { get; set; }
+    public Guid Owners { get; set; }
     public Guid? Provider { get; set; }
 }

@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"CREATE OR REPLACE VIEW CompanyLinkedServiceAccounts AS
+            migrationBuilder.Sql(@"CREATE OR REPLACE VIEW portal.CompanyLinkedServiceAccounts AS
                SELECT
                csa.id AS service_account_id,
                i.company_id as owners,
@@ -57,7 +57,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"DROP VIEW [IF EXISTS] CompanyLinkedServiceAccounts");
+            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.CompanyLinkedServiceAccounts");
         }
     }
 }

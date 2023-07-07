@@ -1312,7 +1312,7 @@ public class PortalDbContext : DbContext
                 .IsUnique();
         });
         modelBuilder.Entity<CompaniesLinkedServiceAccount>()
-             .ToView(nameof(CompanyLinkedServiceAccounts))
+             .ToView(nameof(CompanyLinkedServiceAccounts), "portal")
              .HasKey(t => t.ServiceAccountId);
     }
 }
