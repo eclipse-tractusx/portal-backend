@@ -184,4 +184,10 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 sa.Identity!.UserStatusId == UserStatusId.ACTIVE &&
                 sa.Identity.CompanyId == companyId)
             .AnyAsync();
+
+    public Task<bool> GetCompanyServiceAccountLinkedCompany(Guid companyId) =>
+        _dbContext.CompanyLinkedServiceAccounts
+            .Where(x => x.Provider == companyId || x.Owners == companyId)
+            .AnyAsync();
+    
 }

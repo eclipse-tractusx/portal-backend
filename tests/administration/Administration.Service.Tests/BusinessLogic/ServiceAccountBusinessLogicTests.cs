@@ -231,7 +231,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
+        var result = await sut.ExecuteResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -247,7 +247,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, invalidUser.CompanyId).ConfigureAwait(false);
+        async Task Act() => await sut.ExecuteResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, invalidUser.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -263,7 +263,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(invalidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await sut.ExecuteResetOwnCompanyServiceAccountSecretAsync(invalidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -550,6 +550,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupGetOwnCompanyServiceAccount()
     {
         var data = _fixture.Create<CompanyServiceAccountDetailedData>();
+        A.CallTo(()=>_serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(
                 A<Guid>.That.Matches(x => x == ValidServiceAccountId), A<Guid>.That.Matches(x => x == _identity.CompanyId)))
             .Returns(data);
