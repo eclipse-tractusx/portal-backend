@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Logic;
@@ -63,6 +64,10 @@ public class RealmUpdater
             {
                 await UpdateCompositeRoles(clients, _updateRealm.Roles).ConfigureAwait(false);
             }
+        }
+        if (_updateRealm.IdentityProviders != null)
+        {
+            await UpdateIdentityProviders(_updateRealm.IdentityProviders, _updateRealm.IdentityProviderMappers).ConfigureAwait(false);
         }
     }
 
@@ -452,36 +457,74 @@ public class RealmUpdater
                 Port = updateSmtpServer.Port
             };
 
-    private static IEnumerable<Library.Models.RealmsAdmin.IdentityProvider>? UpdateIdentityProviders(IEnumerable<Library.Models.RealmsAdmin.IdentityProvider>? identityProviders, IEnumerable<IdentityProviderModel>? updateIdentityProviders)
+    private async Task UpdateIdentityProviders(IEnumerable<IdentityProviderModel> updateIdentityProviders, IEnumerable<IdentityProviderMapperModel>? updateIdentityProviderMappers)
     {
-        if (identityProviders == null && updateIdentityProviders == null)
-            return null;
-
-        if (updateIdentityProviders == null)
-            return identityProviders;
-
-        if (identityProviders == null)
+        foreach (var updateIdentityProvider in updateIdentityProviders)
         {
-            return updateIdentityProviders.Select(update =>
-                UpdateIdentityProvider(new Library.Models.RealmsAdmin.IdentityProvider(), update));
+            if (updateIdentityProvider.Alias == null)
+                throw new ConflictException($"identityProvider alias must not be null: {updateIdentityProvider.InternalId} {updateIdentityProvider.DisplayName}");
+
+
+            var updateMappers = updateIdentityProviderMappers?.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias) ?? Enumerable.Empty<IdentityProviderMapperModel>();
+            IEnumerable<IdentityProviderMapperModel> createMappers;
+            try
+            {
+                var identityProvider = await _keycloak.GetIdentityProviderAsync(_realm, updateIdentityProvider.Alias).ConfigureAwait(false);
+                UpdateIdentityProvider(identityProvider, updateIdentityProvider);
+                await _keycloak.UpdateIdentityProviderAsync(_realm, updateIdentityProvider.Alias, identityProvider).ConfigureAwait(false);
+
+                var mappers = await _keycloak.GetIdentityProviderMappersAsync(_realm, updateIdentityProvider.Alias).ConfigureAwait(false);
+
+                createMappers = updateMappers.ExceptBy(mappers.Select(x => x.Name), x => x.Name);
+
+                await Task.WhenAll(
+                    mappers.Join(
+                        updateMappers,
+                        x => x.Name,
+                        x => x.Name,
+                        (mapper, update) =>
+                            _keycloak.UpdateIdentityProviderMapperAsync(
+                                _realm,
+                                updateIdentityProvider.Alias,
+                                mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
+                                UpdateIdentityProviderMapper(mapper, update))))
+                    .ConfigureAwait(false);
+
+                await Task.WhenAll(
+                    mappers
+                        .ExceptBy(updateMappers.Select(x => x.Name), x => x.Name)
+                        .Select(mapper =>
+                            _keycloak.DeleteIdentityProviderMapperAsync(
+                                _realm,
+                                updateIdentityProvider.Alias,
+                                mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"))))
+                    .ConfigureAwait(false);
+            }
+            catch(KeycloakEntityNotFoundException)
+            {
+                var identityProvider = new Library.Models.IdentityProviders.IdentityProvider();
+                UpdateIdentityProvider(identityProvider, updateIdentityProvider);
+                await _keycloak.CreateIdentityProviderAsync(_realm, identityProvider).ConfigureAwait(false);
+                createMappers = updateMappers;
+            }
+
+            await Task.WhenAll(
+                createMappers
+                    .Select(mapper =>
+                        _keycloak.AddIdentityProviderMapperAsync(
+                            _realm,
+                            updateIdentityProvider.Alias,
+                            UpdateIdentityProviderMapper(new Library.Models.IdentityProviders.IdentityProviderMapper
+                                {
+                                    Name = mapper.Name,
+                                    IdentityProviderAlias = mapper.IdentityProviderAlias
+                                },
+                                mapper))))
+                .ConfigureAwait(false);
         }
-
-        var unchanged = identityProviders.ExceptBy(updateIdentityProviders.Select(x => x.Alias), x => x.Alias);
-
-        var changed = identityProviders.Join(
-            updateIdentityProviders,
-            x => x.Alias,
-            x => x.Alias,
-            (provider, update) => UpdateIdentityProvider(provider, update)
-        );
-
-        var created = updateIdentityProviders.ExceptBy(identityProviders.Select(x => x.Alias), x => x.Alias).Select(update =>
-            UpdateIdentityProvider(new Library.Models.RealmsAdmin.IdentityProvider(), update));
-
-        return unchanged.Concat(changed).Concat(created);
     }
 
-    private static Library.Models.RealmsAdmin.IdentityProvider UpdateIdentityProvider(Library.Models.RealmsAdmin.IdentityProvider provider, IdentityProviderModel update)
+    private static Library.Models.IdentityProviders.IdentityProvider UpdateIdentityProvider(Library.Models.IdentityProviders.IdentityProvider provider, IdentityProviderModel update)
     {
         provider.Alias = update.Alias;
         provider.DisplayName = update.DisplayName;
@@ -496,14 +539,52 @@ public class RealmUpdater
         provider.FirstBrokerLoginFlowAlias = update.FirstBrokerLoginFlowAlias;
         provider.Config = update.Config == null
             ? null
-            : new Library.Models.RealmsAdmin.Config
+            : new Library.Models.IdentityProviders.Config
             {
                 HideOnLoginPage = update.Config.HideOnLoginPage,
                 //ClientSecret = update.Config.ClientSecret,
+                DisableUserInfo = update.Config.DisableUserInfo,
+                ValidateSignature = update.Config.ValidateSignature,
                 ClientId = update.Config.ClientId,
-                //DisableUserInfo = x.Config.DisableUserInfo,
-                UseJwksUrl = update.Config.UseJwksUrl
-            };
+                TokenUrl = update.Config.TokenUrl,
+                AuthorizationUrl = update.Config.AuthorizationUrl,
+                ClientAuthMethod = update.Config.ClientAuthMethod,
+                JwksUrl = update.Config.JwksUrl,
+                LogoutUrl = update.Config.LogoutUrl,
+                ClientAssertionSigningAlg = update.Config.ClientAssertionSigningAlg,
+                SyncMode = update.Config.SyncMode,
+                UseJwksUrl = update.Config.UseJwksUrl,
+                UserInfoUrl = update.Config.UserInfoUrl,
+                Issuer = update.Config.Issuer,
+                // for Saml:
+                NameIDPolicyFormat = update.Config.NameIDPolicyFormat,
+                PrincipalType = update.Config.PrincipalType,
+                SignatureAlgorithm = update.Config.SignatureAlgorithm,
+                XmlSigKeyInfoKeyNameTransformer = update.Config.XmlSigKeyInfoKeyNameTransformer,
+                AllowCreate = update.Config.AllowCreate,
+                EntityId = update.Config.EntityId,
+                AuthnContextComparisonType = update.Config.AuthnContextComparisonType,
+                BackchannelSupported = update.Config.BackchannelSupported,
+                PostBindingResponse = update.Config.PostBindingResponse,
+                PostBindingAuthnRequest = update.Config.PostBindingAuthnRequest,
+                PostBindingLogout = update.Config.PostBindingLogout,
+                WantAuthnRequestsSigned = update.Config.WantAuthnRequestsSigned,
+                WantAssertionsSigned = update.Config.WantAssertionsSigned,
+                WantAssertionsEncrypted = update.Config.WantAssertionsEncrypted,
+                ForceAuthn = update.Config.ForceAuthn,
+                SignSpMetadata = update.Config.SignSpMetadata,
+                LoginHint = update.Config.LoginHint,
+                SingleSignOnServiceUrl = update.Config.SingleSignOnServiceUrl,
+                AllowedClockSkew = update.Config.AllowedClockSkew,
+                AttributeConsumingServiceIndex = update.Config.AttributeConsumingServiceIndex
+        };
         return provider;
+    }
+
+    public static Library.Models.IdentityProviders.IdentityProviderMapper UpdateIdentityProviderMapper(Library.Models.IdentityProviders.IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper)
+    {
+        mapper._IdentityProviderMapper = updateMapper.IdentityProviderMapper;
+        mapper.Config = updateMapper.Config?.ToDictionary(x => x.Key, x => x.Value);
+        return mapper;
     }
 }

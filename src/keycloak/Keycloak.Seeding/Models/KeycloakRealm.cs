@@ -303,11 +303,14 @@ public record IdentityProviderModel(
     bool? AuthenticateByDefault,
     bool? LinkOnly,
     string? FirstBrokerLoginFlowAlias,
+    string? PostBrokerLoginFlowAlias,
     IdentityProviderConfigModel? Config
 );
 
 public record IdentityProviderConfigModel(
     string? HideOnLoginPage,
+    string? ClientSecret,
+    string? DisableUserInfo,
     string? ValidateSignature,
     string? ClientId,
     string? TokenUrl,
@@ -317,7 +320,30 @@ public record IdentityProviderConfigModel(
     string? LogoutUrl,
     string? ClientAssertionSigningAlg,
     string? SyncMode,
-    string? UseJwksUrl
+    string? UseJwksUrl,
+    string? UserInfoUrl,
+    string? Issuer,
+    // for Saml:
+    string? NameIDPolicyFormat,
+    string? PrincipalType,
+    string? SignatureAlgorithm,
+    string? XmlSigKeyInfoKeyNameTransformer,
+    string? AllowCreate,
+    string? EntityId,
+    string? AuthnContextComparisonType,
+    string? BackchannelSupported,
+    string? PostBindingResponse,
+    string? PostBindingAuthnRequest,
+    string? PostBindingLogout,
+    string? WantAuthnRequestsSigned,
+    string? WantAssertionsSigned,
+    string? WantAssertionsEncrypted,
+    string? ForceAuthn,
+    string? SignSpMetadata,
+    string? LoginHint,
+    string? SingleSignOnServiceUrl,
+    string? AllowedClockSkew,
+    string? AttributeConsumingServiceIndex
 );
 
 public record IdentityProviderMapperModel(

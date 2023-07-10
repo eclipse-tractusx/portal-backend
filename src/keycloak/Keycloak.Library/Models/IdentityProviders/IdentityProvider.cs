@@ -31,15 +31,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityPr
 public class IdentityProvider
 {
     [JsonProperty("alias")]
-    public string Alias { get; set; }
+    public string? Alias { get; set; }
     [JsonProperty("internalId")]
-    public string InternalId { get; set; }
+    public string? InternalId { get; set; }
     [JsonProperty("providerId")]
-    public string ProviderId { get; set; }
+    public string? ProviderId { get; set; }
     [JsonProperty("enabled")]
     public bool? Enabled { get; set; }
     [JsonProperty("updateProfileFirstLoginMode")]
-    public string UpdateProfileFirstLoginMode { get; set; }
+    public string? UpdateProfileFirstLoginMode { get; set; }
     [JsonProperty("trustEmail")]
     public bool? TrustEmail { get; set; }
     [JsonProperty("storeToken")]
@@ -51,11 +51,11 @@ public class IdentityProvider
     [JsonProperty("linkOnly")]
     public bool? LinkOnly { get; set; }
     [JsonProperty("firstBrokerLoginFlowAlias")]
-    public string FirstBrokerLoginFlowAlias { get; set; }
+    public string? FirstBrokerLoginFlowAlias { get; set; }
     [JsonProperty("postBrokerLoginFlowAlias")]
-    public string PostBrokerLoginFlowAlias { get; set; }
+    public string? PostBrokerLoginFlowAlias { get; set; }
     [JsonProperty("displayName")]
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
     [JsonProperty("config")]
-    public Config Config { get; set; }
+    public Config? Config { get; set; }
 }
