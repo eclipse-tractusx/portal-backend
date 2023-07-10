@@ -189,5 +189,4 @@ public class ServiceAccountRepository : IServiceAccountRepository
         _dbContext.CompanyLinkedServiceAccounts
             .Where(x => x.Provider == companyId || x.Owners == companyId)
             .AnyAsync();
-    
 }

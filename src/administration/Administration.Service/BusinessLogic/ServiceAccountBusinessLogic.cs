@@ -172,7 +172,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
         return await ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId);
     }
-    
+
     private async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
     {
         var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
