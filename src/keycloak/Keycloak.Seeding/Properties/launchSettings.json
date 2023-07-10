@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Keycloak.Seeding": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
