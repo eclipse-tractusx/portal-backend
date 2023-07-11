@@ -104,7 +104,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntity.State.Should().Be(EntityState.Modified);
         changedEntity.Entity.Should().BeOfType<Notification>().Which.IsRead.Should().Be(true);
     }
-    
+
     [Fact]
     public async Task AttachAndModifyNotification_WithExistingNotification_NotUpdatesStatus()
     {
