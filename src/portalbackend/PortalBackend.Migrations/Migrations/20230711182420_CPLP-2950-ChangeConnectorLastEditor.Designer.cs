@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230705111204_CPLP-2950-ChangeConnectorLastEditor")]
+    [Migration("20230711182420_CPLP-2950-ChangeConnectorLastEditor")]
     partial class CPLP2950ChangeConnectorLastEditor
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -6362,16 +6362,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfileAssignedUserRole", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfile", "TechnicalUserProfile")
-                        .WithMany()
+                        .WithMany("TechnicalUserProfileAssignedUserRoles")
                         .HasForeignKey("TechnicalUserProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_technical_user_profile_assigned_user_roles_technical_user_p");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
-                        .WithMany()
+                        .WithMany("TechnicalUserProfileAssignedUserRole")
                         .HasForeignKey("UserRoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_technical_user_profile_assigned_user_roles_user_roles_user_r");
 
@@ -6906,6 +6904,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ServiceDetails");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfile", b =>
+                {
+                    b.Navigation("TechnicalUserProfileAssignedUserRoles");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", b =>
                 {
                     b.Navigation("CompanyIdentifiers");
@@ -6927,6 +6930,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Navigation("IdentityAssignedRoles");
+
+                    b.Navigation("TechnicalUserProfileAssignedUserRole");
 
                     b.Navigation("UserRoleDescriptions");
                 });
