@@ -276,7 +276,7 @@ public class ConnectorsController : ControllerBase
     /// </param>
     /// <remarks>Example: GET: /api/administration/connectors/offerSubscriptions</remarks>
     /// <response code="200">Returns list of the offer subscriptions for the company.</response>
-    [HttpPost]
+    [HttpGet]
     [Route("offerSubscriptions")]
     [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
