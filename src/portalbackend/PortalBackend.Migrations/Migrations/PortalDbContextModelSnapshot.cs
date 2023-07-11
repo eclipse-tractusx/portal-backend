@@ -5174,9 +5174,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("service_account_id");
 
-                    b.Property<Guid>("Owner")
+                    b.Property<Guid>("Owners")
                         .HasColumnType("uuid")
-                        .HasColumnName("owner");
+                        .HasColumnName("owners");
 
                     b.Property<Guid?>("Provider")
                         .HasColumnType("uuid")
@@ -5186,7 +5186,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.ToTable((string)null);
 
-                    b.ToView("CompaniesLinkedServiceAccounts");
+                    b.ToView("CompanyLinkedServiceAccounts", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
