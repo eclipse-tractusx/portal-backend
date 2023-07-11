@@ -43,7 +43,7 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
             .Select(o => new OfferProfileData(
                 o.ProviderCompanyId == userCompanyId,
                 offerTypeId == OfferTypeId.SERVICE ? o.ServiceDetails.Select(sd => sd.ServiceTypeId) : null,
-                o.TechnicalUserProfiles.Select(tup => new ValueTuple<Guid, IEnumerable<Guid>>(tup.Id, tup.UserRoles.Select(ur => ur.Id)))))
+                o.TechnicalUserProfiles.Select(tup => new ValueTuple<Guid, IEnumerable<Guid>>(tup.Id, tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRoleId)))))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -77,6 +77,6 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
                     x.ProviderCompanyId == usersCompanyId,
                     x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformation(
                         tup.Id,
-                        tup.UserRoles.Select(ur => new UserRoleInformation(ur.Id, ur.UserRoleText))))))
+                        tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleInformation(ur.UserRole!.Id, ur.UserRole.UserRoleText))))))
                 .SingleOrDefaultAsync();
 }

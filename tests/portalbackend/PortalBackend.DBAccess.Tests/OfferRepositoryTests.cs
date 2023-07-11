@@ -166,6 +166,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var documentTypeId = offerDetail.Documents.Select(x => x.DocumentTypeId);
         documentTypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documentTypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
+        offerDetail.TechnicalUserProfile.Should().BeEmpty();
     }
 
     #endregion
@@ -444,6 +445,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
+        var technicalUserRoleDatas = new[] {
+            new TechnicalUserRoleData(new Guid("9b2755b6-e641-450a-a21d-d90d6e94fa4e"), new []{"test"}),
+            new TechnicalUserRoleData(new Guid("8a0cd2e0-ceb6-43db-8753-84f1b4238f00"), new []{"test", "EarthCommerce.Advanced.BuyerRC_QAS2"})
+        };
 
         // Act
         var offerDetail = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "de", _userCompanyId).ConfigureAwait(false);
@@ -457,6 +462,9 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             .And.AllSatisfy(
                 x => x.DocumentTypeId.Should().Be(DocumentTypeId.ADDITIONAL_DETAILS)
             );
+        offerDetail.TechnicalUserProfile.Should().NotBeEmpty().And.HaveCount(2)
+        .And.Satisfy(x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 1,
+        x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 2);
     }
 
     #endregion
@@ -501,6 +509,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.OfferProviderData.LeadPictureId.Should().Be(new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"));
         result.OfferProviderData.UseCase.Should().NotBeNull();
         result.OfferProviderData.ServiceTypeIds.Should().BeNull();
+        result.OfferProviderData.TechnicalUserProfile.Should().BeEmpty();
     }
 
     [Fact]
@@ -686,6 +695,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         documenttypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
         InReviewAppofferDetail.OfferStatusId.Should().Be(OfferStatusId.IN_REVIEW);
+        InReviewAppofferDetail.TechnicalUserProfile.Should().BeEmpty();
     }
 
     [Fact]
@@ -1141,6 +1151,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.Title.Should().Be("SDE with EDC");
         result.Provider.Should().Be("Service Provider");
         result.OfferStatusId.Should().Be(OfferStatusId.ACTIVE);
+        result.TechnicalUserProfile.Should().BeEmpty();
     }
     [Fact]
     public async Task GetServiceDetailsByIdAsync_InCorrectOfferStatus_ReturnsNull()

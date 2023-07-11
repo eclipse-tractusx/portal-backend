@@ -131,9 +131,9 @@ public class OfferRepository : IOfferRepository
                 offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),
                 offer.AppInstanceSetup != null && offer.AppInstanceSetup!.IsSingleInstance,
                 offer.LicenseTypeId,
-                offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
+                offer.TechnicalUserProfiles.Where(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()).Select(tup => new TechnicalUserRoleData(
                     tup.Id,
-                    tup.UserRoles.Select(ur => ur.UserRoleText)))
+                    tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRole!.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 
@@ -313,9 +313,9 @@ public class OfferRepository : IOfferRepository
                     .Where(doc => doc.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS)
                     .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                 offer.LicenseTypeId,
-                offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
+                offer.TechnicalUserProfiles.Where(x => x.TechnicalUserProfileAssignedUserRoles.Any()).Select(tup => new TechnicalUserRoleData(
                     tup.Id,
-                    tup.UserRoles.Select(ur => ur.UserRoleText)))
+                    tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRole!.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 
@@ -354,7 +354,7 @@ public class OfferRepository : IOfferRepository
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
                 o.OfferDescriptions.Any(description => description.DescriptionShort == ""),
                 o.UserRoles.Any(),
-                o.TechnicalUserProfiles.Any(tup => tup.UserRoles.Any()),
+                o.TechnicalUserProfiles.Any(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()),
                 o.OfferAssignedPrivacyPolicies.Any(),
                 o.Documents.Where(doc => doc.DocumentStatusId == DocumentStatusId.PENDING || doc.DocumentStatusId == DocumentStatusId.LOCKED)
                     .Select(doc => new ValueTuple<Guid, DocumentStatusId, DocumentTypeId>(doc.Id, doc.DocumentStatusId, doc.DocumentTypeId))
@@ -405,7 +405,7 @@ public class OfferRepository : IOfferRepository
                             : null,
                         x.Offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
                             tup.Id,
-                            tup.UserRoles.Select(ur => ur.UserRoleText))))
+                            tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRole!.UserRoleText))))
                     : null,
                 x.IsProviderCompany))
             .SingleOrDefaultAsync();
@@ -573,7 +573,7 @@ public class OfferRepository : IOfferRepository
                     offer.OfferStatusId,
                     offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
                         tup.Id,
-                        tup.UserRoles.Select(ur => ur.UserRoleText)))))
+                        tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRole!.UserRoleText)))))
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
@@ -706,7 +706,7 @@ public class OfferRepository : IOfferRepository
                 offer.LicenseTypeId,
                 offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
                     tup.Id,
-                    tup.UserRoles.Select(ur => ur.UserRoleText)))
+                    tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRole!.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 
@@ -809,7 +809,7 @@ public class OfferRepository : IOfferRepository
         _context.Offers.Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
             .Select(o => new ValueTuple<bool, IEnumerable<IEnumerable<UserRoleData>>, string?>(
                 o.AppInstanceSetup != null && o.AppInstanceSetup.IsSingleInstance,
-                o.TechnicalUserProfiles.Select(tup => tup.UserRoles.Select(ur => new UserRoleData(ur.Id, ur.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRoleText))),
+                o.TechnicalUserProfiles.Select(tup => tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleData(ur.UserRole!.Id, ur.UserRole.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRole.UserRoleText))),
                 o.Name
             ))
             .SingleOrDefaultAsync();
@@ -819,7 +819,7 @@ public class OfferRepository : IOfferRepository
         _context.OfferSubscriptions.Where(x => x.Id == subscriptionId)
             .Select(o => new ValueTuple<bool, IEnumerable<IEnumerable<UserRoleData>>, string?>(
                 o.Offer!.AppInstanceSetup != null && o.Offer.AppInstanceSetup.IsSingleInstance,
-                o.Offer.TechnicalUserProfiles.Select(tup => tup.UserRoles.Select(ur => new UserRoleData(ur.Id, ur.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRoleText))),
+                o.Offer.TechnicalUserProfiles.Select(tup => tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleData(ur.UserRole!.Id, ur.UserRole.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRole.UserRoleText))),
                 o.Offer.Name
             ))
             .SingleOrDefaultAsync();
