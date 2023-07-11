@@ -168,7 +168,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetCompanyServiceAccountLinkedCompany(companyId).ConfigureAwait(false);
         if (!result)
         {
-            throw new ForbiddenException("The company ID is neither the owner nor the provider of the technical user");
+            throw new ForbiddenException($"The company ID is neither the owner nor the provider of the technical user");
         }
         return await ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId);
     }

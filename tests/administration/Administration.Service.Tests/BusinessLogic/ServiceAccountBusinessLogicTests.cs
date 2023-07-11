@@ -228,6 +228,7 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
+        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -244,6 +245,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
         var invalidUser = _fixture.Create<IdentityData>();
+        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == invalidUser.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -255,11 +257,29 @@ public class ServiceAccountBusinessLogicTests
     }
 
     [Fact]
+    public async Task ResetOwnCompanyServiceAccountSecretAsync_WithInvalidUserCompanyId_ForbiddenException()
+    {
+        // Arrange
+        SetupResetOwnCompanyServiceAccountSecret();
+        var invalidUser = _fixture.Create<IdentityData>();
+        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == invalidUser.CompanyId))).Returns(false);
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
+
+        // Act
+        async Task Act() => await sut.ExecuteResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, invalidUser.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        exception.Message.Should().Be($"The company ID is neither the owner nor the provider of the technical user");
+    }
+
+    [Fact]
     public async Task ResetOwnCompanyServiceAccountSecretAsync_WithInvalidServiceAccount_NotFoundException()
     {
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
         var invalidServiceAccountId = Guid.NewGuid();
+        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -550,7 +570,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupGetOwnCompanyServiceAccount()
     {
         var data = _fixture.Create<CompanyServiceAccountDetailedData>();
-        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
+        
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(
                 A<Guid>.That.Matches(x => x == ValidServiceAccountId), A<Guid>.That.Matches(x => x == _identity.CompanyId)))
             .Returns(data);
