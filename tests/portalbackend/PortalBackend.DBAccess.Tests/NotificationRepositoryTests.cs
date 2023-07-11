@@ -437,6 +437,27 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Count.Should().Be(4);
     }
 
+    [Fact]
+    public async Task GetCountDetailsForUserAsync_ReturnsExpectedCount()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
+        await context.SaveChangesAsync().ConfigureAwait(false);
+
+        // Act
+        var results = await sut
+            .GetCountDetailsForUserAsync(_companyUserId).ToListAsync()
+            .ConfigureAwait(false);
+
+        // Assert
+        results.Count.Should().Be(5);
+        results.Where(x => x.NotificationTopicId == null).Should().ContainSingle().And.Satisfy(x => x.Count == 1);
+
+        await trans.RollbackAsync().ConfigureAwait(false);
+    }
+
     #endregion
 
     #region CheckNotificationExistsByIdAndIamUserId
