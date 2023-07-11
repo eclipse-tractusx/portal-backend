@@ -5186,7 +5186,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.ToTable((string)null);
 
-                    b.ToView("CompanyLinkedServiceAccounts", "portal");
+                    b.ToView("company_linked_service_accounts", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
