@@ -104,6 +104,32 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntity.State.Should().Be(EntityState.Modified);
         changedEntity.Entity.Should().BeOfType<Notification>().Which.IsRead.Should().Be(true);
     }
+    
+    [Fact]
+    public async Task AttachAndModifyNotification_WithExistingNotification_NotUpdatesStatus()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), notification =>
+        {
+            notification.IsRead = true;
+        },
+        notification =>
+        {
+            notification.IsRead = true;
+        });
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeFalse();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.Entity.Should().BeOfType<Notification>().Which.IsRead.Should().Be(true);
+    }
 
     #endregion
 
