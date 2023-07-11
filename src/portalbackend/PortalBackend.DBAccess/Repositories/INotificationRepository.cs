@@ -40,7 +40,7 @@ public interface INotificationRepository
     Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
         bool isRead, Action<Notification>? setOptionalParameters = null);
 
-    void AttachAndModifyNotification(Guid notificationId, Action<Notification> setOptionalParameters);
+    void AttachAndModifyNotification(Guid notificationId, Action<Notification>? initialize, Action<Notification> updateFields);
 
     void AttachAndModifyNotifications(IEnumerable<Guid> notificationIds, Action<Notification> setOptionalParameters);
 
@@ -72,8 +72,9 @@ public interface INotificationRepository
     /// </summary>
     /// <param name="notificationId">Id of the notification</param>
     /// <param name="companyUserId">Id of the receiver</param>
+    /// <param name="isRead">is Read</param>
     /// <returns><c>true</c> if the notification exists, <c>false</c> if it doesn't exist</returns>
-    Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndValidateReceiverAsync(Guid notificationId, Guid companyUserId);
+    Task<(bool IsUserReceiver, bool IsNotificationExisting, bool isRead)> CheckNotificationExistsByIdAndValidateReceiverAsync(Guid notificationId, Guid companyUserId);
 
     /// <summary>
     /// Gets the count of the notifications for the given user and optional status

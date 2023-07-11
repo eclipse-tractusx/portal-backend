@@ -315,10 +315,11 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var notification = new Notification(_notificationDetail.Id, Guid.NewGuid(), DateTimeOffset.Now, NotificationTypeId.INFO, !isRead);
-        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<Notification>>._))
-            .Invokes((Guid _, Action<Notification> setOptionalParameters) =>
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<Notification>>._, A<Action<Notification>>._))
+            .Invokes((Guid _, Action<Notification> initializers, Action<Notification> dbupdatedfield) =>
             {
-                setOptionalParameters.Invoke(notification);
+                initializers.Invoke(notification);
+                dbupdatedfield.Invoke(notification);
             });
         var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
         {
@@ -443,15 +444,15 @@ public class NotificationBusinessLogicTests
 
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndValidateReceiverAsync(_notificationDetail.Id, _identity.UserId))
-            .ReturnsLazily(() => (true, true));
+            .ReturnsLazily(() => (true, true, true));
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndValidateReceiverAsync(
                     A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
-            .Returns((false, false));
+            .Returns((false, false, true));
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndValidateReceiverAsync(_notificationDetail.Id,
                     A<Guid>.That.Not.Matches(x => x == _identity.UserId)))
-            .Returns((false, true));
+            .Returns((false, true, true));
         A.CallTo(() => _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(_notificationDetail.Id, _identity.UserId))
             .Returns((true, _unreadNotificationDetails.First()));
         A.CallTo(() => _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(_notificationDetail.Id, A<Guid>.That.Not.Matches(x => x == _identity.UserId)))

@@ -53,10 +53,12 @@ public class NotificationRepository : INotificationRepository
         return _dbContext.Add(notification).Entity;
     }
 
-    public void AttachAndModifyNotification(Guid notificationId, Action<Notification> setOptionalParameters)
+    public void AttachAndModifyNotification(Guid notificationId, Action<Notification>? initialize, Action<Notification> updateFields)
     {
-        var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
-        setOptionalParameters.Invoke(notification);
+        var notification = new Notification(notificationId, Guid.Empty, default, default, default);
+        initialize?.Invoke(notification);
+        _dbContext.Attach(notification);
+        updateFields.Invoke(notification);
     }
 
     public void AttachAndModifyNotifications(IEnumerable<Guid> notificationIds, Action<Notification> setOptionalParameters)
@@ -171,12 +173,13 @@ public class NotificationRepository : INotificationRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndValidateReceiverAsync(Guid notificationId, Guid companyUserId) =>
+    public Task<(bool IsUserReceiver, bool IsNotificationExisting, bool isRead)> CheckNotificationExistsByIdAndValidateReceiverAsync(Guid notificationId, Guid companyUserId) =>
         _dbContext.Notifications
             .AsNoTracking()
             .Where(notification => notification.Id == notificationId)
-            .Select(notification => new ValueTuple<bool, bool>(
+            .Select(notification => new ValueTuple<bool, bool, bool>(
                 notification.ReceiverUserId == companyUserId,
-                true))
+                true,
+                notification.IsRead))
             .SingleOrDefaultAsync();
 }
