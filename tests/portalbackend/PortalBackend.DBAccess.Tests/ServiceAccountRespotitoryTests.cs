@@ -231,7 +231,6 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().BeTrue();
     }
-    
     #region Setup
 
     private async Task<(ServiceAccountRepository, PortalDbContext)> CreateSut()
