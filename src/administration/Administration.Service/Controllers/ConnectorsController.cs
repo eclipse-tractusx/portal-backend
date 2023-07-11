@@ -242,11 +242,11 @@ public class ConnectorsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieve company connector end point with bpn.
+    /// post list of bpns or an empty array to retrieve available company connector.
     /// </summary>
     /// <param name="bpns" example="BPNL00000003CRHK">Single or List of Business Partner Number of the company.</param>
     /// <remarks>Example: POST: /api/administration/connectors/discovery</remarks>
-    /// <response code="200">Returns connector end point along with bpn.</response>
+    /// <response code="200">Returns company connector per bpn.</response>
     [HttpPost]
     [Route("discovery")]
     [Authorize(Roles = "view_connectors")]
