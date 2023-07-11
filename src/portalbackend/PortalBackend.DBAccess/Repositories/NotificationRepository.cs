@@ -131,12 +131,12 @@ public class NotificationRepository : INotificationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(bool IsRead, bool? Done, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(Guid companyUserId) =>
+    public IAsyncEnumerable<(bool IsRead, bool? Done, NotificationTopicId? NotificationTopicId, int Count)> GetCountDetailsForUserAsync(Guid companyUserId) =>
         _dbContext.Notifications
             .AsNoTracking()
             .Where(not => not.ReceiverUserId == companyUserId)
             .GroupBy(not => new { not.IsRead, not.Done, not.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId },
-                (key, element) => new ValueTuple<bool, bool?, NotificationTopicId, int>(key.IsRead, key.Done, key.NotificationTopicId, element.Count()))
+                (key, element) => new ValueTuple<bool, bool?, NotificationTopicId?, int>(key.IsRead, key.Done, key.NotificationTopicId, element.Count()))
             .AsAsyncEnumerable();
 
     /// <inheritdoc />

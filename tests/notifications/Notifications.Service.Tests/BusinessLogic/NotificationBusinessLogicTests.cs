@@ -275,7 +275,7 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationCountDetailsAsync()
     {
         // Arrange
-        var data = new AsyncEnumerableStub<(bool IsRead, bool? Done, NotificationTopicId NotificationTopicId, int Count)>(new List<(bool IsRead, bool? Done, NotificationTopicId NotificationTopicId, int Count)>
+        var data = new AsyncEnumerableStub<(bool IsRead, bool? Done, NotificationTopicId? NotificationTopicId, int Count)>(new List<(bool IsRead, bool? Done, NotificationTopicId? NotificationTopicId, int Count)>
         {
             new (true, null, NotificationTopicId.INFO, 2),
             new (false, null, NotificationTopicId.INFO, 3),
