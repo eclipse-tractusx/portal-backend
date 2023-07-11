@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230711064520_CPLP-2841-AddCompanyLinkedServiceAccountsView")]
+    [Migration("20230712063045_CPLP-2841-AddCompanyLinkedServiceAccountsView")]
     partial class CPLP2841AddCompanyLinkedServiceAccountsView
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -5746,10 +5746,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("HostId")
                         .HasConstraintName("fk_connectors_companies_host_id");
 
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "LastEditor")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
                         .WithMany()
                         .HasForeignKey("LastEditorId")
-                        .HasConstraintName("fk_connectors_company_users_last_editor_id");
+                        .HasConstraintName("fk_connectors_identities_last_editor_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Location")
                         .WithMany("Connectors")
@@ -6383,16 +6383,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfileAssignedUserRole", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfile", "TechnicalUserProfile")
-                        .WithMany()
+                        .WithMany("TechnicalUserProfileAssignedUserRoles")
                         .HasForeignKey("TechnicalUserProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_technical_user_profile_assigned_user_roles_technical_user_p");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
-                        .WithMany()
+                        .WithMany("TechnicalUserProfileAssignedUserRole")
                         .HasForeignKey("UserRoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_technical_user_profile_assigned_user_roles_user_roles_user_r");
 
@@ -6927,6 +6925,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ServiceDetails");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUserProfile", b =>
+                {
+                    b.Navigation("TechnicalUserProfileAssignedUserRoles");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", b =>
                 {
                     b.Navigation("CompanyIdentifiers");
@@ -6948,6 +6951,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Navigation("IdentityAssignedRoles");
+
+                    b.Navigation("TechnicalUserProfileAssignedUserRole");
 
                     b.Navigation("UserRoleDescriptions");
                 });
