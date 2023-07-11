@@ -490,7 +490,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Where(os =>
                 os.Offer!.ProviderCompanyId == companyId &&
                 (os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE || os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING) &&
-                (!connectorIdSet.HasValue || (connectorIdSet.Value ? os.ConnectorAssignedOfferSubscriptions.Any() : !os.ConnectorAssignedOfferSubscriptions.Any())))
+                (connectorIdSet == null || (connectorIdSet.Value ? os.ConnectorAssignedOfferSubscriptions.Any() : !os.ConnectorAssignedOfferSubscriptions.Any())))
             .Select(os => new OfferSubscriptionConnectorData(
                 os.Id,
                 os.Company!.Name,
