@@ -22,7 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Logic;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Tests;
 
@@ -33,7 +33,7 @@ public class KeycloakRealmModelTests
     {
         // Arrange
         var keycloakSettingsMap = new KeycloakSettingsMap {
-            { "master", new() {
+            { "central", new() {
                 ConnectionString = "https://wsl:8443/iamcentral",
                 User = "admin",
                 Password = "admin",
@@ -42,7 +42,8 @@ public class KeycloakRealmModelTests
         };
         var seederSettings = new KeycloakSeederSettings
         {
-            DataPath = "TestSeeds/CX-Central-realm.json"
+            DataPath = "TestSeeds/CX-Central-realm.json",
+            KeycloakInstanceName = "central"
         };
 
         var logger = A.Fake<ILogger>();
@@ -50,7 +51,16 @@ public class KeycloakRealmModelTests
         FlurlErrorHandler.ConfigureErrorHandler(logger, false);
 
         var factory = new KeycloakFactory(Options.Create(keycloakSettingsMap));
-        var sut = new KeycloakSeeder(factory, Options.Create(seederSettings));
+        var seedDataHandler = new SeedDataHandler();
+
+        var sut = new KeycloakSeeder(
+            factory,
+            seedDataHandler,
+            new RealmUpdater(factory, seedDataHandler),
+            new RolesUpdater(factory, seedDataHandler),
+            new ClientsUpdater(factory, seedDataHandler),
+            new IdentityProvidersUpdater(factory, seedDataHandler),
+            Options.Create(seederSettings));
 
         // Act
         await sut.Seed().ConfigureAwait(false);

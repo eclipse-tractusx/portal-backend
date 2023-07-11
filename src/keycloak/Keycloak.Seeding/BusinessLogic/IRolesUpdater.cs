@@ -18,12 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Logic;
-
-public class KeycloakSeederSettings
+public interface IRolesUpdater
 {
-    [Required]
-    public string DataPath { get; set; } = null!;
+    Task UpdateClientRoles(string keycloakInstanceName);
+    Task UpdateRealmRoles(string keycloakInstanceName);
+    Task UpdateCompositeRoles(string keycloakInstanceName);
 }
