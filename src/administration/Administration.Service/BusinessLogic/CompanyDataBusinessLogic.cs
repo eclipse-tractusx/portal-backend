@@ -172,10 +172,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             throw new UnexpectedConditionException("neither CompanyRoleIds nor ConsentStatusDetails should ever be null here");
         }
-        if (result.CompanyRoleIds.Any())
-        {
-            throw new ConflictException($"companyRoles [{string.Join(", ", result.CompanyRoleIds)}] are already assigned to company {identity.CompanyId}");
-        }
 
         var agreementAssignedRoleData = await companyRepositories.GetAgreementAssignedRolesDataAsync(companyRoleConsentDetails.Select(x => x.CompanyRole))
                 .PreSortedGroupBy(x => x.CompanyRoleId, x => x.AgreementId)
@@ -187,15 +183,21 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 data => data.Key,
                 (details, data) => (
                     CompanyRoleId: details.CompanyRole,
-                    ActiveAgreements: details.Agreements.Where(x => x.ConsentStatus == ConsentStatusId.ACTIVE),
+                    AllActiveAgreements: details.Agreements.All(x => x.ConsentStatus == ConsentStatusId.ACTIVE),
+                    AllInActiveAgreements: details.Agreements.All(x => x.ConsentStatus == ConsentStatusId.INACTIVE),
+                    Agreements: details.Agreements,
                     MissingAgreementIds: data.Value.Except(details.Agreements.Where(x => x.ConsentStatus == ConsentStatusId.ACTIVE).Select(x => x.AgreementId)),
                     ExtraAgreementIds: details.Agreements.ExceptBy(data.Value, x => x.AgreementId).Select(x => x.AgreementId)))
             .ToList();
 
-        var missing = joined.Where(x => x.MissingAgreementIds.Any());
+        var missing = joined.Where(x => x.MissingAgreementIds.Any() && !x.AllInActiveAgreements);
         if (missing.Any())
         {
-            throw new ControllerArgumentException($"All agreements need to get signed. Missing active consents: [{string.Join(", ", missing.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.MissingAgreementIds)}]"))}]");
+            throw new ControllerArgumentException($"All agreements need to get signed as Active or InActive. Missing consents: [{string.Join(", ", missing.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.MissingAgreementIds)}]"))}]");
+        }
+        if (!joined.Any(x => x.AllActiveAgreements))
+        {
+            throw new ConflictException("Company can't unassign from all roles, Atleast one Company role need to signed as active");
         }
         var extra = joined.Where(x => x.ExtraAgreementIds.Any());
         if (extra.Any())
@@ -205,12 +207,15 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         _portalRepositories.GetInstance<IConsentRepository>().AddAttachAndModifyConsents(
             result.ConsentStatusDetails,
-            joined.SelectMany(x => x.ActiveAgreements).DistinctBy(active => active.AgreementId).Select(active => (active.AgreementId, active.ConsentStatus)).ToList(),
+            joined.SelectMany(x => x.Agreements).DistinctBy(active => active.AgreementId).Select(active => (active.AgreementId, active.ConsentStatus)).ToList(),
             identity.CompanyId,
             identity.UserId,
             _dateTimeProvider.OffsetNow);
 
-        _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(identity.CompanyId, joined.Select(x => x.CompanyRoleId));
+        var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
+
+        companyRolesRepository.CreateCompanyAssignedRoles(identity.CompanyId, joined.Where(j => j.AllActiveAgreements && !result.CompanyRoleIds.Contains(j.CompanyRoleId)).Select(x => x.CompanyRoleId));
+        companyRolesRepository.RemoveCompanyAssignedRoles(identity.CompanyId, joined.Where(j => j.AllInActiveAgreements && result.CompanyRoleIds.Contains(j.CompanyRoleId)).Select(x => x.CompanyRoleId));
 
         await _portalRepositories.SaveAsync();
     }
