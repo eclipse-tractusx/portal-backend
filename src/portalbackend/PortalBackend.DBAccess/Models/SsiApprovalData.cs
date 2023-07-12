@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record SsiApprovalData(
     CompanySsiDetailStatusId Status,
     VerifiedCredentialTypeId Type,
-    VerifiedCredentialTypeKindId Kind,
+    VerifiedCredentialTypeKindId? Kind,
     string CompanyName,
     string? Bpn,
     DateTimeOffset? ExpiryDate,

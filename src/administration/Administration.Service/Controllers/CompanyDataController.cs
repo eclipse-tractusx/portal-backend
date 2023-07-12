@@ -213,7 +213,7 @@ public class CompanyDataController : ControllerBase
     /// <param name="data">The type and document</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>The id of the created use case participation</returns>
-    /// <remarks>Example: POST: api/administration/companydata/ssiCertificate</remarks>
+    /// <remarks>Example: POST: api/administration/companydata/certificates</remarks>
     /// <response code="204">Successfully created the ssi certificate.</response>
     [HttpPost]
     [Consumes("multipart/form-data")]
