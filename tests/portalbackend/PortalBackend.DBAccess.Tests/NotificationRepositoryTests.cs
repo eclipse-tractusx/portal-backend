@@ -362,7 +362,28 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             results!.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.Done == doneState.Value));
         }
     }
+    
+    [Fact]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithUnlinkedNotificationTypeIdandTopicId_ReturnsExpectedNotificationDetailData()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
+        await context.SaveChangesAsync().ConfigureAwait(false);
 
+        // Act
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, null, null)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(6);
+        results.Data.Count().Should().Be(6);
+        results.Data.Should().AllBeOfType<NotificationDetailData>();
+        results.Data.Where(x => x.NotificationTopic == null).Should().ContainSingle();
+
+        await trans.RollbackAsync().ConfigureAwait(false);
+    }
     #endregion
 
     #region GetNotificationByIdAndIamUserId
