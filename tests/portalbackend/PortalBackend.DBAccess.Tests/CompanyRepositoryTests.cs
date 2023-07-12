@@ -675,6 +675,24 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetOperatorBpns
+
+    [Fact]
+    public async Task GetOperatorBpns_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.NotBeEmpty();
+        result.Should().HaveCount(1).And.Satisfy(x => x == "BPNL00000003CRHK");
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()

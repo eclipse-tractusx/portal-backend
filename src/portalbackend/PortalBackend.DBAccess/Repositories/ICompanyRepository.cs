@@ -164,4 +164,10 @@ public interface ICompanyRepository
     Task<(bool IsActive, bool IsValid)> GetCompanyStatusDataAsync(Guid companyId);
 
     Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId);
+
+    /// <summary>
+    /// Gets all bpns of companies with role operator
+    /// </summary>
+    /// <returns>Async enumerable of bpns</returns>
+    IAsyncEnumerable<string> GetOperatorBpns();
 }

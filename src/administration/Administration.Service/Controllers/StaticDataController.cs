@@ -90,4 +90,19 @@ public class StaticDataController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<LicenseTypeData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<LicenseTypeData> GetLicenseTypes() =>
         _logic.GetAllLicenseType();
+
+    /// <summary>
+    /// Retrieve the bpns of the operator companies
+    /// </summary>
+    /// <returns>AsyncEnumerable of the operator bpns</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/staticdata/operator-bpn
+    /// </remarks>
+    /// <response code="200">Returns a list of all the operator bpns</response>
+    [HttpGet]
+    [Authorize(Roles = "tbd")]
+    [Route("operator-bpn")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<LicenseTypeData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<string> GetOperatorBpns() =>
+        _logic.GetOperatorBpns();
 }

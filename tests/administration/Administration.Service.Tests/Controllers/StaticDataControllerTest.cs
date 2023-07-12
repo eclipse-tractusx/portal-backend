@@ -37,6 +37,40 @@ public class StaticDataControllerTest
     }
 
     [Fact]
+    public async Task GetUseCases_ReturnsExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<UseCaseData>(5).ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetAllUseCase())
+            .Returns(data);
+
+        //Act
+        var result = await _controller.GetUseCases().ToListAsync().ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _logic.GetAllUseCase()).MustHaveHappenedOnceExactly();
+        Assert.IsType<List<UseCaseData>>(result);
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetLanguages_ReturnsExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<LanguageData>(5).ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetAllLanguage())
+            .Returns(data);
+
+        //Act
+        var result = await _controller.GetLanguages().ToListAsync().ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _logic.GetAllLanguage()).MustHaveHappenedOnceExactly();
+        Assert.IsType<List<LanguageData>>(result);
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
     public async Task GetLicenseTypes_ReturnsExpectedResult()
     {
         //Arrange
@@ -45,11 +79,28 @@ public class StaticDataControllerTest
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetLicenseTypes().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetLicenseTypes().ToListAsync().ConfigureAwait(false);
 
         // Assert 
         A.CallTo(() => _logic.GetAllLicenseType()).MustHaveHappenedOnceExactly();
         Assert.IsType<List<LicenseTypeData>>(result);
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetOperatorBpns_ReturnsExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<string>(5).ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetOperatorBpns())
+            .Returns(data);
+
+        //Act
+        var result = await _controller.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _logic.GetOperatorBpns()).MustHaveHappenedOnceExactly();
+        Assert.IsType<List<string>>(result);
         result.Should().HaveCount(5);
     }
 }

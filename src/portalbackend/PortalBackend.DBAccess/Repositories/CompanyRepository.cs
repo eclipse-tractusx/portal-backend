@@ -296,4 +296,12 @@ public class CompanyRepository : ICompanyRepository
             ))
             .SingleOrDefaultAsync();
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<string> GetOperatorBpns() =>
+        _context.Companies
+            .Where(x =>
+                x.CompanyAssignedRoles.Any(car => car.CompanyRoleId == CompanyRoleId.OPERATOR) &&
+                !string.IsNullOrWhiteSpace(x.BusinessPartnerNumber))
+            .Select(x => x.BusinessPartnerNumber!)
+            .ToAsyncEnumerable();
 }
