@@ -46,64 +46,60 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
             if (updateIdentityProvider.Alias == null)
                 throw new ConflictException($"identityProvider alias must not be null: {updateIdentityProvider.InternalId} {updateIdentityProvider.DisplayName}");
 
-
-            var updateMappers = _seedData.IdentityProviderMappers.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias) ?? Enumerable.Empty<IdentityProviderMapperModel>();
-            IEnumerable<IdentityProviderMapperModel> createMappers;
             try
             {
                 var identityProvider = await keycloak.GetIdentityProviderAsync(realm, updateIdentityProvider.Alias).ConfigureAwait(false);
                 UpdateIdentityProvider(identityProvider, updateIdentityProvider);
                 await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider).ConfigureAwait(false);
-
-                var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias).ConfigureAwait(false);
-
-                createMappers = updateMappers.ExceptBy(mappers.Select(x => x.Name), x => x.Name);
-
-                await Task.WhenAll(
-                    mappers.Join(
-                        updateMappers,
-                        x => x.Name,
-                        x => x.Name,
-                        (mapper, update) =>
-                            keycloak.UpdateIdentityProviderMapperAsync(
-                                realm,
-                                updateIdentityProvider.Alias,
-                                mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
-                                UpdateIdentityProviderMapper(mapper, update))))
-                    .ConfigureAwait(false);
-
-                await Task.WhenAll(
-                    mappers
-                        .ExceptBy(updateMappers.Select(x => x.Name), x => x.Name)
-                        .Select(mapper =>
-                            keycloak.DeleteIdentityProviderMapperAsync(
-                                realm,
-                                updateIdentityProvider.Alias,
-                                mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"))))
-                    .ConfigureAwait(false);
             }
             catch (KeycloakEntityNotFoundException)
             {
                 var identityProvider = new Library.Models.IdentityProviders.IdentityProvider();
                 UpdateIdentityProvider(identityProvider, updateIdentityProvider);
                 await keycloak.CreateIdentityProviderAsync(realm, identityProvider).ConfigureAwait(false);
-                createMappers = updateMappers;
             }
 
-            await Task.WhenAll(
-                createMappers
-                    .Select(mapper =>
-                        keycloak.AddIdentityProviderMapperAsync(
-                            realm,
-                            updateIdentityProvider.Alias,
-                            UpdateIdentityProviderMapper(
-                                new Library.Models.IdentityProviders.IdentityProviderMapper
-                                {
-                                    Name = mapper.Name,
-                                    IdentityProviderAlias = mapper.IdentityProviderAlias
-                                },
-                                mapper))))
-                .ConfigureAwait(false);
+            var updateMappers = _seedData.IdentityProviderMappers.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias);
+            var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias).ConfigureAwait(false);
+
+            // create missing mappers
+            foreach (var mapper in updateMappers.ExceptBy(mappers.Select(x => x.Name), x => x.Name))
+            {
+                await keycloak.AddIdentityProviderMapperAsync(
+                    realm,
+                    updateIdentityProvider.Alias,
+                    UpdateIdentityProviderMapper(
+                        new Library.Models.IdentityProviders.IdentityProviderMapper
+                        {
+                            Name = mapper.Name,
+                            IdentityProviderAlias = mapper.IdentityProviderAlias
+                        },
+                        mapper)).ConfigureAwait(false);
+            }
+
+            // update existing mappers
+            foreach (var x in mappers.Join(
+                updateMappers,
+                x => x.Name,
+                x => x.Name,
+                (mapper, update) => (Mapper: mapper, Update: update)))
+            {
+                var (mapper, update) = x;
+                await keycloak.UpdateIdentityProviderMapperAsync(
+                    realm,
+                    updateIdentityProvider.Alias,
+                    mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
+                    UpdateIdentityProviderMapper(mapper, update)).ConfigureAwait(false);
+            }
+
+            // delete redundant mappers
+            foreach (var mapper in mappers.ExceptBy(updateMappers.Select(x => x.Name), x => x.Name))
+            {
+                await keycloak.DeleteIdentityProviderMapperAsync(
+                    realm,
+                    updateIdentityProvider.Alias,
+                    mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}")).ConfigureAwait(false);
+            }
         }
     }
 

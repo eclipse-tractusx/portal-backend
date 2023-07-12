@@ -93,13 +93,13 @@ public class ClientsUpdater : IClientsUpdater
             x => x.ClientId,
             (client, update) => CreateUpdateClient(client.Id, update)).ToList();
 
-        await Task.WhenAll(
-            updates.Select(update =>
-                keycloak.UpdateClientAsync(
-                    realm,
-                    update.Id ?? throw new ConflictException($"Id must not be null: clientId {update.ClientId}"),
-                    update)))
-            .ConfigureAwait(false);
+        foreach (var update in updates)
+        {
+            await keycloak.UpdateClientAsync(
+                realm,
+                update.Id ?? throw new ConflictException($"Id must not be null: clientId {update.ClientId}"),
+                update).ConfigureAwait(false);
+        }
 
         var creates = updateClients.ExceptBy(clients.Select(x => x.ClientId), x => x.ClientId).Select(update => CreateUpdateClient(null, update)).ToList();
         foreach (var create in creates)
