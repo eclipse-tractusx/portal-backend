@@ -64,7 +64,6 @@ public class ConnectorsRepository : IConnectorsRepository
                     c.Id,
                     c.TypeId,
                     c.StatusId,
-                    c.DapsRegistrationSuccessful,
                     c.Provider!.Name,
                     c.SelfDescriptionDocumentId)
         ).SingleOrDefaultAsync();
@@ -80,7 +79,6 @@ public class ConnectorsRepository : IConnectorsRepository
                     connector.Id,
                     connector.TypeId,
                     connector.StatusId,
-                    connector.DapsRegistrationSuccessful,
                     connector.HostId,
                     connector.Host!.Name,
                     connector.SelfDescriptionDocumentId,
@@ -173,6 +171,6 @@ public class ConnectorsRepository : IConnectorsRepository
             ))
             .SingleOrDefaultAsync();
 
-    public void DeleteConnectorDetails(Guid connectorId) =>
+    public void DeleteConnector(Guid connectorId) =>
         _context.Connectors.Remove(new Connector(connectorId, null!, null!, null!));
 }

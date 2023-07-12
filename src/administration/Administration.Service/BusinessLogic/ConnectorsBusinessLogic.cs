@@ -82,7 +82,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                             c.Id,
                             c.TypeId,
                             c.StatusId,
-                            c.DapsRegistrationSuccessful,
                             c.HostId,
                             c.Host!.Name,
                             c.SelfDescriptionDocumentId,
@@ -349,13 +348,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     private async Task DeleteConnectorWithDocuments(Guid connectorId, Guid selfDescriptionDocumentId, IConnectorsRepository connectorsRepository)
     {
         _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(selfDescriptionDocumentId);
-        connectorsRepository.DeleteConnectorDetails(connectorId);
+        connectorsRepository.DeleteConnector(connectorId);
         await _portalRepositories.SaveAsync();
     }
 
     private async Task DeleteConnectorWithoutDocuments(Guid connectorId, IConnectorsRepository connectorsRepository)
     {
-        connectorsRepository.DeleteConnectorDetails(connectorId);
+        connectorsRepository.DeleteConnector(connectorId);
         await _portalRepositories.SaveAsync();
     }
 

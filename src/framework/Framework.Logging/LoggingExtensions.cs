@@ -32,7 +32,7 @@ public static class LoggingExtensions
         var loggerConfig = new LoggerConfiguration();
         if (config is not null)
         {
-            loggerConfig.ReadFrom.Configuration(config);
+            loggerConfig = loggerConfig.ReadFrom.Configuration(config);
         }
 
         return loggerConfig.Enrich.FromLogContext()
