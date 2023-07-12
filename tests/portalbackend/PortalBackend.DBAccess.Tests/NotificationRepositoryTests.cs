@@ -403,6 +403,30 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result.IsUserReceiver.Should().BeTrue();
         result.NotificationDetailData.IsRead.Should().BeTrue();
+        result.NotificationDetailData.NotificationTopic.Should().Be(NotificationTopicId.INFO);
+    }
+
+    [Fact]
+    public async Task GetNotificationByIdAndIamUserId_WithoutLinkedTopic_GetsExpectedNotification()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
+        await context.SaveChangesAsync().ConfigureAwait(false);
+
+        // Act
+        var result = await sut
+            .GetNotificationByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsUserReceiver.Should().BeTrue();
+        result.NotificationDetailData.IsRead.Should().BeTrue();
+        result.NotificationDetailData.NotificationTopic.Should().BeNull();
+
+        await trans.RollbackAsync().ConfigureAwait(false);
     }
 
     #endregion
