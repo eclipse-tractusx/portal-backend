@@ -362,7 +362,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             results!.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.Done == doneState.Value));
         }
     }
-    
+
     [Fact]
     public async Task GetAllAsDetailsByUserIdUntracked_WithUnlinkedNotificationTypeIdandTopicId_ReturnsExpectedNotificationDetailData()
     {
