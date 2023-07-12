@@ -188,13 +188,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (result.OfferSubscriptionAlreadyLinked)
         {
-            throw new UnexpectedConditionException("OfferSubscription is already linked to a connector");
+            throw new ConflictException("OfferSubscription is already linked to a connector");
         }
 
         if (result.OfferSubscriptionStatus != OfferSubscriptionStatusId.ACTIVE &&
             result.OfferSubscriptionStatus != OfferSubscriptionStatusId.PENDING)
         {
-            throw new UnexpectedConditionException($"The offer subscription must be either {OfferSubscriptionStatusId.ACTIVE} or {OfferSubscriptionStatusId.PENDING}");
+            throw new ConflictException($"The offer subscription must be either {OfferSubscriptionStatusId.ACTIVE} or {OfferSubscriptionStatusId.PENDING}");
         }
 
         if (result.SelfDescriptionDocumentId is null)
@@ -204,7 +204,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (string.IsNullOrWhiteSpace(result.ProviderBpn))
         {
-            throw new UnexpectedConditionException($"The bpn of compay {result.CompanyId} must be set");
+            throw new ConflictException($"The bpn of compay {result.CompanyId} must be set");
         }
 
         await ValidateTechnicalUser(technicalUserId, result.CompanyId).ConfigureAwait(false);
@@ -248,7 +248,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         string businessPartnerNumber,
         Guid selfDescriptionDocumentId,
         IFormFile? file,
-        Guid companyUserId,
+        Guid userId,
         Guid? subscriptionId,
         CancellationToken cancellationToken)
     {
@@ -264,7 +264,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.ProviderId = provider;
                 connector.HostId = host;
                 connector.TypeId = type;
-                connector.LastEditorId = companyUserId;
+                connector.LastEditorId = userId;
                 connector.DateLastChanged = DateTimeOffset.UtcNow;
                 if (technicalUserId != null)
                 {

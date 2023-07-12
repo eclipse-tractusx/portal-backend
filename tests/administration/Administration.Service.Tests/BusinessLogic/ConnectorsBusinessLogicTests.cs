@@ -361,7 +361,7 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, (_technicalUserIdentity.UserId, _technicalUserIdentity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("OfferSubscription is already linked to a connector");
     }
 
@@ -378,7 +378,7 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, (_technicalUserIdentity.UserId, _technicalUserIdentity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"The offer subscription must be either {OfferSubscriptionStatusId.ACTIVE} or {OfferSubscriptionStatusId.PENDING}");
     }
 
@@ -414,7 +414,7 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, (_technicalUserIdentity.UserId, _technicalUserIdentity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"The bpn of compay {companyId} must be set");
     }
 
