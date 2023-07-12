@@ -173,4 +173,8 @@ public class ConnectorsRepository : IConnectorsRepository
 
     public void DeleteConnector(Guid connectorId) =>
         _context.Connectors.Remove(new Connector(connectorId, null!, null!, null!));
+
+    /// <inheritdoc />
+    public ConnectorAssignedOfferSubscription CreateConnectorAssignedSubscriptions(Guid connectorId, Guid subscriptionId) =>
+        _context.ConnectorAssignedOfferSubscriptions.Add(new ConnectorAssignedOfferSubscription(connectorId, subscriptionId)).Entity;
 }

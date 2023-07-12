@@ -84,6 +84,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<IdentityAssignedRole>("identity_assigned_roles", x => new { x.IdentityId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<ConsentAssignedOffer>("consent_assigned_offers", x => new { x.OfferId, x.ConsentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<ConsentAssignedOfferSubscription>("consent_assigned_offer_subscriptions", x => new { x.OfferSubscriptionId, x.ConsentId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<ConnectorAssignedOfferSubscription>("connector_assigned_offer_subscriptions", x => new { x.ConnectorId, x.OfferSubscriptionId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<Country>("countries", x => x.Alpha2Code, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferAssignedDocument>("offer_assigned_documents", x => new { x.OfferId, x.DocumentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<IamIdentityProvider>("iam_identity_providers", x => x.IamIdpAlias, cancellationToken).ConfigureAwait(false);

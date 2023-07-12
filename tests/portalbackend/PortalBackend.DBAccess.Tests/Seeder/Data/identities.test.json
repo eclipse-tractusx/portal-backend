@@ -86,5 +86,21 @@
     "user_status_id": 1,
     "user_entity_id": null,
     "identity_type_id": 2
+  },
+  {
+    "id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f3",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2
+  },
+  {
+    "id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f4",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2
   }
 ]

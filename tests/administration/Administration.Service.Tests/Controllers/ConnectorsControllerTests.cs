@@ -95,7 +95,7 @@ public class ConnectorsControllerTests
             "New Connector",
             "https://connec-tor.com",
             "the location",
-            "VALIDBPN1234",
+            Guid.NewGuid(),
             null,
             null);
         var connectorId = _fixture.Create<Guid>();

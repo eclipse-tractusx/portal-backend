@@ -877,6 +877,55 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region CheckOfferSubscriptionWithOfferProvider
+
+    [Fact]
+    public async Task CheckOfferSubscriptionWithOfferProvider_WithExisting_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckOfferSubscriptionWithOfferProvider(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), new Guid("0dcd8209-85e2-4073-b130-ac094fb47106")).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.ProviderBpn.Should().Be("BPNL00000003AYRE");
+        result.IsOfferProvider.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckOfferSubscriptionWithOfferProvider_WithExistingAndNotOfferProvider_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckOfferSubscriptionWithOfferProvider(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.ProviderBpn.Should().Be("BPNL00000003AYRE");
+        result.IsOfferProvider.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckOfferSubscriptionWithOfferProvider_WithoutExisting_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckOfferSubscriptionWithOfferProvider(Guid.NewGuid(), new Guid("0dcd8209-85e2-4073-b130-ac094fb47106")).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeFalse();
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(IOfferSubscriptionsRepository, PortalDbContext)> CreateSut()

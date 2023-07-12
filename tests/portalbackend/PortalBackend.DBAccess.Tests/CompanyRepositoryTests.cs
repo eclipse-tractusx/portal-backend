@@ -149,39 +149,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetCompanyIdAndSelfDescriptionDocumentByBpnAsync
-
-    [Fact]
-    public async Task GetCompanyIdByBpn_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetCompanyIdAndSelfDescriptionDocumentByBpnAsync("BPNL00000003CRHK").ConfigureAwait(false);
-
-        // Assert
-        result.Should().NotBe(default);
-        result.CompanyId.Should().NotBe(Guid.Empty);
-        result.CompanyId.Should().Be("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
-        result.SelfDescriptionDocumentId.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetCompanyIdByBpn_WithNotExistingBpn_ReturnsEmptyGuid()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var results = await sut.GetCompanyIdAndSelfDescriptionDocumentByBpnAsync("NOTEXISTING").ConfigureAwait(false);
-
-        // Assert
-        results.Should().Be(default);
-    }
-
-    #endregion
-
     #region GetCompanyBpnAndSelfDescriptionDocumentByIdAsync
 
     [Fact]
