@@ -342,6 +342,24 @@ public class CompanySsiDetailsRepositoryTests
 
     #endregion
 
+    #region GetCertificateTypes
+
+    [Fact]
+    public async Task GetCertificateTypes_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.Single().Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<CompanySsiDetailsRepository> CreateSut()

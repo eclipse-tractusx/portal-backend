@@ -979,26 +979,6 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
-    #region Setup
-
-    private void SetupCreateUseCaseParticipation()
-    {
-        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK))
-            .Returns(true);
-        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(A<Guid>.That.Not.Matches(x => x == _traceabilityExternalTypeDetailId), A<VerifiedCredentialTypeId>._))
-            .Returns(false);
-    }
-
-    private void SetupCreateSsiCertificate()
-    {
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE))
-            .Returns(true);
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(A<VerifiedCredentialTypeId>.That.Matches(x => x != VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)))
-            .Returns(false);
-    }
-
-    #endregion
-
     #region GetCredentials
 
     [Fact]
@@ -1469,6 +1449,45 @@ public class CompanyDataBusinessLogicTests
         detail.LastEditorId.Should().Be(_identity.UserId);
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
         detail.DateLastChanged.Should().Be(now);
+    }
+
+    #endregion
+
+    #region GetCertificateTypes
+
+    [Fact]
+    public async Task GetCertificateTypes_WithFilter_ReturnsList()
+    {
+        // Arrange
+        A.CallTo(() => _companySsiDetailsRepository.GetCertificateTypes())
+            .ReturnsLazily(() => Enumerable.Repeat(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, 1).ToAsyncEnumerable());
+
+        // Act
+        var result = await _sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.Single().Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+    }
+
+    #endregion
+
+    #region Setup
+
+    private void SetupCreateUseCaseParticipation()
+    {
+        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK))
+            .Returns(true);
+        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(A<Guid>.That.Not.Matches(x => x == _traceabilityExternalTypeDetailId), A<VerifiedCredentialTypeId>._))
+            .Returns(false);
+    }
+
+    private void SetupCreateSsiCertificate()
+    {
+        A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE))
+            .Returns(true);
+        A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(A<VerifiedCredentialTypeId>.That.Matches(x => x != VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)))
+            .Returns(false);
     }
 
     #endregion

@@ -187,6 +187,20 @@ public class CompanyDataController : ControllerBase
         this.WithCompanyId(companyId => _logic.GetSsiCertificatesAsync(companyId));
 
     /// <summary>
+    /// Gets the Ssi certifications for the own company
+    /// </summary>
+    /// <returns>All ssi certifications of the own company</returns>
+    /// <remarks>Example: Get: api/administration/companydata/certificateTypes</remarks>
+    /// <response code="200">Returns a collection of certificates.</response>
+    [HttpGet]
+    [Authorize(Roles = "request_ssicredential")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("certificateTypes")]
+    [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
+        _logic.GetCertificateTypes();
+
+    /// <summary>
     /// Creates the useCaseParticipation
     /// </summary>
     /// <param name="data">The type and document</param>

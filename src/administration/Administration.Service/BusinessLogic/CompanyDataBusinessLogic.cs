@@ -491,4 +491,8 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             await _mailingService.SendMails(requesterEmail, mailParameters, Enumerable.Repeat("CredentialRejected", 1)).ConfigureAwait(false);
         }
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
+        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes();
 }

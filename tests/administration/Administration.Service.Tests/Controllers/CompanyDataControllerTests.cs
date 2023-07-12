@@ -273,4 +273,19 @@ public class CompanyDataControllerTests
         Assert.IsType<Pagination.Response<CredentialDetailData>>(result);
         result.Content.Should().HaveCount(5);
     }
+
+    [Fact]
+    public async Task GetCredentialTypes()
+    {
+        // Arrange
+        A.CallTo(() => _logic.GetCertificateTypes())
+            .ReturnsLazily(() => Enumerable.Repeat(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, 1).ToAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        result.Should().ContainSingle();
+        result.Single().Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+    }
 }

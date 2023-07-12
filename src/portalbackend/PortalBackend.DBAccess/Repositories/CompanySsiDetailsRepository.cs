@@ -204,4 +204,11 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
         _context.Attach(entity);
         updateFields.Invoke(entity);
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
+        _context.VerifiedCredentialTypes
+            .Where(x => x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
+            .Select(x => x.Id)
+            .ToAsyncEnumerable();
 }
