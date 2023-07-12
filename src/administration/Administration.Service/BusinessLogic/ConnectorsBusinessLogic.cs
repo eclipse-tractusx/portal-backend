@@ -226,7 +226,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         string businessPartnerNumber,
         Guid selfDescriptionDocumentId,
         IFormFile? file,
-        Guid? companyUserId,
+        Guid? userId,
         CancellationToken cancellationToken)
     {
         var (name, connectorUrl, type, location, provider, host, technicalUserId) = connectorInputModel;
@@ -241,7 +241,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.ProviderId = provider;
                 connector.HostId = host;
                 connector.TypeId = type;
-                connector.LastEditorId = companyUserId;
+                connector.LastEditorId = userId;
                 connector.DateLastChanged = DateTimeOffset.UtcNow;
                 if (technicalUserId != null)
                 {

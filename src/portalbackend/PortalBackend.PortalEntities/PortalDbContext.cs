@@ -912,7 +912,7 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<Connector>(entity =>
         {
             entity.HasOne(d => d.SelfDescriptionDocument)
-                .WithOne(p => p!.Connector!)
+                .WithOne(p => p.Connector!)
                 .HasForeignKey<Connector>(d => d.SelfDescriptionDocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
