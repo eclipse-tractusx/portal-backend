@@ -37,6 +37,10 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly Guid _validSubscriptionId = new("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
     private readonly Guid _validServiceAccountId = new("7e85a0b8-0001-ab67-10d1-0ef508201006");
+    private readonly Guid _validCompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020006");
+    private readonly Guid _validProviderId = new("0dcd8209-85e2-4073-b130-ac094fb47106");
+    private readonly Guid _validSubscriberCompanyId = new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84");
+
 
     public ServiceAccountRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -219,18 +223,62 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region  IsCompanyServiceAccountLinkedCompany
+
     [Fact]
-    public async Task GetCompanyServiceAccountLinkedCompany_ReturnsExpectedResult()
+    public async Task IsCompanyServiceAccountLinkedCompany_ForOwnerCompany_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.IsCompanyServiceAccountLinkedCompany(_validCompanyId).ConfigureAwait(false);
+        var result = await sut.IsCompanyServiceAccountLinkedCompany(_validServiceAccountId, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task IsCompanyServiceAccountLinkedCompany_ForProviderCompany_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsCompanyServiceAccountLinkedCompany(_validServiceAccountId, _validProviderId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsCompanyServiceAccountLinkedCompany_ForSubscriberCompany_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsCompanyServiceAccountLinkedCompany(_validServiceAccountId, _validSubscriberCompanyId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IsCompanyServiceAccountLinkedCompany_ForCompanyUserId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsCompanyServiceAccountLinkedCompany(_validCompanyUserId, _validCompanyId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ServiceAccountRepository, PortalDbContext)> CreateSut()

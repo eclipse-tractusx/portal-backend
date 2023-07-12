@@ -167,7 +167,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedUseCase> VerifiedCredentialTypeAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompaniesLinkedServiceAccount> CompanyLinkedServiceAccounts { get; set; } = default!;
-
     public virtual DbSet<OfferSubscriptionView> OfferSubscriptionView { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -1314,9 +1313,10 @@ public class PortalDbContext : DbContext
             entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version })
                 .IsUnique();
         });
+
         modelBuilder.Entity<CompaniesLinkedServiceAccount>()
-             .ToView("company_linked_service_accounts", "portal")
-             .HasNoKey();
+            .ToView("company_linked_service_accounts", "portal")
+            .HasNoKey();
 
         modelBuilder.Entity<ConnectorAssignedOfferSubscription>(entity =>
         {

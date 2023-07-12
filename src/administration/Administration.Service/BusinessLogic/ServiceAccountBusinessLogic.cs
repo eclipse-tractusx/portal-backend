@@ -165,7 +165,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 
     public async Task<ServiceAccountDetails> ExecuteResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
     {
-        if (!await _portalRepositories.GetInstance<IServiceAccountRepository>().IsCompanyServiceAccountLinkedCompany(companyId).ConfigureAwait(false))
+        if (!await _portalRepositories.GetInstance<IServiceAccountRepository>().IsCompanyServiceAccountLinkedCompany(serviceAccountId, companyId).ConfigureAwait(false))
         {
             throw new ForbiddenException($"The company ID is neither the owner nor the provider of the technical user");
         }
