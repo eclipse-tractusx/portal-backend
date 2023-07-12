@@ -64,16 +64,6 @@ public class RolesUpdater : IRolesUpdater
         var roles = await keycloak.GetRolesAsync(realm).ConfigureAwait(false);
         var updateRealmRoles = _seedData.RealmRoles;
 
-        if (!updateRealmRoles.Any())
-        {
-            foreach (var role in roles)
-            {
-                if (role.Id == null)
-                    throw new ConflictException($"role id must not be null: {role.Name}");
-                await keycloak.DeleteRoleByIdAsync(realm, role.Id).ConfigureAwait(false);
-            }
-            return;
-        }
         foreach (var newRole in updateRealmRoles.ExceptBy(roles.Select(x => x.Name), x => x.Name))
         {
             await keycloak.CreateRoleAsync(realm, CreateRole(newRole));
@@ -83,18 +73,21 @@ public class RolesUpdater : IRolesUpdater
 
     private static async Task UpdateAndDeleteRoles(Library.KeycloakClient keycloak, string realm, IEnumerable<Library.Models.Roles.Role> roles, IEnumerable<RoleModel> updateRoles)
     {
-        foreach (var joinedRole in 
+        foreach (var (role, update) in 
             roles.Join(
                     updateRoles,
                     x => x.Name,
                     x => x.Name,
                     (role, updateRole) => (Role: role, Update: updateRole)))
         {
-            if (joinedRole.Role.Id == null)
-                throw new ConflictException($"role id must not be null: {joinedRole.Role.Name}");
-            if (joinedRole.Role.ContainerId == null)
-                throw new ConflictException($"role containerId must not be null: {joinedRole.Role.Name}");
-            await keycloak.UpdateRoleByIdAsync(realm, joinedRole.Role.Id, CreateUpdateRole(joinedRole.Role.Id, joinedRole.Role.ContainerId, joinedRole.Update)).ConfigureAwait(false);
+            if (!Compare(role, update))
+            {
+                if (role.Id == null)
+                    throw new ConflictException($"role id must not be null: {role.Name}");
+                if (role.ContainerId == null)
+                    throw new ConflictException($"role containerId must not be null: {role.Name}");
+                await keycloak.UpdateRoleByIdAsync(realm, role.Id, CreateUpdateRole(role.Id, role.ContainerId, update)).ConfigureAwait(false);
+            }
         }
 
         foreach (var deleteRole in
@@ -228,6 +221,18 @@ public class RolesUpdater : IRolesUpdater
             await addCompositeRoles(role.Name, add);
         }
     }
+
+    private static bool Compare(Library.Models.Roles.Role role, RoleModel update) =>
+        role.Name == update.Name &&
+        role.Description == update.Description &&
+        (role.Attributes == null && update.Attributes == null || 
+        role.Attributes != null && update.Attributes != null &&
+        role.Attributes.Keys.NullOrContentEqual(update.Attributes.Keys) &&
+        role.Attributes.Join(
+            update.Attributes,
+            x => x.Key,
+            x => x.Key,
+            (attribute, update) => attribute.Value.NullOrContentEqual(update.Value)).All(x => x));
 
     private static Library.Models.Roles.Role CreateRole(RoleModel updateRole) =>
         new Library.Models.Roles.Role

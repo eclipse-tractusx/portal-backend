@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
@@ -49,8 +50,11 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
             try
             {
                 var identityProvider = await keycloak.GetIdentityProviderAsync(realm, updateIdentityProvider.Alias).ConfigureAwait(false);
-                UpdateIdentityProvider(identityProvider, updateIdentityProvider);
-                await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider).ConfigureAwait(false);
+                if (!Compare(identityProvider, updateIdentityProvider))
+                {
+                    UpdateIdentityProvider(identityProvider, updateIdentityProvider);
+                    await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider).ConfigureAwait(false);
+                }
             }
             catch (KeycloakEntityNotFoundException)
             {
@@ -85,11 +89,14 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                 (mapper, update) => (Mapper: mapper, Update: update)))
             {
                 var (mapper, update) = x;
-                await keycloak.UpdateIdentityProviderMapperAsync(
-                    realm,
-                    updateIdentityProvider.Alias,
-                    mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
-                    UpdateIdentityProviderMapper(mapper, update)).ConfigureAwait(false);
+                if (!Compare(mapper, update))
+                {
+                    await keycloak.UpdateIdentityProviderMapperAsync(
+                        realm,
+                        updateIdentityProvider.Alias,
+                        mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
+                        UpdateIdentityProviderMapper(mapper, update)).ConfigureAwait(false);
+                }
             }
 
             // delete redundant mappers
@@ -160,10 +167,70 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         return provider;
     }
 
+    private static bool Compare(Library.Models.IdentityProviders.IdentityProvider provider, IdentityProviderModel update) =>
+        provider.Alias == update.Alias &&
+        provider.DisplayName == update.DisplayName &&
+        provider.ProviderId == update.ProviderId &&
+        provider.Enabled == update.Enabled &&
+        provider.UpdateProfileFirstLoginMode == update.UpdateProfileFirstLoginMode &&
+        provider.TrustEmail == update.TrustEmail &&
+        provider.StoreToken == update.StoreToken &&
+        provider.AddReadTokenRoleOnCreate == update.AddReadTokenRoleOnCreate &&
+        provider.AuthenticateByDefault == update.AuthenticateByDefault &&
+        provider.LinkOnly == update.LinkOnly &&
+        provider.FirstBrokerLoginFlowAlias == update.FirstBrokerLoginFlowAlias &&
+        Compare(provider.Config, update.Config);
+
+    private static bool Compare(Library.Models.IdentityProviders.Config? config, IdentityProviderConfigModel? update) =>
+        config == null && update == null ||
+        config != null && update != null &&
+        config.HideOnLoginPage == update.HideOnLoginPage &&
+        //ClientSecret = update.ClientSecret &&
+        config.DisableUserInfo == update.DisableUserInfo &&
+        config.ValidateSignature == update.ValidateSignature &&
+        config.ClientId == update.ClientId &&
+        config.TokenUrl == update.TokenUrl &&
+        config.AuthorizationUrl == update.AuthorizationUrl &&
+        config.ClientAuthMethod == update.ClientAuthMethod &&
+        config.JwksUrl == update.JwksUrl &&
+        config.LogoutUrl == update.LogoutUrl &&
+        config.ClientAssertionSigningAlg == update.ClientAssertionSigningAlg &&
+        config.SyncMode == update.SyncMode &&
+        config.UseJwksUrl == update.UseJwksUrl &&
+        config.UserInfoUrl == update.UserInfoUrl &&
+        config.Issuer == update.Issuer &&
+        // for Saml:
+        config.NameIDPolicyFormat == update.NameIDPolicyFormat &&
+        config.PrincipalType == update.PrincipalType &&
+        config.SignatureAlgorithm == update.SignatureAlgorithm &&
+        config.XmlSigKeyInfoKeyNameTransformer == update.XmlSigKeyInfoKeyNameTransformer &&
+        config.AllowCreate == update.AllowCreate &&
+        config.EntityId == update.EntityId &&
+        config.AuthnContextComparisonType == update.AuthnContextComparisonType &&
+        config.BackchannelSupported == update.BackchannelSupported &&
+        config.PostBindingResponse == update.PostBindingResponse &&
+        config.PostBindingAuthnRequest == update.PostBindingAuthnRequest &&
+        config.PostBindingLogout == update.PostBindingLogout &&
+        config.WantAuthnRequestsSigned == update.WantAuthnRequestsSigned &&
+        config.WantAssertionsSigned == update.WantAssertionsSigned &&
+        config.WantAssertionsEncrypted == update.WantAssertionsEncrypted &&
+        config.ForceAuthn == update.ForceAuthn &&
+        config.SignSpMetadata == update.SignSpMetadata &&
+        config.LoginHint == update.LoginHint &&
+        config.SingleSignOnServiceUrl == update.SingleSignOnServiceUrl &&
+        config.AllowedClockSkew == update.AllowedClockSkew &&
+        config.AttributeConsumingServiceIndex == update.AttributeConsumingServiceIndex;
+
+
     private static Library.Models.IdentityProviders.IdentityProviderMapper UpdateIdentityProviderMapper(Library.Models.IdentityProviders.IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper)
     {
         mapper._IdentityProviderMapper = updateMapper.IdentityProviderMapper;
         mapper.Config = updateMapper.Config?.ToDictionary(x => x.Key, x => x.Value);
         return mapper;
     }
+
+    private static bool Compare(Library.Models.IdentityProviders.IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper) =>
+        mapper.IdentityProviderAlias == updateMapper.IdentityProviderAlias &&
+        mapper._IdentityProviderMapper == updateMapper.IdentityProviderMapper &&
+        mapper.Config.NullOrContentEqual(updateMapper.Config);
 }
