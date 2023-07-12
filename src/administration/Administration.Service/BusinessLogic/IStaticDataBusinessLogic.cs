@@ -49,5 +49,5 @@ public interface IStaticDataBusinessLogic
     /// Get all bpns of companies with role operator
     /// </summary>
     /// <returns>A list of bpns</returns>
-    IAsyncEnumerable<string> GetOperatorBpns();
+    IAsyncEnumerable<OperatorBpnData> GetOperatorBpns();
 }

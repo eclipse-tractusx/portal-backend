@@ -91,7 +91,7 @@ public class StaticDataControllerTest
     public async Task GetOperatorBpns_ReturnsExpectedResult()
     {
         //Arrange
-        var data = _fixture.CreateMany<string>(5).ToAsyncEnumerable();
+        var data = _fixture.CreateMany<OperatorBpnData>(5).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetOperatorBpns())
             .Returns(data);
 
@@ -100,7 +100,7 @@ public class StaticDataControllerTest
 
         // Assert 
         A.CallTo(() => _logic.GetOperatorBpns()).MustHaveHappenedOnceExactly();
-        Assert.IsType<List<string>>(result);
+        Assert.IsType<List<OperatorBpnData>>(result);
         result.Should().HaveCount(5);
     }
 }

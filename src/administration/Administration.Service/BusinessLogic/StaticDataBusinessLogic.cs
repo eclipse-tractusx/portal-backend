@@ -53,6 +53,6 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
         _portalRepositories.GetInstance<IStaticDataRepository>().GetLicenseTypeData();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> GetOperatorBpns() =>
+    public IAsyncEnumerable<OperatorBpnData> GetOperatorBpns() =>
         _portalRepositories.GetInstance<ICompanyRepository>().GetOperatorBpns();
 }

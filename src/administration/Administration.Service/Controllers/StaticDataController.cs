@@ -103,6 +103,6 @@ public class StaticDataController : ControllerBase
     [Authorize(Roles = "tbd")]
     [Route("operator-bpn")]
     [ProducesResponseType(typeof(IAsyncEnumerable<LicenseTypeData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<string> GetOperatorBpns() =>
+    public IAsyncEnumerable<OperatorBpnData> GetOperatorBpns() =>
         _logic.GetOperatorBpns();
 }

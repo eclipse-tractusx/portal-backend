@@ -688,7 +688,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull().And.NotBeEmpty();
-        result.Should().HaveCount(1).And.Satisfy(x => x == "BPNL00000003CRHK");
+        result.Should().HaveCount(1).And.Satisfy(x => x.Bpn == "BPNL00000003CRHK" && x.OperatorName == "Catena-X");
     }
 
     #endregion

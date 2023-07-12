@@ -169,5 +169,5 @@ public interface ICompanyRepository
     /// Gets all bpns of companies with role operator
     /// </summary>
     /// <returns>Async enumerable of bpns</returns>
-    IAsyncEnumerable<string> GetOperatorBpns();
+    IAsyncEnumerable<OperatorBpnData> GetOperatorBpns();
 }

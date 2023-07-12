@@ -117,12 +117,12 @@ public class StaticDataBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         result.Should().HaveCount(3).And.ContainInOrder(data);
     }
-    
+
     [Fact]
     public async Task GetOperatorBpns_ReturnsExpectedResult()
     {
         // Arrange
-        var data = _fixture.CreateMany<string>(3).ToImmutableArray();
+        var data = _fixture.CreateMany<OperatorBpnData>(3).ToImmutableArray();
 
         A.CallTo(() => _companyRepository.GetOperatorBpns())
             .Returns(data.ToAsyncEnumerable());
