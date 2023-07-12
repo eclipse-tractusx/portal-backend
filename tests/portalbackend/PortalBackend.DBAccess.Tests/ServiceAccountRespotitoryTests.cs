@@ -219,6 +219,18 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    [Fact]
+    public async Task GetCompanyServiceAccountLinkedCompany_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsCompanyServiceAccountLinkedCompany(_validCompanyId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
+    }
     #region Setup
 
     private async Task<(ServiceAccountRepository, PortalDbContext)> CreateSut()

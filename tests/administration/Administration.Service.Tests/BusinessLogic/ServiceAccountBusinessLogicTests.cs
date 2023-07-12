@@ -228,10 +228,11 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
+        var result = await sut.ExecuteResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -244,14 +245,32 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
         var invalidUser = _fixture.Create<IdentityData>();
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == invalidUser.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, invalidUser.CompanyId).ConfigureAwait(false);
+        async Task Act() => await sut.ExecuteResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, invalidUser.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
         exception.Message.Should().Be($"serviceAccount {ValidServiceAccountId} not found for company {invalidUser.CompanyId}");
+    }
+
+    [Fact]
+    public async Task ResetOwnCompanyServiceAccountSecretAsync_WithInvalidUserCompanyId_ForbiddenException()
+    {
+        // Arrange
+        SetupResetOwnCompanyServiceAccountSecret();
+        var invalidUser = _fixture.Create<IdentityData>();
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == invalidUser.CompanyId))).Returns(false);
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
+
+        // Act
+        async Task Act() => await sut.ExecuteResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, invalidUser.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        exception.Message.Should().Be($"The company ID is neither the owner nor the provider of the technical user");
     }
 
     [Fact]
@@ -260,10 +279,11 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
         var invalidServiceAccountId = Guid.NewGuid();
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(invalidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await sut.ExecuteResetOwnCompanyServiceAccountSecretAsync(invalidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -550,6 +570,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupGetOwnCompanyServiceAccount()
     {
         var data = _fixture.Create<CompanyServiceAccountDetailedData>();
+
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(
                 A<Guid>.That.Matches(x => x == ValidServiceAccountId), A<Guid>.That.Matches(x => x == _identity.CompanyId)))
             .Returns(data);

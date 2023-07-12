@@ -163,7 +163,16 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.SubscriptionId);
     }
 
-    public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
+    public async Task<ServiceAccountDetails> ExecuteResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
+    {
+        if (!await _portalRepositories.GetInstance<IServiceAccountRepository>().IsCompanyServiceAccountLinkedCompany(companyId).ConfigureAwait(false))
+        {
+            throw new ForbiddenException($"The company ID is neither the owner nor the provider of the technical user");
+        }
+        return await ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId);
+    }
+
+    private async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
     {
         var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
 
