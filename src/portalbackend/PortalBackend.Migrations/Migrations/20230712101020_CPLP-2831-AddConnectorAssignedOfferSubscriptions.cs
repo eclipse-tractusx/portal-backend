@@ -93,6 +93,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                   LEFT JOIN portal.company_service_accounts AS tu ON os.id = tu.offer_subscription_id
                   LEFT JOIN portal.app_subscription_details AS asd ON os.id = asd.offer_subscription_id
                   LEFT JOIN portal.connector_assigned_offer_subscriptions AS caos ON os.id = caos.offer_subscription_id;");
+
+            migrationBuilder.Sql(@"CREATE OR REPLACE VIEW portal.company_linked_service_accounts AS
+                SELECT
+                    csa.id AS service_account_id,
+                    i.company_id AS owners,
+                    CASE
+                        WHEN csa.offer_subscription_id IS NOT NULL THEN o.provider_company_id
+                        WHEN EXISTS (SELECT 1 FROM portal.connectors cs WHERE cs.company_service_account_id = csa.id) THEN c.host_id
+                        END AS provider
+                FROM portal.company_service_accounts csa
+                    JOIN portal.identities i ON csa.id = i.id
+                    LEFT JOIN portal.offer_subscriptions os ON csa.offer_subscription_id = os.id
+                    LEFT JOIN portal.offers o ON os.offer_id = o.id
+                    LEFT JOIN portal.connectors c ON csa.id = c.company_service_account_id
+                WHERE csa.company_service_account_type_id = 1 AND i.identity_type_id = 2
+                UNION
+                SELECT
+                    csa.id AS service_account_id,
+                    i.company_id AS owners,
+                    null AS provider
+                FROM
+                    portal.company_service_accounts csa
+                        JOIN portal.identities i ON csa.id = i.id
+                WHERE csa.company_service_account_type_id = 2
+                ");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -100,6 +125,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql(@"DROP VIEW [IF EXISTS] portal.subscription_view");
             migrationBuilder.Sql("ALTER TABLE portal.connector_assigned_offer_subscriptions DROP CONSTRAINT IF EXISTS CK_Connector_ConnectorType_IsManaged;");
             migrationBuilder.Sql("DROP FUNCTION portal.is_connector_managed;");
+
+            migrationBuilder.Sql(@"CREATE OR REPLACE VIEW portal.company_linked_service_accounts AS
+               SELECT
+               csa.id AS service_account_id,
+               i.company_id AS owners,
+               CASE
+               WHEN csa.offer_subscription_id IS NOT NULL THEN os.company_id
+               WHEN EXISTS (SELECT 1 FROM portal.connectors cs WHERE cs.company_service_account_id = csa.id) THEN c.provider_id
+               ELSE NULL
+               END AS provider
+               FROM
+               portal.company_service_accounts csa
+               JOIN portal.identities i ON csa.id = i.id
+               LEFT JOIN portal.offer_subscriptions os ON csa.offer_subscription_id = os.id
+               LEFT JOIN portal.connectors c ON csa.id = c.company_service_account_id
+               WHERE csa.company_service_account_type_id = 1 AND i.identity_type_id=2
+               UNION
+               SELECT
+               csa.id AS service_account_id,
+               i.company_id AS owners,
+               null AS provider
+               FROM
+               portal.company_service_accounts csa
+               JOIN portal.identities i ON csa.id = i.id
+               WHERE csa.company_service_account_type_id = 2
+            ");
 
             migrationBuilder.DropTable(
                 name: "connector_assigned_offer_subscriptions",

@@ -81,6 +81,7 @@
     "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "location_id": "DE",
     "self_description_document_id": null,
-    "daps_registration_successful": null
+    "daps_registration_successful": null,
+    "company_service_account_id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f4"
   }
 ]
