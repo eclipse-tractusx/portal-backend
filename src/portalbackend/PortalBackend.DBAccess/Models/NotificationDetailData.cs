@@ -36,7 +36,7 @@ public record NotificationDetailData(
     Guid Id,
     DateTimeOffset Created,
     NotificationTypeId TypeId,
-    NotificationTopicId NotificationTopic,
+    NotificationTopicId? NotificationTopic,
     bool IsRead,
     string? Content,
     DateTimeOffset? DueDate,
