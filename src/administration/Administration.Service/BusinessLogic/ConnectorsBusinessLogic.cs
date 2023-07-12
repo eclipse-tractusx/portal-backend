@@ -199,7 +199,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (result.SelfDescriptionDocumentId is null)
         {
-            throw new UnexpectedConditionException($"provider company {result.CompanyId} has no self description document");
+            throw new ConflictException($"provider company {result.CompanyId} has no self description document");
         }
 
         if (string.IsNullOrWhiteSpace(result.ProviderBpn))

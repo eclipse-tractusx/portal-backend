@@ -35,7 +35,6 @@ using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Collections.Immutable;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -396,7 +395,7 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
         exception.Message.Should().Be($"provider company {ValidCompanyId} has no self description document");
     }
 
