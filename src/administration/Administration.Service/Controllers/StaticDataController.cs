@@ -100,9 +100,9 @@ public class StaticDataController : ControllerBase
     /// </remarks>
     /// <response code="200">Returns a list of all the operator bpns</response>
     [HttpGet]
-    [Authorize(Roles = "tbd")]
+    [Authorize]
     [Route("operator-bpn")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<LicenseTypeData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IAsyncEnumerable<OperatorBpnData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OperatorBpnData> GetOperatorBpns() =>
         _logic.GetOperatorBpns();
 }
