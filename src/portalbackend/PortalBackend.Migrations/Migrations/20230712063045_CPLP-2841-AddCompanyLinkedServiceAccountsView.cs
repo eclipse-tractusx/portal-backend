@@ -31,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql(@"CREATE OR REPLACE VIEW portal.company_linked_service_accounts AS
                SELECT
                csa.id AS service_account_id,
-               i.company_id as owners,
+               i.company_id AS owners,
                CASE
                WHEN csa.offer_subscription_id IS NOT NULL THEN os.company_id
                WHEN EXISTS (SELECT 1 FROM portal.connectors cs WHERE cs.company_service_account_id = csa.id) THEN c.provider_id
@@ -41,13 +41,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                portal.company_service_accounts csa
                JOIN portal.identities i ON csa.id = i.id
                LEFT JOIN portal.offer_subscriptions os ON csa.offer_subscription_id = os.id
-               LEFT JOIN portal.connectors  c ON csa.id = c.company_service_account_id
+               LEFT JOIN portal.connectors c ON csa.id = c.company_service_account_id
                WHERE csa.company_service_account_type_id = 1 AND i.identity_type_id=2
-               Union 
+               UNION
                SELECT
                csa.id AS service_account_id,
-               i.company_id as owners,
-               null as   provider
+               i.company_id AS owners,
+               null AS provider
                FROM
                portal.company_service_accounts csa
                JOIN portal.identities i ON csa.id = i.id

@@ -185,7 +185,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 sa.Identity.CompanyId == companyId)
             .AnyAsync();
 
-    public Task<bool> GetCompanyServiceAccountLinkedCompany(Guid companyId) =>
+    public Task<bool> IsCompanyServiceAccountLinkedCompany(Guid companyId) =>
         _dbContext.CompanyLinkedServiceAccounts
             .Where(x => x.Provider == companyId || x.Owners == companyId)
             .AnyAsync();

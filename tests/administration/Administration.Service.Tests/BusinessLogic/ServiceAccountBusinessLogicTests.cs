@@ -228,7 +228,7 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
-        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -245,7 +245,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
         var invalidUser = _fixture.Create<IdentityData>();
-        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == invalidUser.CompanyId))).Returns(true);
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == invalidUser.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -262,7 +262,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
         var invalidUser = _fixture.Create<IdentityData>();
-        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == invalidUser.CompanyId))).Returns(false);
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == invalidUser.CompanyId))).Returns(false);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -279,7 +279,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupResetOwnCompanyServiceAccountSecret();
         var invalidServiceAccountId = Guid.NewGuid();
-        A.CallTo(() => _serviceAccountRepository.GetCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>.That.Matches(x => x == _identity.CompanyId))).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act

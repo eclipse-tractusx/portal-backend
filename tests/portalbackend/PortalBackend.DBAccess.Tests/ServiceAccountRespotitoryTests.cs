@@ -226,7 +226,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyServiceAccountLinkedCompany(_validCompanyId).ConfigureAwait(false);
+        var result = await sut.IsCompanyServiceAccountLinkedCompany(_validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
