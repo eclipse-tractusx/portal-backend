@@ -82,17 +82,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.Sql(@"CREATE VIEW portal.offer_subscription_view AS
                 SELECT
-                  os.id AS subscriptionId,
-                  o.offer_type_id AS offer_type,
+                  os.id AS subscription_id,
+                  o.offer_type_id AS offer_type_id,
                   tu.id AS technical_user,
                   asd.app_instance_id AS app_instance,
                   caos.connector_id AS connector
                 FROM
                   portal.offer_subscriptions AS os
                   JOIN portal.offers AS o ON os.offer_id = o.id
-                  JOIN portal.company_service_accounts AS tu ON os.id = tu.offer_subscription_id
+                  LEFT JOIN portal.company_service_accounts AS tu ON os.id = tu.offer_subscription_id
                   LEFT JOIN portal.app_subscription_details AS asd ON os.id = asd.offer_subscription_id
-                  JOIN portal.connector_assigned_offer_subscriptions AS caos ON os.id = caos.offer_subscription_id;");
+                  LEFT JOIN portal.connector_assigned_offer_subscriptions AS caos ON os.id = caos.offer_subscription_id;");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
