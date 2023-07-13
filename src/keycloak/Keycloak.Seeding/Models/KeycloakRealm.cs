@@ -68,19 +68,19 @@ public class KeycloakRealm
     public int? MaxDeltaTimeSeconds { get; set; }
     public int? FailureFactor { get; set; }
     public RolesModel? Roles { get; set; }
-    public IReadOnlyList<GroupModel>? Groups { get; set; }
+    public IEnumerable<GroupModel>? Groups { get; set; }
     public RoleModel? DefaultRole { get; set; }
-    public IReadOnlyList<string>? DefaultGroups { get; set; }
-    public IReadOnlyList<string>? RequiredCredentials { get; set; }
+    public IEnumerable<string>? DefaultGroups { get; set; }
+    public IEnumerable<string>? RequiredCredentials { get; set; }
     public string? OtpPolicyType { get; set; }
     public string? OtpPolicyAlgorithm { get; set; }
     public int? OtpPolicyInitialCounter { get; set; }
     public int? OtpPolicyDigits { get; set; }
     public int? OtpPolicyLookAheadWindow { get; set; }
     public int? OtpPolicyPeriod { get; set; }
-    public IReadOnlyList<string>? OtpSupportedApplications { get; set; }
+    public IEnumerable<string>? OtpSupportedApplications { get; set; }
     public string? WebAuthnPolicyRpEntityName { get; set; }
-    public IReadOnlyList<string>? WebAuthnPolicySignatureAlgorithms { get; set; }
+    public IEnumerable<string>? WebAuthnPolicySignatureAlgorithms { get; set; }
     public string? WebAuthnPolicyRpId { get; set; }
     public string? WebAuthnPolicyAttestationConveyancePreference { get; set; }
     public string? WebAuthnPolicyAuthenticatorAttachment { get; set; }
@@ -88,9 +88,9 @@ public class KeycloakRealm
     public string? WebAuthnPolicyUserVerificationRequirement { get; set; }
     public int? WebAuthnPolicyCreateTimeout { get; set; }
     public bool? WebAuthnPolicyAvoidSameAuthenticatorRegister { get; set; }
-    public IReadOnlyList<string>? WebAuthnPolicyAcceptableAaguids { get; set; }
+    public IEnumerable<string>? WebAuthnPolicyAcceptableAaguids { get; set; }
     public string? WebAuthnPolicyPasswordlessRpEntityName { get; set; }
-    public IReadOnlyList<string>? WebAuthnPolicyPasswordlessSignatureAlgorithms { get; set; }
+    public IEnumerable<string>? WebAuthnPolicyPasswordlessSignatureAlgorithms { get; set; }
     public string? WebAuthnPolicyPasswordlessRpId { get; set; }
     public string? WebAuthnPolicyPasswordlessAttestationConveyancePreference { get; set; }
     public string? WebAuthnPolicyPasswordlessAuthenticatorAttachment { get; set; }
@@ -98,31 +98,31 @@ public class KeycloakRealm
     public string? WebAuthnPolicyPasswordlessUserVerificationRequirement { get; set; }
     public int? WebAuthnPolicyPasswordlessCreateTimeout { get; set; }
     public bool? WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister { get; set; }
-    public IReadOnlyList<string>? WebAuthnPolicyPasswordlessAcceptableAaguids { get; set; }
-    public IReadOnlyList<UserModel>? Users { get; set; }
-    public IReadOnlyList<ScopeMappingModel>? ScopeMappings { get; set; }
-    public IReadOnlyDictionary<string, IReadOnlyList<ClientScopeMappingModel>>? ClientScopeMappings { get; set; }
-    public IReadOnlyList<ClientModel>? Clients { get; set; }
-    public IReadOnlyList<ClientScopeModel>? ClientScopes { get; set; }
-    public IReadOnlyList<string>? DefaultDefaultClientScopes { get; set; }
-    public IReadOnlyList<string>? DefaultOptionalClientScopes { get; set; }
+    public IEnumerable<string>? WebAuthnPolicyPasswordlessAcceptableAaguids { get; set; }
+    public IEnumerable<UserModel>? Users { get; set; }
+    public IEnumerable<ScopeMappingModel>? ScopeMappings { get; set; }
+    public IReadOnlyDictionary<string, IEnumerable<ClientScopeMappingModel>>? ClientScopeMappings { get; set; }
+    public IEnumerable<ClientModel>? Clients { get; set; }
+    public IEnumerable<ClientScopeModel>? ClientScopes { get; set; }
+    public IEnumerable<string>? DefaultDefaultClientScopes { get; set; }
+    public IEnumerable<string>? DefaultOptionalClientScopes { get; set; }
     public BrowserSecurityHeadersModel? BrowserSecurityHeaders { get; set; }
     public SmtpServerModel? SmtpServer { get; set; }
     public string? LoginTheme { get; set; }
     public bool? EventsEnabled { get; set; }
-    public IReadOnlyList<string>? EventsListeners { get; set; }
-    public IReadOnlyList<string>? EnabledEventTypes { get; set; }
+    public IEnumerable<string>? EventsListeners { get; set; }
+    public IEnumerable<string>? EnabledEventTypes { get; set; }
     public bool? AdminEventsEnabled { get; set; }
     public bool? AdminEventsDetailsEnabled { get; set; }
-    public IReadOnlyList<IdentityProviderModel>? IdentityProviders { get; set; }
-    public IReadOnlyList<IdentityProviderMapperModel>? IdentityProviderMappers { get; set; }
-    public IReadOnlyDictionary<string, IReadOnlyList<ComponentModel>>? Components { get; set; }
+    public IEnumerable<IdentityProviderModel>? IdentityProviders { get; set; }
+    public IEnumerable<IdentityProviderMapperModel>? IdentityProviderMappers { get; set; }
+    public IReadOnlyDictionary<string, IEnumerable<ComponentModel>>? Components { get; set; }
     public bool? InternationalizationEnabled { get; set; }
-    public IReadOnlyList<string>? SupportedLocales { get; set; }
+    public IEnumerable<string>? SupportedLocales { get; set; }
     public string? DefaultLocale { get; set; }
-    public IReadOnlyList<AuthenticationFlowModel>? AuthenticationFlows { get; set; }
-    public IReadOnlyList<AuthenticatorConfigModel>? AuthenticatorConfig { get; set; }
-    public IReadOnlyList<RequiredActionModel>? RequiredActions { get; set; }
+    public IEnumerable<AuthenticationFlowModel>? AuthenticationFlows { get; set; }
+    public IEnumerable<AuthenticatorConfigModel>? AuthenticatorConfig { get; set; }
+    public IEnumerable<RequiredActionModel>? RequiredActions { get; set; }
     public string? BrowserFlow { get; set; }
     public string? RegistrationFlow { get; set; }
     public string? DirectGrantFlow { get; set; }
@@ -137,13 +137,13 @@ public class KeycloakRealm
 }
 
 public record RolesModel(
-    IReadOnlyList<RoleModel>? Realm,
-    IReadOnlyDictionary<string, IReadOnlyList<RoleModel>>? Client
+    IEnumerable<RoleModel>? Realm,
+    IReadOnlyDictionary<string, IEnumerable<RoleModel>>? Client
 );
 
 public record CompositeRolesModel(
-    IReadOnlyList<string>? Realm,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? Client
+    IEnumerable<string>? Realm,
+    IReadOnlyDictionary<string, IEnumerable<string>>? Client
 );
 
 public record RoleModel(
@@ -153,7 +153,7 @@ public record RoleModel(
     bool? Composite,
     bool? ClientRole,
     string? ContainerId,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? Attributes,
+    IReadOnlyDictionary<string, IEnumerable<string>>? Attributes,
     CompositeRolesModel? Composites
 );
 
@@ -167,15 +167,15 @@ public record UserModel(
     string? FirstName,
     string? LastName,
     string? Email,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? Attributes,
-    IReadOnlyList<object>? Credentials,
-    IReadOnlyList<string>? DisableableCredentialTypes,
-    IReadOnlyList<string>? RequiredActions,
-    IReadOnlyList<FederatedIdentityModel>? FederatedIdentities,
-    IReadOnlyList<string>? RealmRoles,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? ClientRoles,
-    long? NotBefore,
-    IReadOnlyList<string>? Groups,
+    IReadOnlyDictionary<string, IEnumerable<string>>? Attributes,
+    IEnumerable<object>? Credentials,
+    IEnumerable<string>? DisableableCredentialTypes,
+    IEnumerable<string>? RequiredActions,
+    IEnumerable<FederatedIdentityModel>? FederatedIdentities,
+    IEnumerable<string>? RealmRoles,
+    IReadOnlyDictionary<string, IEnumerable<string>>? ClientRoles,
+    int? NotBefore,
+    IEnumerable<string>? Groups,
     string? ServiceAccountClientId
 );
 
@@ -189,20 +189,20 @@ public record GroupModel(
     string? Id,
     string? Name,
     string? Path,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? Attributes,
-    IReadOnlyList<string>? RealmRoles,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? ClientRoles,
-    IReadOnlyList<string>? SubGroups
+    IReadOnlyDictionary<string, IEnumerable<string>>? Attributes,
+    IEnumerable<string>? RealmRoles,
+    IReadOnlyDictionary<string, IEnumerable<string>>? ClientRoles,
+    IEnumerable<string>? SubGroups
 );
 
 public record ScopeMappingModel(
     string? ClientScope,
-    IReadOnlyList<string>? Roles
+    IEnumerable<string>? Roles
 );
 
 public record ClientScopeMappingModel(
     string? Client,
-    IReadOnlyList<string>? Roles
+    IEnumerable<string>? Roles
 );
 
 public record ClientModel(
@@ -215,8 +215,8 @@ public record ClientModel(
     bool? Enabled,
     bool? AlwaysDisplayInConsole,
     string? ClientAuthenticatorType,
-    IReadOnlyList<string>? RedirectUris,
-    IReadOnlyList<string>? WebOrigins,
+    IEnumerable<string>? RedirectUris,
+    IEnumerable<string>? WebOrigins,
     int? NotBefore,
     bool? BearerOnly,
     bool? ConsentRequired,
@@ -231,9 +231,9 @@ public record ClientModel(
     IReadOnlyDictionary<string, string>? AuthenticationFlowBindingOverrides,
     bool? FullScopeAllowed,
     int? NodeReRegistrationTimeout,
-    IReadOnlyList<string>? DefaultClientScopes,
-    IReadOnlyList<string>? OptionalClientScopes,
-    IReadOnlyList<ProtocolMapperModel>? ProtocolMappers,
+    IEnumerable<string>? DefaultClientScopes,
+    IEnumerable<string>? OptionalClientScopes,
+    IEnumerable<ProtocolMapperModel>? ProtocolMappers,
     ClientAccessModel? Access,
     string? Secret,
     string? AdminUrl,
@@ -261,7 +261,7 @@ public record ClientScopeModel(
     string? Name,
     string? Protocol,
     IReadOnlyDictionary<string, string>? Attributes,
-    IReadOnlyList<ProtocolMapperModel>? ProtocolMappers,
+    IEnumerable<ProtocolMapperModel>? ProtocolMappers,
     string? Description
 );
 
@@ -360,7 +360,7 @@ public record ComponentModel(
     string? ProviderId,
     string? SubType,
     object? SubComponents,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? Config
+    IReadOnlyDictionary<string, IEnumerable<string>>? Config
 );
 
 public record AuthenticationFlowModel(
@@ -370,7 +370,7 @@ public record AuthenticationFlowModel(
     string? ProviderId,
     bool? TopLevel,
     bool? BuiltIn,
-    IReadOnlyList<AuthenticationExecutionModel>? AuthenticationExecutions
+    IEnumerable<AuthenticationExecutionModel>? AuthenticationExecutions
 );
 
 public record AuthenticationExecutionModel(
@@ -401,9 +401,9 @@ public record RequiredActionModel(
 );
 
 public record ClientProfilesModel(
-    IReadOnlyList<object>? Profiles
+    IEnumerable<object>? Profiles
 );
 
 public record ClientPoliciesModel(
-    IReadOnlyList<object>? Policies
+    IEnumerable<object>? Policies
 );

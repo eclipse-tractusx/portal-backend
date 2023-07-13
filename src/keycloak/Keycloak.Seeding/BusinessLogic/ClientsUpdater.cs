@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
@@ -41,36 +42,34 @@ public class ClientsUpdater : IClientsUpdater
         var realm = _seedData.Realm;
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
 
-        var clients = await keycloak.GetClientsAsync(realm).ConfigureAwait(false);
+        _seedData.ClientsDictionary = await UpdateClientsInternal(keycloak, realm).ToDictionaryAsync(x => x.ClientId, x => x.Id).ConfigureAwait(false);
+    }
 
-        var updateClients = _seedData.Clients;
-        var updates = clients.Join(
-            updateClients,
-            x => x.ClientId,
-            x => x.ClientId,
-            (client, update) => (Client: client, Update: update)).ToList();
-
-        foreach (var update in updates)
+    public async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(Library.KeycloakClient keycloak, string realm)
+    {
+        foreach (var update in _seedData.Clients)
         {
-            if (!Compare(update.Client, update.Update))
+            if (update.ClientId == null)
+                throw new ConflictException($"clientId must not be null {update.Id}");
+            var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId).ConfigureAwait(false)).SingleOrDefault();
+            if (client == null)
             {
-                var updateClient = CreateUpdateClient(update.Client.Id, update.Update);
+                var id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, CreateUpdateClient(null, update)).ConfigureAwait(false);
+                if (id == null)
+                    throw new KeycloakNoSuccessException($"creation of client {update.ClientId} did not return the expected result");
+                yield return (update.ClientId, id);
+            }
+            else if (!Compare(client, update))
+            {
+                if (client.Id == null)
+                    throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}");
+                var updateClient = CreateUpdateClient(client.Id, update);
                 await keycloak.UpdateClientAsync(
                     realm,
-                    updateClient.Id ?? throw new ConflictException($"Id must not be null: clientId {updateClient.ClientId}"),
+                    client.Id,
                     updateClient).ConfigureAwait(false);
+                yield return (update.ClientId, client.Id);
             }
-        }
-
-        var creates = updateClients.ExceptBy(clients.Select(x => x.ClientId), x => x.ClientId).Select(update => CreateUpdateClient(null, update)).ToList();
-        foreach (var create in creates)
-        {
-            create.Id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, create).ConfigureAwait(false);
-        }
-        _seedData.ClientsDictionary = updates.Select(update => (update.Update.ClientId, update.Client.Id)).Concat(creates.Select(create => (create.ClientId, create.Id))).ToDictionary(x => x.ClientId!, x => x.Id!);
-
-        foreach (var client in updateClients)
-        {
         }
     }
 
@@ -149,10 +148,10 @@ public class ClientsUpdater : IClientsUpdater
         // client.Secret == update.Secret &&
         client.AuthorizationServicesEnabled == update.AuthorizationServicesEnabled;
 
-        private static bool Compare(Library.Models.Clients.ClientAccess? access, ClientAccessModel? updateAccess) =>
-            access == null && updateAccess == null ||
-            access != null && updateAccess != null &&
-            access.Configure == updateAccess.Configure &&
-            access.Manage == updateAccess.Manage &&
-            access.View == updateAccess.View;
-}       
+    private static bool Compare(Library.Models.Clients.ClientAccess? access, ClientAccessModel? updateAccess) =>
+        access == null && updateAccess == null ||
+        access != null && updateAccess != null &&
+        access.Configure == updateAccess.Configure &&
+        access.Manage == updateAccess.Manage &&
+        access.View == updateAccess.View;
+}

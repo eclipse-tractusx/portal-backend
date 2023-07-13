@@ -18,31 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public interface ISeedDataHandler
+public interface IUsersUpdater
 {
-    Task Import(string path);
-
-    string Realm { get; }
-
-    KeycloakRealm KeycloakRealm { get; }
-
-    IEnumerable<ClientModel> Clients { get; }
-
-    IReadOnlyDictionary<string, IEnumerable<RoleModel>> ClientRoles { get; }
-
-    IEnumerable<RoleModel> RealmRoles { get; }
-
-    IEnumerable<IdentityProviderModel> IdentityProviders { get; }
-
-    IEnumerable<IdentityProviderMapperModel> IdentityProviderMappers { get; }
-
-    IEnumerable<UserModel> Users { get; }
-
-    IReadOnlyDictionary<string, string> ClientsDictionary { get; set; }
-
-    string GetIdOfClient(string clientId);
+    Task UpdateUsers(string keycloakInstanceName);
 }

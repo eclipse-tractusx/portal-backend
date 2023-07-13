@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 public class SeedDataHandler : ISeedDataHandler
 {
-    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, IncludeFields = true, PropertyNameCaseInsensitive = false };    
+    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, IncludeFields = true, PropertyNameCaseInsensitive = false };
     private KeycloakRealm? jsonRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
 
@@ -58,7 +58,7 @@ public class SeedDataHandler : ISeedDataHandler
         get => jsonRealm?.Roles?.Client?.ToDictionary(x => x.Key, x => x.Value.AsEnumerable()) ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>().ToDictionary(x => x.Item1, x => x.Item2);
     }
 
-    public IReadOnlyList<RoleModel> RealmRoles
+    public IEnumerable<RoleModel> RealmRoles
     {
         get => jsonRealm?.Roles?.Realm ?? Enumerable.Empty<RoleModel>().ToList();
     }
@@ -67,15 +67,21 @@ public class SeedDataHandler : ISeedDataHandler
     {
         get => jsonRealm?.IdentityProviders ?? Enumerable.Empty<IdentityProviderModel>();
     }
-    
+
     public IEnumerable<IdentityProviderMapperModel> IdentityProviderMappers
     {
         get => jsonRealm?.IdentityProviderMappers ?? Enumerable.Empty<IdentityProviderMapperModel>();
     }
-    
+
+    public IEnumerable<UserModel> Users
+    {
+        get => jsonRealm?.Users ?? Enumerable.Empty<UserModel>();
+    }
+
     public IReadOnlyDictionary<string, string> ClientsDictionary
     {
         set => _idOfClients = value;
+        get => _idOfClients ?? throw new InvalidOperationException("ClientsDictionary has not yet been set");
     }
 
     public string GetIdOfClient(string clientId) =>

@@ -73,7 +73,7 @@ public class RolesUpdater : IRolesUpdater
 
     private static async Task UpdateAndDeleteRoles(Library.KeycloakClient keycloak, string realm, IEnumerable<Library.Models.Roles.Role> roles, IEnumerable<RoleModel> updateRoles)
     {
-        foreach (var (role, update) in 
+        foreach (var (role, update) in
             roles.Join(
                     updateRoles,
                     x => x.Name,
@@ -225,14 +225,7 @@ public class RolesUpdater : IRolesUpdater
     private static bool Compare(Library.Models.Roles.Role role, RoleModel update) =>
         role.Name == update.Name &&
         role.Description == update.Description &&
-        (role.Attributes == null && update.Attributes == null || 
-        role.Attributes != null && update.Attributes != null &&
-        role.Attributes.Keys.NullOrContentEqual(update.Attributes.Keys) &&
-        role.Attributes.Join(
-            update.Attributes,
-            x => x.Key,
-            x => x.Key,
-            (attribute, update) => attribute.Value.NullOrContentEqual(update.Value)).All(x => x));
+        role.Attributes.NullOrContentEqual(update.Attributes);
 
     private static Library.Models.Roles.Role CreateRole(RoleModel updateRole) =>
         new Library.Models.Roles.Role
@@ -241,7 +234,7 @@ public class RolesUpdater : IRolesUpdater
             Description = updateRole.Description,
             Composite = updateRole.Composite,
             ClientRole = updateRole.ClientRole,
-            Attributes = updateRole.Attributes?.ToDictionary(x => x.Key, x => x.Value.AsEnumerable())
+            Attributes = updateRole.Attributes?.ToDictionary(x => x.Key, x => x.Value)
         };
 
     private static Library.Models.Roles.Role CreateUpdateRole(string id, string containerId, RoleModel updateRole)
