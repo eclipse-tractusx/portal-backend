@@ -39,8 +39,7 @@ public static class WebApplicationBuildRunner
         try
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            void ExtendLoggingForWeb(LoggerConfiguration configuration, IConfiguration config)
+            builder.Host.AddLogging((configuration, config) =>
             {
                 configuration.Enrich.WithCorrelationIdHeader("X-Request-Id");
                 var healthCheckPaths = config.GetSection("HealthChecks").Get<IEnumerable<HealthCheckSettings>>()?.Select(x => x.Path);
@@ -53,9 +52,7 @@ public static class WebApplicationBuildRunner
                                    logProperty.ToKeyValuePairs().Any(x => healthCheckPaths.Contains(x.Value));
                         });
                 }
-            }
-
-            builder.Host.AddLogging(ExtendLoggingForWeb);
+            });
             builder.Services
                 .AddDefaultServices<TProgram>(builder.Configuration, version);
 
