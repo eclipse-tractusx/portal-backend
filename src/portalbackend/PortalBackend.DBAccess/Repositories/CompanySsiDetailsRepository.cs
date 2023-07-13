@@ -93,13 +93,12 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     /// <inheritdoc />
     public IAsyncEnumerable<SsiCertificateTransferData> GetSsiCertificates(Guid companyId) =>
         _context.VerifiedCredentialTypes
-            .Where(types => types.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
+            .Where(types => types.VerifiedCredentialTypeAssignedKind != null && types.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
             .Select(types => new SsiCertificateTransferData(
                 types.Id,
                 types.CompanySsiDetails
                     .Where(ssi =>
                         ssi.VerifiedCredentialTypeId == types.Id &&
-                        ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE &&
                         ssi.CompanyId == companyId)
                     .Select(ssi =>
                         new CompanySsiDetailTransferData(
@@ -162,7 +161,7 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                 new SsiApprovalData(
                     x.CompanySsiDetailStatusId,
                     x.VerifiedCredentialTypeId,
-                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId,
+                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind == null ? null : x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId,
                     x.Company!.Name,
                     x.Company.BusinessPartnerNumber,
                     x.ExpiryDate,
@@ -205,4 +204,11 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
         _context.Attach(entity);
         updateFields.Invoke(entity);
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
+        _context.VerifiedCredentialTypes
+            .Where(x => x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
+            .Select(x => x.Id)
+            .ToAsyncEnumerable();
 }

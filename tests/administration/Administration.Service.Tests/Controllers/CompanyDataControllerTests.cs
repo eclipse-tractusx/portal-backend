@@ -263,7 +263,7 @@ public class CompanyDataControllerTests
         // Arrange
         var paginationResponse = new Pagination.Response<CredentialDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CredentialDetailData>(5));
         A.CallTo(() => _logic.GetCredentials(A<int>._, A<int>._, A<CompanySsiDetailStatusId>._, A<CompanySsiDetailSorting>._))
-            .ReturnsLazily(() => paginationResponse);
+            .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetCredentials(companySsiDetailStatusId: CompanySsiDetailStatusId.ACTIVE, sorting: CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
@@ -272,5 +272,19 @@ public class CompanyDataControllerTests
         A.CallTo(() => _logic.GetCredentials(0, 15, A<CompanySsiDetailStatusId>._, A<CompanySsiDetailSorting>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CredentialDetailData>>(result);
         result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetCredentialTypes()
+    {
+        // Arrange
+        A.CallTo(() => _logic.GetCertificateTypes())
+            .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        result.Should().ContainSingle().Which.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
     }
 }

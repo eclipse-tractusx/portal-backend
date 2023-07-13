@@ -187,6 +187,20 @@ public class CompanyDataController : ControllerBase
         this.WithCompanyId(companyId => _logic.GetSsiCertificatesAsync(companyId));
 
     /// <summary>
+    /// Gets the Ssi certifications for the own company
+    /// </summary>
+    /// <returns>All ssi certifications of the own company</returns>
+    /// <remarks>Example: Get: api/administration/companydata/certificateTypes</remarks>
+    /// <response code="200">Returns a collection of certificates.</response>
+    [HttpGet]
+    [Authorize(Roles = "request_ssicredential")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("certificateTypes")]
+    [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
+        _logic.GetCertificateTypes();
+
+    /// <summary>
     /// Creates the useCaseParticipation
     /// </summary>
     /// <param name="data">The type and document</param>
@@ -213,7 +227,7 @@ public class CompanyDataController : ControllerBase
     /// <param name="data">The type and document</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>The id of the created use case participation</returns>
-    /// <remarks>Example: POST: api/administration/companydata/ssiCertificate</remarks>
+    /// <remarks>Example: POST: api/administration/companydata/certificates</remarks>
     /// <response code="204">Successfully created the ssi certificate.</response>
     [HttpPost]
     [Consumes("multipart/form-data")]
