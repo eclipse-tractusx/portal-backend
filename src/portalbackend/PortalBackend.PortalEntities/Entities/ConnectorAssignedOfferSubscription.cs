@@ -28,10 +28,10 @@ public class ConnectorAssignedOfferSubscription
         OfferSubscriptionId = offerSubscriptionId;
     }
 
-    public Guid ConnectorId { get; set; }
-    public Guid OfferSubscriptionId { get; set; }
+    public Guid ConnectorId { get; private set; }
+    public Guid OfferSubscriptionId { get; private set; }
 
     // Navigation properties
-    public virtual Connector? Connector { get; set; }
-    public virtual OfferSubscription? OfferSubscription { get; set; }
+    public virtual Connector? Connector { get; private set; }
+    public virtual OfferSubscription? OfferSubscription { get; private set; }
 }
