@@ -19,26 +19,30 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
+using Serilog.Events;
 using Serilog.Formatting.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 public static class LoggingExtensions
 {
-    public static Logger CreateLogger(IConfiguration? config)
-    {
-        var loggerConfig = new LoggerConfiguration();
-        if (config is not null)
+    /// <summary>
+    /// Adds the default Serilog Configuration to the log
+    /// </summary>
+    /// <param name="host">The applications host</param>
+    /// <param name="extendLogging">The possibility to extend the configuration</param>
+    public static IHostBuilder AddLogging(this IHostBuilder host, Action<LoggerConfiguration, IConfiguration>? extendLogging = null) =>
+        host.UseSerilog((context, configuration) =>
         {
-            loggerConfig = loggerConfig.ReadFrom.Configuration(config);
-        }
-
-        return loggerConfig.Enrich.FromLogContext()
-            .WriteTo.Console(new JsonFormatter())
-            .CreateLogger();
-    }
+            configuration
+                .WriteTo.Console(new JsonFormatter())
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .ReadFrom.Configuration(context.Configuration);
+            extendLogging?.Invoke(configuration, context.Configuration);
+        });
 
     /// <summary>
     /// Creates a static logger
@@ -52,6 +56,10 @@ public static class LoggingExtensions
         if (Log.Logger is Logger)
             return;
 
-        Log.Logger = CreateLogger(null);
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .WriteTo.Console(new JsonFormatter())
+            .CreateBootstrapLogger();
     }
 }

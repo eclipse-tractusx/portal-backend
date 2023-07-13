@@ -28,36 +28,33 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
 using System.Reflection;
 
 LoggingExtensions.EnsureInitialized();
 Log.Information("Starting process");
 try
 {
-    var builder = Host.CreateDefaultBuilder(args)
+    var host = Host.CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
         {
             services
-                .AddLogging(builder =>
-                {
-                    var logger = LoggingExtensions.CreateLogger(hostContext.Configuration);
-                    builder.AddSerilog(logger);
-                })
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
                         x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
                             .MigrationsHistoryTable("__efmigrations_history_portal"))
                         .UsePostgreSqlTriggers())
                 .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
-        });
-
-    var host = builder.Build();
+        })
+        .AddLogging()
+        .Build();
 
     await host.Services.InitializeDatabasesAsync(); // We don't actually run anything here. The magic happens in InitializeDatabasesAsync
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
-    Log.Fatal(ex, "Unhandled exception");
+    Log.Fatal("Unhandled exception {Exception}", ex);
     throw;
 }
 finally
