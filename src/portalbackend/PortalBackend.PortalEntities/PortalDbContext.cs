@@ -1316,7 +1316,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<CompaniesLinkedServiceAccount>()
             .ToView("company_linked_service_accounts", "portal")
-            .HasNoKey();
+            .HasKey(x => x.ServiceAccountId);
 
         modelBuilder.Entity<ConnectorAssignedOfferSubscription>(entity =>
         {
@@ -1336,5 +1336,12 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<OfferSubscriptionView>()
             .ToView("offer_subscription_view", "portal")
             .HasNoKey();
+        modelBuilder.Entity<CompanyServiceAccount>(entity =>
+        {
+            entity.HasOne(x => x.CompaniesLinkedServiceAccount)
+                  .WithOne(x => x.CompanyServiceAccount)
+                  .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.ServiceAccountId);
+        });
+ 
     }
 }

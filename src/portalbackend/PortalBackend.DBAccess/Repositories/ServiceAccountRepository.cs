@@ -161,6 +161,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 serviceAccount.ClientClientId,
                 serviceAccount.Name,
                 serviceAccount.CompanyServiceAccountTypeId,
+                serviceAccount.CompaniesLinkedServiceAccount!.Provider != null ? "provider" : "owner",
                 serviceAccount.OfferSubscriptionId,
                 serviceAccount.Connector == null
                     ? null
@@ -189,4 +190,5 @@ public class ServiceAccountRepository : IServiceAccountRepository
         _dbContext.CompanyLinkedServiceAccounts
             .Where(x => x.ServiceAccountId == serviceAccountId && (x.Provider == companyId || x.Owners == companyId))
             .AnyAsync();
+
 }

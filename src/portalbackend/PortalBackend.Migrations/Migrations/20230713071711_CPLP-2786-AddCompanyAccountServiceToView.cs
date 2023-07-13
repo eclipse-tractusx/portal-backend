@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,14 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
+#nullable disable
 
-public class CompaniesLinkedServiceAccount
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public Guid ServiceAccountId { get; set; }
-    public Guid Owners { get; set; }
-    public Guid? Provider { get; set; }
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
+    public partial class CPLP2786AddCompanyAccountServiceToView : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+
+        }
+    }
 }
