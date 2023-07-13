@@ -69,16 +69,13 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
         {
             return ValidateOptionsResult.Skip;
         }
-
         var validationErrors = GetValidationErrors(options.GetType(), Section);
-
         return validationErrors.IfAny(
             errors => errors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'."),
             out var messages)
                 ? ValidateOptionsResult.Fail(messages)
                 : ValidateOptionsResult.Success;
     }
-
     private IEnumerable<ValidationResult> GetValidationErrors(Type type, IConfiguration configSection) =>
         type.GetProperties()
             .ExceptBy(IgnoreTypes, prop => prop.PropertyType)

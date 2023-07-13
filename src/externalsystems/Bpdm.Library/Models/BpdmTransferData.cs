@@ -24,11 +24,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 /// <summary>
 /// View model of an application's detailed data for the bpdm.
 /// </summary>
+/// <param name="ExternalId">Id of the companies application.</param>
 /// <param name="CompanyName">Name of the company.</param>
+/// <param name="ShortName">Shortname of the company.</param>
 /// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
 /// <param name="ZipCode">Zipcode of the company's address.</param>
 /// <param name="City">City of the company's address.</param>
-/// <param name="Street">Street of the company's address.</param>
+/// <param name="StreetName">Street of the company's address.</param>
+/// <param name="StreetNumber">Street number of the company's address.</param>
+/// <param name="Region">Region of the company's address.</param>
+/// <param name="Identifiers">The companies identifiers.</param>
 public record BpdmTransferData(
     string ExternalId,
     string CompanyName,
