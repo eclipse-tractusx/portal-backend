@@ -111,39 +111,19 @@ public class ConnectorsController : ControllerBase
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>View model of the created connector.</returns>
-    /// <remarks>Example: POST: /api/administration/connectors</remarks>
-    /// <response code="201">Returns a view model of the created connector.</response>
-    /// <response code="400">Input parameter are invalid.</response>
-    /// <response code="503">Access to SD factory failed with the given status code.</response>
-    [Obsolete("Please use the /api/administration/connectors/daps endpoint instead. This Endpoint will be removed in a future release.")]
-    [HttpPost]
-    [Route("")]
-    [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
-        this.CreateConnectorWithDapsAsync(connectorInputModel, cancellationToken);
-
-    /// <summary>
-    /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
-    /// </summary>
-    /// <param name="connectorInputModel">Input model of the connector to be created.</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>View model of the created connector.</returns>
     /// <remarks>Example: POST: /api/administration/connectors/daps</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
     /// <response code="400">Input parameter are invalid.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
-    [Route("daps")]
+    [Route("")]
     [Authorize(Roles = "add_connectors")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<CreatedAtRouteResult> CreateConnectorWithDapsAsync([FromForm] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
+    public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromForm] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
         var connectorId = await this.WithUserIdAndCompanyId(identity => _businessLogic.CreateConnectorAsync(connectorInputModel, identity, cancellationToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
@@ -159,35 +139,15 @@ public class ConnectorsController : ControllerBase
     /// <response code="201">Returns a view model of the created connector.</response>
     /// <response code="400">Input parameter are invalid.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
-    [Obsolete("Please use the /api/administration/connectors/managed-daps endpoint instead. This Endpoint will be removed in a future release.")]
     [HttpPost]
     [Route("managed")]
-    [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
-        this.CreateManagedConnectorWithDapsAsync(connectorInputModel, cancellationToken);
-
-    /// <summary>
-    /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
-    /// </summary>
-    /// <param name="connectorInputModel">Input model of the connector to be created.</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>View model of the created connector.</returns>
-    /// <remarks>Example: POST: /api/administration/connectors/managed-daps</remarks>
-    /// <response code="201">Returns a view model of the created connector.</response>
-    /// <response code="400">Input parameter are invalid.</response>
-    /// <response code="503">Access to SD factory failed with the given status code.</response>
-    [HttpPost]
-    [Route("managed-daps")]
     [Authorize(Roles = "add_connectors")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<CreatedAtRouteResult> CreateManagedConnectorWithDapsAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
+    public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
         var connectorId = await this.WithUserIdAndCompanyId(identity => _businessLogic.CreateManagedConnectorAsync(connectorInputModel, identity, cancellationToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
