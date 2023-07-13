@@ -1342,6 +1342,5 @@ public class PortalDbContext : DbContext
                   .WithOne(x => x.CompanyServiceAccount)
                   .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.ServiceAccountId);
         });
- 
     }
 }
