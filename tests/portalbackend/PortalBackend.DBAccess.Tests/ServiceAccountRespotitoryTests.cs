@@ -202,6 +202,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         if (expected > 0)
         {
             result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
+            result.Data.First().Relation.Should().Be("owner");
         }
     }
 
