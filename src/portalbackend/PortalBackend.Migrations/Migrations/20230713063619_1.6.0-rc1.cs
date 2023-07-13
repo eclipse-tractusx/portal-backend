@@ -100,7 +100,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalSchema: "portal",
                 principalTable: "user_roles",
                 principalColumn: "id");
-        
+
             migrationBuilder.Sql(@"CREATE FUNCTION portal.is_connector_managed(connectorId uuid)
                 RETURNS BOOLEAN
                 LANGUAGE plpgsql
