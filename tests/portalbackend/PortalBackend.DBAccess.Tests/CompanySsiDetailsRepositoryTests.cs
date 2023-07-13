@@ -354,8 +354,7 @@ public class CompanySsiDetailsRepositoryTests
         var result = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(1);
-        result.Single().Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+        result.Should().ContainSingle().Which.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
     }
 
     #endregion

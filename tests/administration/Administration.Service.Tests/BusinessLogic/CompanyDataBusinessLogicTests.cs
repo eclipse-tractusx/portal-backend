@@ -1460,7 +1460,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         A.CallTo(() => _companySsiDetailsRepository.GetCertificateTypes())
-            .ReturnsLazily(() => Enumerable.Repeat(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, 1).ToAsyncEnumerable());
+            .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
 
         // Act
         var result = await _sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
