@@ -250,10 +250,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         if (!isSubscribingCompany)
         {
-            throw new ForbiddenException($"the calling user does not belong to the subsribing company");
+            throw new ForbiddenException("the calling user does not belong to the subscribing company");
         }
 
-        if (status is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
+        if (status != OfferSubscriptionStatusId.ACTIVE && status != OfferSubscriptionStatusId.PENDING)
         {
             throw new ArgumentException($"There is no active or pending subscription for company '{companyId}' and subscriptionId '{subscriptionId}'");
         }
