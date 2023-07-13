@@ -109,4 +109,15 @@ public interface IConnectorsBusinessLogic
     /// <param name="identity">identity (userId and companyId) of the user</param>
     /// <param name="cancellationToken">CancellationToken</param>
     Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets the offer subscription data
+    /// </summary>
+    /// <param name="connectorIdSet" example="false">
+    /// Optional: if <c>true</c> only respond with subscriptions where a link to a connector is given,
+    /// if <c>false</c> it will only return subscriptions where no link to an connector exists.
+    /// </param>
+    /// <param name="companyId">Id of the company to get the subscriptions for</param>
+    /// <returns>Returns an IAsyncEnumerable of <see cref="OfferSubscriptionConnectorData"/></returns>
+    IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet, Guid companyId);
 }

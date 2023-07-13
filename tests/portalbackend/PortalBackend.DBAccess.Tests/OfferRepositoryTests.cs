@@ -136,13 +136,14 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var offers = await sut.GetAllActiveAppsAsync(null!, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        offers.Should().HaveCount(6).And.Satisfy(
+        offers.Should().HaveCount(7).And.Satisfy(
+            x => x.Name == "Test App",
+            x => x.Name == "Test App 3",
             x => x.Name == "Trace-X",
             x => x.Name == "Project Implementation: Earth Commerce",
             x => x.Name == "Top App",
             x => x.Name == "Test App 1",
-            x => x.Name == "Test App 2",
-            x => x.Name == "Test App 3"
+            x => x.Name == "Test App 2"
         );
     }
 

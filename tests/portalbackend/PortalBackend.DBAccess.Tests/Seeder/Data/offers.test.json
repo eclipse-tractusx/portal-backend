@@ -236,5 +236,22 @@
       "offer_type_id": 1,
       "last_editor_id": null,
       "license_type_id":1
-    }
+    },
+  {
+    "id": "19e05734-9b1f-1234-b961-8ffa1d7b6999",
+    "name": "Test App",
+    "date_created": "2022-10-01 00:00:00.000000 +00:00",
+    "date_released": "2022-10-01 00:00:00.000005 +00:00",
+    "marketing_url": null,
+    "contact_email": null,
+    "contact_number": null,
+    "provider": "Test Company",
+    "provider_company_id": "41fd2ab8-7123-4546-9bef-a388d91b2999",
+    "offer_status_id": 3,
+    "date_last_changed": "2022-10-01 00:00:00.000000 +00:00",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020005",
+    "offer_type_id": 1,
+    "last_editor_id": null,
+    "license_type_id":1
+  }
 ]

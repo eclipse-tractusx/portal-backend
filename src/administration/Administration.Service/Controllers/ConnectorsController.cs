@@ -266,4 +266,20 @@ public class ConnectorsController : ControllerBase
             .ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Retrieve the offer subscriptions for the company with the linked connectorIds.
+    /// </summary>
+    /// <param name="connectorIdSet" example="false">
+    /// Optional: if <c>true</c> only respond with subscriptions where a link to a connector is given,
+    /// if <c>false</c> it will only return subscriptions where no link to an connector exists.
+    /// </param>
+    /// <remarks>Example: GET: /api/administration/connectors/offerSubscriptions</remarks>
+    /// <response code="200">Returns list of the offer subscriptions for the company.</response>
+    [HttpGet]
+    [Route("offerSubscriptions")]
+    [Authorize(Roles = "view_connectors")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData([FromQuery] bool? connectorIdSet) =>
+        this.WithCompanyId(companyId => _businessLogic.GetConnectorOfferSubscriptionData(connectorIdSet, companyId));
 }
