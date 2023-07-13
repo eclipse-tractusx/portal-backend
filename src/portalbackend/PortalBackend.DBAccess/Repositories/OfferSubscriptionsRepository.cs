@@ -105,14 +105,14 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferSubscriptionStatusId offerSubscriptionStatusId, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId) =>
+    public Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId) =>
         _context.OfferSubscriptions
             .Where(os =>
-                os.Id == subscriptionId &&
-                os.CompanyId == userCompanyId
+                os.Id == subscriptionId
             )
-            .Select(os => new ValueTuple<OfferSubscriptionStatusId, bool>(
+            .Select(os => new ValueTuple<OfferSubscriptionStatusId, bool, bool>(
                 os.OfferSubscriptionStatusId,
+                os.CompanyId == userCompanyId,
                 true
             ))
             .SingleOrDefaultAsync();

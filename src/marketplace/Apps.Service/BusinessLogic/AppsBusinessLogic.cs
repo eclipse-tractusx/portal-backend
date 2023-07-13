@@ -194,12 +194,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var (subscriptionStatusId, requesterId, appId, appName, isUserOfProvider, requesterData) = assignedAppData;
         if (!isUserOfProvider)
         {
-            throw new ControllerArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
+            throw new ForbiddenException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
 
         if (subscriptionStatusId != OfferSubscriptionStatusId.PENDING)
         {
-            throw new ControllerArgumentException($"subscription {subscriptionId} is not in status PENDING");
+            throw new ConflictException($"subscription {subscriptionId} is not in status PENDING");
         }
 
         if (appName is null)
@@ -246,7 +246,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
         }
 
-        var (status, _) = assignedAppData;
+        var (status, isSubscribingCompany, _) = assignedAppData;
+
+        if (!isSubscribingCompany)
+        {
+            throw new ForbiddenException($"the calling user does not belong to the subsribing company");
+        }
 
         if (status is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
         {

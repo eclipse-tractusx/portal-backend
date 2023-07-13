@@ -383,7 +383,7 @@ public class AppBusinessLogicTests
         async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(subscriptionId, (identity.UserId, identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
     }
 
@@ -413,7 +413,7 @@ public class AppBusinessLogicTests
         async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(offerSubscriptionId, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"subscription {offerSubscriptionId} is not in status PENDING");
     }
 

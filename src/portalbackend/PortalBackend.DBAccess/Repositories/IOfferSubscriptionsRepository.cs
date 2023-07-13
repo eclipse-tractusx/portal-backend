@@ -52,7 +52,7 @@ public interface IOfferSubscriptionsRepository
 
     Task<(OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, Guid AppId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
 
-    Task<(OfferSubscriptionStatusId offerSubscriptionStatusId, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
+    Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
 
     Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId);
 
