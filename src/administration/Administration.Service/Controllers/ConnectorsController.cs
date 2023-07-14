@@ -24,8 +24,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -84,6 +86,7 @@ public class ConnectorsController : ControllerBase
     [Authorize(Roles = "view_connectors")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
+    [PublicUrl(CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER)]
     public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         _businessLogic.GetManagedConnectorForCompany(page, size);
 
@@ -145,6 +148,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    [PublicUrl(CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER)]
     public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
         var connectorId = await _businessLogic.CreateManagedConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(false);
@@ -182,6 +186,7 @@ public class ConnectorsController : ControllerBase
     [Route("discovery")]
     [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
+    [PublicUrl(CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT)]
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
         _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
 

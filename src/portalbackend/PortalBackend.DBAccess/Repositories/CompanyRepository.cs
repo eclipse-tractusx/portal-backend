@@ -291,6 +291,13 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
+    public Task<CompanyRoleId[]> GetOwnCompanyRolesAsync(Guid companyId) => 
+        _context.CompanyAssignedRoles
+            .Where(x => x.CompanyId == companyId)
+            .Select(x => x.CompanyRoleId)
+            .ToArrayAsync();
+
+    /// <inheritdoc />
     public IAsyncEnumerable<OperatorBpnData> GetOperatorBpns() =>
         _context.Companies
             .Where(x =>
