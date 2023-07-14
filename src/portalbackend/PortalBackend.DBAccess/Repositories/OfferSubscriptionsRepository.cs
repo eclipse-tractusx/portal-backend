@@ -91,30 +91,28 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, Guid userCompanyId) =>
-        _context.Offers
-            .Where(app => app.Id == appId)
-            .Select(app => new
-            {
-                App = app,
-                OfferSubscription = app.OfferSubscriptions.SingleOrDefault(subscription => subscription.CompanyId == companyId),
-            })
-            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, bool, RequesterData>(
-                x.OfferSubscription!.Id,
-                x.OfferSubscription.OfferSubscriptionStatusId,
-                x.OfferSubscription.RequesterId,
-                x.App.Name,
-                x.App.ProviderCompanyId == userCompanyId,
-                new RequesterData(x.OfferSubscription.Requester!.Email, x.OfferSubscription.Requester.Firstname, x.OfferSubscription.Requester.Lastname)
+    public Task<(OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, Guid AppId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid subscriptionId, Guid userCompanyId) =>
+        _context.OfferSubscriptions
+            .Where(os => os.Id == subscriptionId)
+            .Select(x => new ValueTuple<OfferSubscriptionStatusId, Guid, Guid, string?, bool, RequesterData>(
+                x.OfferSubscriptionStatusId,
+                x.RequesterId,
+                x.Offer!.Id,
+                x.Offer.Name,
+                x.Offer.ProviderCompanyId == userCompanyId,
+                new RequesterData(x.Requester!.Email, x.Requester.Firstname, x.Requester.Lastname)
             ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, Guid userCompanyId) =>
-        _context.Offers
-            .Where(app => app.Id == appId)
-            .Select(app => new ValueTuple<OfferSubscription?, bool>(
-                app.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.CompanyId == userCompanyId),
+    public Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId) =>
+        _context.OfferSubscriptions
+            .Where(os =>
+                os.Id == subscriptionId
+            )
+            .Select(os => new ValueTuple<OfferSubscriptionStatusId, bool, bool>(
+                os.OfferSubscriptionStatusId,
+                os.CompanyId == userCompanyId,
                 true
             ))
             .SingleOrDefaultAsync();
@@ -160,11 +158,13 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId, Process? Process, IEnumerable<ProcessStepTypeId>? ProcessStepTypeIds)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
+    public Task<bool> CheckPendingOrActiveSubscriptionExists(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions.AsNoTracking()
-            .Where(x => x.OfferId == offerId && x.CompanyId == companyId && x.Offer!.OfferTypeId == offerTypeId)
-            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId, Process?, IEnumerable<ProcessStepTypeId>?>(x.Id, x.OfferSubscriptionStatusId, x.Process, x.Process!.ProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO).Select(step => step.ProcessStepTypeId)))
-            .SingleOrDefaultAsync();
+            .AnyAsync(x =>
+                x.OfferId == offerId &&
+                x.CompanyId == companyId &&
+                x.Offer!.OfferTypeId == offerTypeId &&
+                (x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE || x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING));
 
     /// <inheritdoc />
     public OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters)

@@ -86,16 +86,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferSubscriptionStateForCompanyAsync(
+        var result = await sut.CheckPendingOrActiveSubscriptionExists(
             new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"),
             new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
             OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().NotBe(default);
-        result.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result.OfferSubscriptionId.Should().Be(new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"));
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -105,13 +102,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferSubscriptionStateForCompanyAsync(
+        var result = await sut.CheckPendingOrActiveSubscriptionExists(
             new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"),
             new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
             OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
-        result.Should().Be(default);
+        result.Should().BeFalse();
     }
 
     #endregion
