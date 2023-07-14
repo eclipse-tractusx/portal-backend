@@ -79,7 +79,7 @@ public class SdFactoryService : ISdFactoryService
             uniqueIdentifiers.Select(x => new RegistrationNumber(x.Id.GetSdUniqueIdentifierValue(), x.Value)),
             countryCode,
             countryCode,
-            SdFactoryRequestModelSdType.LegalPerson,
+            SdFactoryRequestModelSdType.LegalParticipant,
             businessPartnerNumber,
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
