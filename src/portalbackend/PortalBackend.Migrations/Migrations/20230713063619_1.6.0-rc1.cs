@@ -19,16 +19,30 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
 
 #nullable disable
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP2831AddConnectorAssignedOfferSubscriptions : Migration
+    public partial class _160rc1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "fk_connectors_company_users_last_editor_id",
+                schema: "portal",
+                table: "connectors");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_technical_user_profile_assigned_user_roles_technical_user_p",
+                schema: "portal",
+                table: "technical_user_profile_assigned_user_roles");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_technical_user_profile_assigned_user_roles_user_roles_user_r",
+                schema: "portal",
+                table: "technical_user_profile_assigned_user_roles");
+
             migrationBuilder.CreateTable(
                 name: "connector_assigned_offer_subscriptions",
                 schema: "portal",
@@ -59,6 +73,33 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "connector_assigned_offer_subscriptions",
                 column: "offer_subscription_id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_connectors_identities_last_editor_id",
+                schema: "portal",
+                table: "connectors",
+                column: "last_editor_id",
+                principalSchema: "portal",
+                principalTable: "identities",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_technical_user_profile_assigned_user_roles_technical_user_p",
+                schema: "portal",
+                table: "technical_user_profile_assigned_user_roles",
+                column: "technical_user_profile_id",
+                principalSchema: "portal",
+                principalTable: "technical_user_profiles",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_technical_user_profile_assigned_user_roles_user_roles_user_r",
+                schema: "portal",
+                table: "technical_user_profile_assigned_user_roles",
+                column: "user_role_id",
+                principalSchema: "portal",
+                principalTable: "user_roles",
+                principalColumn: "id");
 
             migrationBuilder.Sql(@"CREATE FUNCTION portal.is_connector_managed(connectorId uuid)
                 RETURNS BOOLEAN
@@ -122,39 +163,58 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"DROP VIEW [IF EXISTS] portal.subscription_view");
+            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.company_linked_service_accounts");
+            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.subscription_view");
             migrationBuilder.Sql("ALTER TABLE portal.connector_assigned_offer_subscriptions DROP CONSTRAINT IF EXISTS CK_Connector_ConnectorType_IsManaged;");
             migrationBuilder.Sql("DROP FUNCTION portal.is_connector_managed;");
 
-            migrationBuilder.Sql(@"CREATE OR REPLACE VIEW portal.company_linked_service_accounts AS
-               SELECT
-               csa.id AS service_account_id,
-               i.company_id AS owners,
-               CASE
-               WHEN csa.offer_subscription_id IS NOT NULL THEN os.company_id
-               WHEN EXISTS (SELECT 1 FROM portal.connectors cs WHERE cs.company_service_account_id = csa.id) THEN c.provider_id
-               ELSE NULL
-               END AS provider
-               FROM
-               portal.company_service_accounts csa
-               JOIN portal.identities i ON csa.id = i.id
-               LEFT JOIN portal.offer_subscriptions os ON csa.offer_subscription_id = os.id
-               LEFT JOIN portal.connectors c ON csa.id = c.company_service_account_id
-               WHERE csa.company_service_account_type_id = 1 AND i.identity_type_id=2
-               UNION
-               SELECT
-               csa.id AS service_account_id,
-               i.company_id AS owners,
-               null AS provider
-               FROM
-               portal.company_service_accounts csa
-               JOIN portal.identities i ON csa.id = i.id
-               WHERE csa.company_service_account_type_id = 2
-            ");
+            migrationBuilder.DropForeignKey(
+                name: "fk_connectors_identities_last_editor_id",
+                schema: "portal",
+                table: "connectors");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_technical_user_profile_assigned_user_roles_technical_user_p",
+                schema: "portal",
+                table: "technical_user_profile_assigned_user_roles");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_technical_user_profile_assigned_user_roles_user_roles_user_r",
+                schema: "portal",
+                table: "technical_user_profile_assigned_user_roles");
 
             migrationBuilder.DropTable(
                 name: "connector_assigned_offer_subscriptions",
                 schema: "portal");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_connectors_company_users_last_editor_id",
+                schema: "portal",
+                table: "connectors",
+                column: "last_editor_id",
+                principalSchema: "portal",
+                principalTable: "company_users",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_technical_user_profile_assigned_user_roles_technical_user_p",
+                schema: "portal",
+                table: "technical_user_profile_assigned_user_roles",
+                column: "technical_user_profile_id",
+                principalSchema: "portal",
+                principalTable: "technical_user_profiles",
+                principalColumn: "id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_technical_user_profile_assigned_user_roles_user_roles_user_r",
+                schema: "portal",
+                table: "technical_user_profile_assigned_user_roles",
+                column: "user_role_id",
+                principalSchema: "portal",
+                principalTable: "user_roles",
+                principalColumn: "id",
+                onDelete: ReferentialAction.Cascade);
         }
     }
 }

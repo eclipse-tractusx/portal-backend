@@ -32,8 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230711182420_CPLP-2950-ChangeConnectorLastEditor")]
-    partial class CPLP2950ChangeConnectorLastEditor
+    [Migration("20230713063619_1.6.0-rc1")]
+    partial class _160rc1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -2614,6 +2614,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_CONNECTOR", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_CONNECTOR() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_CONNECTOR$\r\nBEGIN\r\n  INSERT INTO portal.audit_connector20230503 (\"id\", \"name\", \"connector_url\", \"type_id\", \"status_id\", \"provider_id\", \"host_id\", \"self_description_document_id\", \"location_id\", \"daps_registration_successful\", \"self_description_message\", \"date_last_changed\", \"company_service_account_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.connector_url, \r\n  NEW.type_id, \r\n  NEW.status_id, \r\n  NEW.provider_id, \r\n  NEW.host_id, \r\n  NEW.self_description_document_id, \r\n  NEW.location_id, \r\n  NEW.daps_registration_successful, \r\n  NEW.self_description_message, \r\n  NEW.date_last_changed, \r\n  NEW.company_service_account_id, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_CONNECTOR$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_CONNECTOR AFTER UPDATE\r\nON portal.connectors\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_CONNECTOR();");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorAssignedOfferSubscription", b =>
+                {
+                    b.Property<Guid>("ConnectorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("connector_id");
+
+                    b.Property<Guid>("OfferSubscriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_subscription_id");
+
+                    b.HasKey("ConnectorId", "OfferSubscriptionId")
+                        .HasName("pk_connector_assigned_offer_subscriptions");
+
+                    b.HasIndex("OfferSubscriptionId")
+                        .HasDatabaseName("ix_connector_assigned_offer_subscriptions_offer_subscription_id");
+
+                    b.ToTable("connector_assigned_offer_subscriptions", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorClientDetail", b =>
                 {
                     b.Property<Guid>("ConnectorId")
@@ -5171,6 +5190,52 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompaniesLinkedServiceAccount", b =>
+                {
+                    b.Property<Guid>("Owners")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owners");
+
+                    b.Property<Guid?>("Provider")
+                        .HasColumnType("uuid")
+                        .HasColumnName("provider");
+
+                    b.Property<Guid>("ServiceAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_account_id");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("company_linked_service_accounts", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.OfferSubscriptionView", b =>
+                {
+                    b.Property<Guid?>("AppInstance")
+                        .HasColumnType("uuid")
+                        .HasColumnName("app_instance");
+
+                    b.Property<Guid?>("Connector")
+                        .HasColumnType("uuid")
+                        .HasColumnName("connector");
+
+                    b.Property<int>("OfferTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("offer_type_id");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subscription_id");
+
+                    b.Property<Guid?>("TechnicalUser")
+                        .HasColumnType("uuid")
+                        .HasColumnName("technical_user");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("offer_subscription_view", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Country")
@@ -5776,6 +5841,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Status");
 
                     b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorAssignedOfferSubscription", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", "Connector")
+                        .WithMany("ConnectorAssignedOfferSubscriptions")
+                        .HasForeignKey("ConnectorId")
+                        .IsRequired()
+                        .HasConstraintName("fk_connector_assigned_offer_subscriptions_connectors_connector");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
+                        .WithMany("ConnectorAssignedOfferSubscriptions")
+                        .HasForeignKey("OfferSubscriptionId")
+                        .IsRequired()
+                        .HasConstraintName("fk_connector_assigned_offer_subscriptions_offer_subscriptions_");
+
+                    b.Navigation("Connector");
+
+                    b.Navigation("OfferSubscription");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorClientDetail", b =>
@@ -6683,6 +6767,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", b =>
                 {
                     b.Navigation("ClientDetails");
+
+                    b.Navigation("ConnectorAssignedOfferSubscriptions");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorStatus", b =>
@@ -6852,6 +6938,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("AppSubscriptionDetail");
 
                     b.Navigation("CompanyServiceAccounts");
+
+                    b.Navigation("ConnectorAssignedOfferSubscriptions");
 
                     b.Navigation("ConsentAssignedOfferSubscriptions");
 
