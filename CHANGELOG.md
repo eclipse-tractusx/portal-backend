@@ -2,6 +2,85 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.6.0-RC1
+
+### Change
+* Apps Service
+  * added app tenant url inside the response body of endpoint GET apps/{appId}/subscription/{subscriptionId}/provider
+  * enhanced business logic of PUT: /api/apps/appreleaseprocess/{appId}/technical-user-profiles to remove technical user profiles where no roles are submitted
+  * enhanced business logic of PUT: /api/apps/appreleaseprocess/{appId}/technical-user-profiles to not allow the creation of an profile without any assigned permission
+  * backend business logic updated - ignore empty technical user profiles inside the response body of following endpoints
+    * GET: /api/apps/{appId}/subscription/{subscriptionId}/subscriber
+    * GET: /api/apps/{appId}
+* Services Service
+  * backend business logic updated - ignore empty technical user profiles inside the response body of following endpoints
+    * GET: /api/services/{serviceId}
+    * GET: /api/services/{serviceId}/subscription/{subscriptionId}/subscribe
+* Notification Service
+  * added "doneState" as filter criteria for endpoint GET /api/notification
+  * changed NotificationTopicId to nullable, to mitigate database query errors of missing links for notificationTypeId and NotificationTopicId
+* Registration Service
+  * removed property/attribute countryDe from all required endpoints in registration and administration service
+  
+### Feature
+* Auditing
+  * added audit table for ProviderCompanyDetails (for insert ,update and delete operation)
+* SSI - enable Verified Credential request workflows for useCaseParticipant and company roles by certificates
+  * add use case description table
+  * add datamodel for the use case participation
+  * add endpoint to get the UseCaseParticipations for the own company
+  * add auditing for company ssi details
+  * new email templates added: 'verified_credential_approved' and 'verified_credential_declined'
+  * released endpoints to submit usecaseparticipation and ssi certificates for review
+  * released endpoint to fetch all "in_review" ssi vc requests
+  * released endpoint to approve a ssi vc request
+  * released endpoint to reject a ssi vc request
+* Registration Verfification/Activation - Administration Service
+  * added membership credential creation call (via MIW) in the application activation process step
+  * changed the bpdm interface url to fetch the legal entity bpn generator result with enhanced error message support
+* Disabled DAPS connection for connector registration, change and related data provided in the GET endpoints
+* Company Role config
+  * enabled unassignment of roles
+  * enhanced validations to ensure that minimum one role need to be assigned
+* View CompanyLinkedServiceAccountsView released to easily access/view service account owner/provider
+* Managed Connector subscription connection (administration service)
+  * change request /api/administration/connectors/managed-daps to take a subscriptionId instead of the providerBpn
+  * new mapping table to link connectors with offer subscriptions
+  * added database view to see all offer subscription related links
+  * add /api/administration/connectors/offerSubscriptions to get all offerSubscriptions for the connector view
+* Added /api/administration/staticdata/operator-bpn endpoint to receive the operator bpn
+
+### Technical Support
+* introduce 'identity' table to align 'company_users' and 'company_service_account'
+  * moved UserEntityId from IamUser and IamServiceAccount into the new created table 'identity'
+  * removed 'iam_users' Table
+  * moved client_id and client_client_id into 'company_service_account' table
+  * removed 'iam_service_accounts'
+  * added migration to support lossless migration of the data
+* Multi language handling for language table enabled
+  * introduced new table 'language_long_names'
+  * moved language_long_names from 'languages' to 'language_long_names'
+  * endpoint /api/administration/staticdata/languagetags backend logic updated to fetch data from the new added table
+* introduced structured logging - integration of Serilog logging across all services
+* introduced GitHub workflow to enable 3rd party dependencies check with the Eclipse Dash License Tool
+* changed dependencies file to '-summary' format from Dash Tool
+* added legal information to distribution / include NOTICE.md, LICENSE and DEPENDENCIES file in output
+* added copy of module Framework.Models and Framework.Linq to dockerfile of Module Portal.Migrations
+* Seeding Data
+  * enabled configurable path of the seeding data
+  * added validation on application startup for the seeder settings
+* Several swagger documentation updates (summary, description, endpoint example)
+* Remove obsolete connector endpoints
+* Change routing of the existing connector creation endpoints - daps deleted
+* Refactored email templates by removing redundant code and added additional structure for better readability and maintainability
+* fixed the logging configuration where the logger had to be instantiated multiple times
+* removed the health-check paths from request logging
+  
+### Bugfix
+* Password email template updated to ensure that password field includes no spaces generated by the template
+* Notification endpoint PUT /api/Notification/{notificationId}/read logic fixed to update the read flag true/false
+* Change the Type field of the SD-Factory call from legal person to legal participant
+
 ## 1.5.1
 
 ### Bugfix
