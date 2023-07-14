@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Authorization;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -95,6 +96,7 @@ public static class StartupServiceExtensions
         services.AddHttpContextAccessor();
 
         services.AddDateTimeProvider();
+        services.AddPublicInfos();
         return services;
     }
 }

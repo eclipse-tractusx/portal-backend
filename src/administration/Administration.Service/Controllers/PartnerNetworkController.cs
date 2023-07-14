@@ -21,6 +21,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -53,6 +56,7 @@ public class PartnerNetworkController : ControllerBase
     [Authorize(Roles = "view_membership")]
     [Route("memberCompanies")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [PublicUrl(CompanyRoleId.ACTIVE_PARTICIPANT, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]
     public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
         _logic.GetAllMemberCompaniesBPNAsync();
 }
