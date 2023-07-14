@@ -181,7 +181,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, identity, OfferTypeId.APP, _settings.BasePortalAddress);
 
     /// <inheritdoc/>
-    [Obsolete("This Method is not used anymore")]
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid subscriptionId, (Guid UserId, Guid CompanyId) identity)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
@@ -255,7 +254,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         if (status != OfferSubscriptionStatusId.ACTIVE && status != OfferSubscriptionStatusId.PENDING)
         {
-            throw new ArgumentException($"There is no active or pending subscription for company '{companyId}' and subscriptionId '{subscriptionId}'");
+            throw new ConflictException($"There is no active or pending subscription for company '{companyId}' and subscriptionId '{subscriptionId}'");
         }
 
         offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, os =>

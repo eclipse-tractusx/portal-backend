@@ -109,7 +109,6 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="subscriptionId">ID of the pending app to be activated.</param>
     /// <param name="identity">identity of the current user.</param>
-    [Obsolete("This Method is not used anymore")]
     public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid subscriptionId, (Guid UserId, Guid CompanyId) identity);
 
     /// <summary>
