@@ -161,7 +161,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 serviceAccount.ClientClientId,
                 serviceAccount.Name,
                 serviceAccount.CompanyServiceAccountTypeId,
-                serviceAccount.CompaniesLinkedServiceAccount!.Provider != null ? "provider" : "owner",
+                serviceAccount.CompaniesLinkedServiceAccount!.Provider != null ? false : true,
                 serviceAccount.OfferSubscriptionId,
                 serviceAccount.Connector == null
                     ? null

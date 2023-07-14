@@ -24,8 +24,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views
 
 public class CompaniesLinkedServiceAccount
 {
-    public Guid ServiceAccountId { get; set; }
-    public Guid Owners { get; set; }
-    public Guid? Provider { get; set; }
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
+    public Guid ServiceAccountId { get; private set; }
+    public Guid Owners { get; private set; }
+    public Guid? Provider { get; private set; }
+    public virtual CompanyServiceAccount? CompanyServiceAccount { get; private set; }
 }

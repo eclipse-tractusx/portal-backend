@@ -28,7 +28,7 @@ public record CompanyServiceAccountData(
     [property: JsonPropertyName("clientId")] string? ClientId,
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-    [property: JsonPropertyName("relation")] string Relation,
+    [property: JsonPropertyName("isOwner")] bool IsOwner,
     [property: JsonPropertyName("offerSubscriptionId")] Guid? OfferSubscriptionId,
     [property: JsonPropertyName("connector")] ConnectorResponseData? ConnectorData,
     [property: JsonPropertyName("offer")] OfferResponseData? OfferSubscriptionsData
