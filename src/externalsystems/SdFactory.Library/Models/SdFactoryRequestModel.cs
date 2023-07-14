@@ -57,8 +57,8 @@ public record ConnectorSdFactoryRequestModel(
 
 public enum SdFactoryRequestModelSdType
 {
-    [EnumMember(Value = "LegalPerson")]
-    LegalPerson,
+    [EnumMember(Value = "LegalParticipant")]
+    LegalParticipant,
 
     [EnumMember(Value = "ServiceOffering")]
     ServiceOffering
