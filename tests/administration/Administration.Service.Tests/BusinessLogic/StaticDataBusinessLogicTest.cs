@@ -68,9 +68,9 @@ public class StaticDataBusinessLogicTest
         // Assert
         A.CallTo(() => _staticDataRepository.GetAllUseCase())
             .MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<List<UseCaseData>>();
-        result.Single().Name.Should().Be("test");
-        result.Single().ShortName.Should().Be("t");
+        result.Should().ContainSingle()
+            .Which.Should().BeOfType<UseCaseData>()
+            .Which.Should().Match<UseCaseData>(x => x.Name == "test" && x.ShortName == "t");
     }
 
     [Fact]
@@ -93,9 +93,9 @@ public class StaticDataBusinessLogicTest
         // Assert
         A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
             .MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<List<LicenseTypeData>>();
-        result.FirstOrDefault()!.LicenseTypeId.Should().Be(1);
-        result.FirstOrDefault()!.Name.Should().Be(LicenseTypeId.COTS.ToString());
+        result.Should().NotBeEmpty()
+            .And.AllBeOfType<LicenseTypeData>()
+            .Which.First().Should().Match<LicenseTypeData>(x => x.LicenseTypeId == 1 && x.Name == LicenseTypeId.COTS.ToString());
     }
 
     [Fact]

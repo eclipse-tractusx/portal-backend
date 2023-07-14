@@ -20,6 +20,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -638,8 +639,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBe(default);
         result.Bpn.Should().Be("BPNL00000003CRHK");
-        result.TechnicalUserRoleIds.Should().HaveCount(9);
-        result.TechnicalUserRoleIds.Should().OnlyHaveUniqueItems();
+        result.TechnicalUserRoleIds.Should().HaveCount(9).And.OnlyHaveUniqueItems();
     }
 
     #endregion
@@ -687,8 +687,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull().And.NotBeEmpty();
-        result.Should().HaveCount(1).And.Satisfy(x => x.Bpn == "BPNL00000003CRHK" && x.OperatorName == "Catena-X");
+        result.Should().ContainSingle()
+            .Which.Should().BeOfType<OperatorBpnData>()
+            .And.Match<OperatorBpnData>(x => x.Bpn == "BPNL00000003CRHK" && x.OperatorName == "Catena-X");
     }
 
     #endregion

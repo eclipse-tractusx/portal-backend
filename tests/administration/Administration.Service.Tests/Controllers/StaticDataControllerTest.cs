@@ -49,8 +49,7 @@ public class StaticDataControllerTest
 
         // Assert 
         A.CallTo(() => _logic.GetAllUseCase()).MustHaveHappenedOnceExactly();
-        Assert.IsType<List<UseCaseData>>(result);
-        result.Should().HaveCount(5);
+        result.Should().HaveCount(5).And.AllBeOfType<UseCaseData>();
     }
 
     [Fact]
@@ -66,8 +65,7 @@ public class StaticDataControllerTest
 
         // Assert 
         A.CallTo(() => _logic.GetAllLanguage()).MustHaveHappenedOnceExactly();
-        Assert.IsType<List<LanguageData>>(result);
-        result.Should().HaveCount(5);
+        result.Should().HaveCount(5).And.AllBeOfType<LanguageData>();
     }
 
     [Fact]
@@ -83,8 +81,7 @@ public class StaticDataControllerTest
 
         // Assert 
         A.CallTo(() => _logic.GetAllLicenseType()).MustHaveHappenedOnceExactly();
-        Assert.IsType<List<LicenseTypeData>>(result);
-        result.Should().HaveCount(5);
+        result.Should().HaveCount(5).And.AllBeOfType<LicenseTypeData>();
     }
 
     [Fact]
@@ -100,7 +97,6 @@ public class StaticDataControllerTest
 
         // Assert 
         A.CallTo(() => _logic.GetOperatorBpns()).MustHaveHappenedOnceExactly();
-        Assert.IsType<List<OperatorBpnData>>(result);
-        result.Should().HaveCount(5);
+        result.Should().HaveCount(5).And.AllBeOfType<OperatorBpnData>();
     }
 }
