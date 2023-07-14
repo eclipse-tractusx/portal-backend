@@ -54,15 +54,20 @@ public class BatchUpdateSeeder : ICustomSeeder
     /// <inheritdoc />
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        if (!_settings.DataPaths.Any())
+        {
+            _logger.LogInformation("There a no data paths configured, therefore the {SeederName} will be skipped", nameof(BatchUpdateSeeder));
+            return;
+        }
+
         _logger.LogInformation("Start BaseEntityBatch Seeder");
-        await SeedTable<Language>(
-            "languages",
-            x => x.ShortName,
-            x => x.dbEntity.LongNameDe != x.dataEntity.LongNameDe || x.dbEntity.LongNameEn != x.dataEntity.LongNameEn,
+        await SeedTable<LanguageLongName>(
+            "language_long_names",
+            x => new { x.ShortName, x.LanguageShortName },
+            x => x.dbEntity.LongName != x.dataEntity.LongName,
             (dbEntity, entity) =>
             {
-                dbEntity.LongNameDe = entity.LongNameDe;
-                dbEntity.LongNameEn = entity.LongNameEn;
+                dbEntity.LongName = entity.LongName;
             }, cancellationToken).ConfigureAwait(false);
 
         await SeedTable<CompanyRoleDescription>(
@@ -102,6 +107,16 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Value = entry.Value;
             }, cancellationToken).ConfigureAwait(false);
 
+        await SeedTable<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions",
+            x => x.Id,
+            x => x.dataEntity.Template != x.dbEntity.Template || x.dataEntity.Expiry != x.dbEntity.Expiry || x.dataEntity.ValidFrom != x.dbEntity.ValidFrom,
+            (dbEntry, entry) =>
+            {
+                dbEntry.Template = entry.Template;
+                dbEntry.Expiry = entry.Expiry;
+                dbEntry.ValidFrom = entry.ValidFrom;
+            }, cancellationToken).ConfigureAwait(false);
+
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }
@@ -109,21 +124,21 @@ public class BatchUpdateSeeder : ICustomSeeder
     private async Task SeedTable<T>(string fileName, Func<T, object> keySelector, Func<(T dataEntity, T dbEntity), bool> whereClause, Action<T, T> updateEntries, CancellationToken cancellationToken) where T : class
     {
         _logger.LogInformation("Start seeding {Filename}", fileName);
-        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, _settings.DataPaths, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
         _logger.LogInformation("Found {ElementCount} data", data.Count);
         if (data.Any())
         {
             var typeName = typeof(T).Name;
             var entriesForUpdate = data
-                .Join(_context.Set<T>(), keySelector, keySelector, (dataEntry, dbEntry) => new ValueTuple<T, T>(dataEntry, dbEntry))
+                .Join(_context.Set<T>(), keySelector, keySelector, (dataEntry, dbEntry) => (DataEntry: dataEntry, DbEntry: dbEntry))
                 .Where(whereClause.Invoke)
                 .ToList();
             if (entriesForUpdate.Any())
             {
                 _logger.LogInformation("Started to Update {EntryCount} entries of {TableName}", entriesForUpdate.Count, typeName);
-                foreach (var dbEntry in entriesForUpdate)
+                foreach (var entry in entriesForUpdate)
                 {
-                    updateEntries.Invoke(dbEntry.Item1, dbEntry.Item2);
+                    updateEntries.Invoke(entry.DbEntry, entry.DataEntry);
                 }
                 _logger.LogInformation("Updated {TableName}", typeName);
             }

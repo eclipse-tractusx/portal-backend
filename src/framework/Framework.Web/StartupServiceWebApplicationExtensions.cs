@@ -23,11 +23,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Serilog;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
@@ -36,6 +36,8 @@ public static class StartupServiceWebApplicationExtensions
 
     public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, IHostEnvironment environment)
     {
+        app.UseSerilogRequestLogging();
+
         if (environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -64,6 +66,8 @@ public static class StartupServiceWebApplicationExtensions
         }
 
         app.UseRouting();
+
+        app.UseSession();
 
         app.UseCors(CorsExtensions.AllowSpecificOrigins);
 

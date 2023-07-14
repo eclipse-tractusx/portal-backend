@@ -26,20 +26,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 public class KeycloakFactory : IKeycloakFactory
 {
-    private readonly KeycloakSettingsMap _Settings;
+    private readonly KeycloakSettingsMap _settings;
+
     public KeycloakFactory(IOptions<KeycloakSettingsMap> settings)
     {
-        _Settings = settings.Value;
+        _settings = settings.Value;
     }
 
     public KeycloakClient CreateKeycloakClient(string instance)
     {
-        if (!_Settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
+        if (!_settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
             throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
 
-        var settings = _Settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
+        var settings = _settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
         return settings.ClientSecret == null
             ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm)
             : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.AuthRealm);
@@ -47,12 +48,12 @@ public class KeycloakFactory : IKeycloakFactory
 
     public KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret)
     {
-        if (!_Settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
+        if (!_settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
             throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
 
-        var settings = _Settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
+        var settings = _settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
         return KeycloakClient.CreateWithClientId(settings.ConnectionString, clientId, secret, settings.AuthRealm);
     }
 }

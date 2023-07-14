@@ -27,8 +27,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
-using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 [assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
@@ -101,7 +99,11 @@ public class TestDbFixture : IAsyncLifetime
         var context = new PortalDbContext(optionsBuilder.Options);
         await context.Database.MigrateAsync();
 
-        var seederOptions = Options.Create(new SeederSettings { TestDataEnvironments = new List<string> { "test" } });
+        var seederOptions = Options.Create(new SeederSettings
+        {
+            TestDataEnvironments = new[] { "test" },
+            DataPaths = new[] { "Seeder/Data" }
+        });
         var insertSeeder = new BatchInsertSeeder(context,
             LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchInsertSeeder>(),
             seederOptions);

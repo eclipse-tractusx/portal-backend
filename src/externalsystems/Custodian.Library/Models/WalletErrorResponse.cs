@@ -23,3 +23,5 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 
 public record WalletErrorResponse([property: JsonPropertyName("message")] string Message);
+
+public record MembershipErrorResponse([property: JsonPropertyName("title")] string Title);

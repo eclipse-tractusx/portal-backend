@@ -18,11 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class ProviderCompanyDetail : IBaseEntity
+[AuditEntityV1(typeof(AuditProviderCompanyDetail20230614))]
+public class ProviderCompanyDetail : IAuditableV1, IBaseEntity
 {
     private ProviderCompanyDetail()
     {
@@ -47,6 +50,11 @@ public class ProviderCompanyDetail : IBaseEntity
     public string? AutoSetupCallbackUrl { get; set; }
 
     public Guid CompanyId { get; set; }
+
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
 
     // Navigation properties
     public virtual Company? Company { get; private set; }

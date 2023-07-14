@@ -30,7 +30,7 @@ public class PortalRepositories : IPortalRepositories
 {
     private readonly PortalDbContext _dbContext;
 
-    private static readonly ImmutableDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
+    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
         { typeof(IAgreementRepository), context => new AgreementRepository(context) },
         { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
         { typeof(IApplicationChecklistRepository), context => new ApplicationChecklistRepository(context) },
@@ -38,6 +38,7 @@ public class PortalRepositories : IPortalRepositories
         { typeof(IAppSubscriptionDetailRepository), context => new AppSubscriptionDetailRepository(context) },
         { typeof(IClientRepository), context => new ClientRepository(context) },
         { typeof(ICompanyRepository), context => new CompanyRepository(context) },
+        { typeof(ICompanySsiDetailsRepository), context => new CompanySsiDetailsRepository(context) },
         { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
         { typeof(IConsentAssignedOfferSubscriptionRepository), context => new ConsentAssignedOfferSubscriptionRepository(context) },
         { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },

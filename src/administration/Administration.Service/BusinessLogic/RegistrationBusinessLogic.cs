@@ -92,7 +92,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyWithAddress.Streetadditional ?? "",
             companyWithAddress.Streetnumber ?? "",
             companyWithAddress.Zipcode ?? "",
-            companyWithAddress.CountryDe ?? "",
             companyWithAddress.AgreementsData
                 .GroupBy(x => x.CompanyRoleId)
                 .Select(g => new AgreementsRoleData(
@@ -140,7 +139,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.ApplicationChecklistEntries.Where(x => x.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION).OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
                             .Select(invitation => invitation.CompanyUser)
-                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                            .Where(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
                                 && companyUser.Email != null)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
@@ -166,7 +165,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         Application = application,
                         CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
                     .FirstOrDefault(companyUser =>
-                        companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                        companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
                         && companyUser.Firstname != null
                         && companyUser.Lastname != null
                         && companyUser.Email != null
@@ -204,12 +203,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         var result = await _portalRepositories.GetInstance<IUserRepository>()
             .GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
-        if (!result.Any(item => item.IsApplicationCompany))
+        if (!result.Exists(item => item.IsApplicationCompany))
         {
             throw new NotFoundException($"application {applicationId} not found");
         }
 
-        if (result.Any(item => !item.IsApplicationCompany))
+        if (result.Exists(item => !item.IsApplicationCompany))
         {
             throw new ConflictException("BusinessPartnerNumber is already assigned to a different company");
         }

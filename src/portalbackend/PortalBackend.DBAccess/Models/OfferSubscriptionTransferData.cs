@@ -26,8 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// Detail data for the offer subscription
 /// </summary>
 /// <param name="Status">Offer status</param>
-/// <param name="CompanyUserId">Company User Id</param>
-/// <param name="TechnicalUserId">Id of the company</param>
+/// <param name="IsProviderCompany">true if Company Id is the same as ProviderCompanyId</param>
 /// <param name="CompanyName">Name of the provider company</param>
 /// <param name="CompanyId">Id of the company</param>
 /// <param name="RequesterId">Id of the requester for the offer subscription</param>
@@ -41,9 +40,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="InstanceData">Defines whether the offer is a single or multiple instance offer</param>
 /// <param name="AppInstanceIds">Ids of the app instances</param>
 /// <param name="SalesManagerId">Id of the sales manager</param>
-public record OfferSubscriptionTransferData(OfferSubscriptionStatusId Status,
-    Guid CompanyUserId,
-    Guid TechnicalUserId,
+public record OfferSubscriptionTransferData(
+    OfferSubscriptionStatusId Status,
+    bool IsProviderCompany,
     string CompanyName,
     Guid CompanyId,
     Guid RequesterId,

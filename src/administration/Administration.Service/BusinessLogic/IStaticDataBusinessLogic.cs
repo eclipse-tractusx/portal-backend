@@ -44,4 +44,10 @@ public interface IStaticDataBusinessLogic
     /// </summary>
     /// <returns>AsyncEnumerable of the License Type</returns>
     IAsyncEnumerable<LicenseTypeData> GetAllLicenseType();
+
+    /// <summary>
+    /// Get all bpns of companies with role operator
+    /// </summary>
+    /// <returns>A list of bpns</returns>
+    IAsyncEnumerable<OperatorBpnData> GetOperatorBpns();
 }

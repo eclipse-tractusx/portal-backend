@@ -7,7 +7,8 @@
     "notification_type_id": 1,
     "is_read": true,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "done": true
   },
   {
     "id": "1450F1B2-FCE6-473E-865A-62D6DC0F5A5A",
@@ -17,7 +18,8 @@
     "notification_type_id": 2,
     "is_read": true,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "done": true
   },
   {
     "id": "0AC17754-4317-4612-BBA3-D5FD4AED2683",
@@ -27,7 +29,8 @@
     "notification_type_id": 4,
     "is_read": true,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "done": true
   },
   {
     "id": "351422E4-9B18-4296-9DE1-A625C6D4AF5C",
@@ -37,7 +40,8 @@
     "notification_type_id": 5,
     "is_read": false,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "done": false
   },
   {
     "id": "2D6E87BD-D61E-46AC-BEA9-5508D65A89EB",
@@ -47,7 +51,8 @@
     "notification_type_id": 6,
     "is_read": false,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "done": false
   },
   {
     "id": "1836bbf6-b067-4126-9745-a22a098d3486",
@@ -57,6 +62,7 @@
     "notification_type_id": 11,
     "is_read": false,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
-    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "done": null
   }
 ]

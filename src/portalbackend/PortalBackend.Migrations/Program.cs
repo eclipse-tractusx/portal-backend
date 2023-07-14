@@ -24,40 +24,41 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
 using System.Reflection;
 
-Console.WriteLine("Starting process");
+LoggingExtensions.EnsureInitialized();
+Log.Information("Starting process");
 try
 {
-    var builder = Host.CreateDefaultBuilder(args)
+    var host = Host.CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
         {
-            services.AddDbContext<PortalDbContext>(o =>
+            services
+                .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
                         x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
                             .MigrationsHistoryTable("__efmigrations_history_portal"))
                         .UsePostgreSqlTriggers())
                 .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
-        });
+        })
+        .AddLogging()
+        .Build();
 
-    var host = builder.Build();
-
-    await host.Services.InitializeDatabasesAsync();
-
-    // We don't actually run anything here. The magic happens in InitializeDatabasesAsync
+    await host.Services.InitializeDatabasesAsync(); // We don't actually run anything here. The magic happens in InitializeDatabasesAsync
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
-    // Should be replaced with Serilog as soon as we have it.
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("Unhandled exception: {0}", ex);
-    Console.ResetColor();
+    Log.Fatal("Unhandled exception {Exception}", ex);
     throw;
 }
 finally
 {
-    // Should be replaced with Serilog as soon as we have it.
-    Console.WriteLine("Process Shutting down...");
+    Log.Information("Process Shutting down...");
+    Log.CloseAndFlush();
 }

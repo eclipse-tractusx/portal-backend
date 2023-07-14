@@ -24,14 +24,13 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 var VERSION = "v2";
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuildRunner
+    .BuildAndRunWebApplication<Program>(args, "notification", VERSION, builder =>
+    {
+        builder.Services
+            .AddPortalRepositories(builder.Configuration);
 
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddPortalRepositories(builder.Configuration);
-
-builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
-    .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
-
-builder.Build()
-    .CreateApp<Program>("notification", VERSION, builder.Environment)
-    .Run();
+        builder.Services
+            .AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
+            .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
+    });

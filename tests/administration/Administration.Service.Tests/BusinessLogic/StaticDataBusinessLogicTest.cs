@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -29,7 +30,9 @@ public class StaticDataBusinessLogicTest
 {
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly ICompanyRepository _companyRepository;
     private readonly IStaticDataRepository _staticDataRepository;
+
     public StaticDataBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -37,10 +40,37 @@ public class StaticDataBusinessLogicTest
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        _companyRepository = A.Fake<ICompanyRepository>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
 
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>()).Returns(_staticDataRepository);
+    }
+
+    [Fact]
+    public async Task GetAllUseCase_ReturnExpectedResult()
+    {
+        // Arrange
+        var data = _fixture.Build<UseCaseData>()
+                        .With(x => x.Name, "test")
+                        .With(x => x.ShortName, "t")
+                        .CreateMany(1)
+                        .ToAsyncEnumerable();
+
+        A.CallTo(() => _staticDataRepository.GetAllUseCase())
+            .Returns(data);
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+
+        // Act
+        var result = await sut.GetAllUseCase().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _staticDataRepository.GetAllUseCase())
+            .MustHaveHappenedOnceExactly();
+        result.Should().ContainSingle()
+            .Which.Should().BeOfType<UseCaseData>()
+            .Which.Should().Match<UseCaseData>(x => x.Name == "test" && x.ShortName == "t");
     }
 
     [Fact]
@@ -48,10 +78,10 @@ public class StaticDataBusinessLogicTest
     {
         // Arrange
         var data = _fixture.Build<LicenseTypeData>()
-                            .With(x => x.LicenseTypeId, 1)
-                            .With(x => x.Name, LicenseTypeId.COTS.ToString())
-                            .CreateMany()
-                            .ToAsyncEnumerable();
+                        .With(x => x.LicenseTypeId, 1)
+                        .With(x => x.Name, LicenseTypeId.COTS.ToString())
+                        .CreateMany()
+                        .ToAsyncEnumerable();
 
         A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
             .Returns(data);
@@ -63,8 +93,48 @@ public class StaticDataBusinessLogicTest
         // Assert
         A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
             .MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<List<LicenseTypeData>>();
-        result.FirstOrDefault()!.LicenseTypeId.Should().Be(1);
-        result.FirstOrDefault()!.Name.Should().Be(LicenseTypeId.COTS.ToString());
+        result.Should().NotBeEmpty()
+            .And.AllBeOfType<LicenseTypeData>()
+            .Which.First().Should().Match<LicenseTypeData>(x => x.LicenseTypeId == 1 && x.Name == LicenseTypeId.COTS.ToString());
+    }
+
+    [Fact]
+    public async Task GetAllLanguages_ReturnsExpectedResult()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<LanguageData>(3).ToImmutableArray();
+
+        A.CallTo(() => _staticDataRepository.GetAllLanguage())
+            .Returns(data.ToAsyncEnumerable());
+
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+
+        // Act
+        var result = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _staticDataRepository.GetAllLanguage())
+            .MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(3).And.ContainInOrder(data);
+    }
+
+    [Fact]
+    public async Task GetOperatorBpns_ReturnsExpectedResult()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<OperatorBpnData>(3).ToImmutableArray();
+
+        A.CallTo(() => _companyRepository.GetOperatorBpns())
+            .Returns(data.ToAsyncEnumerable());
+
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+
+        // Act
+        var result = await sut.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _companyRepository.GetOperatorBpns())
+            .MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(3).And.ContainInOrder(data);
     }
 }

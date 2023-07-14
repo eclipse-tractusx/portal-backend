@@ -37,7 +37,6 @@ public record CompanyApplicationDetailData(
     string? City,
     string? Region,
     string? CountryAlpha2Code,
-    string? CountryNameDe,
-    Guid CompanyUserId,
+    bool IsUserOfCompany,
     IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> UniqueIds
 );

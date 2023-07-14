@@ -20,7 +20,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
@@ -61,10 +61,12 @@ public class NotificationController : ControllerBase
     /// <param name="notificationTopicId">OPTIONAL: Topic of the notifications</param>
     /// <param name="onlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
     /// <param name="sorting">Defines the sorting of the list</param>
+    /// <param name="doneState">OPTIONAL: Defines the done state</param>
     /// <response code="200">Collection of the unread notifications for the user.</response>
     /// <response code="400">NotificationType or NotificationStatus don't exist.</response>
     [HttpGet]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("", Name = nameof(GetNotifications))]
     [ProducesResponseType(typeof(IEnumerable<NotificationDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -75,8 +77,9 @@ public class NotificationController : ControllerBase
         [FromQuery] NotificationTypeId? notificationTypeId = null,
         [FromQuery] NotificationTopicId? notificationTopicId = null,
         [FromQuery] bool onlyDueDate = false,
-        [FromQuery] NotificationSorting? sorting = null) =>
-        this.WithIamUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting)));
+        [FromQuery] NotificationSorting? sorting = null,
+        [FromQuery] bool? doneState = null) =>
+        this.WithUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState)));
 
     /// <summary>
     ///     Gets a notification for the logged in user
@@ -88,12 +91,13 @@ public class NotificationController : ControllerBase
     /// <response code="403">User is not assigned.</response>
     [HttpGet]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("{notificationId}", Name = nameof(GetNotification))]
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<NotificationDetailData> GetNotification([FromRoute] Guid notificationId) =>
-        this.WithIamUserId(userId => _logic.GetNotificationDetailDataAsync(userId, notificationId));
+        this.WithUserId(userId => _logic.GetNotificationDetailDataAsync(userId, notificationId));
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -108,11 +112,12 @@ public class NotificationController : ControllerBase
     [HttpGet]
     [Route("count")]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> NotificationCount([FromQuery] bool? isRead) =>
-        this.WithIamUserId(iamUser => _logic.GetNotificationCountAsync(iamUser, isRead));
+        this.WithUserId(userId => _logic.GetNotificationCountAsync(userId, isRead));
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -123,9 +128,10 @@ public class NotificationController : ControllerBase
     [HttpGet]
     [Route("count-details")]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(NotificationCountDetails), StatusCodes.Status200OK)]
     public Task<NotificationCountDetails> NotificationCountDetails() =>
-        this.WithIamUserId(iamUser => _logic.GetNotificationCountDetailsAsync(iamUser));
+        this.WithUserId(userId => _logic.GetNotificationCountDetailsAsync(userId));
 
     /// <summary>
     /// Changes the read status of a notification
@@ -141,12 +147,13 @@ public class NotificationController : ControllerBase
     [HttpPut]
     [Route("{notificationId:guid}/read")]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] bool isRead = true)
     {
-        await this.WithIamUserId(userId => _logic.SetNotificationStatusAsync(userId, notificationId, isRead)).ConfigureAwait(false);
+        await this.WithUserId(userId => _logic.SetNotificationStatusAsync(userId, notificationId, isRead)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -162,12 +169,13 @@ public class NotificationController : ControllerBase
     [HttpDelete]
     [Route("{notificationId:guid}")]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteNotification([FromRoute] Guid notificationId)
     {
-        await this.WithIamUserId(userId => _logic.DeleteNotificationAsync(userId, notificationId)).ConfigureAwait(false);
+        await this.WithUserId(userId => _logic.DeleteNotificationAsync(userId, notificationId)).ConfigureAwait(false);
         return NoContent();
     }
 }

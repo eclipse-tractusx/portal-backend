@@ -20,6 +20,10 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 
@@ -28,42 +32,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 /// </summary>
 public static class ControllerExtensions
 {
-    /// <summary>
-    /// Determines IamUserId from request claims and subsequently calls a provided function with iamUserId as parameter.
-    /// </summary>
-    /// <typeparam name="T">Return type of the controller function.</typeparam>
-    /// <param name="controller">Controller to extend.</param>
-    /// <param name="idConsumingFunction">Function that is called with iamUserId parameter.</param>
-    /// <returns>Result of inner function.</returns>
-    /// <exception cref="ArgumentException">If expected claim value is not provided.</exception>
-    public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> idConsumingFunction)
-    {
-        var sub = controller.GetIamUserId();
-        return idConsumingFunction(sub);
-    }
+    public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> consumingFunction) =>
+        consumingFunction(controller.GetIdentityData());
 
-    public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
-    {
-        var bearer = controller.GetBearerToken();
-        return tokenConsumingFunction(bearer);
-    }
+    public static T WithUserId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
+        consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId));
 
-    public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string iamUserId, string bearerToken), T> tokenConsumingFunction)
-    {
-        var bearerToken = controller.GetBearerToken();
-        var iamUserId = controller.GetIamUserId();
-        return tokenConsumingFunction((iamUserId, bearerToken));
-    }
+    public static T WithCompanyId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
+        consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId));
 
-    private static string GetIamUserId(this ControllerBase controller)
-    {
-        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
-        if (string.IsNullOrWhiteSpace(sub))
-        {
-            throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
-        }
+    public static T WithUserIdAndCompanyId<T>(this ControllerBase controller, Func<(Guid UserId, Guid CompanyId), T> consumingFunction) =>
+        consumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId)));
 
-        return sub;
+    public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
+        tokenConsumingFunction(controller.GetBearerToken());
+
+    public static T WithIdentityIdAndBearerToken<T>(this ControllerBase controller, Func<(Guid UserId, string BearerToken), T> tokenConsumingFunction) =>
+        tokenConsumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.GetBearerToken()));
+
+    private static IdentityData GetIdentityData(this ControllerBase controller)
+    {
+        var sub = controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
+        var identityId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId);
+        var identityType = controller.User.Claims.GetEnumFromClaim<IdentityTypeId>(PortalClaimTypes.IdentityType);
+        var companyId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId);
+        return new IdentityData(sub, identityId, identityType, companyId);
     }
 
     private static string GetBearerToken(this ControllerBase controller)
@@ -82,5 +75,48 @@ public static class ControllerExtensions
         }
 
         return bearer;
+    }
+
+    private static string GetStringFromClaim(this IEnumerable<Claim> claims, string claimType)
+    {
+        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
+        if (string.IsNullOrWhiteSpace(claimValue))
+        {
+            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty.", nameof(claims));
+        }
+
+        return claimValue;
+    }
+
+    private static Guid GetGuidFromClaim(this IEnumerable<Claim> claims, string claimType)
+    {
+        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
+        if (string.IsNullOrWhiteSpace(claimValue))
+        {
+            throw new ControllerArgumentException($"Claim '{claimType} must not be null or empty.");
+        }
+
+        if (!Guid.TryParse(claimValue, out var result) || Guid.Empty == result)
+        {
+            throw new ControllerArgumentException($"Claim {claimType} must contain a Guid");
+        }
+
+        return result;
+    }
+
+    private static T GetEnumFromClaim<T>(this IEnumerable<Claim> claims, string claimType) where T : struct, Enum
+    {
+        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
+        if (string.IsNullOrWhiteSpace(claimValue))
+        {
+            throw new ControllerArgumentException($"Claim '{claimType} must not be null or empty.");
+        }
+
+        if (!Enum.TryParse(claimValue, true, out T result))
+        {
+            throw new ControllerArgumentException($"Claim {claimType} must contain a {typeof(T)}");
+        }
+
+        return result;
     }
 }

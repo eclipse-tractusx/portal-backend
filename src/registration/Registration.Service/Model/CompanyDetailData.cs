@@ -35,7 +35,6 @@ public record CompanyDetailData(
     string? StreetAdditional,
     string? StreetNumber,
     string? ZipCode,
-    string? CountryDe,
     IEnumerable<CompanyUniqueIdData> UniqueIds
 );
 

@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -42,6 +43,8 @@ public class RegistrationSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -49,6 +52,8 @@ public class RegistrationSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<CompanyApplicationStatusId> ApplicationStatusIds { get; set; } = null!;
 
     /// <summary>
@@ -56,7 +61,17 @@ public class RegistrationSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
+    [DistinctValues]
     public IEnumerable<DocumentTypeId> RegistrationDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// SubmitDocument Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    [DistinctValues]
+    public IEnumerable<DocumentTypeId> SubmitDocumentTypeIds { get; set; } = null!;
 }
 
 public static class RegistrationSettingsExtension
@@ -68,6 +83,8 @@ public static class RegistrationSettingsExtension
         services.AddOptions<RegistrationSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
+            .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }

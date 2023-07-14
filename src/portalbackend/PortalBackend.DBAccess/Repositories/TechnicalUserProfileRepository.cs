@@ -37,13 +37,13 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
     }
 
     /// <inheritdoc />
-    public Task<OfferProfileData?> GetOfferProfileData(Guid offerId, OfferTypeId offerTypeId, string iamUserId) =>
+    public Task<OfferProfileData?> GetOfferProfileData(Guid offerId, OfferTypeId offerTypeId, Guid userCompanyId) =>
         _context.Offers
             .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
             .Select(o => new OfferProfileData(
-                o.ProviderCompany!.CompanyUsers.Any(x => x.IamUser!.UserEntityId == iamUserId),
+                o.ProviderCompanyId == userCompanyId,
                 offerTypeId == OfferTypeId.SERVICE ? o.ServiceDetails.Select(sd => sd.ServiceTypeId) : null,
-                o.TechnicalUserProfiles.Select(tup => new ValueTuple<Guid, IEnumerable<Guid>>(tup.Id, tup.UserRoles.Select(ur => ur.Id)))))
+                o.TechnicalUserProfiles.Select(tup => new ValueTuple<Guid, IEnumerable<Guid>>(tup.Id, tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRoleId)))))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -70,13 +70,13 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
 
     /// <inheritdoc />
     public Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformation> Information)>
-        GetTechnicalUserProfileInformation(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
+        GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId) =>
             _context.Offers
                 .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
                 .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformation>>(
-                    x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                    x.ProviderCompanyId == usersCompanyId,
                     x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformation(
                         tup.Id,
-                        tup.UserRoles.Select(ur => new UserRoleInformation(ur.Id, ur.UserRoleText))))))
+                        tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleInformation(ur.UserRole!.Id, ur.UserRole.UserRoleText))))))
                 .SingleOrDefaultAsync();
 }

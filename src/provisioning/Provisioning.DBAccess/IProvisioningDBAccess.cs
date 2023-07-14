@@ -26,7 +26,7 @@ public interface IProvisioningDBAccess
 {
     Task<int> GetNextClientSequenceAsync();
     Task<int> GetNextIdentityProviderSequenceAsync();
-    UserPasswordReset CreateUserPasswordResetInfo(string userEntityId, DateTimeOffset passwordModifiedAt, int resetCount);
-    Task<UserPasswordReset?> GetUserPasswordResetInfo(string userEntityId);
+    UserPasswordReset CreateUserPasswordResetInfo(Guid companyUserId, DateTimeOffset passwordModifiedAt, int resetCount);
+    Task<UserPasswordReset?> GetUserPasswordResetInfo(Guid companyUserId);
     Task<int> SaveAsync();
 }

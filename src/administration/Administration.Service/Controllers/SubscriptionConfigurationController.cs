@@ -21,10 +21,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -60,12 +60,13 @@ public class SubscriptionConfigurationController : ControllerBase
     [HttpGet]
     [Route("owncompany", Name = nameof(GetServiceProviderCompanyDetail))]
     [Authorize(Roles = "add_service_offering, add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(ProviderDetailReturnData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ProviderDetailReturnData> GetServiceProviderCompanyDetail() =>
-        this.WithIamUserId(iamUserId => _businessLogic.GetProviderCompanyDetailsAsync(iamUserId));
+        this.WithCompanyId(companyId => _businessLogic.GetProviderCompanyDetailsAsync(companyId));
 
     /// <summary>
     /// Sets detail data to the calling users service provider
@@ -79,13 +80,15 @@ public class SubscriptionConfigurationController : ControllerBase
     [HttpPut]
     [Route("owncompany")]
     [Authorize(Roles = "add_service_offering, add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> SetProviderCompanyDetail([FromBody] ProviderDetailData data)
     {
-        await this.WithIamUserId(iamUserId => _businessLogic.SetProviderCompanyDetailsAsync(data, iamUserId)).ConfigureAwait(false);
+        await this.WithUserIdAndCompanyId(identity => _businessLogic.SetProviderCompanyDetailsAsync(data, identity)).ConfigureAwait(false);
         return NoContent();
     }
 

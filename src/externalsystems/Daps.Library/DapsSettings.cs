@@ -29,6 +29,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 public class DapsSettings : KeyVaultAuthSettings
 {
     /// <summary>
+    /// If <c>true</c> the daps call will executed like before, if <c>false</c> no daps call will be made
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
     /// Daps endpoint.
     /// </summary>
     [Required]

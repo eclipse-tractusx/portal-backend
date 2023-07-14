@@ -20,17 +20,11 @@
 
 using AutoFixture;
 using FakeItEasy;
-using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
-using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
@@ -38,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers
 
 public class ServiceChangeControllerTest
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IFixture _fixture;
     private readonly ServiceChangeController _controller;
     private readonly IServiceChangeBusinessLogic _logic;
@@ -48,7 +42,7 @@ public class ServiceChangeControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<IServiceChangeBusinessLogic>();
         this._controller = new ServiceChangeController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId);
+        _controller.AddControllerContextWithClaim(_identity.UserEntityId, _identity);
     }
 
     [Fact]
@@ -61,7 +55,7 @@ public class ServiceChangeControllerTest
         var result = await this._controller.DeactivateService(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeactivateOfferByServiceIdAsync(serviceId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeactivateOfferByServiceIdAsync(serviceId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 }

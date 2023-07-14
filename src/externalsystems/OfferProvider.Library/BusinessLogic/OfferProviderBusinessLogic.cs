@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
@@ -134,9 +133,9 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             .GetUserRoleIdsUntrackedAsync(serviceManagerRoles)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
         {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
         }
 
         await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))

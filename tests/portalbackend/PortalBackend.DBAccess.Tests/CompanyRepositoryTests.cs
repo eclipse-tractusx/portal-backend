@@ -20,6 +20,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -36,7 +37,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
 
     public CompanyRepositoryTests(TestDbFixture testDbFixture)
@@ -90,7 +90,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, "8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -106,7 +106,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -119,7 +119,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.OPERATOR, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.OPERATOR, new("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -128,69 +128,24 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region Check Company is ServiceProvider and exists for IamUser
+    #region IsValidCompanyRoleOwner
 
-    [Fact]
-    public async Task CheckCompanyIsServiceProviderAndExistsForIamUser_WithValidData_ReturnsTrue()
+    [Theory]
+    [InlineData("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", new[] { CompanyRoleId.SERVICE_PROVIDER }, true, true)]
+    [InlineData("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", new[] { CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.OPERATOR }, true, true)]
+    [InlineData("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", new[] { CompanyRoleId.OPERATOR }, true, false)]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", new[] { CompanyRoleId.SERVICE_PROVIDER }, false, false)]
+    public async Task IsValidCompanyRoleOwner_ReturnsExpected(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds, bool isValidCompany, bool isCompanyRoleOwner)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("8be5ee49-4b9c-4008-b641-138305430cc4", Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
+        var results = await sut.IsValidCompanyRoleOwner(companyId, companyRoleIds);
 
         // Assert
-        results.Should().NotBe(default);
-        results.CompanyId.Should().NotBe(Guid.Empty);
-        results.IsServiceProviderCompany.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CheckCompanyIsServiceProviderAndExistsForIamUser_WithNonServiceProviderCompany_ReturnsFalse()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("ad56702b-5908-44eb-a668-9a11a0e100d6", Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
-
-        // Assert
-        results.Should().NotBe(default);
-        results.CompanyId.Should().NotBe(Guid.Empty);
-        results.IsServiceProviderCompany.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region GetCompanyIdAndSelfDescriptionDocumentByBpnAsync
-
-    [Fact]
-    public async Task GetCompanyIdByBpn_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetCompanyIdAndSelfDescriptionDocumentByBpnAsync("BPNL00000003CRHK").ConfigureAwait(false);
-
-        // Assert
-        result.Should().NotBe(default);
-        result.CompanyId.Should().NotBe(Guid.Empty);
-        result.CompanyId.Should().Be("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
-        result.SelfDescriptionDocumentId.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetCompanyIdByBpn_WithNotExistingBpn_ReturnsEmptyGuid()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var results = await sut.GetCompanyIdAndSelfDescriptionDocumentByBpnAsync("NOTEXISTING").ConfigureAwait(false);
-
-        // Assert
-        results.Should().Be(default);
+        results.IsValidCompanyId.Should().Be(isValidCompany);
+        results.IsCompanyRoleOwner.Should().Be(isCompanyRoleOwner);
     }
 
     #endregion
@@ -338,7 +293,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailsExistsForUser("8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailsExistsForUser(new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -351,7 +306,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailsExistsForUser(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailsExistsForUser(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -422,14 +377,14 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetOwnCompanyDetailsAsync
+    #region GetCompanyDetailsAsync
 
     [Fact]
-    public async Task GetOwnCompanyDetailsAsync_ReturnsExpected()
+    public async Task GetCompanyDetailsAsync_ReturnsExpected()
     {
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        var result = await sut.GetOwnCompanyDetailsAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+        var result = await sut.GetCompanyDetailsAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
 
         result.Should().NotBeNull();
 
@@ -455,7 +410,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = sut.GetCompanyAssigendUseCaseDetailsAsync("ad56702b-5908-44eb-a668-9a11a0e100d6");
+        var result = sut.GetCompanyAssigendUseCaseDetailsAsync(new("0dcd8209-85e2-4073-b130-ac094fb47106"));
 
         // Assert
         result.Should().NotBeNull();
@@ -469,17 +424,16 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var useCaseId = new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b86");
-        var iamUserId = "ad56702b-5908-44eb-a668-9a11a0e100d6";
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
+        var result = await sut.GetCompanyStatusAndUseCaseIdAsync(new("0dcd8209-85e2-4073-b130-ac094fb47106"), useCaseId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.IsActiveCompanyStatus.Should().BeFalse();
         result.IsUseCaseIdExists.Should().BeTrue();
-        result.CompanyId.Should().Be(new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+        result.IsValidCompany.Should().BeTrue();
     }
 
     [Fact]
@@ -565,15 +519,13 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyRolesDataAsync("8be5ee49-4b9c-4008-b641-138305430cc4", companyRoleIds).ConfigureAwait(false);
+        var result = await sut.GetCompanyRolesDataAsync(new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"), companyRoleIds).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.CompanyId.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
+        result.IsValidCompany.Should().BeTrue();
+        result.IsCompanyActive.Should().BeTrue();
         result.CompanyRoleIds.Should().NotBeNull()
             .And.Contain(CompanyRoleId.SERVICE_PROVIDER);
-        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020005"));
-        result.IsCompanyActive.Should().BeTrue();
         result.ConsentStatusDetails.Should().NotBeNull()
             .And.Contain(x => x.ConsentStatusId == ConsentStatusId.ACTIVE);
     }
@@ -625,50 +577,86 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Fact]
-    public async Task GetCompanyStatusDataAsync()
+    public async Task IsCompanyStatusActive()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyStatusDataAsync("8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
+        var result = await sut.GetCompanyStatusDataAsync(new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.CompanyId.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
+        result.IsValid.Should().BeTrue();
         result.IsActive.Should().BeTrue();
     }
 
     #endregion
 
-    #region GetCompanyIdAndUserIdForUserOrTechnicalUser
+    #region GetBpnAndTechnicalUserRoleIds
 
     [Fact]
-    public async Task GetCompanyIdAndUserIdForUserOrTechnicalUser_WithValidIamUser_ReturnsExpectedResult()
+    public async Task GetCompanyIdAndBpnForIamUserUntrackedAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyIdAndUserIdForUserOrTechnicalUser(IamUserId).ConfigureAwait(false);
+        var result = await sut.GetBpnAndTechnicalUserRoleIds(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "technical_roles_management").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.Bpn.Should().Be("BPNL00000003CRHK");
+        result.TechnicalUserRoleIds.Should().HaveCount(9).And.OnlyHaveUniqueItems();
+    }
+
+    #endregion
+
+    #region GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync
+
+    [Fact]
+    public async Task GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync_WithValidIamUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyInformationAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
-        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
+        result!.OrganizationName.Should().Be("Catena-X");
     }
 
     [Fact]
-    public async Task GetCompanyIdAndUserIdForUserOrTechnicalUser_WithNotExistingIamUser_ReturnsDefault()
+    public async Task GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync_WithNotExistingIamUser_ReturnsDefault()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyIdAndUserIdForUserOrTechnicalUser(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationAsync(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        (result == default).Should().BeTrue();
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetOperatorBpns
+
+    [Fact]
+    public async Task GetOperatorBpns_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle()
+            .Which.Should().BeOfType<OperatorBpnData>()
+            .And.Match<OperatorBpnData>(x => x.Bpn == "BPNL00000003CRHK" && x.OperatorName == "Catena-X");
     }
 
     #endregion

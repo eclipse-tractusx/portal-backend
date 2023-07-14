@@ -58,14 +58,14 @@ public interface ISubscriptionConfigurationBusinessLogic
     /// <summary>
     /// Gets the service provider company details
     /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <returns>The detail data</returns>
-    Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(string iamUserId);
+    Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(Guid companyId);
 
     /// <summary>
     /// Sets service provider company details
     /// </summary>
     /// <param name="data">Detail data for the service provider</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    Task SetProviderCompanyDetailsAsync(ProviderDetailData data, string iamUserId);
+    /// <param name="identity">Id of the users and the users company</param>
+    Task SetProviderCompanyDetailsAsync(ProviderDetailData data, (Guid UserId, Guid CompanyId) identity);
 }

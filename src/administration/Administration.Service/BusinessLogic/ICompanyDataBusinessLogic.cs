@@ -19,22 +19,37 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using System.Net;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public interface ICompanyDataBusinessLogic
 {
-    Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync(string iamUserId);
+    Task<CompanyAddressDetailData> GetCompanyDetailsAsync(Guid companyId);
 
-    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId);
+    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(Guid companyId);
 
-    Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId);
+    Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId);
 
-    Task RemoveCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId);
+    Task RemoveCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId);
 
-    IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, string? languageShortName);
+    IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(Guid companyId, string? languageShortName);
 
-    Task CreateCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
+    Task CreateCompanyRoleAndConsentAgreementDetailsAsync((Guid UserId, Guid CompanyId) identity, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
+
+    Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipationAsync(Guid companyId, string? language);
+
+    Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync(Guid companyId);
+
+    Task CreateUseCaseParticipation((Guid UserId, Guid CompanyId) identity, UseCaseParticipationCreationData data, CancellationToken cancellationToken);
+    Task CreateSsiCertificate((Guid UserId, Guid CompanyId) identity, SsiCertificateCreationData data, CancellationToken cancellationToken);
+
+    Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, CompanySsiDetailSorting? sorting);
+
+    Task ApproveCredential(Guid userId, Guid credentialId, CancellationToken cancellationToken);
+
+    Task RejectCredential(Guid userId, Guid credentialId);
+    IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes();
 }

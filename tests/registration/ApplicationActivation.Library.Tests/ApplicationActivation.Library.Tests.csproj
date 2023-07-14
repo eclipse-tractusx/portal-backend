@@ -43,6 +43,7 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\..\src\externalsystems\Custodian.Library\Custodian.Library.csproj" />
         <ProjectReference Include="..\..\..\src\registration\ApplicationActivation.Library\ApplicationActivation.Library.csproj" />
         <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>

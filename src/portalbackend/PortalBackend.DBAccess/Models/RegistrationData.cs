@@ -34,7 +34,6 @@ public record RegistrationData(
     string? StreetNumber,
     string? ZipCode,
     string? CountryAlpha2Code,
-    string? CountryDe,
     IEnumerable<CompanyRoleId> CompanyRoleIds,
     IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> AgreementConsentStatuses,
     IEnumerable<string> DocumentNames,

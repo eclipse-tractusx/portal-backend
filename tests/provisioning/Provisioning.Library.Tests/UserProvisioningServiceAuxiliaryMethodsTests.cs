@@ -31,7 +31,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 {
     private readonly IFixture _fixture;
     private readonly Guid _identityProviderId;
-    private readonly string _iamUserId;
+    private readonly Guid _companyUserId;
     private readonly ICustomizationComposer<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, (string? IdpAlias, bool IsSharedIdp) IdentityProvider)> _resultComposer;
     private readonly ICustomizationComposer<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<string> IdpAliase)> _sharedIdpComposer;
     private readonly IPortalRepositories _portalRepositories;
@@ -45,7 +45,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _identityProviderId = _fixture.Create<Guid>();
-        _iamUserId = _fixture.Create<string>();
+        _companyUserId = Guid.NewGuid();
         _resultComposer = _fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>();
         _sharedIdpComposer = _fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<string> IdpAliase)>();
 
@@ -54,10 +54,10 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<string>._)).Returns(
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._)).Returns(
             _resultComposer.Create());
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<Guid?>._, A<IdentityProviderCategoryId>._)).Returns(
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._)).Returns(
             _sharedIdpComposer.With(x => x.IdpAliase, new[] { _fixture.Create<string>() }).Create());
     }
 
@@ -68,7 +68,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _iamUserId).ConfigureAwait(false);
+        var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
         result.Should().NotBeNull();
     }
@@ -78,21 +78,21 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         ((Guid, string?, string?), (Guid, string?, string?, string?), (string?, bool)) notfound = default;
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._))
             .Returns(notfound);
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        async Task Act() => await sut.GetCompanyNameIdpAliasData(_identityProviderId, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().Be($"user {_iamUserId} is not associated with any company");
+        error.Message.Should().Be($"user {_companyUserId} does not exist");
     }
 
     [Fact]
     public async void TestCompanyNameIdpAliasDataIdpAliasNullThrows()
     {
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._))
             .Returns(_resultComposer.With(
                 x => x.IdentityProvider,
                     _fixture.Build<(string? IdpAlias, bool IsSharedIdp)>()
@@ -102,10 +102,10 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        Task Act() => sut.GetCompanyNameIdpAliasData(_identityProviderId, _iamUserId);
+        Task Act() => sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().Be($"user {_iamUserId} is not associated with own idp {_identityProviderId}");
+        error.Message.Should().Be($"user {_companyUserId} is not associated with own idp {_identityProviderId}");
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var companyId = _fixture.Create<Guid>();
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._))
             .Returns(_resultComposer.With(
                 x => x.Company,
                     _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()
@@ -124,7 +124,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        Task Act() => sut.GetCompanyNameIdpAliasData(_identityProviderId, _iamUserId);
+        Task Act() => sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId);
 
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"assertion failed: companyName of company {companyId} should never be null here");
@@ -139,7 +139,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        var result = await sut.GetCompanyNameSharedIdpAliasData(_iamUserId).ConfigureAwait(false);
+        var result = await sut.GetCompanyNameSharedIdpAliasData(_companyUserId).ConfigureAwait(false);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
         result.Should().NotBeNull();
     }
@@ -149,15 +149,15 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
             .Returns(notfound);
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId);
+        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"user {_iamUserId} is not associated with any company");
+        error.Message.Should().Be($"user {_companyUserId} does not exist");
     }
 
     [Fact]
@@ -165,45 +165,45 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
             .Returns(notfound);
 
         var applicationId = _fixture.Create<Guid>();
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId, applicationId);
+        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId, applicationId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"user {_iamUserId} is not associated with application {applicationId}");
+        error.Message.Should().Be($"user {_companyUserId} is not associated with application {applicationId}");
     }
 
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataNoIdpAliasThrows()
     {
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
             .Returns(_sharedIdpComposer.With(x => x.IdpAliase, Enumerable.Empty<string>()).Create());
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId);
+        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
 
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"user {_iamUserId} is not associated with any shared idp");
+        error.Message.Should().Be($"user {_companyUserId} is not associated with any shared idp");
     }
 
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataMultipleIdpAliaseThrows()
     {
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
             .Returns(_sharedIdpComposer.With(x => x.IdpAliase, _fixture.CreateMany<string>(2)).Create());
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId);
+        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
 
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"user {_iamUserId} is associated with more than one shared idp");
+        error.Message.Should().Be($"user {_companyUserId} is associated with more than one shared idp");
     }
 
     [Fact]
@@ -211,7 +211,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var companyId = _fixture.Create<Guid>();
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
             .Returns(_sharedIdpComposer
                 .With(x => x.Company,
                     _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()
@@ -222,7 +222,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId);
+        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
 
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"assertion failed: companyName of company {companyId} should never be null here");

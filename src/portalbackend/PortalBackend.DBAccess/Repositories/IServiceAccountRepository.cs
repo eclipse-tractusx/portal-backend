@@ -27,21 +27,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IServiceAccountRepository
 {
-    CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId,
-        CompanyServiceAccountStatusId companyServiceAccountStatusId,
+    CompanyServiceAccount CreateCompanyServiceAccount(Guid identityId,
         string name,
         string description,
+        string clientId,
+        string clientClientId,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         Action<CompanyServiceAccount>? setOptionalParameters = null);
 
     void AttachAndModifyCompanyServiceAccount(Guid id, Action<CompanyServiceAccount>? initialize, Action<CompanyServiceAccount> modify);
-    IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId);
-    void RemoveIamServiceAccount(string clientId);
-    void CreateCompanyServiceAccountAssignedRoles(IEnumerable<(Guid CompanyServiceAccountId, Guid UserRoleId)> companyServiceAccountAssignedRoleIds);
-    void RemoveCompanyServiceAccountAssignedRoles(IEnumerable<(Guid CompanyServiceAccountId, Guid UserRoleId)> companyServiceAccountAssignedRoleIds);
-    Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId);
-    Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, string adminUserId);
-    Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string iamAdminId);
-    Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(string adminUserId);
+    Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, Guid userCompanyId);
+    Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientId, ConnectorStatusId? statusId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId);
+    Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId);
+    Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId);
     Task<bool> CheckActiveServiceAccountExistsForCompanyAsync(Guid technicalUserId, Guid companyId);
+    Task<bool> IsCompanyServiceAccountLinkedCompany(Guid serviceAccountId, Guid companyId);
 }

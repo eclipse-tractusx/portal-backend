@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using System.Net.Mime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -65,7 +66,7 @@ public static class HealthCheckExtensions
     {
         if (settings != null)
         {
-            if (settings.Select(x => x.Path).Distinct().Count() < settings.Count())
+            if (settings.DuplicatesBy(x => x.Path).Any())
             {
                 throw new ConfigurationException($"HealthChecks mapping {string.Join(", ", settings.Select(x => x.Path))} contains ambiguous pathes");
             }

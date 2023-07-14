@@ -1,98 +1,74 @@
 [
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce0575a0011",
-    "date_created": "2022-03-24 18:01:33.394000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.394000 +00:00",
     "email": null,
     "firstname": null,
     "lastlogin": null,
     "lastname": null,
-    "company_id": "0dcd8209-85e2-4073-b130-ac094fb47106",
-    "company_user_status_id": 1,
     "last_editor_id": null
   },
   {
     "id": "cd436931-8399-4c1d-bd81-7dffb298c7ca",
-    "date_created": "2022-03-24 18:01:33.570000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
     "email": "inactive-user@mail.com",
     "firstname": "User",
     "lastlogin": null,
     "lastname": "Inactive",
-    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "company_user_status_id": 2,
     "last_editor_id": null
   },
   {
     "id": "78d664de-04a0-41c6-9a47-478d303403d2",
-    "date_created": "2022-03-24 18:01:33.570000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
     "email": "active-user@mail.com",
     "firstname": "User",
     "lastlogin": null,
     "lastname": "Active",
-    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "company_user_status_id": 2,
     "last_editor_id": null
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058019992",
-    "date_created": "2022-03-24 18:01:33.570000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "company.admin2@acme.corp",
     "firstname": "Test User",
     "lastlogin": null,
     "lastname": "company-admin-2",
-    "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
-    "company_user_status_id": 1,
     "last_editor_id": null
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058019993",
-    "date_created": "2022-03-24 18:01:33.570000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "it.admin2@acme.corp",
     "firstname": "Test User",
     "lastlogin": null,
     "lastname": "it-admin-2",
-    "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
-    "company_user_status_id": 1,
     "last_editor_id": null
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058019994",
-    "date_created": "2022-03-24 18:01:33.570000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "company.admin1@acme.corp",
     "firstname": "Test User",
     "lastlogin": null,
     "lastname": "Company Admin 1",
-    "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
-    "company_user_status_id": 1,
     "last_editor_id": null
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
-    "date_created": "2022-03-24 18:01:33.570000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "cxadmin@acme.corp",
     "firstname": "Test User",
     "lastlogin": null,
     "lastname": "CX Admin",
-    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
-    "company_user_status_id": 1,
     "last_editor_id": null
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce058020005",
-    "date_created": "2022-10-01 18:01:33.570000 +00:00",
     "date_last_changed": "2022-10-01 18:01:33.570000 +00:00",
-    "email": "julia.jeroch@bmw.de",
+    "email": "service.provider@acme.corp",
     "firstname": "Service",
     "lastlogin": null,
     "lastname": "Provider",
-    "company_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd",
-    "company_user_status_id": 1,
     "last_editor_id": null
   }
 ]

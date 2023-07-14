@@ -24,16 +24,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 {
     public class UserPasswordReset
     {
-        public UserPasswordReset(string UserEntityId, DateTimeOffset PasswordModifiedAt, int ResetCount)
+        public UserPasswordReset(Guid companyUserId, DateTimeOffset passwordModifiedAt, int resetCount)
         {
-            this.UserEntityId = UserEntityId;
-            this.PasswordModifiedAt = PasswordModifiedAt;
-            this.ResetCount = ResetCount;
+            this.CompanyUserId = companyUserId;
+            this.PasswordModifiedAt = passwordModifiedAt;
+            this.ResetCount = resetCount;
         }
 
         [Key]
-        [StringLength(36)]
-        public string UserEntityId { get; private set; }
+        public Guid CompanyUserId { get; private set; }
         public DateTimeOffset PasswordModifiedAt { get; set; }
         public int ResetCount { get; set; }
     }

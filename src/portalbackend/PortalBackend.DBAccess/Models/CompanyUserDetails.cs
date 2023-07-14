@@ -24,11 +24,11 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyUserDetails(
-    [property: JsonPropertyName("companyUserId")] Guid Company2UserId,
+    [property: JsonPropertyName("companyUserId")] Guid CompanyUserId,
     [property: JsonPropertyName("created")] DateTimeOffset CreatedAt,
     [property: JsonPropertyName("bpn")] IEnumerable<string> BusinessPartnerNumbers,
     [property: JsonPropertyName("company")] string CompanyName,
-    [property: JsonPropertyName("status")] CompanyUserStatusId CompanyUserStatusId,
+    [property: JsonPropertyName("status")] UserStatusId UserStatusId,
     [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles)
 {
     [JsonPropertyName("firstName")]
@@ -46,7 +46,7 @@ public record CompanyOwnUserDetails(
     [property: JsonPropertyName("created")] DateTimeOffset CreatedAt,
     [property: JsonPropertyName("bpn")] IEnumerable<string> BusinessPartnerNumbers,
     [property: JsonPropertyName("company")] string CompanyName,
-    [property: JsonPropertyName("status")] CompanyUserStatusId CompanyUserStatusId,
+    [property: JsonPropertyName("status")] UserStatusId UserStatusId,
     [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles,
     [property: JsonPropertyName("admin")] IEnumerable<CompanyUserAdminDetails> AdminDetails)
 {

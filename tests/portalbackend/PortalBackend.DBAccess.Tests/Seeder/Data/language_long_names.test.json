@@ -1,0 +1,27 @@
+[
+    {
+        "short_name": "de",
+        "language_short_name": "xx",
+        "long_name": "german_xx"
+    },
+    {
+        "short_name": "en",
+        "language_short_name": "xx",
+        "long_name": "english_xx"
+    },
+    {
+        "short_name": "xx",
+        "language_short_name": "de",
+        "long_name": "xx_german"
+    },
+    {
+        "short_name": "xx",
+        "language_short_name": "en",
+        "long_name": "xx_english"
+    },
+    {
+        "short_name": "xx",
+        "language_short_name": "xx",
+        "long_name": "xx_xx"
+    }
+]

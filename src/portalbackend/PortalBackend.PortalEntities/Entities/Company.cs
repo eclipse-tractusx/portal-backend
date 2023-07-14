@@ -36,13 +36,13 @@ public class Company : IBaseEntity
         CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
         IdentityProviders = new HashSet<IdentityProvider>();
         OfferSubscriptions = new HashSet<OfferSubscription>();
-        CompanyUsers = new HashSet<CompanyUser>();
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+        Identities = new HashSet<Identity>();
         Consents = new HashSet<Consent>();
         ProvidedConnectors = new HashSet<Connector>();
         HostedConnectors = new HashSet<Connector>();
         CompanyIdentifiers = new HashSet<CompanyIdentifier>();
         CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
+        CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
@@ -83,8 +83,7 @@ public class Company : IBaseEntity
     public virtual CompanyStatus? CompanyStatus { get; set; }
     public virtual Document? SelfDescriptionDocument { get; set; }
     public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
-    public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
+    public virtual ICollection<Identity> Identities { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Connector> HostedConnectors { get; private set; }
     public virtual ICollection<IdentityProvider> IdentityProviders { get; private set; }
@@ -92,4 +91,5 @@ public class Company : IBaseEntity
     public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
     public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
     public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
+    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

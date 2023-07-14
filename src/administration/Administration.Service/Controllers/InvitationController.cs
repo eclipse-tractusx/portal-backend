@@ -22,7 +22,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -62,11 +63,12 @@ public class InvitationController : ControllerBase
     /// <response code="409">user is not associated with  company.</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
-        this.WithIamUserId(iamUserId => _logic.ExecuteInvitation(invitationData, iamUserId));
+        this.WithUserId(userId => _logic.ExecuteInvitation(invitationData, userId));
 }

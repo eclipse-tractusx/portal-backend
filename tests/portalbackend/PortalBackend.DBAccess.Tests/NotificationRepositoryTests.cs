@@ -35,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-    private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
+    private readonly Guid _companyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly IFixture _fixture;
 
@@ -87,6 +87,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         sut.AttachAndModifyNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), notification =>
         {
+            notification.IsRead = false;
+        },
+        notification =>
+        {
             notification.IsRead = true;
         });
 
@@ -98,6 +102,32 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().HaveCount(1);
         var changedEntity = changedEntries.Single();
         changedEntity.State.Should().Be(EntityState.Modified);
+        changedEntity.Entity.Should().BeOfType<Notification>().Which.IsRead.Should().Be(true);
+    }
+
+    [Fact]
+    public async Task AttachAndModifyNotification_WithExistingNotification_NotUpdatesStatus()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), notification =>
+        {
+            notification.IsRead = true;
+        },
+        notification =>
+        {
+            notification.IsRead = true;
+        });
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeFalse();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
         changedEntity.Entity.Should().BeOfType<Notification>().Which.IsRead.Should().Be(true);
     }
 
@@ -164,7 +194,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, null, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -180,7 +210,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, NotificationSorting.DateAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, NotificationSorting.DateAsc, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -195,7 +225,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, NotificationSorting.DateDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, NotificationSorting.DateDesc, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -210,7 +240,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, NotificationSorting.ReadStatusAsc, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -225,7 +255,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, NotificationSorting.ReadStatusDesc, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -241,7 +271,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, null, false, null)(0, 15)
+            .GetAllNotificationDetailsByReceiver(_companyUserId, false, null, null, false, null, null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
@@ -258,7 +288,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, null, false, null)(0, 15)
+            .GetAllNotificationDetailsByReceiver(_companyUserId, true, null, null, false, null, null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
@@ -274,7 +304,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -289,7 +319,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -304,7 +334,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -312,6 +342,48 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.NotificationTopic == NotificationTopicId.INFO));
     }
 
+    [Theory]
+    [InlineData(null, 6)]
+    [InlineData(true, 3)]
+    [InlineData(false, 2)]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithDoneState_ReturnsExpectedNotificationDetailData(bool? doneState, int count)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, null, doneState)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results!.Data.Should().HaveCount(count);
+        if (doneState.HasValue)
+        {
+            results!.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.Done == doneState.Value));
+        }
+    }
+
+    [Fact]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithUnlinkedNotificationTypeIdandTopicId_ReturnsExpectedNotificationDetailData()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
+        await context.SaveChangesAsync().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, null, null)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(6);
+        results.Data.Count().Should().Be(6);
+        results.Data.Should().AllBeOfType<NotificationDetailData>();
+        results.Data.Where(x => x.NotificationTopic == null).Should().ContainSingle();
+
+        await trans.RollbackAsync().ConfigureAwait(false);
+    }
     #endregion
 
     #region GetNotificationByIdAndIamUserId
@@ -324,13 +396,37 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut
-            .GetNotificationByIdAndIamUserIdUntrackedAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), IamUserId)
+            .GetNotificationByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
             .ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.IsUserReceiver.Should().BeTrue();
         result.NotificationDetailData.IsRead.Should().BeTrue();
+        result.NotificationDetailData.NotificationTopic.Should().Be(NotificationTopicId.INFO);
+    }
+
+    [Fact]
+    public async Task GetNotificationByIdAndIamUserId_WithoutLinkedTopic_GetsExpectedNotification()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
+        await context.SaveChangesAsync().ConfigureAwait(false);
+
+        // Act
+        var result = await sut
+            .GetNotificationByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsUserReceiver.Should().BeTrue();
+        result.NotificationDetailData.IsRead.Should().BeTrue();
+        result.NotificationDetailData.NotificationTopic.Should().BeNull();
+
+        await trans.RollbackAsync().ConfigureAwait(false);
     }
 
     #endregion
@@ -345,11 +441,11 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetNotificationCountForIamUserAsync(IamUserId, true)
+            .GetNotificationCountForUserAsync(_companyUserId, true)
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(3);
+        results.Should().Be(3);
     }
 
     [Fact]
@@ -360,11 +456,11 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetNotificationCountForIamUserAsync(IamUserId, null)
+            .GetNotificationCountForUserAsync(_companyUserId, null)
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(6);
+        results.Should().Be(6);
     }
 
     #endregion
@@ -379,11 +475,32 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetCountDetailsForUserAsync(IamUserId).ToListAsync()
+            .GetCountDetailsForUserAsync(_companyUserId).ToListAsync()
             .ConfigureAwait(false);
 
         // Assert
         results.Count.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task GetCountDetailsForUserAsync_ReturnsExpectedCount()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
+        await context.SaveChangesAsync().ConfigureAwait(false);
+
+        // Act
+        var results = await sut
+            .GetCountDetailsForUserAsync(_companyUserId).ToListAsync()
+            .ConfigureAwait(false);
+
+        // Assert
+        results.Count.Should().Be(5);
+        results.Where(x => x.NotificationTopicId == null).Should().ContainSingle().And.Satisfy(x => x.Count == 1);
+
+        await trans.RollbackAsync().ConfigureAwait(false);
     }
 
     #endregion
@@ -398,7 +515,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckNotificationExistsByIdAndIamUserIdAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), IamUserId)
+            .CheckNotificationExistsByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
             .ConfigureAwait(false);
 
         // Assert

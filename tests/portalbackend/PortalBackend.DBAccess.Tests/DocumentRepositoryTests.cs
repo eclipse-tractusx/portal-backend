@@ -18,9 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -28,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text;
-using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -39,6 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly Guid _userCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
 
     public DocumentRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -83,15 +80,15 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetUploadedDocuments
 
     [Theory]
-    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.CX_FRAME_CONTRACT, "e756e57e-e236-4f6e-b410-92a16ff8be85", 1)]
-    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.APP_CONTRACT, "e756e57e-e236-4f6e-b410-92a16ff8be85", 0)]
-    public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocuments(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId, int count)
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.CX_FRAME_CONTRACT, "ac1cf001-7fbc-1f2f-817f-bce058019994", 1)]
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.APP_CONTRACT, "ac1cf001-7fbc-1f2f-817f-bce058019994", 0)]
+    public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocuments(Guid applicationId, DocumentTypeId documentTypeId, Guid companyUserId, int count)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetUploadedDocumentsAsync(applicationId, documentTypeId, iamUserId).ConfigureAwait(false);
+        var results = await sut.GetUploadedDocumentsAsync(applicationId, documentTypeId, companyUserId).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBe(default);
@@ -106,7 +103,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(Guid.NewGuid(), DocumentTypeId.CX_FRAME_CONTRACT, "623770c5-cf38-4b9f-9a35-f8b9ae972e2e").ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(Guid.NewGuid(), DocumentTypeId.CX_FRAME_CONTRACT, new("ac1cf001-7fbc-1f2f-817f-bce058019990")).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -119,7 +116,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -138,7 +135,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), _userCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -154,7 +151,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), "4a23930a-30b6-461c-9ad4-58d3e761a0b5").ConfigureAwait(false);
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), new("220330ac-170d-4e22-8d72-9467ed042149")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -170,7 +167,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(Guid.NewGuid(), "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(Guid.NewGuid(), _userCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -373,11 +370,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var documentId = new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2");
-        var iamUserId = "4746cff4-7a64-4be8-a70e-cf762a7011b7";
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferDocumentsAsync(documentId, iamUserId, new[] { DocumentTypeId.APP_IMAGE, DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferDocumentsAsync(documentId, new("41fd2ab8-71cd-4546-9bef-a388d91b2542"), new[] { DocumentTypeId.APP_IMAGE, DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();

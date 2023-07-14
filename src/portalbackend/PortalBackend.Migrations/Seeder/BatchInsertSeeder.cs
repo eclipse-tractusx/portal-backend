@@ -55,8 +55,15 @@ public class BatchInsertSeeder : ICustomSeeder
     /// <inheritdoc />
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        if (!_settings.DataPaths.Any())
+        {
+            _logger.LogInformation("There a no data paths configured, therefore the {SeederName} will be skipped", nameof(BatchUpdateSeeder));
+            return;
+        }
+
         _logger.LogInformation("Start BaseEntityBatch Seeder");
         await SeedTable<Language>("languages", x => x.ShortName, cancellationToken).ConfigureAwait(false);
+        await SeedTable<LanguageLongName>("language_long_names", x => new { x.ShortName, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedBaseEntity(cancellationToken);
 
         await SeedTable<AgreementAssignedCompanyRole>("agreement_assigned_company_roles", x => new { x.AgreementId, x.CompanyRoleId }, cancellationToken).ConfigureAwait(false);
@@ -74,15 +81,13 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<CompanyRoleDescription>("company_role_descriptions", x => new { x.CompanyRoleId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyUserAssignedAppFavourite>("company_user_assigned_app_favourites", x => new { x.CompanyUserId, x.AppId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyUserAssignedBusinessPartner>("company_user_assigned_business_partners", x => new { x.CompanyUserId, x.BusinessPartnerNumber }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<CompanyUserAssignedRole>("company_user_assigned_roles", x => new { x.CompanyUserId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<CompanyServiceAccountAssignedRole>("company_service_account_assigned_roles", x => new { x.CompanyServiceAccountId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<IdentityAssignedRole>("identity_assigned_roles", x => new { x.IdentityId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<ConsentAssignedOffer>("consent_assigned_offers", x => new { x.OfferId, x.ConsentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<ConsentAssignedOfferSubscription>("consent_assigned_offer_subscriptions", x => new { x.OfferSubscriptionId, x.ConsentId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<ConnectorAssignedOfferSubscription>("connector_assigned_offer_subscriptions", x => new { x.ConnectorId, x.OfferSubscriptionId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<Country>("countries", x => x.Alpha2Code, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferAssignedDocument>("offer_assigned_documents", x => new { x.OfferId, x.DocumentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<IamIdentityProvider>("iam_identity_providers", x => x.IamIdpAlias, cancellationToken).ConfigureAwait(false);
-        await SeedTable<IamServiceAccount>("iam_service_accounts", x => x.ClientId, cancellationToken).ConfigureAwait(false);
-        await SeedTable<IamUser>("iam_users", x => x.UserEntityId, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferAssignedLicense>("offer_assigned_licenses", x => new { x.OfferId, x.OfferLicenseId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferDescription>("offer_descriptions", x => new { AppId = x.OfferId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferTag>("offer_tags", x => new { AppId = x.OfferId, x.Name }, cancellationToken).ConfigureAwait(false);
@@ -96,6 +101,10 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<OfferAssignedPrivacyPolicy>("offer_assigned_privacy_policies", x => new { x.OfferId, x.PrivacyPolicyId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<AppInstanceAssignedCompanyServiceAccount>("app_instance_assigned_company_service_accounts", x => new { x.AppInstanceId, x.CompanyServiceAccountId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<TechnicalUserProfileAssignedUserRole>("technical_user_profile_assigned_user_roles", x => new { x.TechnicalUserProfileId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<VerifiedCredentialTypeAssignedKind>("verified_credential_type_assigned_kinds", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialTypeKindId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<UseCaseDescription>("use_case_descriptions", x => new { x.UseCaseId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<VerifiedCredentialTypeAssignedUseCase>("verified_credential_type_assigned_use_cases", x => new { x.VerifiedCredentialTypeId, x.UseCaseId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<VerifiedCredentialTypeAssignedExternalType>("verified_credential_type_assigned_external_types", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialExternalTypeId }, cancellationToken).ConfigureAwait(false);
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
@@ -110,6 +119,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<Document>("documents", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<Offer>("offers", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<IamClient>("iam_clients", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<Identity>("identities", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<CompanyApplication>("company_applications", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<IdentityProvider>("identity_providers", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<UserRoleCollection>("user_role_collections", cancellationToken).ConfigureAwait(false);
@@ -129,7 +139,8 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<Process>("processes", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<AppInstanceSetup>("app_instance_setups", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<TechnicalUserProfile>("technical_user_profiles", cancellationToken).ConfigureAwait(false);
-
+        await SeedTableForBaseEntity<CompanySsiDetail>("company_ssi_details", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions", cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity
@@ -140,7 +151,7 @@ public class BatchInsertSeeder : ICustomSeeder
     private async Task SeedTable<T>(string fileName, Func<T, object> keySelector, CancellationToken cancellationToken) where T : class
     {
         _logger.LogInformation("Start seeding {Filename}", fileName);
-        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, _settings.DataPaths, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
         _logger.LogInformation("Found {ElementCount} data", data.Count);
         if (data.Any())
         {
@@ -152,7 +163,6 @@ public class BatchInsertSeeder : ICustomSeeder
                 .Select(t => t.t.d).ToList();
             _logger.LogInformation("Seeding {DataCount} {TableName}", data.Count, typeName);
             await _context.Set<T>().AddRangeAsync(data, cancellationToken).ConfigureAwait(false);
-
             _logger.LogInformation("Seeded {TableName}", typeName);
         }
     }

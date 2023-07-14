@@ -23,15 +23,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <summary>
 /// Model for LanguageData
 /// </summary>
-/// <param name="languageShortName">Language Short Name</param>
-/// <param name="languageLongNames">Language Long Name</param>
+/// <param name="LanguageShortName">Language Short Name</param>
+/// <param name="LanguageLongNames">Language Long Name</param>
 /// <returns></returns>
-public record LanguageData(string languageShortName, LanguageDataLongNames languageLongNames);
+public record LanguageData(string LanguageShortName, IEnumerable<LanguageDataLongName> LanguageLongNames);
 
 /// <summary>
 /// Model for LanguageDataLongNames
 /// </summary>
-/// <param name="de">German Language</param>
-/// <param name="en">English Language</param>
+/// <param name="Language">language</param>
+/// <param name="LongDescription">long Description</param>
 /// <returns></returns>
-public record LanguageDataLongNames(string de, string en);
+public record LanguageDataLongName(string Language, string LongDescription);

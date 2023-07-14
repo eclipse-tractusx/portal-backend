@@ -420,9 +420,9 @@ public class BpdmBusinessLogicTests
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithStateCreated.ToString()), A<CancellationToken>._))
             .ThrowsAsync(new ServiceException("not found", System.Net.HttpStatusCode.NotFound));
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithoutZipCode.ToString()), A<CancellationToken>._))
-            .ReturnsLazily(() => _fixture.Build<BpdmLegalEntityData>().With(x => x.Bpn, (string?)null).Create());
+            .ReturnsLazily(() => _fixture.Build<BpdmLegalEntityOutputData>().With(x => x.Bpn, (string?)null).Create());
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithBpn.ToString()), A<CancellationToken>._))
-            .ReturnsLazily(() => _fixture.Build<BpdmLegalEntityData>().With(x => x.Bpn, "CAXSDUMMYCATENAZZ").Create());
+            .ReturnsLazily(() => _fixture.Build<BpdmLegalEntityOutputData>().With(x => x.Bpn, "CAXSDUMMYCATENAZZ").Create());
 
         if (company != null)
         {

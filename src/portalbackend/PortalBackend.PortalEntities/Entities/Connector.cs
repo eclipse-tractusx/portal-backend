@@ -35,6 +35,7 @@ public class Connector : IAuditableV1, IBaseEntity
         Name = name;
         LocationId = locationId;
         ConnectorUrl = connectorUrl;
+        ConnectorAssignedOfferSubscriptions = new HashSet<ConnectorAssignedOfferSubscription>();
     }
 
     public Guid Id { get; private set; }
@@ -80,10 +81,12 @@ public class Connector : IAuditableV1, IBaseEntity
     public virtual Country? Location { get; set; }
     public virtual ConnectorClientDetail? ClientDetails { get; set; }
     public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
-    public virtual CompanyUser? LastEditor { get; set; }
+    public virtual Identity? LastEditor { get; set; }
 
     /// <summary>
     /// Mapping to the assigned document
     /// </summary>
     public virtual Document? SelfDescriptionDocument { get; set; }
+
+    public virtual ICollection<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; private set; }
 }

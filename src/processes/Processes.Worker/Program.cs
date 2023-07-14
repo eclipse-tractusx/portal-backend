@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
@@ -30,10 +31,14 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
 
+LoggingExtensions.EnsureInitialized();
+Log.Information("Building worker");
 try
 {
-    Console.WriteLine("Building worker");
     var host = Host
         .CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
@@ -58,23 +63,29 @@ try
                 FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
             }
         })
+        .AddLogging()
         .Build();
-    Console.WriteLine("Building worker completed");
+    Log.Information("Building worker completed");
 
-    var cts = new CancellationTokenSource();
+    var tokenSource = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>
     {
-        Console.WriteLine("Canceling...");
-        cts.Cancel();
+        Log.Information("Canceling...");
+        tokenSource.Cancel();
         e.Cancel = true;
     };
 
-    Console.WriteLine("Start processing");
+    Log.Information("Start processing");
     var workerInstance = host.Services.GetRequiredService<ProcessExecutionService>();
-    await workerInstance.ExecuteAsync(cts.Token).ConfigureAwait(false);
-    Console.WriteLine("Execution finished shutting down");
+    await workerInstance.ExecuteAsync(tokenSource.Token).ConfigureAwait(false);
+    Log.Information("Execution finished shutting down");
 }
-catch (Exception ex)
+catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
-    Console.WriteLine(ex.ToString());
+    Log.Fatal(ex, "Unhandled exception");
+}
+finally
+{
+    Log.Information("Server Shutting down");
+    Log.CloseAndFlush();
 }

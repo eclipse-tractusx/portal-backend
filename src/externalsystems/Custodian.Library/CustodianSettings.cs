@@ -28,7 +28,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library
         public CustodianSettings()
         {
             BaseAddress = null!;
+            MembershipErrorMessage = null!;
         }
+
+        [Required(AllowEmptyStrings = false)]
+        public string MembershipErrorMessage { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string BaseAddress { get; set; }

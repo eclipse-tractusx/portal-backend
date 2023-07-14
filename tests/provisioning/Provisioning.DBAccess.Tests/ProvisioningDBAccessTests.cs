@@ -84,7 +84,7 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task CreateUserPasswordResetInfo_Success()
     {
-        var iamUserId = _fixture.Create<string>();
+        var userId = Guid.NewGuid();
         var modifiedAt = DateTimeOffset.UtcNow;
         var resetCount = _fixture.Create<int>();
 
@@ -92,10 +92,10 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = sut.CreateUserPasswordResetInfo(iamUserId, modifiedAt, resetCount);
+        var result = sut.CreateUserPasswordResetInfo(userId, modifiedAt, resetCount);
 
         result.Should().NotBeNull();
-        result.UserEntityId.Should().Be(iamUserId);
+        result.CompanyUserId.Should().Be(userId);
         result.PasswordModifiedAt.Should().Be(modifiedAt);
         result.ResetCount.Should().Be(resetCount);
 
@@ -108,16 +108,16 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     #region GetUserPasswordResetInfo
 
     [Theory]
-    [InlineData("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", 1)]
-    [InlineData("3d8142f1-860b-48aa-8c2b-1ccb18699f65", 2)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce058020000", 1)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce058020001", 2)]
 
-    public async Task GetUserPasswordResetInfo_ReturnsExpected(string userEntityId, int resetCount)
+    public async Task GetUserPasswordResetInfo_ReturnsExpected(Guid companyUserid, int resetCount)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUserPasswordResetInfo(userEntityId).ConfigureAwait(false);
+        var result = await sut.GetUserPasswordResetInfo(companyUserid).ConfigureAwait(false);
 
         result.Should().NotBe(default);
         result!.ResetCount.Should().Be(resetCount);
@@ -126,12 +126,12 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetUserPasswordResetInfo_UnknownUser_ReturnsDefault()
     {
-        var userEntityId = _fixture.Create<string>();
+        var companyUserId = Guid.NewGuid();
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUserPasswordResetInfo(userEntityId).ConfigureAwait(false);
+        var result = await sut.GetUserPasswordResetInfo(companyUserId).ConfigureAwait(false);
 
         result.Should().Be(default);
     }

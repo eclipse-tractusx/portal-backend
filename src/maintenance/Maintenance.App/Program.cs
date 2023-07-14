@@ -20,18 +20,34 @@
 // See https://aka.ms/new-console-template for more information
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using System.Reflection;
+using Serilog;
 
-var host = Host.CreateDefaultBuilder(args)
-    .UseSystemd()
-    .ConfigureServices((hostContext, services) =>
-    {
-        services.AddDbContext<PortalDbContext>(o =>
-            o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
-        services.AddHostedService<BatchDeleteService>();
-    }).Build();
+LoggingExtensions.EnsureInitialized();
+Log.Information("Building service");
+try
+{
+    var host = Host.CreateDefaultBuilder(args)
+        .UseSystemd()
+        .ConfigureServices((hostContext, services) =>
+        {
+            services.AddDbContext<PortalDbContext>(o =>
+                o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
+            services.AddHostedService<BatchDeleteService>();
+        })
+        .AddLogging()
+        .Build();
 
-host.Run();
+    host.Run();
+}
+catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
+{
+    Log.Fatal(ex, "Unhandled exception");
+}
+finally
+{
+    Log.Information("Server Shutting down");
+    Log.CloseAndFlush();
+}

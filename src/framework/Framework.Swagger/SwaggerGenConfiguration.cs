@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -32,7 +33,8 @@ public static class SwaggerGenConfiguration
         var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
 
         c.SwaggerDoc(version, new OpenApiInfo { Title = assemblyName, Version = version });
-        c.OperationFilter<SwaggerFileOperationFilter>();
+
+        c.MapType(typeof(IFormFile), () => new OpenApiSchema { Type = "file", Format = "binary" });
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {

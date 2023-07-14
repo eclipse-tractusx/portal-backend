@@ -28,7 +28,7 @@ public static class HttpExtensions
 {
     public static async Task<T> GetResultFromContent<T>(this HttpResponseMessage response)
     {
-        using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        await using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var options = new JsonSerializerOptions();
         options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
         return await JsonSerializer.DeserializeAsync<T>(responseStream, options).ConfigureAwait(false) ?? throw new InvalidOperationException();

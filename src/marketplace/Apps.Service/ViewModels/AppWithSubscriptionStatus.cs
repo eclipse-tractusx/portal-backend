@@ -29,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="OfferSubscriptionStatus">Status of app subscription</param>
 /// <param name="Name">name of the app</param>
 /// <param name="Provider">provider company</param>
-/// <param name="Image">Guic of the apps leadimage</param>
+/// <param name="Image">Guid of the apps leadimage</param>
 public record AppWithSubscriptionStatus(
     Guid AppId,
     OfferSubscriptionStatusId OfferSubscriptionStatus,

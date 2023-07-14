@@ -32,6 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly Guid _userCompanyId = new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd");
 
     public OfferSubscriptionRepositoryTest(TestDbFixture testDbFixture)
     {
@@ -124,7 +125,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020006")).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -138,21 +139,26 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
 
     [Theory]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, 2, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, 2, false)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, 2, true)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, 2, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfae", 1, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", 0, false)]
-    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, int count, bool technicalUser)
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new OfferSubscriptionStatusId[] { }, 0, false)]
+    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, false)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfae", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, true)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 0, false)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.INACTIVE }, 1, false)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING }, 1, false)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE }, 2, false)]
+    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, OfferTypeId offerTypeId, IEnumerable<OfferSubscriptionStatusId> offerSubscriptionStatusIds, int count, bool technicalUser)
     {
         // Arrange
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("8be5ee49-4b9c-4008-b641-138305430cc4", OfferTypeId.SERVICE, sorting, OfferSubscriptionStatusId.ACTIVE, offerId)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, offerTypeId, sorting, offerSubscriptionStatusIds, offerId)(0, 15).ConfigureAwait(false);
 
         // Assert
         if (count > 0)
@@ -180,7 +186,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferDetailsAndCheckProviderCompany(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -189,7 +195,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
         result.CompanyName.Should().Be("Catena-X");
-        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
+        result.IsProviderCompany.Should().BeTrue();
         result.Bpn.Should().Be("BPNL00000003CRHK");
         result.OfferName.Should().Be("Trace-X");
     }
@@ -199,73 +205,159 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetSubscriptionDetailForProviderAsync
 
     [Fact]
-    public async Task GetSubscriptionDetailForProviderAsync_ForProvider_ReturnsExpected()
+    public async Task GetSubscriptionDetailForProviderAsync_ReturnsExpected()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSubscriptionDetailsAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "8be5ee49-4b9c-4008-b641-138305430cc4", OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }, true).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailsForProviderAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }).ConfigureAwait(false);
 
         // Assert
         result.Exists.Should().BeTrue();
         result.IsUserOfCompany.Should().BeTrue();
-        result.Details.Name.Should().Be("SDE with EDC");
-        result.Details.CompanyName.Should().Be("Catena-X");
-        result.Details.Contact.Should().ContainSingle().And.Subject.Should().ContainSingle("tobeadded@cx.com");
-        result.Details.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.Details.Should().NotBeNull().And.Match<ProviderSubscriptionDetailData>(x =>
+            x.Name == "SDE with EDC" &&
+            x.Customer == "Catena-X" &&
+            x.Contact.SequenceEqual(new[] { "tobeadded@cx.com" }) &&
+            x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE);
     }
 
     [Fact]
-    public async Task GetSubscriptionDetailForProviderAsync_ForSubscriber_ReturnsExpected()
+    public async Task GetSubscriptionDetailForProviderAsync_WithNotExistingId_ReturnsExpected()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSubscriptionDetailsAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }, false).ConfigureAwait(false);
-
-        // Assert
-        result.Exists.Should().BeTrue();
-        result.IsUserOfCompany.Should().BeTrue();
-        result.Details.Name.Should().Be("SDE with EDC");
-        result.Details.CompanyName.Should().Be("Service Provider");
-        result.Details.Contact.Should().ContainSingle().And.Subject.Should().ContainSingle("tobeadded@cx.com");
-        result.Details.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GetSubscriptionDetailForProviderAsync_WithNotExistingId_ReturnsExpected(bool forProvider)
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetSubscriptionDetailsAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "8be5ee49-4b9c-4008-b641-138305430cc4", OfferTypeId.SERVICE, new List<Guid>(), forProvider).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailsForProviderAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new List<Guid>()).ConfigureAwait(false);
 
         // Assert
         result.Exists.Should().BeFalse();
         result.IsUserOfCompany.Should().BeFalse();
-        result.Details.Should().Be(default!);
+        result.Details.Should().BeNull();
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GetSubscriptionDetailForProviderAsync_WithWrongUser_ReturnsExpected(bool forProvider)
+    [Fact]
+    public async Task GetSubscriptionDetailForProviderAsync_WithWrongUser_ReturnsExpected()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSubscriptionDetailsAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), Guid.NewGuid().ToString(), OfferTypeId.SERVICE, new List<Guid>(), forProvider).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailsForProviderAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), Guid.NewGuid(), OfferTypeId.SERVICE, new List<Guid>()).ConfigureAwait(false);
 
         // Assert
         result.Exists.Should().BeTrue();
         result.IsUserOfCompany.Should().BeFalse();
-        result.Details.Name.Should().Be("SDE with EDC");
+        result.Details.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetAppSubscriptionDetailForProviderAsync
+
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProviderAsync_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAppSubscriptionDetailsForProviderAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.IsUserOfCompany.Should().BeTrue();
+        result.Details.Should().NotBeNull().And.Match<AppProviderSubscriptionDetailData>(x =>
+            x.Name == "SDE with EDC" &&
+            x.Customer == "Catena-X" &&
+            x.Contact.SequenceEqual(new[] { "tobeadded@cx.com" }) &&
+            x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE &&
+            x.TenantUrl == "https://ec-qas.d13fe27.kyma.ondemand.com");
+    }
+
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProviderAsync_WithNotExistingId_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAppSubscriptionDetailsForProviderAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new List<Guid>()).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeFalse();
+        result.IsUserOfCompany.Should().BeFalse();
+        result.Details.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAppSubscriptionDetailForProviderAsync_WithWrongUserCompany_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAppSubscriptionDetailsForProviderAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), Guid.NewGuid(), OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.IsUserOfCompany.Should().BeFalse();
+        result.Details.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetSubscriptionDetailForSubscriberAsync
+
+    [Fact]
+    public async Task GetSubscriptionDetailForSubscriberAsync_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSubscriptionDetailsForSubscriberAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.IsUserOfCompany.Should().BeTrue();
+        result.Details.Should().NotBeNull().And.Match<SubscriberSubscriptionDetailData>(x =>
+            x.Name == "SDE with EDC" &&
+            x.Provider == "Service Provider" &&
+            x.Contact.SequenceEqual(new string[] { "service.provider@acme.corp" }) &&
+            x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE);
+    }
+
+    [Fact]
+    public async Task GetSubscriptionDetailForSubscriberAsync_WithNotExistingId_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSubscriptionDetailsForSubscriberAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new List<Guid>()).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeFalse();
+        result.IsUserOfCompany.Should().BeFalse();
+        result.Details.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetSubscriptionDetailForSubscriberAsync_WithWrongUser_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSubscriptionDetailsForSubscriberAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), Guid.NewGuid(), OfferTypeId.SERVICE, new List<Guid>()).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.IsUserOfCompany.Should().BeFalse();
+        result.Details.Should().BeNull();
     }
 
     #endregion
@@ -599,7 +691,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUpdateUrlDataAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
+        var result = await sut.GetUpdateUrlDataAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -613,7 +705,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUpdateUrlDataAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
+        var result = await sut.GetUpdateUrlDataAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -626,7 +718,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUpdateUrlDataAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetUpdateUrlDataAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -701,16 +793,16 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region  GetOwnCompanySubscribedOfferSubscriptionStatuse
 
     [Theory]
-    [InlineData("502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
-    [InlineData("502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
-    [InlineData("502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.CORE_COMPONENT, DocumentTypeId.SERVICE_LEADIMAGE)]
-    public async Task GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpected(string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
+    [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
+    [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.CORE_COMPONENT, DocumentTypeId.SERVICE_LEADIMAGE)]
+    public async Task GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpected(Guid companyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId)(0, 15).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(companyId, offerTypeId, documentTypeId)(0, 15).ConfigureAwait(false);
 
         // Assert
         switch (offerTypeId)
@@ -781,6 +873,102 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region CheckOfferSubscriptionWithOfferProvider
+
+    [Fact]
+    public async Task CheckOfferSubscriptionWithOfferProvider_WithExisting_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckOfferSubscriptionWithOfferProvider(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), new Guid("0dcd8209-85e2-4073-b130-ac094fb47106")).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.ProviderBpn.Should().Be("BPNL00000003AYRE");
+        result.IsOfferProvider.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckOfferSubscriptionWithOfferProvider_WithExistingAndNotOfferProvider_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckOfferSubscriptionWithOfferProvider(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.ProviderBpn.Should().Be("BPNL00000003AYRE");
+        result.IsOfferProvider.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckOfferSubscriptionWithOfferProvider_WithoutExisting_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckOfferSubscriptionWithOfferProvider(Guid.NewGuid(), new Guid("0dcd8209-85e2-4073-b130-ac094fb47106")).ConfigureAwait(false);
+
+        // Assert
+        result.Exists.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region GetConnectorOfferSubscriptionData
+
+    [Fact]
+    public async Task GetConnectorOfferSubscriptionData_WithoutFilter_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorOfferSubscriptionData(null, new Guid("41fd2ab8-7123-4546-9bef-a388d91b2999")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(3)
+            .And.Satisfy(
+                x => x.SubscriptionId == new Guid("014afd09-e51a-4ecf-83ab-a5380d9af832"),
+                x => x.SubscriptionId == new Guid("92be9d79-4064-422c-bdc8-a12ca7d26e5d"),
+                x => x.SubscriptionId == new Guid("ed6065b1-0902-4d5e-9470-33a716022a1a"));
+    }
+
+    [Fact]
+    public async Task GetConnectorOfferSubscriptionData_WithConnectorIdSet_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorOfferSubscriptionData(true, new Guid("41fd2ab8-7123-4546-9bef-a388d91b2999")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(2).And.AllSatisfy(x => x.ConnectorIds.Should().NotBeNullOrEmpty());
+    }
+
+    [Fact]
+    public async Task GetConnectorOfferSubscriptionData_WithoutConnectorIdSet_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorOfferSubscriptionData(false, new Guid("41fd2ab8-7123-4546-9bef-a388d91b2999")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1).And.AllSatisfy(x => x.ConnectorIds.Should().BeEmpty());
     }
 
     #endregion

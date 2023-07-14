@@ -68,8 +68,9 @@ public class ServiceAccountCreation : IServiceAccountCreation
     {
         var (name, description, iamClientAuthMethod, userRoleIds) = creationData;
         var serviceAccountsRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var userRoleData = await _portalRepositories.GetInstance<IUserRolesRepository>()
+        var userRoleData = await userRolesRepository
             .GetUserRoleDataUntrackedAsync(userRoleIds).ToListAsync().ConfigureAwait(false);
         if (userRoleData.Count != userRoleIds.Count())
         {
@@ -102,21 +103,20 @@ public class ServiceAccountCreation : IServiceAccountCreation
             await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(false);
         }
 
+        var identity = _portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, UserStatusId.ACTIVE);
         var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
-            companyId,
-            CompanyServiceAccountStatusId.ACTIVE,
+            identity.Id,
             enhancedName,
             description,
+            serviceAccountData.InternalClientId,
+            clientId,
             companyServiceAccountTypeId,
             setOptionalParameter);
 
-        serviceAccountsRepository.CreateIamServiceAccount(
-            serviceAccountData.InternalClientId,
-            clientId,
-            serviceAccountData.UserEntityId,
-            serviceAccount.Id);
-
-        serviceAccountsRepository.CreateCompanyServiceAccountAssignedRoles(userRoleData.Select(data => (serviceAccount.Id, data.UserRoleId)));
+        foreach (var roleData in userRoleData)
+        {
+            userRolesRepository.CreateIdentityAssignedRole(serviceAccount.Id, roleData.UserRoleId);
+        }
 
         return (clientId, serviceAccountData, serviceAccount.Id, userRoleData);
     }

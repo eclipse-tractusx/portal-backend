@@ -30,26 +30,24 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 var VERSION = "v2";
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuildRunner
+    .BuildAndRunWebApplication<Program>(args, "apps", VERSION, builder =>
+    {
+        builder.Services
+            .AddMailingAndTemplateManager(builder.Configuration)
+            .AddPortalRepositories(builder.Configuration)
+            .AddProvisioningManager(builder.Configuration);
 
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddMailingAndTemplateManager(builder.Configuration)
-    .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration);
+        builder.Services.AddTransient<INotificationService, NotificationService>();
+        builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+            .AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()
+            .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
+            .AddTransient<IOfferService, OfferService>()
+            .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+            .AddTechnicalUserProfile()
+            .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))
+            .AddOfferDocumentServices();
 
-builder.Services.AddTransient<INotificationService, NotificationService>();
-builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
-                .AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()
-                .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
-                .AddTransient<IOfferService, OfferService>()
-                .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-                .AddTechnicalUserProfile()
-                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))
-                .AddOfferDocumentServices();
-
-builder.Services
-    .AddOfferServices();
-
-builder.Build()
-    .CreateApp<Program>("apps", VERSION, builder.Environment)
-    .Run();
+        builder.Services
+            .AddOfferServices();
+    });

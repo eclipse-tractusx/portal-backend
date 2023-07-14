@@ -49,5 +49,65 @@
     "display_name": null,
     "description": null,
     "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe06"
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "f31b950c-6cc8-4e3d-b3fa-66733c1d8889",
+    "offer_subscription_status_id": 1,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "81a8211d-6261-4969-8123-a420364ae997",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "cfd7a56c-b1c7-4f75-becc-770dfddad847",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "783eb74f-0fe4-4652-a97e-913141539cf3",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "19e05734-9b1f-4c63-b961-8ffa1d7b6327",
+    "offer_subscription_status_id": 3,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "d395798b-07df-48b6-8e18-fb0f1f23c3ca",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "offer_id": "19e05734-9b1f-1234-b961-8ffa1d7b6999",
+    "offer_subscription_status_id": 1,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058019992",
+    "id": "014afd09-e51a-4ecf-83ab-a5380d9af832",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
+    "offer_id": "19e05734-9b1f-1234-b961-8ffa1d7b6999",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "ed6065b1-0902-4d5e-9470-33a716022a1a",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "0dcd8209-85e2-4073-b130-ac094fb47106",
+    "offer_id": "19e05734-9b1f-1234-b961-8ffa1d7b6999",
+    "offer_subscription_status_id": 1,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce0575a0011",
+    "id": "92be9d79-4064-422c-bdc8-a12ca7d26e5d",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
   }
 ]

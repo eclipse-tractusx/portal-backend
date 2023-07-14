@@ -48,7 +48,6 @@ public class RegistrationBusinessLogicTest
     private static readonly string CompanyName = "TestCompany";
 
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
-    private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
     private static readonly Guid ApplicationId = new("6084d6e0-0e01-413c-850d-9f944a6c494c");
     private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
     private const string AlreadyTakenBpn = "BPNL123698762666";
@@ -98,9 +97,6 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(settings);
-
-        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
-            .ReturnsLazily(Guid.NewGuid);
 
         _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic);
     }
@@ -191,8 +187,7 @@ public class RegistrationBusinessLogicTest
             r.Region == data.Region &&
             r.StreetAdditional == data.Streetadditional &&
             r.StreetNumber == data.Streetnumber &&
-            r.ZipCode == data.Zipcode &&
-            r.CountryDe == data.CountryDe
+            r.ZipCode == data.Zipcode
         );
         result.AgreementsRoleData.Should().HaveSameCount(data.AgreementsData.DistinctBy(ad => ad.CompanyRoleId));
         result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
@@ -237,8 +232,7 @@ public class RegistrationBusinessLogicTest
             r.Region == "" &&
             r.StreetAdditional == "" &&
             r.StreetNumber == "" &&
-            r.ZipCode == "" &&
-            r.CountryDe == ""
+            r.ZipCode == ""
         );
         result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
         result.InvitedUserData.Should().AllSatisfy(u => u.Should().Match<InvitedUserData>(u => u.FirstName == "" && u.LastName == "" && u.Email == ""));

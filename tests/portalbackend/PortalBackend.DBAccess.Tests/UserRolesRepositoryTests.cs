@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Xunit.Extensions.AssemblyFixture;
@@ -29,7 +30,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private static readonly Guid ApplicationWithBpn = new("6b2d1263-c073-4a48-bfaf-704dc154ca9e");
     private const string ClientId = "technical_roles_management";
-    private const string ValidIamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
+    private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
 
@@ -52,7 +53,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetCoreOfferRolesAsync(ValidIamUserId, "en", ClientId).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetCoreOfferRolesAsync(_validCompanyId, "en", ClientId).ToListAsync().ConfigureAwait(false);
 
         // Assert
         data.Should().HaveCount(9);
@@ -130,11 +131,54 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetServiceAccountRolesAsync(ValidIamUserId, ClientId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
 
         // Assert
         data.Should().HaveCount(9);
         data.Should().OnlyHaveUniqueItems();
+    }
+
+    #endregion
+
+    #region GetUserRolesByClientId
+
+    [Fact]
+    public async Task GetUserRoleDataUntrackedAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var userRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        data.Should().HaveCount(1);
+        var clientData = data.Single();
+        clientData.ClientClientId.Should().Be("Cl1-CX-Registration");
+        clientData.UserRoleText.Should().Be("Company Admin");
+    }
+
+    [Fact]
+    public async Task GetUserRoleDataUntrackedAsync_WithNotMatchingClient_ReturnsEmpty()
+    {
+        // Arrange
+        var userRoleConfig = new[]{
+            new UserRoleConfig("not-existing-client", new []
+            {
+                "Company Admin"
+            })};
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        data.Should().BeEmpty();
     }
 
     #endregion

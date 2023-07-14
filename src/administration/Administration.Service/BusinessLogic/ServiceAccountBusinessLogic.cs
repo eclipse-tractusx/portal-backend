@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
@@ -53,7 +52,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         _settings = options.Value;
     }
 
-    public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, string iamAdminId)
+    public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, Guid companyId)
     {
         if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
@@ -64,14 +63,14 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ControllerArgumentException("name must not be empty", "name");
         }
 
-        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(iamAdminId, _settings.ClientId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnAndTechnicalUserRoleIds(companyId, _settings.ClientId).ConfigureAwait(false);
         if (result == default)
         {
-            throw new NotFoundException($"user {iamAdminId} is not associated with any company");
+            throw new ConflictException($"company {companyId} does not exist");
         }
         if (string.IsNullOrEmpty(result.Bpn))
         {
-            throw new ConflictException($"bpn not set for company {result.CompanyId}");
+            throw new ConflictException($"bpn not set for company {companyId}");
         }
 
         var unassignable = serviceAccountCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds);
@@ -81,7 +80,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
 
         var companyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;
-        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, result.CompanyId, new[] { result.Bpn }, companyServiceAccountTypeId, false).ConfigureAwait(false);
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, companyId, new[] { result.Bpn }, companyServiceAccountTypeId, false).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new ServiceAccountDetails(
@@ -95,28 +94,31 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountData.AuthData.Secret);
     }
 
-    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, string iamAdminId)
+    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, Guid companyId)
     {
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, iamAdminId).ConfigureAwait(false);
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(false);
         if (result == default)
         {
-            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of user {iamAdminId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
+        }
+        if (result.statusId == ConnectorStatusId.ACTIVE || result.statusId == ConnectorStatusId.PENDING)
+        {
+            throw new ConflictException($"Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user.");
         }
 
-        serviceAccountRepository.AttachAndModifyCompanyServiceAccount(serviceAccountId, null, serviceAccount =>
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
         {
-            serviceAccount.CompanyServiceAccountStatusId = CompanyServiceAccountStatusId.INACTIVE;
+            i.UserStatusId = UserStatusId.INACTIVE;
         });
 
         // serviceAccount
         if (!string.IsNullOrWhiteSpace(result.ClientId))
         {
             await _provisioningManager.DeleteCentralClientAsync(result.ClientId).ConfigureAwait(false);
-            serviceAccountRepository.RemoveIamServiceAccount(result.ClientId);
         }
 
-        serviceAccountRepository.RemoveCompanyServiceAccountAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
+        _portalRepositories.GetInstance<IUserRolesRepository>().DeleteCompanyUserAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
 
         if (result.ConnectorId != null)
         {
@@ -134,20 +136,20 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<ServiceAccountDetails> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, string iamAdminId)
+    public async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, iamAdminId);
+        var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
 
         if (result == null)
         {
-            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {iamAdminId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
         }
         if (result.ClientId == null || result.ClientClientId == null)
         {
             throw new ConflictException($"undefined clientId for serviceAccount {serviceAccountId}");
         }
         var authData = await _provisioningManager.GetCentralClientAuthDataAsync(result.ClientId).ConfigureAwait(false);
-        return new ServiceAccountDetails(
+        return new ServiceAccountConnectorOfferData(
             result.ServiceAccountId,
             result.ClientClientId,
             result.Name,
@@ -156,16 +158,27 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
             authData.Secret,
+            result.ConnectorData,
+            result.OfferSubscriptionData,
             result.SubscriptionId);
     }
 
-    public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, string iamAdminId)
+    public async Task<ServiceAccountDetails> ExecuteResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, iamAdminId);
+        if (!await _portalRepositories.GetInstance<IServiceAccountRepository>().IsCompanyServiceAccountLinkedCompany(serviceAccountId, companyId).ConfigureAwait(false))
+        {
+            throw new ForbiddenException($"The company ID is neither the owner nor the provider of the technical user");
+        }
+        return await ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId);
+    }
+
+    private async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
+    {
+        var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
 
         if (result == null)
         {
-            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {iamAdminId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
         }
         if (result.ClientId == null || result.ClientClientId == null)
         {
@@ -184,25 +197,25 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.SubscriptionId);
     }
 
-    public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountEditableDetails, string iamAdminId)
+    public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, Guid companyId)
     {
-        if (serviceAccountEditableDetails.IamClientAuthMethod != IamClientAuthMethod.SECRET)
+        if (serviceAccountDetails.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
             throw new ArgumentException("other authenticationType values than SECRET are not supported yet", "authenticationType"); //TODO implement other authenticationTypes
         }
-        if (serviceAccountId != serviceAccountEditableDetails.ServiceAccountId)
+        if (serviceAccountId != serviceAccountDetails.ServiceAccountId)
         {
-            throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountEditableDetails.ServiceAccountId}", "serviceAccountId");
+            throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetails.ServiceAccountId}", nameof(serviceAccountId));
         }
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, iamAdminId).ConfigureAwait(false);
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, companyId).ConfigureAwait(false);
         if (result == null)
         {
-            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {iamAdminId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
         }
-        if (result.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.INACTIVE)
+        if (result.UserStatusId == UserStatusId.INACTIVE)
         {
-            throw new ArgumentException($"serviceAccount {serviceAccountId} is already INACTIVE");
+            throw new ConflictException($"serviceAccount {serviceAccountId} is already INACTIVE");
         }
         if (result.ClientId == null)
         {
@@ -216,9 +229,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         await _provisioningManager.UpdateCentralClientAsync(
             result.ClientId,
             new ClientConfigData(
-                serviceAccountEditableDetails.Name,
-                serviceAccountEditableDetails.Description,
-                serviceAccountEditableDetails.IamClientAuthMethod)).ConfigureAwait(false);
+                serviceAccountDetails.Name,
+                serviceAccountDetails.Description,
+                serviceAccountDetails.IamClientAuthMethod)).ConfigureAwait(false);
 
         var authData = await _provisioningManager.GetCentralClientAuthDataAsync(result.ClientId).ConfigureAwait(false);
 
@@ -231,8 +244,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             },
             sa =>
             {
-                sa.Name = serviceAccountEditableDetails.Name;
-                sa.Description = serviceAccountEditableDetails.Description;
+                sa.Name = serviceAccountDetails.Name;
+                sa.Description = serviceAccountDetails.Description;
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -240,8 +253,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         return new ServiceAccountDetails(
             result.ServiceAccountId,
             result.ClientClientId,
-            serviceAccountEditableDetails.Name,
-            serviceAccountEditableDetails.Description,
+            serviceAccountDetails.Name,
+            serviceAccountDetails.Description,
             authData.IamClientAuthMethod,
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
@@ -249,13 +262,13 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.OfferSubscriptionId);
     }
 
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string iamAdminId) =>
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, Guid companyId) =>
         Pagination.CreateResponseAsync(
             page,
             size,
             15,
-            _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(iamAdminId));
+            _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(companyId));
 
-    IAsyncEnumerable<UserRoleWithDescription> IServiceAccountBusinessLogic.GetServiceAccountRolesAsync(string iamUserId, string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(iamUserId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
+    IAsyncEnumerable<UserRoleWithDescription> IServiceAccountBusinessLogic.GetServiceAccountRolesAsync(Guid companyId, string? languageShortName) =>
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(companyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
 }

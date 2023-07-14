@@ -62,7 +62,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         _settings = settings.Value;
     }
 
-    public Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId)
+    public Task ExecuteInvitation(CompanyInvitationData invitationData, Guid userId)
     {
         if (string.IsNullOrWhiteSpace(invitationData.email))
         {
@@ -72,17 +72,11 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         {
             throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
         }
-        return ExecuteInvitationInternalAsync(invitationData, iamUserId);
+        return ExecuteInvitationInternalAsync(invitationData, userId);
     }
 
-    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData, string iamUserId)
+    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData, Guid userId)
     {
-        var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (creatorId == Guid.Empty)
-        {
-            throw new ConflictException($"iamUserId {iamUserId} is not associated with a companyUser");
-        }
-
         var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
         await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName, _settings.InitialLoginTheme).ConfigureAwait(false);
 
@@ -102,7 +96,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             company.Id,
             company.Name,
             null,
-            creatorId,
+            userId,
             idpName,
             true
         );

@@ -30,9 +30,10 @@ public interface ITechnicalUserProfileRepository
     /// Gets the profile offer data for the given offer id and user
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
-    /// <param name="iamUserId">The iam user id</param>
+    /// <param name="offerTypeId">OfferTypeId</param>
+    /// <param name="userCompanyId">The id of the users company</param>
     /// <returns>Returns the offer profile data</returns>
-    Task<OfferProfileData?> GetOfferProfileData(Guid offerId, OfferTypeId offerTypeId, string iamUserId);
+    Task<OfferProfileData?> GetOfferProfileData(Guid offerId, OfferTypeId offerTypeId, Guid userCompanyId);
 
     /// <summary>
     /// Creates the technical user profile for an offer
@@ -64,8 +65,8 @@ public interface ITechnicalUserProfileRepository
     /// Gets the technical user profiles for a given offer
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="usersCompanyId"></param>
     /// <param name="offerTypeId">Id of the offertype</param>
     /// <returns>List of the technical user profile information</returns>
-    Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformation> Information)> GetTechnicalUserProfileInformation(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+    Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformation> Information)> GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId);
 }

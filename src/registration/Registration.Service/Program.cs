@@ -29,21 +29,19 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
 var VERSION = "v2";
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuildRunner
+    .BuildAndRunWebApplication<Program>(args, "registration", VERSION, builder =>
+    {
+        builder.Services
+            .AddMailingAndTemplateManager(builder.Configuration)
+            .AddPortalRepositories(builder.Configuration)
+            .AddProvisioningManager(builder.Configuration);
 
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddMailingAndTemplateManager(builder.Configuration)
-                .AddPortalRepositories(builder.Configuration)
-                .AddProvisioningManager(builder.Configuration);
+        builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
-builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
+        builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
+            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
-                .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
-
-builder.Services.AddApplicationChecklistCreation();
-builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
-
-builder.Build()
-    .CreateApp<Program>("registration", VERSION, builder.Environment)
-    .Run();
+        builder.Services.AddApplicationChecklistCreation();
+        builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
+    });

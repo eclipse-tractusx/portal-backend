@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Text;
@@ -39,6 +40,7 @@ public class UserUploadBusinessLogicTests
     private readonly Guid _identityProviderId;
     private readonly string _iamUserId;
     private readonly string _clientId;
+    private readonly IdentityData _identity;
     private readonly IMailingService _mailingService;
     private readonly UserSettings _settings;
     private readonly Encoding _encoding;
@@ -65,6 +67,7 @@ public class UserUploadBusinessLogicTests
         _clientId = _fixture.Create<string>();
         _settings = _fixture.Build<UserSettings>().With(x => x.Portal, _fixture.Build<UserSetting>().With(x => x.KeycloakClientID, _clientId).Create()).Create();
         _encoding = _fixture.Create<Encoding>();
+        _identity = new(_iamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
 
         _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 
@@ -79,9 +82,9 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), A<string>.That.IsEqualTo(_iamUserId))).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.UserId)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -104,7 +107,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Should().NotBeNull();
         result.Created.Should().Be(5);
@@ -130,7 +133,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        async Task Act() => await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"invalid format: expected 'FirstName', got '{invalidHeader}' (Parameter 'document')");
@@ -160,7 +163,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened();
 
@@ -191,7 +194,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustNotHaveHappened();
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened(4, Times.Exactly);
@@ -224,7 +227,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened();
 
@@ -251,7 +254,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Should().NotBeNull();
         result.Created.Should().Be(4);
@@ -281,7 +284,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened();
 
@@ -305,9 +308,9 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId), A<Guid?>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.UserId, A<Guid?>._)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -329,7 +332,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Should().NotBeNull();
         result.Created.Should().Be(5);
@@ -355,7 +358,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        async Task Act() => await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadOwnCompanySharedIdpUsersAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"invalid format: expected 'FirstName', got '{invalidHeader}' (Parameter 'document')");
@@ -379,7 +382,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustNotHaveHappened();
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened(4, Times.Exactly);
@@ -416,7 +419,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened();
 
@@ -442,7 +445,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Should().NotBeNull();
         result.Created.Should().Be(4);
@@ -471,7 +474,7 @@ public class UserUploadBusinessLogicTests
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
 
-        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened();
 
@@ -494,18 +497,18 @@ public class UserUploadBusinessLogicTests
 
         A.CallTo(() => _options.Value).Returns(_settings);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), A<string>.That.IsEqualTo(_iamUserId)))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.UserId))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create(), _fixture.Create<string>()));
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId), A<Guid?>._))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.UserId, A<Guid?>._))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create(), _fixture.Create<string>()));
 
-        A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._, A<IEnumerable<string>>._, A<string>._))
-            .ReturnsLazily((string clientId, IEnumerable<string> roles, string _) =>
+        A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._, A<IEnumerable<string>>._, A<Guid>._))
+            .ReturnsLazily((string clientId, IEnumerable<string> roles, Guid _) =>
                 roles.Select(role => _fixture.Build<UserRoleData>().With(x => x.ClientClientId, clientId).With(x => x.UserRoleText, role).Create()));
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken) =>
+            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken _) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(

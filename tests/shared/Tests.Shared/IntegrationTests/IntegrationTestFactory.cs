@@ -28,6 +28,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Xunit;
@@ -38,7 +40,6 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
     where TTestClass : class
 {
     private readonly TestcontainerDatabase _container;
-    public IList<Action<PortalDbContext>>? SetupDbActions { get; set; }
 
     public IntegrationTestFactory()
     {
@@ -60,7 +61,7 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
         var projectDir = Directory.GetCurrentDirectory();
         var configPath = Path.Combine(projectDir, "appsettings.IntegrationTests.json");
 
-        builder.ConfigureAppConfiguration((context, conf) =>
+        builder.ConfigureAppConfiguration((_, conf) =>
         {
             conf.AddJsonFile(configPath, true);
         });
@@ -73,9 +74,16 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
                     x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                         .MigrationsHistoryTable("__efmigrations_history_portal"));
             });
-            services.EnsureDbCreated(SetupDbActions);
+            services.EnsureDbCreated();
             services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
         });
+    }
+
+    /// <inheritdoc />
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        builder.AddLogging();
+        return base.CreateHost(builder);
     }
 
     public async Task InitializeAsync() => await _container.StartAsync();

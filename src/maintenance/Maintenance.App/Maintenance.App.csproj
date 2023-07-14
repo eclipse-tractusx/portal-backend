@@ -46,8 +46,21 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
       <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="../../../LICENSE">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="../../../NOTICE.md">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="../../../DEPENDENCIES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>

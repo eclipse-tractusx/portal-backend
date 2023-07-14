@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -58,13 +58,14 @@ public class ServiceAccountController : ControllerBase
     /// <response code="404">Record was not found. Possible reason: invalid user role, requester user invalid.</response>
     [HttpPost]
     [Authorize(Roles = "add_tech_user_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
     {
-        var serviceAccountDetails = await this.WithIamUserId(createdByName => _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo, createdByName).ConfigureAwait(false));
+        var serviceAccountDetails = await this.WithCompanyId(companyId => _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo, companyId).ConfigureAwait(false));
         return CreatedAtRoute("GetServiceAccountDetails", new { serviceAccountId = serviceAccountDetails.ServiceAccountId }, serviceAccountDetails);
     }
 
@@ -76,13 +77,16 @@ public class ServiceAccountController : ControllerBase
     /// <remarks>Example: DELETE: api/administration/serviceaccount/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000</remarks>
     /// <response code="200">Successful if the service account was deleted.</response>
     /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
+    /// <response code="409">Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user.</response>
     [HttpDelete]
     [Authorize(Roles = "delete_tech_user_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteServiceAccount([FromRoute] Guid serviceAccountId) =>
-        this.WithIamUserId(adminId => _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, adminId));
+        this.WithCompanyId(companyId => _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, companyId));
 
     /// <summary>
     /// Gets the service account details for the given id
@@ -95,12 +99,13 @@ public class ServiceAccountController : ControllerBase
     /// <response code="409">Undefined client for service account.</response>
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}", Name = "GetServiceAccountDetails")]
-    [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceAccountConnectorOfferData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task<ServiceAccountDetails> GetServiceAccountDetails([FromRoute] Guid serviceAccountId) =>
-        this.WithIamUserId(adminId => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAccountId, adminId));
+    public Task<ServiceAccountConnectorOfferData> GetServiceAccountDetails([FromRoute] Guid serviceAccountId) =>
+        this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAccountId, companyId));
 
     /// <summary>
     /// Updates the service account details with the given id.
@@ -120,13 +125,14 @@ public class ServiceAccountController : ControllerBase
     /// <response code="409">Undefined client for service account.</response>
     [HttpPut]
     [Authorize(Roles = "add_tech_user_management")] // TODO check whether we also want an edit role
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ServiceAccountDetails> PutServiceAccountDetails([FromRoute] Guid serviceAccountId, [FromBody] ServiceAccountEditableDetails serviceAccountDetails) =>
-        this.WithIamUserId(adminId => _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAccountId, serviceAccountDetails, adminId));
+        this.WithCompanyId(companyId => _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAccountId, serviceAccountDetails, companyId));
 
     /// <summary>
     /// Resets the service account credentials for the given service account Id.
@@ -141,13 +147,14 @@ public class ServiceAccountController : ControllerBase
     /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPost]
     [Authorize(Roles = "add_tech_user_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}/resetCredentials")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<ServiceAccountDetails> ResetServiceAccountCredentials([FromRoute] Guid serviceAccountId) =>
-        this.WithIamUserId(adminId => _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, adminId));
+        this.WithCompanyId(companyId => _logic.ExecuteResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId));
 
     /// <summary>
     /// Gets the service account data as pagination
@@ -159,10 +166,11 @@ public class ServiceAccountController : ControllerBase
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size) =>
-        this.WithIamUserId(adminId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, adminId));
+        this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, companyId));
 
     /// <summary>
     /// Get all service account roles
@@ -173,8 +181,9 @@ public class ServiceAccountController : ControllerBase
     /// <response code="200">returns all service account roles</response>
     [HttpGet]
     [Authorize(Roles = "technical_roles_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("user/roles")]
     [ProducesResponseType(typeof(List<UserRoleWithDescription>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
-        this.WithIamUserId(iamUserId => _logic.GetServiceAccountRolesAsync(iamUserId, languageShortName));
+        this.WithCompanyId(companyId => _logic.GetServiceAccountRolesAsync(companyId, languageShortName));
 }

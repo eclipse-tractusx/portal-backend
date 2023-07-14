@@ -41,25 +41,25 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     }
 
     /// <inheritdoc />
-    public async Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(string iamUserId)
+    public async Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(Guid companyId)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, iamUserId)
+            .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, companyId)
             .ConfigureAwait(false);
         if (result == default)
         {
-            throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
+            throw new ConflictException($"Company {companyId} not found");
         }
         if (!result.IsProviderCompany)
         {
-            throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
+            throw new ForbiddenException($"Company {companyId} is not a service-provider");
         }
 
         return result.ProviderDetailReturnData;
     }
 
     /// <inheritdoc />
-    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, string iamUserId)
+    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, (Guid UserId, Guid CompanyId) identity)
     {
         data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
         data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
@@ -70,34 +70,36 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                 "the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
-        return SetOfferProviderCompanyDetailsInternalAsync(data, iamUserId);
+        return SetOfferProviderCompanyDetailsInternalAsync(data, identity);
     }
 
-    private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, string iamUserId)
+    private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, (Guid UserId, Guid CompanyId) identity)
     {
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var providerDetailData = await companyRepository
-            .GetProviderCompanyDetailsExistsForUser(iamUserId)
+            .GetProviderCompanyDetailsExistsForUser(identity.CompanyId)
             .ConfigureAwait(false);
         if (providerDetailData == default)
         {
             var result = await companyRepository
-                .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
+                .IsValidCompanyRoleOwner(identity.CompanyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
                 .ConfigureAwait(false);
-            if (result == default)
+            if (!result.IsValidCompanyId)
             {
-                throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
+                throw new ConflictException($"Company {identity.CompanyId} not found");
             }
-            if (!result.IsServiceProviderCompany)
+            if (!result.IsCompanyRoleOwner)
             {
-                throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
+                throw new ForbiddenException($"Company {identity.CompanyId} is not an app- or service-provider");
             }
-            companyRepository.CreateProviderCompanyDetail(result.CompanyId, data.Url, providerDetails =>
+            companyRepository.CreateProviderCompanyDetail(identity.CompanyId, data.Url, providerDetails =>
             {
                 if (data.CallbackUrl != null)
                 {
                     providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
                 }
+                providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
+                providerDetails.LastEditorId = identity.UserId;
             });
         }
         else
@@ -105,7 +107,12 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
                 details => { details.AutoSetupUrl = providerDetailData.Url; },
-                details => { details.AutoSetupUrl = data.Url; });
+                details =>
+                {
+                    details.AutoSetupUrl = data.Url;
+                    details.DateLastChanged = DateTimeOffset.UtcNow;
+                    details.LastEditorId = identity.UserId;
+                });
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

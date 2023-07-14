@@ -32,31 +32,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken);
         Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumber(string businessPartnerNumber, string token, CancellationToken cancellationToken);
         IAsyncEnumerable<string> GetClientRolesCompositeAsync();
-        Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken);
+        Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the file content from the persistence store for the given user
         /// </summary>
         /// <param name="documentId">The Id of the document that should be get</param>
-        /// <param name="iamUserId">The Id of the current user</param>
+        /// <param name="userId">The Identity of the current user</param>
         /// <returns></returns>
-        Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, string iamUserId);
+        Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, Guid userId);
 
-        IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);
-        Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, string iamUserId);
-        Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, string iamUserId);
-        Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId);
-        Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, string iamUserId);
-        Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, string iamUserId);
-        Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId);
-        Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId);
+        IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(Guid companyId);
+        Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, Guid companyId);
+        Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, Guid companyId);
+        Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, (Guid UserId, Guid CompanyId) identity);
+        Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, Guid companyId);
+        Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, Guid companyId);
+        Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, Guid userId, Guid companyId);
+        Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, Guid userId);
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
-        Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId);
+        Task<bool> SubmitRegistrationAsync(Guid applicationId, Guid userId);
         IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
-        Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
-        Task<int> SetInvitationStatusAsync(string iamUserId);
-        Task<CompanyRegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
-        Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId);
+        Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid userId);
+        Task<int> SetInvitationStatusAsync(Guid userId);
+        Task<CompanyRegistrationData> GetRegistrationDataAsync(Guid applicationId, Guid companyId);
+        Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, Guid companyId);
         IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null);
         Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers(string alpha2Code);
         Task<(string fileName, byte[] content, string mediaType)> GetRegistrationDocumentAsync(Guid documentId);

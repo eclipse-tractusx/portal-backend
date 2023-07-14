@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -39,7 +38,6 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
-    private readonly IOfferDocumentService _offerDocumentService;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly IOfferSetupService _offerSetupService;
     private readonly ServiceSettings _settings;
@@ -49,21 +47,18 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerService">Access to the offer service</param>
-    /// <param name="offerDocumentService">Access to the offer document service</param>
     /// <param name="offerSubscriptionService">Service for Company to manage offer subscriptions</param>
     /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="settings">Access to the settings</param>
     public ServiceBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferService offerService,
-        IOfferDocumentService offerDocumentService,
         IOfferSubscriptionService offerSubscriptionService,
         IOfferSetupService offerSetupService,
         IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
-        _offerDocumentService = offerDocumentService;
         _offerSubscriptionService = offerSubscriptionService;
         _offerSetupService = offerSetupService;
         _settings = settings.Value;
@@ -78,13 +73,13 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             _portalRepositories.GetInstance<IOfferRepository>().GetActiveServicesPaginationSource(sorting, serviceTypeId, Constants.DefaultLanguage));
 
     /// <inheritdoc />
-    public Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, offerAgreementConsentData, iamUserId, OfferTypeId.SERVICE, _settings.BasePortalAddress);
+    public Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, offerAgreementConsentData, identity, OfferTypeId.SERVICE, _settings.BasePortalAddress);
 
     /// <inheritdoc />
-    public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
+    public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, companyId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
@@ -106,10 +101,10 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, string iamUserId)
+    public async Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, Guid companyId)
     {
         var subscriptionDetailData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
+            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, companyId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (subscriptionDetailData is null)
         {
             throw new NotFoundException($"Subscription {subscriptionId} does not exist");
@@ -127,16 +122,16 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.GetConsentDetailDataAsync(serviceConsentId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, iamUserId, OfferTypeId.SERVICE, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
+    public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, (Guid UserId, Guid CompanyId) identity) =>
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, identity, OfferTypeId.SERVICE, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
 
     /// <inheritdoc/>
-    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
+    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, Guid companyId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
     {
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId ?? OfferSubscriptionStatusId.ACTIVE, offerId)(skip, take).ConfigureAwait(false);
+                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(companyId, OfferTypeId.SERVICE, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId)(skip, take).ConfigureAwait(false);
 
             return offerCompanySubscriptionResponse == null
                 ? null
@@ -152,34 +147,15 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public Task SubmitServiceAsync(Guid serviceId, string iamUserId) =>
-        _offerService.SubmitServiceAsync(serviceId, iamUserId, OfferTypeId.SERVICE, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
-
-    /// <inheritdoc/>
-    public Task ApproveServiceRequestAsync(Guid appId, string iamUserId) =>
-        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
-
-    /// <inheritdoc />
-    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) =>
-        _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
-
-    /// <inheritdoc />
-    public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
-        UploadServiceDoc(serviceId, documentTypeId, document, iamUserId, OfferTypeId.SERVICE, cancellationToken);
-
-    private Task UploadServiceDoc(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
-        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, offerTypeId, _settings.UploadServiceDocumentTypeIds, cancellationToken);
-
     /// <inheritdoc />
     public Task<(byte[] Content, string ContentType, string FileName)> GetServiceDocumentContentAsync(Guid serviceId, Guid documentId, CancellationToken cancellationToken) =>
         _offerService.GetOfferDocumentContentAsync(serviceId, documentId, _settings.ServiceImageDocumentTypeIds, OfferTypeId.SERVICE, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, string userId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId) =>
+    public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, Guid companyId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId) =>
         Pagination.CreateResponseAsync(page, size, 15,
             _portalRepositories.GetInstance<IOfferRepository>()
-                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, userId, sorting ?? OfferSorting.DateDesc, offerName));
+                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, companyId, sorting ?? OfferSorting.DateDesc, offerName));
 
     private static IEnumerable<OfferStatusId> GetOfferStatusIds(ServiceStatusIdFilter? serviceStatusIdFilter)
     {
@@ -209,18 +185,18 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId, string iamUserId) =>
-        _offerService.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, iamUserId, OfferTypeId.SERVICE, _settings.CompanyAdminRoles);
+    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId, Guid companyId) =>
+        _offerService.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, _settings.CompanyAdminRoles);
 
     /// <inheritdoc />
-    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, string iamUserId) =>
-        _offerService.GetSubscriptionDetailsForSubscriberAsync(serviceId, subscriptionId, iamUserId, OfferTypeId.SERVICE, _settings.SalesManagerRoles);
+    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, Guid companyId) =>
+        _offerService.GetSubscriptionDetailsForSubscriberAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, _settings.SalesManagerRoles);
 
     /// <inheritdoc />
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId) =>
-        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, Guid companyId) =>
+        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, companyId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE);
 
     /// <inheritdoc />
-    public Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerSetupService.StartAutoSetupAsync(data, iamUserId, OfferTypeId.SERVICE);
+    public Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId) =>
+        _offerSetupService.StartAutoSetupAsync(data, companyId, OfferTypeId.SERVICE);
 }

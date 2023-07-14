@@ -33,7 +33,6 @@ public record ConnectorData(
     Guid Id,
     ConnectorTypeId Type,
     ConnectorStatusId Status,
-    bool? DapsRegistrationSuccessful,
     Guid? HostId,
     string? HostCompanyName,
     Guid? SelfDescriptionDocumentId,
@@ -58,6 +57,5 @@ public record ManagedConnectorData(
     Guid Id,
     ConnectorTypeId Type,
     ConnectorStatusId Status,
-    bool? DapsRegistrationSuccessful,
     string? ProviderCompanyName,
     Guid? SelfDescriptionDocumentId);

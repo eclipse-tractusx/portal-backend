@@ -35,6 +35,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\externalsystems\Custodian.Library\Custodian.Library.csproj" />
       <ProjectReference Include="..\..\framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
       <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
       <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
