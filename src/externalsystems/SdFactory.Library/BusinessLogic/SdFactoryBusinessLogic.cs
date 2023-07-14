@@ -94,7 +94,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
     public async Task ProcessFinishSelfDescriptionLpForApplication(SelfDescriptionResponseData data, Guid companyId, CancellationToken cancellationToken)
     {
-        var confirm = ValidateData(data);
+        var confirm = ValidateData(data, out var validated);
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 data.ExternalId,
@@ -106,7 +106,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
         if (confirm)
         {
-            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data.Content!, cancellationToken).ConfigureAwait(false);
+            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, validated.Content, cancellationToken).ConfigureAwait(false);
             _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
                 c => { c.SelfDescriptionDocumentId = documentId; });
         }
@@ -127,11 +127,11 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     /// <inheritdoc />
     public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, Guid companyUserId, CancellationToken cancellationToken)
     {
-        var confirm = ValidateData(data);
+        var confirm = ValidateData(data, out var validated);
         Guid? documentId = null;
         if (confirm)
         {
-            documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data.Content!, cancellationToken).ConfigureAwait(false);
+            documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, validated.Content, cancellationToken).ConfigureAwait(false);
         }
         _portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
         {
@@ -142,7 +142,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
             if (!confirm)
             {
-                con.SelfDescriptionMessage = data.Message!;
+                con.SelfDescriptionMessage = validated.Message;
             }
 
             con.LastEditorId = companyUserId;
@@ -150,18 +150,48 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         });
     }
 
-    private static bool ValidateData(SelfDescriptionResponseData data)
+    private sealed class ValidatedResponseData
     {
-        var confirm = data.Status == SelfDescriptionStatus.Confirm;
-        switch (confirm)
+        private readonly bool _confirm;
+        private readonly SelfDescriptionResponseData _data;
+
+        public ValidatedResponseData(SelfDescriptionResponseData data)
         {
-            case false when string.IsNullOrEmpty(data.Message):
-                throw new ConflictException("Please provide a messsage");
-            case true when data.Content == null:
-                throw new ConflictException("Please provide a selfDescriptionDocument");
+            _confirm = data.Status == SelfDescriptionStatus.Confirm;
+            switch (_confirm)
+            {
+                case false when string.IsNullOrEmpty(data.Message):
+                    throw new ConflictException("Please provide a messsage");
+                case true when data.Content == null:
+                    throw new ConflictException("Please provide a selfDescriptionDocument");
+            }
+            _data = data;
         }
 
-        return confirm;
+        public bool Confirm
+        {
+            get => _confirm;
+        }
+
+        public string Message
+        {
+            get => _data.Message == null || _confirm
+                ? throw new InvalidOperationException("Message may only be called when Confirm is false")
+                : _data.Message;
+        }
+
+        public JsonDocument Content
+        {
+            get => _data.Content == null || !_confirm
+                ? throw new InvalidOperationException("Content may only be called when Confirm is true")
+                : _data.Content;
+        }
+    }
+
+    private static bool ValidateData(SelfDescriptionResponseData data, out ValidatedResponseData validated)
+    {
+        validated = new(data);
+        return validated.Confirm;
     }
 
     private async Task<Guid> ProcessDocument(SdFactoryResponseModelTitle title, JsonDocument content, CancellationToken cancellationToken)
