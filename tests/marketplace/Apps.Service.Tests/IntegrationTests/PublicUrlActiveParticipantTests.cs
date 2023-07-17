@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Tests.IntegrationTests;
 
 public class PublicUrlActiveParticipantTests : BasePublicUrlTests<AppsController, ActiveParticipantSeeding>
