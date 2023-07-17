@@ -38,10 +38,11 @@ using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 
-public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestClass>, IAsyncLifetime
+public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFactory<TTestClass>, IAsyncLifetime
     where TTestClass : class
+    where TSeedingData : class
 {
-    private readonly TestcontainerDatabase _container;
+    protected readonly TestcontainerDatabase _container;
 
     public IntegrationTestFactory()
     {
@@ -81,7 +82,7 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
                     x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                         .MigrationsHistoryTable("__efmigrations_history_portal"));
             });
-            services.EnsureDbCreated();
+            services.EnsureDbCreated<TSeedingData>();
             services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
         });
     }

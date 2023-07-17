@@ -291,7 +291,7 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<CompanyRoleId[]> GetOwnCompanyRolesAsync(Guid companyId) => 
+    public Task<CompanyRoleId[]> GetOwnCompanyRolesAsync(Guid companyId) =>
         _context.CompanyAssignedRoles
             .Where(x => x.CompanyId == companyId)
             .Select(x => x.CompanyRoleId)

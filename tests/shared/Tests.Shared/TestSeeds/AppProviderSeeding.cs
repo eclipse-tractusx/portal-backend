@@ -18,11 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public static class Paths
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
+
+public class AppProviderSeeding
 {
-    public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
+    public static Action<PortalDbContext> SeedData() => dbContext =>
+    {
+        BaseSeed.SeedBaseData().Invoke(dbContext);
+
+        dbContext.CompanyAssignedRoles.AddRange(new[]
+        {
+            new CompanyAssignedRole(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.APP_PROVIDER)
+        });
+    };
 }

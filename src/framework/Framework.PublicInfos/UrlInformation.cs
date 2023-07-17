@@ -18,10 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 
-public record UrlInformation
-(
-    string HttpMethods,
-    string Url
+public record UrlInformation(
+    [property: JsonPropertyName("httpMethods")] string HttpMethods,
+    [property: JsonPropertyName("url")] string Url
 );

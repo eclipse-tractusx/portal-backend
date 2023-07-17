@@ -19,37 +19,41 @@
  ********************************************************************************/
 
 using FluentAssertions;
-using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Controllers;
-using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.EnpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
+using System.Linq.Expressions;
 using System.Net;
 using Xunit;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.IntegrationTests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 
-public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<NotificationController, Seeding>>
+public class BasePublicUrlTests<TController, TSeeding> : IClassFixture<IntegrationTestFactory<TController, TSeeding>>
+    where TController : class
+    where TSeeding : class
 {
-    private readonly IntegrationTestFactory<NotificationController, Seeding> _factory;
+    protected readonly IntegrationTestFactory<TController, TSeeding> Factory;
 
-    public NotificationControllerIntegrationTests(IntegrationTestFactory<NotificationController, Seeding> factory)
+    public BasePublicUrlTests(IntegrationTestFactory<TController, TSeeding> factory)
     {
-        _factory = factory;
+        Factory = factory;
     }
 
-    [Fact]
-    public async Task NotificationCount_WithTwoUnreadNotifications_ReturnsCorrectAmount()
+    protected async Task OpenInformationController_ReturnsCorrectAmount(int resultCount, params Expression<Func<UrlInformation, bool>>[] satisfyPredicates)
     {
         // Arrange
-        var client = _factory.CreateClient();
-        var endpoint = new NotificationEndpoints(client);
+        var client = Factory.CreateClient();
+        var endpoint = new InformationEndpoints(client);
 
         // Act
-        var response = await endpoint.NotificationCount(false);
+        var response = await endpoint.Get().ConfigureAwait(false);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var count = await response.GetResultFromContent<int>();
-        count.Should().Be(3);
+        var result = await response.GetResultFromContent<List<UrlInformation>>();
+        result.Should().HaveCount(resultCount);
+        if (satisfyPredicates.Any())
+        {
+            result.Should().Satisfy(satisfyPredicates);
+        }
     }
 }

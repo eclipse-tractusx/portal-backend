@@ -18,11 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
-public static class Paths
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+
+public class InformationEndpoints
 {
-    public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
+    private readonly HttpClient _client;
+
+    public static string Path => Paths.Base;
+
+    public InformationEndpoints(HttpClient client)
+    {
+        this._client = client;
+    }
+
+    public async Task<HttpResponseMessage> Get()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}info");
+        return await this._client.SendAsync(request);
+    }
 }

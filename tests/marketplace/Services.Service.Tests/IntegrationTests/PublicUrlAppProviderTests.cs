@@ -18,11 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
+using Xunit;
 
-public static class Paths
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.IntegrationTests;
+
+public class PublicUrlAppProviderTests : BasePublicUrlTests<ServicesController, AppProviderSeeding>
 {
-    public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
+    public PublicUrlAppProviderTests(IntegrationTestFactory<ServicesController, AppProviderSeeding> factory)
+        : base(factory)
+    { }
+
+    [Fact]
+    public async Task OpenInformationController_WithAppProvider_ReturnsCorrectAmount()
+    {
+        await OpenInformationController_ReturnsCorrectAmount(0)
+            .ConfigureAwait(false);
+    }
 }
