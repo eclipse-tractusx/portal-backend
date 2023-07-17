@@ -138,8 +138,15 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 
     public async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, Guid companyId)
     {
+        if (!await _portalRepositories.GetInstance<IServiceAccountRepository>().IsCompanyServiceAccountLinkedCompany(serviceAccountId, companyId).ConfigureAwait(false))
+        {
+            throw new ForbiddenException($"The company ID is neither the owner nor the provider of the technical user");
+        }
+        return await GetOwnCompanyServiceAccountDetailsDataAsync(serviceAccountId, companyId);
+    }
+    private async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsDataAsync(Guid serviceAccountId, Guid companyId)
+    {
         var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
-
         if (result == null)
         {
             throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");

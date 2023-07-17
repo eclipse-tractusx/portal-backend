@@ -178,6 +178,7 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         SetupGetOwnCompanyServiceAccountDetails();
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>._, A<Guid>._)).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -194,6 +195,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupGetOwnCompanyServiceAccountDetails();
         var invalidCompanyId = Guid.NewGuid();
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>._, A<Guid>._)).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -210,6 +212,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupGetOwnCompanyServiceAccountDetails();
         var invalidServiceAccountId = Guid.NewGuid();
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>._, A<Guid>._)).Returns(true);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -218,6 +221,24 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
         exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found for company {_identity.CompanyId}");
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInvalidUserCompanyId_ThrowsForbiddenException()
+    {
+        // Arrange
+        SetupGetOwnCompanyServiceAccountDetails();
+        var invalidUser = _fixture.Create<IdentityData>();
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(A<Guid>._, A<Guid>._)).Returns(false);
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
+
+        // Act
+        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, invalidUser.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        exception.Message.Should().Be($"The company ID is neither the owner nor the provider of the technical user");
+        A.CallTo(() => _serviceAccountRepository.IsCompanyServiceAccountLinkedCompany(ValidServiceAccountId, invalidUser.CompanyId)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
