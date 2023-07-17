@@ -32,8 +32,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executo
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Json;
 
 LoggingExtensions.EnsureInitialized();
 Log.Information("Building worker");

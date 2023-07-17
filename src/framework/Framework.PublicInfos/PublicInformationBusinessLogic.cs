@@ -51,18 +51,12 @@ public class PublicInformationBusinessLogic : IPublicInformationBusinessLogic
         foreach (var item in _actionDescriptorCollectionProvider.ActionDescriptors.Items
                      .Where(x => x.ActionConstraints != null)
                      .OfType<ControllerActionDescriptor>()
-                     .Where(x => x.MethodInfo.GetCustomAttribute<PublicUrlAttribute>() != null))
+                     .Where(x => x.MethodInfo.GetCustomAttribute<PublicUrlAttribute>() != null && x.MethodInfo.GetCustomAttribute<PublicUrlAttribute>()!.CompanyRoleIds.Any(y => companyRoleIds.Contains(y))))
         {
-            var neededCompanyRoles = item.MethodInfo.GetCustomAttribute<PublicUrlAttribute>()!.CompanyRoleIds;
-            if (!neededCompanyRoles.Any(x => companyRoleIds.Contains(x)))
-            {
-                continue;
-            }
-
             var actionConstraintMetadata = item.ActionConstraints!.OfType<HttpMethodActionConstraint>();
             var httpMethods = actionConstraintMetadata.SelectMany(x => x.HttpMethods).Distinct();
             var url = item.AttributeRouteInfo?.Template ?? throw new ConflictException($"There must be an url for {item.DisplayName}");
-            result.Add(new UrlInformation(string.Join(", ", httpMethods), url));
+            result.Add(new UrlInformation(string.Join(", ", httpMethods), url.ToLower()));
         }
 
         return result;

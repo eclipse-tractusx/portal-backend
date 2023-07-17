@@ -20,7 +20,6 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;

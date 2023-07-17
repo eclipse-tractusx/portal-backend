@@ -24,7 +24,6 @@ using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using Xunit.Extensions.AssemblyFixture;
 
 [assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
@@ -95,7 +94,7 @@ public class TestDbFixture : IAsyncLifetime
         );
         var context = new PortalDbContext(optionsBuilder.Options);
         await context.Database.MigrateAsync();
-        BaseSeed.SeedBasedata().Invoke(context);
+        // BaseSeed.SeedData().Invoke(context);
         await context.SaveChangesAsync();
     }
 

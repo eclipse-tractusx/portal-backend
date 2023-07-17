@@ -28,8 +28,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Json;
 using System.Reflection;
 
 LoggingExtensions.EnsureInitialized();
