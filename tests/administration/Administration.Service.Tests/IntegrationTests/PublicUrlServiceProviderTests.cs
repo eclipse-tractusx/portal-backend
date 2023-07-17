@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.IntegrationTests;
 
@@ -31,6 +32,7 @@ public class PublicUrlServiceProviderTests : BasePublicUrlTests<CompanyDataContr
     { }
 
     [Fact]
+    [SuppressMessage("SonarLint", "S2699", Justification = "Ignored because the assert is done in OpenInformationController_ReturnsCorrectAmount")]
     public async Task OpenInformationController_WithServiceProvider_ReturnsCorrectAmount()
     {
 
