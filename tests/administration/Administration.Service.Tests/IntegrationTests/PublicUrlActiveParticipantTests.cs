@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using System.Diagnostics.CodeAnalysis;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.IntegrationTests;
 
 public class PublicUrlActiveParticipantTests : BasePublicUrlTests<CompanyDataController, ActiveParticipantSeeding>
