@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -59,4 +60,5 @@ public class CompanyServiceAccount : IBaseEntity
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual Connector? Connector { get; set; }
     public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
+    public virtual CompaniesLinkedServiceAccount? CompaniesLinkedServiceAccount { get; private set; }
 }
