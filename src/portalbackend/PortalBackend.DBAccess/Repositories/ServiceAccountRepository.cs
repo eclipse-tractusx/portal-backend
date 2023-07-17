@@ -115,7 +115,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
                 serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                serviceAccount.Identity.CompanyId == companyId)
+                serviceAccount.Identity.CompanyId == companyId && (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
                     serviceAccount.ClientId,
@@ -144,6 +144,8 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             serviceAccount.OfferSubscription.Offer.Name,
                             serviceAccount.OfferSubscription.Id)))
             .SingleOrDefaultAsync();
+
+
 
     public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
@@ -184,10 +186,5 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 sa.Id == technicalUserId &&
                 sa.Identity!.UserStatusId == UserStatusId.ACTIVE &&
                 sa.Identity.CompanyId == companyId)
-            .AnyAsync();
-
-    public Task<bool> IsCompanyServiceAccountLinkedCompany(Guid serviceAccountId, Guid companyId) =>
-        _dbContext.CompanyLinkedServiceAccounts
-            .Where(x => x.ServiceAccountId == serviceAccountId && (x.Provider == companyId || x.Owners == companyId))
             .AnyAsync();
 }

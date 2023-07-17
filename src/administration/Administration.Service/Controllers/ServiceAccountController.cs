@@ -154,7 +154,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<ServiceAccountDetails> ResetServiceAccountCredentials([FromRoute] Guid serviceAccountId) =>
-        this.WithCompanyId(companyId => _logic.ExecuteResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId));
+        this.WithCompanyId(companyId => _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId));
 
     /// <summary>
     /// Gets the service account data as pagination
