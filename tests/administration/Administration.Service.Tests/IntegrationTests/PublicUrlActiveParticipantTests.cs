@@ -36,7 +36,6 @@ public class PublicUrlActiveParticipantTests : BasePublicUrlTests<CompanyDataCon
     [SuppressMessage("SonarLint", "S2699", Justification = "Ignored because the assert is done in OpenInformationController_ReturnsCorrectAmount")]
     public async Task OpenInformationController_WithActiveParticipant_ReturnsCorrectAmount()
     {
-
         await OpenInformationController_ReturnsCorrectAmount(2,
             x => x.HttpMethods == "POST" && x.Url == "api/administration/connectors/discovery",
             x => x.HttpMethods == "GET" && x.Url == "api/administration/partnernetwork/membercompanies")

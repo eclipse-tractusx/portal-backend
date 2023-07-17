@@ -35,7 +35,6 @@ public class PublicUrlServiceProviderTests : BasePublicUrlTests<CompanyDataContr
     [SuppressMessage("SonarLint", "S2699", Justification = "Ignored because the assert is done in OpenInformationController_ReturnsCorrectAmount")]
     public async Task OpenInformationController_WithServiceProvider_ReturnsCorrectAmount()
     {
-
         await OpenInformationController_ReturnsCorrectAmount(8,
             x => x.HttpMethods == "GET" && x.Url == "api/administration/connectors/managed",
             x => x.HttpMethods == "POST" && x.Url == "api/administration/connectors/managed",
