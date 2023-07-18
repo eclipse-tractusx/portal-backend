@@ -181,6 +181,10 @@ public class OfferService : IOfferService
                 companyUserId,
                 DateTimeOffset.UtcNow)
             .Select(consent => new ConsentStatusData(consent.AgreementId, consent.ConsentStatusId));
+
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(offerId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return ConsentStatusdata;
     }

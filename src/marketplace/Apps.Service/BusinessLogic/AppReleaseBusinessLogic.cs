@@ -140,6 +140,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
         }
         var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return roleData;
     }
