@@ -27,12 +27,14 @@ public class HttpMessageHandlerMock : HttpMessageHandler
     private readonly HttpStatusCode _statusCode;
     private readonly Exception? _ex;
     private readonly HttpContent? _httpContent;
+    private readonly bool _isRequestUri;
 
-    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null)
+    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null, bool IsRequestUri = false)
     {
         _statusCode = statusCode;
         _httpContent = httpContent;
         _ex = ex;
+        _isRequestUri = IsRequestUri;
     }
 
     protected override Task<HttpResponseMessage> SendAsync(
@@ -46,7 +48,10 @@ public class HttpMessageHandlerMock : HttpMessageHandler
             throw _ex;
         }
 
-        var httpResponseMessage = new HttpResponseMessage(_statusCode);
+        var httpResponseMessage = new HttpResponseMessage(_statusCode)
+        {
+            RequestMessage = _isRequestUri ? request : null
+        };
         if (_httpContent != null)
         {
             httpResponseMessage.Content = _httpContent;

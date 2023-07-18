@@ -90,18 +90,20 @@ public class CustodianServiceTests
     }
 
     [Theory]
-    [InlineData(HttpStatusCode.Conflict, "{ \"message\": \"Wallet with given identifier already exists!\" }", "call to external system custodian-post failed with statuscode 409 - Message: Wallet with given identifier already exists!")]
-    [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-post failed with statuscode 400")]
-    [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-post failed with statuscode 400")]
-    [InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-post failed with statuscode 403")]
-    public async Task CreateWallet_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string? content, string message)
+    [InlineData(HttpStatusCode.Conflict, "{ \"message\": \"Wallet with given identifier already exists!\" }", "call to external system https://base.address.com/api/wallets failed with statuscode 409 - Message: Wallet with given identifier already exists!", true)]
+    [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-post failed with statuscode 400", false)]
+    [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system https://base.address.com/api/wallets failed with statuscode 400", true)]
+    [InlineData(HttpStatusCode.Forbidden, null, "call to external system https://base.address.com/api/wallets failed with statuscode 403", true)]
+    [InlineData(HttpStatusCode.InternalServerError, "Internal Server Error", "call to external system https://base.address.com/api/wallets failed with statuscode 500 - Message: Internal Server Error", true)]
+    [InlineData(HttpStatusCode.InternalServerError, null, "call to external system custodian-post failed with statuscode 500", false)]
+    public async Task CreateWallet_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string? content, string message, bool isRequiredUri)
     {
         // Arrange
         const string bpn = "123";
         const string name = "test";
         var httpMessageHandlerMock = content == null
-            ? new HttpMessageHandlerMock(statusCode)
-            : new HttpMessageHandlerMock(statusCode, new StringContent(content));
+            ? new HttpMessageHandlerMock(statusCode, null, null, isRequiredUri)
+            : new HttpMessageHandlerMock(statusCode, new StringContent(content), null, isRequiredUri);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -345,7 +347,7 @@ public class CustodianServiceTests
         // Arrange
         const string bpn = "123";
         var httpMessageHandlerMock =
-            new HttpMessageHandlerMock(HttpStatusCode.OK);
+            new HttpMessageHandlerMock(HttpStatusCode.OK, null, null, true);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")

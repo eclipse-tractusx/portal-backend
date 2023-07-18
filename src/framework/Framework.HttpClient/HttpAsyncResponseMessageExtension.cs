@@ -29,6 +29,7 @@ public static class HttpAsyncResponseMessageExtension
         try
         {
             var message = await response.ConfigureAwait(false);
+            var requestUri = message.RequestMessage?.RequestUri?.AbsoluteUri;
             if (message.IsSuccessStatusCode)
             {
                 return message;
@@ -37,9 +38,12 @@ public static class HttpAsyncResponseMessageExtension
             string? errorMessage;
             try
             {
-                (var ignore, errorMessage) = (int)message.StatusCode < 500 && handleErrorResponse != null
-                    ? await handleErrorResponse(message).ConfigureAwait(false)
-                    : (false, null);
+                (var ignore, errorMessage) = (int)message.StatusCode switch
+                {
+                    < 500 when handleErrorResponse != null => await handleErrorResponse(message).ConfigureAwait(false),
+                    >= 500 => (false, await message.Content.ReadAsStringAsync().ConfigureAwait(false)),
+                    _ => (false, null)
+                };
                 if (ignore)
                     return message;
             }
@@ -50,8 +54,8 @@ public static class HttpAsyncResponseMessageExtension
 
             throw new ServiceException(
                 string.IsNullOrWhiteSpace(errorMessage)
-                    ? $"call to external system {systemName} failed with statuscode {(int)message.StatusCode}"
-                    : $"call to external system {systemName} failed with statuscode {(int)message.StatusCode} - Message: {errorMessage}",
+                    ? $"call to external system {requestUri ?? systemName} failed with statuscode {(int)message.StatusCode}"
+                    : $"call to external system {requestUri ?? systemName} failed with statuscode {(int)message.StatusCode} - Message: {errorMessage}",
                 message.StatusCode,
                 (recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
         }
