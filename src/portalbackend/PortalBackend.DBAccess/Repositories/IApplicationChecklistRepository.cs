@@ -40,7 +40,7 @@ public interface IApplicationChecklistRepository
     /// <param name="applicationId">Id of the application to modify</param>
     /// <param name="applicationChecklistTypeId">Id of the checklistType to modify</param>
     /// <param name="setFields">Action to sets the fields</param>
-    ApplicationChecklistEntry AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields);
+    ApplicationChecklistEntry AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> initialize, Action<ApplicationChecklistEntry> setFields);
 
     Task<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)> GetChecklistData(Guid processId);
 

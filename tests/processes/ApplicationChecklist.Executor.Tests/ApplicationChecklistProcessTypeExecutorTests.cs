@@ -313,8 +313,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         ApplicationChecklistEntry? checklistEntry = null;
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
-            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
+            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> Initial, Action<ApplicationChecklistEntry> setFields) =>
             {
                 checklistEntry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
                 setFields(checklistEntry);
@@ -337,7 +337,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         executionResult.ScheduleStepTypeIds.Should().ContainInOrder(followupStepTypeIds);
         executionResult.SkipStepTypeIds.Should().BeNull();
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
 
         checklistEntry.Should().NotBeNull();
@@ -393,8 +393,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         ApplicationChecklistEntry? checklistEntry = null;
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
-            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
+            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> initial, Action<ApplicationChecklistEntry> setFields) =>
             {
                 checklistEntry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
                 setFields(checklistEntry);
@@ -418,7 +418,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         executionResult.SkipStepTypeIds.Should().BeNull();
         executionResult.ProcessMessage.Should().Be("Test message");
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
 
         checklistEntry.Should().NotBeNull();
@@ -486,7 +486,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         executionResult.SkipStepTypeIds.Should().BeNull();
         executionResult.ProcessMessage.Should().Be("Test Message");
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustNotHaveHappened();
     }
 
@@ -522,8 +522,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         ApplicationChecklistEntry? checklistEntry = null;
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
-            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
+            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> initial, Action<ApplicationChecklistEntry> setFields) =>
             {
                 checklistEntry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
                 setFields(checklistEntry);
@@ -546,7 +546,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         executionResult.ScheduleStepTypeIds.Should().BeNull();
         executionResult.SkipStepTypeIds.Should().BeNull();
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
 
         checklistEntry.Should().NotBeNull();
@@ -588,8 +588,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         ApplicationChecklistEntry? checklistEntry = null;
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
-            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
+            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> initial, Action<ApplicationChecklistEntry> setFields) =>
             {
                 checklistEntry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
                 setFields(checklistEntry);
@@ -612,7 +612,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         executionResult.ScheduleStepTypeIds.Should().BeNull();
         executionResult.SkipStepTypeIds.Should().BeNull();
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
 
         checklistEntry.Should().NotBeNull();
@@ -664,7 +664,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustNotHaveHappened();
 
         executionResult.Message.Should().Be(error.Message);

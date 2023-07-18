@@ -151,6 +151,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
             .AttachAndModifyApplicationChecklist(
                 applicationId,
                 entryTypeId,
+                null!,
                 modifyApplicationChecklistEntry);
         checklist![entryTypeId] = entry.ApplicationChecklistEntryStatusId;
         return true;

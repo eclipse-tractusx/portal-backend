@@ -264,6 +264,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            null,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
@@ -338,9 +339,14 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            inital =>
+            {
+                inital.Comment = context.ChecklistComment.SingleOrDefault(x => x.Key == entryTypeId).Value;
+            },
             item =>
             {
                 item.ApplicationChecklistEntryStatusId = checklistEntryStatusId;
+                item.Comment = null;
             },
             new[] { nextProcessStepTypeId });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -382,6 +388,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            null,
             entry =>
             {
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
@@ -417,6 +424,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            null,
             entry =>
             {
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;

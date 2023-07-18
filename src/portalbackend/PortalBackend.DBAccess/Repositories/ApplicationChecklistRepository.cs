@@ -52,9 +52,10 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     }
 
     /// <inheritdoc />
-    public ApplicationChecklistEntry AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields)
+    public ApplicationChecklistEntry AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry>? initialize, Action<ApplicationChecklistEntry> setFields)
     {
         var entity = new ApplicationChecklistEntry(applicationId, applicationChecklistTypeId, default, default);
+        initialize?.Invoke(entity);
         _portalDbContext.ApplicationChecklist.Attach(entity);
         entity.DateLastChanged = DateTimeOffset.UtcNow;
         setFields.Invoke(entity);
@@ -96,7 +97,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
                 x.IsSubmitted
                     ? x.Application.ApplicationChecklistEntries
                         .Where(entry => entryTypeIds.Contains(entry.ApplicationChecklistEntryTypeId))
-                        .Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(entry.ApplicationChecklistEntryTypeId, entry.ApplicationChecklistEntryStatusId))
+                        .Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?>(entry.ApplicationChecklistEntryTypeId, entry.ApplicationChecklistEntryStatusId, entry.Comment))
                     : null,
                 x.IsSubmitted
                     ? x.Process!.ProcessSteps

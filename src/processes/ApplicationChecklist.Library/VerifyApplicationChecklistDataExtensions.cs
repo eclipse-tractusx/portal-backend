@@ -72,5 +72,5 @@ public static class VerifyApplicationChecklistDataExtensions
     }
 
     public static IApplicationChecklistService.ManualChecklistProcessStepData CreateManualChecklistProcessStepData(this VerifyChecklistData checklistData, Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStep processStep) =>
-        new IApplicationChecklistService.ManualChecklistProcessStepData(applicationId, checklistData.Process!, processStep.Id, entryTypeId, checklistData.Checklist!.ToImmutableDictionary(entry => entry.TypeId, entry => entry.StatusId), checklistData.ProcessSteps!);
+        new IApplicationChecklistService.ManualChecklistProcessStepData(applicationId, checklistData.Process!, processStep.Id, entryTypeId, checklistData.Checklist!.ToImmutableDictionary(entry => entry.TypeId, entry => entry.StatusId), checklistData.ProcessSteps!, checklistData.Checklist!.ToImmutableDictionary(entry => entry.TypeId, entry => entry.comment));
 }
