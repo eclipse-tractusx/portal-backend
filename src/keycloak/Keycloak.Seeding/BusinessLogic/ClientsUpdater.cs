@@ -37,12 +37,11 @@ public class ClientsUpdater : IClientsUpdater
         _seedData = seedDataHandler;
     }
 
-    public async Task UpdateClients(string keycloakInstanceName)
+    public Task UpdateClients(string keycloakInstanceName)
     {
         var realm = _seedData.Realm;
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
-
-        _seedData.ClientsDictionary = await UpdateClientsInternal(keycloak, realm).ToDictionaryAsync(x => x.ClientId, x => x.Id).ConfigureAwait(false);
+        return _seedData.SetClientInternalIds(UpdateClientsInternal(keycloak, realm));
     }
 
     public async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(Library.KeycloakClient keycloak, string realm)

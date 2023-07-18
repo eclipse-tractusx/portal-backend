@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
+using System.Collections.Immutable;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
@@ -36,6 +37,7 @@ public class SeedDataHandler : ISeedDataHandler
         {
             jsonRealm = await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options).ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
         }
+        _idOfClients = null;
     }
 
     public string Realm
@@ -78,15 +80,35 @@ public class SeedDataHandler : ISeedDataHandler
         get => jsonRealm?.Users ?? Enumerable.Empty<UserModel>();
     }
 
+    public IEnumerable<AuthenticationFlowModel> TopLevelCustomAuthenticationFlows
+    {
+        get => jsonRealm?.AuthenticationFlows?.Where(x => (x.TopLevel ?? false) && !(x.BuiltIn ?? false)) ?? Enumerable.Empty<AuthenticationFlowModel>();
+    }
+
     public IReadOnlyDictionary<string, string> ClientsDictionary
     {
-        set => _idOfClients = value;
-        get => _idOfClients ?? throw new InvalidOperationException("ClientsDictionary has not yet been set");
+        get => _idOfClients ?? throw new InvalidOperationException("ClientInternalIds have not been set");
+    }
+
+    public async Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds)
+    {
+        var clientIds = new Dictionary<string, string>();
+        await foreach (var (clientId, id) in clientInternalIds.ConfigureAwait(false))
+        {
+            clientIds[clientId] = id;
+        }
+        _idOfClients = clientIds.ToImmutableDictionary();
     }
 
     public string GetIdOfClient(string clientId) =>
-        (_idOfClients ?? throw new InvalidOperationException("ClientsDictionary has not been set before"))
+        (_idOfClients ?? throw new InvalidOperationException("ClientInternalIds have not been set"))
             .TryGetValue(clientId, out var id)
                 ? id ?? throw new ConflictException($"id of client must not be null {clientId}")
                 : throw new ConflictException($"clientId is unknown {clientId}");
+
+    public AuthenticationFlowModel GetAuthenticationFlow(string? alias) =>
+        jsonRealm?.AuthenticationFlows?.Where(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))).SingleOrDefault() ?? throw new ConflictException($"authenticationFlow {alias} does not exist in seeding-data");
+    
+    public IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias) =>
+        GetAuthenticationFlow(alias).AuthenticationExecutions ?? Enumerable.Empty<AuthenticationExecutionModel>();
 }

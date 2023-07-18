@@ -5138,6 +5138,7 @@
     {
       "alias": "CX-Operator",
       "displayName": "CX-Operator",
+      "internalId": "fbc571fd-cd44-4cec-a36e-4eba647fe712",
       "providerId": "keycloak-oidc",
       "enabled": true,
       "updateProfileFirstLoginMode": "on",

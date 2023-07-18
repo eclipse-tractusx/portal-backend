@@ -18,39 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public interface ISeedDataHandler
+public interface IAuthenticationFlowsUpdater
 {
-    Task Import(string path);
-
-    string Realm { get; }
-
-    KeycloakRealm KeycloakRealm { get; }
-
-    IEnumerable<ClientModel> Clients { get; }
-
-    IReadOnlyDictionary<string, IEnumerable<RoleModel>> ClientRoles { get; }
-
-    IEnumerable<RoleModel> RealmRoles { get; }
-
-    IEnumerable<IdentityProviderModel> IdentityProviders { get; }
-
-    IEnumerable<IdentityProviderMapperModel> IdentityProviderMappers { get; }
-
-    IEnumerable<UserModel> Users { get; }
-
-    IEnumerable<AuthenticationFlowModel> TopLevelCustomAuthenticationFlows { get; }
-
-    IReadOnlyDictionary<string, string> ClientsDictionary { get; }
-
-    Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds);
-
-    string GetIdOfClient(string clientId);
-
-    AuthenticationFlowModel GetAuthenticationFlow(string? alias);
-    
-    IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias);
+    Task UpdateAuthenticationFlows(string keycloakInstanceName);
 }

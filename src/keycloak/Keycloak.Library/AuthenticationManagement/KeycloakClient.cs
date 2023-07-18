@@ -182,7 +182,17 @@ public partial class KeycloakClient
             .PutJsonAsync(authenticationExecutionInfo)
             .ConfigureAwait(false);
 
-    public async Task AddAuthenticationFlowExecutionAsync(string realm, string flowAlias, IDictionary<string, object> dataWithProvider) =>
+    public Task AddAuthenticationFlowExecutionAsync(string realm, string flowAlias, IDictionary<string, object> dataWithProvider) =>
+        InternalAddAuthenticationFlowExecutionAsync(realm, flowAlias, dataWithProvider);
+
+    public async Task<string?> AddAndRetrieveAuthenticationFlowExecutionIdAsync(string realm, string flowAlias, IDictionary<string, object> dataWithProvider)
+    {
+        var response = await InternalAddAuthenticationFlowExecutionAsync(realm, flowAlias, dataWithProvider).ConfigureAwait(false);
+        var locationPathAndQuery = response.ResponseMessage.Headers.Location?.PathAndQuery;
+        return locationPathAndQuery != null ? locationPathAndQuery.Substring(locationPathAndQuery.LastIndexOf("/", StringComparison.Ordinal) + 1) : null;
+    }
+
+    private async Task<IFlurlResponse> InternalAddAuthenticationFlowExecutionAsync(string realm, string flowAlias, IDictionary<string, object> dataWithProvider) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
@@ -192,7 +202,17 @@ public partial class KeycloakClient
             .PostJsonAsync(dataWithProvider)
             .ConfigureAwait(false);
 
-    public async Task AddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(string realm, string flowAlias, IDictionary<string, object> dataWithAliasTypeProviderDescription) =>
+    public Task AddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(string realm, string flowAlias, IDictionary<string, object> dataWithAliasTypeProviderDescription) =>
+        InternalAddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(realm, flowAlias, dataWithAliasTypeProviderDescription);
+
+    public async Task<string?> AddAndRetrieveAuthenticationFlowAndExecutionToAuthenticationFlowIdAsync(string realm, string flowAlias, IDictionary<string, object> dataWithAliasTypeProviderDescription)
+    {
+        var response = await InternalAddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(realm, flowAlias, dataWithAliasTypeProviderDescription).ConfigureAwait(false);
+        var locationPathAndQuery = response.ResponseMessage.Headers.Location?.PathAndQuery;
+        return locationPathAndQuery != null ? locationPathAndQuery.Substring(locationPathAndQuery.LastIndexOf("/", StringComparison.Ordinal) + 1) : null;
+    }
+
+    private async Task<IFlurlResponse> InternalAddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(string realm, string flowAlias, IDictionary<string, object> dataWithAliasTypeProviderDescription) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)

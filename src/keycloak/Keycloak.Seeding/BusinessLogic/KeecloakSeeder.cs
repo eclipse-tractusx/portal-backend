@@ -33,7 +33,8 @@ public class KeycloakSeeder
     private readonly IClientsUpdater _clientsUpdater;
     private readonly IIdentityProvidersUpdater _identityProvidersUpdater;
     private readonly IUsersUpdater _usersUpdater;
-    public KeycloakSeeder(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IOptions<KeycloakSeederSettings> options)
+    private readonly IAuthenticationFlowsUpdater _authenticationFlowsUpdater;
+    public KeycloakSeeder(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IAuthenticationFlowsUpdater authenticationFlowsUpdater, IOptions<KeycloakSeederSettings> options)
     {
         _factory = keycloakFactory;
         _seedData = seedDataHandler;
@@ -42,6 +43,7 @@ public class KeycloakSeeder
         _clientsUpdater = clientsUpdater;
         _identityProvidersUpdater = identityProvidersUpdater;
         _usersUpdater = usersUpdater;
+        _authenticationFlowsUpdater = authenticationFlowsUpdater;
         _settings = options.Value;
     }
 
@@ -55,5 +57,6 @@ public class KeycloakSeeder
         await _rolesUpdater.UpdateCompositeRoles(_settings.KeycloakInstanceName).ConfigureAwait(false);
         await _identityProvidersUpdater.UpdateIdentityProviders(_settings.KeycloakInstanceName).ConfigureAwait(false);
         await _usersUpdater.UpdateUsers(_settings.KeycloakInstanceName).ConfigureAwait(false);
+        await _authenticationFlowsUpdater.UpdateAuthenticationFlows(_settings.KeycloakInstanceName).ConfigureAwait(false);
     }
 }
