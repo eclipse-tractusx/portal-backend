@@ -147,6 +147,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task AddFavouriteAppForUserAsync(Guid appId, Guid userId)
     {
         _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, userId);
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

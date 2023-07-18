@@ -342,6 +342,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ContactEmail = appData.ContactEmail;
             app.ContactNumber = appData.ContactNumber;
             app.MarketingUrl = appData.MarketingUrl;
+            app.DateLastChanged = DateTimeOffset.UtcNow;
         });
 
         _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions, appData.OfferDescriptions);
