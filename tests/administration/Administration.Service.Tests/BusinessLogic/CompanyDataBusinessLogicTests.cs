@@ -996,11 +996,11 @@ public class CompanyDataBusinessLogicTests
             .With(x => x.Document, new Document(Guid.NewGuid(), null!, null!, "test-doc.pdf", MediaTypeId.PDF, default, default, default))
             .CreateMany(3);
         var credentials = new AsyncEnumerableStub<CompanySsiDetail>(data);
-        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(CompanySsiDetailStatusId.ACTIVE))!
+        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(CompanySsiDetailStatusId.ACTIVE, null, null))!
             .Returns(credentials.AsQueryable());
 
         // Act
-        var result = await _sut.GetCredentials(0, 15, CompanySsiDetailStatusId.ACTIVE, CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
+        var result = await _sut.GetCredentials(0, 15, CompanySsiDetailStatusId.ACTIVE, null, null, CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
 
         // Assert
         result.Content.Should().HaveCount(credentials.Count());

@@ -262,14 +262,14 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var paginationResponse = new Pagination.Response<CredentialDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CredentialDetailData>(5));
-        A.CallTo(() => _logic.GetCredentials(A<int>._, A<int>._, A<CompanySsiDetailStatusId>._, A<CompanySsiDetailSorting>._))
+        A.CallTo(() => _logic.GetCredentials(A<int>._, A<int>._, A<CompanySsiDetailStatusId?>._, A<VerifiedCredentialTypeId?>._, A<string?>._, A<CompanySsiDetailSorting?>._))
             .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetCredentials(companySsiDetailStatusId: CompanySsiDetailStatusId.ACTIVE, sorting: CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCredentials(0, 15, A<CompanySsiDetailStatusId>._, A<CompanySsiDetailSorting>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCredentials(0, 15, A<CompanySsiDetailStatusId>._, A<VerifiedCredentialTypeId?>._, A<string?>._, A<CompanySsiDetailSorting>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CredentialDetailData>>(result);
         result.Content.Should().HaveCount(5);
     }

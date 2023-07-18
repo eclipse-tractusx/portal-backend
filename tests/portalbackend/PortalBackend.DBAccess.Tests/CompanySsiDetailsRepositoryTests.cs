@@ -78,7 +78,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllCredentialDetails(null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllCredentialDetails(null, null, null).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -91,6 +91,59 @@ public class CompanySsiDetailsRepositoryTests
                 x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
         result.Where(x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).Should().ContainSingle()
             .And.Satisfy(x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
+    }
+
+    [Fact]
+    public async Task GetAllCredentialDetails_WithWithStatusId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetAllCredentialDetails(CompanySsiDetailStatusId.PENDING, null, null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Count.Should().Be(4);
+        result.Should().HaveCount(4);
+        result.Where(x => x.CompanyId == _validCompanyId).Should().HaveCount(3)
+            .And.Satisfy(
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.PCF_FRAMEWORK,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+        result.Where(x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).Should().ContainSingle()
+            .And.Satisfy(x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
+    }
+
+    [Fact]
+    public async Task GetAllCredentialDetails_WithWithCredentialType_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetAllCredentialDetails(null, VerifiedCredentialTypeId.PCF_FRAMEWORK, null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Count.Should().Be(1);
+        result.Should().HaveCount(1);
+        result.Should().ContainSingle().Which.CompanyId.Should().Be(_validCompanyId);
+    }
+
+    [Fact]
+    public async Task GetAllCredentialDetails_WithWithCompanyName_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetAllCredentialDetails(null, null, "Service").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Count.Should().Be(1);
+        result.Should().ContainSingle().Which.CompanyId.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
     }
 
     #endregion
