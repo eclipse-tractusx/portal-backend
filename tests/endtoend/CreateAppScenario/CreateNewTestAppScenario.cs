@@ -35,9 +35,9 @@ public class CreateNewTestAppScenario : EndToEndTestBase
     {
     }
 
-    [Theory]
+    [Theory(DisplayName = "App Release Request Creation")]
     [MemberData(nameof(GetDataEntries))]
-    public async Task Scenario_CreateApp_ReturnsExpectedResult(TestDataModelCreateApp testEntry)
+    public async Task CreateAppRequest(TestDataModelCreateApp testEntry)
     {
         _portalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
             Secrets.PortalUserPassword);

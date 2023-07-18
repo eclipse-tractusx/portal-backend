@@ -21,17 +21,17 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     {
     }
 
-    [Fact]
-    private async Task Scenario0_GetTechUserToken()
+    [Fact(DisplayName = "Service Account Get Access Token")]
+    private async Task GetAccessToken() // in order to just get token once, ensure that method name is alphabetically before other tests cases
     {
         var result = await AdministrationEndpointHelper.GetOperatorToken();
         result.Should().BeTrue("Could not get an access token for technical user.");
     }
 
     //Scenario - Create a new service account
-    [Theory]
+    [Theory(DisplayName = "Service Account Creation")]
     [MemberData(nameof(GetDataEntries))]
-    public void Scenario1_HappyPathCreateServiceAccount(string[] permissions)
+    public void ServiceAccount_Creation(string[] permissions)
     {
         List<CompanyServiceAccountData>? existingServiceAccounts = null;
 
@@ -87,9 +87,9 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     }
 
     //Scenario - Create a new service account and update the same
-    [Theory]
+    [Theory(DisplayName = "Service Account Data Update")]
     [MemberData(nameof(GetDataEntries))]
-    public void Scenario2_HappyPathCreateAndUpdateServiceAccount(string[] permissions)
+    public void ServiceAccount_DataUpdate(string[] permissions)
     {
         //create a new service account
         var newServiceAccount =
@@ -112,9 +112,9 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     }
 
     //Scenario - Create a new service account and update the credentials
-    [Theory]
+    [Theory(DisplayName = "Service Account credential refresh")]
     [MemberData(nameof(GetDataEntries))]
-    public void Scenario3_HappyPathCreateServiceAccountAndUpdateCredentials(string[] permissions)
+    public void ServiceAccount_CredentialRefresh(string[] permissions)
     {
         // create a new service account
         var newServiceAccount =
@@ -137,9 +137,9 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     }
 
     //Scenario - Create and delete a new service account
-    [Theory]
+    [Theory(DisplayName = "Service Account Deletion")]
     [MemberData(nameof(GetDataEntries))]
-    public void Scenario4_HappyPathCreateAndDeleteServiceAccount(string[] permissions)
+    public void ServiceAccount_Deletion(string[] permissions)
     {
         // create a new service account
         var newServiceAccount =

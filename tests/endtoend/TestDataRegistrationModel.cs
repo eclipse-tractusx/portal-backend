@@ -10,4 +10,10 @@ public record TestDataRegistrationModel(
     List<CompanyRoleId> CompanyRoles,
     string? DocumentTypeId,
     string? DocumentName
-);
+)
+{
+    public override string ToString()
+    {
+        return $"Company={CompanyDetailData?.Name}";
+    }
+}

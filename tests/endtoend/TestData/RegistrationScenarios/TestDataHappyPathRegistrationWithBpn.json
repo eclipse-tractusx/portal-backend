@@ -1,5 +1,8 @@
 ﻿[
   {
+    "companyDetailData": {
+      "name": "Test-Catena-X-With-Bpn1"
+    },
     "companyRoles": [
       "ACTIVE_PARTICIPANT", "APP_PROVIDER"
     ],
@@ -7,6 +10,9 @@
     "documentName": "TestDataRegistrationDocument.pdf"
   },
   {
+    "companyDetailData": {
+      "name": "Test-Catena-X-With-Bpn2"
+    },
     "companyRoles": [
       "ACTIVE_PARTICIPANT", "APP_PROVIDER", "SERVICE_PROVIDER"
     ],

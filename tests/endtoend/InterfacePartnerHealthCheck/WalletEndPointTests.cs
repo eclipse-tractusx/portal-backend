@@ -27,7 +27,7 @@ public class WalletEndpointTests : EndToEndTestBase
     }
 
     [Fact]
-    public void Scenario_InterfaceHealthCheckWalletCreation()
+    public void WalletCreationInterface_CreateAndDuplicationCheck()
     {
         Bpn = $"TestAutomation_{DateTime.Now:s}";
         InterfaceHealthCheckTechUserToken =
@@ -35,15 +35,15 @@ public class WalletEndpointTests : EndToEndTestBase
                 Secrets.InterfaceHealthCheckTechClientSecret);
         if (InterfaceHealthCheckTechUserToken.IsNullOrEmpty())
             throw new Exception("Could not fetch token for interface partner health check");
-        GetListOfWallets_ReturnsExpectedResult();
+        GetListOfWallets();
         Thread.Sleep(3000);
-        CreateWallet_ReturnsExpectedResult(201);
+        CreateWallet(201);
         Thread.Sleep(3000);
-        CreateWallet_ReturnsExpectedResult(409);
+        CreateWallet(409);
     }
 
     //GET: /api/wallets
-    private static void GetListOfWallets_ReturnsExpectedResult()
+    private static void GetListOfWallets()
     {
         Given()
             .DisableSslCertificateValidation()
@@ -58,7 +58,7 @@ public class WalletEndpointTests : EndToEndTestBase
     }
 
     //POST: /api/wallets
-    private static void CreateWallet_ReturnsExpectedResult(int statusCode)
+    private static void CreateWallet(int statusCode)
     {
         Given()
             .DisableSslCertificateValidation()

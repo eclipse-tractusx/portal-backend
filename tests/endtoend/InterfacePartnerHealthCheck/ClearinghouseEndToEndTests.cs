@@ -26,7 +26,7 @@ public class ClearinghouseEndToEndTests : EndToEndTestBase
     }
 
     [Fact]
-    public void ClearinghouseInterfaceHealthCheck_ReturnsExpectedResult()
+    public void ClearinghouseInterface_HealthCheck()
     {
         ClearingHouseUserToken =
             TechTokenRetriever.GetToken(BaseTokenUrl,

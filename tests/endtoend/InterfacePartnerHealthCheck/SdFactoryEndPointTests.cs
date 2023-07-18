@@ -27,7 +27,7 @@ public class SdFactoryEndpointTests : EndToEndTestBase
     }
 
     [Fact]
-    public void InterfaceHealthCheckSdDocCreation_ReturnsExpectedResult()
+    public void InterfaceHealthCheck_SdDocCreation()
     {
         InterfaceHealthCheckTechUserToken = TechTokenRetriever.GetToken(TokenUrl,
             Secrets.InterfaceHealthCheckTechClientId,

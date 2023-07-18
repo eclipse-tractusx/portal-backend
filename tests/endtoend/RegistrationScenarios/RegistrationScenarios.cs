@@ -16,9 +16,9 @@ public class RegistrationScenarios : EndToEndTestBase
     {
     }
 
-    [Theory]
+    [Theory(DisplayName = "Company Registration with manual data input")]
     [MemberData(nameof(GetDataEntriesForRegistrationWithoutBpn))]
-    public async Task Scenario1_HappyPathRegistrationWithoutBpn(TestDataRegistrationModel testEntry)
+    public async Task CompanyRegistration_WithManualDataInput(TestDataRegistrationModel testEntry)
     {
         if (testEntry == null)
             throw new ArgumentNullException(nameof(testEntry));
@@ -58,9 +58,9 @@ public class RegistrationScenarios : EndToEndTestBase
         storedCompanyDetailData.Should().NotBeNull();
     }
 
-    [Theory]
+    [Theory(DisplayName = "Company Registration - add company data and update company data")]
     [MemberData(nameof(GetDataEntriesForUpdateCompanyDetailDataWithoutBpn))]
-    public async Task Scenario2_HappyPathUpdateCompanyDetailDataWithoutBpn(TestDataRegistrationModel testEntry)
+    public async Task CompanyRegistration_AddAndUpdateCompanyData(TestDataRegistrationModel testEntry)
     {
         if (testEntry.CompanyDetailData is null || testEntry.UpdateCompanyDetailData is null)
         {
@@ -76,8 +76,8 @@ public class RegistrationScenarios : EndToEndTestBase
         RegistrationEndpointHelper.UpdateCompanyDetailData(testEntry.UpdateCompanyDetailData);
     }
 
-    [Fact]
-    public async Task Scenario3_HappyPathInRegistrationUserInvite()
+    [Fact(DisplayName = "Company Registration with manual data input & additional user invite")]
+    public async Task CompanyRegistration_WithManualDataInputAndAdditionalUserInvite()
     {
         var now = DateTime.Now;
         var userCompanyName = $"Test-Catena-X_{now:s}";
@@ -87,9 +87,9 @@ public class RegistrationScenarios : EndToEndTestBase
         RegistrationEndpointHelper.InviteNewUser();
     }
 
-    [Theory]
+    [Theory(DisplayName = "Company Registration by BPN")]
     [MemberData(nameof(GetDataEntriesForRegistrationWithBpn))]
-    public async Task Scenario4_HappyPath_RegistrationWithBpn(TestDataRegistrationModel testEntry)
+    public async Task CompanyRegistration_ByBpn(TestDataRegistrationModel testEntry)
     {
         var bpn = RegistrationEndpointHelper.GetBpn().Result;
         var bpdmCompanyDetailData = RegistrationEndpointHelper.GetCompanyBpdmDetailData(bpn);

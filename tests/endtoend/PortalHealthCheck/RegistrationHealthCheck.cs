@@ -25,7 +25,7 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public async Task Test0_Setup_GetToken()
+    public async Task GetAccessToken() // in order to just get token once, ensure that method name is alphabetically before other tests cases
     {
         PortalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
             Secrets.PortalUserPassword);
@@ -34,7 +34,7 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public void Test1_GetCompanyRoles_ReturnsExpectedResult()
+    public void GetCompanyRoles()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -52,7 +52,7 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public void Test2_GetCompanyRoleAgreementData_ReturnsExpectedResult()
+    public void GetCompanyRoleAgreementData()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -71,7 +71,7 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public void Test3_GetClientRolesComposite_ReturnsExpectedResult()
+    public void GetClientRolesComposite()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -89,7 +89,7 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public void Test4_GetApplicationsWithStatus_ReturnsExpectedResult()
+    public void GetApplicationsWithStatus()
     {
         var response = Given()
             .DisableSslCertificateValidation()

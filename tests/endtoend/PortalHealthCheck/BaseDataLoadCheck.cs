@@ -25,7 +25,7 @@ public class BaseDataLoadCheck : EndToEndTestBase
     }
 
     [Fact]
-    public async Task Test0_Setup_GetToken()
+    public async Task GetAccessToken() // in order to just get token once, ensure that method name is alphabetically before other tests cases
     {
         PortalUserToken = await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
             Secrets.PortalUserPassword);
@@ -35,7 +35,7 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     // GET: /api/administration/staticdata/usecases
     [Fact]
-    public void Test1_GetUseCaseData_ReturnsExpectedResult()
+    public void GetUseCaseData()
     {
         if (PortalUserToken.IsNullOrEmpty())
             throw new Exception("Portal user token could not be fetched");
@@ -58,7 +58,7 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     //     GET: /api/administration/staticdata/languagetags
     [Fact]
-    public void Test2_GetAppLanguageTags_ReturnsExpectedResult()
+    public void GetAppLanguageTags()
     {
         if (PortalUserToken.IsNullOrEmpty())
             throw new Exception("Portal user token could not be fetched");
@@ -81,7 +81,7 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     //     GET: /api/administration/staticdata/licenseType
     [Fact]
-    public void Test3_GetAllLicenseTypes_ReturnsExpectedResult()
+    public void GetAllLicenseTypes()
     {
         if (PortalUserToken.IsNullOrEmpty())
             throw new Exception("Portal user token could not be fetched");
@@ -104,7 +104,7 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     //     GET: api/administration/user/owncompany/users
     [Fact]
-    public void Test4_GetCompanyUserData_ReturnsExpectedResult()
+    public void GetCompanyUserData()
     {
         if (PortalUserToken.IsNullOrEmpty())
             throw new Exception("Portal user token could not be fetched");
@@ -127,7 +127,7 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     //     GET: api/administration/companydata/ownCompanyDetails
     [Fact]
-    public void Test5_GetOwnCompanyDetails_ReturnsExpectedResult()
+    public void GetOwnCompanyDetails()
     {
         if (PortalUserToken.IsNullOrEmpty())
             throw new Exception("Portal user token could not be fetched");
