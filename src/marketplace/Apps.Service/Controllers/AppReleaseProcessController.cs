@@ -301,6 +301,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="200">Returns the list of all in review status marketplace apps.</response>
     [HttpGet]
     [Route("inReview")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Authorize(Roles = "approve_app_release,decline_app_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, OfferStatusIdFilter? offerStatusIdFilter = null) =>
@@ -342,6 +343,7 @@ public class AppReleaseProcessController : ControllerBase
     [Route("{appId}/approveApp")]
     [Authorize(Roles = "approve_app_release")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
@@ -381,6 +383,7 @@ public class AppReleaseProcessController : ControllerBase
     [Route("{appId:guid}/declineApp")]
     [Authorize(Roles = "decline_app_release")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

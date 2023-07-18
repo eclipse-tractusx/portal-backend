@@ -228,6 +228,7 @@ public class ConnectorsController : ControllerBase
     [Authorize(Roles = "submit_connector_sd")]
     [Route("clearinghouse/selfDescription")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
