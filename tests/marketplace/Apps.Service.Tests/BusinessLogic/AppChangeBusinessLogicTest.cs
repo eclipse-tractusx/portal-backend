@@ -603,10 +603,10 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
 
         // Act
-        await _sut.DeactivateOfferByAppIdAsync(appId, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.DeactivateOfferByAppIdAsync(appId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, _identity.CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -654,7 +654,7 @@ public class AppChangeBusinessLogicTest
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
@@ -708,7 +708,7 @@ public class AppChangeBusinessLogicTest
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
@@ -759,7 +759,7 @@ public class AppChangeBusinessLogicTest
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustNotHaveHappened();
@@ -783,7 +783,7 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _identity.CompanyId))
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, oldUrl, A<string>._)).MustNotHaveHappened();
@@ -802,7 +802,7 @@ public class AppChangeBusinessLogicTest
         var subscriptionId = _fixture.Create<Guid>();
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -826,7 +826,7 @@ public class AppChangeBusinessLogicTest
             .Returns((OfferUpdateUrlData?)null);
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -852,7 +852,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", true, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -878,7 +878,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, false, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -904,7 +904,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.PENDING, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -928,7 +928,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, null));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

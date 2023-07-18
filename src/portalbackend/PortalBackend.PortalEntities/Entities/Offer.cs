@@ -101,7 +101,7 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual OfferStatus? OfferStatus { get; set; }
 
     public virtual LicenseType? LicenseType { get; set; }
-
+    public virtual Identity? LastEditor { get; set; }
     public virtual AppInstanceSetup? AppInstanceSetup { get; set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }

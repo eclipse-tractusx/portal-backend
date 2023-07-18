@@ -37,10 +37,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers
 
 public class ServiceControllerTest
 {
-    private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private const string AccessToken = "THISISTHEACCESSTOKEN";
     private static readonly Guid ServiceId = new("4C1A6851-D4E7-4E10-A011-3732CD045453");
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IFixture _fixture;
     private readonly IServiceBusinessLogic _logic;
     private readonly ServicesController _controller;
@@ -50,7 +49,7 @@ public class ServiceControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<IServiceBusinessLogic>();
         this._controller = new ServicesController(_logic);
-        _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken, _identity);
+        _controller.AddControllerContextWithClaimAndBearer(AccessToken, _identity);
     }
 
     [Fact]

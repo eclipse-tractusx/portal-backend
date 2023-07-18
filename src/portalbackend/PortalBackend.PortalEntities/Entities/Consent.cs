@@ -72,6 +72,7 @@ public class Consent : IAuditableV1, IBaseEntity
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual ConsentStatus? ConsentStatus { get; private set; }
     public virtual Document? Document { get; private set; }
+    public virtual Identity? LastEditor { get; private set; }
     public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
 }

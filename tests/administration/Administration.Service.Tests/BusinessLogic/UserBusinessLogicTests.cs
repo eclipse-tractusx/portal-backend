@@ -1344,8 +1344,8 @@ public class UserBusinessLogicTests
             A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>._, A<Guid>._)).Returns((_fixture.Create<CompanyNameIdpAliasData>(), _fixture.Create<string>()));
         }
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken) =>
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Guid>._, A<CancellationToken>._))
+            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, Guid _, CancellationToken _) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
         A.CallTo(() => _userProvisioningService.GetIdentityProviderDisplayName(A<string>._)).Returns(_displayName);

@@ -237,7 +237,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateService([FromRoute] Guid serviceId, [FromBody] ServiceUpdateRequestData data)
     {
-        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, companyId));
+        await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, identity));
         return NoContent();
     }
 

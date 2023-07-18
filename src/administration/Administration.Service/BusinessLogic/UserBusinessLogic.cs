@@ -115,7 +115,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
-        await foreach (var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
+        await foreach (var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps, identity.UserId).ConfigureAwait(false))
         {
             var email = emailData[userName];
 
@@ -177,7 +177,8 @@ public class UserBusinessLogic : IUserBusinessLogic
                     roleDatas,
                     userCreationInfo.UserName,
                     userCreationInfo.UserId
-                ), 1).ToAsyncEnumerable())
+                ), 1).ToAsyncEnumerable(),
+                identity.UserId)
             .FirstAsync()
             .ConfigureAwait(false);
 
@@ -356,6 +357,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 cu.Firstname = ownCompanyUserEditableDetails.FirstName;
                 cu.Lastname = ownCompanyUserEditableDetails.LastName;
                 cu.Email = ownCompanyUserEditableDetails.Email;
+                cu.LastEditorId = userId;
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new CompanyUserDetails(

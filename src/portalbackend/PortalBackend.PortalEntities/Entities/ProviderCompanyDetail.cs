@@ -58,4 +58,5 @@ public class ProviderCompanyDetail : IAuditableV1, IBaseEntity
 
     // Navigation properties
     public virtual Company? Company { get; private set; }
+    public virtual Identity? LastEditor { get; private set; }
 }

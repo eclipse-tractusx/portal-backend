@@ -520,7 +520,11 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         await _dapsService
             .UpdateDapsConnectorUrl(connector.DapsClientId, data.ConnectorUrl, bpn, cancellationToken)
             .ConfigureAwait(false);
-        connectorsRepository.AttachAndModifyConnector(connectorId, null, con => { con.ConnectorUrl = data.ConnectorUrl; });
+        connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
+        {
+            con.ConnectorUrl = data.ConnectorUrl;
+            con.LastEditorId = identity.UserId;
+        });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

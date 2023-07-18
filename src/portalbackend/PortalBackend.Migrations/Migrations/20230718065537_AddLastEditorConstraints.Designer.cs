@@ -22,6 +22,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
 #nullable disable
@@ -29,9 +32,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230718065537_AddLastEditorConstraints")]
+    partial class AddLastEditorConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -5212,10 +5216,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompaniesLinkedServiceAccount", b =>
                 {
-                    b.Property<Guid>("ServiceAccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("service_account_id");
-
                     b.Property<Guid>("Owners")
                         .HasColumnType("uuid")
                         .HasColumnName("owners");
@@ -5224,7 +5224,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("provider");
 
-                    b.HasKey("ServiceAccountId");
+                    b.Property<Guid>("ServiceAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_account_id");
 
                     b.ToTable((string)null);
 
@@ -6191,10 +6193,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Notification", b =>
                 {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "Creator")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "Creator")
                         .WithMany("CreatedNotifications")
                         .HasForeignKey("CreatorUserId")
-                        .HasConstraintName("fk_notifications_identities_creator_id");
+                        .HasConstraintName("fk_notifications_company_users_creator_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
                         .WithMany("Notifications")
@@ -6702,18 +6704,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("VerifiedCredentialType");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompaniesLinkedServiceAccount", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
-                        .WithOne("CompaniesLinkedServiceAccount")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompaniesLinkedServiceAccount", "ServiceAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_company_linked_service_accounts_company_service_accounts_co");
-
-                    b.Navigation("CompanyServiceAccount");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
                     b.Navigation("Companies");
@@ -6815,8 +6805,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 {
                     b.Navigation("AppInstances");
 
-                    b.Navigation("CompaniesLinkedServiceAccount");
-
                     b.Navigation("Connector");
                 });
 
@@ -6842,6 +6830,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyUserAssignedBusinessPartners");
 
                     b.Navigation("Consents");
+
+                    b.Navigation("CreatedNotifications");
 
                     b.Navigation("Documents");
 
@@ -6925,8 +6915,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyServiceAccount");
 
                     b.Navigation("CompanyUser");
-
-                    b.Navigation("CreatedNotifications");
 
                     b.Navigation("IdentityAssignedRoles");
                 });

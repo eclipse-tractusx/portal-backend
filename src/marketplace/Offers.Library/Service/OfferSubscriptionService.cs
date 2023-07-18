@@ -137,7 +137,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         Guid offerId,
         IOfferSubscriptionsRepository offerSubscriptionsRepository,
         CompanyInformationData companyInformation,
-        Guid companyUserId)
+        Guid userId)
     {
         var activeOrPendingSubscriptionExists = await offerSubscriptionsRepository
             .CheckPendingOrActiveSubscriptionExists(offerId, companyInformation.CompanyId, OfferTypeId.APP)
@@ -147,7 +147,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             throw new ConflictException($"company {companyInformation.CompanyId} is already subscribed to {offerId}");
         }
 
-        return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, userId, userId);
     }
 
     private void CreateConsentsForSubscription(Guid offerSubscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid companyId, Guid companyUserId)

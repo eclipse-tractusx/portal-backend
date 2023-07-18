@@ -44,11 +44,9 @@ public class Identity : IBaseEntity, IAuditableV1
     public virtual CompanyUser? CompanyUser { get; set; }
     public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
     public virtual Company? Company { get; set; }
-
     public virtual IdentityUserStatus? IdentityStatus { get; set; }
-
     public virtual IdentityType? IdentityType { get; set; }
-
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
     public virtual ICollection<IdentityAssignedRole> IdentityAssignedRoles { get; private set; }
+    public virtual Identity? LastEditor { get; private set; }
 }

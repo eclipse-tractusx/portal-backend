@@ -200,20 +200,20 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task DeactivateOfferByAppIdAsync(Guid appId, Guid companyId) =>
-        _offerService.DeactivateOfferIdAsync(appId, companyId, OfferTypeId.APP);
+    public Task DeactivateOfferByAppIdAsync(Guid appId, (Guid UserId, Guid CompanyId) identity) =>
+        _offerService.DeactivateOfferIdAsync(appId, identity, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, Guid companyId)
+    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, (Guid UserId, Guid CompanyId) identity)
     {
         data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
-        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, companyId);
+        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, identity);
     }
 
-    private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, Guid companyId)
+    private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, (Guid UserId, Guid CompanyId) identity)
     {
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(false);
+        var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, identity.CompanyId).ConfigureAwait(false);
         if (result == null)
         {
             throw new NotFoundException($"Offer {offerId} or subscription {subscriptionId} do not exists");
@@ -227,7 +227,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (!isUserOfCompany)
         {
-            throw new ForbiddenException($"Company {companyId} is not the app's providing company");
+            throw new ForbiddenException($"Company {identity.CompanyId} is not the app's providing company");
         }
 
         if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)
@@ -251,6 +251,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             os =>
             {
                 os.AppSubscriptionUrl = url;
+                os.LastEditorId = identity.UserId;
             });
 
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(offerId, offer =>

@@ -53,6 +53,7 @@ public class UserProvisioningService : IUserProvisioningService
     public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(
         CompanyNameIdpAliasData companyNameIdpAliasData,
         IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos,
+        Guid userId,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
@@ -98,6 +99,7 @@ public class UserProvisioningService : IUserProvisioningService
                     userRepository.AttachAndModifyIdentity(companyUserId, null, cu =>
                     {
                         cu.UserEntityId = centralUserId;
+                        cu.LastEditorId = userId;
                     });
                 }
                 else

@@ -45,7 +45,7 @@ public class NotificationControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<INotificationBusinessLogic>();
         this._controller = new NotificationController(_logic);
-        _controller.AddControllerContextWithClaimAndBearer(_identity.UserEntityId, "THISISTHEACCESSTOKEN", _identity);
+        _controller.AddControllerContextWithClaimAndBearer("THISISTHEACCESSTOKEN", _identity);
     }
 
     [Fact]

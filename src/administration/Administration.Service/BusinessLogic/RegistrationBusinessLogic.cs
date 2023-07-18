@@ -403,7 +403,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task DeclineRegistrationVerification(Guid applicationId, string comment)
+    public async Task DeclineRegistrationVerification(Guid applicationId, string comment, Guid userId)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (result == default)
@@ -439,6 +439,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
             application.DateLastChanged = DateTimeOffset.UtcNow;
+            application.LastEditorId = userId;
         });
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, company =>
         {

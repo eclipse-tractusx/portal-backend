@@ -98,8 +98,8 @@ public interface IServiceReleaseBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service to update</param>
     /// <param name="data">Data of the updated entry</param>
-    /// <param name="companyId">Id of the current users company</param>
-    Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, Guid companyId);
+    /// <param name="identity">Users identity</param>
+    Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, (Guid UserId, Guid CompanyId) identity);
 
     /// <summary>
     /// Update app status and create notification

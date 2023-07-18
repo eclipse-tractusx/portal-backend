@@ -170,9 +170,9 @@ public interface IOfferService
     /// Deactivate the given offerStatus by offerId and offerType
     /// </summary>
     /// <param name="offerId">Id of the offer that should be Deactivate</param>
-    /// <param name="companyId">Id of the users company</param>
+    /// <param name="identity">Users identity</param>
     /// <param name="offerTypeId">Type of the offer</param>
-    Task DeactivateOfferIdAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
+    Task DeactivateOfferIdAsync(Guid offerId, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Update offer status and create notification for Service

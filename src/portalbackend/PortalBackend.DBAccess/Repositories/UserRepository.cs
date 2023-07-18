@@ -73,9 +73,7 @@ public class UserRepository : IUserRepository
 
     public void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? initialize, Action<CompanyUser> setOptionalParameters)
     {
-        var companyUser = new CompanyUser(companyUserId,
-            // Guid.Empty, default, default, 
-            Guid.Empty);
+        var companyUser = new CompanyUser(companyUserId, Guid.Empty);
         initialize?.Invoke(companyUser);
         var updatedEntity = _dbContext.Attach(companyUser).Entity;
         setOptionalParameters.Invoke(updatedEntity);

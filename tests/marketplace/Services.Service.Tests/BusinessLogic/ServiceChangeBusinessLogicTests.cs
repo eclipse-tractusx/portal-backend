@@ -66,10 +66,10 @@ public class ServiceChangeBusinessLogicTests
         // Arrange
         var serviceId = _fixture.Create<Guid>();
         // Act
-        await _sut.DeactivateOfferByServiceIdAsync(serviceId, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.DeactivateOfferByServiceIdAsync(serviceId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.DeactivateOfferIdAsync(serviceId, _identity.CompanyId, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.DeactivateOfferIdAsync(serviceId, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

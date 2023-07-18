@@ -38,9 +38,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers
 
 public class ServiceReleaseControllerTest
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private const string AccessToken = "THISISTHEACCESSTOKEN";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private static readonly Guid ServiceId = new("4C1A6851-D4E7-4E10-A011-3732CD045453");
     private readonly IFixture _fixture;
     private readonly IServiceReleaseBusinessLogic _logic;
@@ -50,7 +49,7 @@ public class ServiceReleaseControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<IServiceReleaseBusinessLogic>();
         this._controller = new ServiceReleaseController(_logic);
-        _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken, _identity);
+        _controller.AddControllerContextWithClaimAndBearer(AccessToken, _identity);
     }
 
     [Fact]
@@ -215,14 +214,14 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = _fixture.Create<Guid>();
         var data = _fixture.Create<ServiceUpdateRequestData>();
-        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._, _identity.CompanyId))
+        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)))
             .Returns(Task.CompletedTask);
 
         //Act
         var result = await this._controller.UpdateService(serviceId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId))).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

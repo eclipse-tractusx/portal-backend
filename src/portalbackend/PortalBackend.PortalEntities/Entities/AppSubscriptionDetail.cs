@@ -79,4 +79,5 @@ public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
     /// Subscription of an offer
     /// </summary>
     public virtual OfferSubscription? OfferSubscription { get; private set; }
+    public virtual Identity? LastEditor { get; set; }
 }

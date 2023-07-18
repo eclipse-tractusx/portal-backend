@@ -421,7 +421,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -437,7 +437,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -463,7 +463,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
+        await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         if (withClient)

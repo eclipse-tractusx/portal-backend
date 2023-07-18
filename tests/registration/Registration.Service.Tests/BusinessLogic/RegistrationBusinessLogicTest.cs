@@ -472,7 +472,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null, null, null, null, null, uniqueIdData);
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<Guid>()).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, new ValueTuple<Guid, Guid>(Guid.NewGuid(), Guid.NewGuid())).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -501,7 +501,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => (CompanyApplicationDetailData?)null);
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -533,7 +533,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => _fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData, identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData, new ValueTuple<Guid, Guid>(identity.UserId, identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -582,7 +582,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData, identity.CompanyId).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData, new ValueTuple<Guid, Guid>(identity.UserId, identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
@@ -659,7 +659,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData, identity.CompanyId).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData, new ValueTuple<Guid, Guid>(identity.UserId, identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
@@ -744,7 +744,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData, identity.CompanyId).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData, new ValueTuple<Guid, Guid>(identity.UserId, identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
@@ -826,7 +826,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData, identity.CompanyId).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData, new ValueTuple<Guid, Guid>(identity.UserId, identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(companyId, A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._)).MustHaveHappenedOnceExactly();
@@ -861,7 +861,7 @@ public class RegistrationBusinessLogicTest
             .Returns((false, null!));
 
         // Act
-        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<Guid>());
+        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, new ValueTuple<Guid, Guid>(Guid.NewGuid(), Guid.NewGuid()));
 
         //Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -893,7 +893,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, new[] { identifiers.First() }));
 
         // Act
-        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<Guid>());
+        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, new ValueTuple<Guid, Guid>(Guid.NewGuid(), Guid.NewGuid()));
 
         //Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -920,7 +920,7 @@ public class RegistrationBusinessLogicTest
             null!);
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, 0, _fixture.Create<Guid>()).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, 0, new ValueTuple<Guid, Guid>(Guid.NewGuid(), Guid.NewGuid())).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -945,7 +945,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>());
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, _fixture.Create<Guid>()).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, new ValueTuple<Guid, Guid>(Guid.NewGuid(), Guid.NewGuid())).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -970,7 +970,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, CompanyApplicationStatusId.CREATED));
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, _fixture.Create<Guid>()).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, new ValueTuple<Guid, Guid>(Guid.NewGuid(), Guid.NewGuid())).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act).ConfigureAwait(false);
@@ -995,7 +995,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, CompanyApplicationStatusId.VERIFY));
 
         // Act
-        await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.SUBMITTED, _fixture.Create<Guid>()).ConfigureAwait(false);
+        await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.SUBMITTED, new ValueTuple<Guid, Guid>(Guid.NewGuid(), Guid.NewGuid())).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1259,7 +1259,7 @@ public class RegistrationBusinessLogicTest
 
         await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName), A<List<string>>._)).MustHaveHappened();
@@ -1352,7 +1352,7 @@ public class RegistrationBusinessLogicTest
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
@@ -2558,8 +2558,8 @@ public class RegistrationBusinessLogicTest
 
     private void SetupFakesForInvitation()
     {
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken _) =>
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Guid>._, A<CancellationToken>._))
+            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, Guid _, CancellationToken _) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))

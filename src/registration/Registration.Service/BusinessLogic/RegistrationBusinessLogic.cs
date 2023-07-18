@@ -279,7 +279,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         );
     }
 
-    public Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, Guid companyId)
+    public Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, (Guid UserId, Guid CompanyId) identity)
     {
         if (string.IsNullOrWhiteSpace(companyDetails.Name))
         {
@@ -308,17 +308,17 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             var duplicateIds = companyDetails.UniqueIds.Except(distinctIds);
             throw new ControllerArgumentException($"uniqueIds must not contain duplicate types: '{string.Join(", ", duplicateIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
         }
-        return SetCompanyDetailDataInternal(applicationId, companyDetails, companyId);
+        return SetCompanyDetailDataInternal(applicationId, companyDetails, identity);
     }
 
-    private async Task SetCompanyDetailDataInternal(Guid applicationId, CompanyDetailData companyDetails, Guid companyId)
+    private async Task SetCompanyDetailDataInternal(Guid applicationId, CompanyDetailData companyDetails, (Guid UserId, Guid CompanyId) identity)
     {
         await ValidateCountryAssignedIdentifiers(companyDetails).ConfigureAwait(false);
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
 
-        var companyApplicationData = await GetAndValidateApplicationData(applicationId, companyDetails, companyId, applicationRepository).ConfigureAwait(false);
+        var companyApplicationData = await GetAndValidateApplicationData(applicationId, companyDetails, identity.CompanyId, applicationRepository).ConfigureAwait(false);
 
         var addressId = CreateOrModifyAddress(companyApplicationData, companyDetails, companyRepository);
 
@@ -326,7 +326,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         companyRepository.CreateUpdateDeleteIdentifiers(companyDetails.CompanyId, companyApplicationData.UniqueIds, companyDetails.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
 
-        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
+        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, identity.UserId, applicationRepository);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -473,7 +473,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             ""
         )}.ToAsyncEnumerable();
 
-        var (newCompanyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
+        var (newCompanyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps, identity.UserId).SingleAsync().ConfigureAwait(false);
 
         if (error != null)
         {
@@ -507,7 +507,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return modified;
     }
 
-    public async Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, Guid companyId)
+    public async Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, (Guid UserId, Guid CompanyId) identity)
     {
         if (status == 0)
         {
@@ -515,13 +515,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserDataAsync(applicationId, companyId).ConfigureAwait(false);
+        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserDataAsync(applicationId, identity.CompanyId).ConfigureAwait(false);
         if (!applicationUserData.Exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
         }
 
-        ValidateCompanyApplicationStatus(applicationId, status, applicationUserData, applicationRepository);
+        ValidateCompanyApplicationStatus(applicationId, status, applicationUserData, applicationRepository, identity.UserId);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -590,7 +590,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         HandleConsent(consents, agreementConsentsToSet, consentRepository, companyId, userId);
 
-        UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>());
+        UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, userId, _portalRepositories.GetInstance<IApplicationRepository>());
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -643,6 +643,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                     application.ChecklistProcessId = process.Id;
+                    application.LastEditorId = userId;
                 });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -803,7 +804,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
 
     private static void HandleConsent(IEnumerable<ConsentData> consents, IEnumerable<AgreementConsentStatus> agreementConsentsToSet,
-        IConsentRepository consentRepository, Guid companyId, Guid companyUserId)
+        IConsentRepository consentRepository, Guid companyId, Guid userId)
     {
         var consentsToInactivate = consents
             .Where(consent =>
@@ -813,7 +814,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         consentRepository.AttachAndModifiesConsents(consentsToInactivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.INACTIVE;
-            consent.LastEditorId = companyUserId;
+            consent.LastEditorId = userId;
         });
 
         var consentsToActivate = consents
@@ -825,7 +826,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         consentRepository.AttachAndModifiesConsents(consentsToActivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.ACTIVE;
-            consent.LastEditorId = companyUserId;
+            consent.LastEditorId = userId;
         });
 
         foreach (var agreementConsentToAdd in agreementConsentsToSet
@@ -834,7 +835,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                          && !consents.Any(activeConsent =>
                              activeConsent.AgreementId == agreementConsent.AgreementId)))
         {
-            consentRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId,
+            consentRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, userId,
                 ConsentStatusId.ACTIVE);
         }
     }
@@ -842,7 +843,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private static void ValidateCompanyApplicationStatus(Guid applicationId,
         CompanyApplicationStatusId status,
         (bool Exists, CompanyApplicationStatusId StatusId) applicationData,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository,
+        Guid userId)
     {
         var allowedCombination = new (CompanyApplicationStatusId applicationStatus, CompanyApplicationStatusId status)[]
         {
@@ -865,15 +867,20 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         applicationRepository.AttachAndModifyCompanyApplication(applicationId, a =>
         {
             a.ApplicationStatusId = status;
+            a.LastEditorId = userId;
         });
     }
 
-    private static void UpdateApplicationStatus(Guid applicationId, CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type, IApplicationRepository applicationRepository)
+    private static void UpdateApplicationStatus(Guid applicationId, CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type, Guid userId, IApplicationRepository applicationRepository)
     {
         var updateStatus = GetAndValidateUpdateApplicationStatus(applicationStatusId, type);
         if (updateStatus != default)
         {
-            applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca => ca.ApplicationStatusId = updateStatus);
+            applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
+            {
+                ca.ApplicationStatusId = updateStatus;
+                ca.LastEditorId = userId;
+            });
         }
     }
 

@@ -285,7 +285,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateAppRelease([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
     {
-        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, companyId).ConfigureAwait(false));
+        await this.WithUserIdAndCompanyId(identity => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, identity).ConfigureAwait(false));
         return NoContent();
     }
 

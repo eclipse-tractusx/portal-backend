@@ -403,6 +403,7 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.IN_REVIEW;
             offer.DateLastChanged = DateTimeOffset.UtcNow;
+            offer.LastEditorId = userId;
         });
 
         var notificationContent = new
@@ -480,6 +481,7 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.ACTIVE;
             offer.DateReleased = DateTime.UtcNow;
+            offer.LastEditorId = userId;
         });
 
         var technicalUserIds = offerTypeId == OfferTypeId.APP && offerDetails.IsSingleInstance
@@ -540,6 +542,7 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.CREATED;
             offer.DateLastChanged = DateTime.UtcNow;
+            offer.LastEditorId = userId;
         });
 
         if (declineData.ActiveDocumentStatusDatas.Any())
@@ -617,10 +620,10 @@ public class OfferService : IOfferService
         }
     }
 
-    public async Task DeactivateOfferIdAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId)
+    public async Task DeactivateOfferIdAsync(Guid offerId, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var offerData = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, companyId).ConfigureAwait(false);
+        var offerData = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, identity.CompanyId).ConfigureAwait(false);
         if (offerData == default)
         {
             throw new NotFoundException($"{offerTypeId} {offerId} does not exist.");
@@ -637,6 +640,7 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.INACTIVE;
             offer.DateReleased = DateTime.UtcNow;
+            offer.LastEditorId = identity.UserId;
         });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

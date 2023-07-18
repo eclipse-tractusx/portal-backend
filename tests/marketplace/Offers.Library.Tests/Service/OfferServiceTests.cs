@@ -1182,7 +1182,7 @@ public class OfferServiceTests
             .Returns(((bool, bool))default);
 
         // Act
-        async Task Act() => await _sut.DeactivateOfferIdAsync(notExistingId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeactivateOfferIdAsync(notExistingId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId), offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1200,7 +1200,7 @@ public class OfferServiceTests
             .Returns((true, false));
 
         // Act
-        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId), offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -1219,7 +1219,7 @@ public class OfferServiceTests
             .Returns((false, true));
 
         // Act
-        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId), offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1246,7 +1246,7 @@ public class OfferServiceTests
             });
 
         // Act
-        await _sut.DeactivateOfferIdAsync(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        await _sut.DeactivateOfferIdAsync(offerId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId), offerTypeId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();

@@ -94,13 +94,13 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountData.AuthData.Secret);
     }
 
-    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, Guid companyId)
+    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, (Guid UserId, Guid CompanyId) identity)
     {
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(false);
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, identity.CompanyId).ConfigureAwait(false);
         if (result == default)
         {
-            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {identity.CompanyId}");
         }
         if (result.statusId == ConnectorStatusId.ACTIVE || result.statusId == ConnectorStatusId.PENDING)
         {
@@ -110,6 +110,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
         {
             i.UserStatusId = UserStatusId.INACTIVE;
+            i.LastEditorId = identity.UserId;
         });
 
         // serviceAccount
@@ -130,6 +131,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                 connector =>
                 {
                     connector.CompanyServiceAccountId = null;
+                    connector.LastEditorId = identity.UserId;
                 });
         }
 

@@ -39,6 +39,7 @@ public class UserProvisioningServiceCreateUsersTests
     private readonly int _indexSpecialUser;
     private readonly string _firstNameSpecialUser;
     private readonly Guid _companyUserIdSpecialUser;
+    private readonly Guid _userId;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
@@ -93,6 +94,7 @@ public class UserProvisioningServiceCreateUsersTests
         await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp,
+            _userId,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
@@ -114,6 +116,7 @@ public class UserProvisioningServiceCreateUsersTests
         await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasDataSharedIdp,
             userCreationInfoIdp,
+            _userId,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
@@ -135,6 +138,7 @@ public class UserProvisioningServiceCreateUsersTests
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            _userId,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
@@ -167,6 +171,7 @@ public class UserProvisioningServiceCreateUsersTests
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            _userId,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
@@ -200,6 +205,7 @@ public class UserProvisioningServiceCreateUsersTests
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            _userId,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
@@ -229,6 +235,7 @@ public class UserProvisioningServiceCreateUsersTests
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            _userId,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
@@ -271,6 +278,7 @@ public class UserProvisioningServiceCreateUsersTests
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            _userId,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
@@ -307,6 +315,7 @@ public class UserProvisioningServiceCreateUsersTests
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            _userId,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 

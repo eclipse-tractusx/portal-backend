@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -33,8 +34,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class RegistrationControllerTest
 {
-    private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
+    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IRegistrationBusinessLogic _logic;
     private readonly RegistrationController _controller;
     private readonly IFixture _fixture;
@@ -46,7 +47,7 @@ public class RegistrationControllerTest
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _logic = A.Fake<IRegistrationBusinessLogic>();
         this._controller = new RegistrationController(_logic);
-        _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken);
+        _controller.AddControllerContextWithClaimAndBearer(AccessToken, _identity);
     }
 
     [Fact]
@@ -107,7 +108,7 @@ public class RegistrationControllerTest
         var result = await this._controller.DeclineApplication(applicationId, new RegistrationDeclineData("test")).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeclineRegistrationVerification(applicationId, "test")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeclineRegistrationVerification(applicationId, "test", _identity.UserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

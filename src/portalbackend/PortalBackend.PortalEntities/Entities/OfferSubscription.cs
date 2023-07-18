@@ -122,6 +122,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// Requester
     /// </summary>
     public virtual CompanyUser? Requester { get; private set; }
+    public virtual Identity? LastEditor { get; private set; }
 
     /// <summary>
     /// Subscription status.

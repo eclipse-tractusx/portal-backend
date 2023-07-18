@@ -160,7 +160,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await this.WithCompanyId(companyId => _businessLogic.DeactivateOfferByAppIdAsync(appId, companyId)).ConfigureAwait(false);
+        await this.WithUserIdAndCompanyId(identity => _businessLogic.DeactivateOfferByAppIdAsync(appId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -176,13 +176,14 @@ public class AppChangeController : ControllerBase
     [Route("{appId}/subscription/{subscriptionId}/tenantUrl")]
     [Authorize(Roles = "edit_apps")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
     {
-        await this.WithCompanyId(companyId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, companyId)).ConfigureAwait(false);
+        await this.WithUserIdAndCompanyId(identity => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, identity)).ConfigureAwait(false);
         return NoContent();
     }
 }

@@ -268,7 +268,7 @@ public class AppReleaseProcessControllerTest
             "test@gmail.com",
             "9456321678"
             );
-        A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, _identity.CompanyId))
+        A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)))
             .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
@@ -276,7 +276,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.UpdateAppReleaseAsync(appId, data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateAppReleaseAsync(appId, data, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

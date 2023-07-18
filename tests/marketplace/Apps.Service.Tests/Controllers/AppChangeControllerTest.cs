@@ -123,14 +123,12 @@ public class AppChangeControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -145,7 +143,7 @@ public class AppChangeControllerTest
         var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId)).MustHaveHappened();
+        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId))).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>();
     }
 }
