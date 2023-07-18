@@ -45,6 +45,7 @@ public static class ProvisioningManagerStartupServiceExtensions
         }
 
         return services
-            .AddServiceAccountCreation(configuration.GetSection("Provisioning"));
+                .AddServiceAccountCreation(configuration.GetSection("Provisioning"));
+        ;
     }
 }

@@ -75,7 +75,7 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
                     x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                         .MigrationsHistoryTable("__efmigrations_history_portal"));
             });
-            services.EnsureDbCreated<TSeedingData>();
+            services.EnsureDbCreatedWithSeeding<TSeedingData>();
             services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
         });
     }

@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjection;
@@ -46,5 +47,7 @@ WebApplicationBuildRunner
             .AddTechnicalUserProfile()
             .AddOfferDocumentServices();
 
-        builder.Services.AddOfferServices();
+        builder.Services
+            .AddOfferServices()
+            .AddProvisioningDBAccess(builder.Configuration);
     });
