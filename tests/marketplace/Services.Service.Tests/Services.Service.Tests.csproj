@@ -51,4 +51,9 @@
         <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.IntegrationTests.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
