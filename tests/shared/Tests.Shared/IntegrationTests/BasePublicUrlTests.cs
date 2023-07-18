@@ -25,7 +25,6 @@ using System.Linq.Expressions;
 using System.Net;
 using Xunit;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 
 public class BasePublicUrlTests<TController, TSeeding> : IClassFixture<IntegrationTestFactory<TController, TSeeding>>
