@@ -53,4 +53,6 @@ public interface ISeedDataHandler
     AuthenticationFlowModel GetAuthenticationFlow(string? alias);
 
     IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias);
+
+    AuthenticatorConfigModel GetAuthenticatorConfig(string? alias);
 }

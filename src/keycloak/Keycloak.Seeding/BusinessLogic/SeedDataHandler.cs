@@ -111,4 +111,7 @@ public class SeedDataHandler : ISeedDataHandler
 
     public IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias) =>
         GetAuthenticationFlow(alias).AuthenticationExecutions ?? Enumerable.Empty<AuthenticationExecutionModel>();
+
+    public AuthenticatorConfigModel GetAuthenticatorConfig(string? alias) =>
+        jsonRealm?.AuthenticatorConfig?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticatorConfig {alias} does not exist");
 }

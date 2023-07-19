@@ -53,7 +53,6 @@ public partial class KeycloakClient
         .GetJsonAsync<AuthenticatorConfigInfo>()
         .ConfigureAwait(false);
 
-    [Obsolete("Not working yet")]
     public async Task<AuthenticatorConfig> GetAuthenticatorConfigurationAsync(string realm, string configurationId) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
         .AppendPathSegment("/admin/realms/")
         .AppendPathSegment(realm, true)
@@ -106,7 +105,7 @@ public partial class KeycloakClient
             .DeleteAsync()
             .ConfigureAwait(false);
 
-    public async Task UpdateAuthenticationExecutionConfigurationAsync(string realm, string executionId, AuthenticatorConfig authenticatorConfig) =>
+    public async Task CreateAuthenticationExecutionConfigurationAsync(string realm, string executionId, AuthenticatorConfig authenticatorConfig) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
