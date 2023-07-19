@@ -142,7 +142,7 @@ public class AppChangeBusinessLogicTest
             });
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .Returns(_fixture.CreateMany<Guid>(4).AsFakeIAsyncEnumerable(out var createNotificationsResultAsyncEnumerator));
-        
+
         //Act
         var result = await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
