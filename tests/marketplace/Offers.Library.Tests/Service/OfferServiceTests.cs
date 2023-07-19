@@ -1419,7 +1419,14 @@ public class OfferServiceTests
                 new(consentId, agreementId, CompanyUserCompanyId, _companyUser.Id, ConsentStatusId.ACTIVE, utcNow),
                 new(newCreatedConsentId, additionalAgreementId, CompanyUserCompanyId, _companyUser.Id, ConsentStatusId.ACTIVE, utcNow)
             });
-
+        var existingOffer = _fixture.Create<Offer>();
+        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
+            });
         // Act
         var result = await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
 
@@ -1432,6 +1439,7 @@ public class OfferServiceTests
                 x => x.AgreementId == agreementId && x.ConsentStatus == ConsentStatusId.ACTIVE,
                 x => x.AgreementId == additionalAgreementId && x.ConsentStatus == ConsentStatusId.ACTIVE
             );
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -1875,7 +1883,14 @@ public class OfferServiceTests
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileRepository.CreateTechnicalUserProfile(A<Guid>._, offerId))
             .Returns(new TechnicalUserProfile(newProfileId, offerId));
-
+        var existingOffer = _fixture.Create<Offer>();
+        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
+            });
         // Act
         await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
 
@@ -1896,6 +1911,7 @@ public class OfferServiceTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _technicalUserProfileRepository.RemoveTechnicalUserProfiles(A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2 && x.Contains(technicalUserProfile2) && x.Contains(technicalUserProfile3))))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
