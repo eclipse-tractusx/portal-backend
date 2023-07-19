@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
@@ -58,7 +59,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
             }
             catch (KeycloakEntityNotFoundException)
             {
-                var identityProvider = new Library.Models.IdentityProviders.IdentityProvider();
+                var identityProvider = new IdentityProvider();
                 UpdateIdentityProvider(identityProvider, updateIdentityProvider);
                 await keycloak.CreateIdentityProviderAsync(realm, identityProvider).ConfigureAwait(false);
             }
@@ -73,7 +74,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                     realm,
                     updateIdentityProvider.Alias,
                     UpdateIdentityProviderMapper(
-                        new Library.Models.IdentityProviders.IdentityProviderMapper
+                        new IdentityProviderMapper
                         {
                             Name = mapper.Name,
                             IdentityProviderAlias = mapper.IdentityProviderAlias
@@ -110,7 +111,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         }
     }
 
-    private static Library.Models.IdentityProviders.IdentityProvider UpdateIdentityProvider(Library.Models.IdentityProviders.IdentityProvider provider, IdentityProviderModel update)
+    private static IdentityProvider UpdateIdentityProvider(IdentityProvider provider, IdentityProviderModel update)
     {
         provider.Alias = update.Alias;
         provider.DisplayName = update.DisplayName;
@@ -125,7 +126,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         provider.FirstBrokerLoginFlowAlias = update.FirstBrokerLoginFlowAlias;
         provider.Config = update.Config == null
             ? null
-            : new Library.Models.IdentityProviders.Config
+            : new Config
             {
                 HideOnLoginPage = update.Config.HideOnLoginPage,
                 //ClientSecret = update.Config.ClientSecret,
@@ -167,7 +168,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         return provider;
     }
 
-    private static bool Compare(Library.Models.IdentityProviders.IdentityProvider provider, IdentityProviderModel update) =>
+    private static bool Compare(IdentityProvider provider, IdentityProviderModel update) =>
         provider.Alias == update.Alias &&
         provider.DisplayName == update.DisplayName &&
         provider.ProviderId == update.ProviderId &&
@@ -181,7 +182,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         provider.FirstBrokerLoginFlowAlias == update.FirstBrokerLoginFlowAlias &&
         Compare(provider.Config, update.Config);
 
-    private static bool Compare(Library.Models.IdentityProviders.Config? config, IdentityProviderConfigModel? update) =>
+    private static bool Compare(Config? config, IdentityProviderConfigModel? update) =>
         config == null && update == null ||
         config != null && update != null &&
         config.HideOnLoginPage == update.HideOnLoginPage &&
@@ -221,15 +222,14 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         config.AllowedClockSkew == update.AllowedClockSkew &&
         config.AttributeConsumingServiceIndex == update.AttributeConsumingServiceIndex;
 
-
-    private static Library.Models.IdentityProviders.IdentityProviderMapper UpdateIdentityProviderMapper(Library.Models.IdentityProviders.IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper)
+    private static IdentityProviderMapper UpdateIdentityProviderMapper(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper)
     {
         mapper._IdentityProviderMapper = updateMapper.IdentityProviderMapper;
         mapper.Config = updateMapper.Config?.ToDictionary(x => x.Key, x => x.Value);
         return mapper;
     }
 
-    private static bool Compare(Library.Models.IdentityProviders.IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper) =>
+    private static bool Compare(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper) =>
         mapper.IdentityProviderAlias == updateMapper.IdentityProviderAlias &&
         mapper._IdentityProviderMapper == updateMapper.IdentityProviderMapper &&
         mapper.Config.NullOrContentEqual(updateMapper.Config);

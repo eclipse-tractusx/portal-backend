@@ -38,6 +38,8 @@ public class Client
     public string? RootUrl { get; set; }
     [JsonProperty("name")]
     public string? Name { get; set; }
+    [JsonProperty("description")]
+    public string? Description { get; set; }
     [JsonProperty("baseUrl")]
     public string? BaseUrl { get; set; }
     [JsonProperty("surrogateAuthRequired")]

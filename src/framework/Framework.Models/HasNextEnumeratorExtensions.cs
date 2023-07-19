@@ -42,6 +42,7 @@ public static class HasNextEnumeratorExtensions
         {
             get => _hasNext;
         }
+
         public T Current
         {
             get => _enumerator.Current;
@@ -56,6 +57,7 @@ public static class HasNextEnumeratorExtensions
 public interface IHasNextEnumerator<T>
 {
     void Advance();
+
     bool HasNext { get; }
 
     T Current { get; }

@@ -52,4 +52,6 @@ public class AuthenticationFlowExecution
     public bool? AuthenticationFlow { get; set; }
     [JsonProperty("flowId")]
     public string? FlowId { get; set; }
+    [JsonProperty("authenticationConfig")]
+    public string? AuthenticationConfig { get; set; }
 }

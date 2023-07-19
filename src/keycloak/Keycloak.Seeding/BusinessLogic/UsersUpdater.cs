@@ -22,6 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
@@ -46,7 +48,8 @@ public class UsersUpdater : IUsersUpdater
         {
             if (seedUser.Username == null)
                 throw new ConflictException($"username must not be null {seedUser.Id}");
-            var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username).ConfigureAwait(false)).SingleOrDefault();
+
+            var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username).ConfigureAwait(false)).SingleOrDefault(x => x.UserName == seedUser.Username);
             if (user == null)
             {
                 user = CreateUpdateUser(null, seedUser);
@@ -87,7 +90,7 @@ public class UsersUpdater : IUsersUpdater
         }
     }
 
-    private static async Task UpdateUserRoles(Func<Task<IEnumerable<Library.Models.Roles.Role>>> getUserRoles, Func<IEnumerable<string>> getSeedRoles, Func<Task<IEnumerable<Library.Models.Roles.Role>>> getAllRoles, Func<IEnumerable<Library.Models.Roles.Role>, Task> deleteRoles, Func<IEnumerable<Library.Models.Roles.Role>, Task> addRoles)
+    private static async Task UpdateUserRoles(Func<Task<IEnumerable<Role>>> getUserRoles, Func<IEnumerable<string>> getSeedRoles, Func<Task<IEnumerable<Role>>> getAllRoles, Func<IEnumerable<Role>, Task> deleteRoles, Func<IEnumerable<Role>, Task> addRoles)
     {
         var userRoles = await getUserRoles().ConfigureAwait(false);
         var seedRoles = getSeedRoles();
@@ -117,7 +120,7 @@ public class UsersUpdater : IUsersUpdater
         }
     }
 
-    private static Library.Models.Users.User CreateUpdateUser(string? id, UserModel update) => new Library.Models.Users.User
+    private static User CreateUpdateUser(string? id, UserModel update) => new User
     {
         Id = id,
         CreatedTimestamp = update.CreatedTimestamp,
@@ -135,7 +138,7 @@ public class UsersUpdater : IUsersUpdater
         Attributes = update.Attributes?.ToDictionary(x => x.Key, x => x.Value),
         // ClientConsents = update.ClientConsents,
         // Credentials = update.Credentials,
-        FederatedIdentities = update.FederatedIdentities?.Select(x => new Library.Models.Users.FederatedIdentity
+        FederatedIdentities = update.FederatedIdentities?.Select(x => new FederatedIdentity
         { // TODO: this works only on usercreation, it does not update existing identities
             IdentityProvider = x.IdentityProvider,
             UserId = x.UserId,
@@ -148,7 +151,7 @@ public class UsersUpdater : IUsersUpdater
         ServiceAccountClientId = update.ServiceAccountClientId
     };
 
-    private static bool Compare(Library.Models.Users.User user, UserModel update) =>
+    private static bool Compare(User user, UserModel update) =>
         user.CreatedTimestamp == update.CreatedTimestamp &&
         user.UserName == update.Username &&
         user.Enabled == update.Enabled &&
@@ -165,13 +168,13 @@ public class UsersUpdater : IUsersUpdater
         // ClientConsents == update.ClientConsents &&
         // Credentials == update.Credentials &&
         Compare(user.FederatedIdentities, update.FederatedIdentities) && // doesn't update
-        // FederationLink == update.FederationLink &&
+                                                                         // FederationLink == update.FederationLink &&
         user.Groups.NullOrContentEqual(update.Groups) &&
         // Origin == update.Origin &&
         // Self == update.Self &&
         user.ServiceAccountClientId == update.ServiceAccountClientId;
 
-    private static bool Compare(IEnumerable<Library.Models.Users.FederatedIdentity>? identities, IEnumerable<FederatedIdentityModel>? updates) =>
+    private static bool Compare(IEnumerable<FederatedIdentity>? identities, IEnumerable<FederatedIdentityModel>? updates) =>
         identities == null && updates == null ||
         identities != null && updates != null &&
         identities.Select(x => x.IdentityProvider ?? throw new ConflictException("keycloak federated identity identityProvider must not be null")).NullOrContentEqual(updates.Select(x => x.IdentityProvider ?? throw new ConflictException("seeding federated identity identityProvider must not be null"))) &&

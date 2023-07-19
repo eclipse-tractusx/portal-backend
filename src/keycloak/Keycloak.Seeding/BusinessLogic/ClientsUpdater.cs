@@ -22,6 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
@@ -44,7 +46,7 @@ public class ClientsUpdater : IClientsUpdater
         return _seedData.SetClientInternalIds(UpdateClientsInternal(keycloak, realm));
     }
 
-    public async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(Library.KeycloakClient keycloak, string realm)
+    private async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(KeycloakClient keycloak, string realm)
     {
         foreach (var update in _seedData.Clients)
         {
@@ -72,12 +74,13 @@ public class ClientsUpdater : IClientsUpdater
         }
     }
 
-    private static Library.Models.Clients.Client CreateUpdateClient(string? id, ClientModel update) => new Library.Models.Clients.Client
+    private static Client CreateUpdateClient(string? id, ClientModel update) => new Client
     {
         Id = id,
         ClientId = update.ClientId,
         RootUrl = update.RootUrl,
         Name = update.Name,
+        Description = update.Description,
         BaseUrl = update.BaseUrl,
         SurrogateAuthRequired = update.SurrogateAuthRequired,
         Enabled = update.Enabled,
@@ -99,14 +102,14 @@ public class ClientsUpdater : IClientsUpdater
         AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.ToDictionary(x => x.Key, x => x.Value),
         FullScopeAllowed = update.FullScopeAllowed,
         NodeReregistrationTimeout = update.NodeReRegistrationTimeout,
-        // ProtocolMappers = update.ProtocolMappers?.Select(x => new Library.Models.Clients.ClientProtocolMapper
+        // ProtocolMappers = update.ProtocolMappers?.Select(x => new ClientProtocolMapper
         // {
         // }),
         DefaultClientScopes = update.DefaultClientScopes,
         OptionalClientScopes = update.OptionalClientScopes,
         Access = update.Access == null
             ? null
-            : new Library.Models.Clients.ClientAccess
+            : new ClientAccess
             {
                 View = update.Access.View,
                 Configure = update.Access.Configure,
@@ -116,10 +119,11 @@ public class ClientsUpdater : IClientsUpdater
         AuthorizationServicesEnabled = update.AuthorizationServicesEnabled
     };
 
-    private static bool Compare(Library.Models.Clients.Client client, ClientModel update) =>
+    private static bool Compare(Client client, ClientModel update) =>
         client.ClientId == update.ClientId &&
         client.RootUrl == update.RootUrl &&
         client.Name == update.Name &&
+        client.Description == update.Description &&
         client.BaseUrl == update.BaseUrl &&
         client.SurrogateAuthRequired == update.SurrogateAuthRequired &&
         client.Enabled == update.Enabled &&
@@ -147,7 +151,7 @@ public class ClientsUpdater : IClientsUpdater
         // client.Secret == update.Secret &&
         client.AuthorizationServicesEnabled == update.AuthorizationServicesEnabled;
 
-    private static bool Compare(Library.Models.Clients.ClientAccess? access, ClientAccessModel? updateAccess) =>
+    private static bool Compare(ClientAccess? access, ClientAccessModel? updateAccess) =>
         access == null && updateAccess == null ||
         access != null && updateAccess != null &&
         access.Configure == updateAccess.Configure &&

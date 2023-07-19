@@ -54,7 +54,6 @@ public class KeycloakRealmModelTests
         var seedDataHandler = new SeedDataHandler();
 
         var sut = new KeycloakSeeder(
-            factory,
             seedDataHandler,
             new RealmUpdater(factory, seedDataHandler),
             new RolesUpdater(factory, seedDataHandler),

@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
@@ -41,14 +42,14 @@ public class RealmUpdater : IRealmUpdater
         var realm = _seedData.Realm;
         var seedRealm = _seedData.KeycloakRealm;
 
-        Library.Models.RealmsAdmin.Realm keycloakRealm;
+        Realm keycloakRealm;
         try
         {
             keycloakRealm = await keycloak.GetRealmAsync(realm).ConfigureAwait(false);
         }
         catch (KeycloakEntityNotFoundException)
         {
-            keycloakRealm = new Library.Models.RealmsAdmin.Realm
+            keycloakRealm = new Realm
             {
                 Id = seedRealm.Id,
                 _Realm = seedRealm.Realm
@@ -129,7 +130,7 @@ public class RealmUpdater : IRealmUpdater
         }
     }
 
-    private static bool Compare(Library.Models.RealmsAdmin.Realm keycloakRealm, KeycloakRealm seedRealm) =>
+    private static bool Compare(Realm keycloakRealm, KeycloakRealm seedRealm) =>
         keycloakRealm._Realm == seedRealm.Realm &&
         keycloakRealm.DisplayName == seedRealm.DisplayName &&
         keycloakRealm.NotBefore == seedRealm.NotBefore &&
@@ -202,7 +203,7 @@ public class RealmUpdater : IRealmUpdater
         attributes != null && updateAttributes != null &&
         attributes.OrderBy(x => x.Key).SequenceEqual(updateAttributes.OrderBy(x => x.Key));
 
-    private static bool Compare(Library.Models.RealmsAdmin.BrowserSecurityHeaders? securityHeaders, BrowserSecurityHeadersModel? updateSecurityHeaders) =>
+    private static bool Compare(BrowserSecurityHeaders? securityHeaders, BrowserSecurityHeadersModel? updateSecurityHeaders) =>
         securityHeaders == null && updateSecurityHeaders == null ||
         securityHeaders != null && updateSecurityHeaders != null &&
         securityHeaders.ContentSecurityPolicyReportOnly == updateSecurityHeaders.ContentSecurityPolicyReportOnly &&
@@ -213,10 +214,10 @@ public class RealmUpdater : IRealmUpdater
         securityHeaders.ContentSecurityPolicy == updateSecurityHeaders.ContentSecurityPolicy &&
         securityHeaders.StrictTransportSecurity == updateSecurityHeaders.StrictTransportSecurity;
 
-    private static Library.Models.RealmsAdmin.BrowserSecurityHeaders? UpdateBrowserSecurityHeaders(BrowserSecurityHeadersModel? updateSecurityHeaders) =>
+    private static BrowserSecurityHeaders? UpdateBrowserSecurityHeaders(BrowserSecurityHeadersModel? updateSecurityHeaders) =>
         updateSecurityHeaders == null
             ? null
-            : new Library.Models.RealmsAdmin.BrowserSecurityHeaders
+            : new BrowserSecurityHeaders
             {
                 ContentSecurityPolicyReportOnly = updateSecurityHeaders.ContentSecurityPolicyReportOnly,
                 XContentTypeOptions = updateSecurityHeaders.XContentTypeOptions,
@@ -227,7 +228,7 @@ public class RealmUpdater : IRealmUpdater
                 StrictTransportSecurity = updateSecurityHeaders.StrictTransportSecurity
             };
 
-    private static bool Compare(Library.Models.RealmsAdmin.SmtpServer? smtpServer, SmtpServerModel? updateSmtpServer) =>
+    private static bool Compare(SmtpServer? smtpServer, SmtpServerModel? updateSmtpServer) =>
         smtpServer == null && updateSmtpServer == null ||
         smtpServer != null && updateSmtpServer != null &&
         smtpServer.Host == updateSmtpServer.Host &&
@@ -243,10 +244,10 @@ public class RealmUpdater : IRealmUpdater
         smtpServer.EnvelopeFrom == updateSmtpServer.EnvelopeFrom &&
         smtpServer.Port == updateSmtpServer.Port;
 
-    private static Library.Models.RealmsAdmin.SmtpServer? UpdateSmtpServer(SmtpServerModel? updateSmtpServer) =>
+    private static SmtpServer? UpdateSmtpServer(SmtpServerModel? updateSmtpServer) =>
         updateSmtpServer == null
             ? null
-            : new Library.Models.RealmsAdmin.SmtpServer
+            : new SmtpServer
             {
                 Host = updateSmtpServer.Host,
                 Ssl = updateSmtpServer.Ssl,

@@ -26,7 +26,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 public class KeycloakSeeder
 {
     private readonly KeycloakSeederSettings _settings;
-    private readonly IKeycloakFactory _factory;
     private readonly ISeedDataHandler _seedData;
     private readonly IRealmUpdater _realmUpdater;
     private readonly IRolesUpdater _rolesUpdater;
@@ -34,9 +33,8 @@ public class KeycloakSeeder
     private readonly IIdentityProvidersUpdater _identityProvidersUpdater;
     private readonly IUsersUpdater _usersUpdater;
     private readonly IAuthenticationFlowsUpdater _authenticationFlowsUpdater;
-    public KeycloakSeeder(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IAuthenticationFlowsUpdater authenticationFlowsUpdater, IOptions<KeycloakSeederSettings> options)
+    public KeycloakSeeder(ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IAuthenticationFlowsUpdater authenticationFlowsUpdater, IOptions<KeycloakSeederSettings> options)
     {
-        _factory = keycloakFactory;
         _seedData = seedDataHandler;
         _realmUpdater = realmUpdater;
         _rolesUpdater = rolesUpdater;

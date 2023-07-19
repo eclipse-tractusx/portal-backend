@@ -108,7 +108,7 @@ public class SeedDataHandler : ISeedDataHandler
 
     public AuthenticationFlowModel GetAuthenticationFlow(string? alias) =>
         jsonRealm?.AuthenticationFlows?.Where(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))).SingleOrDefault() ?? throw new ConflictException($"authenticationFlow {alias} does not exist in seeding-data");
-    
+
     public IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias) =>
         GetAuthenticationFlow(alias).AuthenticationExecutions ?? Enumerable.Empty<AuthenticationExecutionModel>();
 }

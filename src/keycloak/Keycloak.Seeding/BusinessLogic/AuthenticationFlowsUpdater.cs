@@ -22,7 +22,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
@@ -39,7 +42,6 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
 
     public Task UpdateAuthenticationFlows(string keycloakInstanceName)
     {
-        var realm = _seedData.Realm;
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
 
         var handler = new AuthenticationFlowHandler(keycloak, _seedData);
@@ -49,11 +51,11 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
 
     private class AuthenticationFlowHandler
     {
-        private string _realm;
-        private readonly Library.KeycloakClient _keycloak;
+        private readonly string _realm;
+        private readonly KeycloakClient _keycloak;
         private readonly ISeedDataHandler _seedData;
 
-        public AuthenticationFlowHandler(Library.KeycloakClient keycloak, ISeedDataHandler seedData)
+        public AuthenticationFlowHandler(KeycloakClient keycloak, ISeedDataHandler seedData)
         {
             _keycloak = keycloak;
             _seedData = seedData;
@@ -132,7 +134,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
         private async Task UpdateAuthenticationFlowExecutions(string alias)
         {
             var updateExecutions = _seedData.GetAuthenticationExecutions(alias);
-            var executionNodes = ExecutionNode.Parse(await GetExecutions(alias).ConfigureAwait(false)).ToList();
+            var executionNodes = ExecutionNode.Parse(await GetExecutions(alias).ConfigureAwait(false));
 
             if (CompareRecursive(executionNodes, updateExecutions))
             {
@@ -140,7 +142,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
             }
             await DeleteExecutionsRecursive(executionNodes).ConfigureAwait(false);
             await AddExecutionsRecursive(alias, updateExecutions).ConfigureAwait(false);
-            executionNodes = ExecutionNode.Parse(await GetExecutions(alias).ConfigureAwait(false)).ToList();
+            executionNodes = ExecutionNode.Parse(await GetExecutions(alias).ConfigureAwait(false));
             await UpdateExecutionsRecursive(alias, executionNodes, updateExecutions).ConfigureAwait(false);
         }
 
@@ -190,9 +192,9 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
             }
         }
 
-        private async Task UpdateExecutionsRecursive(string alias, IEnumerable<ExecutionNode> executionNodes, IEnumerable<AuthenticationExecutionModel> seedExecutions)
+        private async Task UpdateExecutionsRecursive(string alias, IReadOnlyList<ExecutionNode> executionNodes, IEnumerable<AuthenticationExecutionModel> seedExecutions)
         {
-            if (executionNodes.Count() != seedExecutions.Count())
+            if (executionNodes.Count != seedExecutions.Count())
                 throw new ArgumentException("number of elements in executionNodes doesn't match seedData");
 
             foreach (var (executionNode, update) in executionNodes.Zip(seedExecutions))
@@ -214,7 +216,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                     await _keycloak.UpdateAuthenticationFlowExecutionsAsync(
                         _realm,
                         alias,
-                        new Library.Models.AuthenticationManagement.AuthenticationExecutionInfo
+                        new AuthenticationExecutionInfo
                         {
                             AuthenticationFlow = true,
                             Configurable = executionNode.Execution.Configurable,
@@ -244,7 +246,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                     return _keycloak.UpdateAuthenticationFlowExecutionsAsync(
                         _realm,
                         alias,
-                        new Library.Models.AuthenticationManagement.AuthenticationExecutionInfo
+                        new AuthenticationExecutionInfo
                         {
                             Configurable = executionNode.Execution.Configurable,
                             DisplayName = executionNode.Execution.Description,
@@ -255,21 +257,21 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                             Requirement = update.Requirement,
                             RequirementChoices = executionNode.Execution.RequirementChoices
                         });
-                };
+                }
                 return Task.CompletedTask;
             }
         }
 
-        bool CompareFlowExecutions(Library.Models.AuthenticationManagement.AuthenticationFlowExecution execution, AuthenticationExecutionModel update) =>
+        private bool CompareFlowExecutions(AuthenticationFlowExecution execution, AuthenticationExecutionModel update) =>
             execution.Description == _seedData.GetAuthenticationFlow(update.FlowAlias).Description &&
             execution.DisplayName == update.FlowAlias &&
             execution.Requirement == update.Requirement;
 
-        static bool CompareExecutions(Library.Models.AuthenticationManagement.AuthenticationFlowExecution execution, AuthenticationExecutionModel update) =>
+        private static bool CompareExecutions(AuthenticationFlowExecution execution, AuthenticationExecutionModel update) =>
             execution.ProviderId == update.Authenticator &&
             execution.Requirement == update.Requirement;
 
-        private Task<IEnumerable<Library.Models.AuthenticationManagement.AuthenticationFlowExecution>> GetExecutions(string alias) =>
+        private Task<IEnumerable<AuthenticationFlowExecution>> GetExecutions(string alias) =>
             _keycloak.GetAuthenticationFlowExecutionsAsync(_realm, alias);
 
         private IDictionary<string, object> CreateDataWithAliasTypeProviderDescription(AuthenticationExecutionModel execution)
@@ -291,31 +293,31 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
 
         private class ExecutionNode
         {
-            private readonly Library.Models.AuthenticationManagement.AuthenticationFlowExecution _execution;
-            private readonly IEnumerable<ExecutionNode>? _children;
+            private readonly AuthenticationFlowExecution _execution;
+            private readonly IReadOnlyList<ExecutionNode>? _children;
 
-            private ExecutionNode(Library.Models.AuthenticationManagement.AuthenticationFlowExecution execution, IEnumerable<ExecutionNode>? children = null)
+            private ExecutionNode(AuthenticationFlowExecution execution, IReadOnlyList<ExecutionNode>? children = null)
             {
                 _execution = execution;
                 _children = children;
             }
 
-            public Library.Models.AuthenticationManagement.AuthenticationFlowExecution Execution
+            public AuthenticationFlowExecution Execution
             {
                 get => _execution;
             }
 
-            public IEnumerable<ExecutionNode> Children
+            public IReadOnlyList<ExecutionNode> Children
             {
                 get => _children ?? throw new InvalidOperationException($"execution is not a flow: {_execution.DisplayName}");
             }
 
-            public static IEnumerable<ExecutionNode> Parse(IEnumerable<Library.Models.AuthenticationManagement.AuthenticationFlowExecution> executions)
+            public static IReadOnlyList<ExecutionNode> Parse(IEnumerable<AuthenticationFlowExecution> executions)
             {
-                return ParseInternal(executions.GetHasNextEnumerator(), 0);
+                return ParseInternal(executions.GetHasNextEnumerator(), 0).ToImmutableList();
             }
 
-            private static IEnumerable<ExecutionNode> ParseInternal(IHasNextEnumerator<Library.Models.AuthenticationManagement.AuthenticationFlowExecution> executions, int level)
+            private static IEnumerable<ExecutionNode> ParseInternal(IHasNextEnumerator<AuthenticationFlowExecution> executions, int level)
             {
                 while (executions.HasNext)
                 {
@@ -333,7 +335,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                     executions.Advance();
                     yield return execution.AuthenticationFlow switch
                     {
-                        true => new ExecutionNode(execution, ParseInternal(executions, level + 1).ToList()),
+                        true => new ExecutionNode(execution, ParseInternal(executions, level + 1).ToImmutableList()),
                         _ => new ExecutionNode(execution)
                     };
                 }
@@ -341,7 +343,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
         }
     }
 
-    private static Library.Models.AuthenticationManagement.AuthenticationFlow CreateUpdateAuthenticationFlow(string? id, AuthenticationFlowModel update) => new Library.Models.AuthenticationManagement.AuthenticationFlow
+    private static AuthenticationFlow CreateUpdateAuthenticationFlow(string? id, AuthenticationFlowModel update) => new AuthenticationFlow
     {
         Id = id,
         Alias = update.Alias,
@@ -351,7 +353,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
         TopLevel = update.TopLevel
     };
 
-    private static bool Compare(Library.Models.AuthenticationManagement.AuthenticationFlow flow, AuthenticationFlowModel update) =>
+    private static bool Compare(AuthenticationFlow flow, AuthenticationFlowModel update) =>
         flow.BuiltIn == update.BuiltIn &&
         flow.Description == update.Description &&
         flow.ProviderId == update.ProviderId &&

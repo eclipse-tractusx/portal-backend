@@ -51,6 +51,6 @@ public interface ISeedDataHandler
     string GetIdOfClient(string clientId);
 
     AuthenticationFlowModel GetAuthenticationFlow(string? alias);
-    
+
     IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias);
 }
