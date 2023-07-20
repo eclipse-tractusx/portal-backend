@@ -239,7 +239,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         x.Company.BusinessPartnerNumber,
                         x.Company.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
                         x.Subscription.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
-                        x.Subscription.AppSubscriptionDetail!.AppSubscriptionUrl)
+                        x.Subscription.AppSubscriptionDetail!.AppSubscriptionUrl,
+                        x.Subscription.AppSubscriptionDetail!.AppInstanceId)
                     : null))
             .SingleOrDefaultAsync();
 
