@@ -96,7 +96,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
         }
     }
 
-    public void FinalizeChecklistEntryAndProcessSteps(IApplicationChecklistService.ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry>? modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
+    public void FinalizeChecklistEntryAndProcessSteps(IApplicationChecklistService.ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry>? initializeApplicationChecklistEntry, Action<ApplicationChecklistEntry>? modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
     {
         var applicationChecklistRepository = _portalRepositories.GetInstance<IApplicationChecklistRepository>();
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
@@ -104,7 +104,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
         if (modifyApplicationChecklistEntry != null)
         {
             applicationChecklistRepository
-                .AttachAndModifyApplicationChecklist(context.ApplicationId, context.EntryTypeId, modifyApplicationChecklistEntry);
+                .AttachAndModifyApplicationChecklist(context.ApplicationId, context.EntryTypeId, initializeApplicationChecklistEntry, modifyApplicationChecklistEntry);
         }
         processStepRepository.AttachAndModifyProcessStep(context.ProcessStepId, null, step => step.ProcessStepStatusId = ProcessStepStatusId.DONE);
         if (nextProcessStepTypeIds == null || !nextProcessStepTypeIds.Any())

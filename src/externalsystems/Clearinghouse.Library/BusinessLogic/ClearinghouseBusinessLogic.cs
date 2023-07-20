@@ -120,6 +120,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            null,
             item =>
             {
                 item.ApplicationChecklistEntryStatusId = declined
