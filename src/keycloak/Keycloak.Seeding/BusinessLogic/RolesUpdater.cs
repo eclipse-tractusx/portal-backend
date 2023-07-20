@@ -39,7 +39,7 @@ public class RolesUpdater : IRolesUpdater
         _seedData = seedDataHandler;
     }
 
-    public async Task UpdateClientRoles(string keycloakInstanceName)
+    public async Task UpdateClientRoles(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = _seedData.Realm;
@@ -47,32 +47,32 @@ public class RolesUpdater : IRolesUpdater
         foreach (var (clientId, updateRoles) in _seedData.ClientRoles)
         {
             var id = _seedData.GetIdOfClient(clientId);
-            var roles = await keycloak.GetRolesAsync(realm, id).ConfigureAwait(false);
+            var roles = await keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             foreach (var newRole in updateRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name))
             {
-                await keycloak.CreateRoleAsync(realm, id, CreateRole(newRole)).ConfigureAwait(false);
+                await keycloak.CreateRoleAsync(realm, id, CreateRole(newRole), cancellationToken).ConfigureAwait(false);
             }
 
-            await UpdateAndDeleteRoles(keycloak, realm, roles, updateRoles).ConfigureAwait(false);
+            await UpdateAndDeleteRoles(keycloak, realm, roles, updateRoles, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    public async Task UpdateRealmRoles(string keycloakInstanceName)
+    public async Task UpdateRealmRoles(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = _seedData.Realm;
-        var roles = await keycloak.GetRolesAsync(realm).ConfigureAwait(false);
+        var roles = await keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken).ConfigureAwait(false);
         var updateRealmRoles = _seedData.RealmRoles;
 
         foreach (var newRole in updateRealmRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name))
         {
-            await keycloak.CreateRoleAsync(realm, CreateRole(newRole));
+            await keycloak.CreateRoleAsync(realm, CreateRole(newRole), cancellationToken).ConfigureAwait(false);
         }
-        await UpdateAndDeleteRoles(keycloak, realm, roles, updateRealmRoles).ConfigureAwait(false);
+        await UpdateAndDeleteRoles(keycloak, realm, roles, updateRealmRoles, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task UpdateAndDeleteRoles(KeycloakClient keycloak, string realm, IEnumerable<Role> roles, IEnumerable<RoleModel> updateRoles)
+    private static async Task UpdateAndDeleteRoles(KeycloakClient keycloak, string realm, IEnumerable<Role> roles, IEnumerable<RoleModel> updateRoles, CancellationToken cancellationToken)
     {
         foreach (var (role, update) in
             roles.Join(
@@ -87,7 +87,8 @@ public class RolesUpdater : IRolesUpdater
                     throw new ConflictException($"role id must not be null: {role.Name}");
                 if (role.ContainerId == null)
                     throw new ConflictException($"role containerId must not be null: {role.Name}");
-                await keycloak.UpdateRoleByIdAsync(realm, role.Id, CreateUpdateRole(role.Id, role.ContainerId, update)).ConfigureAwait(false);
+
+                await keycloak.UpdateRoleByIdAsync(realm, role.Id, CreateUpdateRole(role.Id, role.ContainerId, update), cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -96,11 +97,12 @@ public class RolesUpdater : IRolesUpdater
         {
             if (deleteRole.Id == null)
                 throw new ConflictException($"role id must not be null: {deleteRole.Name}");
-            await keycloak.DeleteRoleByIdAsync(realm, deleteRole.Id).ConfigureAwait(false);
+    
+            await keycloak.DeleteRoleByIdAsync(realm, deleteRole.Id, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    public async Task UpdateCompositeRoles(string keycloakInstanceName)
+    public async Task UpdateCompositeRoles(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = _seedData.Realm;
@@ -112,10 +114,10 @@ public class RolesUpdater : IRolesUpdater
                     var id = _seedData.GetIdOfClient(clientId);
 
                     await UpdateCompositeRolesInner(
-                        () => keycloak.GetRolesAsync(realm, id),
+                        () => keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken),
                         updateRoles,
-                        (name, roles) => keycloak.RemoveCompositesFromRoleAsync(realm, id, name, roles),
-                        (name, roles) => keycloak.AddCompositesToRoleAsync(realm, id, name, roles)).ConfigureAwait(false);
+                        (name, roles) => keycloak.RemoveCompositesFromRoleAsync(realm, id, name, roles, cancellationToken),
+                        (name, roles) => keycloak.AddCompositesToRoleAsync(realm, id, name, roles, cancellationToken)).ConfigureAwait(false);
                 }
             },
             out var updateCompositeClientRolesTask))
@@ -125,10 +127,10 @@ public class RolesUpdater : IRolesUpdater
 
         if (_seedData.RealmRoles.IfAny(realmRoles =>
             UpdateCompositeRolesInner(
-                () => keycloak.GetRolesAsync(realm),
+                () => keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken),
                 realmRoles,
-                (name, roles) => keycloak.RemoveCompositesFromRoleAsync(realm, name, roles),
-                (name, roles) => keycloak.AddCompositesToRoleAsync(realm, name, roles)),
+                (name, roles) => keycloak.RemoveCompositesFromRoleAsync(realm, name, roles, cancellationToken),
+                (name, roles) => keycloak.AddCompositesToRoleAsync(realm, name, roles, cancellationToken)),
             out var updateCompositeRealmRolesTask))
         {
             await updateCompositeRealmRolesTask!.ConfigureAwait(false);
@@ -154,7 +156,7 @@ public class RolesUpdater : IRolesUpdater
                 role => (
                     role.ContainerId ?? throw new ConflictException($"role.ContainerId is null: {role.Id} {role.Name}"),
                     role.Name ?? throw new ConflictException($"role.Name is null: {role.Id}")),
-                x => keycloak.GetRoleByNameAsync(realm, x.ContainerId, x.Name)
+                x => keycloak.GetRoleByNameAsync(realm, x.ContainerId, x.Name, cancellationToken)
             ).ConfigureAwait(false);
 
             await RemoveAddCompositeRolesInner(
@@ -163,7 +165,7 @@ public class RolesUpdater : IRolesUpdater
                 role => !(role.ClientRole ?? false),
                 roleModel => roleModel.Composites?.Realm ?? throw new ConflictException($"roleModel.Composites.Realm is null: {roleModel.Id} {roleModel.Name}"),
                 role => role.Name ?? throw new ConflictException($"role.Name is null: {role.Id}"),
-                name => keycloak.GetRoleByNameAsync(realm, name)
+                name => keycloak.GetRoleByNameAsync(realm, name, cancellationToken)
             ).ConfigureAwait(false);
 
             async Task RemoveAddCompositeRolesInner<T>(
@@ -182,7 +184,7 @@ public class RolesUpdater : IRolesUpdater
                     if (remove.Id == null || remove.Name == null)
                         throw new ConflictException($"role.id or role.name must not be null {remove.Id} {remove.Name}");
 
-                    var composites = (await keycloak.GetRoleChildrenAsync(realm, remove.Id).ConfigureAwait(false)).Where(role => rolePredicate(role));
+                    var composites = (await keycloak.GetRoleChildrenAsync(realm, remove.Id, cancellationToken).ConfigureAwait(false)).Where(role => rolePredicate(role));
                     await removeCompositeRoles(remove.Name, composites).ConfigureAwait(false);
                 }
 
@@ -198,7 +200,7 @@ public class RolesUpdater : IRolesUpdater
                 {
                     if (role.Id == null || role.Name == null)
                         throw new ConflictException($"role.id or role.name must not be null {role.Id} {role.Name}");
-                    var composites = (await keycloak.GetRoleChildrenAsync(realm, role.Id).ConfigureAwait(false)).Where(role => rolePredicate(role));
+                    var composites = (await keycloak.GetRoleChildrenAsync(realm, role.Id, cancellationToken).ConfigureAwait(false)).Where(role => rolePredicate(role));
                     composites.Where(role => role.ContainerId == null || role.Name == null).IfAny(
                         invalid => throw new ConflictException($"composites roles containerId or name must not be null: {string.Join(" ", invalid.Select(x => $"[{string.Join(",", x.Id, x.Name, x.Description, x.ContainerId)}]"))}"));
 

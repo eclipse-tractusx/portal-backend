@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 public interface IRolesUpdater
 {
-    Task UpdateClientRoles(string keycloakInstanceName);
-    Task UpdateRealmRoles(string keycloakInstanceName);
-    Task UpdateCompositeRoles(string keycloakInstanceName);
+    Task UpdateClientRoles(string keycloakInstanceName, CancellationToken cancellationToken);
+    Task UpdateRealmRoles(string keycloakInstanceName, CancellationToken cancellationToken);
+    Task UpdateCompositeRoles(string keycloakInstanceName, CancellationToken cancellationToken);
 }

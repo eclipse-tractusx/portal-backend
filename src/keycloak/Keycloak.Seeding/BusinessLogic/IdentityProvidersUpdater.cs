@@ -38,7 +38,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         _seedData = seedDataHandler;
     }
 
-    public async Task UpdateIdentityProviders(string keycloakInstanceName)
+    public async Task UpdateIdentityProviders(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = _seedData.Realm;
@@ -50,22 +50,22 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
 
             try
             {
-                var identityProvider = await keycloak.GetIdentityProviderAsync(realm, updateIdentityProvider.Alias).ConfigureAwait(false);
+                var identityProvider = await keycloak.GetIdentityProviderAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(false);
                 if (!Compare(identityProvider, updateIdentityProvider))
                 {
                     UpdateIdentityProvider(identityProvider, updateIdentityProvider);
-                    await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider).ConfigureAwait(false);
+                    await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (KeycloakEntityNotFoundException)
             {
                 var identityProvider = new IdentityProvider();
                 UpdateIdentityProvider(identityProvider, updateIdentityProvider);
-                await keycloak.CreateIdentityProviderAsync(realm, identityProvider).ConfigureAwait(false);
+                await keycloak.CreateIdentityProviderAsync(realm, identityProvider, cancellationToken).ConfigureAwait(false);
             }
 
             var updateMappers = _seedData.IdentityProviderMappers.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias);
-            var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias).ConfigureAwait(false);
+            var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(false);
 
             // create missing mappers
             foreach (var mapper in updateMappers.ExceptBy(mappers.Select(x => x.Name), x => x.Name))
@@ -79,7 +79,8 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                             Name = mapper.Name,
                             IdentityProviderAlias = mapper.IdentityProviderAlias
                         },
-                        mapper)).ConfigureAwait(false);
+                        mapper),
+                    cancellationToken).ConfigureAwait(false);
             }
 
             // update existing mappers
@@ -96,7 +97,8 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                         realm,
                         updateIdentityProvider.Alias,
                         mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
-                        UpdateIdentityProviderMapper(mapper, update)).ConfigureAwait(false);
+                        UpdateIdentityProviderMapper(mapper, update),
+                        cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -106,7 +108,8 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                 await keycloak.DeleteIdentityProviderMapperAsync(
                     realm,
                     updateIdentityProvider.Alias,
-                    mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}")).ConfigureAwait(false);
+                    mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
+                    cancellationToken).ConfigureAwait(false);
             }
         }
     }

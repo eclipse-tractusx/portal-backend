@@ -18,15 +18,34 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 public class KeycloakSeederSettings
 {
     [Required]
-    public string DataPath { get; set; } = null!;
+    [DistinctValues]
+    public IEnumerable<string> DataPathes { get; set; } = null!;
 
     [Required]
-    public string KeycloakInstanceName { get; set; } = null!;
+    public string InstanceName { get; set; } = null!;
+}
+
+public static class KeycloakSeederSettingsExtensions
+{
+    public static IServiceCollection ConfigureKeycloakSeederSettings(
+        this IServiceCollection services,
+        IConfigurationSection section
+    )
+    {
+        services.AddOptions<KeycloakSeederSettings>()
+            .Bind(section)
+            .ValidateDistinctValues(section)
+            .ValidateOnStart();
+        return services;
+    }
 }

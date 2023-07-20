@@ -19,11 +19,10 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public class KeycloakSeeder
+public class KeycloakSeeder : IKeycloakSeeder
 {
     private readonly KeycloakSeederSettings _settings;
     private readonly ISeedDataHandler _seedData;
@@ -45,16 +44,19 @@ public class KeycloakSeeder
         _settings = options.Value;
     }
 
-    public async Task Seed()
+    public async Task Seed(CancellationToken cancellationToken)
     {
-        await _seedData.Import(_settings.DataPath).ConfigureAwait(false);
-        await _realmUpdater.UpdateRealm(_settings.KeycloakInstanceName).ConfigureAwait(false);
-        await _rolesUpdater.UpdateRealmRoles(_settings.KeycloakInstanceName).ConfigureAwait(false);
-        await _clientsUpdater.UpdateClients(_settings.KeycloakInstanceName).ConfigureAwait(false);
-        await _rolesUpdater.UpdateClientRoles(_settings.KeycloakInstanceName).ConfigureAwait(false);
-        await _rolesUpdater.UpdateCompositeRoles(_settings.KeycloakInstanceName).ConfigureAwait(false);
-        await _identityProvidersUpdater.UpdateIdentityProviders(_settings.KeycloakInstanceName).ConfigureAwait(false);
-        await _usersUpdater.UpdateUsers(_settings.KeycloakInstanceName).ConfigureAwait(false);
-        await _authenticationFlowsUpdater.UpdateAuthenticationFlows(_settings.KeycloakInstanceName).ConfigureAwait(false);
+        foreach (var dataPath in _settings.DataPathes)
+        {
+            await _seedData.Import(dataPath, cancellationToken).ConfigureAwait(false);
+            await _realmUpdater.UpdateRealm(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _rolesUpdater.UpdateRealmRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _clientsUpdater.UpdateClients(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _rolesUpdater.UpdateClientRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _rolesUpdater.UpdateCompositeRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _identityProvidersUpdater.UpdateIdentityProviders(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _usersUpdater.UpdateUsers(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _authenticationFlowsUpdater.UpdateAuthenticationFlows(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

@@ -45,7 +45,7 @@ public partial class KeycloakClient
     private readonly string? _userName;
     private readonly string? _password;
     private readonly string? _clientSecret;
-    private readonly Func<Task<string>>? _getTokenAsync;
+    private readonly Func<CancellationToken, Task<string>>? _getTokenAsync;
     private readonly string? _authRealm;
     private readonly string? _clientId;
 
@@ -75,11 +75,11 @@ public partial class KeycloakClient
     public KeycloakClient(string url, Func<string> getToken, string? authRealm = null)
         : this(url)
     {
-        _getTokenAsync = () => Task.FromResult(getToken());
+        _getTokenAsync = (_) => Task.FromResult(getToken());
         _authRealm = authRealm;
     }
 
-    public KeycloakClient(string url, Func<Task<string>> getTokenAsync, string? authRealm = null)
+    public KeycloakClient(string url, Func<CancellationToken, Task<string>> getTokenAsync, string? authRealm = null)
         : this(url)
     {
         _getTokenAsync = getTokenAsync;
@@ -96,8 +96,8 @@ public partial class KeycloakClient
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
     }
 
-    private Task<IFlurlRequest> GetBaseUrlAsync(string targetRealm) => new Url(_url)
+    private Task<IFlurlRequest> GetBaseUrlAsync(string targetRealm, CancellationToken cancellationToken = default) => new Url(_url)
         .AppendPathSegment("/auth")
         .ConfigureRequest(settings => settings.JsonSerializer = _serializer)
-        .WithAuthenticationAsync(_getTokenAsync, _url, _authRealm ?? targetRealm, _userName, _password, _clientSecret, _clientId);
+        .WithAuthenticationAsync(_getTokenAsync, _url, _authRealm ?? targetRealm, _userName, _password, _clientSecret, _clientId, cancellationToken);
 }

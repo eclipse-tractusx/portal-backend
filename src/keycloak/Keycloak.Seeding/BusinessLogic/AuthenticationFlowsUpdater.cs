@@ -40,13 +40,13 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
         _seedData = seedDataHandler;
     }
 
-    public Task UpdateAuthenticationFlows(string keycloakInstanceName)
+    public Task UpdateAuthenticationFlows(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
 
         var handler = new AuthenticationFlowHandler(keycloak, _seedData);
 
-        return handler.UpdateAuthenticationFlows();
+        return handler.UpdateAuthenticationFlows(cancellationToken);
     }
 
     private class AuthenticationFlowHandler
@@ -62,9 +62,9 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
             _realm = seedData.Realm;
         }
 
-        public async Task UpdateAuthenticationFlows()
+        public async Task UpdateAuthenticationFlows(CancellationToken cancellationToken)
         {
-            var flows = (await _keycloak.GetAuthenticationFlowsAsync(_realm).ConfigureAwait(false));
+            var flows = (await _keycloak.GetAuthenticationFlowsAsync(_realm, cancellationToken).ConfigureAwait(false));
             var seedFlows = _seedData.TopLevelCustomAuthenticationFlows;
             var topLevelCustomFlows = flows.Where(flow => !(flow.BuiltIn ?? false) && (flow.TopLevel ?? false));
 
@@ -75,7 +75,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                     {
                         if (delete.Id == null)
                             throw new ConflictException($"authenticationFlow.id is null {delete.Alias} {delete.Description}");
-                        await _keycloak.DeleteAuthenticationFlowAsync(_realm, delete.Id).ConfigureAwait(false);
+                        await _keycloak.DeleteAuthenticationFlowAsync(_realm, delete.Id, cancellationToken).ConfigureAwait(false);
                     }
                 },
                 out var deleteFlowsTask
@@ -93,8 +93,8 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                             throw new ConflictException($"authenticationFlow.Alias is null {addFlow.Id} {addFlow.Description}");
                         if (addFlow.BuiltIn ?? false)
                             throw new ConflictException($"authenticationFlow.buildIn is true. flow cannot be added: {addFlow.Alias}");
-                        await _keycloak.CreateAuthenticationFlowAsync(_realm, CreateUpdateAuthenticationFlow(null, addFlow)).ConfigureAwait(false);
-                        await UpdateAuthenticationFlowExecutions(addFlow.Alias);
+                        await _keycloak.CreateAuthenticationFlowAsync(_realm, CreateUpdateAuthenticationFlow(null, addFlow), cancellationToken).ConfigureAwait(false);
+                        await UpdateAuthenticationFlowExecutions(addFlow.Alias, cancellationToken);
                     }
                 },
                 out var addFlowsTasks
@@ -119,9 +119,9 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                             throw new ConflictException($"authenticationFlow.Alias is null {flow.Id} {flow.Description}");
                         if (!Compare(flow, seed))
                         {
-                            await _keycloak.UpdateAuthenticationFlowAsync(_realm, flow.Id, CreateUpdateAuthenticationFlow(flow.Id, seed)).ConfigureAwait(false);
+                            await _keycloak.UpdateAuthenticationFlowAsync(_realm, flow.Id, CreateUpdateAuthenticationFlow(flow.Id, seed), cancellationToken).ConfigureAwait(false);
                         }
-                        await UpdateAuthenticationFlowExecutions(flow.Alias);
+                        await UpdateAuthenticationFlowExecutions(flow.Alias, cancellationToken);
                     }
                 },
                 out var updateFlowsTask
@@ -131,18 +131,18 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
             }
         }
 
-        private async Task UpdateAuthenticationFlowExecutions(string alias)
+        private async Task UpdateAuthenticationFlowExecutions(string alias, CancellationToken cancellationToken)
         {
             var updateExecutions = _seedData.GetAuthenticationExecutions(alias);
-            var executionNodes = ExecutionNode.Parse(await GetExecutions(alias).ConfigureAwait(false));
+            var executionNodes = ExecutionNode.Parse(await GetExecutions(alias, cancellationToken).ConfigureAwait(false));
 
             if (!CompareStructureRecursive(executionNodes, updateExecutions))
             {
-                await DeleteExecutionsRecursive(executionNodes).ConfigureAwait(false);
-                await AddExecutionsRecursive(alias, updateExecutions).ConfigureAwait(false);
-                executionNodes = ExecutionNode.Parse(await GetExecutions(alias).ConfigureAwait(false));
+                await DeleteExecutionsRecursive(executionNodes, cancellationToken).ConfigureAwait(false);
+                await AddExecutionsRecursive(alias, updateExecutions, cancellationToken).ConfigureAwait(false);
+                executionNodes = ExecutionNode.Parse(await GetExecutions(alias, cancellationToken).ConfigureAwait(false));
             }
-            await UpdateExecutionsRecursive(alias, executionNodes, updateExecutions).ConfigureAwait(false);
+            await UpdateExecutionsRecursive(alias, executionNodes, updateExecutions, cancellationToken).ConfigureAwait(false);
         }
 
         private bool CompareStructureRecursive(IReadOnlyList<ExecutionNode> executions, IEnumerable<AuthenticationExecutionModel> updateExecutions) =>
@@ -154,37 +154,37 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                         (x.Node.Execution.AuthenticationFlow ?? false) == (x.Update.AuthenticatorFlow ?? false) &&
                         (!(x.Node.Execution.AuthenticationFlow ?? false) || CompareStructureRecursive(x.Node.Children, _seedData.GetAuthenticationExecutions(x.Update.FlowAlias))));
 
-        private async Task DeleteExecutionsRecursive(IEnumerable<ExecutionNode> executionNodes)
+        private async Task DeleteExecutionsRecursive(IEnumerable<ExecutionNode> executionNodes, CancellationToken cancellationToken)
         {
             foreach (var executionNode in executionNodes)
             {
                 if (executionNode.Execution.AuthenticationFlow ?? false)
                 {
-                    await DeleteExecutionsRecursive(executionNode.Children).ConfigureAwait(false);
+                    await DeleteExecutionsRecursive(executionNode.Children, cancellationToken).ConfigureAwait(false);
                 }
-                await _keycloak.DeleteAuthenticationExecutionAsync(_realm, executionNode.Execution.Id ?? throw new ConflictException("authenticationFlow.Id is null")).ConfigureAwait(false);
+                await _keycloak.DeleteAuthenticationExecutionAsync(_realm, executionNode.Execution.Id ?? throw new ConflictException("authenticationFlow.Id is null"), cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task AddExecutionsRecursive(string? alias, IEnumerable<AuthenticationExecutionModel> seedExecutions)
+        private async Task AddExecutionsRecursive(string? alias, IEnumerable<AuthenticationExecutionModel> seedExecutions, CancellationToken cancellationToken)
         {
             foreach (var execution in seedExecutions)
             {
                 await (execution.AuthenticatorFlow switch
                 {
-                    true => AddAuthenticationFlowExecutionRecursive(alias!, execution),
-                    _ => _keycloak.AddAuthenticationFlowExecutionAsync(_realm, alias!, CreateDataWithProvider(execution))
+                    true => AddAuthenticationFlowExecutionRecursive(alias!, execution, cancellationToken),
+                    _ => _keycloak.AddAuthenticationFlowExecutionAsync(_realm, alias!, CreateDataWithProvider(execution), cancellationToken)
                 }).ConfigureAwait(false);
             }
 
-            async Task AddAuthenticationFlowExecutionRecursive(string alias, AuthenticationExecutionModel execution)
+            async Task AddAuthenticationFlowExecutionRecursive(string alias, AuthenticationExecutionModel execution, CancellationToken cancellationToken)
             {
-                await _keycloak.AddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(_realm, alias, CreateDataWithAliasTypeProviderDescription(execution)).ConfigureAwait(false);
-                await AddExecutionsRecursive(execution.FlowAlias, _seedData.GetAuthenticationExecutions(execution.FlowAlias)).ConfigureAwait(false);
+                await _keycloak.AddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(_realm, alias, CreateDataWithAliasTypeProviderDescription(execution), cancellationToken).ConfigureAwait(false);
+                await AddExecutionsRecursive(execution.FlowAlias, _seedData.GetAuthenticationExecutions(execution.FlowAlias), cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task UpdateExecutionsRecursive(string alias, IReadOnlyList<ExecutionNode> executionNodes, IEnumerable<AuthenticationExecutionModel> seedExecutions)
+        private async Task UpdateExecutionsRecursive(string alias, IReadOnlyList<ExecutionNode> executionNodes, IEnumerable<AuthenticationExecutionModel> seedExecutions, CancellationToken cancellationToken)
         {
             if (executionNodes.Count != seedExecutions.Count())
                 throw new ArgumentException("number of elements in executionNodes doesn't match seedData");
@@ -196,12 +196,12 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
 
                 await (executionNode.Execution.AuthenticationFlow switch
                 {
-                    true => UpdateAuthenticationFlowExecutionRecursive(alias, executionNode, update),
-                    _ => UpdateAuthenticationExecution(executionNode, update)
+                    true => UpdateAuthenticationFlowExecutionRecursive(alias, executionNode, update, cancellationToken),
+                    _ => UpdateAuthenticationExecution(executionNode, update, cancellationToken)
                 }).ConfigureAwait(false);
             }
 
-            async Task UpdateAuthenticationFlowExecutionRecursive(string alias, ExecutionNode executionNode, AuthenticationExecutionModel update)
+            async Task UpdateAuthenticationFlowExecutionRecursive(string alias, ExecutionNode executionNode, AuthenticationExecutionModel update, CancellationToken cancellationToken)
             {
                 if (!CompareFlowExecutions(executionNode.Execution, update))
                 {
@@ -221,7 +221,8 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                             Level = executionNode.Execution.Level,
                             Requirement = update.Requirement,
                             RequirementChoices = executionNode.Execution.RequirementChoices
-                        }).ConfigureAwait(false);
+                        },
+                        cancellationToken).ConfigureAwait(false);
                 }
 
                 var seedExecutions = _seedData.GetAuthenticationExecutions(update.FlowAlias);
@@ -229,12 +230,13 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                 await UpdateExecutionsRecursive(
                     update.FlowAlias!,
                     executionNode.Children,
-                    seedExecutions).ConfigureAwait(false);
+                    seedExecutions,
+                    cancellationToken).ConfigureAwait(false);
             }
 
-            async Task UpdateAuthenticationExecution(ExecutionNode executionNode, AuthenticationExecutionModel update)
+            async Task UpdateAuthenticationExecution(ExecutionNode executionNode, AuthenticationExecutionModel update, CancellationToken cancellationToken)
             {
-                var (isEqual, authenticatorConfig) = await CompareExecutions(executionNode.Execution, update).ConfigureAwait(false);
+                var (isEqual, authenticatorConfig) = await CompareExecutions(executionNode.Execution, update, cancellationToken).ConfigureAwait(false);
                 if (!isEqual)
                 {
                     await _keycloak.UpdateAuthenticationFlowExecutionsAsync(
@@ -250,14 +252,15 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                             ProviderId = executionNode.Execution.ProviderId,
                             Requirement = update.Requirement,
                             RequirementChoices = executionNode.Execution.RequirementChoices
-                        }).ConfigureAwait(false);
+                        },
+                        cancellationToken).ConfigureAwait(false);
 
-                    await UpdateAuthenticatorConfig(executionNode.Execution, update, authenticatorConfig).ConfigureAwait(false);
+                    await UpdateAuthenticatorConfig(executionNode.Execution, update, authenticatorConfig, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task UpdateAuthenticatorConfig(AuthenticationFlowExecution execution, AuthenticationExecutionModel update, AuthenticatorConfig? config)
+        private async Task UpdateAuthenticatorConfig(AuthenticationFlowExecution execution, AuthenticationExecutionModel update, AuthenticatorConfig? config, CancellationToken cancellationToken)
         {
             switch ((execution.AuthenticationConfig, update.AuthenticatorConfig))
             {
@@ -272,13 +275,15 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                         {
                             Alias = update.AuthenticatorConfig,
                             Config = _seedData.GetAuthenticatorConfig(update.AuthenticatorConfig).Config?.ToDictionary(x => x.Key, x => x.Value)
-                        }).ConfigureAwait(false);
+                        },
+                        cancellationToken).ConfigureAwait(false);
                     break;
 
                 case (_, null):
                     await _keycloak.DeleteAuthenticatorConfigurationAsync(
                         _realm,
-                        execution.AuthenticationConfig).ConfigureAwait(false);
+                        execution.AuthenticationConfig,
+                        cancellationToken).ConfigureAwait(false);
                     break;
 
                 case (_, _):
@@ -287,7 +292,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                         throw new UnexpectedConditionException("authenticatorConfig is null");
                     config.Alias = update.AuthenticatorConfig;
                     config.Config = updateConfig.Config?.ToDictionary(x => x.Key, x => x.Value);
-                    await _keycloak.UpdateAuthenticatorConfigurationAsync(_realm, execution.AuthenticationConfig, config).ConfigureAwait(false);
+                    await _keycloak.UpdateAuthenticatorConfigurationAsync(_realm, execution.AuthenticationConfig, config, cancellationToken).ConfigureAwait(false);
                     break;
             }
         }
@@ -297,7 +302,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
             execution.DisplayName == update.FlowAlias &&
             execution.Requirement == update.Requirement;
 
-        private Task<(bool IsEqual, AuthenticatorConfig? AuthenticatorConfig)> CompareExecutions(AuthenticationFlowExecution execution, AuthenticationExecutionModel update) =>
+        private Task<(bool IsEqual, AuthenticatorConfig? AuthenticatorConfig)> CompareExecutions(AuthenticationFlowExecution execution, AuthenticationExecutionModel update, CancellationToken cancellationToken) =>
             (execution.ProviderId != update.Authenticator ||
             execution.Requirement != update.Requirement)
                 ? Task.FromResult((false, (AuthenticatorConfig?)null))
@@ -306,12 +311,12 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                     (null, null) => Task.FromResult((true, (AuthenticatorConfig?)null)),
                     (null, _) => Task.FromResult((false, (AuthenticatorConfig?)null)),
                     (_, null) => Task.FromResult((false, (AuthenticatorConfig?)null)),
-                    (_, _) => CompareAuthenticationConfig(execution.AuthenticationConfig, update.AuthenticatorConfig)
+                    (_, _) => CompareAuthenticationConfig(execution.AuthenticationConfig, update.AuthenticatorConfig, cancellationToken)
                 });
 
-        private async Task<(bool, AuthenticatorConfig?)> CompareAuthenticationConfig(string authenticatorConfigId, string authenticatorConfigAlias)
+        private async Task<(bool, AuthenticatorConfig?)> CompareAuthenticationConfig(string authenticatorConfigId, string authenticatorConfigAlias, CancellationToken cancellationToken)
         {
-            var config = await _keycloak.GetAuthenticatorConfigurationAsync(_realm, authenticatorConfigId).ConfigureAwait(false);
+            var config = await _keycloak.GetAuthenticatorConfigurationAsync(_realm, authenticatorConfigId, cancellationToken).ConfigureAwait(false);
             var update = _seedData.GetAuthenticatorConfig(authenticatorConfigAlias);
             return (CompareAuthenticatorConfig(config, update), config);
         }
@@ -320,8 +325,8 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
             config.Alias == update.Alias &&
             config.Config.NullOrContentEqual(update.Config);
 
-        private Task<IEnumerable<AuthenticationFlowExecution>> GetExecutions(string alias) =>
-            _keycloak.GetAuthenticationFlowExecutionsAsync(_realm, alias);
+        private Task<IEnumerable<AuthenticationFlowExecution>> GetExecutions(string alias, CancellationToken cancellationToken) =>
+            _keycloak.GetAuthenticationFlowExecutionsAsync(_realm, alias, cancellationToken);
 
         private IDictionary<string, object> CreateDataWithAliasTypeProviderDescription(AuthenticationExecutionModel execution)
         {

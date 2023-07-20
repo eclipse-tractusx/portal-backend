@@ -21,8 +21,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Keycloak.Seeding</AssemblyName>
-    <RootNamespace>Org.CatenaX.Ng.Portal.Backend.Keycloak.Seeding</RootNamespace>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -51,6 +51,7 @@
     <ProjectReference Include="..\..\framework\Framework.Linq\Framework.Linq.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

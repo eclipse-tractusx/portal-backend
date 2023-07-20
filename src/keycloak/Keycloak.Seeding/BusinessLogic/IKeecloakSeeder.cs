@@ -20,7 +20,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public interface IAuthenticationFlowsUpdater
+public interface IKeycloakSeeder
 {
-    Task UpdateAuthenticationFlows(string keycloakInstanceNamem, CancellationToken cancellationToken);
+    Task Seed(CancellationToken cancellationToken);
 }

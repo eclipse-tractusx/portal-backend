@@ -31,11 +31,11 @@ public class SeedDataHandler : ISeedDataHandler
     private KeycloakRealm? jsonRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
 
-    public async Task Import(string path)
+    public async Task Import(string path, CancellationToken cancellationToken)
     {
         using (var stream = File.OpenRead(path))
         {
-            jsonRealm = await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options).ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
+            jsonRealm = await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options, cancellationToken).ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
         }
         _idOfClients = null;
     }

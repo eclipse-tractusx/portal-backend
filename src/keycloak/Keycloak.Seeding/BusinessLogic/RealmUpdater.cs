@@ -36,7 +36,7 @@ public class RealmUpdater : IRealmUpdater
         _seedData = seedDataHandler;
     }
 
-    public async Task UpdateRealm(string keycloakInstanceName)
+    public async Task UpdateRealm(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = _seedData.Realm;
@@ -45,7 +45,7 @@ public class RealmUpdater : IRealmUpdater
         Realm keycloakRealm;
         try
         {
-            keycloakRealm = await keycloak.GetRealmAsync(realm).ConfigureAwait(false);
+            keycloakRealm = await keycloak.GetRealmAsync(realm, cancellationToken).ConfigureAwait(false);
         }
         catch (KeycloakEntityNotFoundException)
         {
@@ -54,7 +54,7 @@ public class RealmUpdater : IRealmUpdater
                 Id = seedRealm.Id,
                 _Realm = seedRealm.Realm
             };
-            await keycloak.ImportRealmAsync(realm, keycloakRealm).ConfigureAwait(false);
+            await keycloak.ImportRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(false);
         }
 
         if (!Compare(keycloakRealm, seedRealm))
@@ -126,7 +126,7 @@ public class RealmUpdater : IRealmUpdater
             //realm.PasswordPolicy = jsonRealm.PasswordPolicy;
             keycloakRealm.LoginTheme = seedRealm.LoginTheme;
 
-            await keycloak.UpdateRealmAsync(realm, keycloakRealm).ConfigureAwait(false);
+            await keycloak.UpdateRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(false);
         }
     }
 

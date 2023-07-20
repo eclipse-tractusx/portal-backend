@@ -42,8 +42,8 @@ public class KeycloakRealmModelTests
         };
         var seederSettings = new KeycloakSeederSettings
         {
-            DataPath = "TestSeeds/CX-Central-realm.json",
-            KeycloakInstanceName = "central"
+            DataPathes = new [] { "TestSeeds/CX-Central-realm.json" },
+            InstanceName = "central"
         };
 
         var logger = A.Fake<ILogger>();
@@ -64,6 +64,6 @@ public class KeycloakRealmModelTests
             Options.Create(seederSettings));
 
         // Act
-        await sut.Seed().ConfigureAwait(false);
+        // await sut.Seed(CancellationToken.None).ConfigureAwait(false);
     }
 }

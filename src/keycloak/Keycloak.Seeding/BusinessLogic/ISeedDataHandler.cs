@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 public interface ISeedDataHandler
 {
-    Task Import(string path);
+    Task Import(string path, CancellationToken cancellationToken);
 
     string Realm { get; }
 

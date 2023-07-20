@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
+using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
@@ -39,23 +40,23 @@ public class ClientsUpdater : IClientsUpdater
         _seedData = seedDataHandler;
     }
 
-    public Task UpdateClients(string keycloakInstanceName)
+    public Task UpdateClients(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var realm = _seedData.Realm;
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
-        return _seedData.SetClientInternalIds(UpdateClientsInternal(keycloak, realm));
+        return _seedData.SetClientInternalIds(UpdateClientsInternal(keycloak, realm, cancellationToken));
     }
 
-    private async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(KeycloakClient keycloak, string realm)
+    private async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(KeycloakClient keycloak, string realm, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         foreach (var update in _seedData.Clients)
         {
             if (update.ClientId == null)
                 throw new ConflictException($"clientId must not be null {update.Id}");
-            var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId).ConfigureAwait(false)).SingleOrDefault();
+            var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId, cancellationToken: cancellationToken).ConfigureAwait(false)).SingleOrDefault();
             if (client == null)
             {
-                var id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, CreateUpdateClient(null, update)).ConfigureAwait(false);
+                var id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, CreateUpdateClient(null, update), cancellationToken).ConfigureAwait(false);
                 if (id == null)
                     throw new KeycloakNoSuccessException($"creation of client {update.ClientId} did not return the expected result");
                 yield return (update.ClientId, id);
@@ -68,7 +69,8 @@ public class ClientsUpdater : IClientsUpdater
                 await keycloak.UpdateClientAsync(
                     realm,
                     client.Id,
-                    updateClient).ConfigureAwait(false);
+                    updateClient,
+                    cancellationToken).ConfigureAwait(false);
                 yield return (update.ClientId, client.Id);
             }
         }

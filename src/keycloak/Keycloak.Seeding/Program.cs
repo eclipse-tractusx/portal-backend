@@ -17,28 +17,82 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-// See https://aka.ms/new-console-template for more information
 
-Console.WriteLine("Starting process");
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
+using Serilog;
+
+LoggingExtensions.EnsureInitialized();
+Log.Information("Building keycloak-seeder");
+var isDevelopment = false;
 try
 {
-    // var builder = Host.CreateDefaultBuilder(args)
-    //     .ConfigureServices((hostContext, services) =>
-    //     {
-    //     });
+    var host = Host
+        .CreateDefaultBuilder(args)
+        .ConfigureServices((hostContext, services) =>
+        {
+            services
+                .AddLogging(builder =>
+                {
+                    var logger = LoggingExtensions.CreateLogger(hostContext.Configuration);
+                    builder.AddSerilog(logger);
+                })
+                .AddScoped<ISeedDataHandler, SeedDataHandler>()
+                .AddTransient<IRealmUpdater, RealmUpdater>()
+                .AddTransient<IRolesUpdater, RolesUpdater>()
+                .AddTransient<IClientsUpdater, ClientsUpdater>()
+                .AddTransient<IIdentityProvidersUpdater, IdentityProvidersUpdater>()
+                .AddTransient<IUsersUpdater, UsersUpdater>()
+                .AddTransient<IAuthenticationFlowsUpdater, AuthenticationFlowsUpdater>()
+                .AddTransient<IKeycloakFactory, KeycloakFactory>()
+                .ConfigureKeycloakSettingsMap(hostContext.Configuration.GetSection("Keycloak"))
+                .AddTransient<IKeycloakSeeder, KeycloakSeeder>()
+                .ConfigureKeycloakSeederSettings(hostContext.Configuration.GetSection("KeycloakSeeding"));
 
-    // var host = builder.Build();
+            if (hostContext.HostingEnvironment.IsDevelopment())
+            {
+                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+                    .Where(config => config.ConnectionString.StartsWith("https://"))
+                    .Select(config => config.ConnectionString)
+                    .Distinct();
+                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+                isDevelopment = true;
+            }
+        })
+        .UseSerilog()
+        .Build();
+
+    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>(), isDevelopment);
+
+    Log.Information("Building keycloak-seeder completed");
+
+    var tokenSource = new CancellationTokenSource();
+    Console.CancelKeyPress += (s, e) =>
+    {
+        Log.Information("Canceling...");
+        tokenSource.Cancel();
+        e.Cancel = true;
+    };
+
+    using (var scope = host.Services.CreateScope())
+    {
+        Log.Information("Start seeding");
+        var seederInstance = scope.ServiceProvider.GetRequiredService<IKeycloakSeeder>();
+        await seederInstance.Seed(tokenSource.Token).ConfigureAwait(false);
+        Log.Information("Execution finished shutting down");
+    }
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
-    // Should be replaced with Serilog as soon as we have it.
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("Unhandled exception: {0}", ex);
-    Console.ResetColor();
-    throw;
+    Log.Fatal(ex, "Unhandled exception");
 }
 finally
 {
-    // Should be replaced with Serilog as soon as we have it.
-    Console.WriteLine("Process Shutting down...");
+    Log.Information("Server Shutting down");
+    Log.CloseAndFlush();
 }

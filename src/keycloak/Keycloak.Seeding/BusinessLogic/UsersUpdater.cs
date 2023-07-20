@@ -39,7 +39,7 @@ public class UsersUpdater : IUsersUpdater
         _seedData = seedDataHandler;
     }
 
-    public async Task UpdateUsers(string keycloakInstanceName)
+    public async Task UpdateUsers(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var realm = _seedData.Realm;
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
@@ -49,11 +49,11 @@ public class UsersUpdater : IUsersUpdater
             if (seedUser.Username == null)
                 throw new ConflictException($"username must not be null {seedUser.Id}");
 
-            var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username).ConfigureAwait(false)).SingleOrDefault(x => x.UserName == seedUser.Username);
+            var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(false)).SingleOrDefault(x => x.UserName == seedUser.Username);
             if (user == null)
             {
                 user = CreateUpdateUser(null, seedUser);
-                user.Id = await keycloak.CreateAndRetrieveUserIdAsync(realm, user).ConfigureAwait(false);
+                user.Id = await keycloak.CreateAndRetrieveUserIdAsync(realm, user, cancellationToken).ConfigureAwait(false);
                 if (user.Id == null)
                     throw new KeycloakNoSuccessException($"failed to retrieve id of newly created user {seedUser.Username}");
             }
@@ -67,26 +67,27 @@ public class UsersUpdater : IUsersUpdater
                     await keycloak.UpdateUserAsync(
                         realm,
                         user.Id,
-                        updateUser).ConfigureAwait(false);
+                        updateUser,
+                        cancellationToken).ConfigureAwait(false);
                 }
             }
 
             foreach (var (clientId, id) in _seedData.ClientsDictionary)
             {
                 await UpdateUserRoles(
-                    () => keycloak.GetClientRoleMappingsForUserAsync(realm, user.Id, id),
+                    () => keycloak.GetClientRoleMappingsForUserAsync(realm, user.Id, id, cancellationToken),
                     () => (seedUser.ClientRoles?.TryGetValue(clientId, out var seedRoles) ?? false) ? seedRoles : Enumerable.Empty<string>(),
-                    () => keycloak.GetRolesAsync(realm, id),
-                    delete => keycloak.DeleteClientRoleMappingsFromUserAsync(realm, user.Id, id, delete),
-                    add => keycloak.AddClientRoleMappingsToUserAsync(realm, user.Id, id, add)).ConfigureAwait(false);
+                    () => keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken),
+                    delete => keycloak.DeleteClientRoleMappingsFromUserAsync(realm, user.Id, id, delete, cancellationToken),
+                    add => keycloak.AddClientRoleMappingsToUserAsync(realm, user.Id, id, add, cancellationToken)).ConfigureAwait(false);
             }
 
             await UpdateUserRoles(
-                () => keycloak.GetRealmRoleMappingsForUserAsync(realm, user.Id),
+                () => keycloak.GetRealmRoleMappingsForUserAsync(realm, user.Id, cancellationToken),
                 () => seedUser.RealmRoles ?? Enumerable.Empty<string>(),
-                () => keycloak.GetRolesAsync(realm),
-                delete => keycloak.DeleteRealmRoleMappingsFromUserAsync(realm, user.Id, delete),
-                add => keycloak.AddRealmRoleMappingsToUserAsync(realm, user.Id, add)).ConfigureAwait(false);
+                () => keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken),
+                delete => keycloak.DeleteRealmRoleMappingsFromUserAsync(realm, user.Id, delete, cancellationToken),
+                add => keycloak.AddRealmRoleMappingsToUserAsync(realm, user.Id, add, cancellationToken)).ConfigureAwait(false);
         }
     }
 
