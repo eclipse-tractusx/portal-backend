@@ -25,3 +25,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 public record WalletErrorResponse([property: JsonPropertyName("message")] string Message);
 
 public record MembershipErrorResponse([property: JsonPropertyName("title")] string Title);
+
+public record WalletCreationResponse([property: JsonPropertyName("DID")] string did, [property: JsonPropertyName("CreatedAt")] DateTimeOffset createdAt);

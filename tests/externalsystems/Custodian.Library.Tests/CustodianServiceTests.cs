@@ -36,6 +36,8 @@ public class CustodianServiceTests
 {
     #region Initialization
 
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     private readonly ITokenService _tokenService;
     private readonly IOptions<CustodianSettings> _options;
     private readonly IFixture _fixture;
@@ -66,14 +68,18 @@ public class CustodianServiceTests
 
     #region Create Wallet
 
-    [Fact]
-    public async Task CreateWallet_WithValidData_DoesNotThrowException()
+    [Theory]
+    [InlineData("did:sov:GamAMqXnXr1chS4viYXoxB", true)]
+     [InlineData(null, false)]
+    public async Task CreateWallet_WithValidData_DoesNotThrowException(string DID, bool IsCreatedAt)
     {
         // Arrange
         const string bpn = "123";
         const string name = "test";
+        var data = JsonSerializer.Serialize(
+            new WalletCreationResponse("did:sov:GamAMqXnXr1chS4viYXoxB", IsCreatedAt ? DateTimeOffset.UtcNow : default), JsonOptions);
         var httpMessageHandlerMock =
-            new HttpMessageHandlerMock(HttpStatusCode.OK);
+            new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/json"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -83,10 +89,11 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _options);
 
         // Act
-        await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        true.Should().BeTrue(); // One Assert is needed - just checking for no exception
+        result.Should().NotBeNull();
+        result.Should().Be(data);
     }
 
     [Theory]
@@ -118,6 +125,31 @@ public class CustodianServiceTests
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be(message);
         ex.StatusCode.Should().Be(statusCode);
+    }
+
+    [Fact]
+    public async Task CreateWallet_withSuccessStatusCode_JsonException()
+    {
+        // Arrange
+        const string bpn = "123";
+        const string name = "test";
+        string content = "this is no json data";
+        var httpMessageHandlerMock =
+            new HttpMessageHandlerMock(HttpStatusCode.OK, new StringContent(content));
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
+            .Returns(httpClient);
+        var sut = new CustodianService(_tokenService, _options);
+
+        // Act
+        var result = await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().Be("Service Response deSerialization failed for custodian-post");
     }
 
     #endregion
