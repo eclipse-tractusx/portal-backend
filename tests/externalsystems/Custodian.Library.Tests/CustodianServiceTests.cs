@@ -70,14 +70,14 @@ public class CustodianServiceTests
 
     [Theory]
     [InlineData("did:sov:GamAMqXnXr1chS4viYXoxB", true)]
-     [InlineData(null, false)]
+    [InlineData(null, false)]
     public async Task CreateWallet_WithValidData_DoesNotThrowException(string DID, bool IsCreatedAt)
     {
         // Arrange
         const string bpn = "123";
         const string name = "test";
         var data = JsonSerializer.Serialize(
-            new WalletCreationResponse("did:sov:GamAMqXnXr1chS4viYXoxB", IsCreatedAt ? DateTimeOffset.UtcNow : default), JsonOptions);
+            new WalletCreationResponse(DID, IsCreatedAt ? DateTimeOffset.UtcNow : default), JsonOptions);
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/json"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
@@ -133,7 +133,7 @@ public class CustodianServiceTests
         // Arrange
         const string bpn = "123";
         const string name = "test";
-        string content = "this is no json data";
+        var content = "this is no json data";
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK, new StringContent(content));
         var httpClient = new HttpClient(httpMessageHandlerMock)
