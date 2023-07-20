@@ -985,6 +985,9 @@ public class CompanyDataBusinessLogicTests
     public async Task GetCredentials_WithFilter_ReturnsList()
     {
         // Arrange
+        var companySsiDetailStatusId = _fixture.Create<CompanySsiDetailStatusId>();
+        var credentialTypeId = _fixture.Create<VerifiedCredentialTypeId>();
+        var companyName = _fixture.Create<string>();
         var verificationCredentialType = _fixture.Build<VerifiedCredentialType>()
             .With(x => x.VerifiedCredentialTypeAssignedUseCase, new VerifiedCredentialTypeAssignedUseCase(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, Guid.NewGuid())
             {
@@ -996,14 +999,16 @@ public class CompanyDataBusinessLogicTests
             .With(x => x.Document, new Document(Guid.NewGuid(), null!, null!, "test-doc.pdf", MediaTypeId.PDF, default, default, default))
             .CreateMany(3);
         var credentials = new AsyncEnumerableStub<CompanySsiDetail>(data);
-        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(CompanySsiDetailStatusId.ACTIVE, null, null))!
+        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(A<CompanySsiDetailStatusId>._, A<VerifiedCredentialTypeId?>._, A<string?>._))
             .Returns(credentials.AsQueryable());
 
         // Act
-        var result = await _sut.GetCredentials(0, 15, CompanySsiDetailStatusId.ACTIVE, null, null, CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
+        var result = await _sut.GetCredentials(0, 15, companySsiDetailStatusId, credentialTypeId, companyName, CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
 
         // Assert
         result.Content.Should().HaveCount(credentials.Count());
+        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(companySsiDetailStatusId, credentialTypeId, companyName))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
