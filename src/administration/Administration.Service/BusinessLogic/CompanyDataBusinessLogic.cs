@@ -330,11 +330,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, CompanySsiDetailSorting? sorting)
+    public Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, VerifiedCredentialTypeId? credentialTypeId, string? companyName, CompanySsiDetailSorting? sorting)
     {
         var query = _portalRepositories
             .GetInstance<ICompanySsiDetailsRepository>()
-            .GetAllCredentialDetails(companySsiDetailStatusId);
+            .GetAllCredentialDetails(companySsiDetailStatusId, credentialTypeId, companyName);
         var sortedQuery = sorting switch
         {
             CompanySsiDetailSorting.CompanyAsc or null => query.OrderBy(c => c.Company!.Name),
@@ -352,6 +352,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                     .Select(c => new CredentialDetailData(
                         c.Id,
                         c.CompanyId,
+                        c.Company!.Name,
                         c.VerifiedCredentialTypeId,
                         c.VerifiedCredentialType!.VerifiedCredentialTypeAssignedUseCase!.UseCase!.Name,
                         c.CompanySsiDetailStatusId,
