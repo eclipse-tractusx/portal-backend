@@ -455,9 +455,8 @@ public class SdFactoryBusinessLogicTests
                 new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP }))
             .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _process, Guid.NewGuid(),
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
-                ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>.Empty,
-                new List<ProcessStep>(),
-                ImmutableDictionary<ApplicationChecklistEntryTypeId, string?>.Empty));
+                ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty,
+                new List<ProcessStep>()));
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._,
                 A<IEnumerable<ProcessStepTypeId>>._))

@@ -354,9 +354,8 @@ public class ChecklistServiceTests
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
-            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, string?>>().ToImmutableDictionary()
+            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
+            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
         var lockExpiryDate = _fixture.Create<DateTimeOffset>();
 
@@ -380,9 +379,8 @@ public class ChecklistServiceTests
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
-            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, string?>>().ToImmutableDictionary()
+            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
+            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
 
         // Act
@@ -408,9 +406,8 @@ public class ChecklistServiceTests
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
-            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, string?>>().ToImmutableDictionary()
+            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
+            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
 
         ApplicationChecklistEntry? modifiedChecklistEntry = null;
@@ -487,9 +484,8 @@ public class ChecklistServiceTests
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
-            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, string?>>().ToImmutableDictionary()
+            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
+            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
 
         ProcessStep? modifiedProcessStep = null;
@@ -553,9 +549,8 @@ public class ChecklistServiceTests
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
-            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, string?>>().ToImmutableDictionary()
+            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
+            new ProcessStep[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
 
         ApplicationChecklistEntry? modifiedChecklistEntry = null;
@@ -618,9 +613,8 @@ public class ChecklistServiceTests
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
-            processSteps,
-            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, string?>>().ToImmutableDictionary()
+            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
+            processSteps
         );
 
         var modifiedProcessSteps = new List<ProcessStep>();

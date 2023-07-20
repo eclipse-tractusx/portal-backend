@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Lib
 
 public interface IApplicationChecklistService
 {
-    record ManualChecklistProcessStepData(Guid ApplicationId, Process Process, Guid ProcessStepId, ApplicationChecklistEntryTypeId EntryTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId> Checklist, IEnumerable<ProcessStep> ProcessSteps, ImmutableDictionary<ApplicationChecklistEntryTypeId, string?> ChecklistComment);
+    record ManualChecklistProcessStepData(Guid ApplicationId, Process Process, Guid ProcessStepId, ApplicationChecklistEntryTypeId EntryTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId StatusId, string? Comment)> Checklist, IEnumerable<ProcessStep> ProcessSteps);
     record WorkerChecklistProcessStepData(Guid ApplicationId, ProcessStepTypeId ProcessStepTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId> Checklist, IEnumerable<ProcessStepTypeId> ProcessStepTypeIds);
     record WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId StepStatusId, Action<ApplicationChecklistEntry>? ModifyChecklistEntry, IEnumerable<ProcessStepTypeId>? ScheduleStepTypeIds, IEnumerable<ProcessStepTypeId>? SkipStepTypeIds, bool Modified, string? ProcessMessage);
 

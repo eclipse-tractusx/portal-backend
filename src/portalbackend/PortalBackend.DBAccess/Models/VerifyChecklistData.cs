@@ -26,5 +26,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record VerifyChecklistData(
     bool IsSubmitted,
     Process? Process,
-    IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? comment)>? Checklist,
+    IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string Comment)> Checklist,
     IEnumerable<ProcessStep>? ProcessSteps);

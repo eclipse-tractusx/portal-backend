@@ -104,7 +104,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
         if (modifyApplicationChecklistEntry != null)
         {
             applicationChecklistRepository
-                .AttachAndModifyApplicationChecklist(context.ApplicationId, context.EntryTypeId, initializeApplicationChecklistEntry!, modifyApplicationChecklistEntry);
+                .AttachAndModifyApplicationChecklist(context.ApplicationId, context.EntryTypeId, initializeApplicationChecklistEntry, modifyApplicationChecklistEntry);
         }
         processStepRepository.AttachAndModifyProcessStep(context.ProcessStepId, null, step => step.ProcessStepStatusId = ProcessStepStatusId.DONE);
         if (nextProcessStepTypeIds == null || !nextProcessStepTypeIds.Any())
