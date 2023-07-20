@@ -98,7 +98,7 @@ public class OfferDocumentService : IOfferDocumentService
         });
         _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(id, doc.Id);
 
-        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(id, offer =>
+        offerRepository.AttachAndModifyOffer(id, offer =>
             offer.DateLastChanged = DateTimeOffset.UtcNow);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
