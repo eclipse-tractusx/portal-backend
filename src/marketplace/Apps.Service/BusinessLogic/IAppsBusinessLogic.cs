@@ -107,18 +107,16 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
     /// </summary>
-    /// <param name="appId">ID of the pending app to be activated.</param>
-    /// <param name="subscribingCompanyId">ID of the company subscribing the app.</param>
+    /// <param name="subscriptionId">ID of the pending app to be activated.</param>
     /// <param name="identity">identity of the current user.</param>
-    [Obsolete("This Method is not used anymore")]
-    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, (Guid UserId, Guid CompanyId) identity);
+    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid subscriptionId, (Guid UserId, Guid CompanyId) identity);
 
     /// <summary>
     /// Unsubscribes an app for the current users company.
     /// </summary>
-    /// <param name="appId">ID of the app to unsubscribe from.</param>
+    /// <param name="subscriptionId">ID of the subscription to unsubscribe from.</param>
     /// <param name="companyId">Id of the users company that initiated app unsubscription.</param>
-    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, Guid companyId);
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId, Guid companyId);
 
     /// <summary>
     /// Retrieve Company Owned App Data

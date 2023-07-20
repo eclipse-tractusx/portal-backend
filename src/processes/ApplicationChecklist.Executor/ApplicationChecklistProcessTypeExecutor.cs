@@ -36,7 +36,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
     private readonly IApplicationChecklistRepository _checklistRepository;
 
     private Guid applicationId;
-    private IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>? checklist = null;
+    private IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>? checklist;
 
     public ApplicationChecklistProcessTypeExecutor(
         IApplicationChecklistHandlerService checklistHandlerService,
@@ -151,6 +151,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
             .AttachAndModifyApplicationChecklist(
                 applicationId,
                 entryTypeId,
+                null,
                 modifyApplicationChecklistEntry);
         checklist![entryTypeId] = entry.ApplicationChecklistEntryStatusId;
         return true;

@@ -249,6 +249,8 @@ public class CompanyDataController : ControllerBase
     /// <param name="page">The page to get</param>
     /// <param name="size">Amount of entries</param>
     /// <param name="companySsiDetailStatusId">OPTIONAL: Filter for the status</param>
+    /// <param name="credentialTypeId">OPTIONAL: The type of the credential that should be returned</param>
+    /// <param name="companyName">OPTIONAL: Search string for the company name</param>
     /// <param name="sorting">Defines the sorting of the list</param>
     /// <response code="200">Collection of the credentials.</response>
     [HttpGet]
@@ -260,8 +262,10 @@ public class CompanyDataController : ControllerBase
         [FromQuery] int page = 0,
         [FromQuery] int size = 15,
         [FromQuery] CompanySsiDetailStatusId? companySsiDetailStatusId = null,
+        [FromQuery] VerifiedCredentialTypeId? credentialTypeId = null,
+        [FromQuery] string? companyName = null,
         [FromQuery] CompanySsiDetailSorting? sorting = null) =>
-        _logic.GetCredentials(page, size, companySsiDetailStatusId, sorting);
+        _logic.GetCredentials(page, size, companySsiDetailStatusId, credentialTypeId, companyName, sorting);
 
     /// <summary>
     /// Approves the given credential

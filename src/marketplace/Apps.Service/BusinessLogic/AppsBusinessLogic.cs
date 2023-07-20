@@ -181,30 +181,24 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, identity, OfferTypeId.APP, _settings.BasePortalAddress);
 
     /// <inheritdoc/>
-    [Obsolete("This Method is not used anymore")]
-    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, (Guid UserId, Guid CompanyId) identity)
+    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid subscriptionId, (Guid UserId, Guid CompanyId) identity)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var assignedAppData = await offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, subscribingCompanyId, identity.CompanyId).ConfigureAwait(false);
+        var assignedAppData = await offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(subscriptionId, identity.CompanyId).ConfigureAwait(false);
         if (assignedAppData == default)
         {
-            throw new NotFoundException($"App {appId} does not exist.");
+            throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
         }
 
-        var (subscriptionId, subscriptionStatusId, requesterId, appName, isUserOfProvider, requesterData) = assignedAppData;
+        var (subscriptionStatusId, requesterId, appId, appName, isUserOfProvider, requesterData) = assignedAppData;
         if (!isUserOfProvider)
         {
-            throw new ControllerArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
-        }
-
-        if (subscriptionId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"subscription for app {appId}, company {subscribingCompanyId} has not been created yet");
+            throw new ForbiddenException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
 
         if (subscriptionStatusId != OfferSubscriptionStatusId.PENDING)
         {
-            throw new ControllerArgumentException($"subscription for app {appId}, company {subscribingCompanyId} is not in status PENDING");
+            throw new ConflictException($"subscription {subscriptionId} is not in status PENDING");
         }
 
         if (appName is null)
@@ -242,22 +236,31 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, Guid companyId)
+    public async Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId, Guid companyId)
     {
-        var assignedAppData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyAssignedAppDataForCompanyUserAsync(appId, companyId).ConfigureAwait(false);
-
+        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var assignedAppData = await offerSubscriptionsRepository.GetCompanyAssignedAppDataForCompanyUserAsync(subscriptionId, companyId).ConfigureAwait(false);
         if (assignedAppData == default)
         {
-            throw new NotFoundException($"App {appId} does not exist.");
+            throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
         }
 
-        var (subscription, _) = assignedAppData;
+        var (status, isSubscribingCompany, _) = assignedAppData;
 
-        if (subscription == null)
+        if (!isSubscribingCompany)
         {
-            throw new ArgumentException($"There is no active subscription for company '{companyId}' and app '{appId}'");
+            throw new ForbiddenException("the calling user does not belong to the subscribing company");
         }
-        subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.INACTIVE;
+
+        if (status != OfferSubscriptionStatusId.ACTIVE && status != OfferSubscriptionStatusId.PENDING)
+        {
+            throw new ConflictException($"There is no active or pending subscription for company '{companyId}' and subscriptionId '{subscriptionId}'");
+        }
+
+        offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, os =>
+        {
+            os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.INACTIVE;
+        });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

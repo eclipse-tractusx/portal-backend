@@ -59,6 +59,7 @@ public record ProviderSubscriptionDetailData(
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
 /// <param name="TenantUrl">Url of Tenant</param>
+/// <param name="AppInstanceId">Id of the app instance</param>
 public record AppProviderSubscriptionDetailData(
     Guid Id,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
@@ -67,7 +68,8 @@ public record AppProviderSubscriptionDetailData(
     string? Bpn,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
-    string? TenantUrl
+    string? TenantUrl,
+    Guid? AppInstanceId
 );
 
 /// <summary>
