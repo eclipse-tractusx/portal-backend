@@ -62,6 +62,7 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm._Realm = seedRealm.Realm;
             keycloakRealm.DisplayName = seedRealm.DisplayName;
             keycloakRealm.NotBefore = seedRealm.NotBefore;
+            keycloakRealm.DefaultSignatureAlgorithm = seedRealm.DefaultSignatureAlgorithm;
             keycloakRealm.RevokeRefreshToken = seedRealm.RevokeRefreshToken;
             keycloakRealm.RefreshTokenMaxReuse = seedRealm.RefreshTokenMaxReuse;
             keycloakRealm.AccessTokenLifespan = seedRealm.AccessTokenLifespan;
@@ -123,7 +124,7 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.DockerAuthenticationFlow = seedRealm.DockerAuthenticationFlow;
             keycloakRealm.Attributes = seedRealm.Attributes?.ToDictionary(x => x.Key, x => x.Value);
             keycloakRealm.UserManagedAccessAllowed = seedRealm.UserManagedAccessAllowed;
-            //realm.PasswordPolicy = jsonRealm.PasswordPolicy;
+            keycloakRealm.PasswordPolicy = seedRealm.PasswordPolicy;
             keycloakRealm.LoginTheme = seedRealm.LoginTheme;
 
             await keycloak.UpdateRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(false);
@@ -134,6 +135,7 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm._Realm == seedRealm.Realm &&
         keycloakRealm.DisplayName == seedRealm.DisplayName &&
         keycloakRealm.NotBefore == seedRealm.NotBefore &&
+        keycloakRealm.DefaultSignatureAlgorithm == seedRealm.DefaultSignatureAlgorithm &&
         keycloakRealm.RevokeRefreshToken == seedRealm.RevokeRefreshToken &&
         keycloakRealm.RefreshTokenMaxReuse == seedRealm.RefreshTokenMaxReuse &&
         keycloakRealm.AccessTokenLifespan == seedRealm.AccessTokenLifespan &&
@@ -177,6 +179,7 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.OtpPolicyLookAheadWindow == seedRealm.OtpPolicyLookAheadWindow &&
         keycloakRealm.OtpPolicyPeriod == seedRealm.OtpPolicyPeriod &&
         keycloakRealm.OtpSupportedApplications == seedRealm.OtpSupportedApplications &&
+        keycloakRealm.PasswordPolicy == seedRealm.PasswordPolicy &&
         Compare(keycloakRealm.BrowserSecurityHeaders, seedRealm.BrowserSecurityHeaders) &&
         Compare(keycloakRealm.SmtpServer, seedRealm.SmtpServer) &&
         keycloakRealm.EventsEnabled == seedRealm.EventsEnabled &&

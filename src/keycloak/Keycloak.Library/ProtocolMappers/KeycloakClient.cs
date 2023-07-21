@@ -105,13 +105,35 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<ProtocolMapper>>()
             .ConfigureAwait(false);
 
-    public async Task CreateClientProtocolMapperAsync(string realm, string clientId, ProtocolMapper protocolMapperRepresentation) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task CreateClientProtocolMapperAsync(string realm, string clientId, ProtocolMapper protocolMapperRepresentation, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/protocol-mappers/models")
-            .PostJsonAsync(protocolMapperRepresentation)
+            .PostJsonAsync(protocolMapperRepresentation, cancellationToken)
+            .ConfigureAwait(false);
+
+    public async Task UpdateClientProtocolMapperAsync(string realm, string clientId, string protocolMapperId, ProtocolMapper protocolMapperRepresentation, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/clients/")
+            .AppendPathSegment(clientId, true)
+            .AppendPathSegment("/protocol-mappers/models/")
+            .AppendPathSegment(protocolMapperId, true)
+            .PutJsonAsync(protocolMapperRepresentation, cancellationToken)
+            .ConfigureAwait(false);
+
+    public async Task DeleteClientProtocolMapperAsync(string realm, string clientId, string protocolMapperId, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/clients/")
+            .AppendPathSegment(clientId, true)
+            .AppendPathSegment("/protocol-mappers/models/")
+            .AppendPathSegment(protocolMapperId, true)
+            .DeleteAsync(cancellationToken)
             .ConfigureAwait(false);
 }

@@ -97,7 +97,7 @@ public class RolesUpdater : IRolesUpdater
         {
             if (deleteRole.Id == null)
                 throw new ConflictException($"role id must not be null: {deleteRole.Name}");
-    
+
             await keycloak.DeleteRoleByIdAsync(realm, deleteRole.Id, cancellationToken).ConfigureAwait(false);
         }
     }

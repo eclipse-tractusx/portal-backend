@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 public class KeycloakRealm
@@ -79,6 +81,7 @@ public class KeycloakRealm
     public int? OtpPolicyLookAheadWindow { get; set; }
     public int? OtpPolicyPeriod { get; set; }
     public IEnumerable<string>? OtpSupportedApplications { get; set; }
+    public string? PasswordPolicy { get; set; }
     public string? WebAuthnPolicyRpEntityName { get; set; }
     public IEnumerable<string>? WebAuthnPolicySignatureAlgorithms { get; set; }
     public string? WebAuthnPolicyRpId { get; set; }
@@ -271,6 +274,7 @@ public record BrowserSecurityHeadersModel(
     string? XRobotsTag,
     string? XFrameOptions,
     string? ContentSecurityPolicy,
+    [property: JsonPropertyName("xXSSProtection")]
     string? XXSSProtection,
     string? StrictTransportSecurity
 );

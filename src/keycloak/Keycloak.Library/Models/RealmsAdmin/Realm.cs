@@ -40,6 +40,8 @@ public class Realm
     public string? DisplayName { get; set; }
     [JsonProperty("notBefore")]
     public int? NotBefore { get; set; }
+    [JsonProperty("defaultSignatureAlgorithm")]
+    public string? DefaultSignatureAlgorithm { get; set; }
     [JsonProperty("revokeRefreshToken")]
     public bool? RevokeRefreshToken { get; set; }
     [JsonProperty("refreshTokenMaxReuse")]

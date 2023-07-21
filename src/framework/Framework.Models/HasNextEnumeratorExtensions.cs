@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public static class HasNextEnumeratorExtensions
 {
-    private class HasNextEnumeratorWrapper<T> : IHasNextEnumerator<T>, IDisposable
+    private sealed class HasNextEnumeratorWrapper<T> : IHasNextEnumerator<T>, IDisposable
     {
         private readonly IEnumerator<T> _enumerator;
         private bool _hasNext;
@@ -54,7 +54,7 @@ public static class HasNextEnumeratorExtensions
     public static IHasNextEnumerator<T> GetHasNextEnumerator<T>(this IEnumerable<T> source) => new HasNextEnumeratorWrapper<T>(source);
 }
 
-public interface IHasNextEnumerator<T>
+public interface IHasNextEnumerator<out T>
 {
     void Advance();
 

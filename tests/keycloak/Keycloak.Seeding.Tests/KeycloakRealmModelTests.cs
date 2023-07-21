@@ -42,7 +42,7 @@ public class KeycloakRealmModelTests
         };
         var seederSettings = new KeycloakSeederSettings
         {
-            DataPathes = new [] { "TestSeeds/CX-Central-realm.json" },
+            DataPathes = new[] { "TestSeeds/CX-Central-realm.json" },
             InstanceName = "central"
         };
 

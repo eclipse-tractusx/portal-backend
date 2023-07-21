@@ -53,26 +53,91 @@ public class ClientsUpdater : IClientsUpdater
         {
             if (update.ClientId == null)
                 throw new ConflictException($"clientId must not be null {update.Id}");
-            var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId, cancellationToken: cancellationToken).ConfigureAwait(false)).SingleOrDefault();
+            var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId, cancellationToken: cancellationToken).ConfigureAwait(false)).SingleOrDefault(x => x.ClientId == update.ClientId);
             if (client == null)
             {
                 var id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, CreateUpdateClient(null, update), cancellationToken).ConfigureAwait(false);
                 if (id == null)
                     throw new KeycloakNoSuccessException($"creation of client {update.ClientId} did not return the expected result");
-                yield return (update.ClientId, id);
+                
+                // load newly created client as keycloak may create default protocolmappers on client-creation
+                client = await keycloak.GetClientAsync(realm, id).ConfigureAwait(false);
             }
-            else if (!Compare(client, update))
+
+            if (client.Id == null)
+                throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}");
+
+            if (!CompareClient(client, update))
             {
-                if (client.Id == null)
-                    throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}");
                 var updateClient = CreateUpdateClient(client.Id, update);
                 await keycloak.UpdateClientAsync(
                     realm,
                     client.Id,
                     updateClient,
                     cancellationToken).ConfigureAwait(false);
-                yield return (update.ClientId, client.Id);
             }
+
+            var clientProtocolMappers = client.ProtocolMappers ?? Enumerable.Empty<ClientProtocolMapper>();
+            var updateProtocolMappers = update.ProtocolMappers ?? Enumerable.Empty<ProtocolMapperModel>();
+
+            if (clientProtocolMappers.ExceptBy(updateProtocolMappers.Select(x => x.Name), x => x.Name).IfAny(
+                async deleteMappers =>
+                {
+                    foreach (var mapper in deleteMappers)
+                    {
+                        await keycloak.DeleteClientProtocolMapperAsync(
+                            realm,
+                            client.Id,
+                            mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
+                            cancellationToken).ConfigureAwait(false);
+                    }
+                },
+                out var deleteMappersTask))
+            {
+                await deleteMappersTask!.ConfigureAwait(false);
+            }
+
+            if (updateProtocolMappers.ExceptBy(clientProtocolMappers.Select(x => x.Name), x => x.Name).IfAny(
+                async addMappers =>
+                {
+                    foreach (var update in addMappers)
+                    {
+                        await keycloak.CreateClientProtocolMapperAsync(
+                            realm,
+                            client.Id,
+                            ProtocolMappersUpdater.CreateProtocolMapper(null, update),
+                            cancellationToken).ConfigureAwait(false);
+                    }
+                },
+                out var addMappersTask))
+            {
+                await addMappersTask!.ConfigureAwait(false);
+            }
+
+            if (clientProtocolMappers.Join(
+                updateProtocolMappers,
+                x => x.Name,
+                x => x.Name,
+                (mapper, update) => (Mapper: mapper, Update: update))
+                .Where(x => !CompareClientProtocolMapper(x.Mapper, x.Update))
+                .IfAny(
+                    async joinedMappers =>
+                    {
+                        foreach (var (mapper, update) in joinedMappers)
+                        {
+                            await keycloak.UpdateClientProtocolMapperAsync(
+                                realm,
+                                client.Id,
+                                mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
+                                ProtocolMappersUpdater.CreateProtocolMapper(mapper.Id, update),
+                                cancellationToken).ConfigureAwait(false);
+                        }
+                    },
+                    out var updateMappersTask))
+            {
+                await updateMappersTask!.ConfigureAwait(false);
+            }
+            yield return (update.ClientId, client.Id);
         }
     }
 
@@ -104,9 +169,6 @@ public class ClientsUpdater : IClientsUpdater
         AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.ToDictionary(x => x.Key, x => x.Value),
         FullScopeAllowed = update.FullScopeAllowed,
         NodeReregistrationTimeout = update.NodeReRegistrationTimeout,
-        // ProtocolMappers = update.ProtocolMappers?.Select(x => new ClientProtocolMapper
-        // {
-        // }),
         DefaultClientScopes = update.DefaultClientScopes,
         OptionalClientScopes = update.OptionalClientScopes,
         Access = update.Access == null
@@ -121,7 +183,7 @@ public class ClientsUpdater : IClientsUpdater
         AuthorizationServicesEnabled = update.AuthorizationServicesEnabled
     };
 
-    private static bool Compare(Client client, ClientModel update) =>
+    private static bool CompareClient(Client client, ClientModel update) =>
         client.ClientId == update.ClientId &&
         client.RootUrl == update.RootUrl &&
         client.Name == update.Name &&
@@ -149,14 +211,33 @@ public class ClientsUpdater : IClientsUpdater
         client.NodeReregistrationTimeout == update.NodeReRegistrationTimeout &&
         client.DefaultClientScopes.NullOrContentEqual(update.DefaultClientScopes) &&
         client.OptionalClientScopes.NullOrContentEqual(update.OptionalClientScopes) &&
-        Compare(client.Access, update.Access) &&
+        CompareClientAccess(client.Access, update.Access) &&
         // client.Secret == update.Secret &&
         client.AuthorizationServicesEnabled == update.AuthorizationServicesEnabled;
 
-    private static bool Compare(ClientAccess? access, ClientAccessModel? updateAccess) =>
+    private static bool CompareClientAccess(ClientAccess? access, ClientAccessModel? updateAccess) =>
         access == null && updateAccess == null ||
         access != null && updateAccess != null &&
         access.Configure == updateAccess.Configure &&
         access.Manage == updateAccess.Manage &&
         access.View == updateAccess.View;
+
+    private static bool CompareClientProtocolMapper(ClientProtocolMapper mapper, ProtocolMapperModel update) =>
+        mapper.Name == update.Name &&
+        mapper.Protocol == update.Protocol &&
+        mapper.ProtocolMapper == update.ProtocolMapper &&
+        mapper.ConsentRequired == update.ConsentRequired &&
+        (mapper.Config == null && update.Config == null ||
+        mapper.Config != null && update.Config != null &&
+        CompareClientProtocolMapperConfig(mapper.Config, update.Config));
+
+    private static bool CompareClientProtocolMapperConfig(ClientConfig config, IReadOnlyDictionary<string, string> update) =>
+        config.UserInfoTokenClaim == (update.TryGetValue("userinfo.token.claim", out var userInfoTokenClaim) ? userInfoTokenClaim : null) &&
+        config.UserAttribute == (update.TryGetValue("user.attribute", out var userAttribute) ? userAttribute : null) &&
+        config.IdTokenClaim == (update.TryGetValue("id.token.claim", out var idTokenClaim) ? idTokenClaim : null) &&
+        config.AccessTokenClaim == (update.TryGetValue("access.token.claim", out var accessTokenClaim) ? accessTokenClaim : null) &&
+        config.ClaimName == (update.TryGetValue("claim.name", out var claimName) ? claimName : null) &&
+        config.JsonTypelabel == (update.TryGetValue("jsonType.label", out var jsonTypeLabel) ? jsonTypeLabel : null) &&
+        config.FriendlyName == (update.TryGetValue("friendly.name", out var friendlyName) ? friendlyName : null) &&
+        config.AttributeName == (update.TryGetValue("attribute.name", out var attributeName) ? attributeName : null);
 }
