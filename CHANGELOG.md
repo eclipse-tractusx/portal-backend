@@ -2,6 +2,20 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.6.0-RC2
+
+### Change
+* Administration Service
+  * GET /owncompany/serviceAccount endpoint backend logic enhanced by including managed service accounts in the response of the app/service provider. Additionally, the relation is added inside the response body with the boolean value 'isOwner'
+* Apps Service
+  * endpoint PUT /apps/{subscriptionId}/activate - endpoint changed and backend business logic got updated. In case of an already existing INACTIVE subscription a new subscription record is getting created.
+  * Add AppInstanceId to the /{appId}/subscription/{subscriptionId}/provider endpoint
+* Application Checklist Worker
+  * enhanced error handling and stored error messages to better human readable information
+  * retrigger of an process step deleted the earlier stored error comment inside application_checklist.comments
+* SSI - enable Verified Credential request workflows for useCaseParticipant and company roles by certificates
+  * added 'CompanyName' property inside the GET /credentials endpoint
+
 ## 1.6.0-RC1
 
 ### Change
