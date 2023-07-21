@@ -397,6 +397,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.StreetName.Should().Be("Street");
         result.StreetNumber.Should().Be("1");
         result.ZipCode.Should().Be("00001");
+        result.CompanyRole.Should().Contain(CompanyRoleId.ACTIVE_PARTICIPANT);
     }
 
     #endregion
