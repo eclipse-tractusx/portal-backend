@@ -26,6 +26,7 @@ public record CredentialDetailData
 (
     Guid CredentialDetailId,
     Guid CompanyId,
+    string CompanyName,
     VerifiedCredentialTypeId CredentialType,
     string? UseCase,
     CompanySsiDetailStatusId ParticipantStatus,

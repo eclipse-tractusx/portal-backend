@@ -113,6 +113,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            null,
             item =>
             {
                 item.ApplicationChecklistEntryStatusId =

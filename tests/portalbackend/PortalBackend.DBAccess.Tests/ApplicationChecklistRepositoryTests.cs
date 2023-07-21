@@ -91,6 +91,11 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
 
         // Act
         sut.AttachAndModifyApplicationChecklist(ApplicationWithExistingChecklistId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            initial =>
+            {
+                initial.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.TO_DO;
+                initial.Comment = null;
+            },
             entry =>
             {
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
@@ -141,6 +146,13 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetChecklistProcessStepData_WithExisting_ReturnsExpected()
     {
         // Arrange
+        var checklistData = new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?>[] {
+            ( ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE ,null),
+            ( ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE,null ),
+            ( ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE , null),
+            ( ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE, null ),
+            ( ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE, null),
+        };
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
@@ -162,13 +174,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Assert
         result.Should().NotBeNull();
         result!.IsSubmitted.Should().BeTrue();
-        result.Checklist.Should().HaveCount(5).And.Contain(new[] {
-            ( ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE ),
-            ( ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE ),
-            ( ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE ),
-            ( ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE ),
-            ( ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE ),
-        });
+        result.Checklist.Should().HaveCount(5).And.Contain(checklistData);
         result.Process!.Id.Should().Be(new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe"));
         result.Process.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
         result.Process.LockExpiryDate.Should().Be(DateTimeOffset.Parse("2023-03-01 00:00:00.000000 +00:00"));
