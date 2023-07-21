@@ -78,7 +78,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllCredentialDetails(null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllCredentialDetails(null, null, null).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -91,6 +91,55 @@ public class CompanySsiDetailsRepositoryTests
                 x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
         result.Where(x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).Should().ContainSingle()
             .And.Satisfy(x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
+    }
+
+    [Fact]
+    public async Task GetAllCredentialDetails_WithWithStatusId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetAllCredentialDetails(CompanySsiDetailStatusId.PENDING, null, null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(4);
+        result.Count.Should().Be(4);
+        result.Where(x => x.CompanyId == _validCompanyId).Should().HaveCount(3)
+            .And.Satisfy(
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.PCF_FRAMEWORK,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+        result.Should().ContainSingle(x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"))
+            .Which.Should().Match<CompanySsiDetail>(x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
+    }
+
+    [Fact]
+    public async Task GetAllCredentialDetails_WithWithCredentialType_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetAllCredentialDetails(null, VerifiedCredentialTypeId.PCF_FRAMEWORK, null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.ContainSingle().Which.CompanyId.Should().Be(_validCompanyId);
+        result.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetAllCredentialDetails_WithWithCompanyName_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetAllCredentialDetails(null, null, "Service").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.ContainSingle().Which.CompanyId.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
+        result.Count.Should().Be(1);
     }
 
     #endregion
@@ -107,11 +156,12 @@ public class CompanySsiDetailsRepositoryTests
         var result = await sut.GetSsiCertificates(_validCompanyId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().ContainSingle();
-        var certificate = result.Single();
-        certificate.CredentialType.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
-        certificate.SsiDetailData.Should().NotBeNull();
-        certificate.SsiDetailData.Single().ParticipationStatus.Should().Be(CompanySsiDetailStatusId.PENDING);
+        result.Should().ContainSingle()
+            .Which.Should().Match<Models.SsiCertificateTransferData>(x =>
+                x.CredentialType == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE &&
+                x.SsiDetailData != null &&
+                x.SsiDetailData.Count() == 1 &&
+                x.SsiDetailData.Single().ParticipationStatus == CompanySsiDetailStatusId.PENDING);
     }
 
     #endregion
@@ -128,14 +178,10 @@ public class CompanySsiDetailsRepositoryTests
         sut.CreateSsiDetails(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, new Guid("00000000-0000-0000-0000-000000000001"), CompanySsiDetailStatusId.PENDING, _userId, null);
 
         // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<CompanySsiDetail>();
-        var ssiDetail = changedEntries.Single().Entity as CompanySsiDetail;
-        ssiDetail!.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.PENDING);
+        context.ChangeTracker.HasChanges().Should().BeTrue();
+        context.ChangeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanySsiDetail>()
+            .Which.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.PENDING);
     }
 
     #endregion

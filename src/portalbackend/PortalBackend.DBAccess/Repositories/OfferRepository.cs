@@ -459,7 +459,7 @@ public class OfferRepository : IOfferRepository
                 x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
                 x.UseCases.Select(uc => uc.Id),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
-                x.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),
+                x.OfferAssignedPrivacyPolicies.Select(oapp => oapp.PrivacyPolicyId),
                 x.Name,
                 x.Provider,
                 x.SalesManagerId,

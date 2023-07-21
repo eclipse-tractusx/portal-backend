@@ -251,7 +251,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
             c => { c.BusinessPartnerNumber = bpn; });
 
-        var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED;
+        var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.FAILED, null);
 
         _checklistService.SkipProcessSteps(
             context,
@@ -264,6 +264,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            null,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
@@ -338,9 +339,17 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            initial =>
+            {
+                if (context.Checklist.TryGetValue(entryTypeId, out var data))
+                {
+                    initial.Comment = data.Comment;
+                }
+            },
             item =>
             {
                 item.ApplicationChecklistEntryStatusId = checklistEntryStatusId;
+                item.Comment = null;
             },
             new[] { nextProcessStepTypeId });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -378,10 +387,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET })
             .ConfigureAwait(false);
 
-        var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE;
+        var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null);
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            null,
             entry =>
             {
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
@@ -417,6 +427,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
+            null,
             entry =>
             {
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
