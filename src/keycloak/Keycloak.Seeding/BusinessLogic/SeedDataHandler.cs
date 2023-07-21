@@ -85,6 +85,11 @@ public class SeedDataHandler : ISeedDataHandler
         get => jsonRealm?.AuthenticationFlows?.Where(x => (x.TopLevel ?? false) && !(x.BuiltIn ?? false)) ?? Enumerable.Empty<AuthenticationFlowModel>();
     }
 
+    public IEnumerable<ClientScopeModel> ClientScopes
+    {
+        get => jsonRealm?.ClientScopes ?? Enumerable.Empty<ClientScopeModel>();
+    }
+
     public IReadOnlyDictionary<string, string> ClientsDictionary
     {
         get => _idOfClients ?? throw new InvalidOperationException("ClientInternalIds have not been set");

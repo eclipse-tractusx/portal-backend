@@ -60,6 +60,7 @@ public class KeycloakRealmModelTests
             new ClientsUpdater(factory, seedDataHandler),
             new IdentityProvidersUpdater(factory, seedDataHandler),
             new UsersUpdater(factory, seedDataHandler),
+            new ClientScopesUpdater(factory, seedDataHandler),
             new AuthenticationFlowsUpdater(factory, seedDataHandler),
             Options.Create(seederSettings));
 

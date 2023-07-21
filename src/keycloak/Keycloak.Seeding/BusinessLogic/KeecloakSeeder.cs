@@ -31,8 +31,9 @@ public class KeycloakSeeder : IKeycloakSeeder
     private readonly IClientsUpdater _clientsUpdater;
     private readonly IIdentityProvidersUpdater _identityProvidersUpdater;
     private readonly IUsersUpdater _usersUpdater;
+    private readonly IClientScopesUpdater _clientScopesUpdater;
     private readonly IAuthenticationFlowsUpdater _authenticationFlowsUpdater;
-    public KeycloakSeeder(ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IAuthenticationFlowsUpdater authenticationFlowsUpdater, IOptions<KeycloakSeederSettings> options)
+    public KeycloakSeeder(ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IClientScopesUpdater clientScopesUpdater, IAuthenticationFlowsUpdater authenticationFlowsUpdater, IOptions<KeycloakSeederSettings> options)
     {
         _seedData = seedDataHandler;
         _realmUpdater = realmUpdater;
@@ -40,6 +41,7 @@ public class KeycloakSeeder : IKeycloakSeeder
         _clientsUpdater = clientsUpdater;
         _identityProvidersUpdater = identityProvidersUpdater;
         _usersUpdater = usersUpdater;
+        _clientScopesUpdater = clientScopesUpdater;
         _authenticationFlowsUpdater = authenticationFlowsUpdater;
         _settings = options.Value;
     }
@@ -56,6 +58,7 @@ public class KeycloakSeeder : IKeycloakSeeder
             await _rolesUpdater.UpdateCompositeRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
             await _identityProvidersUpdater.UpdateIdentityProviders(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
             await _usersUpdater.UpdateUsers(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _clientScopesUpdater.UpdateClientScopes(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
             await _authenticationFlowsUpdater.UpdateAuthenticationFlows(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
         }
     }

@@ -37,17 +37,14 @@ try
         .ConfigureServices((hostContext, services) =>
         {
             services
-                .AddLogging(builder =>
-                {
-                    var logger = LoggingExtensions.CreateLogger(hostContext.Configuration);
-                    builder.AddSerilog(logger);
-                })
+                .AddLogging()
                 .AddScoped<ISeedDataHandler, SeedDataHandler>()
                 .AddTransient<IRealmUpdater, RealmUpdater>()
                 .AddTransient<IRolesUpdater, RolesUpdater>()
                 .AddTransient<IClientsUpdater, ClientsUpdater>()
                 .AddTransient<IIdentityProvidersUpdater, IdentityProvidersUpdater>()
                 .AddTransient<IUsersUpdater, UsersUpdater>()
+                .AddTransient<IClientScopesUpdater, ClientScopesUpdater>()
                 .AddTransient<IAuthenticationFlowsUpdater, AuthenticationFlowsUpdater>()
                 .AddTransient<IKeycloakFactory, KeycloakFactory>()
                 .ConfigureKeycloakSettingsMap(hostContext.Configuration.GetSection("Keycloak"))

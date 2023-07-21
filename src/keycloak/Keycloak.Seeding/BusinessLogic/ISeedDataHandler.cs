@@ -44,6 +44,8 @@ public interface ISeedDataHandler
 
     IEnumerable<AuthenticationFlowModel> TopLevelCustomAuthenticationFlows { get; }
 
+    IEnumerable<ClientScopeModel> ClientScopes { get; }
+
     IReadOnlyDictionary<string, string> ClientsDictionary { get; }
 
     Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds);
