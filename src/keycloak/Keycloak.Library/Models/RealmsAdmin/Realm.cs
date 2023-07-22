@@ -38,6 +38,8 @@ public class Realm
     public string? _Realm { get; set; }
     [JsonProperty("displayName")]
     public string? DisplayName { get; set; }
+    [JsonProperty("displayNameHtml")]
+    public string? DisplayNameHtml { get; set; }
     [JsonProperty("notBefore")]
     public int? NotBefore { get; set; }
     [JsonProperty("defaultSignatureAlgorithm")]
@@ -132,6 +134,14 @@ public class Realm
     public BrowserSecurityHeaders? BrowserSecurityHeaders { get; set; }
     [JsonProperty("smtpServer")]
     public SmtpServer? SmtpServer { get; set; }
+    [JsonProperty("loginTheme")]
+    public string? LoginTheme { get; set; }
+    [JsonProperty("accountTheme")]
+    public string? AccountTheme { get; set; }
+    [JsonProperty("adminTheme")]
+    public string? AdminTheme { get; set; }
+    [JsonProperty("emailTheme")]
+    public string? EmailTheme { get; set; }
     [JsonProperty("eventsEnabled")]
     public bool? EventsEnabled { get; set; }
     [JsonProperty("eventsListeners")]
@@ -166,7 +176,4 @@ public class Realm
     public bool? UserManagedAccessAllowed { get; set; }
     [JsonProperty("passwordPolicy")]
     public string? PasswordPolicy { get; set; }
-
-    [JsonProperty("loginTheme")]
-    public string? LoginTheme { get; set; }
 }

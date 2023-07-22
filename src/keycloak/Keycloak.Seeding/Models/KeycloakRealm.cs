@@ -27,6 +27,7 @@ public class KeycloakRealm
     public string? Id { get; set; }
     public string? Realm { get; set; }
     public string? DisplayName { get; set; }
+    public string? DisplayNameHtml { get; set; }
     public int? NotBefore { get; set; }
     public string? DefaultSignatureAlgorithm { get; set; }
     public bool? RevokeRefreshToken { get; set; }
@@ -112,6 +113,9 @@ public class KeycloakRealm
     public BrowserSecurityHeadersModel? BrowserSecurityHeaders { get; set; }
     public SmtpServerModel? SmtpServer { get; set; }
     public string? LoginTheme { get; set; }
+    public string? AccountTheme { get; set; }
+    public string? AdminTheme { get; set; }
+    public string? EmailTheme { get; set; }
     public bool? EventsEnabled { get; set; }
     public IEnumerable<string>? EventsListeners { get; set; }
     public IEnumerable<string>? EnabledEventTypes { get; set; }

@@ -57,12 +57,12 @@ public class SeedDataHandler : ISeedDataHandler
 
     public IReadOnlyDictionary<string, IEnumerable<RoleModel>> ClientRoles
     {
-        get => jsonRealm?.Roles?.Client?.ToDictionary(x => x.Key, x => x.Value.AsEnumerable()) ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>().ToDictionary(x => x.Item1, x => x.Item2);
+        get => jsonRealm?.Roles?.Client ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>().ToImmutableDictionary(x => x.Item1, x => x.Item2);
     }
 
     public IEnumerable<RoleModel> RealmRoles
     {
-        get => jsonRealm?.Roles?.Realm ?? Enumerable.Empty<RoleModel>().ToList();
+        get => jsonRealm?.Roles?.Realm ?? Enumerable.Empty<RoleModel>();
     }
 
     public IEnumerable<IdentityProviderModel> IdentityProviders

@@ -61,6 +61,7 @@ public class RealmUpdater : IRealmUpdater
         {
             keycloakRealm._Realm = seedRealm.Realm;
             keycloakRealm.DisplayName = seedRealm.DisplayName;
+            keycloakRealm.DisplayNameHtml = seedRealm.DisplayNameHtml;
             keycloakRealm.NotBefore = seedRealm.NotBefore;
             keycloakRealm.DefaultSignatureAlgorithm = seedRealm.DefaultSignatureAlgorithm;
             keycloakRealm.RevokeRefreshToken = seedRealm.RevokeRefreshToken;
@@ -108,6 +109,10 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.OtpSupportedApplications = seedRealm.OtpSupportedApplications;
             keycloakRealm.BrowserSecurityHeaders = UpdateBrowserSecurityHeaders(seedRealm.BrowserSecurityHeaders);
             keycloakRealm.SmtpServer = UpdateSmtpServer(seedRealm.SmtpServer);
+            keycloakRealm.LoginTheme = seedRealm.LoginTheme;
+            keycloakRealm.AccountTheme = seedRealm.AccountTheme;
+            keycloakRealm.AdminTheme = seedRealm.AdminTheme;
+            keycloakRealm.EmailTheme = seedRealm.EmailTheme;
             keycloakRealm.EventsEnabled = seedRealm.EventsEnabled;
             keycloakRealm.EventsListeners = seedRealm.EventsListeners;
             keycloakRealm.EnabledEventTypes = seedRealm.EnabledEventTypes;
@@ -125,7 +130,6 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.Attributes = seedRealm.Attributes?.ToDictionary(x => x.Key, x => x.Value);
             keycloakRealm.UserManagedAccessAllowed = seedRealm.UserManagedAccessAllowed;
             keycloakRealm.PasswordPolicy = seedRealm.PasswordPolicy;
-            keycloakRealm.LoginTheme = seedRealm.LoginTheme;
 
             await keycloak.UpdateRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(false);
         }
@@ -182,6 +186,10 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.PasswordPolicy == seedRealm.PasswordPolicy &&
         Compare(keycloakRealm.BrowserSecurityHeaders, seedRealm.BrowserSecurityHeaders) &&
         Compare(keycloakRealm.SmtpServer, seedRealm.SmtpServer) &&
+        keycloakRealm.LoginTheme == seedRealm.LoginTheme &&
+        keycloakRealm.AccountTheme == seedRealm.AccountTheme &&
+        keycloakRealm.AdminTheme == seedRealm.AdminTheme &&
+        keycloakRealm.EmailTheme == seedRealm.EmailTheme &&
         keycloakRealm.EventsEnabled == seedRealm.EventsEnabled &&
         keycloakRealm.EventsListeners == seedRealm.EventsListeners &&
         keycloakRealm.EnabledEventTypes == seedRealm.EnabledEventTypes &&
@@ -198,8 +206,7 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.DockerAuthenticationFlow == seedRealm.DockerAuthenticationFlow &&
         Compare(keycloakRealm.Attributes, seedRealm.Attributes) &&
         keycloakRealm.UserManagedAccessAllowed == seedRealm.UserManagedAccessAllowed &&
-        //realm.PasswordPolicy != jsonRealm.PasswordPolicy &&
-        keycloakRealm.LoginTheme == seedRealm.LoginTheme;
+        keycloakRealm.PasswordPolicy == seedRealm.PasswordPolicy;
 
     private static bool Compare(IDictionary<string, string>? attributes, IReadOnlyDictionary<string, string>? updateAttributes) =>
         attributes == null && updateAttributes == null ||

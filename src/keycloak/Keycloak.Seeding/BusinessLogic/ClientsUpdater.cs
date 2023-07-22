@@ -59,7 +59,7 @@ public class ClientsUpdater : IClientsUpdater
                 var id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, CreateUpdateClient(null, update), cancellationToken).ConfigureAwait(false);
                 if (id == null)
                     throw new KeycloakNoSuccessException($"creation of client {update.ClientId} did not return the expected result");
-                
+
                 // load newly created client as keycloak may create default protocolmappers on client-creation
                 client = await keycloak.GetClientAsync(realm, id).ConfigureAwait(false);
             }
