@@ -251,7 +251,6 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             os =>
             {
                 os.AppSubscriptionUrl = url;
-                os.LastEditorId = identity.UserId;
             });
 
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(offerId, offer =>

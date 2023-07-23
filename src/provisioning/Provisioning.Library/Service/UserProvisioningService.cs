@@ -99,7 +99,6 @@ public class UserProvisioningService : IUserProvisioningService
                     userRepository.AttachAndModifyIdentity(companyUserId, null, cu =>
                     {
                         cu.UserEntityId = centralUserId;
-                        cu.LastEditorId = userId;
                     });
                 }
                 else

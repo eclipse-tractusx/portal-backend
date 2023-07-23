@@ -210,7 +210,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<int> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status) =>
-            this.WithUserIdAndCompanyId(identity => _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status, identity));
+            this.WithCompanyId(companyId => _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status, companyId));
 
         /// <summary>
         /// Gets the status of an application for the given id
@@ -270,7 +270,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task SetCompanyDetailDataAsync([FromRoute] Guid applicationId, [FromBody] CompanyDetailData companyDetailData) =>
-            this.WithUserIdAndCompanyId(identity => _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, identity));
+            this.WithCompanyId(companyId => _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, companyId));
 
         /// <summary>
         /// Invites the given user to the given application

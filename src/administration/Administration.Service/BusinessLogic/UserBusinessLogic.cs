@@ -357,7 +357,6 @@ public class UserBusinessLogic : IUserBusinessLogic
                 cu.Firstname = ownCompanyUserEditableDetails.FirstName;
                 cu.Lastname = ownCompanyUserEditableDetails.LastName;
                 cu.Email = ownCompanyUserEditableDetails.Email;
-                cu.LastEditorId = userId;
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new CompanyUserDetails(
@@ -386,20 +385,20 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new ConflictException($"user {userId} does not exist");
         }
         var (sharedIdpAlias, accountData) = iamIdpAliasAccountData;
-        await DeleteUserInternalAsync(sharedIdpAlias, accountData, userId).ConfigureAwait(false);
+        await DeleteUserInternalAsync(sharedIdpAlias, accountData).ConfigureAwait(false);
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds, (Guid UserId, Guid CompanyId) identity)
+    public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds, Guid companyId)
     {
-        var iamIdpAlias = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasDataUntrackedAsync(identity.CompanyId);
+        var iamIdpAlias = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasDataUntrackedAsync(companyId);
 
-        await foreach (var accountData in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserAccountDataUntrackedAsync(userIds, identity.CompanyId).ConfigureAwait(false))
+        await foreach (var accountData in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserAccountDataUntrackedAsync(userIds, companyId).ConfigureAwait(false))
         {
             var success = false;
             try
             {
-                await DeleteUserInternalAsync(iamIdpAlias, accountData, identity.UserId).ConfigureAwait(false);
+                await DeleteUserInternalAsync(iamIdpAlias, accountData).ConfigureAwait(false);
                 success = true;
             }
             catch (Exception e)
@@ -421,7 +420,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task DeleteUserInternalAsync(string? sharedIdpAlias, CompanyUserAccountData accountData, Guid administratorId)
+    private async Task DeleteUserInternalAsync(string? sharedIdpAlias, CompanyUserAccountData accountData)
     {
         var (userId, userEntityId, businessPartnerNumbers, roleIds, offerIds, invitationIds) = accountData;
         if (userEntityId != null)
@@ -436,14 +435,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             i =>
             {
                 i.UserStatusId = UserStatusId.DELETED;
-                i.LastEditorId = administratorId;
                 i.UserEntityId = null;
-            });
-
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyCompanyUser(userId, null,
-            i =>
-            {
-                i.LastEditorId = administratorId;
             });
 
         _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()

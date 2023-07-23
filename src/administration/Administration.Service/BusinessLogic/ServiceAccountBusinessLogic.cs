@@ -110,7 +110,6 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
         {
             i.UserStatusId = UserStatusId.INACTIVE;
-            i.LastEditorId = identity.UserId;
         });
 
         // serviceAccount
@@ -131,7 +130,6 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                 connector =>
                 {
                     connector.CompanyServiceAccountId = null;
-                    connector.LastEditorId = identity.UserId;
                 });
         }
 

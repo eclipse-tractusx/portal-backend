@@ -18,19 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests
-{
-    public static class InMemoryDbContextFactory
-    {
-        public static PortalDbContext GetPortalDbContext()
-        {
-            var options = new DbContextOptionsBuilder<PortalDbContext>()
-                               .UseInMemoryDatabase(databaseName: "InMemoryPortalDatabase").Options;
-            var dbContext = new PortalDbContext(options);
-            return dbContext;
-        }
-    }
-}
+namespace PortalBackend.PortalEntities.Identity;
+
+public record IdentityData(string UserEntityId, Guid UserId, IdentityTypeId IdentityType, Guid CompanyId);

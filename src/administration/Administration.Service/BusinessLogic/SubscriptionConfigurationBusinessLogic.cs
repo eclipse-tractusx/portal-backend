@@ -99,7 +99,6 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                     providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
                 }
                 providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
-                providerDetails.LastEditorId = identity.UserId;
             });
         }
         else
@@ -111,7 +110,6 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                 {
                     details.AutoSetupUrl = data.Url;
                     details.DateLastChanged = DateTimeOffset.UtcNow;
-                    details.LastEditorId = identity.UserId;
                 });
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

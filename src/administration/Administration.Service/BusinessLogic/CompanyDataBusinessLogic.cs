@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using PortalBackend.PortalEntities.Identity;
 using System.Globalization;
 using System.Text.Json;
 
@@ -412,7 +413,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             {
                 c.CompanySsiDetailStatusId = CompanySsiDetailStatusId.ACTIVE;
                 c.DateLastChanged = _dateTimeProvider.OffsetNow;
-                c.LastEditorId = userId;
             });
 
         switch (data.Kind)
@@ -475,7 +475,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             {
                 c.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
                 c.DateLastChanged = _dateTimeProvider.OffsetNow;
-                c.LastEditorId = userId;
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

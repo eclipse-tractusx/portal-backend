@@ -99,7 +99,6 @@ public class ConsentRepository : IConsentRepository
             (consent, modify) =>
             {
                 consent.ConsentStatusId = modify.ConsentStatusId;
-                consent.LastEditorId = companyUserId;
             });
 
     public IEnumerable<Consent> AddAttachAndModifyConsents(IEnumerable<ConsentStatusDetails> initialItems, IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> modifyItems, Guid companyId, Guid companyUserId, DateTimeOffset utcNow) =>
@@ -114,6 +113,5 @@ public class ConsentRepository : IConsentRepository
             (consent, modify) =>
             {
                 consent.ConsentStatusId = modify.ConsentStatusId;
-                consent.LastEditorId = companyUserId;
             });
 }

@@ -23,7 +23,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEnti
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
+using PortalBackend.PortalEntities.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -36,13 +38,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 /// </remarks>
 public class PortalDbContext : DbContext
 {
+    private readonly IIdentityService _identityService;
+
     protected PortalDbContext()
     {
+        Console.WriteLine("Constructor without params hit");
+        _identityService = null!;
     }
 
-    public PortalDbContext(DbContextOptions<PortalDbContext> options)
+    public PortalDbContext(DbContextOptions<PortalDbContext> options, IIdentityService identityService)
         : base(options)
     {
+        _identityService = identityService;
     }
 
     public virtual DbSet<Address> Addresses { get; set; } = default!;
@@ -115,7 +122,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;
     public virtual DbSet<IamClient> IamClients { get; set; } = default!;
     public virtual DbSet<IamIdentityProvider> IamIdentityProviders { get; set; } = default!;
-    public virtual DbSet<Identity> Identities { get; set; } = default!;
+    public virtual DbSet<Entities.Identity> Identities { get; set; } = default!;
     public virtual DbSet<IdentityAssignedRole> IdentityAssignedRoles { get; set; } = default!;
     public virtual DbSet<IdentityProvider> IdentityProviders { get; set; } = default!;
     public virtual DbSet<IdentityProviderCategory> IdentityProviderCategories { get; set; } = default!;
@@ -679,7 +686,7 @@ public class PortalDbContext : DbContext
                     .Select(e => new IdentityType(e))
             );
 
-        modelBuilder.Entity<Identity>(entity =>
+        modelBuilder.Entity<Entities.Identity>(entity =>
         {
             entity.HasIndex(e => e.UserEntityId)
                 .IsUnique();
@@ -699,7 +706,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(e => e.IdentityTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Identity, AuditIdentity20230526>();
+            entity.HasAuditV1Triggers<Entities.Identity, AuditIdentity20230526>();
         });
 
         modelBuilder.Entity<CompanyUser>(entity =>
@@ -1342,5 +1349,42 @@ public class PortalDbContext : DbContext
                   .WithOne(x => x.CompanyServiceAccount)
                   .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.ServiceAccountId);
         });
+    }
+
+    /// <inheritdoc />
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
+    {
+        EnhanceChangedEntries();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        EnhanceChangedEntries();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override int SaveChanges()
+    {
+        EnhanceChangedEntries();
+        return base.SaveChanges();
+    }
+
+    private void EnhanceChangedEntries()
+    {
+        var changeSet = ChangeTracker.Entries()
+            .Where(c => c.State != EntityState.Unchanged);
+        foreach (var entry in changeSet.Where(x => x.Entity is IAuditableV1))
+        {
+            var names = entry.Entity.GetType()
+                .GetProperties().Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute)))
+                .Select(x => x.Name);
+            var properties = entry.Properties.Where(x => names.Contains(x.Metadata.Name));
+            foreach (var prop in properties)
+            {
+                prop.CurrentValue = _identityService.IdentityData.UserId;
+            }
+        }
     }
 }

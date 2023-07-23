@@ -209,7 +209,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         offerSubscriptionRepository.AttachAndModifyOfferSubscription(subscriptionId, subscription =>
         {
             subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
-            subscription.LastEditorId = identity.UserId;
         });
 
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId,

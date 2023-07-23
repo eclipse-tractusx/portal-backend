@@ -83,7 +83,6 @@ public class OfferSetupService : IOfferSetupService
         offerSubscriptionsRepository.AttachAndModifyOfferSubscription(data.RequestId, subscription =>
         {
             subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
-            subscription.LastEditorId = identity.UserId;
         });
 
         if (offerDetails.InstanceData.IsSingleInstance)

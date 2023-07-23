@@ -334,7 +334,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ContactEmail = appRequestModel.ContactEmail;
             app.ContactNumber = appRequestModel.ContactNumber;
             app.MarketingUrl = appRequestModel.ProviderUri;
-            app.LastEditorId = identity.UserId;
         },
         app =>
         {

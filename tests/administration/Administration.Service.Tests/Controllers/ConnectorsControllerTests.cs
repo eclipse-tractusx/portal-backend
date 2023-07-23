@@ -22,12 +22,14 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using PortalBackend.PortalEntities.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -74,14 +76,14 @@ public class ConnectorsControllerTests
             null,
             null);
         var connectorId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.CreateConnectorAsync(A<ConnectorInputModel>._, A<(Guid, Guid)>._, A<CancellationToken>._))
+        A.CallTo(() => _logic.CreateConnectorAsync(A<ConnectorInputModel>._, A<Guid>._, A<CancellationToken>._))
             .Returns(connectorId);
 
         //Act
         var result = await this._controller.CreateConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, new(_identity.UserId, _identity.CompanyId), A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, _identity.CompanyId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(connectorId);
     }
@@ -98,14 +100,14 @@ public class ConnectorsControllerTests
             null,
             null);
         var connectorId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.CreateManagedConnectorAsync(A<ManagedConnectorInputModel>._, A<(Guid, Guid)>._, A<CancellationToken>._))
+        A.CallTo(() => _logic.CreateManagedConnectorAsync(A<ManagedConnectorInputModel>._, A<Guid>._, A<CancellationToken>._))
             .Returns(connectorId);
 
         //Act
         var result = await this._controller.CreateManagedConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, new(_identity.UserId, _identity.CompanyId), A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, _identity.CompanyId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(connectorId);
     }

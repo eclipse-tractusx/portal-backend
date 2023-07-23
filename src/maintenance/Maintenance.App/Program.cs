@@ -21,8 +21,10 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using PortalBackend.PortalEntities.Identity;
 using Serilog;
 
 LoggingExtensions.EnsureInitialized();
@@ -33,8 +35,10 @@ try
         .UseSystemd()
         .ConfigureServices((hostContext, services) =>
         {
-            services.AddDbContext<PortalDbContext>(o =>
-                o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
+            services
+                .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddDbContext<PortalDbContext>(o =>
+                    o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
             services.AddHostedService<BatchDeleteService>();
         })
         .AddLogging()

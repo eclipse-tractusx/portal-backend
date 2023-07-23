@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
@@ -31,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using PortalBackend.PortalEntities.Identity;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -403,7 +405,6 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.IN_REVIEW;
             offer.DateLastChanged = DateTimeOffset.UtcNow;
-            offer.LastEditorId = userId;
         });
 
         var notificationContent = new
@@ -481,7 +482,6 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.ACTIVE;
             offer.DateReleased = DateTime.UtcNow;
-            offer.LastEditorId = userId;
         });
 
         var technicalUserIds = offerTypeId == OfferTypeId.APP && offerDetails.IsSingleInstance
@@ -542,7 +542,6 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.CREATED;
             offer.DateLastChanged = DateTime.UtcNow;
-            offer.LastEditorId = userId;
         });
 
         if (declineData.ActiveDocumentStatusDatas.Any())

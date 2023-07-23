@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using PortalBackend.PortalEntities.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -1190,7 +1191,6 @@ public class CompanyDataBusinessLogicTests
         notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_APPROVAL);
         notification.CreatorUserId.Should().Be(_identity.UserId);
 
-        detail.LastEditorId.Should().Be(_identity.UserId);
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.ACTIVE);
         detail.DateLastChanged.Should().Be(now);
     }
@@ -1318,7 +1318,6 @@ public class CompanyDataBusinessLogicTests
         notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_APPROVAL);
         notification.CreatorUserId.Should().Be(_identity.UserId);
 
-        detail.LastEditorId.Should().Be(_identity.UserId);
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.ACTIVE);
         detail.DateLastChanged.Should().Be(now);
     }
@@ -1407,7 +1406,6 @@ public class CompanyDataBusinessLogicTests
         notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_REJECTED);
         notification.CreatorUserId.Should().Be(_identity.UserId);
 
-        detail.LastEditorId.Should().Be(_identity.UserId);
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
         detail.DateLastChanged.Should().Be(now);
     }
@@ -1451,7 +1449,6 @@ public class CompanyDataBusinessLogicTests
         notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_REJECTED);
         notification.CreatorUserId.Should().Be(_identity.UserId);
 
-        detail.LastEditorId.Should().Be(_identity.UserId);
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
         detail.DateLastChanged.Should().Be(now);
     }

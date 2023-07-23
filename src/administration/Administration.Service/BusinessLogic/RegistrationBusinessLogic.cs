@@ -439,7 +439,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
             application.DateLastChanged = DateTimeOffset.UtcNow;
-            application.LastEditorId = userId;
         });
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, company =>
         {
