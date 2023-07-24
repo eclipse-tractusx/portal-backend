@@ -105,8 +105,10 @@ public class CompanyDataController : ControllerBase
     /// </summary>
     /// <remarks>Example: DELETE: api/administration/companydata/preferredUseCases</remarks>
     /// <response code="204">NoContentResult</response>
-    /// <response code="409">Company Status is Incorrect</response>
-    /// <response code="409">UseCaseId is not available</response>
+    /// <response code="409">
+    /// Company Status is Incorrect <br />
+    /// UseCaseId is not available
+    /// </response>
     [HttpDelete]
     [Authorize(Roles = "set_company_use_cases")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
@@ -145,11 +147,15 @@ public class CompanyDataController : ControllerBase
     /// <returns>Create Companyrole and Consent details</returns>
     /// <remarks>Example: POST: api/administration/companydata/companyRolesAndConsents</remarks>
     /// <response code="204">Created the Companyrole and Consent details.</response>
-    /// <response code="400">All agreement need to get signed as Active or InActive</response>
-    /// <response code="400">Agreements not associated with requested companyRoles</response>
-    /// <response code="409">Company does not exists</response>
-    /// <response code="409">Company is in Incorrect state</response>
-    /// <response code="409">Company can't unassign from all roles</response>
+    /// <response code="400">
+    /// All agreement need to get signed as Active or InActive <br />
+    /// Agreements not associated with requested companyRoles
+    /// </response>
+    /// <response code="409">
+    /// Company does not exists <br />
+    /// Company is in Incorrect state <br />
+    /// Company can't unassign from all roles
+    /// </response>
     [HttpPost]
     [Authorize(Roles = "view_company_data")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
@@ -218,8 +224,10 @@ public class CompanyDataController : ControllerBase
     /// <returns>The id of the created use case participation</returns>
     /// <remarks>Example: POST: api/administration/companydata/useCaseParticipation</remarks>
     /// <response code="204">Successfully created the use case particiation.</response>
-    /// <response code="400">VerifiedCredentialExternalTypeDetailId does not exist</response>
-    /// <response code="400">Credential request already exist</response>
+    /// <response code="400">
+    /// VerifiedCredentialExternalTypeDetailId does not exist <br />
+    /// Credential request already exist
+    /// </response>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [Authorize(Roles = "request_ssicredential")]
@@ -242,8 +250,10 @@ public class CompanyDataController : ControllerBase
     /// <returns>The id of the created use case participation</returns>
     /// <remarks>Example: POST: api/administration/companydata/certificates</remarks>
     /// <response code="204">Successfully created the ssi certificate.</response>
-    /// <response code="400">credentialTypeId is not assigned to a certificate</response>
-    /// <response code="400">Credential request already exist</response>
+    /// <response code="400">
+    /// credentialTypeId is not assigned to a certificate <br />
+    /// Credential request already exist
+    /// </response>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [Authorize(Roles = "request_ssicredential")]
@@ -292,8 +302,10 @@ public class CompanyDataController : ControllerBase
     /// <returns>No Content</returns>
     /// <response code="204">Successfully approved the credentials.</response>
     /// <response code="404">CompanySsiDetail does not exists</response>
-    /// <response code="409">Credential is in Incorrect State</response>
-    /// <response code="409">VerifiedCredentialTypeKindId must not be null</response>
+    /// <response code="409">
+    /// Credential is in Incorrect State <br />
+    /// VerifiedCredentialTypeKindId must not be null
+    /// </response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
