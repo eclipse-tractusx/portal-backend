@@ -76,14 +76,6 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var existingOffer = _fixture.Create<Offer>();
-        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._))
-            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
-            {
-                initializeParemeters?.Invoke(existingOffer);
-                setOptionalParameters(existingOffer);
-            });
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
@@ -92,7 +84,6 @@ public class AppBusinessLogicTests
         // Assert
         A.CallTo(() => _offerRepository.CreateAppFavourite(A<Guid>.That.Matches(x => x == appId), A<Guid>.That.Matches(x => x == _identity.UserId))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
