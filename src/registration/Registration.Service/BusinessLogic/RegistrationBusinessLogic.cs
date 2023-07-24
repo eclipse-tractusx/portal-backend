@@ -19,6 +19,8 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -33,8 +35,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Text.RegularExpressions;
 
@@ -51,7 +51,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly ILogger<RegistrationBusinessLogic> _logger;
     private readonly IApplicationChecklistCreationService _checklistService;
 
-    private static readonly Regex bpnRegex = new Regex(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
+    private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
@@ -103,27 +103,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
         }
-        BpdmLegalEntityAddressDto? legalEntityAddress;
-        try
-        {
-            legalEntityAddress = await _bpnAccess.FetchLegalEntityAddressByBpn(businessPartnerNumber, token, cancellationToken).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (InvalidOperationException)
-        {
-            throw new ConflictException($"bpdm returned more than a single legalEntityAddress for {businessPartnerNumber}");
-        }
-        if (legalEntityAddress == null)
-        {
-            throw new ConflictException($"bpdm returned no legalEntityAddress for {businessPartnerNumber}");
-        }
-        if (!businessPartnerNumber.Equals(legalEntityAddress.LegalEntity, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ConflictException("Bpdm did return incorrect bpn address-data");
-        }
 
-        var legalAddress = legalEntityAddress.LegalAddress;
-
-        var country = legalAddress.Country.TechnicalKey;
+        var country = legalEntity.LegalEntityAddress.PhysicalPostalAddress?.Country?.TechnicalKey ??
+                      throw new ConflictException("Legal-entity-data did not contain a valid country identifier");
 
         var bpdmIdentifiers = ParseBpdmIdentifierDtos(legalEntity.Identifiers).ToList();
         var assignedIdentifiersResult = await _portalRepositories.GetInstance<IStaticDataRepository>()
@@ -140,35 +122,18 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 bpdmIdentifier => bpdmIdentifier.BpdmIdentifierId,
                 (countryIdentifier, bpdmIdentifier) => (countryIdentifier.UniqueIdentifierId, bpdmIdentifier.Value));
 
-        TItem? SingleOrDefaultChecked<TItem>(IEnumerable<TItem> items, string itemName)
-        {
-            try
-            {
-                return items.SingleOrDefault();
-            }
-            catch (InvalidOperationException)
-            {
-                throw new ConflictException($"bpdm returned more than a single {itemName} in legal entity for {businessPartnerNumber}");
-            }
-        }
-
-        BpdmNameDto? name = SingleOrDefaultChecked(legalEntity.Names, nameof(name));
-        string? administrativeArea = SingleOrDefaultChecked(legalAddress.AdministrativeAreas, nameof(administrativeArea))?.Value;
-        string? postCode = SingleOrDefaultChecked(legalAddress.PostCodes, nameof(postCode))?.Value;
-        string? locality = SingleOrDefaultChecked(legalAddress.Localities, nameof(locality))?.Value;
-        BpdmThoroughfareDto? thoroughfare = SingleOrDefaultChecked(legalAddress.Thoroughfares, nameof(thoroughfare));
-
+        var physicalPostalAddress = legalEntity.LegalEntityAddress.PhysicalPostalAddress;
         return new CompanyBpdmDetailData(
             businessPartnerNumber,
             country,
-            name?.Value ?? "",
-            name?.ShortName ?? "",
-            locality ?? "",
-            thoroughfare?.Value ?? "",
-            administrativeArea,
+            legalEntity.LegalName ?? "",
+            legalEntity.LegalShortName ?? "",
+            physicalPostalAddress?.City ?? "",
+            physicalPostalAddress?.Street?.Name ?? "",
+            physicalPostalAddress?.AdministrativeAreaLevel1?.RegionCode,
             null, // TODO clarify how to map from bpdm data
-            thoroughfare?.Number,
-            postCode,
+            physicalPostalAddress?.Street?.HouseNumber,
+            physicalPostalAddress?.PostalCode,
             portalIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
         );
     }

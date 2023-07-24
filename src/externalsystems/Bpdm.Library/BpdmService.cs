@@ -22,7 +22,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -37,7 +36,10 @@ public class BpdmService : IBpdmService
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new JsonStringEnumConverter(allowIntegerValues: false) }
+        Converters =
+        {
+            new JsonStringEnumConverter(allowIntegerValues: false),
+        }
     };
 
     public BpdmService(ITokenService tokenService, IOptions<BpdmServiceSettings> options)
@@ -54,75 +56,54 @@ public class BpdmService : IBpdmService
         var requestData = new BpdmLegalEntityData[]
         {
             new(
-                data.ExternalId,               // ExternalId
-                null,                          // Bpn
+                data.ExternalId, // Index
+                Enumerable.Repeat(data.CompanyName, 1),         // LegalName
+                data.ShortName,     // LegalShortName
+                null, // LegalForm
                 data.Identifiers.Select(x =>
                     new BpdmIdentifier(
                         x.Value,               // Value
                         x.BpdmIdentifierId,    // Type
-                        null,                  // IssuingBody
-                        null)),                // Status
-                new BpdmName[] // Names
-                {
-                    new (
-                        data.CompanyName,      // Value
-                        null,                  // ShortName
-                        "REGISTERED",          // Type
-                        "de")                  // Language
-                },
-                null, // LegalForm
-                null, // Status
-                Enumerable.Empty<BpdmProfileClassification>(),
-                Enumerable.Empty<string>(),    // Types
-                Enumerable.Empty<BpdmBankAccount>(),
+                        null)),     // IssuingBody
+                Enumerable.Empty<BpdmStatus>(), // Status
+                Enumerable.Empty<BpdmProfileClassification>(),        // Classifications
+                Enumerable.Empty<string>(),                                   // Roles
                 new BpdmLegalAddress(
-                    new BpdmAddressVersion(
-                        "WESTERN_LATIN_STANDARD", //CharacterSet
-                        "de"),                    // Version
-                    null,                      // CareOf
-                    Enumerable.Empty<string>(),// Contexts
-                    data.AlphaCode2,           // Country
-                    data.Region == null
-                        ? Enumerable.Empty<BpdmAdministrativeArea>()
-                        : new BpdmAdministrativeArea[] {
-                            new (
-                                data.Region,   // Value
-                                null,          // ShortName
-                                null,          // Fipscode
-                                "COUNTY"       // Type
-                            )
-                        },
-                    data.ZipCode == null
-                        ? Enumerable.Empty<BpdmPostcode>()
-                        : new BpdmPostcode[] {
-                            new (
-                                data.ZipCode,  // Value
-                                "REGULAR")     // Type
-                        },
-                    new BpdmLocality[] {
-                        new (
-                            data.City,         // Value
-                            null,              // ShortName
-                            "CITY")            // Type
-                    },
-                    new BpdmThoroughfare[] {
-                        new (
-                            data.StreetName,   // Value
-                            null,              // Name
-                            null,              // ShortName
-                            data.StreetNumber, // Number
-                            null,              // Direction
-                            "STREET")          // Type
-                    },
-                    Enumerable.Empty<BpdmPremise>(),
-                    Enumerable.Empty<BpdmPostalDeliveryPoint>(),
-                    null,                 // GeographicCoordinates
-                    Enumerable.Empty<string>() // Types
-                    )
+                    Enumerable.Empty<string>(),                           // Name
+                    Enumerable.Empty<BpdmAddressState>(),                    // States 
+                    Enumerable.Empty<BpdmAddressIdentifier>(),          // Identifiers
+                    new BpdmAddressPhysicalPostalAddress(                           // PhysicalPostalAddress
+                        null,                                                       // GeographicCoordinates
+                        data.AlphaCode2,                                    // Country
+                        data.ZipCode,                                    // PostalCode
+                        data.City,                                                 // City
+                        new BpdmStreet(
+                            null,                             // NamePrefix
+                            null,                  // AdditionalNamePrefix
+                            data.StreetName,                                             // Name
+                            null,                                        // NameSuffix
+                            null,                                        // AdditionalNameSuffix
+                            data.StreetNumber,                                        // StreetNumber
+                            null,                                        // Milestone
+                            null                                        // Direction
+                        ),
+                        data.Region,                        // AdministrativeAreaLevel1
+                        null,                               // AdministrativeAreaLevel2
+                        null,                               // AdministrativeAreaLevel3
+                        null,                                             // District
+                        null,                                     // CompanyPostalCode
+                        null,                                        // IndustrialZone
+                        null,                                             // Building
+                        null,                                                // Floor
+                        null                                                  // Door
+                    ),
+                    null,                                     // AlternativePostalAddress
+                    Enumerable.Empty<string>()
+                )
             )
         };
 
-        await httpClient.PutAsJsonAsync("/api/catena/input/legal-entities", requestData, Options, cancellationToken)
+        await httpClient.PutAsJsonAsync("/companies/test-company/api/catena/input/legal-entities", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }
@@ -132,28 +113,19 @@ public class BpdmService : IBpdmService
         var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
 
         var data = Enumerable.Repeat(externalId, 1);
-        var result = await httpClient.PostAsJsonAsync("/api/catena/output/legal-entities/search", data, Options, cancellationToken)
+        var result = await httpClient.PostAsJsonAsync($"/companies/test-company/api/catena/output/legal-entities/search{externalId}", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-search-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         try
         {
-            var paginationResponse = await result.Content
-                .ReadFromJsonAsync<PageOutputResponseBpdmLegalEntityData>(Options, cancellationToken)
+            var response = await result.Content
+                .ReadFromJsonAsync<BpdmLegalEntityOutputData>(Options, cancellationToken)
                 .ConfigureAwait(false);
-            if (paginationResponse?.Content == null || paginationResponse.Errors == null)
+            if (response?.ExternalId == null)
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
             }
 
-            paginationResponse.Errors.IfAny(errors =>
-                throw new ServiceException($"The external system bpdm responded with errors {string.Join(";", errors.Select(x => $"ErrorCode: {x.ErrorCode}, ErrorMessage: {x.Message}"))}"));
-            try
-            {
-                return paginationResponse.Content.Single(x => x.ExternalId == externalId);
-            }
-            catch (InvalidOperationException)
-            {
-                throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
-            }
+            return response;
         }
         catch (JsonException je)
         {

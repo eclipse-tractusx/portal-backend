@@ -117,9 +117,8 @@ public class BpdmServiceTests
             .With(x => x.ExternalId, externalId)
             .With(x => x.Bpn, "TESTBPN")
             .Create();
-        var pageOutputData = new PageOutputResponseBpdmLegalEntityData(
-            Enumerable.Repeat(data, 1),
-            Enumerable.Empty<BpdmErrorInfo>());
+        // var pageOutputData = new PageOutputResponseBpdmLegalEntityData(
+        //     Enumerable.Repeat(data, 1));
         var options = new System.Text.Json.JsonSerializerOptions
         {
             PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
@@ -128,7 +127,7 @@ public class BpdmServiceTests
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            pageOutputData.ToJsonContent(
+            data.ToJsonContent(
                 options,
                 "application/json")
             );
@@ -193,39 +192,6 @@ public class BpdmServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
         ex.Message.Should().StartWith("Access to external system bpdm did not return a valid json response");
-        ex.IsRecoverable.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task FetchInputLegalEntity_WithError_ThrowsServiceException()
-    {
-        // Arrange
-        var error = new BpdmErrorInfo("SharingProcessError", "This is a test", "test");
-        var pageOutputData = new PageOutputResponseBpdmLegalEntityData(
-            Enumerable.Empty<BpdmLegalEntityOutputData>(),
-            Enumerable.Repeat(error, 1));
-        var options = new System.Text.Json.JsonSerializerOptions
-        {
-            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter(allowIntegerValues: false) }
-        };
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(
-            HttpStatusCode.OK,
-            pageOutputData.ToJsonContent(options, "application/json"));
-
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
-
-        // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
-        ex.Message.Should().StartWith("The external system bpdm responded with errors ErrorCode: SharingProcessError, ErrorMessage: This is a test");
         ex.IsRecoverable.Should().BeFalse();
     }
 

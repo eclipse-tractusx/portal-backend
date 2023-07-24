@@ -18,14 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
 public class BpnAccess : IBpnAccess
 {
@@ -58,9 +59,9 @@ public class BpnAccess : IBpnAccess
     public async Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var uri = new UriBuilder()
+        var uri = new UriBuilder
         {
-            Path = $"api/catena/legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}",
+            Path = $"pool/api/catena/legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}",
             Query = "idType=BPN"
         }.Uri;
         var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken).ConfigureAwait(false);
@@ -84,45 +85,6 @@ public class BpnAccess : IBpnAccess
         catch (JsonException je)
         {
             throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
-        }
-    }
-
-    public async IAsyncEnumerable<BpdmLegalEntityAddressDto> FetchLegalEntityAddressByBpn(string businessPartnerNumber, string token, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var uri = new UriBuilder()
-        {
-            Path = "api/catena/legal-entities/legal-addresses/search"
-        }.Uri;
-        var json = new[] { businessPartnerNumber };
-        var result = await _httpClient.PostAsJsonAsync(uri.PathAndQuery, json, cancellationToken).ConfigureAwait(false);
-        if (result.IsSuccessStatusCode)
-        {
-            await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
-            await foreach (var address in JsonSerializer
-                    .DeserializeAsyncEnumerable<BpdmLegalEntityAddressDto>(
-                        responseStream,
-                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
-                        cancellationToken: cancellationToken)
-                    .CatchingAsync(
-                        ex =>
-                        {
-                            throw new ServiceException($"Access to external system bpdm did not return a valid json response: {ex.Message}");
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false))
-            {
-                if (address?.LegalAddress == null || address.LegalEntity == null)
-                {
-                    throw new ServiceException("Access to external system bpdm did not return a valid legal entity address response");
-                }
-                yield return address;
-            }
-        }
-        else
-        {
-            throw new ServiceException($"Access to external system bpdm failed with Status Code {result.StatusCode}", result.StatusCode);
         }
     }
 }

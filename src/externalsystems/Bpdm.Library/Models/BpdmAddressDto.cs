@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 public record BpdmLegalEntityAddressDto(
     string LegalEntity,
@@ -37,7 +37,7 @@ public record BpdmLegalAddressDto(
     IEnumerable<BpdmPremiseDto> Premises,
     IEnumerable<BpdmPostalDeliveryPointDto> PostalDeliveryPoints,
     BpdmGeographicCoordinatesDto GeographicCoordinates,
-    IEnumerable<BpdmUrlDataDto> Types
+    IEnumerable<BpdmTechnicalKey> Types
 );
 
 public record BpdmAddressVersionDto(
@@ -49,19 +49,19 @@ public record BpdmAdministrativeAreaDto(
     string Value,
     string ShortName,
     string FipsCode,
-    BpdmUrlDataDto Type,
+    BpdmTechnicalKey Type,
     BpdmDataDto Language
 );
 
 public record BpdmPostCodeDto(
     string Value,
-    BpdmUrlDataDto Type
+    BpdmTechnicalKey Type
 );
 
 public record BpdmLocalityDto(
     string Value,
     string ShortName,
-    BpdmUrlDataDto Type,
+    BpdmTechnicalKey Type,
     BpdmDataDto Language
 );
 
@@ -71,7 +71,7 @@ public record BpdmThoroughfareDto(
     string ShortName,
     string Number,
     string Direction,
-    BpdmUrlDataDto Type,
+    BpdmTechnicalKey Type,
     BpdmDataDto Language
 );
 
@@ -79,7 +79,7 @@ public record BpdmPremiseDto(
     string Value,
     string ShortName,
     string Number,
-    BpdmUrlDataDto Type,
+    BpdmTechnicalKey Type,
     BpdmDataDto Language
 );
 
@@ -87,7 +87,7 @@ public record BpdmPostalDeliveryPointDto(
     string Value,
     string ShortName,
     string Number,
-    BpdmUrlDataDto Type,
+    BpdmTechnicalKey Type,
     BpdmDataDto Language
 );
 
