@@ -128,7 +128,9 @@ public class CompanyRepository : ICompanyRepository
                 company.Address.Region,
                 company.Address.Streetadditional,
                 company.Address.Streetnumber,
-                company.Address!.Zipcode))
+                company.Address!.Zipcode,
+                company.CompanyAssignedRoles.Select(car => car.CompanyRoleId)
+                ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
