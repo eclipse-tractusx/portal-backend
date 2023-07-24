@@ -97,6 +97,9 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             await _provisioningManager.AddRolesToClientAsync(clientId, userRoles.Select(x => x.Role)).ConfigureAwait(false);
         }
 
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
+
         var notificationContent = new
         {
             AppName = result.AppName,
@@ -125,6 +128,8 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             await ValidateAndGetAppDescription(appId, companyId, offerRepository),
             offerDescriptionDatas.Select(od => new ValueTuple<string, string, string>(od.LanguageCode, od.LongDescription, od.ShortDescription)));
 
+        offerRepository.AttachAndModifyOffer(appId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -189,6 +194,8 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         offerRepository.RemoveOfferAssignedDocuments(result.documentStatusDatas.Select(data => (appId, data.DocumentId)));
         documentRepository.RemoveDocuments(result.documentStatusDatas.Select(data => data.DocumentId));
 
+        offerRepository.AttachAndModifyOffer(appId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -245,6 +252,9 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             {
                 os.AppSubscriptionUrl = url;
             });
+
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(offerId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
 
         if (!string.IsNullOrEmpty(detailData.ClientClientId))
         {
