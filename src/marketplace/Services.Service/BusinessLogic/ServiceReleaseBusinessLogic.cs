@@ -198,7 +198,6 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
                 offer.SalesManagerId = data.SalesManager;
                 offer.ContactEmail = data.ContactEmail;
                 offer.MarketingUrl = data.ProviderUri;
-                offer.DateLastChanged = DateTimeOffset.UtcNow;
             },
             offer =>
             {
