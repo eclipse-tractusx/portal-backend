@@ -172,7 +172,7 @@ public class ConnectorsControllerTests
         await this._controller.DeleteConnectorAsync(connectorId, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId, _identity.UserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
