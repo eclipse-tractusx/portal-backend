@@ -181,6 +181,10 @@ public class OfferService : IOfferService
                 companyUserId,
                 DateTimeOffset.UtcNow)
             .Select(consent => new ConsentStatusData(consent.AgreementId, consent.ConsentStatusId));
+
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(offerId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return ConsentStatusdata;
     }
@@ -233,6 +237,7 @@ public class OfferService : IOfferService
             service.ProviderCompanyId = identity.CompanyId;
             service.MarketingUrl = data.ProviderUri;
             service.LicenseTypeId = LicenseTypeId.COTS;
+            service.DateLastChanged = DateTimeOffset.UtcNow;
         });
         var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
@@ -629,7 +634,10 @@ public class OfferService : IOfferService
             throw new ConflictException($"offerStatus is in Incorrect State");
         }
         offerRepository.AttachAndModifyOffer(offerId, offer =>
-            offer.OfferStatusId = OfferStatusId.INACTIVE);
+        {
+            offer.OfferStatusId = OfferStatusId.INACTIVE;
+            offer.DateReleased = DateTime.UtcNow;
+        });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -783,6 +791,9 @@ public class OfferService : IOfferService
                         .Select(x => x.TechnicalUserProfileId!.Value),
                     x => x.TechnicalUserProfileId)
                 .Select(x => x.TechnicalUserProfileId));
+
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(offerId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
