@@ -160,7 +160,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await this.WithUserIdAndCompanyId(identity => _businessLogic.DeactivateOfferByAppIdAsync(appId, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _businessLogic.DeactivateOfferByAppIdAsync(appId, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 

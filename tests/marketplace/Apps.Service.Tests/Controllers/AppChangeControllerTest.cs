@@ -130,7 +130,7 @@ public class AppChangeControllerTest
         var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

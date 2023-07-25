@@ -619,10 +619,10 @@ public class OfferService : IOfferService
         }
     }
 
-    public async Task DeactivateOfferIdAsync(Guid offerId, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId)
+    public async Task DeactivateOfferIdAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var offerData = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, identity.CompanyId).ConfigureAwait(false);
+        var offerData = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, companyId).ConfigureAwait(false);
         if (offerData == default)
         {
             throw new NotFoundException($"{offerTypeId} {offerId} does not exist.");
@@ -639,7 +639,6 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.INACTIVE;
             offer.DateReleased = DateTime.UtcNow;
-            offer.LastEditorId = identity.UserId;
         });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

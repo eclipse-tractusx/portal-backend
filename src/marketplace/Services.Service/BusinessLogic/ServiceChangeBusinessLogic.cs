@@ -41,7 +41,7 @@ public class ServiceChangeBusinessLogic : IServiceChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task DeactivateOfferByServiceIdAsync(Guid serviceId, (Guid UserId, Guid CompanyId) identity) =>
-        _offerService.DeactivateOfferIdAsync(serviceId, identity, OfferTypeId.SERVICE);
+    public Task DeactivateOfferByServiceIdAsync(Guid serviceId, Guid companyId) =>
+        _offerService.DeactivateOfferIdAsync(serviceId, companyId, OfferTypeId.SERVICE);
 
 }

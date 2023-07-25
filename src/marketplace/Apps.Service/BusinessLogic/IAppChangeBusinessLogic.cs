@@ -65,8 +65,8 @@ public interface IAppChangeBusinessLogic
     /// Deactivate Offer Status by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="identity">Users identity</param>
-    public Task DeactivateOfferByAppIdAsync(Guid appId, (Guid UserId, Guid CompanyId) identity);
+    /// <param name="companyId">CompanyId</param>
+    public Task DeactivateOfferByAppIdAsync(Guid appId, Guid companyId);
 
     /// <summary>
     /// Updates the url of the subscription
