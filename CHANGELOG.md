@@ -2,6 +2,18 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.6.0-RC3
+
+### Change
+* Apps Service
+  * whenever updating the offer or a related entity the offer LastDateChanged column is updated
+* Services Service
+  * whenever updating the offer or a related entity the offer LastDateChanged column is updated
+* Application Checklist Worker
+  * enhance the logging of a successful create wallet process step
+* Administration Service
+  * GET /companydata/ownCompanyDetails enhanced the response with CompanyRoles
+
 ## 1.6.0-RC2
 
 ### Change

@@ -85,11 +85,19 @@ public class OfferDocumentServiceTests
                 var offerAssignedDocument = new OfferAssignedDocument(offerId, docId);
                 offerAssignedDocuments.Add(offerAssignedDocument);
             });
-
+        var existingOffer = _fixture.Create<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>();
+        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>>._, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>?>._))
+            .Invokes((Guid _, Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer> setOptionalParameters, Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
+            });
         // Act
         await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>>._, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         documents.Should().HaveCount(1);
         offerAssignedDocuments.Should().HaveCount(1);

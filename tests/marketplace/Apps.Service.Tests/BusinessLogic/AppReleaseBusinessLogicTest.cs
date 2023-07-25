@@ -156,7 +156,14 @@ public class AppReleaseBusinessLogicTest
                 userRoleDescriptions.Add(createdUserRoleDescriptions);
                 return createdUserRoleDescriptions;
             });
-
+        var existingOffer = _fixture.Create<Offer>();
+        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
+            });
         // Act
         var result = await _sut.AddAppUserRoleAsync(appId, appUserRoles, _identity.CompanyId).ConfigureAwait(false);
 
@@ -176,7 +183,7 @@ public class AppReleaseBusinessLogicTest
                 x => x.UserRoleText == appUserRoles[1].Role,
                 x => x.UserRoleText == appUserRoles[2].Role
             );
-
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid, string, string)>>._)).MustHaveHappened(appUserRoles.Length, Times.Exactly);
         userRoleDescriptions.Should()
             .HaveSameCount(appUserRoles)

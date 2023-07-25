@@ -202,6 +202,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             offer =>
             {
                 offer.SalesManagerId = serviceData.SalesManagerId;
+                offer.DateLastChanged = DateTimeOffset.UtcNow;
             });
 
         _offerService.UpsertRemoveOfferDescription(serviceId, data.Descriptions, serviceData.Descriptions);
