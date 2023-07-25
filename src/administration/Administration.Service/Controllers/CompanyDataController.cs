@@ -105,8 +105,10 @@ public class CompanyDataController : ControllerBase
     /// </summary>
     /// <remarks>Example: DELETE: api/administration/companydata/preferredUseCases</remarks>
     /// <response code="204">NoContentResult</response>
-    /// <response code="409">Company Status is Incorrect</response>
-    /// <response code="409">UseCaseId is not available</response>
+    /// <response code="409">
+    /// Company Status is Incorrect <br />
+    /// UseCaseId is not available
+    /// </response>
     [HttpDelete]
     [Authorize(Roles = "set_company_use_cases")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
@@ -125,6 +127,8 @@ public class CompanyDataController : ControllerBase
     /// <returns>the Companyrole and ConsentAgreement details</returns>
     /// <remarks>Example: GET: api/administration/companydata/companyRolesAndConsents</remarks>
     /// <response code="200">Returns the Companyrole and Consent details.</response>
+    /// <response code="400">languageShortName is not valid</response>
+    /// <response code="404">CompanyId does not exist in company</response>
     /// <response code="409">No Companyrole or Incorrect Status</response>
     [HttpGet]
     [Authorize(Roles = "view_company_data")]
@@ -132,6 +136,7 @@ public class CompanyDataController : ControllerBase
     [Route("companyRolesAndConsents")]
     [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery] string? languageShortName = null) =>
         this.WithCompanyId(companyId => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(companyId, languageShortName));
@@ -142,8 +147,15 @@ public class CompanyDataController : ControllerBase
     /// <returns>Create Companyrole and Consent details</returns>
     /// <remarks>Example: POST: api/administration/companydata/companyRolesAndConsents</remarks>
     /// <response code="204">Created the Companyrole and Consent details.</response>
-    /// <response code="409">companyRole already exists</response>
-    /// <response code="409">All agreement need to get signed</response>
+    /// <response code="400">
+    /// All agreement need to get signed as Active or InActive <br />
+    /// Agreements not associated with requested companyRoles
+    /// </response>
+    /// <response code="409">
+    /// Company does not exists <br />
+    /// Company is in Incorrect state <br />
+    /// Company can't unassign from all roles
+    /// </response>
     [HttpPost]
     [Authorize(Roles = "view_company_data")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
@@ -164,11 +176,13 @@ public class CompanyDataController : ControllerBase
     /// <remarks>Example: Get: api/administration/companydata/useCaseParticipation</remarks>
     /// <returns>All UseCaseParticipations of the own company</returns>
     /// <response code="200">Returns a collection of UseCaseParticipation.</response>
+    /// <response code="409">There should only be one pending or active ssi detail be assigned</response>
     [HttpGet]
     [Authorize(Roles = "view_use_case_participation")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("useCaseParticipation")]
     [ProducesResponseType(typeof(IEnumerable<UseCaseParticipationData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipation([FromQuery] string? language) =>
         this.WithCompanyId(companyId => _logic.GetUseCaseParticipationAsync(companyId, language));
 
@@ -178,11 +192,13 @@ public class CompanyDataController : ControllerBase
     /// <returns>All ssi certifications of the own company</returns>
     /// <remarks>Example: Get: api/administration/companydata/certificates</remarks>
     /// <response code="200">Returns a collection of certificates.</response>
+    /// <response code="409">There should only be one pending or active ssi detail be assigned</response>
     [HttpGet]
     [Authorize(Roles = "view_certificates")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificates")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<IEnumerable<SsiCertificateData>> GetSsiCertificationData() =>
         this.WithCompanyId(companyId => _logic.GetSsiCertificatesAsync(companyId));
 
@@ -208,6 +224,10 @@ public class CompanyDataController : ControllerBase
     /// <returns>The id of the created use case participation</returns>
     /// <remarks>Example: POST: api/administration/companydata/useCaseParticipation</remarks>
     /// <response code="204">Successfully created the use case particiation.</response>
+    /// <response code="400">
+    /// VerifiedCredentialExternalTypeDetailId does not exist <br />
+    /// Credential request already exist
+    /// </response>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [Authorize(Roles = "request_ssicredential")]
@@ -215,6 +235,7 @@ public class CompanyDataController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("useCaseParticipation")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken)
     {
         await this.WithUserIdAndCompanyId(identity => _logic.CreateUseCaseParticipation(identity, data, cancellationToken)).ConfigureAwait(false);
@@ -229,6 +250,10 @@ public class CompanyDataController : ControllerBase
     /// <returns>The id of the created use case participation</returns>
     /// <remarks>Example: POST: api/administration/companydata/certificates</remarks>
     /// <response code="204">Successfully created the ssi certificate.</response>
+    /// <response code="400">
+    /// credentialTypeId is not assigned to a certificate <br />
+    /// Credential request already exist
+    /// </response>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [Authorize(Roles = "request_ssicredential")]
@@ -236,6 +261,7 @@ public class CompanyDataController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificates")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)
     {
         await this.WithUserIdAndCompanyId(identity => _logic.CreateSsiCertificate(identity, data, cancellationToken)).ConfigureAwait(false);
@@ -275,11 +301,18 @@ public class CompanyDataController : ControllerBase
     /// <param name="cts">Cancellation Token</param>
     /// <returns>No Content</returns>
     /// <response code="204">Successfully approved the credentials.</response>
+    /// <response code="404">CompanySsiDetail does not exists</response>
+    /// <response code="409">
+    /// Credential is in Incorrect State <br />
+    /// VerifiedCredentialTypeKindId must not be null
+    /// </response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("credentials/{credentialId}/approval")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> ApproveCredential([FromRoute] Guid credentialId, CancellationToken cts)
     {
         await this.WithUserId(userId => _logic.ApproveCredential(userId, credentialId, cts)).ConfigureAwait(false);
@@ -293,11 +326,15 @@ public class CompanyDataController : ControllerBase
     /// <param name="credentialId">Id of the entry that should be approved</param>
     /// <returns>No Content</returns>
     /// <response code="204">Successfully rejected the credentials.</response>
+    /// <response code="404">CompanySsiDetail does not exists</response>
+    /// <response code="409">CredentialSsiDetail is in Incorrect State</response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("credentials/{credentialId}/reject")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> RejectCredential([FromRoute] Guid credentialId)
     {
         await this.WithUserId(userId => _logic.RejectCredential(userId, credentialId)).ConfigureAwait(false);
