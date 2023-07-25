@@ -140,6 +140,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
         }
         var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return roleData;
     }
@@ -259,6 +262,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ContactNumber = appRequestModel.ContactNumber;
             app.MarketingUrl = appRequestModel.ProviderUri;
             app.LicenseTypeId = LicenseTypeId.COTS;
+            app.DateLastChanged = DateTimeOffset.UtcNow;
         }).Id;
         appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
@@ -339,6 +343,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ContactEmail = appData.ContactEmail;
             app.ContactNumber = appData.ContactNumber;
             app.MarketingUrl = appData.MarketingUrl;
+            app.DateLastChanged = DateTimeOffset.UtcNow;
         });
 
         _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions, appData.OfferDescriptions);

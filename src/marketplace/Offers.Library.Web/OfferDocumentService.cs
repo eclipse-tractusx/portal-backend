@@ -97,6 +97,10 @@ public class OfferDocumentService : IOfferDocumentService
             x.CompanyUserId = identity.UserId;
         });
         _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(id, doc.Id);
+
+        offerRepository.AttachAndModifyOffer(id, offer =>
+            offer.DateLastChanged = DateTimeOffset.UtcNow);
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

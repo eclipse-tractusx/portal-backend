@@ -75,14 +75,26 @@ public class CustodianService : ICustodianService
         const string walletUrl = "/api/wallets";
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
         var requestBody = new { name = name, bpn = bpn };
-
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
             (false, (await errorResponse.Content.ReadFromJsonAsync<WalletErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Message);
 
         var result = await httpClient.PostAsJsonAsync(walletUrl, requestBody, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
 
-        return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var walletResponse = await result.Content.ReadFromJsonAsync<WalletCreationResponse>(Options, cancellationToken).ConfigureAwait(false);
+            if (walletResponse == null)
+            {
+                return "Service Response for custodian-post is null";
+            }
+
+            return JsonSerializer.Serialize(walletResponse, Options);
+        }
+        catch (JsonException)
+        {
+            return "Service Response deSerialization failed for custodian-post";
+        }
     }
 
     /// <inhertidoc />

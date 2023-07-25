@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -33,5 +34,6 @@ public record CompanyAddressDetailData(
     string? Region,
     string? StreetAdditional,
     string? StreetNumber,
-    string? ZipCode
+    string? ZipCode,
+    IEnumerable<CompanyRoleId> CompanyRole
 );
