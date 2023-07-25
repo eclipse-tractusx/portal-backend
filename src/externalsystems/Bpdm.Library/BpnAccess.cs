@@ -37,25 +37,6 @@ public class BpnAccess : IBpnAccess
         _httpClient = httpFactory.CreateClient(nameof(BpnAccess));
     }
 
-    public async IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var result = await _httpClient.GetAsync($"api/catena/business-partner/{Uri.EscapeDataString(bpn)}", cancellationToken).ConfigureAwait(false);
-        if (result.IsSuccessStatusCode)
-        {
-            await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var businesPartnerDto = await JsonSerializer.DeserializeAsync<FetchBusinessPartnerDto>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (businesPartnerDto != null)
-            {
-                yield return businesPartnerDto;
-            }
-        }
-        else
-        {
-            throw new ServiceException($"Access to BPN Failed with Status Code {result.StatusCode}", result.StatusCode);
-        }
-    }
-
     public async Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

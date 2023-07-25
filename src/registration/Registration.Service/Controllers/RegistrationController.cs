@@ -39,39 +39,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
     [Consumes("application/json")]
     public class RegistrationController : ControllerBase
     {
-        private readonly ILogger<RegistrationController> _logger;
         private readonly IRegistrationBusinessLogic _registrationBusinessLogic;
 
         /// <summary>
         /// Creates a new instance of <see cref="RegistrationController"/>
         /// </summary>
-        /// <param name="logger">The logger</param>
         /// <param name="registrationBusinessLogic">Access to the business logic</param>
-        public RegistrationController(ILogger<RegistrationController> logger, IRegistrationBusinessLogic registrationBusinessLogic)
+        public RegistrationController(IRegistrationBusinessLogic registrationBusinessLogic)
         {
-            _logger = logger;
             _registrationBusinessLogic = registrationBusinessLogic;
         }
-
-        /// <summary>
-        /// Gets a company by its bpn
-        /// </summary>
-        /// <param name="bpn" example="CAXSDUMMYCATENAZZ">The bpn to get the company for</param>
-        /// <param name="authorization">the authorization</param>
-        /// <param name="cancellationToken">Cancellation Token</param>
-        /// <returns>Returns a List with one company</returns>
-        /// <remarks>Example: GET /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
-        /// <response code="200">Returns the company</response>
-        /// <response code="503">The requested service responded with the given error.</response>
-        [Obsolete($"use {nameof(GetCompanyBpdmDetailDataAsync)} instead")]
-        [HttpGet]
-        [Authorize(Roles = "add_company_data")]
-        [Route("company/{bpn}")]
-        [ProducesResponseType(typeof(IAsyncEnumerable<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-        public IAsyncEnumerable<FetchBusinessPartnerDto> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization, CancellationToken cancellationToken) =>
-            _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1], cancellationToken);
 
         /// <summary>
         /// Gets legal entity and address data from bpdm by its bpn

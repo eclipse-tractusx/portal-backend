@@ -76,17 +76,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
         _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeycloakClientID);
 
-    [Obsolete($"use {nameof(GetCompanyBpdmDetailDataByBusinessPartnerNumber)} instead")]
-    public IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken)
-    {
-        if (!bpnRegex.IsMatch(companyIdentifier))
-        {
-            throw new ControllerArgumentException("BPN must contain exactly 16 digits or letters.", nameof(companyIdentifier));
-        }
-
-        return _bpnAccess.FetchBusinessPartner(companyIdentifier, token, cancellationToken);
-    }
-
     public Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumber(string businessPartnerNumber, string token, CancellationToken cancellationToken)
     {
         if (!bpnRegex.IsMatch(businessPartnerNumber))

@@ -162,56 +162,6 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
-    #region GetCompanyByIdentifier
-
-    [Fact]
-    public async Task GetCompanyByIdentifierAsync_WithValidBpn_FetchesBusinessPartner()
-    {
-        //Arrange
-        var bpnAccess = A.Fake<IBpnAccess>();
-        var bpn = "THISBPNISVALID12";
-        var token = "justatoken";
-        var sut = new RegistrationBusinessLogic(
-            _options,
-            null!,
-            bpnAccess,
-            null!,
-            null!,
-            null!,
-            null!,
-            null!);
-
-        // Act
-        var result = await sut.GetCompanyByIdentifierAsync(bpn, token, CancellationToken.None).ToListAsync().ConfigureAwait(false);
-
-        result.Should().NotBeNull();
-        A.CallTo(() => bpnAccess.FetchBusinessPartner(bpn, token, CancellationToken.None)).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task GetCompanyByIdentifierAsync_WithValidBpn_ThrowsArgumentException()
-    {
-        //Arrange
-        var sut = new RegistrationBusinessLogic(
-            _options,
-            null!,
-            null!,
-            null!,
-            null!,
-            null!,
-            null!,
-            null!);
-
-        // Act
-        async Task Act() => await sut.GetCompanyByIdentifierAsync("NotLongEnough", "justatoken", CancellationToken.None).ToListAsync().ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("companyIdentifier");
-    }
-
-    #endregion
-
     #region GetCompanyBpdmDetailDataByBusinessPartnerNumber
 
     [Fact]

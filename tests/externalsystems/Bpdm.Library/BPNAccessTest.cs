@@ -53,38 +53,6 @@ public class BPNAccessTest
         A.CallTo(() => httpClientFactory.FakedObject.CreateClient("bpn")).Returns(httpClient);
     }
 
-    [Fact]
-    public async Task FetchBusinessPartner_Success()
-    {
-        var resultSet = _fixture.Create<FetchBusinessPartnerDto>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(JsonSerializer.Serialize(resultSet))
-        });
-
-        var httpClient = _fixture.Create<HttpClient>();
-        var sut = _fixture.Create<BpnAccess>();
-
-        var result = await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None).ToListAsync().ConfigureAwait(false);
-        Assert.Equal(resultSet.Bpn, result.First().Bpn);
-        Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
-    }
-
-    [Fact]
-    public async Task FetchBusinessPartner_Failure()
-    {
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage { StatusCode = HttpStatusCode.InternalServerError });
-
-        var httpClient = _fixture.Create<HttpClient>();
-        var sut = _fixture.Create<BpnAccess>();
-
-        async Task Act() => await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None).ToListAsync().ConfigureAwait(false);
-
-        await Assert.ThrowsAsync<ServiceException>(Act);
-        Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
-    }
-
     #region FetchLegalEntityByBpns
 
     [Fact]
