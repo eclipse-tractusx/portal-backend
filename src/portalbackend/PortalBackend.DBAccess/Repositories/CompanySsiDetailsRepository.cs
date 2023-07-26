@@ -130,6 +130,7 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                 x.CompanyId == companyId &&
                 x.VerifiedCredentialTypeId == verifiedCredentialTypeId &&
                 x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == kindId &&
+                x.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE &&
                 (verifiedCredentialExternalTypeUseCaseDetailId == null || x.VerifiedCredentialExternalTypeUseCaseDetailId == verifiedCredentialExternalTypeUseCaseDetailId));
 
     /// <inheritdoc />
