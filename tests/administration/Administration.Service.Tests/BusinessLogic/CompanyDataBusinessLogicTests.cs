@@ -1461,11 +1461,11 @@ public class CompanyDataBusinessLogicTests
     public async Task GetCertificateTypes_WithFilter_ReturnsList()
     {
         // Arrange
-        A.CallTo(() => _companySsiDetailsRepository.GetCertificateTypes())
+        A.CallTo(() => _companySsiDetailsRepository.GetCertificateTypes(_identity.CompanyId))
             .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
 
         // Act
-        var result = await _sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetCertificateTypes(_identity.CompanyId).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(1);

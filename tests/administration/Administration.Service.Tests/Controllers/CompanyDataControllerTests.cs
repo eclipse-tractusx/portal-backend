@@ -283,7 +283,7 @@ public class CompanyDataControllerTests
     public async Task GetCredentialTypes()
     {
         // Arrange
-        A.CallTo(() => _logic.GetCertificateTypes())
+        A.CallTo(() => _logic.GetCertificateTypes(_identity.CompanyId))
             .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
 
         //Act
