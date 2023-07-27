@@ -112,19 +112,19 @@ public class BpdmServiceTests
     [Fact]
     public async Task FetchInputLegalEntity_WithValidResult_ReturnsExpected()
     {
+        // Arrange
         var externalId = _fixture.Create<string>();
         var data = _fixture.Build<BpdmLegalEntityOutputData>()
             .With(x => x.ExternalId, externalId)
             .With(x => x.Bpn, "TESTBPN")
             .Create();
-        // var pageOutputData = new PageOutputResponseBpdmLegalEntityData(
-        //     Enumerable.Repeat(data, 1));
+
         var options = new System.Text.Json.JsonSerializerOptions
         {
             PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
             Converters = { new JsonStringEnumConverter(allowIntegerValues: false) }
         };
-        // Arrange
+
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
             data.ToJsonContent(

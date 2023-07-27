@@ -56,48 +56,48 @@ public class BpdmService : IBpdmService
         var requestData = new BpdmLegalEntityData[]
         {
             new(
-                data.ExternalId, // Index
-                Enumerable.Repeat(data.CompanyName, 1),         // LegalName
-                data.ShortName,     // LegalShortName
-                null, // LegalForm
+                data.ExternalId,                               // Index
+                Enumerable.Repeat(data.CompanyName, 1),        // LegalName
+                data.ShortName,                                // LegalShortName
+                null,                                          // LegalForm
                 data.Identifiers.Select(x =>
                     new BpdmIdentifier(
-                        x.Value,               // Value
-                        x.BpdmIdentifierId,    // Type
-                        null)),     // IssuingBody
-                Enumerable.Empty<BpdmStatus>(), // Status
-                Enumerable.Empty<BpdmProfileClassification>(),        // Classifications
-                Enumerable.Empty<string>(),                                   // Roles
+                        x.Value,                               // Value
+                        x.BpdmIdentifierId,                    // Type
+                        null)),                                // IssuingBody
+                Enumerable.Empty<BpdmStatus>(),                // Status
+                Enumerable.Empty<BpdmProfileClassification>(), // Classifications
+                Enumerable.Empty<string>(),                    // Roles
                 new BpdmLegalAddress(
-                    Enumerable.Empty<string>(),                           // Name
-                    Enumerable.Empty<BpdmAddressState>(),                    // States 
-                    Enumerable.Empty<BpdmAddressIdentifier>(),          // Identifiers
-                    new BpdmAddressPhysicalPostalAddress(                           // PhysicalPostalAddress
-                        null,                                                       // GeographicCoordinates
-                        data.AlphaCode2,                                    // Country
-                        data.ZipCode,                                    // PostalCode
-                        data.City,                                                 // City
+                    Enumerable.Empty<string>(),                // Name
+                    Enumerable.Empty<BpdmAddressState>(),      // States 
+                    Enumerable.Empty<BpdmAddressIdentifier>(), // Identifiers
+                    new BpdmAddressPhysicalPostalAddress(      // PhysicalPostalAddress
+                        null,                                  // GeographicCoordinates
+                        data.AlphaCode2,                       // Country
+                        data.ZipCode,                          // PostalCode
+                        data.City,                             // City
                         new BpdmStreet(
-                            null,                             // NamePrefix
-                            null,                  // AdditionalNamePrefix
-                            data.StreetName,                                             // Name
-                            null,                                        // NameSuffix
-                            null,                                        // AdditionalNameSuffix
-                            data.StreetNumber,                                        // StreetNumber
-                            null,                                        // Milestone
-                            null                                        // Direction
+                            null,                              // NamePrefix
+                            null,                              // AdditionalNamePrefix
+                            data.StreetName,                   // Name
+                            null,                              // NameSuffix
+                            null,                              // AdditionalNameSuffix
+                            data.StreetNumber,                 // StreetNumber
+                            null,                              // Milestone
+                            null                               // Direction
                         ),
-                        data.Region,                        // AdministrativeAreaLevel1
-                        null,                               // AdministrativeAreaLevel2
-                        null,                               // AdministrativeAreaLevel3
-                        null,                                             // District
-                        null,                                     // CompanyPostalCode
-                        null,                                        // IndustrialZone
-                        null,                                             // Building
-                        null,                                                // Floor
-                        null                                                  // Door
+                        data.Region,                           // AdministrativeAreaLevel1
+                        null,                                  // AdministrativeAreaLevel2
+                        null,                                  // AdministrativeAreaLevel3
+                        null,                                  // District
+                        null,                                  // CompanyPostalCode
+                        null,                                  // IndustrialZone
+                        null,                                  // Building
+                        null,                                  // Floor
+                        null                                   // Door
                     ),
-                    null,                                     // AlternativePostalAddress
+                    null,                                      // AlternativePostalAddress
                     Enumerable.Empty<string>()
                 )
             )

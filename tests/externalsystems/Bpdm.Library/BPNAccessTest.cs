@@ -18,10 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Net;
-using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
@@ -61,7 +59,143 @@ public class BPNAccessTest
         //Arrange
         HttpRequestMessage? request = null;
 
-        const string json = "{ \"legalName\": \"string\", \"bpnl\": \"string\", \"identifiers\": [ { \"value\": \"string\", \"type\": { \"technicalKey\": \"string\", \"name\": \"string\" }, \"issuingBody\": \"string\" } ], \"legalShortName\": \"string\", \"legalForm\": { \"technicalKey\": \"string\", \"name\": \"string\", \"abbreviation\": \"string\" }, \"states\": [ { \"officialDenotation\": \"string\", \"validFrom\": \"2023-07-24T11:23:20.887Z\", \"validTo\": \"2023-07-24T11:23:20.887Z\", \"type\": { \"technicalKey\": \"ACTIVE\", \"name\": \"string\" } } ], \"classifications\": [ { \"value\": \"string\", \"code\": \"string\", \"type\": { \"technicalKey\": \"NACE\", \"name\": \"string\" } } ], \"relations\": [ { \"type\": { \"technicalKey\": \"CX_LEGAL_SUCCESSOR_OF\", \"name\": \"string\" }, \"startBpn\": \"string\", \"endBpn\": \"string\", \"validFrom\": \"2023-07-24T11:23:20.887Z\", \"validTo\": \"2023-07-24T11:23:20.887Z\" } ], \"currentness\": \"2023-07-24T11:23:20.887Z\", \"createdAt\": \"2023-07-24T11:23:20.887Z\", \"updatedAt\": \"2023-07-24T11:23:20.887Z\", \"legalAddress\": { \"bpna\": \"string\", \"name\": \"string\", \"states\": [ { \"description\": \"string\", \"validFrom\": \"2023-07-24T11:23:20.887Z\", \"validTo\": \"2023-07-24T11:23:20.887Z\", \"type\": { \"technicalKey\": \"ACTIVE\", \"name\": \"string\" } } ], \"identifiers\": [ { \"value\": \"string\", \"type\": { \"technicalKey\": \"string\", \"name\": \"string\" } } ], \"physicalPostalAddress\": { \"geographicCoordinates\": { \"longitude\": 0, \"latitude\": 0, \"altitude\": 0 }, \"country\": { \"technicalKey\": \"UNDEFINED\", \"name\": \"string\" }, \"postalCode\": \"string\", \"city\": \"string\", \"street\": { \"name\": \"string\", \"houseNumber\": \"string\", \"milestone\": \"string\", \"direction\": \"string\" }, \"administrativeAreaLevel1\": { \"name\": \"string\", \"regionCode\": \"string\" }, \"administrativeAreaLevel2\": \"string\", \"administrativeAreaLevel3\": \"string\", \"district\": \"string\", \"companyPostalCode\": \"string\", \"industrialZone\": \"string\", \"building\": \"string\", \"floor\": \"string\", \"door\": \"string\" }, \"alternativePostalAddress\": { \"geographicCoordinates\": { \"longitude\": 0, \"latitude\": 0, \"altitude\": 0 }, \"country\": { \"technicalKey\": \"UNDEFINED\", \"name\": \"string\" }, \"postalCode\": \"string\", \"city\": \"string\", \"administrativeAreaLevel1\": { \"name\": \"string\", \"regionCode\": \"string\" }, \"deliveryServiceNumber\": \"string\", \"type\": \"PO_BOX\", \"deliveryServiceQualifier\": \"string\" }, \"bpnLegalEntity\": \"string\", \"bpnSite\": \"string\", \"createdAt\": \"2023-07-24T11:23:20.887Z\", \"updatedAt\": \"2023-07-24T11:23:20.887Z\", \"isLegalAddress\": true, \"isMainAddress\": true }}";
+        const string json = @"{
+          ""legalName"": ""string"",
+          ""bpnl"": ""string"",
+          ""identifiers"": [
+            {
+              ""value"": ""string"",
+              ""type"": {
+                ""technicalKey"": ""string"",
+                ""name"": ""string""
+              },
+              ""issuingBody"": ""string""
+            }
+          ],
+          ""legalShortName"": ""string"",
+          ""legalForm"": {
+            ""technicalKey"": ""string"",
+            ""name"": ""string"",
+            ""abbreviation"": ""string""
+          },
+          ""states"": [
+            {
+              ""officialDenotation"": ""string"",
+              ""validFrom"": ""2023-07-24T11:23:20.887Z"",
+              ""validTo"": ""2023-07-24T11:23:20.887Z"",
+              ""type"": {
+                ""technicalKey"": ""ACTIVE"",
+                ""name"": ""string""
+              }
+            }
+          ],
+          ""classifications"": [
+            {
+              ""value"": ""string"",
+              ""code"": ""string"",
+              ""type"": {
+                ""technicalKey"": ""NACE"",
+                ""name"": ""string""
+              }
+            }
+          ],
+          ""relations"": [
+            {
+              ""type"": {
+                ""technicalKey"": ""CX_LEGAL_SUCCESSOR_OF"",
+                ""name"": ""string""
+              },
+              ""startBpn"": ""string"",
+              ""endBpn"": ""string"",
+              ""validFrom"": ""2023-07-24T11:23:20.887Z"",
+              ""validTo"": ""2023-07-24T11:23:20.887Z""
+            }
+          ],
+          ""currentness"": ""2023-07-24T11:23:20.887Z"",
+          ""createdAt"": ""2023-07-24T11:23:20.887Z"",
+          ""updatedAt"": ""2023-07-24T11:23:20.887Z"",
+          ""legalAddress"": {
+            ""bpna"": ""string"",
+            ""name"": ""string"",
+            ""states"": [
+              {
+                ""description"": ""string"",
+                ""validFrom"": ""2023-07-24T11:23:20.887Z"",
+                ""validTo"": ""2023-07-24T11:23:20.887Z"",
+                ""type"": {
+                  ""technicalKey"": ""ACTIVE"",
+                  ""name"": ""string""
+                }
+              }
+            ],
+            ""identifiers"": [
+              {
+                ""value"": ""string"",
+                ""type"": {
+                  ""technicalKey"": ""string"",
+                  ""name"": ""string""
+                }
+              }
+            ],
+            ""physicalPostalAddress"": {
+              ""geographicCoordinates"": {
+                ""longitude"": 0,
+                ""latitude"": 0,
+                ""altitude"": 0
+              },
+              ""country"": {
+                ""technicalKey"": ""UNDEFINED"",
+                ""name"": ""string""
+              },
+              ""postalCode"": ""string"",
+              ""city"": ""string"",
+              ""street"": {
+                ""name"": ""string"",
+                ""houseNumber"": ""string"",
+                ""milestone"": ""string"",
+                ""direction"": ""string""
+              },
+              ""administrativeAreaLevel1"": {
+                ""name"": ""string"",
+                ""regionCode"": ""string""
+              },
+              ""administrativeAreaLevel2"": ""string"",
+              ""administrativeAreaLevel3"": ""string"",
+              ""district"": ""string"",
+              ""companyPostalCode"": ""string"",
+              ""industrialZone"": ""string"",
+              ""building"": ""string"",
+              ""floor"": ""string"",
+              ""door"": ""string""
+            },
+            ""alternativePostalAddress"": {
+              ""geographicCoordinates"": {
+                ""longitude"": 0,
+                ""latitude"": 0,
+                ""altitude"": 0
+              },
+              ""country"": {
+                ""technicalKey"": ""UNDEFINED"",
+                ""name"": ""string""
+              },
+              ""postalCode"": ""string"",
+              ""city"": ""string"",
+              ""administrativeAreaLevel1"": {
+                ""name"": ""string"",
+                ""regionCode"": ""string""
+              },
+              ""deliveryServiceNumber"": ""string"",
+              ""type"": ""PO_BOX"",
+              ""deliveryServiceQualifier"": ""string""
+            },
+            ""bpnLegalEntity"": ""string"",
+            ""bpnSite"": ""string"",
+            ""createdAt"": ""2023-07-24T11:23:20.887Z"",
+            ""updatedAt"": ""2023-07-24T11:23:20.887Z"",
+            ""isLegalAddress"": true,
+            ""isMainAddress"": true
+          }
+        }";
 
         ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {

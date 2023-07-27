@@ -19,11 +19,8 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
