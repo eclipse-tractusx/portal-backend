@@ -29,7 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230727174032_AddLastEditorConstraints")]
+    [Migration("20230727191716_AddLastEditorConstraints")]
     partial class AddLastEditorConstraints
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -6225,10 +6225,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Notification", b =>
                 {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "Creator")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "Creator")
                         .WithMany("CreatedNotifications")
                         .HasForeignKey("CreatorUserId")
-                        .HasConstraintName("fk_notifications_company_users_creator_id");
+                        .HasConstraintName("fk_notifications_identities_creator_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
                         .WithMany("Notifications")
@@ -6884,8 +6884,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("Consents");
 
-                    b.Navigation("CreatedNotifications");
-
                     b.Navigation("Documents");
 
                     b.Navigation("Invitations");
@@ -6968,6 +6966,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyServiceAccount");
 
                     b.Navigation("CompanyUser");
+
+                    b.Navigation("CreatedNotifications");
 
                     b.Navigation("IdentityAssignedRoles");
                 });
