@@ -18,6 +18,7 @@ public class Identity : IBaseEntity, IAuditableV1
         IdentityTypeId = identityTypeId;
 
         IdentityAssignedRoles = new HashSet<IdentityAssignedRole>();
+        CreatedNotifications = new HashSet<Notification>();
     }
 
     public Guid Id { get; set; }
@@ -48,5 +49,6 @@ public class Identity : IBaseEntity, IAuditableV1
 
     public virtual IdentityType? IdentityType { get; set; }
 
+    public virtual ICollection<Notification> CreatedNotifications { get; private set; }
     public virtual ICollection<IdentityAssignedRole> IdentityAssignedRoles { get; private set; }
 }
