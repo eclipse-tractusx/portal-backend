@@ -23,17 +23,16 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using PortalBackend.PortalEntities.Identity;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers;
@@ -216,14 +215,14 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = _fixture.Create<Guid>();
         var data = _fixture.Create<ServiceUpdateRequestData>();
-        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)))
+        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._, _identity.CompanyId))
             .Returns(Task.CompletedTask);
 
         //Act
         var result = await this._controller.UpdateService(serviceId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

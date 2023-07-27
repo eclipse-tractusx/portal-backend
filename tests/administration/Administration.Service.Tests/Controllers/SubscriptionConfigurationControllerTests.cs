@@ -23,8 +23,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using PortalBackend.PortalEntities.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -114,7 +114,7 @@ public class SubscriptionConfigurationControllerTests
         var result = await this._controller.SetProviderCompanyDetail(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, new(_identity.UserId, _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

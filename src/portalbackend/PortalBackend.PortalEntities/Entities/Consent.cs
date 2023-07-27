@@ -64,7 +64,7 @@ public class Consent : IAuditableV1, IBaseEntity
     public Guid CompanyUserId { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }

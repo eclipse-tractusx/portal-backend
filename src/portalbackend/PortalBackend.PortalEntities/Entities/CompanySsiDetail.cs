@@ -52,9 +52,10 @@ public class CompanySsiDetail : IAuditableV1, IBaseEntity
     public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
     public DateTimeOffset? DateLastChanged { get; set; }
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     // Navigation Properties
+    public virtual Identity? LastEditor { get; private set; }
     public virtual Company? Company { get; set; }
     public virtual VerifiedCredentialType? VerifiedCredentialType { get; set; }
     public virtual CompanySsiDetailStatus? CompanySsiDetailStatus { get; set; }

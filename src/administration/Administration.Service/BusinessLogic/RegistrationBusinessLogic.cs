@@ -403,7 +403,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task DeclineRegistrationVerification(Guid applicationId, string comment, Guid userId)
+    public async Task DeclineRegistrationVerification(Guid applicationId, string comment)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (result == default)

@@ -21,8 +21,7 @@
 using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identity;
-using PortalBackend.PortalEntities.Identity;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 

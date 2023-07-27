@@ -19,16 +19,15 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
-using PortalBackend.PortalEntities.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -190,7 +189,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns((Guid.Empty, null!));
 
         // Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
@@ -225,7 +224,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             });
 
         //Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData, _identity.CompanyId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, null)).MustNotHaveHappened();
@@ -245,7 +244,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, (Guid.NewGuid(), Guid.NewGuid())).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, Guid.NewGuid()).ConfigureAwait(false);
 
         //Assert
         await Assert.ThrowsAsync<ConflictException>(Action);
@@ -261,7 +260,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, (_noServiceProviderIdentity.UserId, _noServiceProviderIdentity.CompanyId)).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, _noServiceProviderIdentity.CompanyId).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -283,7 +282,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData(url!, null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, _identity.CompanyId).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);

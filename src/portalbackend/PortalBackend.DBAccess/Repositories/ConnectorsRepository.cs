@@ -137,11 +137,12 @@ public class ConnectorsRepository : IConnectorsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidConnectorId, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, bool? DapsRegistrationSuccessful)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId) =>
+    public Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, bool? DapsRegistrationSuccessful)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId) =>
         _context.Connectors
-            .Where(x => x.Id == connectorId && (x.ProviderId == companyId || x.HostId == companyId))
-            .Select(connector => new ValueTuple<bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId, bool?>(
+            .Where(x => x.Id == connectorId)
+            .Select(connector => new ValueTuple<bool, bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId, bool?>(
                 true,
+                connector.ProviderId == companyId || connector.HostId == companyId,
                 connector.ClientDetails == null ? null : connector.ClientDetails!.ClientId,
                 connector.SelfDescriptionDocumentId,
                 connector.SelfDescriptionDocument!.DocumentStatusId,

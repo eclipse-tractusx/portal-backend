@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public interface IServiceAccountBusinessLogic
 {
     Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, Guid companyId);
-    Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, (Guid UserId, Guid CompanyId) identity);
+    Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, Guid companyId);
     Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, Guid companyId);
     Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, Guid companyId);
     Task<ServiceAccountDetails> ExecuteResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId);

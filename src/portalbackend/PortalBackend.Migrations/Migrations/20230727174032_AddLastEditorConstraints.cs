@@ -29,6 +29,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateIndex(
+                name: "ix_user_roles_last_editor_id",
+                schema: "portal",
+                table: "user_roles",
+                column: "last_editor_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_provider_company_details_last_editor_id",
                 schema: "portal",
                 table: "provider_company_details",
@@ -47,6 +53,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "last_editor_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_identity_assigned_roles_last_editor_id",
+                schema: "portal",
+                table: "identity_assigned_roles",
+                column: "last_editor_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_identities_last_editor_id",
                 schema: "portal",
                 table: "identities",
@@ -62,6 +74,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "ix_company_users_last_editor_id",
                 schema: "portal",
                 table: "company_users",
+                column: "last_editor_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_ssi_details_last_editor_id",
+                schema: "portal",
+                table: "company_ssi_details",
+                column: "last_editor_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_assigned_roles_last_editor_id",
+                schema: "portal",
+                table: "company_assigned_roles",
                 column: "last_editor_id");
 
             migrationBuilder.CreateIndex(
@@ -95,6 +119,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalColumn: "id");
 
             migrationBuilder.AddForeignKey(
+                name: "fk_company_assigned_roles_identities_last_editor_id",
+                schema: "portal",
+                table: "company_assigned_roles",
+                column: "last_editor_id",
+                principalSchema: "portal",
+                principalTable: "identities",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_company_ssi_details_identities_last_editor_id",
+                schema: "portal",
+                table: "company_ssi_details",
+                column: "last_editor_id",
+                principalSchema: "portal",
+                principalTable: "identities",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
                 name: "fk_company_users_identities_last_editor_id",
                 schema: "portal",
                 table: "company_users",
@@ -116,6 +158,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "fk_identities_identities_last_editor_id",
                 schema: "portal",
                 table: "identities",
+                column: "last_editor_id",
+                principalSchema: "portal",
+                principalTable: "identities",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_identity_assigned_roles_identities_last_editor_id",
+                schema: "portal",
+                table: "identity_assigned_roles",
                 column: "last_editor_id",
                 principalSchema: "portal",
                 principalTable: "identities",
@@ -147,6 +198,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalSchema: "portal",
                 principalTable: "identities",
                 principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_user_roles_identities_last_editor_id",
+                schema: "portal",
+                table: "user_roles",
+                column: "last_editor_id",
+                principalSchema: "portal",
+                principalTable: "identities",
+                principalColumn: "id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -160,6 +220,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "fk_company_applications_identities_last_editor_id",
                 schema: "portal",
                 table: "company_applications");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_company_assigned_roles_identities_last_editor_id",
+                schema: "portal",
+                table: "company_assigned_roles");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_company_ssi_details_identities_last_editor_id",
+                schema: "portal",
+                table: "company_ssi_details");
 
             migrationBuilder.DropForeignKey(
                 name: "fk_company_users_identities_last_editor_id",
@@ -177,6 +247,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "identities");
 
             migrationBuilder.DropForeignKey(
+                name: "fk_identity_assigned_roles_identities_last_editor_id",
+                schema: "portal",
+                table: "identity_assigned_roles");
+
+            migrationBuilder.DropForeignKey(
                 name: "fk_offer_subscriptions_identities_last_editor_id",
                 schema: "portal",
                 table: "offer_subscriptions");
@@ -190,6 +265,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "fk_provider_company_details_identities_last_editor_id",
                 schema: "portal",
                 table: "provider_company_details");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_user_roles_identities_last_editor_id",
+                schema: "portal",
+                table: "user_roles");
+
+            migrationBuilder.DropIndex(
+                name: "ix_user_roles_last_editor_id",
+                schema: "portal",
+                table: "user_roles");
 
             migrationBuilder.DropIndex(
                 name: "ix_provider_company_details_last_editor_id",
@@ -207,6 +292,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "offer_subscriptions");
 
             migrationBuilder.DropIndex(
+                name: "ix_identity_assigned_roles_last_editor_id",
+                schema: "portal",
+                table: "identity_assigned_roles");
+
+            migrationBuilder.DropIndex(
                 name: "ix_identities_last_editor_id",
                 schema: "portal",
                 table: "identities");
@@ -220,6 +310,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "ix_company_users_last_editor_id",
                 schema: "portal",
                 table: "company_users");
+
+            migrationBuilder.DropIndex(
+                name: "ix_company_ssi_details_last_editor_id",
+                schema: "portal",
+                table: "company_ssi_details");
+
+            migrationBuilder.DropIndex(
+                name: "ix_company_assigned_roles_last_editor_id",
+                schema: "portal",
+                table: "company_assigned_roles");
 
             migrationBuilder.DropIndex(
                 name: "ix_company_applications_last_editor_id",

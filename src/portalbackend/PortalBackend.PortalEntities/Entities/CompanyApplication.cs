@@ -53,7 +53,8 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     public Guid? ChecklistProcessId { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
+
     // Navigation properties
     public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
     public virtual Company? Company { get; set; }

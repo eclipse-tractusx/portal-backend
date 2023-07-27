@@ -59,7 +59,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     }
 
     /// <inheritdoc />
-    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, (Guid UserId, Guid CompanyId) identity)
+    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, Guid companyId)
     {
         data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
         data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
@@ -70,29 +70,29 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                 "the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
-        return SetOfferProviderCompanyDetailsInternalAsync(data, identity);
+        return SetOfferProviderCompanyDetailsInternalAsync(data, companyId);
     }
 
-    private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, (Guid UserId, Guid CompanyId) identity)
+    private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, Guid companyId)
     {
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var providerDetailData = await companyRepository
-            .GetProviderCompanyDetailsExistsForUser(identity.CompanyId)
+            .GetProviderCompanyDetailsExistsForUser(companyId)
             .ConfigureAwait(false);
         if (providerDetailData == default)
         {
             var result = await companyRepository
-                .IsValidCompanyRoleOwner(identity.CompanyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
+                .IsValidCompanyRoleOwner(companyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
                 .ConfigureAwait(false);
             if (!result.IsValidCompanyId)
             {
-                throw new ConflictException($"Company {identity.CompanyId} not found");
+                throw new ConflictException($"Company {companyId} not found");
             }
             if (!result.IsCompanyRoleOwner)
             {
-                throw new ForbiddenException($"Company {identity.CompanyId} is not an app- or service-provider");
+                throw new ForbiddenException($"Company {companyId} is not an app- or service-provider");
             }
-            companyRepository.CreateProviderCompanyDetail(identity.CompanyId, data.Url, providerDetails =>
+            companyRepository.CreateProviderCompanyDetail(companyId, data.Url, providerDetails =>
             {
                 if (data.CallbackUrl != null)
                 {

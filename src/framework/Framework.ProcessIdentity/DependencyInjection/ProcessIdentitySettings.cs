@@ -29,11 +29,11 @@ public class ProcessIdentitySettings
     public string UserEntityId { get; set; } = null!;
 
     [Required]
-    public Guid ProcessUserId { get; set; } = default;
+    public Guid ProcessUserId { get; set; } = Guid.Empty;
 
     [Required]
     public IdentityTypeId IdentityTypeId { get; set; } = default;
 
     [Required]
-    public Guid ProcessUserCompanyId { get; set; } = default;
+    public Guid ProcessUserCompanyId { get; set; } = Guid.Empty;
 }

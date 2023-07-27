@@ -68,7 +68,9 @@ public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
     public string? AppSubscriptionUrl { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
+
+    // navigational properties
 
     /// <summary>
     /// Subscribing app instance.
@@ -79,5 +81,5 @@ public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
     /// Subscription of an offer
     /// </summary>
     public virtual OfferSubscription? OfferSubscription { get; private set; }
-    public virtual Identity? LastEditor { get; set; }
+    public virtual Identity? LastEditor { get; private set; }
 }

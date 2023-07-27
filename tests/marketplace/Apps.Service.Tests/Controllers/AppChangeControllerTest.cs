@@ -25,12 +25,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using PortalBackend.PortalEntities.Identity;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -145,7 +144,7 @@ public class AppChangeControllerTest
         var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId))).MustHaveHappened();
+        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>();
     }
 }

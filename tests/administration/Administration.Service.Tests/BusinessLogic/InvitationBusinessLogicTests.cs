@@ -20,12 +20,10 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -33,7 +31,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using PortalBackend.PortalEntities.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
 
@@ -52,7 +49,6 @@ public class InvitationBusinessLogicTests
     private readonly string _companyName;
     private readonly string _idpName;
     private readonly Guid _companyId;
-    private readonly IdentityData _identity;
     private readonly Guid _identityProviderId;
     private readonly Guid _applicationId;
     private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
@@ -80,7 +76,6 @@ public class InvitationBusinessLogicTests
         _companyId = _fixture.Create<Guid>();
         _identityProviderId = _fixture.Create<Guid>();
         _applicationId = _fixture.Create<Guid>();
-        _identity = new(Guid.NewGuid().ToString(), Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
 
         _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 
@@ -108,7 +103,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        await sut.ExecuteInvitation(invitationData, _identity.UserId).ConfigureAwait(false);
+        await sut.ExecuteInvitation(invitationData).ConfigureAwait(false);
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
         A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
@@ -121,7 +116,6 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
             A<CompanyNameIdpAliasData>.That.Matches(d => d.CompanyId == _companyId),
             A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,
-            A<Guid>._,
             A<CancellationToken>._)).MustHaveHappened();
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == invitationData.firstName))).MustHaveHappened();
@@ -151,7 +145,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData, _identity.UserId);
+        Task Act() => sut.ExecuteInvitation(invitationData);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be("email must not be empty (Parameter 'email')");
@@ -180,7 +174,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData, _identity.UserId);
+        Task Act() => sut.ExecuteInvitation(invitationData);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
@@ -215,7 +209,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData, _identity.UserId);
+        Task Act() => sut.ExecuteInvitation(invitationData);
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
@@ -246,7 +240,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData, _identity.UserId);
+        Task Act() => sut.ExecuteInvitation(invitationData);
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
@@ -285,8 +279,8 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).Returns(_idpName);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Guid>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, Guid _, CancellationToken _) =>
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken _) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(

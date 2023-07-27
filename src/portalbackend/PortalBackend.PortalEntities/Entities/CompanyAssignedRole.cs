@@ -39,9 +39,10 @@ public class CompanyAssignedRole : IAuditableV1
     public CompanyRoleId CompanyRoleId { get; private set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
+    public virtual Identity? LastEditor { get; private set; }
     public virtual Company? Company { get; private set; }
     public virtual CompanyRole? CompanyRole { get; private set; }
 }

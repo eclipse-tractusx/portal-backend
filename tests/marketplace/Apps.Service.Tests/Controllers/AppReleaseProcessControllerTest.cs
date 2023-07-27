@@ -25,14 +25,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using PortalBackend.PortalEntities.Identity;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -270,7 +269,7 @@ public class AppReleaseProcessControllerTest
             "test@gmail.com",
             "9456321678"
             );
-        A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)))
+        A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, _identity.CompanyId))
             .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
@@ -278,7 +277,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.UpdateAppReleaseAsync(appId, data, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateAppReleaseAsync(appId, data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

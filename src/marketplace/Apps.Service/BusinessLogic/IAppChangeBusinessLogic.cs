@@ -74,6 +74,6 @@ public interface IAppChangeBusinessLogic
     /// <param name="offerId">Id of the offer</param>
     /// <param name="subscriptionId">If of the subscription</param>
     /// <param name="data">the data to update the url</param>
-    /// <param name="identity"></param>
-    Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, (Guid UserId, Guid CompanyId) identity);
+    /// <param name="companyId"></param>
+    Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, Guid companyId);
 }

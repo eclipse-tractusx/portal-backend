@@ -313,12 +313,17 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     public async Task DeleteConnectorAsync(Guid connectorId, Guid companyId, CancellationToken cancellationToken)
     {
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
-        var (isValidConnectorId, dapsClientId, selfDescriptionDocumentId,
+        var (isValidConnectorId, isProvidingOrHostCompany, dapsClientId, selfDescriptionDocumentId,
             documentStatus, connectorStatus, dapsRegistrationSuccess) = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false);
 
         if (!isValidConnectorId)
         {
             throw new NotFoundException($"Connector {connectorId} does not exist");
+        }
+
+        if (!isProvidingOrHostCompany)
+        {
+            throw new ForbiddenException($"company {companyId} is neither provider nor host-company of connector {connectorId}");
         }
 
         switch ((dapsRegistrationSuccess ?? false, connectorStatus))

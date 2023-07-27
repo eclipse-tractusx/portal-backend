@@ -166,7 +166,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> DeclineApplication([FromRoute] Guid applicationId, [FromBody] RegistrationDeclineData data)
     {
-        await this.WithUserId(userId => _logic.DeclineRegistrationVerification(applicationId, data.Comment, userId)).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(applicationId, data.Comment).ConfigureAwait(false);
         return NoContent();
     }
 

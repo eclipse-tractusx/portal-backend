@@ -53,13 +53,12 @@ public class UserProvisioningService : IUserProvisioningService
     public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(
         CompanyNameIdpAliasData companyNameIdpAliasData,
         IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos,
-        Guid userId,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var (companyId, companyName, businessPartnerNumber, creatorId, alias, isSharedIdp) = companyNameIdpAliasData;
+        var (companyId, companyName, businessPartnerNumber, alias, isSharedIdp) = companyNameIdpAliasData;
 
         var passwordProvider = new OptionalPasswordProvider(isSharedIdp);
 
@@ -72,7 +71,7 @@ public class UserProvisioningService : IUserProvisioningService
 
             try
             {
-                var (identity, companyUserId) = await GetOrCreateCompanyUser(userRepository, alias, user, companyId, creatorId, businessPartnerNumber);
+                var (identity, companyUserId) = await GetOrCreateCompanyUser(userRepository, alias, user, companyId, businessPartnerNumber);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -128,7 +127,6 @@ public class UserProvisioningService : IUserProvisioningService
         string alias,
         UserCreationRoleDataIdpInfo user,
         Guid companyId,
-        Guid creatorId,
         string? businessPartnerNumber)
     {
         var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
@@ -141,7 +139,7 @@ public class UserProvisioningService : IUserProvisioningService
         }
 
         identity = userRepository.CreateIdentity(companyId, UserStatusId.ACTIVE);
-        companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email, creatorId).Id;
+        companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email).Id;
         if (businessPartnerNumber != null)
         {
             businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
@@ -194,7 +192,7 @@ public class UserProvisioningService : IUserProvisioningService
 
         var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, companyUser.CompanyUserId);
 
-        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, identityProvider.IdpAlias, identityProvider.IsSharedIdp), createdByName);
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, identityProvider.IdpAlias, identityProvider.IsSharedIdp), createdByName);
     }
 
     public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(Guid companyUserId, Guid? applicationId = null)
@@ -222,7 +220,7 @@ public class UserProvisioningService : IUserProvisioningService
 
         var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, companyUser.CompanyUserId);
 
-        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, idpAliase.First(), true), createdByName);
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAliase.First(), true), createdByName);
     }
 
     private static string CreateNameString(string? firstName, string? lastName, string? email, Guid companyUserId)

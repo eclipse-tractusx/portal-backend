@@ -24,7 +24,6 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
@@ -36,8 +35,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using PortalBackend.PortalEntities.Identity;
 using System.Collections.Immutable;
 using Xunit;
 
@@ -368,7 +367,7 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Create<AppRequestModel>();
 
         // Act
-        async Task Act() => await _sut.UpdateAppReleaseAsync(_notExistingAppId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_notExistingAppId, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -383,7 +382,7 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Create<AppRequestModel>();
 
         // Act
-        async Task Act() => await _sut.UpdateAppReleaseAsync(_activeAppId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_activeAppId, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -398,7 +397,7 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Create<AppRequestModel>();
 
         // Act
-        async Task Act() => await _sut.UpdateAppReleaseAsync(_differentCompanyAppId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_differentCompanyAppId, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -415,7 +414,7 @@ public class AppReleaseBusinessLogicTest
             .Create();
 
         // Act
-        async Task Act() => await _sut.UpdateAppReleaseAsync(_existingAppId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_existingAppId, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -443,7 +442,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         // Act
-        await _sut.UpdateAppReleaseAsync(_existingAppId, data, new ValueTuple<Guid, Guid>(_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
+        await _sut.UpdateAppReleaseAsync(_existingAppId, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))

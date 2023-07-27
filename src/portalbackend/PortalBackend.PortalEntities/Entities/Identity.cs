@@ -38,7 +38,7 @@ public class Identity : IBaseEntity, IAuditableV1
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; set; }

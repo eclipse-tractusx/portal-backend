@@ -51,7 +51,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// <param name="offerSubscriptionStatusId">app subscription status.</param>
     /// <param name="requesterId">Id of the requester</param>
     /// <param name="lastEditorId">Id of the editor</param>
-    public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
+    public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId)
         : this()
     {
         Id = id;
@@ -59,7 +59,6 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
         CompanyId = companyId;
         OfferSubscriptionStatusId = offerSubscriptionStatusId;
         RequesterId = requesterId;
-        LastEditorId = lastEditorId;
     }
 
     /// <inheritdoc />
@@ -98,7 +97,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     public Guid RequesterId { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     public Guid? ProcessId { get; set; }
 

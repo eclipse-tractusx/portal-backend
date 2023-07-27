@@ -473,7 +473,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             ""
         )}.ToAsyncEnumerable();
 
-        var (newCompanyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps, identity.UserId).SingleAsync().ConfigureAwait(false);
+        var (newCompanyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
 
         if (error != null)
         {

@@ -90,13 +90,11 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
                         lines,
-                        identity.UserId,
                         cancellationToken)
                 : CreateOwnCompanyIdpUsersWithEmailAsync(
                         nameCreatedBy,
                         companyNameIdpAliasData,
                         lines,
-                        identity.UserId,
                         cancellationToken))
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
@@ -104,7 +102,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
     }
 
-    private async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, Guid userId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (companyNameIdpAliasData.IsSharedIdp)
         {
@@ -123,7 +121,6 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                             userCreationInfo = info;
                             return info;
                         }),
-                    userId,
                     cancellationToken)
                 .WithCancellation(cancellationToken)
                 .ConfigureAwait(false))
@@ -221,7 +218,6 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
                         lines,
-                        identity.UserId,
                         cancellationToken)
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);

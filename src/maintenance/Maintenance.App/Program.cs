@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using PortalBackend.PortalEntities.Identity;
 using Serilog;
 
 LoggingExtensions.EnsureInitialized();

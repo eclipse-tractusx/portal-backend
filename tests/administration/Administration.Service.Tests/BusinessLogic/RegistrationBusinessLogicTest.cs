@@ -455,7 +455,7 @@ public class RegistrationBusinessLogicTest
         SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId);
 
         // Act
-        await _logic.DeclineRegistrationVerification(IdWithBpn, comment, Guid.NewGuid()).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(IdWithBpn, comment).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

@@ -121,9 +121,9 @@ public interface IAppReleaseBusinessLogic
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="appRequestModel"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns>Guid of the created app.</returns>
-    Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, (Guid UserId, Guid CompanyId) identity);
+    Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, Guid companyId);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.

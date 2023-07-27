@@ -163,11 +163,11 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _offerService.CreateServiceOfferingAsync(data, identity, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, (Guid UserId, Guid CompanyId) identity)
+    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, Guid companyId)
     {
         var serviceData = await _portalRepositories
             .GetInstance<IOfferRepository>()
-            .GetServiceUpdateData(serviceId, data.ServiceTypeIds, identity.CompanyId)
+            .GetServiceUpdateData(serviceId, data.ServiceTypeIds, companyId)
             .ConfigureAwait(false);
         if (serviceData is null)
         {
@@ -181,12 +181,12 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
         if (!serviceData.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {identity.CompanyId} is not the service provider.");
+            throw new ForbiddenException($"Company {companyId} is not the service provider.");
         }
 
         if (data.SalesManager.HasValue)
         {
-            await _offerService.ValidateSalesManager(data.SalesManager.Value, identity.CompanyId, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(data.SalesManager.Value, companyId, _settings.SalesManagerRoles).ConfigureAwait(false);
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();

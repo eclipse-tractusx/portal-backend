@@ -287,12 +287,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, (Guid UserId, Guid CompanyId) identity)
+    public async Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, Guid companyId)
     {
         var appData = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetAppUpdateData(
                 appId,
-                identity.CompanyId,
+                companyId,
                 appRequestModel.SupportedLanguageCodes)
             .ConfigureAwait(false);
         if (appData is null)
@@ -307,12 +307,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (!appData.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {identity.CompanyId} is not the app provider.");
+            throw new ForbiddenException($"Company {companyId} is not the app provider.");
         }
 
         if (appRequestModel.SalesManagerId.HasValue)
         {
-            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, identity.CompanyId, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, companyId, _settings.SalesManagerRoles).ConfigureAwait(false);
         }
 
         var newSupportedLanguages = appRequestModel.SupportedLanguageCodes.Except(appData.Languages.Where(x => x.IsMatch).Select(x => x.Shortname));

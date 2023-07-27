@@ -183,7 +183,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
     {
-        await this.WithUserIdAndCompanyId(identity => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 }

@@ -20,17 +20,15 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using PortalBackend.PortalEntities.Identity;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
@@ -185,7 +183,6 @@ public class IdentityProviderBusinessLogicTests
         SetupFakes(users, lines);
 
         var changedEmailResult = (string?)null;
-        var lastEditorId = (Guid?)null;
 
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._))
             .Invokes(x =>
@@ -193,10 +190,9 @@ public class IdentityProviderBusinessLogicTests
                 var companyUserId = x.Arguments.Get<Guid>("companyUserId")!;
                 var setOptionalParameters = x.Arguments.Get<Action<CompanyUser>>("setOptionalParameters");
 
-                var companyUser = new CompanyUser(companyUserId, Guid.Empty);
+                var companyUser = new CompanyUser(companyUserId);
                 setOptionalParameters?.Invoke(companyUser);
                 changedEmailResult = companyUser.Email;
-                lastEditorId = companyUser.LastEditorId;
             }
         );
 

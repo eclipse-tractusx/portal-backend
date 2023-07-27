@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -32,10 +31,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using PortalBackend.PortalEntities.Identity;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -580,7 +579,7 @@ public class ConnectorsBusinessLogicTests
         var connector = new Connector(connectorId, null!, null!, null!);
         var selfDescriptionDocumentId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns((true, "123", selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.ACTIVE, true));
+            .Returns((true, true, "123", selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.ACTIVE, true));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid DocId, Action<Document>? initialize, Action<Document> modify)
@@ -617,7 +616,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var connector = new Connector(connectorId, null!, null!, null!);
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, "12345", null, null, ConnectorStatusId.ACTIVE, true));
+            .Returns((true, true, "12345", null, null, ConnectorStatusId.ACTIVE, true));
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
             .Invokes((Guid _, Action<Connector>? initialize, Action<Connector> setOptionalFields) =>
             {
@@ -641,7 +640,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, null, null, null, ConnectorStatusId.ACTIVE, false));
+            .Returns((true, true, null, null, null, ConnectorStatusId.ACTIVE, false));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
@@ -657,7 +656,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, null, null, null, ConnectorStatusId.ACTIVE, true));
+            .Returns((true, true, null, null, null, ConnectorStatusId.ACTIVE, true));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
@@ -673,7 +672,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns(((bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId, bool))default);
+            .Returns(((bool, bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId, bool))default);
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
@@ -681,6 +680,22 @@ public class ConnectorsBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Connector {connectorId} does not exist");
+    }
+
+    [Fact]
+    public async Task DeleteConnectorAsync_ThrowsForbiddenException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
+            .Returns((true, false, null, null, null, default, true));
+
+        // Act
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"company {_identity.CompanyId} is neither provider nor host-company of connector {connectorId}");
     }
 
     #endregion
