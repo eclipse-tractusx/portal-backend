@@ -74,11 +74,11 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("business")]
     [Authorize(Roles = "view_apps")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [ProducesResponseType(typeof(IAsyncEnumerable<BusinessAppData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppsForCurrentUserAsync() =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetAllUserUserBusinessAppsAsync(companyId));
+        this.WithUserId(userId => _appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
 
     /// <summary>
     /// Retrieves app details for an app referenced by id.

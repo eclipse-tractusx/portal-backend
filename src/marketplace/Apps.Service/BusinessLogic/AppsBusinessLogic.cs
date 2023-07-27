@@ -85,9 +85,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.UseCaseNames));
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(Guid companyId) =>
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(Guid userId) =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetAllBusinessAppDataForUserIdAsync(companyId)
+            .GetAllBusinessAppDataForUserIdAsync(userId)
             .Select(x =>
                 new BusinessAppData(
                     x.OfferId,
