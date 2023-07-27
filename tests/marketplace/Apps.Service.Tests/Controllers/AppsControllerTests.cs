@@ -85,7 +85,7 @@ public class AppsControllerTests
         var result = await this._controller.GetAllBusinessAppsForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllUserUserBusinessAppsAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllUserUserBusinessAppsAsync(_identity.UserId)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
