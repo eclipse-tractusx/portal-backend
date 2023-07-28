@@ -69,7 +69,7 @@ public record AppProviderSubscriptionDetailData(
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
     string? TenantUrl,
-    Guid? AppInstanceId
+    string AppInstanceId
 );
 
 /// <summary>
