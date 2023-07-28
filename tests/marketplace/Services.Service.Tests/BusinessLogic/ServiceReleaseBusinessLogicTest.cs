@@ -314,12 +314,13 @@ public class ServiceReleaseBusinessLogicTest
     {
         var serviceId = Guid.NewGuid();
         var iamUserId = Guid.NewGuid().ToString();
+        var identitytestData = (_identity.UserId, _identity.CompanyId);
         var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
 
-        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, data, _identity.CompanyId, OfferTypeId.SERVICE))
+        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, data, identitytestData, OfferTypeId.SERVICE))
             .ReturnsLazily(() => new[] { new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE) });
 
-        var result = await _sut.SubmitOfferConsentAsync(serviceId, data, _identity.CompanyId).ConfigureAwait(false);
+        var result = await _sut.SubmitOfferConsentAsync(identitytestData, serviceId, data).ConfigureAwait(false);
 
         result.Should().ContainSingle().Which.ConsentStatus.Should().Be(ConsentStatusId.ACTIVE);
     }
@@ -328,7 +329,8 @@ public class ServiceReleaseBusinessLogicTest
     public async Task SubmitOfferConsentAsync_WithEmptyGuid_ThrowsControllerArgumentException()
     {
         var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
-        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data, _fixture.Create<Guid>()).ConfigureAwait(false);
+        var identitytestData = (_identity.UserId, _identity.CompanyId);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(identitytestData, Guid.Empty, data).ConfigureAwait(false);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("ServiceId must not be empty");

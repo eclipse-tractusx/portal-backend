@@ -91,10 +91,10 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerId"></param>
     /// <param name="offerAgreementConsent"></param>
-    /// <param name="companyId"></param>
+    /// <param name="identity"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, Guid companyId, OfferTypeId offerTypeId);
+    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Creates a new service offering

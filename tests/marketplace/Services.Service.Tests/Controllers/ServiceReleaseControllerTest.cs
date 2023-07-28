@@ -145,16 +145,17 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
+        var identitytestData = (_identity.UserId, _identity.CompanyId);
         var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
         var offerAgreementConsentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, A<OfferAgreementConsent>._, A<Guid>._))
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(identitytestData, serviceId, A<OfferAgreementConsent>._))
             .ReturnsLazily(() => Enumerable.Repeat(consentStatusData, 1));
 
         //Act
         var result = await this._controller.SubmitOfferConsentToAgreementsAsync(serviceId, offerAgreementConsentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, offerAgreementConsentData, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(identitytestData, serviceId, offerAgreementConsentData)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(1);
     }
 

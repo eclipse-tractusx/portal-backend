@@ -155,7 +155,8 @@ public class AppReleaseProcessControllerTest
         var appId = Guid.NewGuid();
         var data = _fixture.Create<OfferAgreementConsent>();
         var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._, A<Guid>._))
+        var identitydatas = (_identity.UserId, _identity.CompanyId);
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(identitydatas, A<Guid>._, A<OfferAgreementConsent>._))
             .ReturnsLazily(() => Enumerable.Repeat(consentStatusData, 1));
 
         //Act
@@ -163,7 +164,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         result.Should().HaveCount(1);
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(appId, data, _identity.CompanyId))
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(identitydatas, appId, data))
             .MustHaveHappenedOnceExactly();
     }
 

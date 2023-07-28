@@ -1322,12 +1322,13 @@ public class OfferServiceTests
         //Arrange
         var offerId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
+        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns(((OfferAgreementConsentUpdate, bool))default);
 
         // Act
-        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, identitytestdata, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1342,12 +1343,13 @@ public class OfferServiceTests
         //Arrange
         var offerId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
+        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
-            .Returns((new OfferAgreementConsentUpdate(_companyUser.Id, Enumerable.Empty<AppAgreementConsentStatus>(), Enumerable.Empty<Guid>()), false));
+            .Returns((new OfferAgreementConsentUpdate(Enumerable.Empty<AppAgreementConsentStatus>(), Enumerable.Empty<Guid>()), false));
 
         // Act
-        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, identitytestdata, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1364,9 +1366,9 @@ public class OfferServiceTests
         var agreementId = Guid.NewGuid();
         var additionalAgreementId = Guid.NewGuid();
         var consentId = Guid.NewGuid();
+        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE), new AgreementConsentStatus(additionalAgreementId, ConsentStatusId.ACTIVE) });
         var offerAgreementConsent = new OfferAgreementConsentUpdate(
-            _companyUser.Id,
             new[]
             {
                 new AppAgreementConsentStatus(agreementId, consentId, ConsentStatusId.INACTIVE)
@@ -1379,7 +1381,7 @@ public class OfferServiceTests
             .Returns((offerAgreementConsent, true));
 
         // Act
-        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, identitytestdata, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -1400,9 +1402,9 @@ public class OfferServiceTests
         var consentId = Guid.NewGuid();
         var newCreatedConsentId = Guid.NewGuid();
         var utcNow = DateTimeOffset.UtcNow;
+        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE), new AgreementConsentStatus(additionalAgreementId, ConsentStatusId.ACTIVE) });
         var offerAgreementConsent = new OfferAgreementConsentUpdate(
-            _companyUser.Id,
             new[]
             {
                 new AppAgreementConsentStatus(agreementId, consentId, ConsentStatusId.INACTIVE)
@@ -1414,7 +1416,7 @@ public class OfferServiceTests
             });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns((offerAgreementConsent, true));
-        A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._, A<IEnumerable<AgreementConsentStatus>>._, A<Guid>._, A<Guid>._, A<Guid>._, A<DateTimeOffset>._))
+        A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._, A<IEnumerable<AgreementConsentStatus>>._, A<Guid>._, _identity.CompanyId, _identity.UserId, A<DateTimeOffset>._))
             .Returns(new Consent[] {
                 new(consentId, agreementId, CompanyUserCompanyId, _companyUser.Id, ConsentStatusId.ACTIVE, utcNow),
                 new(newCreatedConsentId, additionalAgreementId, CompanyUserCompanyId, _companyUser.Id, ConsentStatusId.ACTIVE, utcNow)
@@ -1428,10 +1430,10 @@ public class OfferServiceTests
                 setOptionalParameters(existingOffer);
             });
         // Act
-        var result = await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        var result = await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, identitytestdata, offerTypeId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._, A<IEnumerable<AgreementConsentStatus>>._, offerId, CompanyUserCompanyId, _companyUser.Id, A<DateTimeOffset>._))
+        A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._, A<IEnumerable<AgreementConsentStatus>>._, offerId, _identity.CompanyId, _identity.UserId, A<DateTimeOffset>._))
             .MustHaveHappenedOnceExactly();
         result.Should()
             .HaveCount(2)
