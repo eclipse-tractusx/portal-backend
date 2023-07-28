@@ -49,7 +49,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
         return handler.UpdateAuthenticationFlows(cancellationToken);
     }
 
-    private class AuthenticationFlowHandler
+    private sealed class AuthenticationFlowHandler
     {
         private readonly string _realm;
         private readonly KeycloakClient _keycloak;
@@ -68,68 +68,70 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
             var seedFlows = _seedData.TopLevelCustomAuthenticationFlows;
             var topLevelCustomFlows = flows.Where(flow => !(flow.BuiltIn ?? false) && (flow.TopLevel ?? false));
 
-            if (topLevelCustomFlows.ExceptBy(seedFlows.Select(x => x.Alias), x => x.Alias).IfAny(
-                async deleteFlows =>
-                {
-                    foreach (var delete in deleteFlows)
-                    {
-                        if (delete.Id == null)
-                            throw new ConflictException($"authenticationFlow.id is null {delete.Alias} {delete.Description}");
-                        await _keycloak.DeleteAuthenticationFlowAsync(_realm, delete.Id, cancellationToken).ConfigureAwait(false);
-                    }
-                },
-                out var deleteFlowsTask
-            ))
-            {
-                await deleteFlowsTask!.ConfigureAwait(false);
-            }
+            await DeleteRedundantAuthenticationFlows(topLevelCustomFlows, seedFlows, cancellationToken).ConfigureAwait(false);
+            await AddMissingAuthenticationFlows(topLevelCustomFlows, seedFlows, cancellationToken).ConfigureAwait(false);
+            await UpdateExistingAuthenticationFlows(topLevelCustomFlows, seedFlows, cancellationToken).ConfigureAwait(false);
+        }
 
-            if (seedFlows.ExceptBy(topLevelCustomFlows.Select(x => x.Alias), x => x.Alias).IfAny(
-                async addFlows =>
-                {
-                    foreach (var addFlow in addFlows)
-                    {
-                        if (addFlow.Alias == null)
-                            throw new ConflictException($"authenticationFlow.Alias is null {addFlow.Id} {addFlow.Description}");
-                        if (addFlow.BuiltIn ?? false)
-                            throw new ConflictException($"authenticationFlow.buildIn is true. flow cannot be added: {addFlow.Alias}");
-                        await _keycloak.CreateAuthenticationFlowAsync(_realm, CreateUpdateAuthenticationFlow(null, addFlow), cancellationToken).ConfigureAwait(false);
-                        await UpdateAuthenticationFlowExecutions(addFlow.Alias, cancellationToken);
-                    }
-                },
-                out var addFlowsTasks
-            ))
+        private async Task DeleteRedundantAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, CancellationToken cancellationToken)
+        {
+            foreach (var delete in topLevelCustomFlows.ExceptBy(seedFlows.Select(x => x.Alias), x => x.Alias))
             {
-                await addFlowsTasks!.ConfigureAwait(false);
+                if (delete.Id == null)
+                    throw new ConflictException($"authenticationFlow.id is null {delete.Alias} {delete.Description}");
+                await _keycloak.DeleteAuthenticationFlowAsync(_realm, delete.Id, cancellationToken).ConfigureAwait(false);
             }
+        }
 
-            if (topLevelCustomFlows.Join(
+        private async Task AddMissingAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, CancellationToken cancellationToken)
+        {
+            foreach (var addFlow in seedFlows.ExceptBy(topLevelCustomFlows.Select(x => x.Alias), x => x.Alias))
+            {
+                if (addFlow.Alias == null)
+                    throw new ConflictException($"authenticationFlow.Alias is null {addFlow.Id} {addFlow.Description}");
+                if (addFlow.BuiltIn ?? false)
+                    throw new ConflictException($"authenticationFlow.buildIn is true. flow cannot be added: {addFlow.Alias}");
+                await _keycloak.CreateAuthenticationFlowAsync(_realm, CreateUpdateAuthenticationFlow(null, addFlow), cancellationToken).ConfigureAwait(false);
+                await UpdateAuthenticationFlowExecutions(addFlow.Alias, cancellationToken);
+            }
+        }
+
+        private async Task UpdateExistingAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, CancellationToken cancellationToken)
+        {
+            foreach (var (flow, seed) in topLevelCustomFlows
+                .Join(
                     seedFlows,
                     x => x.Alias,
                     x => x.Alias,
-                    (flow, seed) => (Flow: flow, Seed: seed)
-                ).IfAny(
-                async updateFlows =>
-                {
-                    foreach (var (flow, seed) in updateFlows)
-                    {
-                        if (flow.Id == null)
-                            throw new ConflictException($"authenticationFlow.id is null {flow.Alias} {flow.Description}");
-                        if (flow.Alias == null)
-                            throw new ConflictException($"authenticationFlow.Alias is null {flow.Id} {flow.Description}");
-                        if (!Compare(flow, seed))
-                        {
-                            await _keycloak.UpdateAuthenticationFlowAsync(_realm, flow.Id, CreateUpdateAuthenticationFlow(flow.Id, seed), cancellationToken).ConfigureAwait(false);
-                        }
-                        await UpdateAuthenticationFlowExecutions(flow.Alias, cancellationToken);
-                    }
-                },
-                out var updateFlowsTask
-            ))
+                    (flow, seed) => (Flow: flow, Seed: seed)))
             {
-                await updateFlowsTask!.ConfigureAwait(false);
+                if (flow.Id == null)
+                    throw new ConflictException($"authenticationFlow.id is null {flow.Alias} {flow.Description}");
+                if (flow.Alias == null)
+                    throw new ConflictException($"authenticationFlow.Alias is null {flow.Id} {flow.Description}");
+                if (!CompareAuthenticationFlow(flow, seed))
+                {
+                    await _keycloak.UpdateAuthenticationFlowAsync(_realm, flow.Id, CreateUpdateAuthenticationFlow(flow.Id, seed), cancellationToken).ConfigureAwait(false);
+                }
+                await UpdateAuthenticationFlowExecutions(flow.Alias, cancellationToken);
             }
         }
+
+        private static AuthenticationFlow CreateUpdateAuthenticationFlow(string? id, AuthenticationFlowModel update) => new AuthenticationFlow
+        {
+            Id = id,
+            Alias = update.Alias,
+            BuiltIn = update.BuiltIn,
+            Description = update.Description,
+            ProviderId = update.ProviderId,
+            TopLevel = update.TopLevel
+        };
+
+        private static bool CompareAuthenticationFlow(AuthenticationFlow flow, AuthenticationFlowModel update) =>
+            flow.BuiltIn == update.BuiltIn &&
+            flow.Description == update.Description &&
+            flow.ProviderId == update.ProviderId &&
+            flow.TopLevel == update.TopLevel;
 
         private async Task UpdateAuthenticationFlowExecutions(string alias, CancellationToken cancellationToken)
         {
@@ -345,7 +347,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                 { "provider", execution.Authenticator ?? throw new ConflictException("authenticationExecution.Authenticator is null")}
             };
 
-        private class ExecutionNode
+        private sealed class ExecutionNode
         {
             private readonly AuthenticationFlowExecution _execution;
             private readonly IReadOnlyList<ExecutionNode>? _children;
@@ -396,20 +398,4 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
             }
         }
     }
-
-    private static AuthenticationFlow CreateUpdateAuthenticationFlow(string? id, AuthenticationFlowModel update) => new AuthenticationFlow
-    {
-        Id = id,
-        Alias = update.Alias,
-        BuiltIn = update.BuiltIn,
-        Description = update.Description,
-        ProviderId = update.ProviderId,
-        TopLevel = update.TopLevel
-    };
-
-    private static bool Compare(AuthenticationFlow flow, AuthenticationFlowModel update) =>
-        flow.BuiltIn == update.BuiltIn &&
-        flow.Description == update.Description &&
-        flow.ProviderId == update.ProviderId &&
-        flow.TopLevel == update.TopLevel;
 }

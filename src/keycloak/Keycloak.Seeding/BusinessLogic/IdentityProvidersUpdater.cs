@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
@@ -51,7 +52,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
             try
             {
                 var identityProvider = await keycloak.GetIdentityProviderAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(false);
-                if (!Compare(identityProvider, updateIdentityProvider))
+                if (!CompareIdentityProvider(identityProvider, updateIdentityProvider))
                 {
                     UpdateIdentityProvider(identityProvider, updateIdentityProvider);
                     await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider, cancellationToken).ConfigureAwait(false);
@@ -67,54 +68,71 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
             var updateMappers = _seedData.IdentityProviderMappers.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias);
             var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(false);
 
-            // create missing mappers
-            foreach (var mapper in updateMappers.ExceptBy(mappers.Select(x => x.Name), x => x.Name))
-            {
-                await keycloak.AddIdentityProviderMapperAsync(
-                    realm,
-                    updateIdentityProvider.Alias,
-                    UpdateIdentityProviderMapper(
-                        new IdentityProviderMapper
-                        {
-                            Name = mapper.Name,
-                            IdentityProviderAlias = mapper.IdentityProviderAlias
-                        },
-                        mapper),
-                    cancellationToken).ConfigureAwait(false);
-            }
-
-            // update existing mappers
-            foreach (var x in mappers.Join(
-                updateMappers,
-                x => x.Name,
-                x => x.Name,
-                (mapper, update) => (Mapper: mapper, Update: update)))
-            {
-                var (mapper, update) = x;
-                if (!Compare(mapper, update))
-                {
-                    await keycloak.UpdateIdentityProviderMapperAsync(
-                        realm,
-                        updateIdentityProvider.Alias,
-                        mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
-                        UpdateIdentityProviderMapper(mapper, update),
-                        cancellationToken).ConfigureAwait(false);
-                }
-            }
-
-            // delete redundant mappers
-            foreach (var mapper in mappers.ExceptBy(updateMappers.Select(x => x.Name), x => x.Name))
-            {
-                await keycloak.DeleteIdentityProviderMapperAsync(
-                    realm,
-                    updateIdentityProvider.Alias,
-                    mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
-                    cancellationToken).ConfigureAwait(false);
-            }
+            await DeleteObsoleteIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
+            await CreateMissingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
+            await UpdateExistingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private static IdentityProvider UpdateIdentityProvider(IdentityProvider provider, IdentityProviderModel update)
+    private static async Task CreateMissingIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, CancellationToken cancellationToken)
+    {
+        foreach (var mapper in updateMappers.ExceptBy(mappers.Select(x => x.Name), x => x.Name))
+        {
+            await keycloak.AddIdentityProviderMapperAsync(
+                realm,
+                alias,
+                UpdateIdentityProviderMapper(
+                    new IdentityProviderMapper
+                    {
+                        Name = mapper.Name,
+                        IdentityProviderAlias = mapper.IdentityProviderAlias
+                    },
+                    mapper),
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task UpdateExistingIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, CancellationToken cancellationToken)
+    {
+        foreach (var (mapper, update) in mappers
+            .Join(
+                updateMappers,
+                x => x.Name,
+                x => x.Name,
+                (mapper, update) => (Mapper: mapper, Update: update))
+            .Where(
+                x => !CompareIdentityProviderMapper(x.Mapper, x.Update)))
+        {
+            await keycloak.UpdateIdentityProviderMapperAsync(
+                realm,
+                alias,
+                mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
+                UpdateIdentityProviderMapper(mapper, update),
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task DeleteObsoleteIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, CancellationToken cancellationToken)
+    {
+        if (mappers.ExceptBy(updateMappers.Select(x => x.Name), x => x.Name).IfAny(
+            async mappers =>
+            {
+                foreach (var mapper in mappers)
+                {
+                    await keycloak.DeleteIdentityProviderMapperAsync(
+                        realm,
+                        alias,
+                        mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
+                        cancellationToken).ConfigureAwait(false);
+                }
+            },
+            out var deleteMappersTask))
+        {
+            await deleteMappersTask!.ConfigureAwait(false);
+        }
+    }
+
+    private static void UpdateIdentityProvider(IdentityProvider provider, IdentityProviderModel update)
     {
         provider.Alias = update.Alias;
         provider.DisplayName = update.DisplayName;
@@ -168,10 +186,9 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                 AllowedClockSkew = update.Config.AllowedClockSkew,
                 AttributeConsumingServiceIndex = update.Config.AttributeConsumingServiceIndex
             };
-        return provider;
     }
 
-    private static bool Compare(IdentityProvider provider, IdentityProviderModel update) =>
+    private static bool CompareIdentityProvider(IdentityProvider provider, IdentityProviderModel update) =>
         provider.Alias == update.Alias &&
         provider.DisplayName == update.DisplayName &&
         provider.ProviderId == update.ProviderId &&
@@ -183,9 +200,9 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         provider.AuthenticateByDefault == update.AuthenticateByDefault &&
         provider.LinkOnly == update.LinkOnly &&
         provider.FirstBrokerLoginFlowAlias == update.FirstBrokerLoginFlowAlias &&
-        Compare(provider.Config, update.Config);
+        CompareIdentityProviderConfig(provider.Config, update.Config);
 
-    private static bool Compare(Config? config, IdentityProviderConfigModel? update) =>
+    private static bool CompareIdentityProviderConfig(Config? config, IdentityProviderConfigModel? update) =>
         config == null && update == null ||
         config != null && update != null &&
         config.HideOnLoginPage == update.HideOnLoginPage &&
@@ -232,7 +249,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
         return mapper;
     }
 
-    private static bool Compare(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper) =>
+    private static bool CompareIdentityProviderMapper(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper) =>
         mapper.IdentityProviderAlias == updateMapper.IdentityProviderAlias &&
         mapper._IdentityProviderMapper == updateMapper.IdentityProviderMapper &&
         mapper.Config.NullOrContentEqual(updateMapper.Config);

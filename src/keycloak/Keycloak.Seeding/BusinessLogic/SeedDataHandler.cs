@@ -107,12 +107,10 @@ public class SeedDataHandler : ISeedDataHandler
 
     public string GetIdOfClient(string clientId) =>
         (_idOfClients ?? throw new InvalidOperationException("ClientInternalIds have not been set"))
-            .TryGetValue(clientId, out var id)
-                ? id ?? throw new ConflictException($"id of client must not be null {clientId}")
-                : throw new ConflictException($"clientId is unknown {clientId}");
+            .GetValueOrDefault(clientId) ?? throw new ConflictException($"clientId is unknown or id of client is null {clientId}");
 
     public AuthenticationFlowModel GetAuthenticationFlow(string? alias) =>
-        jsonRealm?.AuthenticationFlows?.Where(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))).SingleOrDefault() ?? throw new ConflictException($"authenticationFlow {alias} does not exist in seeding-data");
+        jsonRealm?.AuthenticationFlows?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticationFlow {alias} does not exist in seeding-data");
 
     public IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias) =>
         GetAuthenticationFlow(alias).AuthenticationExecutions ?? Enumerable.Empty<AuthenticationExecutionModel>();

@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
@@ -43,52 +44,69 @@ public class UsersUpdater : IUsersUpdater
     {
         var realm = _seedData.Realm;
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
+        var clientsDictionary = _seedData.ClientsDictionary;
 
         foreach (var seedUser in _seedData.Users)
         {
             if (seedUser.Username == null)
                 throw new ConflictException($"username must not be null {seedUser.Id}");
 
-            var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(false)).SingleOrDefault(x => x.UserName == seedUser.Username);
-            if (user == null)
-            {
-                user = CreateUpdateUser(null, seedUser);
-                user.Id = await keycloak.CreateAndRetrieveUserIdAsync(realm, user, cancellationToken).ConfigureAwait(false);
-                if (user.Id == null)
-                    throw new KeycloakNoSuccessException($"failed to retrieve id of newly created user {seedUser.Username}");
-            }
-            else
-            {
-                if (user.Id == null)
-                    throw new ConflictException($"user.Id must not be null: userName {seedUser.Username}");
-                if (!Compare(user, seedUser))
-                {
-                    var updateUser = CreateUpdateUser(user.Id, seedUser);
-                    await keycloak.UpdateUserAsync(
-                        realm,
-                        user.Id,
-                        updateUser,
-                        cancellationToken).ConfigureAwait(false);
-                }
-            }
+            var userId = await CreateOrUpdateUserReturningId(
+                keycloak,
+                realm,
+                seedUser,
+                cancellationToken).ConfigureAwait(false);
 
-            foreach (var (clientId, id) in _seedData.ClientsDictionary)
-            {
-                await UpdateUserRoles(
-                    () => keycloak.GetClientRoleMappingsForUserAsync(realm, user.Id, id, cancellationToken),
-                    () => (seedUser.ClientRoles?.TryGetValue(clientId, out var seedRoles) ?? false) ? seedRoles : Enumerable.Empty<string>(),
-                    () => keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken),
-                    delete => keycloak.DeleteClientRoleMappingsFromUserAsync(realm, user.Id, id, delete, cancellationToken),
-                    add => keycloak.AddClientRoleMappingsToUserAsync(realm, user.Id, id, add, cancellationToken)).ConfigureAwait(false);
-            }
-
-            await UpdateUserRoles(
-                () => keycloak.GetRealmRoleMappingsForUserAsync(realm, user.Id, cancellationToken),
-                () => seedUser.RealmRoles ?? Enumerable.Empty<string>(),
-                () => keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken),
-                delete => keycloak.DeleteRealmRoleMappingsFromUserAsync(realm, user.Id, delete, cancellationToken),
-                add => keycloak.AddRealmRoleMappingsToUserAsync(realm, user.Id, add, cancellationToken)).ConfigureAwait(false);
+            await UpdateClientAndRealmRoles(keycloak, realm, userId, seedUser, clientsDictionary, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private static async Task<string> CreateOrUpdateUserReturningId(KeycloakClient keycloak, string realm, UserModel seedUser, CancellationToken cancellationToken)
+    {
+        var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(false)).SingleOrDefault(x => x.UserName == seedUser.Username);
+
+        if (user == null)
+        {
+            return await keycloak.CreateAndRetrieveUserIdAsync(
+                realm,
+                CreateUpdateUser(null, seedUser),
+                cancellationToken).ConfigureAwait(false) ?? throw new KeycloakNoSuccessException($"failed to retrieve id of newly created user {seedUser.Username}");
+        }
+        else
+        {
+            if (user.Id == null)
+                throw new ConflictException($"user.Id must not be null: userName {seedUser.Username}");
+            if (!CompareUser(user, seedUser))
+            {
+                var updateUser = CreateUpdateUser(user.Id, seedUser);
+                await keycloak.UpdateUserAsync(
+                    realm,
+                    user.Id,
+                    updateUser,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            return user.Id;
+        }
+    }
+
+    private static async Task UpdateClientAndRealmRoles(KeycloakClient keycloak, string realm, string userId, UserModel seedUser, IReadOnlyDictionary<string, string> clientsDictionary, CancellationToken cancellationToken)
+    {
+        foreach (var (clientId, id) in clientsDictionary)
+        {
+            await UpdateUserRoles(
+                () => keycloak.GetClientRoleMappingsForUserAsync(realm, userId, id, cancellationToken),
+                () => seedUser.ClientRoles?.GetValueOrDefault(clientId) ?? Enumerable.Empty<string>(),
+                () => keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken),
+                delete => keycloak.DeleteClientRoleMappingsFromUserAsync(realm, userId, id, delete, cancellationToken),
+                add => keycloak.AddClientRoleMappingsToUserAsync(realm, userId, id, add, cancellationToken)).ConfigureAwait(false);
+        }
+
+        await UpdateUserRoles(
+            () => keycloak.GetRealmRoleMappingsForUserAsync(realm, userId, cancellationToken),
+            () => seedUser.RealmRoles ?? Enumerable.Empty<string>(),
+            () => keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken),
+            delete => keycloak.DeleteRealmRoleMappingsFromUserAsync(realm, userId, delete, cancellationToken),
+            add => keycloak.AddRealmRoleMappingsToUserAsync(realm, userId, add, cancellationToken)).ConfigureAwait(false);
     }
 
     private static async Task UpdateUserRoles(Func<Task<IEnumerable<Role>>> getUserRoles, Func<IEnumerable<string>> getSeedRoles, Func<Task<IEnumerable<Role>>> getAllRoles, Func<IEnumerable<Role>, Task> deleteRoles, Func<IEnumerable<Role>, Task> addRoles)
@@ -152,7 +170,7 @@ public class UsersUpdater : IUsersUpdater
         ServiceAccountClientId = update.ServiceAccountClientId
     };
 
-    private static bool Compare(User user, UserModel update) =>
+    private static bool CompareUser(User user, UserModel update) =>
         user.CreatedTimestamp == update.CreatedTimestamp &&
         user.UserName == update.Username &&
         user.Enabled == update.Enabled &&
@@ -168,14 +186,14 @@ public class UsersUpdater : IUsersUpdater
         user.Attributes.NullOrContentEqual(update.Attributes) &&
         // ClientConsents == update.ClientConsents &&
         // Credentials == update.Credentials &&
-        Compare(user.FederatedIdentities, update.FederatedIdentities) && // doesn't update
-                                                                         // FederationLink == update.FederationLink &&
+        CompareFederatedIdentities(user.FederatedIdentities, update.FederatedIdentities) && // doesn't update
+                                                                                            // FederationLink == update.FederationLink &&
         user.Groups.NullOrContentEqual(update.Groups) &&
         // Origin == update.Origin &&
         // Self == update.Self &&
         user.ServiceAccountClientId == update.ServiceAccountClientId;
 
-    private static bool Compare(IEnumerable<FederatedIdentity>? identities, IEnumerable<FederatedIdentityModel>? updates) =>
+    private static bool CompareFederatedIdentities(IEnumerable<FederatedIdentity>? identities, IEnumerable<FederatedIdentityModel>? updates) =>
         identities == null && updates == null ||
         identities != null && updates != null &&
         identities.Select(x => x.IdentityProvider ?? throw new ConflictException("keycloak federated identity identityProvider must not be null")).NullOrContentEqual(updates.Select(x => x.IdentityProvider ?? throw new ConflictException("seeding federated identity identityProvider must not be null"))) &&

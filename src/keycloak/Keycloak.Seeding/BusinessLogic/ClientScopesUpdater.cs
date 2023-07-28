@@ -19,8 +19,8 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientScopes;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
@@ -46,126 +46,104 @@ public class ClientScopesUpdater : IClientScopesUpdater
         var clientScopes = await keycloak.GetClientScopesAsync(realm, cancellationToken).ConfigureAwait(false);
         var seedClientScopes = _seedData.ClientScopes;
 
-        if (clientScopes.ExceptBy(seedClientScopes.Select(x => x.Name), x => x.Name).IfAny(
-            async deleteScopes =>
-            {
-                foreach (var deleteScope in deleteScopes)
-                {
-                    await keycloak.DeleteClientScopeAsync(
-                        realm,
-                        deleteScope.Id ?? throw new ConflictException($"clientScope.Id is null: {deleteScope.Name}"),
-                        cancellationToken).ConfigureAwait(false);
-                }
-            },
-            out var deleteTask))
+        await RemoveObsoleteClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(false);
+        await CreateMissingClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(false);
+        await UpdateExistingClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task RemoveObsoleteClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, CancellationToken cancellationToken)
+    {
+        foreach (var deleteScope in clientScopes.ExceptBy(seedClientScopes.Select(x => x.Name), x => x.Name))
         {
-            await deleteTask!.ConfigureAwait(false);
+            await keycloak.DeleteClientScopeAsync(
+                realm,
+                deleteScope.Id ?? throw new ConflictException($"clientScope.Id is null: {deleteScope.Name}"),
+                cancellationToken).ConfigureAwait(false);
         }
+    }
 
-        if (seedClientScopes.ExceptBy(clientScopes.Select(x => x.Name), x => x.Name).IfAny(
-            async addScopes =>
-            {
-                foreach (var addScope in addScopes)
-                {
-                    await keycloak.CreateClientScopeAsync(realm, CreateClientScope(null, addScope, true), cancellationToken).ConfigureAwait(false);
-                }
-            },
-            out var addTask))
+    private static async Task CreateMissingClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, CancellationToken cancellationToken)
+    {
+        foreach (var addScope in seedClientScopes.ExceptBy(clientScopes.Select(x => x.Name), x => x.Name))
         {
-            await addTask!.ConfigureAwait(false);
+            await keycloak.CreateClientScopeAsync(realm, CreateClientScope(null, addScope, true), cancellationToken).ConfigureAwait(false);
         }
+    }
 
-        if (clientScopes.Join(
-            seedClientScopes,
-            x => x.Name,
-            x => x.Name,
-            (clientScope, update) => (ClientScope: clientScope, Update: update)).IfAny(
-                async joinedScopes =>
-                {
-                    foreach (var (clientScope, update) in joinedScopes)
-                    {
-                        await UpdateClientScopeWithProtocolMappers(clientScope, update).ConfigureAwait(false);
-                    }
-                },
-                out var updateTask))
-        {
-            await updateTask!.ConfigureAwait(false);
-        }
-
-        async Task UpdateClientScopeWithProtocolMappers(ClientScope clientScope, ClientScopeModel update)
-        {
-            if (clientScope.Id == null)
-                throw new ConflictException($"clientScope.Id is null: {clientScope.Name}");
-
-            if (!CompareClientScope(clientScope, update))
-            {
-                await keycloak.UpdateClientScopeAsync(
-                    realm,
-                    clientScope.Id,
-                    CreateClientScope(clientScope.Id, update, false),
-                    cancellationToken).ConfigureAwait(false);
-            }
-
-            var mappers = clientScope.ProtocolMappers ?? Enumerable.Empty<ProtocolMapper>();
-            var updateMappers = update.ProtocolMappers ?? Enumerable.Empty<ProtocolMapperModel>();
-
-            if (mappers.ExceptBy(updateMappers.Select(x => x.Name), x => x.Name).IfAny(
-                async deleteMappers =>
-                {
-                    foreach (var mapper in deleteMappers)
-                    {
-                        await keycloak.DeleteProtocolMapperAsync(
-                            realm,
-                            clientScope.Id,
-                            mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
-                            cancellationToken).ConfigureAwait(false);
-                    }
-                },
-                out var deleteMappersTask))
-            {
-                await deleteMappersTask!.ConfigureAwait(false);
-            }
-
-            if (updateMappers.ExceptBy(mappers.Select(x => x.Name), x => x.Name).IfAny(
-                async addMappers =>
-                {
-                    foreach (var update in addMappers)
-                    {
-                        await keycloak.CreateProtocolMapperAsync(
-                            realm,
-                            clientScope.Id,
-                            ProtocolMappersUpdater.CreateProtocolMapper(null, update),
-                            cancellationToken).ConfigureAwait(false);
-                    }
-                },
-                out var addMappersTask))
-            {
-                await addMappersTask!.ConfigureAwait(false);
-            }
-
-            if (mappers.Join(
-                updateMappers,
+    private static async Task UpdateExistingClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, CancellationToken cancellationToken)
+    {
+        foreach (var (clientScope, update) in clientScopes
+            .Join(
+                seedClientScopes,
                 x => x.Name,
                 x => x.Name,
-                (mapper, update) => (Mapper: mapper, Update: update))
-                .Where(x => !ProtocolMappersUpdater.CompareProtocolMapper(x.Mapper, x.Update))
-                .IfAny(
-                    async joinedMappers =>
-                    {
-                        foreach (var (mapper, update) in joinedMappers)
-                        {
-                            await keycloak.UpdateProtocolMapperAsync(
-                                realm,
-                                clientScope.Id,
-                                mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
-                                ProtocolMappersUpdater.CreateProtocolMapper(mapper.Id, update),
-                                cancellationToken).ConfigureAwait(false);
-                        }
-                    },
-                    out var updateMappersTask))
-            {
-                await updateMappersTask!.ConfigureAwait(false);
-            }
+                (clientScope, update) => (ClientScope: clientScope, Update: update)))
+        {
+            await UpdateClientScopeWithProtocolMappers(keycloak, realm, clientScope, update, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task UpdateClientScopeWithProtocolMappers(KeycloakClient keycloak, string realm, ClientScope clientScope, ClientScopeModel update, CancellationToken cancellationToken)
+    {
+        if (clientScope.Id == null)
+            throw new ConflictException($"clientScope.Id is null: {clientScope.Name}");
+
+        if (!CompareClientScope(clientScope, update))
+        {
+            await keycloak.UpdateClientScopeAsync(
+                realm,
+                clientScope.Id,
+                CreateClientScope(clientScope.Id, update, false),
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        var mappers = clientScope.ProtocolMappers ?? Enumerable.Empty<ProtocolMapper>();
+        var updateMappers = update.ProtocolMappers ?? Enumerable.Empty<ProtocolMapperModel>();
+
+        await DeleteObsoleteProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
+        await CreateMissingProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
+        await UpdateExistingProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task DeleteObsoleteProtocolMappers(KeycloakClient keycloak, string realm, string clientScopeId, IEnumerable<ProtocolMapper> mappers, IEnumerable<ProtocolMapperModel> updateMappers, CancellationToken cancellationToken)
+    {
+        foreach (var mapper in mappers.ExceptBy(updateMappers.Select(x => x.Name), x => x.Name))
+        {
+            await keycloak.DeleteProtocolMapperAsync(
+                realm,
+                clientScopeId,
+                mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task CreateMissingProtocolMappers(KeycloakClient keycloak, string realm, string clientScopeId, IEnumerable<ProtocolMapper> mappers, IEnumerable<ProtocolMapperModel> updateMappers, CancellationToken cancellationToken)
+    {
+        foreach (var update in updateMappers.ExceptBy(mappers.Select(x => x.Name), x => x.Name))
+        {
+            await keycloak.CreateProtocolMapperAsync(
+                realm,
+                clientScopeId,
+                ProtocolMappersUpdater.CreateProtocolMapper(null, update),
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task UpdateExistingProtocolMappers(KeycloakClient keycloak, string realm, string clientScopeId, IEnumerable<ProtocolMapper> mappers, IEnumerable<ProtocolMapperModel> updateMappers, CancellationToken cancellationToken)
+    {
+        foreach (var (mapper, update) in mappers.Join(
+            updateMappers,
+            x => x.Name,
+            x => x.Name,
+            (mapper, update) => (Mapper: mapper, Update: update))
+            .Where(x => !ProtocolMappersUpdater.CompareProtocolMapper(x.Mapper, x.Update)))
+        {
+            await keycloak.UpdateProtocolMapperAsync(
+                realm,
+                clientScopeId,
+                mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
+                ProtocolMappersUpdater.CreateProtocolMapper(mapper.Id, update),
+                cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -191,13 +169,13 @@ public class ClientScopesUpdater : IClientScopesUpdater
     private static Attributes CreateClientScopeAttributes(IReadOnlyDictionary<string, string> update) =>
         new Attributes
         {
-            ConsentScreenText = update.TryGetValue("consent.screen.text", out var consentScreenText) ? consentScreenText : null,
-            DisplayOnConsentScreen = update.TryGetValue("display.on.consent.screen", out var displayOnConsentScreen) ? displayOnConsentScreen : null,
-            IncludeInTokenScope = update.TryGetValue("include.in.token.scope", out var includeInTokenScope) ? includeInTokenScope : null,
+            ConsentScreenText = update.GetValueOrDefault("consent.screen.text"),
+            DisplayOnConsentScreen = update.GetValueOrDefault("display.on.consent.screen"),
+            IncludeInTokenScope = update.GetValueOrDefault("include.in.token.scope")
         };
 
     private static bool CompareClientScopeAttributes(Attributes attributes, IReadOnlyDictionary<string, string> update) =>
-        attributes.ConsentScreenText == (update.TryGetValue("consent.screen.text", out var consentScreenText) ? consentScreenText : null) &&
-        attributes.DisplayOnConsentScreen == (update.TryGetValue("display.on.consent.screen", out var displayOnConsentScreen) ? displayOnConsentScreen : null) &&
-        attributes.IncludeInTokenScope == (update.TryGetValue("include.in.token.scope", out var includeInTokenScope) ? includeInTokenScope : null);
+        attributes.ConsentScreenText == update.GetValueOrDefault("consent.screen.text") &&
+        attributes.DisplayOnConsentScreen == update.GetValueOrDefault("display.on.consent.screen") &&
+        attributes.IncludeInTokenScope == update.GetValueOrDefault("include.in.token.scope");
 }

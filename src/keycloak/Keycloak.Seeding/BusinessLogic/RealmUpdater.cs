@@ -57,7 +57,7 @@ public class RealmUpdater : IRealmUpdater
             await keycloak.ImportRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(false);
         }
 
-        if (!Compare(keycloakRealm, seedRealm))
+        if (!CompareRealm(keycloakRealm, seedRealm)) // defaultRole and IdentityProviders are not compared as they cannot be updated through realm
         {
             keycloakRealm._Realm = seedRealm.Realm;
             keycloakRealm.DisplayName = seedRealm.DisplayName;
@@ -98,7 +98,6 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.QuickLoginCheckMilliSeconds = seedRealm.QuickLoginCheckMilliSeconds;
             keycloakRealm.MaxDeltaTimeSeconds = seedRealm.MaxDeltaTimeSeconds;
             keycloakRealm.FailureFactor = seedRealm.FailureFactor;
-            // realm.DefaultRole = UpdateDefaultRole(realm.DefaultRole, jsonRealm.DefaultRole);
             keycloakRealm.RequiredCredentials = seedRealm.RequiredCredentials;
             keycloakRealm.OtpPolicyType = seedRealm.OtpPolicyType;
             keycloakRealm.OtpPolicyAlgorithm = seedRealm.OtpPolicyAlgorithm;
@@ -118,7 +117,6 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.EnabledEventTypes = seedRealm.EnabledEventTypes;
             keycloakRealm.AdminEventsEnabled = seedRealm.AdminEventsEnabled;
             keycloakRealm.AdminEventsDetailsEnabled = seedRealm.AdminEventsDetailsEnabled;
-            // realm.IdentityProviders = UpdateIdentityProviders(realm.IdentityProviders, jsonRealm.IdentityProviders);
             keycloakRealm.InternationalizationEnabled = seedRealm.InternationalizationEnabled;
             keycloakRealm.SupportedLocales = seedRealm.SupportedLocales;
             keycloakRealm.BrowserFlow = seedRealm.BrowserFlow;
@@ -135,7 +133,7 @@ public class RealmUpdater : IRealmUpdater
         }
     }
 
-    private static bool Compare(Realm keycloakRealm, KeycloakRealm seedRealm) =>
+    private static bool CompareRealm(Realm keycloakRealm, KeycloakRealm seedRealm) =>
         keycloakRealm._Realm == seedRealm.Realm &&
         keycloakRealm.DisplayName == seedRealm.DisplayName &&
         keycloakRealm.NotBefore == seedRealm.NotBefore &&
@@ -174,7 +172,6 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.QuickLoginCheckMilliSeconds == seedRealm.QuickLoginCheckMilliSeconds &&
         keycloakRealm.MaxDeltaTimeSeconds == seedRealm.MaxDeltaTimeSeconds &&
         keycloakRealm.FailureFactor == seedRealm.FailureFactor &&
-        // realm.DefaultRole != UpdateDefaultRole(realm.DefaultRole, jsonRealm.DefaultRole) &&
         keycloakRealm.RequiredCredentials == seedRealm.RequiredCredentials &&
         keycloakRealm.OtpPolicyType == seedRealm.OtpPolicyType &&
         keycloakRealm.OtpPolicyAlgorithm == seedRealm.OtpPolicyAlgorithm &&
@@ -184,8 +181,8 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.OtpPolicyPeriod == seedRealm.OtpPolicyPeriod &&
         keycloakRealm.OtpSupportedApplications == seedRealm.OtpSupportedApplications &&
         keycloakRealm.PasswordPolicy == seedRealm.PasswordPolicy &&
-        Compare(keycloakRealm.BrowserSecurityHeaders, seedRealm.BrowserSecurityHeaders) &&
-        Compare(keycloakRealm.SmtpServer, seedRealm.SmtpServer) &&
+        CompareBrowserSecurityHeaders(keycloakRealm.BrowserSecurityHeaders, seedRealm.BrowserSecurityHeaders) &&
+        CompareSmtpServer(keycloakRealm.SmtpServer, seedRealm.SmtpServer) &&
         keycloakRealm.LoginTheme == seedRealm.LoginTheme &&
         keycloakRealm.AccountTheme == seedRealm.AccountTheme &&
         keycloakRealm.AdminTheme == seedRealm.AdminTheme &&
@@ -195,7 +192,6 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.EnabledEventTypes == seedRealm.EnabledEventTypes &&
         keycloakRealm.AdminEventsEnabled == seedRealm.AdminEventsEnabled &&
         keycloakRealm.AdminEventsDetailsEnabled == seedRealm.AdminEventsDetailsEnabled &&
-        // realm.IdentityProviders != UpdateIdentityProviders(realm.IdentityProviders, jsonRealm.IdentityProviders) &&
         keycloakRealm.InternationalizationEnabled == seedRealm.InternationalizationEnabled &&
         keycloakRealm.SupportedLocales == seedRealm.SupportedLocales &&
         keycloakRealm.BrowserFlow == seedRealm.BrowserFlow &&
@@ -204,16 +200,16 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.ResetCredentialsFlow == seedRealm.ResetCredentialsFlow &&
         keycloakRealm.ClientAuthenticationFlow == seedRealm.ClientAuthenticationFlow &&
         keycloakRealm.DockerAuthenticationFlow == seedRealm.DockerAuthenticationFlow &&
-        Compare(keycloakRealm.Attributes, seedRealm.Attributes) &&
+        CompareRealmAttributes(keycloakRealm.Attributes, seedRealm.Attributes) &&
         keycloakRealm.UserManagedAccessAllowed == seedRealm.UserManagedAccessAllowed &&
         keycloakRealm.PasswordPolicy == seedRealm.PasswordPolicy;
 
-    private static bool Compare(IDictionary<string, string>? attributes, IReadOnlyDictionary<string, string>? updateAttributes) =>
+    private static bool CompareRealmAttributes(IDictionary<string, string>? attributes, IReadOnlyDictionary<string, string>? updateAttributes) =>
         attributes == null && updateAttributes == null ||
         attributes != null && updateAttributes != null &&
         attributes.OrderBy(x => x.Key).SequenceEqual(updateAttributes.OrderBy(x => x.Key));
 
-    private static bool Compare(BrowserSecurityHeaders? securityHeaders, BrowserSecurityHeadersModel? updateSecurityHeaders) =>
+    private static bool CompareBrowserSecurityHeaders(BrowserSecurityHeaders? securityHeaders, BrowserSecurityHeadersModel? updateSecurityHeaders) =>
         securityHeaders == null && updateSecurityHeaders == null ||
         securityHeaders != null && updateSecurityHeaders != null &&
         securityHeaders.ContentSecurityPolicyReportOnly == updateSecurityHeaders.ContentSecurityPolicyReportOnly &&
@@ -238,7 +234,7 @@ public class RealmUpdater : IRealmUpdater
                 StrictTransportSecurity = updateSecurityHeaders.StrictTransportSecurity
             };
 
-    private static bool Compare(SmtpServer? smtpServer, SmtpServerModel? updateSmtpServer) =>
+    private static bool CompareSmtpServer(SmtpServer? smtpServer, SmtpServerModel? updateSmtpServer) =>
         smtpServer == null && updateSmtpServer == null ||
         smtpServer != null && updateSmtpServer != null &&
         smtpServer.Host == updateSmtpServer.Host &&

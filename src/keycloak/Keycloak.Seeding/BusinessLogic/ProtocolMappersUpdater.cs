@@ -47,41 +47,41 @@ public static class ProtocolMappersUpdater
     private static Config CreateProtocolMapperConfig(IReadOnlyDictionary<string, string> update) =>
         new Config
         {
-            Single = update.TryGetValue("single", out var single) ? single : null,
-            AttributeNameFormat = update.TryGetValue("attribute.nameformat", out var attributeNameFormat) ? attributeNameFormat : null,
-            AttributeName = update.TryGetValue("attribute.name", out var attributeName) ? attributeName : null,
-            UserInfoTokenClaim = update.TryGetValue("userinfo.token.claim", out var userInfoTokenClaim) ? userInfoTokenClaim : null,
-            UserAttribute = update.TryGetValue("user.attribute", out var userAttribute) ? userAttribute : null,
-            IdTokenClaim = update.TryGetValue("id.token.claim", out var idTokenClaim) ? idTokenClaim : null,
-            AccessTokenClaim = update.TryGetValue("access.token.claim", out var accessTokenClaim) ? accessTokenClaim : null,
-            ClaimName = update.TryGetValue("claim.name", out var claimName) ? claimName : null,
-            JsonTypelabel = update.TryGetValue("jsonType.label", out var jsonTypeLabel) ? jsonTypeLabel : null,
-            UserAttributeFormatted = update.TryGetValue("user.attribute.formated", out var userAttributeFormated) ? userAttributeFormated : null,
-            UserAttributeCountry = update.TryGetValue("user.attribute.country", out var userAttributeCountry) ? userAttributeCountry : null,
-            UserAttributePostalCode = update.TryGetValue("user.attribute.postal_code", out var userAttributePostalCode) ? userAttributePostalCode : null,
-            UserAttributeStreet = update.TryGetValue("user.attribute.street", out var userAttributeStreet) ? userAttributeStreet : null,
-            UserAttributeRegion = update.TryGetValue("user.attribute.region", out var userAttributeRegion) ? userAttributeRegion : null,
-            UserAttributeLocality = update.TryGetValue("user.attribute.locality", out var userAttributeLocality) ? userAttributeLocality : null,
-            IncludedClientAudience = update.TryGetValue("included.client.audience", out var includedClientAudience) ? includedClientAudience : null,
-            Multivalued = update.TryGetValue("multivalued", out var multiValued) ? multiValued : null
+            Single = update.GetValueOrDefault("single"),
+            AttributeNameFormat = update.GetValueOrDefault("attribute.nameformat"),
+            AttributeName = update.GetValueOrDefault("attribute.name"),
+            UserInfoTokenClaim = update.GetValueOrDefault("userinfo.token.claim"),
+            UserAttribute = update.GetValueOrDefault("user.attribute"),
+            IdTokenClaim = update.GetValueOrDefault("id.token.claim"),
+            AccessTokenClaim = update.GetValueOrDefault("access.token.claim"),
+            ClaimName = update.GetValueOrDefault("claim.name"),
+            JsonTypelabel = update.GetValueOrDefault("jsonType.label"),
+            UserAttributeFormatted = update.GetValueOrDefault("user.attribute.formated"),
+            UserAttributeCountry = update.GetValueOrDefault("user.attribute.country"),
+            UserAttributePostalCode = update.GetValueOrDefault("user.attribute.postal_code"),
+            UserAttributeStreet = update.GetValueOrDefault("user.attribute.street"),
+            UserAttributeRegion = update.GetValueOrDefault("user.attribute.region"),
+            UserAttributeLocality = update.GetValueOrDefault("user.attribute.locality"),
+            IncludedClientAudience = update.GetValueOrDefault("included.client.audience"),
+            Multivalued = update.GetValueOrDefault("multivalued")
         };
 
     private static bool CompareProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string> update) =>
-        config.Single == (update.TryGetValue("single", out var single) ? single : null) &&
-            config.AttributeNameFormat == (update.TryGetValue("attribute.nameformat", out var attributeNameFormat) ? attributeNameFormat : null) &&
-            config.AttributeName == (update.TryGetValue("attribute.name", out var attributeName) ? attributeName : null) &&
-            config.UserInfoTokenClaim == (update.TryGetValue("userinfo.token.claim", out var userInfoTokenClaim) ? userInfoTokenClaim : null) &&
-            config.UserAttribute == (update.TryGetValue("user.attribute", out var userAttribute) ? userAttribute : null) &&
-            config.IdTokenClaim == (update.TryGetValue("id.token.claim", out var idTokenClaim) ? idTokenClaim : null) &&
-            config.AccessTokenClaim == (update.TryGetValue("access.token.claim", out var accessTokenClaim) ? accessTokenClaim : null) &&
-            config.ClaimName == (update.TryGetValue("claim.name", out var claimName) ? claimName : null) &&
-            config.JsonTypelabel == (update.TryGetValue("jsonType.label", out var jsonTypeLabel) ? jsonTypeLabel : null) &&
-            config.UserAttributeFormatted == (update.TryGetValue("user.attribute.formated", out var userAttributeFormated) ? userAttributeFormated : null) &&
-            config.UserAttributeCountry == (update.TryGetValue("user.attribute.country", out var userAttributeCountry) ? userAttributeCountry : null) &&
-            config.UserAttributePostalCode == (update.TryGetValue("user.attribute.postal_code", out var userAttributePostalCode) ? userAttributePostalCode : null) &&
-            config.UserAttributeStreet == (update.TryGetValue("user.attribute.street", out var userAttributeStreet) ? userAttributeStreet : null) &&
-            config.UserAttributeRegion == (update.TryGetValue("user.attribute.region", out var userAttributeRegion) ? userAttributeRegion : null) &&
-            config.UserAttributeLocality == (update.TryGetValue("user.attribute.locality", out var userAttributeLocality) ? userAttributeLocality : null) &&
-            config.IncludedClientAudience == (update.TryGetValue("included.client.audience", out var includedClientAudience) ? includedClientAudience : null) &&
-            config.Multivalued == (update.TryGetValue("multivalued", out var multiValued) ? multiValued : null);
+        config.Single == update.GetValueOrDefault("single") &&
+            config.AttributeNameFormat == update.GetValueOrDefault("attribute.nameformat") &&
+            config.AttributeName == update.GetValueOrDefault("attribute.name") &&
+            config.UserInfoTokenClaim == update.GetValueOrDefault("userinfo.token.claim") &&
+            config.UserAttribute == update.GetValueOrDefault("user.attribute") &&
+            config.IdTokenClaim == update.GetValueOrDefault("id.token.claim") &&
+            config.AccessTokenClaim == update.GetValueOrDefault("access.token.claim") &&
+            config.ClaimName == update.GetValueOrDefault("claim.name") &&
+            config.JsonTypelabel == update.GetValueOrDefault("jsonType.label") &&
+            config.UserAttributeFormatted == update.GetValueOrDefault("user.attribute.formated") &&
+            config.UserAttributeCountry == update.GetValueOrDefault("user.attribute.country") &&
+            config.UserAttributePostalCode == update.GetValueOrDefault("user.attribute.postal_code") &&
+            config.UserAttributeStreet == update.GetValueOrDefault("user.attribute.street") &&
+            config.UserAttributeRegion == update.GetValueOrDefault("user.attribute.region") &&
+            config.UserAttributeLocality == update.GetValueOrDefault("user.attribute.locality") &&
+            config.IncludedClientAudience == update.GetValueOrDefault("included.client.audience") &&
+            config.Multivalued == update.GetValueOrDefault("multivalued");
 }
