@@ -189,7 +189,7 @@ public class OfferService : IOfferService
         return ConsentStatusdata;
     }
 
-    private async Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId,  Guid companyId, OfferStatusId statusId, OfferTypeId offerTypeId)
+    private async Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId, Guid companyId, OfferStatusId statusId, OfferTypeId offerTypeId)
     {
         var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(offerId, companyId, statusId, offerTypeId).ConfigureAwait(false);
         if (result == default)
