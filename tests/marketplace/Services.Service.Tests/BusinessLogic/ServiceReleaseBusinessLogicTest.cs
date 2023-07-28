@@ -314,21 +314,25 @@ public class ServiceReleaseBusinessLogicTest
     {
         var serviceId = Guid.NewGuid();
         var iamUserId = Guid.NewGuid().ToString();
+        var identitytestData = (_identity.UserId, _identity.CompanyId);
         var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
 
-        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, data, _identity.CompanyId, OfferTypeId.SERVICE))
-            .ReturnsLazily(() => new[] { new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE) });
+        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(A<Guid>._, A<OfferAgreementConsent>._, A<(Guid, Guid)>._, A<OfferTypeId>._))
+            .Returns(new[] { new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE) });
 
-        var result = await _sut.SubmitOfferConsentAsync(serviceId, data, _identity.CompanyId).ConfigureAwait(false);
+        var result = await _sut.SubmitOfferConsentAsync(serviceId, data, identitytestData).ConfigureAwait(false);
 
         result.Should().ContainSingle().Which.ConsentStatus.Should().Be(ConsentStatusId.ACTIVE);
+        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, data, identitytestData, OfferTypeId.SERVICE))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
     public async Task SubmitOfferConsentAsync_WithEmptyGuid_ThrowsControllerArgumentException()
     {
         var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
-        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data, _fixture.Create<Guid>()).ConfigureAwait(false);
+        var identitytestData = (_identity.UserId, _identity.CompanyId);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data, identitytestData).ConfigureAwait(false);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("ServiceId must not be empty");
@@ -364,7 +368,7 @@ public class ServiceReleaseBusinessLogicTest
         var serviceId = Guid.NewGuid();
         var offerService = A.Fake<IOfferService>();
         _fixture.Inject(offerService);
-        A.CallTo(() => offerService.CreateServiceOfferingAsync(A<ServiceOfferingData>._, A<ValueTuple<Guid, Guid>>._, A<OfferTypeId>._)).ReturnsLazily(() => serviceId);
+        A.CallTo(() => offerService.CreateServiceOfferingAsync(A<ServiceOfferingData>._, A<(Guid, Guid)>._, A<OfferTypeId>._)).Returns(serviceId);
         var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
 
         // Act
@@ -551,7 +555,7 @@ public class ServiceReleaseBusinessLogicTest
         await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, A<(Guid, Guid)>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -620,13 +624,13 @@ public class ServiceReleaseBusinessLogicTest
     private void SetupUpdateService()
     {
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .ReturnsLazily(() => (ServiceUpdateData?)null);
+            .Returns((ServiceUpdateData?)null);
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
+            .Returns(new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), ((Guid, string, bool))default, Array.Empty<LocalizedDescription>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
+            .Returns(new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), ((Guid, string, bool))default, Array.Empty<LocalizedDescription>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, true, Enumerable.Repeat(new ValueTuple<ServiceTypeId, bool>(ServiceTypeId.DATASPACE_SERVICE, false), 1), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), Array.Empty<LocalizedDescription>(), Guid.NewGuid()));
+            .Returns(new ServiceUpdateData(OfferStatusId.CREATED, true, new[] { (ServiceTypeId.DATASPACE_SERVICE, false) }, (Guid.NewGuid(), "123", false), Array.Empty<LocalizedDescription>(), Guid.NewGuid()));
     }
 
     private void SetupRepositories()

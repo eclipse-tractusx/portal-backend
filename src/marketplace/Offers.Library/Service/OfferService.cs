@@ -163,9 +163,9 @@ public class OfferService : IOfferService
         return result.OfferAgreementConsent;
     }
 
-    public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, Guid companyId, OfferTypeId offerTypeId)
+    public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId)
     {
-        var (companyUserId, dbAgreements, requiredAgreementIds) = await GetProviderOfferAgreementConsent(offerId, companyId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+        var (dbAgreements, requiredAgreementIds) = await GetProviderOfferAgreementConsent(offerId, identity.CompanyId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
         var invalidConsents = offerAgreementConsent.Agreements.ExceptBy(requiredAgreementIds, consent => consent.AgreementId);
         if (invalidConsents.Any())
         {
@@ -177,8 +177,8 @@ public class OfferService : IOfferService
                 dbAgreements,
                 offerAgreementConsent.Agreements,
                 offerId,
-                companyId,
-                companyUserId,
+                identity.CompanyId,
+                identity.UserId,
                 DateTimeOffset.UtcNow)
             .Select(consent => new ConsentStatusData(consent.AgreementId, consent.ConsentStatusId));
 

@@ -174,14 +174,14 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="400">App Id is incorrect.</response>
     [HttpPost]
     [Authorize(Roles = "edit_apps")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("consent/{appId}/agreementConsents")]
     [ProducesResponseType(typeof(IEnumerable<ConsentStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
-        this.WithCompanyId(companyId => _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, companyId));
+        this.WithUserIdAndCompanyId(identity => _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, identity));
 
     /// <summary>
     /// Return app detail with status

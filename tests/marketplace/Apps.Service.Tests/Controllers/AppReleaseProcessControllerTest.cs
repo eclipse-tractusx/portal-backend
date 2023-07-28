@@ -21,7 +21,6 @@
 using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
@@ -64,8 +63,6 @@ public class AppReleaseProcessControllerTest
             "https://test.provider.com",
             null,
             null);
-        A.CallTo(() => _logic.UpdateAppAsync(A<Guid>._, A<AppEditableDetail>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
         var result = await this._controller.UpdateApp(appId, data).ConfigureAwait(false);
@@ -82,9 +79,6 @@ public class AppReleaseProcessControllerTest
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
         var documentTypeId = DocumentTypeId.ADDITIONAL_DETAILS;
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-
-        A.CallTo(() => _logic.CreateAppDocumentAsync(A<Guid>._, A<DocumentTypeId>._, A<FormFile>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), A<CancellationToken>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         await this._controller.UpdateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
@@ -155,15 +149,16 @@ public class AppReleaseProcessControllerTest
         var appId = Guid.NewGuid();
         var data = _fixture.Create<OfferAgreementConsent>();
         var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._, A<Guid>._))
-            .ReturnsLazily(() => Enumerable.Repeat(consentStatusData, 1));
+        var identitydatas = (_identity.UserId, _identity.CompanyId);
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._, A<(Guid, Guid)>._))
+            .Returns(Enumerable.Repeat(consentStatusData, 1));
 
         //Act
         var result = await this._controller.SubmitOfferConsentToAgreementsAsync(appId, data).ConfigureAwait(false);
 
         // Assert 
         result.Should().HaveCount(1);
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(appId, data, _identity.CompanyId))
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(appId, data, identitydatas))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -174,7 +169,7 @@ public class AppReleaseProcessControllerTest
         var appId = Guid.NewGuid();
         var data = _fixture.Create<AppProviderResponse>();
         A.CallTo(() => _logic.GetAppDetailsForStatusAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         //Act
         var result = await this._controller.GetAppDetailsForStatusAsync(appId).ConfigureAwait(false);
@@ -191,8 +186,6 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
-        A.CallTo(() => _logic.DeleteAppRoleAsync(A<Guid>._, A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeleteAppRoleAsync(appId, roleId).ConfigureAwait(false);
@@ -209,7 +202,7 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var data = _fixture.CreateMany<CompanyUserNameData>(5).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(A<Guid>._))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         //Act
         var result = await this._controller.GetAppProviderSalesManagerAsync().ToListAsync().ConfigureAwait(false);
@@ -227,7 +220,7 @@ public class AppReleaseProcessControllerTest
         var appId = _fixture.Create<Guid>();
         var data = _fixture.Create<AppRequestModel>();
         A.CallTo(() => _logic.AddAppAsync(A<AppRequestModel>._, _identity.CompanyId))
-            .ReturnsLazily(() => appId);
+            .Returns(appId);
 
         //Act
         var result = await this._controller.ExecuteAppCreation(data).ConfigureAwait(false);
@@ -268,8 +261,6 @@ public class AppReleaseProcessControllerTest
             "test@gmail.com",
             "9456321678"
             );
-        A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, _identity.CompanyId))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
         var result = await this._controller.UpdateAppRelease(appId, data).ConfigureAwait(false);
@@ -285,7 +276,7 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var paginationResponse = new Pagination.Response<InReviewAppData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewAppData>(5));
         A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._, A<OfferSorting?>._, null))
-            .ReturnsLazily(() => paginationResponse);
+            .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
@@ -300,8 +291,6 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.SubmitAppReleaseRequest(appId).ConfigureAwait(false);
@@ -316,8 +305,6 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.ApproveAppRequest(appId).ConfigureAwait(false);
@@ -333,8 +320,6 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = _fixture.Create<Guid>();
         var data = new OfferDeclineRequest("Just a test");
-        A.CallTo(() => _logic.DeclineAppRequestAsync(A<Guid>._, A<Guid>._, A<OfferDeclineRequest>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeclineAppRequest(appId, data).ConfigureAwait(false);
@@ -368,8 +353,6 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var documentId = Guid.NewGuid();
-        A.CallTo(() => _logic.DeleteAppDocumentsAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeleteAppDocumentsAsync(documentId).ConfigureAwait(false);
@@ -385,8 +368,6 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeleteAppAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeleteAppAsync(appId).ConfigureAwait(false);
