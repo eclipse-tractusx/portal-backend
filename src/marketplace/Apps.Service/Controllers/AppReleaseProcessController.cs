@@ -181,7 +181,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
-        this.WithUserIdAndCompanyId(identity => _appReleaseBusinessLogic.SubmitOfferConsentAsync(identity, appId, offerAgreementConsents));
+        this.WithUserIdAndCompanyId(identity => _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, identity));
 
     /// <summary>
     /// Return app detail with status

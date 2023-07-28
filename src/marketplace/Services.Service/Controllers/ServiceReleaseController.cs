@@ -149,7 +149,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid serviceId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
-        await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(identity, serviceId, offerAgreementConsents));
+        await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents, identity));
 
     /// <summary>
     /// Retrieves all in review status service in the marketplace .

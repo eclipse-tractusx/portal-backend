@@ -529,7 +529,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Act
         var identitytestdata = (_identity.UserId, _identity.CompanyId);
-        async Task Act() => await _sut.SubmitOfferConsentAsync(identitytestdata, Guid.Empty, _fixture.Create<OfferAgreementConsent>()).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>(), identitytestdata).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -544,7 +544,7 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Create<OfferAgreementConsent>();
 
         // Act
-        await _sut.SubmitOfferConsentAsync(identitytestdata, _existingAppId, data).ConfigureAwait(false);
+        await _sut.SubmitOfferConsentAsync(_existingAppId, data, identitytestdata).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(_existingAppId, data, identitytestdata, OfferTypeId.APP)).MustHaveHappenedOnceExactly();

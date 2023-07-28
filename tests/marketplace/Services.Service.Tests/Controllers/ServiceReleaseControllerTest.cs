@@ -21,7 +21,6 @@
 using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -128,7 +127,7 @@ public class ServiceReleaseControllerTest
         var serviceId = Guid.NewGuid();
         var data = _fixture.Create<ServiceProviderResponse>();
         A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         //Act
         var result = await this._controller.GetServiceDetailsForStatusAsync(serviceId).ConfigureAwait(false);
@@ -148,14 +147,14 @@ public class ServiceReleaseControllerTest
         var identitytestData = (_identity.UserId, _identity.CompanyId);
         var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
         var offerAgreementConsentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(identitytestData, serviceId, A<OfferAgreementConsent>._))
-            .ReturnsLazily(() => Enumerable.Repeat(consentStatusData, 1));
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._, A<(Guid, Guid)>._))
+            .Returns(Enumerable.Repeat(consentStatusData, 1));
 
         //Act
         var result = await this._controller.SubmitOfferConsentToAgreementsAsync(serviceId, offerAgreementConsentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(identitytestData, serviceId, offerAgreementConsentData)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, offerAgreementConsentData, identitytestData)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(1);
     }
 
@@ -165,7 +164,7 @@ public class ServiceReleaseControllerTest
         //Arrange
         var paginationResponse = new Pagination.Response<InReviewServiceData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewServiceData>(5));
         A.CallTo(() => _logic.GetAllInReviewStatusServiceAsync(A<int>._, A<int>._, A<OfferSorting?>._, A<string>._, A<string>._, A<ServiceReleaseStatusIdFilter?>._))
-            .ReturnsLazily(() => paginationResponse);
+            .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetAllInReviewStatusServiceAsync().ConfigureAwait(false);
@@ -180,8 +179,6 @@ public class ServiceReleaseControllerTest
     {
         //Arrange
         var documentId = Guid.NewGuid();
-        A.CallTo(() => _logic.DeleteServiceDocumentsAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeleteServiceDocumentsAsync(documentId).ConfigureAwait(false);
@@ -230,10 +227,6 @@ public class ServiceReleaseControllerTest
     [Fact]
     public async Task SubmitService_ReturnsExpectedCount()
     {
-        //Arrange
-        A.CallTo(() => _logic.SubmitServiceAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-
         //Act
         await this._controller.SubmitService(ServiceId).ConfigureAwait(false);
 
@@ -261,8 +254,6 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = _fixture.Create<Guid>();
         var data = new OfferDeclineRequest("Just a test");
-        A.CallTo(() => _logic.DeclineServiceRequestAsync(A<Guid>._, A<Guid>._, A<OfferDeclineRequest>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeclineServiceRequest(serviceId, data).ConfigureAwait(false);
@@ -278,16 +269,13 @@ public class ServiceReleaseControllerTest
         // Arrange
         var serviceId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        A.CallTo(() => _logic.CreateServiceDocumentAsync(A<Guid>._,
-            A<DocumentTypeId>._, A<IFormFile>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), CancellationToken.None))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
         await this._controller.UpdateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,
-            DocumentTypeId.ADDITIONAL_DETAILS, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), CancellationToken.None)).MustHaveHappened();
+            DocumentTypeId.ADDITIONAL_DETAILS, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

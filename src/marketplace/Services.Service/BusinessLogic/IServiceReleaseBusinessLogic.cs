@@ -72,7 +72,7 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="serviceId">Id of the service</param>
     /// <param name="offerAgreementConsents">Data of the consents for the agreements</param>
     /// <param name="identity">Id of the users company</param>
-    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync((Guid UserId, Guid CompanyId) identity, Guid serviceId, OfferAgreementConsent offerAgreementConsents);
+    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, (Guid UserId, Guid CompanyId) identity);
 
     /// <summary>
     /// Retrieves all in review status offer in the marketplace.
