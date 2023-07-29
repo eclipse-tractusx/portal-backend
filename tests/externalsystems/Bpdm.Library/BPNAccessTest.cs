@@ -329,7 +329,7 @@ public class BPNAccessTest
         var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
 
         //Assert
-        result.Message.Should().Be($"Access to external system bpdm failed with Status Code {HttpStatusCode.BadRequest}");
+        result.Message.Should().Be($"call to external system bpn-fetch-legal-entity failed with statuscode {(int)HttpStatusCode.BadRequest}");
     }
 
     #endregion

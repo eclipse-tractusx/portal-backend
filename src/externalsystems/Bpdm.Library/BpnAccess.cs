@@ -20,7 +20,9 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
@@ -28,6 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 public class BpnAccess : IBpnAccess
 {
     private readonly HttpClient _httpClient;
+    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public BpnAccess(IHttpClientFactory httpFactory)
     {
@@ -42,18 +45,12 @@ public class BpnAccess : IBpnAccess
             Path = $"pool/api/catena/legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}",
             Query = "idType=BPN"
         }.Uri;
-        var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken).ConfigureAwait(false);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new ServiceException($"Access to external system bpdm failed with Status Code {result.StatusCode}", result.StatusCode);
-        }
-        await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken)
+            .CatchingIntoServiceExceptionFor("bpn-fetch-legal-entity")
+            .ConfigureAwait(false);
         try
         {
-            var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmLegalEntityDto>(
-                responseStream,
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+            var legalEntityResponse = await result.Content.ReadFromJsonAsync<BpdmLegalEntityDto>(Options, cancellationToken).ConfigureAwait(false);
             if (legalEntityResponse?.Bpn == null)
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
