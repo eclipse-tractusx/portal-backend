@@ -37,8 +37,8 @@ public class InvitationRepository : IInvitationRepository
     public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
         _dbContext.Invitations
             .AsNoTracking()
-            .Where(invitation => 
-                invitation.CompanyApplicationId == applicationId && 
+            .Where(invitation =>
+                invitation.CompanyApplicationId == applicationId &&
                 invitation.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)
             .Select(invitation => new InvitedUserDetail(
                 invitation.CompanyUser!.Identity!.UserEntityId,
