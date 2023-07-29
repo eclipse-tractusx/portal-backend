@@ -254,7 +254,7 @@ public class CompanyDataController : ControllerBase
     /// <param name="sorting">Defines the sorting of the list</param>
     /// <response code="200">Collection of the credentials.</response>
     [HttpGet]
-    // [Authorize(Roles = "decision_ssicredential")]
+    [Authorize(Roles = "decision_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("credentials", Name = nameof(GetCredentials))]
     [ProducesResponseType(typeof(IEnumerable<CredentialDetailData>), StatusCodes.Status200OK)]

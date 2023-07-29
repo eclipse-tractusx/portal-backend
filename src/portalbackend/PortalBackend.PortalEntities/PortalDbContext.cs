@@ -41,8 +41,7 @@ public class PortalDbContext : DbContext
 
     protected PortalDbContext()
     {
-        Console.WriteLine("Constructor without params hit");
-        _identityService = null!;
+        throw new InvalidOperationException("IdentityService should never be null");
     }
 
     public PortalDbContext(DbContextOptions<PortalDbContext> options, IIdentityService identityService)
