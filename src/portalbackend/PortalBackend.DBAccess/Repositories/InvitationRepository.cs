@@ -34,24 +34,17 @@ public class InvitationRepository : IInvitationRepository
     {
         _dbContext = dbContext;
     }
-
     public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
         _dbContext.Invitations
-            .Join(_dbContext.InvitationStatuses,
-                i => i.InvitationStatusId,
-                invitationStatus => invitationStatus.Id,
-                (i, invitationStatus) => new { Invitation = i, InvitationStatus = invitationStatus })
-            .Join(_dbContext.CompanyUsers,
-                i => i.Invitation.CompanyUserId,
-                cu => cu.Id,
-                (i, cu) => new { i.Invitation, i.InvitationStatus, CompanyUser = cu })
-            .Where(i => i.Invitation.CompanyApplicationId == applicationId && i.CompanyUser.Identity!.UserStatusId != UserStatusId.DELETED)
-            .Select(i => new InvitedUserDetail(
-                i.CompanyUser.Identity!.UserEntityId,
-                i.InvitationStatus.Id,
-                i.CompanyUser.Email))
-        .AsNoTracking()
-        .AsAsyncEnumerable();
+            .AsNoTracking()
+            .Where(invitation => 
+                invitation.CompanyApplicationId == applicationId && 
+                invitation.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)
+            .Select(invitation => new InvitedUserDetail(
+                invitation.CompanyUser!.Identity!.UserEntityId,
+                invitation.InvitationStatusId,
+                invitation.CompanyUser.Email))
+            .AsAsyncEnumerable();
 
     public Task<Invitation?> GetInvitationStatusAsync(Guid companyUserId) =>
         _dbContext.Invitations

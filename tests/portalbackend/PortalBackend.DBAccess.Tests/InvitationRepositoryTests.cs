@@ -27,11 +27,10 @@ public class InvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         var result = await sut.GetInvitedUserDetailsUntrackedAsync(_applicationId).ToListAsync().ConfigureAwait(false);
 
-        result.Should().NotBeNull();
-        result.Should().HaveCount(2);
-        result.Should().Satisfy(
-            x => x.EmailId == "test@user.com" && x.InvitationStatus == InvitationStatusId.CREATED,
-            x => x.EmailId == "company.admin1@acme.corp" && x.InvitationStatus == InvitationStatusId.CREATED);
+        result.Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.EmailId == "test@user.com" && x.InvitationStatus == InvitationStatusId.CREATED,
+                x => x.EmailId == "company.admin1@acme.corp" && x.InvitationStatus == InvitationStatusId.CREATED);
     }
 
     #region Setup    
