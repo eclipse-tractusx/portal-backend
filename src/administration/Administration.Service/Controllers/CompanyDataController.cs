@@ -193,7 +193,7 @@ public class CompanyDataController : ControllerBase
     /// <remarks>Example: Get: api/administration/companydata/certificateTypes</remarks>
     /// <response code="200">Returns a collection of certificates.</response>
     [HttpGet]
-    // [Authorize(Roles = "request_ssicredential")]
+    [Authorize(Roles = "request_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificateTypes")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
