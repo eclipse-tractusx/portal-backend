@@ -206,7 +206,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new ConflictException("App Name is not yet set.");
         }
 
-        offerSubscriptionRepository.AttachAndModifyOfferSubscription(subscriptionId, subscription => subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE);
+        offerSubscriptionRepository.AttachAndModifyOfferSubscription(subscriptionId, subscription =>
+        {
+            subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+        });
 
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId,
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,

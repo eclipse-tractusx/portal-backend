@@ -270,8 +270,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task SetCompanyDetailDataAsync([FromRoute] Guid applicationId, [FromBody] CompanyDetailData companyDetailData) =>
-            this.WithCompanyId(companyId =>
-                _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, companyId));
+            this.WithCompanyId(companyId => _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, companyId));
 
         /// <summary>
         /// Invites the given user to the given application

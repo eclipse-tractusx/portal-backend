@@ -54,27 +54,27 @@ public interface IConnectorsBusinessLogic
     /// Add a connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <param name="identity">identity (userId and companyId) of the user</param>
+    /// <param name="companyId">companyId of the user</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
-    Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken);
+    Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, Guid companyId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Add a managed connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <param name="identity">identity (userId and companyId) of the user</param>
+    /// <param name="companyId">companyId of the user</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
-    Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken);
+    Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, Guid companyId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>
-    /// <param name="userId">userId of the user</param>
+    /// <param name="companyId">companyId of the user</param>
     /// <param name="cancellationToken">Cancellation Token</param>
-    Task DeleteConnectorAsync(Guid connectorId, Guid userId, CancellationToken cancellationToken);
+    Task DeleteConnectorAsync(Guid connectorId, Guid companyId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieve connector end point along with bpns

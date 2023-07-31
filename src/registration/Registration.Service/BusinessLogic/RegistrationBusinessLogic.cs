@@ -803,7 +803,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
 
     private static void HandleConsent(IEnumerable<ConsentData> consents, IEnumerable<AgreementConsentStatus> agreementConsentsToSet,
-        IConsentRepository consentRepository, Guid companyId, Guid companyUserId)
+        IConsentRepository consentRepository, Guid companyId, Guid userId)
     {
         var consentsToInactivate = consents
             .Where(consent =>
@@ -813,7 +813,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         consentRepository.AttachAndModifiesConsents(consentsToInactivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.INACTIVE;
-            consent.LastEditorId = companyUserId;
         });
 
         var consentsToActivate = consents
@@ -825,7 +824,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         consentRepository.AttachAndModifiesConsents(consentsToActivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.ACTIVE;
-            consent.LastEditorId = companyUserId;
         });
 
         foreach (var agreementConsentToAdd in agreementConsentsToSet
@@ -834,7 +832,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                          && !consents.Any(activeConsent =>
                              activeConsent.AgreementId == agreementConsent.AgreementId)))
         {
-            consentRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId,
+            consentRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, userId,
                 ConsentStatusId.ACTIVE);
         }
     }
@@ -873,7 +871,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var updateStatus = GetAndValidateUpdateApplicationStatus(applicationStatusId, type);
         if (updateStatus != default)
         {
-            applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca => ca.ApplicationStatusId = updateStatus);
+            applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
+            {
+                ca.ApplicationStatusId = updateStatus;
+            });
         }
     }
 

@@ -98,7 +98,7 @@ public interface IServiceReleaseBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service to update</param>
     /// <param name="data">Data of the updated entry</param>
-    /// <param name="companyId">Id of the current users company</param>
+    /// <param name="companyId">CompanyId of User</param>
     Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, Guid companyId);
 
     /// <summary>

@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
@@ -37,9 +38,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers
 
 public class ServiceReleaseControllerTest
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private const string AccessToken = "THISISTHEACCESSTOKEN";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private static readonly Guid ServiceId = new("4C1A6851-D4E7-4E10-A011-3732CD045453");
     private readonly IFixture _fixture;
     private readonly IServiceReleaseBusinessLogic _logic;
@@ -49,7 +49,7 @@ public class ServiceReleaseControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<IServiceReleaseBusinessLogic>();
         this._controller = new ServiceReleaseController(_logic);
-        _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken, _identity);
+        _controller.AddControllerContextWithClaimAndBearer(AccessToken, _identity);
     }
 
     [Fact]

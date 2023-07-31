@@ -64,7 +64,7 @@ public class Consent : IAuditableV1, IBaseEntity
     public Guid CompanyUserId { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }
@@ -72,6 +72,7 @@ public class Consent : IAuditableV1, IBaseEntity
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual ConsentStatus? ConsentStatus { get; private set; }
     public virtual Document? Document { get; private set; }
+    public virtual Identity? LastEditor { get; private set; }
     public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
 }

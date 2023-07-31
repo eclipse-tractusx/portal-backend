@@ -27,6 +27,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Tests;
 
@@ -67,7 +68,7 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options);
+        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
         return context;
     }
 
@@ -86,7 +87,7 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options);
+        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
         await context.Database.MigrateAsync();
 
         var seederOptions = Options.Create(new SeederSettings
