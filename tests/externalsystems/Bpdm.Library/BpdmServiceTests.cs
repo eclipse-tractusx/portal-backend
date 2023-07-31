@@ -117,8 +117,9 @@ public class BpdmServiceTests
         var data = _fixture.Build<BpdmLegalEntityOutputData>()
             .With(x => x.ExternalId, externalId)
             .With(x => x.Bpn, "TESTBPN")
-            .Create();
-
+            .CreateMany(1);
+        var pagination = new PageOutputResponseBpdmLegalEntityData(data);
+        
         var options = new System.Text.Json.JsonSerializerOptions
         {
             PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
@@ -127,7 +128,7 @@ public class BpdmServiceTests
 
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            data.ToJsonContent(
+            pagination.ToJsonContent(
                 options,
                 "application/json")
             );
@@ -143,7 +144,7 @@ public class BpdmServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.ExternalId.Should().Be(data.ExternalId);
+        result.ExternalId.Should().Be(externalId);
         result.Bpn.Should().Be("TESTBPN");
     }
 
