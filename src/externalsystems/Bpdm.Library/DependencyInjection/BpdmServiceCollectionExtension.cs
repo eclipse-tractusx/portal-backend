@@ -25,7 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
 public static class BpdmServiceCollectionExtension
 {

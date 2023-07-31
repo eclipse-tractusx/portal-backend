@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
+ * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,13 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
-public interface IBpnAccess
+public static class BpnAccessCollectionExtension
 {
-    IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken);
-    Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
-    IAsyncEnumerable<BpdmLegalEntityAddressDto> FetchLegalEntityAddressByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
+    public static IServiceCollection AddBpnAccess(this IServiceCollection services, string baseAddress)
+    {
+        services.AddTransient<LoggingHandler<BpnAccess>>();
+        services.AddHttpClient(nameof(BpnAccess), c =>
+            {
+                c.BaseAddress = new Uri(baseAddress);
+            })
+            .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
+        services.AddTransient<IBpnAccess, BpnAccess>();
+
+        return services;
+    }
 }

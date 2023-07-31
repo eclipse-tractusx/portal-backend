@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,22 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
-public static class BpnAccessCollectionExtension
+public interface IBpnAccess
 {
-    public static IServiceCollection AddBpnAccess(this IServiceCollection services, string baseAddress)
-    {
-        services.AddTransient<LoggingHandler<BpnAccess>>();
-        services.AddHttpClient(nameof(BpnAccess), c =>
-            {
-                c.BaseAddress = new Uri(baseAddress);
-            })
-            .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
-        services.AddTransient<IBpnAccess, BpnAccess>();
-
-        return services;
-    }
+    Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
 }
