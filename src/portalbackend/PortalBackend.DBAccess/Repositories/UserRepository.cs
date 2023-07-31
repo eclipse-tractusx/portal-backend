@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -53,8 +54,8 @@ public class UserRepository : IUserRepository
             })
             .AsAsyncEnumerable();
 
-    public CompanyUser CreateCompanyUser(Guid identityId, string? firstName, string? lastName, string email, Guid lastEditorId) =>
-        _dbContext.CompanyUsers.Add(new CompanyUser(identityId, lastEditorId)
+    public CompanyUser CreateCompanyUser(Guid identityId, string? firstName, string? lastName, string email) =>
+        _dbContext.CompanyUsers.Add(new CompanyUser(identityId)
         {
             Firstname = firstName,
             Lastname = lastName,
@@ -73,9 +74,7 @@ public class UserRepository : IUserRepository
 
     public void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? initialize, Action<CompanyUser> setOptionalParameters)
     {
-        var companyUser = new CompanyUser(companyUserId,
-            // Guid.Empty, default, default, 
-            Guid.Empty);
+        var companyUser = new CompanyUser(companyUserId);
         initialize?.Invoke(companyUser);
         var updatedEntity = _dbContext.Attach(companyUser).Entity;
         setOptionalParameters.Invoke(updatedEntity);

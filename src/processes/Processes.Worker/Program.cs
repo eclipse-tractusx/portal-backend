@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
@@ -32,8 +33,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executo
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Json;
 
 LoggingExtensions.EnsureInitialized();
 Log.Information("Building worker");
@@ -52,7 +51,8 @@ try
                 .AddPortalRepositories(hostContext.Configuration)
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddApplicationChecklistCreation()
-                .AddApplicationActivation(hostContext.Configuration);
+                .AddApplicationActivation(hostContext.Configuration)
+                .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"));
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {

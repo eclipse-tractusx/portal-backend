@@ -62,7 +62,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         _settings = settings.Value;
     }
 
-    public Task ExecuteInvitation(CompanyInvitationData invitationData, Guid userId)
+    public Task ExecuteInvitation(CompanyInvitationData invitationData)
     {
         if (string.IsNullOrWhiteSpace(invitationData.email))
         {
@@ -72,10 +72,10 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         {
             throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
         }
-        return ExecuteInvitationInternalAsync(invitationData, userId);
+        return ExecuteInvitationInternalAsync(invitationData);
     }
 
-    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData, Guid userId)
+    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
     {
         var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
         await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName, _settings.InitialLoginTheme).ConfigureAwait(false);
@@ -96,7 +96,6 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             company.Id,
             company.Name,
             null,
-            userId,
             idpName,
             true
         );

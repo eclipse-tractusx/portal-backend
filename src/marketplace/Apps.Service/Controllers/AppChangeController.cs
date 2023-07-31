@@ -176,6 +176,7 @@ public class AppChangeController : ControllerBase
     [Route("{appId}/subscription/{subscriptionId}/tenantUrl")]
     [Authorize(Roles = "edit_apps")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

@@ -85,9 +85,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.UseCaseNames));
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(Guid companyId) =>
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(Guid userId) =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetAllBusinessAppDataForUserIdAsync(companyId)
+            .GetAllBusinessAppDataForUserIdAsync(userId)
             .Select(x =>
                 new BusinessAppData(
                     x.OfferId,
@@ -206,7 +206,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new ConflictException("App Name is not yet set.");
         }
 
-        offerSubscriptionRepository.AttachAndModifyOfferSubscription(subscriptionId, subscription => subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE);
+        offerSubscriptionRepository.AttachAndModifyOfferSubscription(subscriptionId, subscription =>
+        {
+            subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+        });
 
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId,
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,

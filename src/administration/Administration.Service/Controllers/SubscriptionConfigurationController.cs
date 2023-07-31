@@ -88,7 +88,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> SetProviderCompanyDetail([FromBody] ProviderDetailData data)
     {
-        await this.WithUserIdAndCompanyId(identity => _businessLogic.SetProviderCompanyDetailsAsync(data, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _businessLogic.SetProviderCompanyDetailsAsync(data, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 

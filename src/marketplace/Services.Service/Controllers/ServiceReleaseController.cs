@@ -143,13 +143,13 @@ public class ServiceReleaseController : ControllerBase
     [HttpPost]
     [Route("consent/{serviceId}/agreementConsents")]
     [Authorize(Roles = "add_service_offering")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [ProducesResponseType(typeof(IEnumerable<ConsentStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid serviceId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
-        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents, companyId));
+        await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents, identity));
 
     /// <summary>
     /// Retrieves all in review status service in the marketplace .

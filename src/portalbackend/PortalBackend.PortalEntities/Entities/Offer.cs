@@ -93,7 +93,7 @@ public class Offer : IAuditableV1, IBaseEntity
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
     // Navigation properties
 
     public virtual OfferType? OfferType { get; private set; }
@@ -101,7 +101,7 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual OfferStatus? OfferStatus { get; set; }
 
     public virtual LicenseType? LicenseType { get; set; }
-
+    public virtual Identity? LastEditor { get; private set; }
     public virtual AppInstanceSetup? AppInstanceSetup { get; set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }

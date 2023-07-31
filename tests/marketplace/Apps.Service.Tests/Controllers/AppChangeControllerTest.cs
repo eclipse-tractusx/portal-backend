@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
@@ -123,8 +124,6 @@ public class AppChangeControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);

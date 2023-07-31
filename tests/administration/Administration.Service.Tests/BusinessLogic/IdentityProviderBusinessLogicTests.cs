@@ -23,10 +23,10 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Text;
@@ -110,7 +110,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers);
@@ -144,7 +144,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"Only contentType {_csvSettings.ContentType} files are allowed.");
@@ -183,7 +183,6 @@ public class IdentityProviderBusinessLogicTests
         SetupFakes(users, lines);
 
         var changedEmailResult = (string?)null;
-        var lastEditorId = (Guid?)null;
 
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._))
             .Invokes(x =>
@@ -191,10 +190,9 @@ public class IdentityProviderBusinessLogicTests
                 var companyUserId = x.Arguments.Get<Guid>("companyUserId")!;
                 var setOptionalParameters = x.Arguments.Get<Action<CompanyUser>>("setOptionalParameters");
 
-                var companyUser = new CompanyUser(companyUserId, Guid.Empty);
+                var companyUser = new CompanyUser(companyUserId);
                 setOptionalParameters?.Invoke(companyUser);
                 changedEmailResult = companyUser.Email;
-                lastEditorId = companyUser.LastEditorId;
             }
         );
 
@@ -203,7 +201,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -219,8 +217,6 @@ public class IdentityProviderBusinessLogicTests
 
         changedEmailResult.Should().NotBeNull();
         changedEmailResult.Should().Be(changedEmail);
-        lastEditorId.Should().HaveValue();
-        lastEditorId!.Value.Should().Be(_companyUserId);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
     }
 
@@ -259,7 +255,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -311,7 +307,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -362,7 +358,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers - 1);

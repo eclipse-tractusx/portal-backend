@@ -24,6 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 {
     public interface IInvitationBusinessLogic
     {
-        Task ExecuteInvitation(CompanyInvitationData invitationData, Guid userId);
+        Task ExecuteInvitation(CompanyInvitationData invitationData);
     }
 }

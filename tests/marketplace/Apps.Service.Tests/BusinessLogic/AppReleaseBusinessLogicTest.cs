@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Collections.Immutable;
 using Xunit;
@@ -528,7 +529,8 @@ public class AppReleaseBusinessLogicTest
     public async Task SubmitOfferConsentAsync_WithEmptyAppId_ThrowsControllerArgumentException()
     {
         // Act
-        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>(), _identity.CompanyId).ConfigureAwait(false);
+        var identitytestdata = (_identity.UserId, _identity.CompanyId);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>(), identitytestdata).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -539,13 +541,14 @@ public class AppReleaseBusinessLogicTest
     public async Task SubmitOfferConsentAsync_WithAppId_CallsOfferService()
     {
         // Arrange
+        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var data = _fixture.Create<OfferAgreementConsent>();
 
         // Act
-        await _sut.SubmitOfferConsentAsync(_existingAppId, data, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.SubmitOfferConsentAsync(_existingAppId, data, identitytestdata).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(_existingAppId, data, _identity.CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(_existingAppId, data, identitytestdata, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

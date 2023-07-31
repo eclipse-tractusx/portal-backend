@@ -18,19 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Microsoft.AspNetCore.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+
+public class IdentityService : IIdentityService
 {
-    public static class InMemoryDbContextFactory
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public IdentityService(IHttpContextAccessor httpContextAccessor)
     {
-        public static PortalDbContext GetPortalDbContext()
-        {
-            var options = new DbContextOptionsBuilder<PortalDbContext>()
-                               .UseInMemoryDatabase(databaseName: "InMemoryPortalDatabase").Options;
-            var dbContext = new PortalDbContext(options);
-            return dbContext;
-        }
+        _httpContextAccessor = httpContextAccessor;
     }
+
+    /// <inheritdoc />
+    public IdentityData IdentityData =>
+        _httpContextAccessor.HttpContext?.User.GetIdentityData() ??
+        throw new ConflictException("The identity should be set here");
 }

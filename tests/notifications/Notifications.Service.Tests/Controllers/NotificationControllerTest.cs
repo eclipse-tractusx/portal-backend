@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
@@ -45,7 +46,7 @@ public class NotificationControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<INotificationBusinessLogic>();
         this._controller = new NotificationController(_logic);
-        _controller.AddControllerContextWithClaimAndBearer(_identity.UserEntityId, "THISISTHEACCESSTOKEN", _identity);
+        _controller.AddControllerContextWithClaimAndBearer("THISISTHEACCESSTOKEN", _identity);
     }
 
     [Fact]

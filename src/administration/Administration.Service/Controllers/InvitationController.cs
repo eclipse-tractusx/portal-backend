@@ -70,5 +70,5 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
-        this.WithUserId(userId => _logic.ExecuteInvitation(invitationData, userId));
+        _logic.ExecuteInvitation(invitationData);
 }

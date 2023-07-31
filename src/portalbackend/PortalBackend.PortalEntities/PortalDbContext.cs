@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEnti
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -36,13 +37,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 /// </remarks>
 public class PortalDbContext : DbContext
 {
+    private readonly IIdentityService _identityService;
+
     protected PortalDbContext()
     {
+        throw new InvalidOperationException("IdentityService should never be null");
     }
 
-    public PortalDbContext(DbContextOptions<PortalDbContext> options)
+    public PortalDbContext(DbContextOptions<PortalDbContext> options, IIdentityService identityService)
         : base(options)
     {
+        _identityService = identityService;
     }
 
     public virtual DbSet<Address> Addresses { get; set; } = default!;
@@ -1342,5 +1347,40 @@ public class PortalDbContext : DbContext
                   .WithOne(x => x.CompanyServiceAccount)
                   .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.ServiceAccountId);
         });
+    }
+
+    /// <inheritdoc />
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
+    {
+        EnhanceChangedEntries();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        EnhanceChangedEntries();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override int SaveChanges()
+    {
+        EnhanceChangedEntries();
+        return base.SaveChanges();
+    }
+
+    private void EnhanceChangedEntries()
+    {
+        foreach (var prop in ChangeTracker.Entries()
+            .Where(entry => entry.State != EntityState.Unchanged && entry.State != EntityState.Detached && entry.Entity is IAuditableV1)
+            .SelectMany(entry =>
+                entry.Properties.IntersectBy(
+                    entry.Entity.GetType().GetProperties()
+                        .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute)))
+                        .Select(x => x.Name),
+                    property => property.Metadata.Name)))
+        {
+            prop.CurrentValue = _identityService.IdentityData.UserId;
+        }
     }
 }

@@ -65,7 +65,7 @@ public interface IAppChangeBusinessLogic
     /// Deactivate Offer Status by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="companyId">Id of the Users company</param>
+    /// <param name="companyId">CompanyId</param>
     public Task DeactivateOfferByAppIdAsync(Guid appId, Guid companyId);
 
     /// <summary>

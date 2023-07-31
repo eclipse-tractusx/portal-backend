@@ -56,9 +56,10 @@ public class UserRole : IAuditableV1, IBaseEntity
     public Guid OfferId { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
     // Navigation properties
     public virtual Offer? Offer { get; set; }
+    public virtual Identity? LastEditor { get; private set; }
     public virtual ICollection<IdentityAssignedRole> IdentityAssignedRoles { get; private set; }
     public virtual ICollection<UserRoleCollection> UserRoleCollections { get; private set; }
     public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }

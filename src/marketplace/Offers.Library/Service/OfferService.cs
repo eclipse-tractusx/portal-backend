@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -163,9 +164,9 @@ public class OfferService : IOfferService
         return result.OfferAgreementConsent;
     }
 
-    public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, Guid companyId, OfferTypeId offerTypeId)
+    public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId)
     {
-        var (companyUserId, dbAgreements, requiredAgreementIds) = await GetProviderOfferAgreementConsent(offerId, companyId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+        var (dbAgreements, requiredAgreementIds) = await GetProviderOfferAgreementConsent(offerId, identity.CompanyId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
         var invalidConsents = offerAgreementConsent.Agreements.ExceptBy(requiredAgreementIds, consent => consent.AgreementId);
         if (invalidConsents.Any())
         {
@@ -177,8 +178,8 @@ public class OfferService : IOfferService
                 dbAgreements,
                 offerAgreementConsent.Agreements,
                 offerId,
-                companyId,
-                companyUserId,
+                identity.CompanyId,
+                identity.UserId,
                 DateTimeOffset.UtcNow)
             .Select(consent => new ConsentStatusData(consent.AgreementId, consent.ConsentStatusId));
 

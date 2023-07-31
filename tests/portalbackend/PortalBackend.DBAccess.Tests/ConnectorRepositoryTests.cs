@@ -81,7 +81,6 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = sut.CreateConnector("Test connector", "de", "https://www.test.de", con =>
         {
             con.ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
-            con.LastEditorId = new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2");
         });
 
         // Assert
@@ -89,9 +88,9 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changedEntries = changeTracker.Entries().ToList();
         result.Name.Should().Be("Test connector");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<Connector>().Which.Name.Should().Be("Test connector");
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Connector>()
+            .Which.Name.Should().Be("Test connector");
     }
 
     #endregion
@@ -255,11 +254,12 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConnectorDeleteDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833")).ConfigureAwait(false);
+        var result = await sut.GetConnectorDeleteDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.IsValidConnectorId.Should().BeTrue();
+        result.IsProvidingOrHostCompany.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().BeNull();
         result.DocumentStatusId.Should().BeNull();
     }
@@ -271,13 +271,29 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConnectorDeleteDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839")).ConfigureAwait(false);
+        var result = await sut.GetConnectorDeleteDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.IsValidConnectorId.Should().BeTrue();
+        result.IsProvidingOrHostCompany.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().Be(new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b3"));
         result.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+    }
+
+    [Fact]
+    public async Task GetSelfDescriptionDocumentDataAsync_WithoutExistingCompanyId_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorDeleteDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839"), Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsValidConnectorId.Should().BeTrue();
+        result.IsProvidingOrHostCompany.Should().BeFalse();
     }
 
     [Fact]
@@ -287,7 +303,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConnectorDeleteDataAsync(new Guid()).ConfigureAwait(false);
+        var result = await sut.GetConnectorDeleteDataAsync(new Guid(), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
