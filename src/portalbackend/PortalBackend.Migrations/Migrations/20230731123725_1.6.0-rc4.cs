@@ -24,10 +24,15 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public partial class AddLastEditorConstraints : Migration
+    public partial class _160rc4 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "fk_notifications_company_users_creator_id",
+                schema: "portal",
+                table: "notifications");
+
             migrationBuilder.CreateIndex(
                 name: "ix_user_roles_last_editor_id",
                 schema: "portal",
@@ -168,6 +173,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "identity_assigned_roles",
                 column: "last_editor_id",
+                principalSchema: "portal",
+                principalTable: "identities",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_notifications_identities_creator_id",
+                schema: "portal",
+                table: "notifications",
+                column: "creator_user_id",
                 principalSchema: "portal",
                 principalTable: "identities",
                 principalColumn: "id");
@@ -252,6 +266,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "identity_assigned_roles");
 
             migrationBuilder.DropForeignKey(
+                name: "fk_notifications_identities_creator_id",
+                schema: "portal",
+                table: "notifications");
+
+            migrationBuilder.DropForeignKey(
                 name: "fk_offer_subscriptions_identities_last_editor_id",
                 schema: "portal",
                 table: "offer_subscriptions");
@@ -330,6 +349,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "ix_app_subscription_details_last_editor_id",
                 schema: "portal",
                 table: "app_subscription_details");
+
+            migrationBuilder.Sql("UPDATE portal.notifications as n SET creator_user_id = null FROM (SELECT id FROM portal.identities where identity_type_id = 2) AS i WHERE i.id = n.creator_user_id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_notifications_company_users_creator_id",
+                schema: "portal",
+                table: "notifications",
+                column: "creator_user_id",
+                principalSchema: "portal",
+                principalTable: "company_users",
+                principalColumn: "id");
         }
     }
 }
