@@ -92,7 +92,7 @@ public record BpdmPostalDeliveryPointDto(
 );
 
 public record BpdmGeographicCoordinatesDto(
-    int Longitude,
-    int Latitude,
-    int Altitude
+    double Longitude,
+    double Latitude,
+    double Altitude
 );

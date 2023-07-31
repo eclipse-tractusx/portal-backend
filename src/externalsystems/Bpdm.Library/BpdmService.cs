@@ -118,14 +118,14 @@ public class BpdmService : IBpdmService
         try
         {
             var response = await result.Content
-                .ReadFromJsonAsync<BpdmLegalEntityOutputData>(Options, cancellationToken)
+                .ReadFromJsonAsync<PageOutputResponseBpdmLegalEntityData>(Options, cancellationToken)
                 .ConfigureAwait(false);
-            if (response?.ExternalId == null)
+            if (response?.Content?.Count() != 1)
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
             }
 
-            return response;
+            return response.Content.Single();
         }
         catch (JsonException je)
         {
