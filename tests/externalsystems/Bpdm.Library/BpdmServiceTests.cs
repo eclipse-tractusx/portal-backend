@@ -119,7 +119,7 @@ public class BpdmServiceTests
             .With(x => x.Bpn, "TESTBPN")
             .CreateMany(1);
         var pagination = new PageOutputResponseBpdmLegalEntityData(data);
-        
+
         var options = new System.Text.Json.JsonSerializerOptions
         {
             PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
