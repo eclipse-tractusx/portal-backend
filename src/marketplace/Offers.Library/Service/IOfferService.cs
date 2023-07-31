@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -91,10 +92,10 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerId"></param>
     /// <param name="offerAgreementConsent"></param>
-    /// <param name="companyId"></param>
+    /// <param name="identity"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, Guid companyId, OfferTypeId offerTypeId);
+    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Creates a new service offering
@@ -170,7 +171,7 @@ public interface IOfferService
     /// Deactivate the given offerStatus by offerId and offerType
     /// </summary>
     /// <param name="offerId">Id of the offer that should be Deactivate</param>
-    /// <param name="companyId">Id of the users company</param>
+    /// <param name="companyId">CompanyId of the user</param>
     /// <param name="offerTypeId">Type of the offer</param>
     Task DeactivateOfferIdAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 

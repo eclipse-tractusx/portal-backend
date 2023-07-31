@@ -41,9 +41,9 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Get all apps that a user has been assigned roles in.
     /// </summary>
-    /// <param name="companyId">Id of the user to get available apps for.</param>
+    /// <param name="userId">Id of the user to get available apps for.</param>
     /// <returns>List of available apps for user.</returns>
-    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(Guid companyId);
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(Guid userId);
 
     /// <summary>
     /// Get detailed application data for a single app by id.

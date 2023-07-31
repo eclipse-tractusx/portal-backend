@@ -158,17 +158,14 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, Guid companyId)
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, (Guid UserId, Guid CompanyId) identity)
     {
         if (appId == Guid.Empty)
         {
             throw new ControllerArgumentException($"AppId must not be empty");
         }
-        return SubmitOfferConsentInternalAsync(appId, offerAgreementConsents, companyId);
+        return _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, identity, OfferTypeId.APP);
     }
-
-    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, Guid companyId) =>
-        _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, companyId, OfferTypeId.APP);
 
     /// <inheritdoc/>
     public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, Guid companyId)

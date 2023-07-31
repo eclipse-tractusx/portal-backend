@@ -28,10 +28,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditCompanyUser20230522))]
 public class CompanyUser : IBaseEntity, IAuditableV1
 {
-    public CompanyUser(Guid id, Guid? lastEditorId)
+    public CompanyUser(Guid id)
     {
         Id = id;
-        LastEditorId = lastEditorId;
 
         Consents = new HashSet<Consent>();
         Documents = new HashSet<Document>();
@@ -40,7 +39,6 @@ public class CompanyUser : IBaseEntity, IAuditableV1
         SalesManagerOfOffers = new HashSet<Offer>();
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
         Notifications = new HashSet<Notification>();
-        CreatedNotifications = new HashSet<Notification>();
         RequestedSubscriptions = new HashSet<OfferSubscription>();
         CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
@@ -62,9 +60,10 @@ public class CompanyUser : IBaseEntity, IAuditableV1
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     public virtual Identity? Identity { get; set; }
+    public virtual Identity? LastEditor { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
@@ -72,7 +71,6 @@ public class CompanyUser : IBaseEntity, IAuditableV1
     public virtual ICollection<Offer> SalesManagerOfOffers { get; private set; }
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
     public virtual ICollection<Notification> Notifications { get; private set; }
-    public virtual ICollection<Notification> CreatedNotifications { get; private set; }
     public virtual ICollection<OfferSubscription> RequestedSubscriptions { get; private set; }
     public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

@@ -516,19 +516,19 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, unlinkedUsersOnly, companyId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
     }
 
-    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, Guid companyId, CancellationToken cancellationToken)
     {
         if (!document.ContentType.Equals(_settings.CsvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
         {
             throw new UnsupportedMediaTypeException($"Only contentType {_settings.CsvSettings.ContentType} files are allowed.");
         }
-        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, identity, cancellationToken);
+        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, companyId, cancellationToken);
     }
 
-    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, Guid companyId, CancellationToken cancellationToken)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var (sharedIdpAlias, existingAliase) = await GetCompanyAliasDataAsync(identity.CompanyId).ConfigureAwait(false);
+        var (sharedIdpAlias, existingAliase) = await GetCompanyAliasDataAsync(companyId).ConfigureAwait(false);
 
         using var stream = document.OpenReadStream();
 
@@ -541,7 +541,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 numIdps = ParseCSVFirstLineReturningNumIdps(line);
             },
             line => ParseCSVLine(line, numIdps, existingAliase),
-            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, identity.CompanyId, sharedIdpAlias, identity.UserId, cancellationToken),
+            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, companyId, sharedIdpAlias, cancellationToken),
             cancellationToken
         ).ConfigureAwait(false);
 
@@ -556,7 +556,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         IUserRepository userRepository,
         Guid companyId,
         string? sharedIdpAlias,
-        Guid creatorId,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var (companyUserId, profile, identityProviderLinks) in userProfileLinkDatas)
@@ -578,7 +577,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
                 if (existingProfile != profile)
                 {
-                    await UpdateUserProfileAsync(userRepository, userEntityId, companyUserId, profile, existingLinks, sharedIdpAlias, creatorId).ConfigureAwait(false);
+                    await UpdateUserProfileAsync(userRepository, userEntityId, companyUserId, profile, existingLinks, sharedIdpAlias).ConfigureAwait(false);
                     updated = true;
                 }
                 success = updated;
@@ -644,7 +643,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return true;
     }
 
-    private async ValueTask UpdateUserProfileAsync(IUserRepository userRepository, string userEntityId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias, Guid creatorId)
+    private async ValueTask UpdateUserProfileAsync(IUserRepository userRepository, string userEntityId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias)
     {
         var (firstName, lastName, email) = (profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "");
 
@@ -663,7 +662,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 companyUser.Firstname = profile.FirstName;
                 companyUser.Lastname = profile.LastName;
                 companyUser.Email = profile.Email;
-                companyUser.LastEditorId = creatorId;
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

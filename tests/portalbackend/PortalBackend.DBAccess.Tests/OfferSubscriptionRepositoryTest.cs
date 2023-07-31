@@ -272,7 +272,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x.Contact.SequenceEqual(new[] { "tobeadded@cx.com" }) &&
             x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE &&
             x.TenantUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
-            x.AppInstanceId == new Guid("ab25c218-9ab3-4f1a-b6f4-6394fbc33c5b"));
+            x.AppInstanceId == "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com");
     }
 
     [Fact]

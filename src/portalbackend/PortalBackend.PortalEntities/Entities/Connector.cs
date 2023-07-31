@@ -71,7 +71,7 @@ public class Connector : IAuditableV1, IBaseEntity
     public Guid? CompanyServiceAccountId { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
     public virtual ConnectorType? Type { get; set; }

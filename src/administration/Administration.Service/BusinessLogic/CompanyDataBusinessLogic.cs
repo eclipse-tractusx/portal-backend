@@ -412,7 +412,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             {
                 c.CompanySsiDetailStatusId = CompanySsiDetailStatusId.ACTIVE;
                 c.DateLastChanged = _dateTimeProvider.OffsetNow;
-                c.LastEditorId = userId;
             });
 
         switch (data.Kind)
@@ -475,7 +474,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             {
                 c.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
                 c.DateLastChanged = _dateTimeProvider.OffsetNow;
-                c.LastEditorId = userId;
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

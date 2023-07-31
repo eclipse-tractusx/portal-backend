@@ -24,186 +24,80 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 public record BpdmLegalEntityData(
     string ExternalId,
-    string? Bpn,
-    IEnumerable<BpdmIdentifier> Identifiers,
-    IEnumerable<BpdmName> Names,
+    IEnumerable<string> LegalNameParts,
+    string? LegalShortName,
     string? LegalForm,
-    BpdmStatus? Status,
-    IEnumerable<BpdmProfileClassification> ProfileClassifications,
-    IEnumerable<string> Types,
-    IEnumerable<BpdmBankAccount>? BankAccounts,
+    IEnumerable<BpdmIdentifier> Identifiers,
+    IEnumerable<BpdmStatus> States,
+    IEnumerable<BpdmProfileClassification> Classifications,
+    IEnumerable<string> Roles,
     BpdmLegalAddress LegalAddress
 );
 
 public record BpdmIdentifier(
     string Value,
     BpdmIdentifierId Type,
-    string? IssuingBody,
-    string? Status
-);
-
-public record BpdmName(
-    string Value,
-    string? ShortName,
-    string Type,
-    string Language
-);
-
-public record BpdmLegalForm
-(
-    string TechnicalKey,
-    string Name,
-    string Url,
-    string MainAbbreviation,
-    BpdmLanguage Language,
-    IEnumerable<BpdmCategory> Categories
-);
-
-public record BpdmLanguage
-(
-    string TechnicalKey,
-    string Name
-);
-
-public record BpdmCategory
-(
-    string Name,
-    string Url
+    string? IssuingBody
 );
 
 public record BpdmStatus(
     string OfficialDenotation,
     DateTimeOffset ValidFrom,
     DateTimeOffset ValidUntil,
-    BpdmType Type
+    string Type
 );
 
 public record BpdmProfileClassification(
     string Value,
     string Code,
-    BpdmProfileClassificationType Type
-);
-
-public record BpdmProfileClassificationType
-(
-    string Name,
-    string Url
-);
-
-public record BpdmType
-(
-    string TechnicalKey,
-    string Name,
-    string Url
-);
-
-public record BpdmBankAccount(
-    IEnumerable<float> TrustScores,
-    BpdmCurrency Currency,
-    string InternationalBankAccountIdentifier,
-    string InternationalBankIdentifier,
-    string NationalBankAccountIdentifier,
-    string NationalBankIdentifier
-);
-
-public record BpdmCurrency
-(
-    string TechnicalKey,
-    string Name
-);
-
-public record BpdmRoles
-(
-    string TechnicalKey,
-    string Name
-);
-
-public record BpdmReations
-(
-    BpdmRelationClass RelationClass,
-    BpdmRelationType Type,
-    string StartNode,
-    string EndNode,
-    DateTimeOffset StartedAt,
-    DateTimeOffset EndedAt
-);
-
-public record BpdmRelationClass
-(
-    string TechnicalKey,
-    string Name
-);
-
-public record BpdmRelationType
-(
-    string TechnicalKey,
-    string Name
+    string Type
 );
 
 public record BpdmLegalAddress(
-    BpdmAddressVersion Version,
-    string? CareOf,
-    IEnumerable<string> Contexts,
-    string Country,
-    IEnumerable<BpdmAdministrativeArea> AdministrativeAreas,
-    IEnumerable<BpdmPostcode> PostCodes,
-    IEnumerable<BpdmLocality> Localities,
-    IEnumerable<BpdmThoroughfare> Thoroughfares,
-    IEnumerable<BpdmPremise> Premises,
-    IEnumerable<BpdmPostalDeliveryPoint> PostalDeliveryPoints,
-    BpdmGeographicCoordinates? GeographicCoordinates,
-    IEnumerable<string> Types
+    IEnumerable<string> NameParts,
+    IEnumerable<BpdmAddressState> States,
+    IEnumerable<BpdmAddressIdentifier> Identifiers,
+    BpdmAddressPhysicalPostalAddress PhysicalPostalAddress,
+    BpdmAddressAlternativePostalAddress? AlternativePostalAddress,
+    IEnumerable<string> Roles
 );
 
-public record BpdmAddressVersion(
-    string CharacterSet,
-    string Language
-);
-
-public record BpdmAdministrativeArea(
-    string Value,
-    string? ShortName,
-    string? FipsCode,
+public record BpdmAddressState(
+    string Description,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTo,
     string Type
 );
 
-public record BpdmPostcode(
+public record BpdmAddressIdentifier(
     string Value,
-    string Type
+    BpdmIdentifierId Type
 );
 
-public record BpdmLocality(
-    string Value,
-    string? ShortName,
-    string Type
+public record BpdmAddressPhysicalPostalAddress(
+    BpdmGeographicCoordinatesDto? GeographicCoordinates,
+    string? Country,
+    string? PostalCode,
+    string? City,
+    BpdmStreet? Street,
+    string? AdministrativeAreaLevel1,
+    string? AdministrativeAreaLevel2,
+    string? AdministrativeAreaLevel3,
+    string? District,
+    string? CompanyPostalCode,
+    string? IndustrialZone,
+    string? Building,
+    string? Floor,
+    string? Door
 );
 
-public record BpdmThoroughfare(
-    string Value,
-    string? Name,
-    string? ShortName,
-    string? Number,
-    string? Direction,
-    string Type
+public record BpdmAddressAlternativePostalAddress(
+    BpdmGeographicCoordinatesDto? GeographicCoordinates,
+    string? Country,
+    string? PostalCode,
+    string? City,
+    string? AdministrativeAreaLevel1,
+    string? DeliveryServiceNumber,
+    string? DeliveryServiceType,
+    string? DeliveryServiceQualifier
 );
-
-public record BpdmPremise(
-    string Value,
-    string? ShortName,
-    string? Number,
-    string Type
-);
-
-public record BpdmPostalDeliveryPoint(
-    string Value,
-    string? ShortName,
-    string? Number,
-    string Type
-);
-
-public record BpdmGeographicCoordinates(
-    int Longitude,
-    int Latitude,
-    int Altitude
-);
-

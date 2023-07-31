@@ -128,55 +128,55 @@ public static class BaseSeed
 
         dbContext.CompanyUsers.AddRange(new List<CompanyUser>
         {
-            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"), null)
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
                 Email = "tester.user1@test.de",
                 Firstname = "Test User 1",
                 Lastname = "cx-user-2",
             },
-            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991"), null)
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991"))
             {
                 Email = "tester.user2@test.de",
                 Firstname = "Test User 2",
                 Lastname = "cx-admin-2",
             },
-            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992"), null)
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992"))
             {
                 Email = "tester.user3@test.de",
                 Firstname = "Test User 3",
                 Lastname = "company-admin-2",
             },
-            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993"))
             {
                 Email = "tester.user4@test.de",
                 Firstname = "Test User 4",
                 Lastname = "it-admin-2",
             },
-            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"))
             {
                 Email = "tester.user5@test.de",
                 Firstname = "Test User 5",
                 Lastname = "CX User",
             },
-            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"))
             {
                 Email = "tester.user6@test.de",
                 Firstname = "Test User 6",
                 Lastname = "CX Admin",
             },
-            new(new Guid("40ed8c0d-b506-4c15-b2a9-85fee4b0c280"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            new(new Guid("40ed8c0d-b506-4c15-b2a9-85fee4b0c280"))
             {
                 Email = "tester.user7@test.de",
                 Firstname = "Test User 7",
                 Lastname = "Inactive",
             },
-            new(new Guid("22b7bfef-19f5-4d8a-9fb4-af1a5e978f21"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            new(new Guid("22b7bfef-19f5-4d8a-9fb4-af1a5e978f21"))
             {
                 Email = "tester.user8@test.de",
                 Firstname = "Test User 8",
                 Lastname = "Deleted",
             },
-            new(new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            new(new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"))
             {
                 Email = "tester.user@test.de",
                 Firstname = "Test User",

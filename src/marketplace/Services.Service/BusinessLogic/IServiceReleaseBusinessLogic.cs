@@ -71,8 +71,8 @@ public interface IServiceReleaseBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service</param>
     /// <param name="offerAgreementConsents">Data of the consents for the agreements</param>
-    /// <param name="companyId">Id of the users company</param>
-    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, Guid companyId);
+    /// <param name="identity">Id of the users company</param>
+    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, (Guid UserId, Guid CompanyId) identity);
 
     /// <summary>
     /// Retrieves all in review status offer in the marketplace.
@@ -98,7 +98,7 @@ public interface IServiceReleaseBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service to update</param>
     /// <param name="data">Data of the updated entry</param>
-    /// <param name="companyId">Id of the current users company</param>
+    /// <param name="companyId">CompanyId of User</param>
     Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, Guid companyId);
 
     /// <summary>

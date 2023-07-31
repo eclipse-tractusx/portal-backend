@@ -21,105 +21,37 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 public record PageOutputResponseBpdmLegalEntityData(
-    IEnumerable<BpdmLegalEntityOutputData>? Content,
-    IEnumerable<BpdmErrorInfo> Errors
+    IEnumerable<BpdmLegalEntityOutputData>? Content
 );
 
 public record BpdmLegalEntityOutputData(
-    string ExternalId,
+    string? ExternalId,
     string? Bpn,
+    string? LegalShortName,
+    string? LegalForm,
     IEnumerable<BpdmIdentifier> Identifiers,
-    IEnumerable<BpdmName> Names,
-    BpdmLegalForm? LegalForm,
-    BpdmStatus? Status,
-    IEnumerable<BpdmProfileClassification> ProfileClassifications,
-    IEnumerable<BpdmType> Types,
-    IEnumerable<BpdmBankAccount>? BankAccounts,
-    IEnumerable<BpdmRoles> Roles,
-    IEnumerable<BpdmReations> Relations,
+    IEnumerable<BpdmStatus> States,
+    IEnumerable<BpdmProfileClassification> Classifications,
+    IEnumerable<string> LegalNameParts,
+    IEnumerable<string> Roles,
     BpdmLegalAddressResponse LegalAddress
 );
 
 public record BpdmLegalAddressResponse(
-    BpdmAddressVersionResponse Version,
-    string? CareOf,
-    IEnumerable<string> Contexts,
-    BpdmCountry Country,
-    IEnumerable<BpdmAdministrativeAreaResponse> AdministrativeAreas,
-    IEnumerable<BpdmPostcodeResponse> PostCodes,
-    IEnumerable<BpdmLocalityResponse> Localities,
-    IEnumerable<BpdmThoroughfareResponse> Thoroughfares,
-    IEnumerable<BpdmPremiseResponse> Premises,
-    IEnumerable<BpdmPostalDeliveryPointResponse> PostalDeliveryPoints,
-    BpdmGeographicCoordinates? GeographicCoordinates,
-    IEnumerable<BpdmType> Types
-);
-
-public record BpdmAddressVersionResponse(
-    BpdmCharacterSet CharacterSet,
-    BpdmLanguage Language
-);
-
-public record BpdmCharacterSet
-(
-    string TechnicalKey,
-    string Name
+    string ExternalId,
+    string LegalEntityExternalId,
+    string SiteExternalId,
+    string Bpn,
+    IEnumerable<string> NameParts,
+    IEnumerable<BpdmAddressState> States,
+    IEnumerable<BpdmAddressIdentifier> Identifiers,
+    BpdmAddressPhysicalPostalAddress PhysicalPostalAddress,
+    BpdmAddressAlternativePostalAddress AlternativePostalAddress,
+    IEnumerable<string> Roles
 );
 
 public record BpdmCountry
 (
     string TechnicalKey,
     string Name
-);
-
-public record BpdmAdministrativeAreaResponse(
-    string Value,
-    string? ShortName,
-    string? FipsCode,
-    BpdmType Type,
-    BpdmLanguage Language
-);
-
-public record BpdmPostcodeResponse(
-    string Value,
-    BpdmType Type
-);
-
-public record BpdmLocalityResponse(
-    string Value,
-    string? ShortName,
-    BpdmType Type,
-    BpdmLanguage Language
-);
-
-public record BpdmThoroughfareResponse(
-    string Value,
-    string? Name,
-    string? ShortName,
-    string? Number,
-    string? Direction,
-    BpdmType Type,
-    BpdmLanguage Language
-);
-
-public record BpdmPremiseResponse(
-    string Value,
-    string? ShortName,
-    string? Number,
-    BpdmType Type,
-    BpdmLanguage Language
-);
-
-public record BpdmPostalDeliveryPointResponse(
-    string Value,
-    string? ShortName,
-    string? Number,
-    BpdmType Type,
-    BpdmLanguage Language
-);
-
-public record BpdmErrorInfo(
-    string ErrorCode,
-    string Message,
-    string EntityKey
 );

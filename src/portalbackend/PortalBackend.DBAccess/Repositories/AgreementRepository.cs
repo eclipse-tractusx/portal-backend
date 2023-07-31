@@ -101,7 +101,6 @@ public class AgreementRepository : IAgreementRepository
                 offer.OfferTypeId == offerTypeId)
             .Select(offer => new ValueTuple<OfferAgreementConsentUpdate, bool>(
                 new OfferAgreementConsentUpdate(
-                    offer.ProviderCompany!.Identities.Select(companyUser => companyUser.Id).SingleOrDefault(),
                     offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AppAgreementConsentStatus(
                         consentAssignedOffer.Consent!.AgreementId,
                         consentAssignedOffer.Consent.Id,

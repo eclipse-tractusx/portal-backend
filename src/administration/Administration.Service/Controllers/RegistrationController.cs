@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -157,7 +158,8 @@ public class RegistrationController : ControllerBase
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>
     /// <response code="404">Application ID not found.</response>
     [HttpPost]
-    // [Authorize(Roles = "decline_new_partner")]
+    [Authorize(Roles = "decline_new_partner")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("applications/{applicationId}/decline")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

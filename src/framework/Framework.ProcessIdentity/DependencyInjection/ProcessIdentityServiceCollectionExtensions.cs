@@ -18,8 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 
-public record IdentityData(string UserEntityId, Guid UserId, IdentityTypeId IdentityType, Guid CompanyId);
+public static class ProcessIdentityServiceCollectionExtensions
+{
+    public static IServiceCollection AddProcessIdentity(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<ProcessIdentitySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+
+        return services.AddTransient<IIdentityService, ProcessIdentityService>();
+    }
+}

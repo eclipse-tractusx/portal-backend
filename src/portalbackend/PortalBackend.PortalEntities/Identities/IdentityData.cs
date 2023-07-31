@@ -18,22 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-public static class BpnAccessCollectionExtension
-{
-    public static IServiceCollection AddBpnAccess(this IServiceCollection services, string baseAddress)
-    {
-        services.AddTransient<LoggingHandler<BpnAccess>>();
-        services.AddHttpClient(nameof(BpnAccess), c =>
-            {
-                c.BaseAddress = new Uri(baseAddress);
-            })
-            .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
-        services.AddTransient<IBpnAccess, BpnAccess>();
-
-        return services;
-    }
-}
+public record IdentityData(string UserEntityId, Guid UserId, IdentityTypeId IdentityType, Guid CompanyId);

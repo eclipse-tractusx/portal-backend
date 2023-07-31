@@ -18,30 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
-public static class BpdmServiceCollectionExtension
+public static class BpnAccessCollectionExtension
 {
-    public static IServiceCollection AddBpdmService(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddBpnAccess(this IServiceCollection services, string baseAddress)
     {
-        services.AddOptions<BpdmServiceSettings>()
-            .Bind(section)
-            .ValidateOnStart();
-        services.AddTransient<LoggingHandler<BpdmService>>();
-
-        var sp = services.BuildServiceProvider();
-        var settings = sp.GetRequiredService<IOptions<BpdmServiceSettings>>();
-        services
-            .AddCustomHttpClientWithAuthentication<BpdmService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress)
-            .AddTransient<IBpdmService, BpdmService>()
-            .AddTransient<IBpdmBusinessLogic, BpdmBusinessLogic>();
+        services.AddTransient<LoggingHandler<BpnAccess>>();
+        services.AddHttpClient(nameof(BpnAccess), c =>
+            {
+                c.BaseAddress = new Uri(baseAddress);
+            })
+            .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
+        services.AddTransient<IBpnAccess, BpnAccess>();
 
         return services;
     }

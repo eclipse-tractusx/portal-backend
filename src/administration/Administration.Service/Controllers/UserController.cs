@@ -312,7 +312,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public IAsyncEnumerable<Guid> DeleteOwnCompanyUsers([FromBody] IEnumerable<Guid> usersToDelete) =>
-        this.WithUserIdAndCompanyId(identity => _logic.DeleteOwnCompanyUsersAsync(usersToDelete, identity));
+        this.WithCompanyId(companyId => _logic.DeleteOwnCompanyUsersAsync(usersToDelete, companyId));
 
     /// <summary>
     /// Resets the password for the given user
