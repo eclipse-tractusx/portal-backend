@@ -70,5 +70,23 @@
     "lastlogin": null,
     "lastname": "Provider",
     "last_editor_id": null
+  },
+  {
+    "id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f5",
+    "date_last_changed": "2022-10-01 18:01:33.570000 +00:00",
+    "email": "test@user.com",
+    "firstname": "Test",
+    "lastlogin": null,
+    "lastname": "User",
+    "last_editor_id": null
+  },
+  {
+    "id": "1dceacb8-c5a5-4573-a77d-e2487ac4a8aa",
+    "date_last_changed": "2022-10-01 18:01:33.570000 +00:00",
+    "email": "test@user.com",
+    "firstname": "Deleted",
+    "lastlogin": null,
+    "lastname": "User",
+    "last_editor_id": null
   }
 ]
