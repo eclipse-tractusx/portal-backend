@@ -193,7 +193,6 @@ public class CompanyDataController : ControllerBase
     /// <response code="200">Returns a collection of certificates.</response>
     [HttpGet]
     [Authorize(Roles = "request_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificateTypes")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
@@ -274,7 +273,6 @@ public class CompanyDataController : ControllerBase
     /// <response code="204">Successfully approved the credentials.</response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("credentials/{credentialId}/approval")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -293,7 +291,6 @@ public class CompanyDataController : ControllerBase
     /// <response code="204">Successfully rejected the credentials.</response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("credentials/{credentialId}/reject")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
