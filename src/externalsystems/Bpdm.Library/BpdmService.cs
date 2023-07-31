@@ -113,7 +113,7 @@ public class BpdmService : IBpdmService
         var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
 
         var data = Enumerable.Repeat(externalId, 1);
-        var result = await httpClient.PostAsJsonAsync($"/companies/test-company/api/catena/output/legal-entities/search{externalId}", data, Options, cancellationToken)
+        var result = await httpClient.PostAsJsonAsync("/companies/test-company/api/catena/output/legal-entities/search", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-search-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         try
         {
