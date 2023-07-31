@@ -29,8 +29,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230726140020_CPLP-3042-ChangeNotificationCreator")]
-    partial class CPLP3042ChangeNotificationCreator
+    [Migration("20230731123725_1.6.0-rc4")]
+    partial class _160rc4
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1534,6 +1534,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasIndex("AppInstanceId")
                         .HasDatabaseName("ix_app_subscription_details_app_instance_id");
 
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_app_subscription_details_last_editor_id");
+
                     b.HasIndex("OfferSubscriptionId")
                         .IsUnique()
                         .HasDatabaseName("ix_app_subscription_details_offer_subscription_id");
@@ -1926,6 +1929,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_company_applications_company_id");
 
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_company_applications_last_editor_id");
+
                     b.ToTable("company_applications", "portal");
 
                     b
@@ -2018,6 +2024,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasIndex("CompanyRoleId")
                         .HasDatabaseName("ix_company_assigned_roles_company_role_id");
+
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_company_assigned_roles_last_editor_id");
 
                     b.ToTable("company_assigned_roles", "portal");
 
@@ -2335,6 +2344,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsUnique()
                         .HasDatabaseName("ix_company_ssi_details_document_id");
 
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_company_ssi_details_last_editor_id");
+
                     b.HasIndex("VerifiedCredentialExternalTypeUseCaseDetailId")
                         .HasDatabaseName("ix_company_ssi_details_verified_credential_external_type_use_c");
 
@@ -2464,6 +2476,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasKey("Id")
                         .HasName("pk_company_users");
+
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_company_users_last_editor_id");
 
                     b.ToTable("company_users", "portal");
 
@@ -2774,6 +2789,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasIndex("DocumentId")
                         .HasDatabaseName("ix_consents_document_id");
+
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_consents_last_editor_id");
 
                     b.ToTable("consents", "portal");
 
@@ -3185,6 +3203,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasIndex("IdentityTypeId")
                         .HasDatabaseName("ix_identities_identity_type_id");
 
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_identities_last_editor_id");
+
                     b.HasIndex("UserEntityId")
                         .IsUnique()
                         .HasDatabaseName("ix_identities_user_entity_id");
@@ -3216,6 +3237,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasKey("IdentityId", "UserRoleId")
                         .HasName("pk_identity_assigned_roles");
+
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_identity_assigned_roles_last_editor_id");
 
                     b.HasIndex("UserRoleId")
                         .HasDatabaseName("ix_identity_assigned_roles_user_role_id");
@@ -3906,6 +3930,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasKey("Id")
                         .HasName("pk_offers");
 
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_offers_last_editor_id");
+
                     b.HasIndex("LicenseTypeId")
                         .HasDatabaseName("ix_offers_license_type_id");
 
@@ -4125,6 +4152,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_offer_subscriptions_company_id");
+
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_offer_subscriptions_last_editor_id");
 
                     b.HasIndex("OfferId")
                         .HasDatabaseName("ix_offer_subscriptions_offer_id");
@@ -4655,6 +4685,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsUnique()
                         .HasDatabaseName("ix_provider_company_details_company_id");
 
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_provider_company_details_last_editor_id");
+
                     b.ToTable("provider_company_details", "portal");
 
                     b
@@ -4869,6 +4902,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasKey("Id")
                         .HasName("pk_user_roles");
+
+                    b.HasIndex("LastEditorId")
+                        .HasDatabaseName("ix_user_roles_last_editor_id");
 
                     b.HasIndex("OfferId")
                         .HasDatabaseName("ix_user_roles_offer_id");
@@ -5462,6 +5498,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("AppInstanceId")
                         .HasConstraintName("fk_app_subscription_details_app_instances_app_instance_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_app_subscription_details_identities_last_editor_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
                         .WithOne("AppSubscriptionDetail")
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppSubscriptionDetail", "OfferSubscriptionId")
@@ -5469,6 +5510,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_app_subscription_details_offer_subscriptions_offer_subscrip");
 
                     b.Navigation("AppInstance");
+
+                    b.Navigation("LastEditor");
 
                     b.Navigation("OfferSubscription");
                 });
@@ -5519,11 +5562,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_applications_companies_company_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_company_applications_identities_last_editor_id");
+
                     b.Navigation("ApplicationStatus");
 
                     b.Navigation("ChecklistProcess");
 
                     b.Navigation("Company");
+
+                    b.Navigation("LastEditor");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyAssignedRole", b =>
@@ -5540,9 +5590,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_assigned_roles_company_roles_company_role_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_company_assigned_roles_identities_last_editor_id");
+
                     b.Navigation("Company");
 
                     b.Navigation("CompanyRole");
+
+                    b.Navigation("LastEditor");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyAssignedUseCase", b =>
@@ -5710,6 +5767,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_ssi_details_documents_document_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_company_ssi_details_identities_last_editor_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", "VerifiedCredentialExternalTypeUseCaseDetailVersion")
                         .WithMany("CompanySsiDetails")
                         .HasForeignKey("VerifiedCredentialExternalTypeUseCaseDetailId")
@@ -5729,6 +5791,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("Document");
 
+                    b.Navigation("LastEditor");
+
                     b.Navigation("VerifiedCredentialExternalTypeUseCaseDetailVersion");
 
                     b.Navigation("VerifiedCredentialType");
@@ -5743,7 +5807,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_users_identities_identity_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_company_users_identities_last_editor_id");
+
                     b.Navigation("Identity");
+
+                    b.Navigation("LastEditor");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedAppFavourite", b =>
@@ -5904,6 +5975,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("DocumentId")
                         .HasConstraintName("fk_consents_documents_document_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_consents_identities_last_editor_id");
+
                     b.Navigation("Agreement");
 
                     b.Navigation("Company");
@@ -5913,6 +5989,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ConsentStatus");
 
                     b.Navigation("Document");
+
+                    b.Navigation("LastEditor");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConsentAssignedOffer", b =>
@@ -6041,6 +6119,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_identities_identity_type_identity_type_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_identities_identities_last_editor_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityUserStatus", "IdentityStatus")
                         .WithMany("Identities")
                         .HasForeignKey("UserStatusId")
@@ -6052,6 +6135,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IdentityStatus");
 
                     b.Navigation("IdentityType");
+
+                    b.Navigation("LastEditor");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityAssignedRole", b =>
@@ -6062,6 +6147,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_identity_assigned_roles_identities_identity_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_identity_assigned_roles_identities_last_editor_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
                         .WithMany("IdentityAssignedRoles")
                         .HasForeignKey("UserRoleId")
@@ -6069,6 +6159,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_identity_assigned_roles_user_roles_user_role_id");
 
                     b.Navigation("Identity");
+
+                    b.Navigation("LastEditor");
 
                     b.Navigation("UserRole");
                 });
@@ -6178,6 +6270,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", b =>
                 {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_offers_identities_last_editor_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.LicenseType", "LicenseType")
                         .WithMany("Offers")
                         .HasForeignKey("LicenseTypeId")
@@ -6208,6 +6305,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("SalesManagerOfOffers")
                         .HasForeignKey("SalesManagerId")
                         .HasConstraintName("fk_offers_company_users_sales_manager_id");
+
+                    b.Navigation("LastEditor");
 
                     b.Navigation("LicenseType");
 
@@ -6304,6 +6403,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_offer_subscriptions_companies_company_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_offer_subscriptions_identities_last_editor_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "Offer")
                         .WithMany("OfferSubscriptions")
                         .HasForeignKey("OfferId")
@@ -6328,6 +6432,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_offer_subscriptions_company_users_requester_id");
 
                     b.Navigation("Company");
+
+                    b.Navigation("LastEditor");
 
                     b.Navigation("Offer");
 
@@ -6409,7 +6515,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_provider_company_details_companies_company_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_provider_company_details_identities_last_editor_id");
+
                     b.Navigation("Company");
+
+                    b.Navigation("LastEditor");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceDetail", b =>
@@ -6482,12 +6595,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
+                        .WithMany()
+                        .HasForeignKey("LastEditorId")
+                        .HasConstraintName("fk_user_roles_identities_last_editor_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "Offer")
                         .WithMany("UserRoles")
                         .HasForeignKey("OfferId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_user_roles_offers_offer_id");
+
+                    b.Navigation("LastEditor");
 
                     b.Navigation("Offer");
                 });
