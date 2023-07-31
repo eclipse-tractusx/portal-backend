@@ -54,8 +54,9 @@ public class ProviderCompanyDetail : IAuditableV1, IBaseEntity
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
     public virtual Company? Company { get; private set; }
+    public virtual Identity? LastEditor { get; private set; }
 }

@@ -21,8 +21,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
@@ -33,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 public static class ControllerExtensions
 {
     public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> consumingFunction) =>
-        consumingFunction(controller.GetIdentityData());
+        consumingFunction(controller.User.GetIdentityData());
 
     public static T WithUserId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
         consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId));
@@ -50,12 +50,12 @@ public static class ControllerExtensions
     public static T WithIdentityIdAndBearerToken<T>(this ControllerBase controller, Func<(Guid UserId, string BearerToken), T> tokenConsumingFunction) =>
         tokenConsumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.GetBearerToken()));
 
-    private static IdentityData GetIdentityData(this ControllerBase controller)
+    public static IdentityData GetIdentityData(this ClaimsPrincipal user)
     {
-        var sub = controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
-        var identityId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId);
-        var identityType = controller.User.Claims.GetEnumFromClaim<IdentityTypeId>(PortalClaimTypes.IdentityType);
-        var companyId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId);
+        var sub = user.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
+        var identityId = user.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId);
+        var identityType = user.Claims.GetEnumFromClaim<IdentityTypeId>(PortalClaimTypes.IdentityType);
+        var companyId = user.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId);
         return new IdentityData(sub, identityId, identityType, companyId);
     }
 

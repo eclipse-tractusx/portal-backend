@@ -82,13 +82,14 @@ public class CompanySsiDetailsRepositoryTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Count.Should().Be(4);
-        result.Should().HaveCount(4);
-        result.Where(x => x.CompanyId == _validCompanyId).Should().HaveCount(3)
+        result.Count.Should().Be(5);
+        result.Should().HaveCount(5);
+        result.Where(x => x.CompanyId == _validCompanyId).Should().HaveCount(4)
             .And.Satisfy(
-                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK,
-                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.PCF_FRAMEWORK,
-                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK && x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.PCF_FRAMEWORK && x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE && x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING,
+                x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.BEHAVIOR_TWIN_FRAMEWORK && x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE);
         result.Where(x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).Should().ContainSingle()
             .And.Satisfy(x => x.VerifiedCredentialTypeId == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
     }
@@ -222,6 +223,19 @@ public class CompanySsiDetailsRepositoryTests
 
         // Act
         var result = await sut.CheckSsiDetailsExistsForCompany(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.CERTIFICATE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d560")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckCredentialDetailsExistsForCompany_WithInactive_ReturnsFalse()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.CheckSsiDetailsExistsForCompany(_validCompanyId, VerifiedCredentialTypeId.BEHAVIOR_TWIN_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d562")).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();

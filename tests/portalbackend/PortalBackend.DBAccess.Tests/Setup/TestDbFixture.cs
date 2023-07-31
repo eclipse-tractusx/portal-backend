@@ -27,6 +27,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit.Extensions.AssemblyFixture;
 
 [assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
@@ -70,7 +71,7 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options);
+        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
         await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
         foreach (var seedAction in seedActions)
         {
@@ -96,7 +97,7 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options);
+        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
         await context.Database.MigrateAsync();
 
         var seederOptions = Options.Create(new SeederSettings

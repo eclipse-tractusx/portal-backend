@@ -38,7 +38,7 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerSubscriptionStatusId">id of the app subscription status</param>
     /// <param name="requesterId">id of the user that requested the subscription of the app</param>
     /// <param name="creatorId">id of the creator</param>
-    OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId);
+    OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId);
 
     /// <summary>
     /// Gets the provided offer subscription statuses for the user and given company

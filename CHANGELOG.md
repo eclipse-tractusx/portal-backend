@@ -2,6 +2,29 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.6.0-RC4
+
+### Change
+* Apps Service
+  * Change the appInstanceId to iamClientId for the /{appId}/subscription/{subscriptionId}/provider endpoint
+* BPDM Service
+  * BPDM Service calls are changed to the new bpdm endpoints
+
+### Technical Support
+* reinclude http request & response messages in logging
+* lastEditorId is now set whenever a auditable entity is changed
+  
+### Bugfix
+* Apps Service
+  * Fix /api/apps/business endpoint to return correct results
+  * Fix POST /api/apps/appreleaseprocess/consent/{appId}/agreementConsents to save consents and set the correct user id
+* Services Service
+  * Fix POST /api/services/servicerelease/consent/{serviceId}/agreementConsents to save consents and set the correct user id
+* Administration Service
+  * Ignore inactive credentials when trying to create a new credential
+* AutoSetup
+  * fix an error that occurred when autoSetup was executed by a service-account caused by the the creator of a notification being linked to a companyUser instead of identities
+
 ## 1.6.0-RC3
 
 ### Change

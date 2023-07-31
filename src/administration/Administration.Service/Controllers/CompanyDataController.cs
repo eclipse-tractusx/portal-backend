@@ -147,7 +147,6 @@ public class CompanyDataController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "view_company_data")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("companyRolesAndConsents")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -212,7 +211,6 @@ public class CompanyDataController : ControllerBase
     [Consumes("multipart/form-data")]
     [Authorize(Roles = "request_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("useCaseParticipation")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken)
@@ -233,7 +231,6 @@ public class CompanyDataController : ControllerBase
     [Consumes("multipart/form-data")]
     [Authorize(Roles = "request_ssicredential")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificates")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)

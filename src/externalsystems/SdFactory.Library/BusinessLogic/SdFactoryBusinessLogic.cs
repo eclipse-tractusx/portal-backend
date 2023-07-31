@@ -146,7 +146,6 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
                 con.SelfDescriptionMessage = data.Message!;
             }
 
-            con.LastEditorId = companyUserId;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });
     }

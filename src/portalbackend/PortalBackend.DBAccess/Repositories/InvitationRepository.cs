@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -33,19 +34,17 @@ public class InvitationRepository : IInvitationRepository
     {
         _dbContext = dbContext;
     }
-
     public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
-        (from invitation in _dbContext.Invitations
-         join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.Id
-         join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
-         where invitation.CompanyApplicationId == applicationId
-         select new InvitedUserDetail(
-             companyuser.Identity!.UserEntityId,
-             invitationStatus.Id,
-             companyuser.Email
-         ))
-        .AsNoTracking()
-        .AsAsyncEnumerable();
+        _dbContext.Invitations
+            .AsNoTracking()
+            .Where(invitation =>
+                invitation.CompanyApplicationId == applicationId &&
+                invitation.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)
+            .Select(invitation => new InvitedUserDetail(
+                invitation.CompanyUser!.Identity!.UserEntityId,
+                invitation.InvitationStatusId,
+                invitation.CompanyUser.Email))
+            .AsAsyncEnumerable();
 
     public Task<Invitation?> GetInvitationStatusAsync(Guid companyUserId) =>
         _dbContext.Invitations

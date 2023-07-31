@@ -22,9 +22,9 @@ using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
@@ -46,9 +46,8 @@ public class RegistrationControllerTest
     {
         _fixture = new Fixture();
         _registrationBusinessLogicFake = A.Fake<IRegistrationBusinessLogic>();
-        var registrationLoggerFake = A.Fake<ILogger<RegistrationController>>();
-        _controller = new RegistrationController(registrationLoggerFake, _registrationBusinessLogicFake);
-        _controller.AddControllerContextWithClaimAndBearer(_identity.UserEntityId, "ac-token", _identity);
+        _controller = new RegistrationController(_registrationBusinessLogicFake);
+        _controller.AddControllerContextWithClaimAndBearer("ac-token", _identity);
     }
 
     [Fact]

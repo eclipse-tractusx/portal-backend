@@ -24,6 +24,8 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -32,17 +34,18 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 using Xunit;
+using Address = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.BusinessLogic;
 
@@ -159,56 +162,6 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
-    #region GetCompanyByIdentifier
-
-    [Fact]
-    public async Task GetCompanyByIdentifierAsync_WithValidBpn_FetchesBusinessPartner()
-    {
-        //Arrange
-        var bpnAccess = A.Fake<IBpnAccess>();
-        var bpn = "THISBPNISVALID12";
-        var token = "justatoken";
-        var sut = new RegistrationBusinessLogic(
-            _options,
-            null!,
-            bpnAccess,
-            null!,
-            null!,
-            null!,
-            null!,
-            null!);
-
-        // Act
-        var result = await sut.GetCompanyByIdentifierAsync(bpn, token, CancellationToken.None).ToListAsync().ConfigureAwait(false);
-
-        result.Should().NotBeNull();
-        A.CallTo(() => bpnAccess.FetchBusinessPartner(bpn, token, CancellationToken.None)).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task GetCompanyByIdentifierAsync_WithValidBpn_ThrowsArgumentException()
-    {
-        //Arrange
-        var sut = new RegistrationBusinessLogic(
-            _options,
-            null!,
-            null!,
-            null!,
-            null!,
-            null!,
-            null!,
-            null!);
-
-        // Act
-        async Task Act() => await sut.GetCompanyByIdentifierAsync("NotLongEnough", "justatoken", CancellationToken.None).ToListAsync().ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("companyIdentifier");
-    }
-
-    #endregion
-
     #region GetCompanyBpdmDetailDataByBusinessPartnerNumber
 
     [Fact]
@@ -232,31 +185,29 @@ public class RegistrationBusinessLogicTest
         var bpdmIdentifiers = uniqueIdSeed.Select(x => ((string TechnicalKey, string Value))(x.BpdmIdentifierId.ToString(), x.Value));
         var validIdentifiers = uniqueIdSeed.Skip(2).Take(2).Select(x => (x.BpdmIdentifierId, x.UniqueIdentifierId));
 
-        var legalEntity = _fixture.Build<Bpn.Model.BpdmLegalEntityDto>()
+        var bpdmAddress = _fixture.Build<BpdmLegalEntityAddress>()
+            .With(x => x.BpnLegalEntity, name)
+            .With(x => x.Bpnl, businessPartnerNumber)
+            .With(x => x.PhysicalPostalAddress, _fixture.Build<BpdmPhysicalPostalAddress>()
+                .With(x => x.Country, _fixture.Build<BpdmCountry>().With(x => x.TechnicalKey, country).Create())
+                .With(x => x.AdministrativeAreaLevel1, _fixture.Build<BpdmAdministrativeAreaLevel>().With(x => x.RegionCode, region).Create())
+                .With(x => x.PostalCode, zipCode)
+                .With(x => x.City, city)
+                .With(x => x.Street, _fixture.Build<BpdmStreet>().With(x => x.Name, streetName).With(x => x.HouseNumber, streetNumber).Create())
+                .Create())
+            .Create();
+        var legalEntity = _fixture.Build<BpdmLegalEntityDto>()
             .With(x => x.Bpn, businessPartnerNumber)
-            .With(x => x.Names, new[] { _fixture.Build<Bpn.Model.BpdmNameDto>()
-                    .With(x => x.Value, name)
-                    .With(x => x.ShortName, shortName)
-                    .Create() })
-            .With(x => x.Identifiers, bpdmIdentifiers.Select(identifier => _fixture.Build<Bpn.Model.BpdmIdentifierDto>()
-                    .With(x => x.Type, _fixture.Build<Bpn.Model.BpdmUrlDataDto>().With(x => x.TechnicalKey, identifier.TechnicalKey).Create())
+            .With(x => x.LegalName, name)
+            .With(x => x.LegalShortName, shortName)
+            .With(x => x.Identifiers, bpdmIdentifiers.Select(identifier => _fixture.Build<BpdmIdentifierDto>()
+                    .With(x => x.Type, _fixture.Build<BpdmTechnicalKey>().With(x => x.TechnicalKey, identifier.TechnicalKey).Create())
                     .With(x => x.Value, identifier.Value)
                     .Create()))
-            .Create();
-        var bpdmAddress = _fixture.Build<Bpn.Model.BpdmLegalEntityAddressDto>()
-            .With(x => x.LegalEntity, businessPartnerNumber)
-            .With(x => x.LegalAddress, _fixture.Build<Bpn.Model.BpdmLegalAddressDto>()
-                .With(x => x.Country, _fixture.Build<Bpn.Model.BpdmDataDto>().With(x => x.TechnicalKey, country).Create())
-                .With(x => x.AdministrativeAreas, new[] { _fixture.Build<Bpn.Model.BpdmAdministrativeAreaDto>().With(x => x.Value, region).Create() })
-                .With(x => x.PostCodes, new[] { _fixture.Build<Bpn.Model.BpdmPostCodeDto>().With(x => x.Value, zipCode).Create() })
-                .With(x => x.Localities, new[] { _fixture.Build<Bpn.Model.BpdmLocalityDto>().With(x => x.Value, city).Create() })
-                .With(x => x.Thoroughfares, new[] { _fixture.Build<Bpn.Model.BpdmThoroughfareDto>().With(x => x.Value, streetName).With(x => x.Number, streetNumber).Create() })
-                .Create())
+            .With(x => x.LegalEntityAddress, bpdmAddress)
             .Create();
         A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .Returns(legalEntity);
-        A.CallTo(() => bpnAccess.FetchLegalEntityAddressByBpn(businessPartnerNumber, token, A<CancellationToken>._))
-            .Returns(new[] { bpdmAddress }.ToAsyncEnumerable());
         A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids => ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
             .Returns((true, validIdentifiers));
 
@@ -274,8 +225,6 @@ public class RegistrationBusinessLogicTest
         var result = await sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None).ConfigureAwait(false);
 
         A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => bpnAccess.FetchLegalEntityAddressByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids => ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
             .MustHaveHappenedOnceExactly();
@@ -472,7 +421,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null, null, null, null, null, uniqueIdData);
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<Guid>()).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -861,7 +810,7 @@ public class RegistrationBusinessLogicTest
             .Returns((false, null!));
 
         // Act
-        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<Guid>());
+        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, Guid.NewGuid());
 
         //Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -893,7 +842,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, new[] { identifiers.First() }));
 
         // Act
-        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<Guid>());
+        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, Guid.NewGuid());
 
         //Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -920,7 +869,7 @@ public class RegistrationBusinessLogicTest
             null!);
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, 0, _fixture.Create<Guid>()).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, 0, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -945,7 +894,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>());
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, _fixture.Create<Guid>()).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -970,7 +919,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, CompanyApplicationStatusId.CREATED));
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, _fixture.Create<Guid>()).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act).ConfigureAwait(false);
@@ -995,7 +944,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, CompanyApplicationStatusId.VERIFY));
 
         // Act
-        await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.SUBMITTED, _fixture.Create<Guid>()).ConfigureAwait(false);
+        await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.SUBMITTED, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -33,8 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class ConnectorsControllerTests
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private const string AccessToken = "superSafeToken";
     private readonly IConnectorsBusinessLogic _logic;
     private readonly ConnectorsController _controller;
@@ -45,7 +45,7 @@ public class ConnectorsControllerTests
         _fixture = new Fixture();
         _logic = A.Fake<IConnectorsBusinessLogic>();
         this._controller = new ConnectorsController(_logic);
-        _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken, _identity);
+        _controller.AddControllerContextWithClaimAndBearer(AccessToken, _identity);
     }
 
     [Fact]
@@ -75,14 +75,14 @@ public class ConnectorsControllerTests
             null,
             null);
         var connectorId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.CreateConnectorAsync(A<ConnectorInputModel>._, A<(Guid, Guid)>._, A<CancellationToken>._))
+        A.CallTo(() => _logic.CreateConnectorAsync(A<ConnectorInputModel>._, A<Guid>._, A<CancellationToken>._))
             .Returns(connectorId);
 
         //Act
         var result = await this._controller.CreateConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, new(_identity.UserId, _identity.CompanyId), A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, _identity.CompanyId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(connectorId);
     }
@@ -99,14 +99,14 @@ public class ConnectorsControllerTests
             null,
             null);
         var connectorId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.CreateManagedConnectorAsync(A<ManagedConnectorInputModel>._, A<(Guid, Guid)>._, A<CancellationToken>._))
+        A.CallTo(() => _logic.CreateManagedConnectorAsync(A<ManagedConnectorInputModel>._, A<Guid>._, A<CancellationToken>._))
             .Returns(connectorId);
 
         //Act
         var result = await this._controller.CreateManagedConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, new(_identity.UserId, _identity.CompanyId), A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, _identity.CompanyId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(connectorId);
     }
@@ -171,7 +171,7 @@ public class ConnectorsControllerTests
         await this._controller.DeleteConnectorAsync(connectorId, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId, _identity.UserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

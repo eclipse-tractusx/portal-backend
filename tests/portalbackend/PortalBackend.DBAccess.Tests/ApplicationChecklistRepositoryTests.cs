@@ -174,7 +174,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Assert
         result.Should().NotBeNull();
         result!.IsSubmitted.Should().BeTrue();
-        result.Checklist.Should().HaveCount(5).And.Contain(checklistData);
+        result.Checklist.Should().HaveCount(5).And.ContainInOrder(checklistData!);
         result.Process!.Id.Should().Be(new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe"));
         result.Process.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
         result.Process.LockExpiryDate.Should().Be(DateTimeOffset.Parse("2023-03-01 00:00:00.000000 +00:00"));

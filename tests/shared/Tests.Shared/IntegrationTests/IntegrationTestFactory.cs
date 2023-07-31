@@ -30,8 +30,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
@@ -67,6 +69,11 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
         });
         builder.ConfigureTestServices(services =>
         {
+            var identityService = services.SingleOrDefault(d => d.ServiceType == typeof(IdentityService));
+            if (identityService != null)
+                services.Remove(identityService);
+            services.AddScoped<IIdentityService, FakeIdentityService>();
+
             services.RemoveProdDbContext<PortalDbContext>();
             services.AddDbContext<PortalDbContext>(options =>
             {

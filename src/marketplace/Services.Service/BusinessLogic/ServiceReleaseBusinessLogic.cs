@@ -123,18 +123,15 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, Guid companyId)
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, (Guid UserId, Guid CompanyId) identity)
     {
         if (serviceId == Guid.Empty)
         {
             throw new ControllerArgumentException("ServiceId must not be empty");
         }
 
-        return SubmitOfferConsentInternalAsync(serviceId, offerAgreementConsents, companyId);
+        return _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, identity, OfferTypeId.SERVICE);
     }
-
-    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, Guid companyId) =>
-        _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, companyId, OfferTypeId.SERVICE);
 
     /// <inheritdoc/>
     public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName, ServiceReleaseStatusIdFilter? statusId) =>
