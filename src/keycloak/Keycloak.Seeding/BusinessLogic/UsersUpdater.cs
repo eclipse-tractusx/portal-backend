@@ -57,7 +57,20 @@ public class UsersUpdater : IUsersUpdater
                 seedUser,
                 cancellationToken).ConfigureAwait(false);
 
-            await UpdateClientAndRealmRoles(keycloak, realm, userId, seedUser, clientsDictionary, cancellationToken).ConfigureAwait(false);
+            await UpdateClientAndRealmRoles(
+                keycloak,
+                realm,
+                userId,
+                seedUser,
+                clientsDictionary,
+                cancellationToken).ConfigureAwait(false);
+
+            await UpdateFederatedIdentities(
+                keycloak,
+                realm,
+                userId,
+                seedUser.FederatedIdentities ?? Enumerable.Empty<FederatedIdentityModel>(),
+                cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -78,11 +91,10 @@ public class UsersUpdater : IUsersUpdater
                 throw new ConflictException($"user.Id must not be null: userName {seedUser.Username}");
             if (!CompareUser(user, seedUser))
             {
-                var updateUser = CreateUpdateUser(user.Id, seedUser);
                 await keycloak.UpdateUserAsync(
                     realm,
                     user.Id,
-                    updateUser,
+                    CreateUpdateUser(user.Id, seedUser),
                     cancellationToken).ConfigureAwait(false);
             }
             return user.Id;
@@ -157,12 +169,7 @@ public class UsersUpdater : IUsersUpdater
         Attributes = update.Attributes?.ToDictionary(x => x.Key, x => x.Value),
         // ClientConsents = update.ClientConsents,
         // Credentials = update.Credentials,
-        FederatedIdentities = update.FederatedIdentities?.Select(x => new FederatedIdentity
-        { // TODO: this works only on usercreation, it does not update existing identities
-            IdentityProvider = x.IdentityProvider,
-            UserId = x.UserId,
-            UserName = x.UserName
-        }),
+        // FederatedIdentities: doesn't update
         // FederationLink = update.FederationLink,
         Groups = update.Groups,
         // Origin = update.Origin,
@@ -186,17 +193,83 @@ public class UsersUpdater : IUsersUpdater
         user.Attributes.NullOrContentEqual(update.Attributes) &&
         // ClientConsents == update.ClientConsents &&
         // Credentials == update.Credentials &&
-        CompareFederatedIdentities(user.FederatedIdentities, update.FederatedIdentities) && // doesn't update
-                                                                                            // FederationLink == update.FederationLink &&
+        // CompareFederatedIdentities(user.FederatedIdentities, update.FederatedIdentities) && // doesn't update
+        // FederationLink == update.FederationLink &&
         user.Groups.NullOrContentEqual(update.Groups) &&
         // Origin == update.Origin &&
         // Self == update.Self &&
         user.ServiceAccountClientId == update.ServiceAccountClientId;
 
-    private static bool CompareFederatedIdentities(IEnumerable<FederatedIdentity>? identities, IEnumerable<FederatedIdentityModel>? updates) =>
-        identities == null && updates == null ||
-        identities != null && updates != null &&
-        identities.Select(x => x.IdentityProvider ?? throw new ConflictException("keycloak federated identity identityProvider must not be null")).NullOrContentEqual(updates.Select(x => x.IdentityProvider ?? throw new ConflictException("seeding federated identity identityProvider must not be null"))) &&
-        identities.Select(x => x.UserId ?? throw new ConflictException("keycloak federated identity identityProvider must not be null")).NullOrContentEqual(updates.Select(x => x.UserId ?? throw new ConflictException("seeding federated identity identityProvider must not be null"))) &&
-        identities.Select(x => x.UserName ?? throw new ConflictException("keycloak federated identity identityProvider must not be null")).NullOrContentEqual(updates.Select(x => x.UserName ?? throw new ConflictException("seeding federated identity identityProvider must not be null")));
+    private static bool CompareFederatedIdentity(FederatedIdentity identity, FederatedIdentityModel update) =>
+        identity.IdentityProvider == update.IdentityProvider &&
+        identity.UserId == update.UserId &&
+        identity.UserName == update.UserName;
+
+    private static async Task UpdateFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
+    {
+        var identities = await keycloak.GetUserSocialLoginsAsync(realm, userId).ConfigureAwait(false);
+        await DeleteObsoleteFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(false);
+        await CreateMissingFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(false);
+        await UpdateExistingFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task DeleteObsoleteFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
+    {
+        foreach (var identity in identities.ExceptBy(updates.Select(x => x.IdentityProvider), x => x.IdentityProvider))
+        {
+            await keycloak.RemoveUserSocialLoginProviderAsync(
+                realm,
+                userId,
+                identity.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task CreateMissingFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
+    {
+        foreach (var update in updates.ExceptBy(identities.Select(x => x.IdentityProvider), x => x.IdentityProvider))
+        {
+            await keycloak.AddUserSocialLoginProviderAsync(
+                realm,
+                userId,
+                update.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
+                new()
+                {
+                    IdentityProvider = update.IdentityProvider,
+                    UserId = update.UserId ?? throw new ConflictException($"federatedIdentity.UserId is null {userId}, {update.IdentityProvider}"),
+                    UserName = update.UserName ?? throw new ConflictException($"federatedIdentity.UserName is null {userId}, {update.IdentityProvider}")
+                },
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task UpdateExistingFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
+    {
+        foreach (var (identity, update) in identities
+            .Join(
+                updates,
+                x => x.IdentityProvider,
+                x => x.IdentityProvider,
+                (identity, update) => (Identity: identity, Update: update))
+            .Where(x => !CompareFederatedIdentity(x.Identity, x.Update)))
+        {
+            await keycloak.RemoveUserSocialLoginProviderAsync(
+                realm,
+                userId,
+                identity.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
+                cancellationToken).ConfigureAwait(false);
+
+            await keycloak.AddUserSocialLoginProviderAsync(
+                realm,
+                userId,
+                update.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
+                new()
+                {
+                    IdentityProvider = update.IdentityProvider,
+                    UserId = update.UserId ?? throw new ConflictException($"federatedIdentity.UserId is null {userId}, {update.IdentityProvider}"),
+                    UserName = update.UserName ?? throw new ConflictException($"federatedIdentity.UserName is null {userId}, {update.IdentityProvider}")
+                },
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
 }

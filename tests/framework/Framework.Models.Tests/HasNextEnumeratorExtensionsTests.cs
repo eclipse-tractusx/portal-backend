@@ -72,14 +72,14 @@ public class HasNextEnumeratorExtensionsTests
         var data = _fixture.CreateMany<string>(5).ToImmutableArray();
         var sut = data.AsFakeIEnumerable(out var enumerator).GetHasNextEnumerator();
 
-        IEnumerable<string> Act(IHasNextEnumerator<string> hasNextEnumerator)
+        static IEnumerable<string> Act(IHasNextEnumerator<string> hasNextEnumerator)
         {
             while (hasNextEnumerator.HasNext)
             {
-                yield return (hasNextEnumerator.Current);
+                yield return hasNextEnumerator.Current;
                 hasNextEnumerator.Advance();
             }
-            yield return (hasNextEnumerator.Current);
+            yield return hasNextEnumerator.Current;
         }
 
         // Act

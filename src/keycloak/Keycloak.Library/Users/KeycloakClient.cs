@@ -169,26 +169,26 @@ public partial class KeycloakClient
         .GetJsonAsync<IEnumerable<FederatedIdentity>>()
         .ConfigureAwait(false);
 
-    public async Task AddUserSocialLoginProviderAsync(string realm, string userId, string provider, FederatedIdentity federatedIdentity) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task AddUserSocialLoginProviderAsync(string realm, string userId, string provider, FederatedIdentity federatedIdentity, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/federated-identity/")
             .AppendPathSegment(provider, true)
-            .PostJsonAsync(federatedIdentity)
+            .PostJsonAsync(federatedIdentity, cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task RemoveUserSocialLoginProviderAsync(string realm, string userId, string provider) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task RemoveUserSocialLoginProviderAsync(string realm, string userId, string provider, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/federated-identity/")
             .AppendPathSegment(provider, true)
-            .DeleteAsync()
+            .DeleteAsync(cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<IEnumerable<Group>> GetUserGroupsAsync(string realm, string userId) =>
