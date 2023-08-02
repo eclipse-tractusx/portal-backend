@@ -356,6 +356,31 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetApplicationsWithStatus
+
+    [Fact]
+    public async Task GetApplicationsWithStatusUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetApplicationsWithStatusUntrackedAsync(new("41fd2ab8-71cd-4546-9bef-a388d91b2542")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.Satisfy(x => x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e")
+            && x.ApplicationStatus == CompanyApplicationStatusId.SUBMITTED);
+        result.Single().ApplicationChecklistDatas.Should().Satisfy(
+            y => y.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+            y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            y => y.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+            y => y.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+            y => y.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && y.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            y => y.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO);
+    }
+
+    #endregion
+
     private async Task<UserRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

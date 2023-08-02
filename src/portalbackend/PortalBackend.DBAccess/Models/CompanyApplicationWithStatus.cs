@@ -25,6 +25,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
     public class CompanyApplicationWithStatus
     {
         public Guid ApplicationId;
-        public CompanyApplicationStatusId? ApplicationStatus; //FIXME - this should not be nullable!
+        public CompanyApplicationStatusId ApplicationStatus;
+        public IEnumerable<ApplicationChecklistData>? ApplicationChecklistDatas;
     }
+    public record ApplicationChecklistData(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId);
 }

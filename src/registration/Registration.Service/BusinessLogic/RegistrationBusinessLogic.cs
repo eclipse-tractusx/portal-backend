@@ -201,7 +201,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             yield return new CompanyApplicationData
             {
                 ApplicationId = applicationWithStatus.ApplicationId,
-                ApplicationStatus = applicationWithStatus.ApplicationStatus
+                ApplicationStatus = applicationWithStatus.ApplicationStatus,
+                ApplicationChecklist = applicationWithStatus.ApplicationChecklistDatas!.Select(acd =>
+                    new ApplicationChecklistDetails(acd.TypeId, acd.StatusId))
             };
         }
     }

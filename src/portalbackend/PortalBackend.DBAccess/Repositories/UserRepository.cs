@@ -50,7 +50,9 @@ public class UserRepository : IUserRepository
             .Select(companyApplication => new CompanyApplicationWithStatus
             {
                 ApplicationId = companyApplication.Id,
-                ApplicationStatus = companyApplication.ApplicationStatusId
+                ApplicationStatus = companyApplication.ApplicationStatusId,
+                ApplicationChecklistDatas = companyApplication.ApplicationChecklistEntries.Select(ace =>
+                    new ApplicationChecklistData(ace.ApplicationChecklistEntryTypeId, ace.ApplicationChecklistEntryStatusId))
             })
             .AsAsyncEnumerable();
 

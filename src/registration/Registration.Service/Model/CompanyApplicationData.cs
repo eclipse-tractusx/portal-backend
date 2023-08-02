@@ -27,4 +27,8 @@ public class CompanyApplicationData
     public Guid ApplicationId { get; set; }
 
     public CompanyApplicationStatusId? ApplicationStatus { get; set; }
+
+    public IEnumerable<ApplicationChecklistDetails>? ApplicationChecklist { get; set; }
 }
+
+public record ApplicationChecklistDetails(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId);
