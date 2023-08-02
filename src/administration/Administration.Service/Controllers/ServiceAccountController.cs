@@ -161,8 +161,8 @@ public class ServiceAccountController : ControllerBase
     /// </summary>
     /// <param name="page">the page of service account data</param>
     /// <param name="size">number of service account data</param>
-    /// <param name="isOwner">number of service account data</param>
-    /// <param name="clientId">number of service account data</param>
+    /// <param name="isOwner">isOwner either true or false</param>
+    /// <param name="clientId">clientId is string clientclientid</param>
     /// <returns>Returns the specific number of service account data for the given page.</returns>
     /// <remarks>Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
