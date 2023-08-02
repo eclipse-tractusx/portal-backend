@@ -372,14 +372,14 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
-        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(_identity.CompanyId))
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(_identity.CompanyId, null, null))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyServiceAccountData>?)new Pagination.Source<CompanyServiceAccountData>(data.Count(), data.Skip(skip).Take(take))));
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, _identity.CompanyId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, _identity.CompanyId, null, null).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();

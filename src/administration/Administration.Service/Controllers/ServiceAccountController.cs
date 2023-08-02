@@ -174,8 +174,6 @@ public class ServiceAccountController : ControllerBase
     public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId) =>
         this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, companyId, clientId, isOwner));
 
-
-
     /// <summary>
     /// Get all service account roles
     /// </summary>

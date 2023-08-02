@@ -19,12 +19,12 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -155,8 +155,8 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 .Where(serviceAccount =>
                     serviceAccount.Identity!.CompanyId == userCompanyId &&
                     serviceAccount.Identity.UserStatusId == UserStatusId.ACTIVE &&
-                    (!isOwner.HasValue || (serviceAccount.CompaniesLinkedServiceAccount!.Provider == null) == isOwner) &&
-                    (clientId == null || EF.Functions.ILike(serviceAccount.ClientClientId!, $"%{clientId!.EscapeForILike()}%")))
+                    (!isOwner.HasValue || (isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider == null) || (!isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider != null)) &&
+                    (clientId == null || EF.Functions.ILike(serviceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
                 .GroupBy(serviceAccount => serviceAccount.Identity!.CompanyId),
             serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
             serviceAccount => new CompanyServiceAccountData(
