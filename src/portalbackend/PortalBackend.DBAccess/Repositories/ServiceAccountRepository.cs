@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -145,7 +146,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             serviceAccount.OfferSubscription.Id)))
             .SingleOrDefaultAsync();
 
-    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -153,7 +154,9 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 .AsNoTracking()
                 .Where(serviceAccount =>
                     serviceAccount.Identity!.CompanyId == userCompanyId &&
-                    serviceAccount.Identity.UserStatusId == UserStatusId.ACTIVE)
+                    serviceAccount.Identity.UserStatusId == UserStatusId.ACTIVE &&
+                    (!isOwner.HasValue || (serviceAccount.CompaniesLinkedServiceAccount!.Provider == null) == isOwner) &&
+                    (clientId == null || EF.Functions.ILike(serviceAccount.ClientClientId!, $"%{clientId!.EscapeForILike()}%")))
                 .GroupBy(serviceAccount => serviceAccount.Identity!.CompanyId),
             serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
             serviceAccount => new CompanyServiceAccountData(

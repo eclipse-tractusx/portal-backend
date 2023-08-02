@@ -161,6 +161,8 @@ public class ServiceAccountController : ControllerBase
     /// </summary>
     /// <param name="page">the page of service account data</param>
     /// <param name="size">number of service account data</param>
+    /// <param name="isOwner">number of service account data</param>
+    /// <param name="clientId">number of service account data</param>
     /// <returns>Returns the specific number of service account data for the given page.</returns>
     /// <remarks>Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
@@ -169,8 +171,10 @@ public class ServiceAccountController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size) =>
-        this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, companyId));
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId) =>
+        this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, companyId, clientId, isOwner));
+
+
 
     /// <summary>
     /// Get all service account roles
