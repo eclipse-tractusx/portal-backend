@@ -137,15 +137,16 @@ public class ConnectorsRepository : IConnectorsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId) =>
+    public Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, IEnumerable<Guid> AssignedOfferSubscriptions)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId) =>
         _context.Connectors
             .Where(x => x.Id == connectorId)
-            .Select(connector => new ValueTuple<bool, bool, Guid?, DocumentStatusId?, ConnectorStatusId>(
+            .Select(connector => new ValueTuple<bool, bool, Guid?, DocumentStatusId?, ConnectorStatusId, IEnumerable<Guid>>(
                 true,
                 connector.ProviderId == companyId || connector.HostId == companyId,
                 connector.SelfDescriptionDocumentId,
                 connector.SelfDescriptionDocument!.DocumentStatusId,
-                connector.StatusId
+                connector.StatusId,
+                connector.ConnectorAssignedOfferSubscriptions.Select(x => x.OfferSubscriptionId)
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -167,4 +168,8 @@ public class ConnectorsRepository : IConnectorsRepository
     /// <inheritdoc />
     public ConnectorAssignedOfferSubscription CreateConnectorAssignedSubscriptions(Guid connectorId, Guid subscriptionId) =>
         _context.ConnectorAssignedOfferSubscriptions.Add(new ConnectorAssignedOfferSubscription(connectorId, subscriptionId)).Entity;
+
+    /// <inheritdoc />
+    public void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions) =>
+        _context.ConnectorAssignedOfferSubscriptions.RemoveRange(assignedOfferSubscriptions.Select(x => new ConnectorAssignedOfferSubscription(connectorId, x)));
 }

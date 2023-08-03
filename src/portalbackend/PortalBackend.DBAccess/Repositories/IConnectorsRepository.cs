@@ -87,7 +87,7 @@ public interface IConnectorsRepository
     /// <param name="connectorId">Id of the connector</param>
     /// <param name="companyId">Id of the company</param>
     /// <returns>returns SelfDescriptionDocument Data/c></returns>
-    Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId);
+    Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, IEnumerable<Guid> AssignedOfferSubscriptions)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId);
 
     /// <summary>
     /// Gets the data required for the connector update
@@ -104,4 +104,6 @@ public interface IConnectorsRepository
     void DeleteConnector(Guid connectorId);
 
     ConnectorAssignedOfferSubscription CreateConnectorAssignedSubscriptions(Guid connectorId, Guid subscriptionId);
+
+    void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions);
 }

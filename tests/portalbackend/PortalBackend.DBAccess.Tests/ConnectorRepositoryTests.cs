@@ -478,6 +478,29 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region DeleteConnector
+
+    [Fact]
+    public async Task DeleteConnectorAssignedSubscriptions_ExecutesExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.DeleteConnectorAssignedSubscriptions(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"), Enumerable.Repeat(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), 1));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var removedEntity = changedEntries.Single();
+        removedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    #endregion
+
     private async Task<(ConnectorsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
