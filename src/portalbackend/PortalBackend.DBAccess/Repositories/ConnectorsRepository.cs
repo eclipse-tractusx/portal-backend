@@ -42,7 +42,7 @@ public class ConnectorsRepository : IConnectorsRepository
     }
 
     /// <inheritdoc/>
-    public IQueryable<Connector> GetAllCompanyConnectorsForIamUser(Guid companyId) =>
+    public IQueryable<Connector> GetAllCompanyConnectorsForCompanyId(Guid companyId) =>
         _context.Connectors
             .AsNoTracking()
             .Where(x => x.ProviderId == companyId && x.StatusId != ConnectorStatusId.INACTIVE);
@@ -137,26 +137,16 @@ public class ConnectorsRepository : IConnectorsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, bool? DapsRegistrationSuccessful)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId) =>
+    public Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId) =>
         _context.Connectors
             .Where(x => x.Id == connectorId)
-            .Select(connector => new ValueTuple<bool, bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId, bool?>(
+            .Select(connector => new ValueTuple<bool, bool, Guid?, DocumentStatusId?, ConnectorStatusId>(
                 true,
                 connector.ProviderId == companyId || connector.HostId == companyId,
-                connector.ClientDetails == null ? null : connector.ClientDetails!.ClientId,
                 connector.SelfDescriptionDocumentId,
                 connector.SelfDescriptionDocument!.DocumentStatusId,
-                connector.StatusId,
-                connector.DapsRegistrationSuccessful
+                connector.StatusId
             )).SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    public void CreateConnectorClientDetails(Guid connectorId, string dapsClientId) =>
-        _context.ConnectorClientDetails.Add(new ConnectorClientDetail(connectorId, dapsClientId));
-
-    /// <inheritdoc />
-    public void DeleteConnectorClientDetails(Guid connectorId) =>
-        _context.ConnectorClientDetails.Remove(new ConnectorClientDetail(connectorId, null!));
 
     /// <inheritdoc />
     public Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid companyId) =>
@@ -167,8 +157,7 @@ public class ConnectorsRepository : IConnectorsRepository
                 c.TypeId,
                 c.HostId == companyId,
                 c.ConnectorUrl,
-                c.Provider!.BusinessPartnerNumber,
-                c.ClientDetails!.ClientId
+                c.Provider!.BusinessPartnerNumber
             ))
             .SingleOrDefaultAsync();
 

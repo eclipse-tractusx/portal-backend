@@ -21,8 +21,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
@@ -31,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Text.RegularExpressions;
@@ -44,7 +43,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private readonly IDapsService _dapsService;
+    private readonly IIdentityService _identityService;
     private readonly ConnectorsSettings _settings;
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -54,19 +53,19 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// <param name="portalRepositories">Access to the needed repositories</param>
     /// <param name="options">The options</param>
     /// <param name="sdFactoryBusinessLogic">Access to the connectorsSdFactory</param>
-    /// <param name="dapsService">Access to the daps service</param>
-    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, ISdFactoryBusinessLogic sdFactoryBusinessLogic, IDapsService dapsService)
+    /// <param name="identityService">Access to the current logged in user</param>
+    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, ISdFactoryBusinessLogic sdFactoryBusinessLogic, IIdentityService identityService)
     {
         _portalRepositories = portalRepositories;
         _settings = options.Value;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
-        _dapsService = dapsService;
+        _identityService = identityService;
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatas(Guid companyId, int page, int size)
+    public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatas(int page, int size)
     {
-        var connectors = _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForIamUser(companyId);
+        var connectors = _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForCompanyId(_identityService.IdentityData.CompanyId);
 
         return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
             new Pagination.AsyncSource<ConnectorData>
@@ -92,15 +91,16 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForCompany(Guid companyId, int page, int size) =>
+    public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForCompany(int page, int size) =>
         Pagination.CreateResponseAsync(
             page,
             size,
             _settings.MaxPageSize,
-            _portalRepositories.GetInstance<IConnectorsRepository>().GetManagedConnectorsForCompany(companyId));
+            _portalRepositories.GetInstance<IConnectorsRepository>().GetManagedConnectorsForCompany(_identityService.IdentityData.CompanyId));
 
-    public async Task<ConnectorData> GetCompanyConnectorData(Guid connectorId, Guid companyId)
+    public async Task<ConnectorData> GetCompanyConnectorData(Guid connectorId)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForCompany(connectorId, companyId).ConfigureAwait(false);
         if (result == default)
         {
@@ -114,30 +114,16 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, Guid companyId, CancellationToken cancellationToken)
-    {
-        ValidateCertificationType(connectorInputModel.Certificate);
-        return CreateConnectorInternalAsync(connectorInputModel, companyId, cancellationToken);
-    }
+    public Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
+        CreateConnectorInternalAsync(connectorInputModel, cancellationToken);
 
-    public Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, Guid companyId, CancellationToken cancellationToken)
-    {
-        ValidateCertificationType(connectorInputModel.Certificate);
-        return CreateManagedConnectorInternalAsync(connectorInputModel, companyId, cancellationToken);
-    }
+    public Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
+        CreateManagedConnectorInternalAsync(connectorInputModel, cancellationToken);
 
-    private void ValidateCertificationType(IFormFile? certificate)
+    private async Task<Guid> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        if (certificate != null && !_settings.ValidCertificationContentTypes.Contains(certificate.ContentType))
-        {
-            throw new UnsupportedMediaTypeException(
-                $"Only {string.Join(",", _settings.ValidCertificationContentTypes)} files are allowed.");
-        }
-    }
-
-    private async Task<Guid> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, Guid companyId, CancellationToken cancellationToken)
-    {
-        var (name, connectorUrl, location, certificate, technicalUserId) = connectorInputModel;
+        var companyId = _identityService.IdentityData.CompanyId;
+        var (name, connectorUrl, location, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location);
 
         var result = await _portalRepositories
@@ -161,14 +147,14 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             connectorRequestModel,
             result.Bpn,
             result.SelfDescriptionDocumentId.Value,
-            certificate,
             null,
             cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, Guid companyId, CancellationToken cancellationToken)
+    private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var (name, connectorUrl, location, subscriptionId, certificate, technicalUserId) = connectorInputModel;
+        var companyId = _identityService.IdentityData.CompanyId;
+        var (name, connectorUrl, location, subscriptionId, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location).ConfigureAwait(false);
 
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
@@ -213,7 +199,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             connectorRequestModel,
             result.ProviderBpn,
             result.SelfDescriptionDocumentId!.Value,
-            certificate,
             subscriptionId,
             cancellationToken).ConfigureAwait(false);
     }
@@ -245,7 +230,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         ConnectorRequestModel connectorInputModel,
         string businessPartnerNumber,
         Guid selfDescriptionDocumentId,
-        IFormFile? file,
         Guid? subscriptionId,
         CancellationToken cancellationToken)
     {
@@ -262,6 +246,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.HostId = host;
                 connector.TypeId = type;
                 connector.DateLastChanged = DateTimeOffset.UtcNow;
+                connector.StatusId = ConnectorStatusId.PENDING;
                 if (technicalUserId != null)
                 {
                     connector.CompanyServiceAccountId = technicalUserId;
@@ -271,33 +256,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         if (subscriptionId != null)
         {
             connectorsRepository.CreateConnectorAssignedSubscriptions(createdConnector.Id, subscriptionId.Value);
-        }
-
-        DapsResponse? response = null;
-        if (file is not null)
-        {
-            try
-            {
-                response = await _dapsService
-                    .EnableDapsAuthAsync(name, connectorUrl, businessPartnerNumber, file, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (ServiceException)
-            {
-                // No error should be visible for the user
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(response?.ClientId))
-        {
-            connectorsRepository.CreateConnectorClientDetails(createdConnector.Id, response.ClientId);
-            createdConnector.DapsRegistrationSuccessful = true;
-            createdConnector.StatusId = ConnectorStatusId.ACTIVE;
-        }
-        else
-        {
-            createdConnector.DapsRegistrationSuccessful = false;
-            createdConnector.StatusId = ConnectorStatusId.PENDING;
         }
 
         var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
@@ -310,11 +268,11 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task DeleteConnectorAsync(Guid connectorId, Guid companyId, CancellationToken cancellationToken)
+    public async Task DeleteConnectorAsync(Guid connectorId)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
-        var (isValidConnectorId, isProvidingOrHostCompany, dapsClientId, selfDescriptionDocumentId,
-            documentStatus, connectorStatus, dapsRegistrationSuccess) = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false);
+        var (isValidConnectorId, isProvidingOrHostCompany, selfDescriptionDocumentId, documentStatusId, connectorStatus) = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false);
 
         if (!isValidConnectorId)
         {
@@ -326,51 +284,39 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ForbiddenException($"company {companyId} is neither provider nor host-company of connector {connectorId}");
         }
 
-        switch ((dapsRegistrationSuccess ?? false, connectorStatus))
+        switch (connectorStatus)
         {
-            case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId == null:
-                await DeleteUpdateConnectorDetail(connectorId, dapsClientId, connectorsRepository, cancellationToken);
-                break;
-            case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId != null && documentStatus != null:
-                await DeleteConnector(connectorId, dapsClientId, selfDescriptionDocumentId.Value, documentStatus.Value, connectorsRepository, cancellationToken);
-                break;
-            case (false, ConnectorStatusId.PENDING) when selfDescriptionDocumentId == null:
+            case ConnectorStatusId.PENDING when selfDescriptionDocumentId == null:
                 await DeleteConnectorWithoutDocuments(connectorId, connectorsRepository);
                 break;
-            case (false, ConnectorStatusId.PENDING) when selfDescriptionDocumentId != null:
+            case ConnectorStatusId.PENDING:
                 await DeleteConnectorWithDocuments(connectorId, selfDescriptionDocumentId.Value, connectorsRepository);
                 break;
-            case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId != null && documentStatus == null:
-                throw new UnexpectedConditionException("documentStatus should never be null here");
+            case ConnectorStatusId.ACTIVE when selfDescriptionDocumentId != null && documentStatusId != null:
+                await DeleteConnector(connectorId, selfDescriptionDocumentId.Value, documentStatusId.Value, connectorsRepository);
+                break;
             default:
-                throw new ConflictException($"Connector status does not match a deletion scenario. Deletion declined");
+                throw new ConflictException("Connector status does not match a deletion scenario. Deletion declined");
         }
     }
 
-    private async Task DeleteConnector(Guid connectorId, string? dapsClientId, Guid selfDescriptionDocumentId, DocumentStatusId documentStatus, IConnectorsRepository connectorsRepository, CancellationToken cancellationToken)
+    private async Task DeleteConnector(Guid connectorId, Guid selfDescriptionDocumentId, DocumentStatusId documentStatus, IConnectorsRepository connectorsRepository)
     {
         _portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocument(
             selfDescriptionDocumentId,
             a => { a.DocumentStatusId = documentStatus; },
             a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
 
-        await DeleteUpdateConnectorDetail(connectorId, dapsClientId, connectorsRepository, cancellationToken);
+        await DeleteUpdateConnectorDetail(connectorId, connectorsRepository);
     }
 
-    private async Task DeleteUpdateConnectorDetail(Guid connectorId, string? dapsClientId, IConnectorsRepository connectorsRepository, CancellationToken cancellationToken)
+    private async Task DeleteUpdateConnectorDetail(Guid connectorId, IConnectorsRepository connectorsRepository)
     {
-        if (string.IsNullOrWhiteSpace(dapsClientId))
-        {
-            throw new ConflictException("DapsClientId must be set");
-        }
-
-        connectorsRepository.DeleteConnectorClientDetails(connectorId);
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
             con.StatusId = ConnectorStatusId.INACTIVE;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });
-        await _dapsService.DeleteDapsClient(dapsClientId, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync();
     }
 
@@ -405,48 +351,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
-    {
-        var connectorsRepository = _portalRepositories
-            .GetInstance<IConnectorsRepository>();
-        var connector = await connectorsRepository
-            .GetConnectorInformationByIdForIamUser(connectorId, identity.CompanyId)
-            .ConfigureAwait(false);
-
-        if (connector == default)
-        {
-            throw new NotFoundException($"Connector {connectorId} does not exists");
-        }
-
-        if (!connector.IsProviderUser)
-        {
-            throw new ForbiddenException("User is not provider of the connector");
-        }
-
-        var connectorData = connector.ConnectorInformationData;
-        var response = await _dapsService
-            .EnableDapsAuthAsync(connectorData.Name, connectorData.Url, connectorData.Bpn, certificate, cancellationToken)
-            .ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(response?.ClientId))
-        {
-            throw new ConflictException("Client Id should be set here");
-        }
-
-        connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
-        {
-            con.DapsRegistrationSuccessful = true;
-            con.StatusId = ConnectorStatusId.ACTIVE;
-            con.DateLastChanged = DateTimeOffset.UtcNow;
-        });
-
-        connectorsRepository.CreateConnectorClientDetails(connectorId, response.ClientId);
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return true;
-    }
-
-    /// <inheritdoc />
-    public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, Guid userId, CancellationToken cancellationToken)
+    public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IConnectorsRepository>()
             .GetConnectorDataById(data.ExternalId)
@@ -462,19 +367,20 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException($"Connector {data.ExternalId} already has a document assigned");
         }
 
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, userId, cancellationToken).ConfigureAwait(false);
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityService.IdentityData.UserId, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data)
     {
         data.ConnectorUrl.EnsureValidHttpUrl(() => nameof(data.ConnectorUrl));
-        return UpdateConnectorUrlInternal(connectorId, data, identity, cancellationToken);
+        return UpdateConnectorUrlInternal(connectorId, data);
     }
 
-    private async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    private async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data)
     {
+        var identity = _identityService.IdentityData;
         var connectorsRepository = _portalRepositories
             .GetInstance<IConnectorsRepository>();
         var connector = await connectorsRepository
@@ -501,11 +407,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException($"Connector {connectorId} is in state {ConnectorStatusId.INACTIVE}");
         }
 
-        if (string.IsNullOrWhiteSpace(connector.DapsClientId))
-        {
-            throw new ConflictException($"Connector {connectorId} has no client id");
-        }
-
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
             ? connector.Bpn
             : await _portalRepositories.GetInstance<IUserRepository>()
@@ -516,9 +417,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException("The business partner number must be set here");
         }
 
-        await _dapsService
-            .UpdateDapsConnectorUrl(connector.DapsClientId, data.ConnectorUrl, bpn, cancellationToken)
-            .ConfigureAwait(false);
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
             con.ConnectorUrl = data.ConnectorUrl;
@@ -528,7 +426,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet, Guid companyId) =>
+    public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet) =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetConnectorOfferSubscriptionData(connectorIdSet, companyId);
+            .GetConnectorOfferSubscriptionData(connectorIdSet, _identityService.IdentityData.CompanyId);
 }

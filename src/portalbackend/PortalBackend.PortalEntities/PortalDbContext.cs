@@ -78,6 +78,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyUser20230522> AuditCompanyUser20230523 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230405> AuditConnector20230405 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230503> AuditConnector20230503 { get; set; } = default!;
+    public virtual DbSet<AuditConnector20230803> AuditConnector20230803 { get; set; } = default!;
     public virtual DbSet<AuditIdentity20230526> AuditIdentity20230526 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
@@ -106,7 +107,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; set; } = default!;
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
     public virtual DbSet<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; set; } = default!;
-    public virtual DbSet<ConnectorClientDetail> ConnectorClientDetails { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
     public virtual DbSet<ConnectorType> ConnectorTypes { get; set; } = default!;
     public virtual DbSet<Consent> Consents { get; set; } = default!;
@@ -946,17 +946,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<Connector>(d => d.CompanyServiceAccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Connector, AuditConnector20230503>();
-        });
-
-        modelBuilder.Entity<ConnectorClientDetail>(entity =>
-        {
-            entity.HasKey(x => x.ConnectorId);
-
-            entity.HasOne(c => c.Connector)
-                .WithOne(c => c.ClientDetails)
-                .HasForeignKey<ConnectorClientDetail>(c => c.ConnectorId)
-                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasAuditV1Triggers<Connector, AuditConnector20230803>();
         });
 
         modelBuilder.Entity<ConnectorStatus>()

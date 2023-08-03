@@ -35,7 +35,6 @@ public record ConnectorInputModel(
     [MaxLength(255)] string Name,
     [MaxLength(255)] string ConnectorUrl,
     [StringLength(2, MinimumLength = 2)] string Location,
-    IFormFile? Certificate,
     Guid? TechnicalUserId
 );
 
@@ -46,14 +45,12 @@ public record ConnectorInputModel(
 /// <param name="ConnectorUrl"> URL of the connector..</param>
 /// <param name="Location">Connector's location country code.</param>
 /// <param name="SubscriptionId">Id of the offer subscription.</param>
-/// <param name="Certificate">The certificate for the daps call.</param>
 /// <param name="TechnicalUserId">Id of the technical user.</param>
 public record ManagedConnectorInputModel(
     [MaxLength(255)] string Name,
     [MaxLength(255)] string ConnectorUrl,
     [StringLength(2, MinimumLength = 2)] string Location,
     Guid SubscriptionId,
-    IFormFile? Certificate,
     Guid? TechnicalUserId
 );
 

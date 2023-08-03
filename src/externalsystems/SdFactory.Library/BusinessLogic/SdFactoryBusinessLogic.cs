@@ -139,6 +139,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
             if (documentId != null)
             {
                 con.SelfDescriptionDocumentId = documentId;
+                con.StatusId = ConnectorStatusId.ACTIVE;
             }
 
             if (!confirm)

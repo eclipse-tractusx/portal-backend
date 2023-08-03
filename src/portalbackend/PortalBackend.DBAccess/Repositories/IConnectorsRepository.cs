@@ -35,7 +35,7 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="companyId">The id of the provider company.</param>
     /// <returns>Queryable of connectors that allows transformation.</returns>
-    IQueryable<Connector> GetAllCompanyConnectorsForIamUser(Guid companyId);
+    IQueryable<Connector> GetAllCompanyConnectorsForCompanyId(Guid companyId);
 
     /// <summary>
     /// Get all managed connectors of a user's company by iam user ID.
@@ -87,20 +87,7 @@ public interface IConnectorsRepository
     /// <param name="connectorId">Id of the connector</param>
     /// <param name="companyId">Id of the company</param>
     /// <returns>returns SelfDescriptionDocument Data/c></returns>
-    Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, bool? DapsRegistrationSuccessful)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId);
-
-    /// <summary>
-    /// Creates the connector details
-    /// </summary>
-    /// <param name="connectorId">Id of the connector</param>
-    /// <param name="dapsClientId">client id of daps</param>
-    void CreateConnectorClientDetails(Guid connectorId, string dapsClientId);
-
-    /// <summary>
-    /// Deletes the connector client details
-    /// </summary>
-    /// <param name="connectorId">Id of the connector</param>
-    void DeleteConnectorClientDetails(Guid connectorId);
+    Task<(bool IsValidConnectorId, bool IsProvidingOrHostCompany, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId);
 
     /// <summary>
     /// Gets the data required for the connector update

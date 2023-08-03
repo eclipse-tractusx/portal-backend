@@ -30,5 +30,4 @@ public record ConnectorUpdateInformation(
     ConnectorTypeId Type,
     bool IsHostCompany,
     string ConnectorUrl,
-    string? Bpn,
-    string? DapsClientId);
+    string? Bpn);
