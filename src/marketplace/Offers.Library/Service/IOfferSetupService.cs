@@ -75,11 +75,14 @@ public interface IOfferSetupService
     /// <param name="data">The offer subscription id and url for the service</param>
     /// <param name="companyId">Id of the company</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
-    /// <returns>Returns the response data</returns>
     Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId, OfferTypeId offerTypeId);
 
-    /// <inheritdoc />
-    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId);
+    /// <summary>
+    /// Creates the single instance subscription detail and creates the activation step.
+    /// </summary>
+    /// <param name="offerSubscriptionId">The offer subscription id and url for the service</param>
+    /// <param name="companyId">Id of the company</param>
+    Task CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId, Guid companyId);
 
     Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateClient(Guid offerSubscriptionId);
 

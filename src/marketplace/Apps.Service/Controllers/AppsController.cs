@@ -321,6 +321,26 @@ public class AppsController : ControllerBase
     }
 
     /// <summary>
+    /// Triggers the activation of a single instance app subscription
+    /// </summary>
+    /// <remarks>Example: POST: /api/apps/subscription/activate-single-instance</remarks>
+    /// <response code="204">The activation of the subscription has successfully been started.</response>
+    /// <response code="400">Offer Subscription is pending or not the providing company.</response>
+    /// <response code="404">Offer Subscription not found.</response>
+    [HttpPost]
+    [Route("subscription/{offerSubscriptionId}/activate-single-instance")]
+    [Authorize(Roles = "activate_subscription")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ActivateSingleInstance([FromRoute] Guid offerSubscriptionId)
+    {
+        await this.WithCompanyId(companyId => _appsBusinessLogic.ActivateSingleInstance(offerSubscriptionId, companyId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Retrieve Document Content for document type "App Lead Image" and "App Image" by ID
     /// </summary>
     /// <param name="appId"></param>
