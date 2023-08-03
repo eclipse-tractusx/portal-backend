@@ -323,11 +323,11 @@ public class AppsController : ControllerBase
     /// <summary>
     /// Triggers the activation of a single instance app subscription
     /// </summary>
-    /// <remarks>Example: POST: /api/apps/subscription/activate-single-instance</remarks>
+    /// <remarks>Example: PUT: /api/apps/subscription/{offerSubscriptionId}/activate-single-instance</remarks>
     /// <response code="204">The activation of the subscription has successfully been started.</response>
     /// <response code="400">Offer Subscription is pending or not the providing company.</response>
     /// <response code="404">Offer Subscription not found.</response>
-    [HttpPost]
+    [HttpPut]
     [Route("subscription/{offerSubscriptionId}/activate-single-instance")]
     [Authorize(Roles = "activate_subscription")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
