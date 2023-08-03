@@ -149,6 +149,20 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().Be(default);
     }
 
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync_WithValidProviderWithDifferentOwner_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        Guid companyServiceAccountId = new("93eecd4e-ca47-4dd2-85bf-775ea72eb000");
+        Guid companyId = new("41fd2ab8-71cd-4546-9bef-a388d91b2542");
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(companyServiceAccountId, companyId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
     #endregion
 
     #region GetOwnCompanyServiceAccountDetailedDataUntrackedAsync
