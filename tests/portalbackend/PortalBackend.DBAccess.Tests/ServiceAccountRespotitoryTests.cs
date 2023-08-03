@@ -158,7 +158,6 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         Guid companyId = new("41fd2ab8-71cd-4546-9bef-a388d91b2542");
         // Act
         var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(companyServiceAccountId, companyId).ConfigureAwait(false);
-
         // Assert
         result.Should().NotBeNull();
     }
