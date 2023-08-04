@@ -78,8 +78,16 @@ public static class StartupServiceExtensions
         {
             options.AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId)));
             options.AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.CompanyId)));
-            options.AddPolicy(PolicyTypes.CompanyUser, policy => policy.Requirements.Add(new MandatoryEnumTypeClaimRequirement(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_USER)));
-            options.AddPolicy(PolicyTypes.ServiceAccount, policy => policy.Requirements.Add(new MandatoryEnumTypeClaimRequirement(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_SERVICE_ACCOUNT)));
+            options.AddPolicy(PolicyTypes.CompanyUser, policy =>
+            {
+                policy.Requirements.Add(new MandatoryEnumTypeClaimRequirement(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_USER));
+                policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId));
+            });
+            options.AddPolicy(PolicyTypes.ServiceAccount, policy =>
+            {
+                policy.Requirements.Add(new MandatoryEnumTypeClaimRequirement(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_SERVICE_ACCOUNT));
+                policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId));
+            });
         });
 
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
