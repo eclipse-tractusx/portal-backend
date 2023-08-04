@@ -26,7 +26,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditConnector20230503))]
+[AuditEntityV1(typeof(AuditConnector20230803))]
 public class Connector : IAuditableV1, IBaseEntity
 {
     public Connector(Guid id, string name, string locationId, string connectorUrl)
@@ -62,8 +62,6 @@ public class Connector : IAuditableV1, IBaseEntity
     [StringLength(2, MinimumLength = 2)]
     public string LocationId { get; set; }
 
-    public bool? DapsRegistrationSuccessful { get; set; }
-
     public string? SelfDescriptionMessage { get; set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }
@@ -79,7 +77,6 @@ public class Connector : IAuditableV1, IBaseEntity
     public virtual Company? Provider { get; set; }
     public virtual Company? Host { get; set; }
     public virtual Country? Location { get; set; }
-    public virtual ConnectorClientDetail? ClientDetails { get; set; }
     public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
     public virtual Identity? LastEditor { get; set; }
 

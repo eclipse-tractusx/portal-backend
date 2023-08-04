@@ -21,13 +21,12 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Net;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Tests;
 
 public class OfferProviderServiceTests
 {

@@ -18,14 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -36,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Collections.Immutable;
+using ConnectorData = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models.ConnectorData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -67,10 +66,10 @@ public class ConnectorsBusinessLogicTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly ConnectorsBusinessLogic _logic;
-    private readonly IDapsService _dapsService;
     private readonly ConnectorsSettings _settings;
     private readonly IDocumentRepository _documentRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly IIdentityService _identityService;
 
     public ConnectorsBusinessLogicTests()
     {
@@ -87,7 +86,7 @@ public class ConnectorsBusinessLogicTests
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
-        _dapsService = A.Fake<IDapsService>();
+        _identityService = A.Fake<IIdentityService>();
         _connectors = new List<Connector>();
         var options = A.Fake<IOptions<ConnectorsSettings>>();
         _settings = new ConnectorsSettings
@@ -104,9 +103,30 @@ public class ConnectorsBusinessLogicTests
         SetupRepositoryMethods();
 
         A.CallTo(() => options.Value).Returns(_settings);
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _dapsService);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService);
     }
+
+    #region GetAllCompanyConnectorDatas
+
+    [Fact]
+    public async Task GetAllCompanyConnectorDatas_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var connectors = new AsyncEnumerableStub<Connector>(_fixture.CreateMany<Connector>(5));
+        A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(_identity.CompanyId))
+            .Returns(connectors.AsQueryable());
+
+        // Act
+        var result = await _logic.GetAllCompanyConnectorDatas(0, 10).ConfigureAwait(false);
+
+        // Assert
+        result.Content.Should().HaveCount(connectors.Count());
+        result.Meta.NumberOfElements.Should().Be(connectors.Count());
+    }
+
+    #endregion
 
     #region Create Connector
 
@@ -114,18 +134,14 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", file, ServiceAccountUserId);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._))
-            .Returns(new DapsResponse("12345"));
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
     }
 
@@ -134,13 +150,10 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var saId = Guid.NewGuid();
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", file, saId);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._))
-            .Returns(new DapsResponse("12345"));
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", saId);
 
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -152,29 +165,25 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithClientIdNull_DoesntSaveData()
     {
         // Arrange
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", file, null);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._))
-            .Returns((DapsResponse?)null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
     public async Task CreateConnectorAsync_WithoutSelfDescriptionDocument_ThrowsUnexpectedException()
     {
         // Arrange
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", file, null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        A.CallTo(() => _identityService.IdentityData).Returns(_identityWithoutSdDocument);
 
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _identityWithoutSdDocument.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -185,10 +194,10 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "invalid", null, null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "invalid", null);
 
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -199,10 +208,11 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithCompanyWithoutBpn_ThrowsUnexpectedConditionException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null, null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        A.CallTo(() => _identityService.IdentityData).Returns(_identityWithoutBpn);
 
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _identityWithoutBpn.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -213,34 +223,15 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithFailingDapsService_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", file, null);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._,
-            A<IFormFile>._, A<CancellationToken>._)).Throws(new ServiceException("Service failed"));
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task CreateConnectorAsync_WithWrongFileType_ThrowsUnsupportedMediaTypeException()
-    {
-        // Arrange
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pdf", "application/pdf");
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", file, null);
-
-        // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var exception = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
-        exception.Message.Should().Be($"Only {string.Join(",", _settings.ValidCertificationContentTypes)} files are allowed.");
     }
 
     #endregion
@@ -251,18 +242,14 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pdf", "application/x-pem-file");
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, file, ServiceAccountUserId);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._))
-            .Returns(new DapsResponse("12345"));
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, ValidOfferSubscriptionId)).MustHaveHappenedOnceExactly();
     }
 
@@ -270,44 +257,26 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var file = FormFileHelper.GetFormFile("this is just random content", "cert.pem", "application/x-pem-file");
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, file, null);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._))
-            .Returns(new DapsResponse("12345"));
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, null);
+        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, _technicalUserIdentity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, ValidOfferSubscriptionId)).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task CreateManagedConnectorAsync_WithWrongFileType_ThrowsUnsupportedMediaTypeException()
-    {
-        // Arrange
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pdf", "application/pdf");
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", Guid.NewGuid(), file, null);
-
-        // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var exception = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
-        exception.Message.Should().Be($"Only {string.Join(",", _settings.ValidCertificationContentTypes)} files are allowed.");
     }
 
     [Fact]
     public async Task CreateManagedConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "invalid", ValidOfferSubscriptionId, null, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "invalid", ValidOfferSubscriptionId, null);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -321,10 +290,11 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
             .Returns((false, default, default, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _technicalUserIdentity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -338,10 +308,11 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
             .Returns((true, false, default, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _technicalUserIdentity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -355,10 +326,11 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
             .Returns((true, true, true, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _technicalUserIdentity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -372,10 +344,11 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.INACTIVE, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _technicalUserIdentity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -389,11 +362,10 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, A<Guid>.That.Matches(x => x == _identity.CompanyId || x == _technicalUserIdentity.CompanyId)))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, null, ValidCompanyId, ValidCompanyBpn));
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pdf", "application/x-pem-file");
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, file, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -408,10 +380,11 @@ public class ConnectorsBusinessLogicTests
         var companyId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), companyId, null));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _technicalUserIdentity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -423,88 +396,15 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var saId = Guid.NewGuid();
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pdf", "application/x-pem-file");
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, file, saId);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._))
-            .Returns(new DapsResponse("12345"));
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, saId);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"Technical User {saId} is not assigned to company {ValidCompanyId} or is not active (Parameter 'technicalUserId')");
         ex.ParamName.Should().Be("technicalUserId");
-    }
-
-    #endregion
-
-    #region TriggerDaps
-
-    [Fact]
-    public async Task TriggerDaps_WithValidInput_CallsDaps()
-    {
-        // Arrange
-        _connectors.Add(new Connector(ExistingConnectorId, "test", "de", "https://www.api.connector.com"));
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._))
-            .Returns(new DapsResponse("12345"));
-
-        // Act
-        await _logic.TriggerDapsAsync(ExistingConnectorId, file, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task TriggerDaps_WithFailingDapsCall_ThrowsConflictException()
-    {
-        // Arrange
-        _connectors.Add(new Connector(ExistingConnectorId, "test", "de", "https://www.api.connector.com"));
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._))
-            .Returns((DapsResponse?)null);
-
-        // Act
-        async Task Act() => await _logic.TriggerDapsAsync(ExistingConnectorId, file, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Client Id should be set here");
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task TriggerDaps_WithNotExistingConnector_ThrowsNotFoundException()
-    {
-        // Arrange
-        var notExistingConnectorId = Guid.NewGuid();
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-
-        // Act
-        async Task Act() => await _logic.TriggerDapsAsync(notExistingConnectorId, file, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"Connector {notExistingConnectorId} does not exists");
-    }
-
-    [Fact]
-    public async Task TriggerDaps_WithWrongUser_ThrowsForbiddenException()
-    {
-        // Arrange
-        var identity = _fixture.Create<(Guid, Guid)>();
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-
-        // Act
-        async Task Act() => await _logic.TriggerDapsAsync(ExistingConnectorId, file, identity, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        exception.Message.Should().Be("User is not provider of the connector");
     }
 
     #endregion
@@ -521,7 +421,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((connectorId, (Guid?)null));
 
         // Act
-        await _logic.ProcessClearinghouseSelfDescription(data, _identity.UserId, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
@@ -540,7 +440,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(((Guid, Guid?))default);
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, _identity.UserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -558,7 +458,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((connectorId, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, _identity.UserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -578,14 +478,15 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var connector = new Connector(connectorId, null!, null!, null!);
         var selfDescriptionDocumentId = Guid.NewGuid();
+        var assignedOfferSubscriptions = _fixture.CreateMany<Guid>(2);
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns((true, true, "123", selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.ACTIVE, true));
+            .Returns((true, true, selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.ACTIVE, assignedOfferSubscriptions));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
-            .Invokes((Guid DocId, Action<Document>? initialize, Action<Document> modify)
+            .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
                 =>
             {
-                var document = new Document(DocId, null!, null!, null!, default, default, default, default);
+                var document = new Document(docId, null!, null!, null!, default, default, default, default);
                 initialize?.Invoke(document);
                 modify(document);
             });
@@ -597,15 +498,76 @@ public class ConnectorsBusinessLogicTests
             });
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
 
         // Assert
         connector.StatusId.Should().Be(ConnectorStatusId.INACTIVE);
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(selfDescriptionDocumentId, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, A<Action<Connector>>._, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _connectorsRepository.DeleteConnectorClientDetails(connectorId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _dapsService.DeleteDapsClient("123", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteConnectorAsync_WithPendingAndWithoutDocumentId_ExpectedCalls()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var assignedOfferSubscriptions = _fixture.CreateMany<Guid>(2);
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
+            .Returns((true, true, null, null, ConnectorStatusId.PENDING, assignedOfferSubscriptions));
+
+        // Act
+        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnector(connectorId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteConnectorAsync_WithPendingAndDocumentId_ExpectedCalls()
+    {
+        // Arrange
+        const DocumentStatusId documentStatusId = DocumentStatusId.LOCKED;
+        var connectorId = Guid.NewGuid();
+        var selfDescriptionDocumentId = Guid.NewGuid();
+        var assignedOfferSubscriptions = _fixture.CreateMany<Guid>(2);
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
+            .Returns((true, true, selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.PENDING, assignedOfferSubscriptions));
+
+        // Act
+        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.RemoveDocument(selfDescriptionDocumentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnector(connectorId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteConnectorAsync_WithoutAssignedOfferSubscriptions_ExpectedCalls()
+    {
+        // Arrange
+        const DocumentStatusId documentStatusId = DocumentStatusId.LOCKED;
+        var connectorId = Guid.NewGuid();
+        var selfDescriptionDocumentId = Guid.NewGuid();
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
+            .Returns((true, true, selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<Guid>()));
+
+        // Act
+        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.RemoveDocument(selfDescriptionDocumentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnector(connectorId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
@@ -614,24 +576,15 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var connector = new Connector(connectorId, null!, null!, null!);
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, true, "12345", null, null, ConnectorStatusId.ACTIVE, true));
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
-            .Invokes((Guid _, Action<Connector>? initialize, Action<Connector> setOptionalFields) =>
-            {
-                initialize?.Invoke(connector);
-                setOptionalFields.Invoke(connector);
-            });
+            .Returns((true, true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<Guid>()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
 
         // Assert
-        connector.StatusId.Should().Be(ConnectorStatusId.INACTIVE);
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, A<Action<Connector>>._, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("Connector status does not match a deletion scenario. Deletion declined");
     }
 
     [Fact]
@@ -640,30 +593,14 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, true, null, null, null, ConnectorStatusId.ACTIVE, false));
+            .Returns((true, true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<Guid>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Connector status does not match a deletion scenario. Deletion declined");
-    }
-
-    [Fact]
-    public async Task DeleteConnectorAsync_WithEmptyDapsClientId_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var connectorId = Guid.NewGuid();
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, true, null, null, null, ConnectorStatusId.ACTIVE, true));
-
-        // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("DapsClientId must be set");
     }
 
     [Fact]
@@ -672,10 +609,10 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns(((bool, bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId, bool))default);
+            .Returns((false, false, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<Guid>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -688,10 +625,10 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, false, null, null, null, default, true));
+            .Returns((true, false, null, null, default, Enumerable.Empty<Guid>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, _identity.CompanyId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -717,7 +654,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<ManagedConnectorData>?)new Pagination.Source<ManagedConnectorData>(data.Length, data.Skip(skip).Take(take))));
 
         // Act
-        var result = await _logic.GetManagedConnectorForCompany(_identity.CompanyId, page, size);
+        var result = await _logic.GetManagedConnectorForCompany(page, size);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetManagedConnectorsForCompany(_identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -737,7 +674,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((int _, int _) => Task.FromResult((Pagination.Source<ManagedConnectorData>?)null));
 
         // Act
-        var result = await _logic.GetManagedConnectorForCompany(_identity.CompanyId, 0, 10);
+        var result = await _logic.GetManagedConnectorForCompany(0, 10);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetManagedConnectorsForCompany(_identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -762,7 +699,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((ConnectorUpdateInformation?)null);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"), (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de")).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -781,11 +718,10 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"), (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de")).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _dapsService.UpdateDapsConnectorUrl(A<string>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -801,7 +737,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -822,33 +758,11 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Connector {connectorId} is in state {ConnectorStatusId.INACTIVE}");
-    }
-
-    [Fact]
-    public async Task UpdateConnectorUrl_WithoutDapsClientId_ThrowsConflictException()
-    {
-        // Arrange
-        var connectorId = Guid.NewGuid();
-        var data = _fixture.Build<ConnectorUpdateInformation>()
-            .With(x => x.ConnectorUrl, "https://old.de")
-            .With(x => x.IsHostCompany, true)
-            .With(x => x.Status, ConnectorStatusId.ACTIVE)
-            .With(x => x.DapsClientId, (string?)null)
-            .Create();
-        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
-            .Returns(data);
-
-        // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Connector {connectorId} has no client id");
     }
 
     [Fact]
@@ -860,7 +774,6 @@ public class ConnectorsBusinessLogicTests
             .With(x => x.ConnectorUrl, "https://old.de")
             .With(x => x.IsHostCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
-            .With(x => x.DapsClientId, "1234")
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
             .With(x => x.Bpn, (string?)null)
             .Create();
@@ -868,7 +781,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -884,7 +797,6 @@ public class ConnectorsBusinessLogicTests
             .With(x => x.ConnectorUrl, "https://old.de")
             .With(x => x.IsHostCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
-            .With(x => x.DapsClientId, "1234")
             .With(x => x.Type, ConnectorTypeId.COMPANY_CONNECTOR)
             .With(x => x.Bpn, "BPNL123456789")
             .Create();
@@ -894,7 +806,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((string?)null);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -913,7 +825,6 @@ public class ConnectorsBusinessLogicTests
             .With(x => x.ConnectorUrl, "https://old.de")
             .With(x => x.IsHostCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
-            .With(x => x.DapsClientId, "1234")
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
             .With(x => x.Bpn, "BPNL123456789")
             .Create();
@@ -927,16 +838,17 @@ public class ConnectorsBusinessLogicTests
             });
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, null, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _dapsService.UpdateDapsConnectorUrl("1234", "https://new.de", A<string>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         connector.ConnectorUrl.Should().Be("https://new.de");
     }
 
     #endregion
+
+    #region GetCompanyConnectorEndPointAsync
 
     [Fact]
     public async Task GetCompanyConnectorEndPoint_WithValidData_ReturnsExpectedResult()
@@ -990,6 +902,8 @@ public class ConnectorsBusinessLogicTests
         ex.Message.Should().Be($"Incorrect BPN [{bpns[0]}] attribute value");
     }
 
+    #endregion
+
     #region GetConnectorOfferSubscriptionData
 
     [Fact]
@@ -997,14 +911,69 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var data = _fixture.CreateMany<OfferSubscriptionConnectorData>(5);
-        A.CallTo(() => _offerSubscriptionRepository.GetConnectorOfferSubscriptionData(null, _identity.CompanyId))!
+        A.CallTo(() => _offerSubscriptionRepository.GetConnectorOfferSubscriptionData(null, _identity.CompanyId))
             .Returns(data.ToAsyncEnumerable());
 
         // Act
-        var result = await _logic.GetConnectorOfferSubscriptionData(null, _identity.CompanyId).ToListAsync().ConfigureAwait(false);
+        var result = await _logic.GetConnectorOfferSubscriptionData(null).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(data.Count());
+    }
+
+    #endregion
+
+    #region GetCompanyConnectorData
+
+    [Fact]
+    public async Task GetCompanyConnectorData_WithInvalid_ThrowsForbiddenException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var connectorData = _fixture.Create<ConnectorData>();
+        A.CallTo(() => _connectorsRepository.GetConnectorByIdForCompany(connectorId, _identity.CompanyId))
+            .Returns((connectorData, false));
+
+        // Act
+        async Task Act() => await _logic.GetCompanyConnectorData(connectorId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"company {_identity.CompanyId} is not provider of connector {connectorId}");
+    }
+
+    [Fact]
+    public async Task GetCompanyConnectorData_WithNotExisting_ThrowsNotFoundException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        A.CallTo(() => _connectorsRepository.GetConnectorByIdForCompany(connectorId, _identity.CompanyId))
+            .Returns(new ValueTuple<ConnectorData, bool>());
+
+        // Act
+        async Task Act() => await _logic.GetCompanyConnectorData(connectorId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"connector {connectorId} does not exist");
+    }
+
+    [Fact]
+    public async Task GetCompanyConnectorData_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var connectorData = _fixture.Build<ConnectorData>()
+            .With(x => x.Name, "Test Connector")
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorByIdForCompany(connectorId, _identity.CompanyId))
+            .Returns((connectorData, true));
+
+        // Act
+        var result = await _logic.GetCompanyConnectorData(connectorId).ConfigureAwait(false);
+
+        // Assert
+        result.Name.Should().Be("Test Connector");
     }
 
     #endregion
