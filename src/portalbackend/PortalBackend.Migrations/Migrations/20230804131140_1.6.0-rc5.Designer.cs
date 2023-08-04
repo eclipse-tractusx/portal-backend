@@ -29,8 +29,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230803131109_CPLP-3105-RemoveDaps")]
-    partial class CPLP3105RemoveDaps
+    [Migration("20230804131140_1.6.0-rc5")]
+    partial class _160rc5
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
