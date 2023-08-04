@@ -101,7 +101,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
                 serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                serviceAccount.Identity!.CompanyId == companyId)
+                (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
             .Select(sa => new ValueTuple<IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?>(
                 sa.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
                 sa.Connector!.Id,
