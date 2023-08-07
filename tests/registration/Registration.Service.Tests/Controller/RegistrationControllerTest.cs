@@ -201,4 +201,20 @@ public class RegistrationControllerTest
         A.CallTo(() => _registrationBusinessLogicFake.InviteNewUserAsync(applicationId, creationInfo, new(_identity.UserId, _identity.CompanyId))).MustHaveHappenedOnceExactly();
         result.Should().Be(1);
     }
+
+    [Fact]
+    public async Task GetApplicationsWithStatusAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var companyApplicationWithStatus = _fixture.CreateMany<CompanyApplicationWithStatus>(2);
+        A.CallTo(() => _registrationBusinessLogicFake.GetAllApplicationsForUserWithStatus(_identity.CompanyId))
+            .Returns(companyApplicationWithStatus.ToAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetApplicationsWithStatusAsync().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetAllApplicationsForUserWithStatus(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(2);
+    }
 }
