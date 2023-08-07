@@ -78,15 +78,18 @@ public static class EntityTypeBuilderV1Extension
         var insertEditorProperty = sourceProperties.SingleOrDefault(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(AuditInsertEditorV1Attribute)));
         var lastEditorProperty = sourceProperties.SingleOrDefault(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(AuditLastEditorV1Attribute)));
 
-        return builder.AfterInsert(trigger => trigger
-                            .Action(action => action
-                                .Insert(CreateNewAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, insertEditorProperty ?? lastEditorProperty))))
-                        .AfterUpdate(trigger => trigger
-                            .Action(action => action
-                                .Insert(CreateUpdateAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, lastEditorProperty))))
-                        .AfterDelete(trigger => trigger
-                            .Action(action => action
-                                .Insert(CreateDeleteAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, lastEditorProperty))));
+        return builder.AfterInsert(trigger => trigger.Action(action => action.Insert(x => x.New)))
+            .AfterUpdate(trigger => trigger.Action(action => action.Insert(x => x.Old)))
+            .AfterDelete(trigger => trigger.Action(action => action.Insert(x => x.Old)));
+        // return builder.AfterInsert(trigger => trigger
+        //                     .Action(action => action
+        //                         .Insert(CreateNewAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, insertEditorProperty ?? lastEditorProperty))))
+        //                 .AfterUpdate(trigger => trigger
+        //                     .Action(action => action
+        //                         .Insert(CreateUpdateAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, lastEditorProperty))))
+        //                 .AfterDelete(trigger => trigger
+        //                     .Action(action => action
+        //                         .Insert(CreateDeleteAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, lastEditorProperty))));
     }
 
     private static Expression<Func<TEntity, TAuditEntity>> CreateNewAuditEntityExpression<TEntity, TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty)

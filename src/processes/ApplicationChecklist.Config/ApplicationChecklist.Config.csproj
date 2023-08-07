@@ -23,7 +23,7 @@
     <PropertyGroup>
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config</AssemblyName>
         <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config</RootNamespace>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>91356e1f-3558-409f-9afe-a1cd06ae65b2</UserSecretsId>

@@ -18,9 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -35,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
+using Testcontainers.PostgreSql;
 using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
@@ -44,13 +42,8 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
     where TTestClass : class
     where TSeedingData : class, IBaseSeeding
 {
-    protected readonly TestcontainerDatabase _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-        .WithDatabase(new PostgreSqlTestcontainerConfiguration
-        {
-            Database = "test_db",
-            Username = "postgres",
-            Password = "postgres",
-        })
+    protected readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
+        .WithDatabase("test_db")
         .WithImage("postgres")
         .WithCleanUp(true)
         .WithName(Guid.NewGuid().ToString())
@@ -75,7 +68,7 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
             services.RemoveProdDbContext<PortalDbContext>();
             services.AddDbContext<PortalDbContext>(options =>
             {
-                options.UseNpgsql(_container.ConnectionString,
+                options.UseNpgsql(_container.GetConnectionString(),
                     x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                         .MigrationsHistoryTable("__efmigrations_history_portal"));
             });

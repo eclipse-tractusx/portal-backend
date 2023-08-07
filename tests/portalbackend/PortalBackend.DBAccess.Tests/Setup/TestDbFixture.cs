@@ -18,9 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Testcontainers.PostgreSql;
 using Xunit.Extensions.AssemblyFixture;
 
 [assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
@@ -35,18 +33,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup
 
 public class TestDbFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlTestcontainer _container;
+    private readonly PostgreSqlContainer _container;
 
     public TestDbFixture()
     {
-        _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            .WithDatabase(new PostgreSqlTestcontainerConfiguration
-            {
-                Database = "test_db",
-                Username = "postgres",
-                Password = "postgres",
-                Environments = { { "Include Error Detail", "true" } }
-            })
+        _container = new PostgreSqlBuilder()
+            .WithDatabase("test_db")
             .WithImage("postgres")
             .WithCleanUp(true)
             .WithName(Guid.NewGuid().ToString())
@@ -67,7 +59,7 @@ public class TestDbFixture : IAsyncLifetime
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
         optionsBuilder.UseNpgsql(
-            _container.ConnectionString,
+            _container.GetConnectionString(),
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
@@ -93,7 +85,7 @@ public class TestDbFixture : IAsyncLifetime
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
         optionsBuilder.UseNpgsql(
-            _container.ConnectionString,
+            _container.GetConnectionString(),
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
