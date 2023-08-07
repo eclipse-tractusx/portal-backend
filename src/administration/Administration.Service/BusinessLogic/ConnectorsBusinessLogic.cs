@@ -272,28 +272,22 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     {
         var companyId = _identityService.IdentityData.CompanyId;
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
-        var (isValidConnectorId, isProvidingOrHostCompany, selfDescriptionDocumentId, documentStatusId, connectorStatus, assignedOfferSubscriptions) = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false);
-
-        if (!isValidConnectorId)
-        {
-            throw new NotFoundException($"Connector {connectorId} does not exist");
-        }
-
-        if (!isProvidingOrHostCompany)
+        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false) ?? throw new NotFoundException($"Connector {connectorId} does not exist");
+        if (!result.IsProvidingOrHostCompany)
         {
             throw new ForbiddenException($"company {companyId} is neither provider nor host-company of connector {connectorId}");
         }
 
-        switch (connectorStatus)
+        switch (result.ConnectorStatus)
         {
-            case ConnectorStatusId.PENDING when selfDescriptionDocumentId == null:
-                await DeleteConnectorWithoutDocuments(connectorId, assignedOfferSubscriptions, connectorsRepository);
+            case ConnectorStatusId.PENDING when result.SelfDescriptionDocumentId == null:
+                await DeleteConnectorWithoutDocuments(connectorId, result.ConnectorOfferSubscriptions, connectorsRepository);
                 break;
             case ConnectorStatusId.PENDING:
-                await DeleteConnectorWithDocuments(connectorId, assignedOfferSubscriptions, selfDescriptionDocumentId.Value, connectorsRepository);
+                await DeleteConnectorWithDocuments(connectorId, result.SelfDescriptionDocumentId.Value, result.ConnectorOfferSubscriptions, connectorsRepository);
                 break;
-            case ConnectorStatusId.ACTIVE when selfDescriptionDocumentId != null && documentStatusId != null:
-                await DeleteConnector(connectorId, assignedOfferSubscriptions, selfDescriptionDocumentId.Value, documentStatusId.Value, connectorsRepository);
+            case ConnectorStatusId.ACTIVE when result.SelfDescriptionDocumentId != null && result.DocumentStatusId != null:
+                await DeleteConnector(connectorId, result.ConnectorOfferSubscriptions.Select(cos => cos.AssignedOfferSubscriptionIds), result.SelfDescriptionDocumentId.Value, result.DocumentStatusId.Value, connectorsRepository);
                 break;
             default:
                 throw new ConflictException("Connector status does not match a deletion scenario. Deletion declined");
@@ -320,17 +314,29 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         await _portalRepositories.SaveAsync();
     }
 
-    private async Task DeleteConnectorWithDocuments(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions, Guid selfDescriptionDocumentId, IConnectorsRepository connectorsRepository)
+    private async Task DeleteConnectorWithDocuments(Guid connectorId, Guid selfDescriptionDocumentId, IEnumerable<ConnectorOfferSubscription> connectorOfferSubscriptions, IConnectorsRepository connectorsRepository)
     {
+        var isActiveConnectorOfferSubscription = connectorOfferSubscriptions.Where(cos => cos.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE)
+            .Select(cos => cos.AssignedOfferSubscriptionIds);
+        if (isActiveConnectorOfferSubscription.Any())
+        {
+            throw new ForbiddenException($"Deletion Failed. Connector {connectorId} connected to an active offer subscription [{string.Join(",", isActiveConnectorOfferSubscription)}]");
+        }
         _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(selfDescriptionDocumentId);
-        RemoveConnectorAssignedOfferSubscriptions(connectorId, assignedOfferSubscriptions, connectorsRepository);
+        RemoveConnectorAssignedOfferSubscriptions(connectorId, connectorOfferSubscriptions.Select(cos => cos.AssignedOfferSubscriptionIds), connectorsRepository);
         connectorsRepository.DeleteConnector(connectorId);
         await _portalRepositories.SaveAsync();
     }
 
-    private async Task DeleteConnectorWithoutDocuments(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions, IConnectorsRepository connectorsRepository)
+    private async Task DeleteConnectorWithoutDocuments(Guid connectorId, IEnumerable<ConnectorOfferSubscription> connectorOfferSubscriptions, IConnectorsRepository connectorsRepository)
     {
-        RemoveConnectorAssignedOfferSubscriptions(connectorId, assignedOfferSubscriptions, connectorsRepository);
+        var isActiveConnectorOfferSubscription = connectorOfferSubscriptions.Where(cos => cos.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE)
+            .Select(cos => cos.AssignedOfferSubscriptionIds);
+        if (isActiveConnectorOfferSubscription.Any())
+        {
+            throw new ForbiddenException($"Deletion Failed. Connector {connectorId} connected to an active offer subscription [{string.Join(",", isActiveConnectorOfferSubscription)}]");
+        }
+        RemoveConnectorAssignedOfferSubscriptions(connectorId, connectorOfferSubscriptions.Select(cos => cos.AssignedOfferSubscriptionIds), connectorsRepository);
         connectorsRepository.DeleteConnector(connectorId);
         await _portalRepositories.SaveAsync();
     }
