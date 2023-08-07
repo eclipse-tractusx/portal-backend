@@ -36,6 +36,7 @@ using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -516,7 +517,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
             .Returns((connectorId, (Guid?)null));
 
@@ -535,7 +536,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
             .Returns(((Guid, Guid?))default);
 
@@ -553,7 +554,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
             .Returns((connectorId, Guid.NewGuid()));
 

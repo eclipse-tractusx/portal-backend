@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -199,8 +200,7 @@ public class ConnectorsControllerTests
     public async Task ProcessClearinghouseSelfDescription_ReturnsExpectedResult()
     {
         // Arrange
-        var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
-
+        var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
         // Act
         var result = await this._controller.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 

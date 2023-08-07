@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
 
@@ -203,7 +204,7 @@ public class SdFactoryBusinessLogicTests
             .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
             .Create();
         const string contentJson = "{\"@context\":[\"https://www.w3.org/2018/credentials/v1\",\"https://github.com/catenax-ng/tx-sd-factory/raw/clearing-house/src/main/resources/verifiablecredentials.jsonld/sd-document-v22.10.jsonld\",\"https://w3id.org/vc/status-list/2021/v1\"],\"type\":[\"VerifiableCredential\",\"LegalPerson\"],\"issuer\":\"did:sov:12345\",\"issuanceDate\":\"2023-02-18T23:03:16Z\",\"expirationDate\":\"2023-05-19T23:03:16Z\",\"credentialSubject\":{\"bpn\":\"BPNL000000000000\",\"registrationNumber\":[{\"type\":\"local\",\"value\":\"o12345678\"}],\"headquarterAddress\":{\"countryCode\":\"DE\"},\"type\":\"LegalPerson\",\"legalAddress\":{\"countryCode\":\"DE\"},\"id\":\"did:sov:12345\"},\"credentialStatus\":{\"id\":\"https://managed-identity-wallets.int.demo.catena-x.net/api/credentials/status/123\",\"type\":\"StatusList2021Entry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"58\",\"statusListCredential\":\"https://managed-identity-wallets.int.demo.catena-x.net/api/credentials/status/123\"},\"proof\":{\"type\":\"Ed25519Signature2018\",\"created\":\"2023-02-18T23:03:18Z\",\"proofPurpose\":\"assertionMethod\",\"verificationMethod\":\"did:sov:12345#key-1\",\"jws\":\"test\"}}";
-        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, contentJson);
+        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse(contentJson));
         SetupForProcessFinish(company, applicationChecklistEntry);
 
         // Act
@@ -339,7 +340,7 @@ public class SdFactoryBusinessLogicTests
         // Arrange
         var connector = new Connector(Guid.NewGuid(), "con-air", "de", "https://one-url.com");
         const string contentJson = "{\"@context\":[\"https://www.w3.org/2018/credentials/v1\",\"https://github.com/catenax-ng/tx-sd-factory/raw/clearing-house/src/main/resources/verifiablecredentials.jsonld/sd-document-v22.10.jsonld\",\"https://w3id.org/vc/status-list/2021/v1\"],\"type\":[\"VerifiableCredential\",\"LegalPerson\"],\"issuer\":\"did:sov:12345\",\"issuanceDate\":\"2023-02-18T23:03:16Z\",\"expirationDate\":\"2023-05-19T23:03:16Z\",\"credentialSubject\":{\"bpn\":\"BPNL000000000000\",\"registrationNumber\":[{\"type\":\"local\",\"value\":\"o12345678\"}],\"headquarterAddress\":{\"countryCode\":\"DE\"},\"type\":\"LegalPerson\",\"legalAddress\":{\"countryCode\":\"DE\"},\"id\":\"did:sov:12345\"},\"credentialStatus\":{\"id\":\"https://managed-identity-wallets.int.demo.catena-x.net/api/credentials/status/123\",\"type\":\"StatusList2021Entry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"58\",\"statusListCredential\":\"https://managed-identity-wallets.int.demo.catena-x.net/api/credentials/status/123\"},\"proof\":{\"type\":\"Ed25519Signature2018\",\"created\":\"2023-02-18T23:03:18Z\",\"proofPurpose\":\"assertionMethod\",\"verificationMethod\":\"did:sov:12345#key-1\",\"jws\":\"test\"}}";
-        var data = new SelfDescriptionResponseData(connector.Id, SelfDescriptionStatus.Confirm, null, contentJson);
+        var data = new SelfDescriptionResponseData(connector.Id, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse(contentJson));
         SetupForProcessFinishForConnector(connector);
 
         // Act
