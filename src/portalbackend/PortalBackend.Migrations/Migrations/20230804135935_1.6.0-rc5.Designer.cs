@@ -29,7 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230804135935_1.6.0-rc5")]
+    [Migration("20230807080842_1.6.0-rc5")]
     partial class _160rc5
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -5104,6 +5104,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 4,
                             Label = "VEHICLE_DISMANTLE"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "SUSTAINABILITY_CREDENTIAL"
                         });
                 });
 
@@ -5183,6 +5188,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 4,
                             Label = "DISMANTLER_CERTIFICATE"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "SUSTAINABILITY_FRAMEWORK"
                         });
                 });
 
