@@ -239,33 +239,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId, Guid companyId)
-    {
-        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var assignedAppData = await offerSubscriptionsRepository.GetCompanyAssignedAppDataForCompanyUserAsync(subscriptionId, companyId).ConfigureAwait(false);
-        if (assignedAppData == default)
-        {
-            throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
-        }
-
-        var (status, isSubscribingCompany, _) = assignedAppData;
-
-        if (!isSubscribingCompany)
-        {
-            throw new ForbiddenException("the calling user does not belong to the subscribing company");
-        }
-
-        if (status != OfferSubscriptionStatusId.ACTIVE && status != OfferSubscriptionStatusId.PENDING)
-        {
-            throw new ConflictException($"There is no active or pending subscription for company '{companyId}' and subscriptionId '{subscriptionId}'");
-        }
-
-        offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, os =>
-        {
-            os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.INACTIVE;
-        });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId, Guid companyId) =>
+        _offerService.UnsubscribeOwnCompanySubscriptionAsync(subscriptionId, companyId);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(Guid companyId) =>

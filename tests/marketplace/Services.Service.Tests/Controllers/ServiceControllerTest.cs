@@ -313,4 +313,18 @@ public class ServiceControllerTest
     }
 
     #endregion
+
+    [Fact]
+    public async Task UnsubscribeCompanyServiceSubscription_ReturnsNoContent()
+    {
+        //Arrange
+        var serviceId = _fixture.Create<Guid>();
+
+        //Act
+        var result = await this._controller.UnsubscribeCompanyServiceSubscriptionAsync(serviceId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UnsubscribeOwnCompanyServiceSubscriptionAsync(serviceId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
 }

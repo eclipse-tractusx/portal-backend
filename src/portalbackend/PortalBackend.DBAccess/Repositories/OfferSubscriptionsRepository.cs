@@ -105,15 +105,19 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId) =>
+    public Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId, IEnumerable<Guid> ConnectorIds, IEnumerable<Guid> ServiceAccounts)> GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId) =>
         _context.OfferSubscriptions
             .Where(os =>
                 os.Id == subscriptionId
             )
-            .Select(os => new ValueTuple<OfferSubscriptionStatusId, bool, bool>(
+            .Select(os => new ValueTuple<OfferSubscriptionStatusId, bool, bool, IEnumerable<Guid>, IEnumerable<Guid>>(
                 os.OfferSubscriptionStatusId,
                 os.CompanyId == userCompanyId,
-                true
+                true,
+                os.ConnectorAssignedOfferSubscriptions.Where(caos => caos.Connector!.StatusId != ConnectorStatusId.INACTIVE).Select(caos =>
+                    caos.Connector!.Id),
+                os.ConnectorAssignedOfferSubscriptions.Where(caos => caos.Connector!.CompanyServiceAccountId != null && caos.Connector.CompanyServiceAccount!.Identity!.UserStatusId != UserStatusId.INACTIVE).Select(caos =>
+                    caos.Connector!.CompanyServiceAccount!.Identity!.Id)
             ))
             .SingleOrDefaultAsync();
 

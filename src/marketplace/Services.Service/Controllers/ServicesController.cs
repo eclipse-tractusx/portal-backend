@@ -300,4 +300,25 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         this.WithCompanyId(companyId => _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size, companyId));
+
+    /// <summary>
+    /// Unsubscribes an service from the current user's company's subscriptions.
+    /// </summary>
+    /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to unsubscribe from.</param>
+    /// <remarks>Example: PUT: /api/service/{subscriptionId}/unsubscribe</remarks>
+    /// <response code="204">The service was successfully unsubscribed from.</response>
+    /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
+    /// <response code="404">Service does not exist.</response>
+    [HttpPut]
+    [Route("{subscriptionId}/unsubscribe")]
+    [Authorize(Roles = "unsubscribe_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnsubscribeCompanyServiceSubscriptionAsync([FromRoute] Guid subscriptionId)
+    {
+        await this.WithCompanyId(companyId => _serviceBusinessLogic.UnsubscribeOwnCompanyServiceSubscriptionAsync(subscriptionId, companyId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

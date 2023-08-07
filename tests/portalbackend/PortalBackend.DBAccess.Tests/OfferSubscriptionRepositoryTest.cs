@@ -971,6 +971,27 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetCompanyAssignedOfferSubscriptionDataForCompanyUser
+
+    [Fact]
+    public async Task GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+
+        // Assert
+        result.IsSubscribingCompany.Should().BeTrue();
+        result.IsValidSubscriptionId.Should().BeTrue();
+        result.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
+        result.ConnectorIds.Should().Contain(new Guid("bd644d9c-ca12-4488-ae38-6eb902c9bec0"));
+        result.ServiceAccounts.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(IOfferSubscriptionsRepository, PortalDbContext)> CreateSut()

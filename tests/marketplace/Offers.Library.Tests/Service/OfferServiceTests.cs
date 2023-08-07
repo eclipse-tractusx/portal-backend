@@ -67,6 +67,7 @@ public class OfferServiceTests
     private readonly OfferService _sut;
     private readonly IOfferSetupService _offerSetupService;
     private readonly ITechnicalUserProfileRepository _technicalUserProfileRepository;
+    private readonly IConnectorsRepository _connectorsRepository;
 
     public OfferServiceTests()
     {
@@ -98,6 +99,7 @@ public class OfferServiceTests
         _mailingService = A.Fake<IMailingService>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _offerSetupService = A.Fake<IOfferSetupService>();
+        _connectorsRepository = A.Fake<IConnectorsRepository>();
 
         _sut = new OfferService(_portalRepositories, _notificationService, _mailingService, _offerSetupService);
 
@@ -2444,6 +2446,121 @@ public class OfferServiceTests
 
     #endregion
 
+    #region UnsubscribeOwnCompanyAppSubscriptionAsync
+
+    [Fact]
+    public async Task UnsubscribeOwnCompanySubscriptionAsync_WithNotExistingApp_ThrowsNotFoundException()
+    {
+        // Arrange
+        var notExistingSubscriptionId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(A<Guid>._, A<Guid>._))
+            .Returns(((OfferSubscriptionStatusId, bool, bool, IEnumerable<Guid>, IEnumerable<Guid>))default);
+
+        // Act
+        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(notExistingSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Subscription {notExistingSubscriptionId} does not exist.");
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(notExistingSubscriptionId, _identity.CompanyId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UnsubscribeOwnCompanySubscriptionAsync_IsNoMemberOfCompanyProvidingApp_ThrowsArgumentException()
+    {
+        // Arrange
+        var identity = _fixture.Create<IdentityData>();
+        var subscriptionId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(A<Guid>._, A<Guid>._))
+            .Returns((OfferSubscriptionStatusId.ACTIVE, false, true, _fixture.CreateMany<Guid>(), _fixture.CreateMany<Guid>()));
+
+        // Act
+        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(subscriptionId, identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be("the calling user does not belong to the subscribing company");
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(subscriptionId, identity.CompanyId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UnsubscribeOwnCompanySubscriptionAsync_WithInactiveApp_ThrowsArgumentException()
+    {
+        // Arrange
+        var offerSubscriptionId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(A<Guid>._, A<Guid>._))
+            .Returns((
+                OfferSubscriptionStatusId.INACTIVE,
+                true,
+                true, Enumerable.Empty<Guid>(), Enumerable.Empty<Guid>()));
+
+        // Act
+        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(offerSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"There is no active or pending subscription for company '{_identity.CompanyId}' and subscriptionId '{offerSubscriptionId}'");
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(offerSubscriptionId, _identity.CompanyId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UnsubscribeOwnCompanySubscriptionAsync_CallsExpected()
+    {
+        // Arrange
+        var offerSubscription = _fixture.Build<OfferSubscription>()
+            .With(x => x.OfferSubscriptionStatusId, OfferSubscriptionStatusId.PENDING)
+            .Create();
+        var identities = _fixture.Build<Identity>()
+            .With(x => x.UserStatusId, UserStatusId.ACTIVE).CreateMany(2);
+        var connectors = _fixture.Build<Connector>()
+            .With(x => x.StatusId, ConnectorStatusId.PENDING).CreateMany(2);
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(A<Guid>._, A<Guid>._))
+            .Returns((OfferSubscriptionStatusId.ACTIVE, true, true, connectors.Select(con => con.Id), identities.Select(iden => iden.Id)));
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(A<Guid>._, A<Action<OfferSubscription>>._))
+            .Invokes((Guid _, Action<OfferSubscription> setFields) =>
+            {
+                setFields.Invoke(offerSubscription);
+            });
+
+        foreach (var identity in identities)
+        {
+            A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+                .Invokes((Guid _, Action<Identity>? initialize, Action<Identity> setFields) =>
+                {
+                    initialize?.Invoke(identity);
+                    setFields.Invoke(identity);
+                });
+        }
+        foreach (var connector in connectors)
+        {
+            A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
+                .Invokes((Guid _, Action<Connector>? initialize, Action<Connector> setOptionalFields) =>
+                {
+                    initialize?.Invoke(connector);
+                    setOptionalFields.Invoke(connector);
+                });
+        }
+        // Act
+        await _sut.UnsubscribeOwnCompanySubscriptionAsync(offerSubscription.Id, _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.INACTIVE);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(offerSubscription.Id, _identity.CompanyId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscription.Id, A<Action<OfferSubscription>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
+            .MustHaveHappenedTwiceExactly();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustHaveHappenedTwiceExactly();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupValidateSalesManager()
@@ -2524,6 +2641,7 @@ public class OfferServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserProfileRepository>()).Returns(_technicalUserProfileRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
         _fixture.Inject(_portalRepositories);
     }
 

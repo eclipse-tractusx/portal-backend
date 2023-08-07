@@ -151,4 +151,11 @@ public interface IServiceBusinessLogic
     /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the response data</returns>
     Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId);
+
+    /// <summary>
+    /// Unsubscribes an Service for the current users company.
+    /// </summary>
+    /// <param name="subscriptionId">ID of the subscription to unsubscribe from.</param>
+    /// <param name="companyId">Id of the users company that initiated app unsubscription.</param>
+    public Task UnsubscribeOwnCompanyServiceSubscriptionAsync(Guid subscriptionId, Guid companyId);
 }

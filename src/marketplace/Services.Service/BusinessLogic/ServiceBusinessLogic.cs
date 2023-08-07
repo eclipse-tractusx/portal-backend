@@ -199,4 +199,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId) =>
         _offerSetupService.StartAutoSetupAsync(data, companyId, OfferTypeId.SERVICE);
+
+    /// <inheritdoc/>
+    public Task UnsubscribeOwnCompanyServiceSubscriptionAsync(Guid subscriptionId, Guid companyId) =>
+        _offerService.UnsubscribeOwnCompanySubscriptionAsync(subscriptionId, companyId);
 }
