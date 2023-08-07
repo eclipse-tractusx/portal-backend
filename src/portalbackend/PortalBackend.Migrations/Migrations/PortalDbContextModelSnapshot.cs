@@ -5102,6 +5102,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 4,
                             Label = "VEHICLE_DISMANTLE"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "SUSTAINABILITY_CREDENTIAL"
                         });
                 });
 
@@ -5181,6 +5186,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 4,
                             Label = "DISMANTLER_CERTIFICATE"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "SUSTAINABILITY_FRAMEWORK"
                         });
                 });
 

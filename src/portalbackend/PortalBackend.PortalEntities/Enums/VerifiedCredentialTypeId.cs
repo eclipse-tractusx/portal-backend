@@ -35,4 +35,7 @@ public enum VerifiedCredentialTypeId
 
     [EnumMember(Value = "Dismantler Certificate")]
     DISMANTLER_CERTIFICATE = 4,
+
+    [EnumMember(Value = "Sustainability Framework")]
+    SUSTAINABILITY_FRAMEWORK = 5,
 }
