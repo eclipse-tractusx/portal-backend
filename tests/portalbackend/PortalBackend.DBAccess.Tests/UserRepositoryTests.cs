@@ -370,7 +370,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull().And.Satisfy(x => x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e")
             && x.ApplicationStatus == CompanyApplicationStatusId.SUBMITTED);
-        result.Single().ApplicationChecklistDatas.Should().Satisfy(
+        result.Single().ApplicationChecklist.Should().Satisfy(
             y => y.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
             y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE,
             y => y.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO,

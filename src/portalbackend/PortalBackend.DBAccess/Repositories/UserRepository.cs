@@ -47,13 +47,11 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(app => app.CompanyId == companyId)
-            .Select(companyApplication => new CompanyApplicationWithStatus
-            {
-                ApplicationId = companyApplication.Id,
-                ApplicationStatus = companyApplication.ApplicationStatusId,
-                ApplicationChecklistDatas = companyApplication.ApplicationChecklistEntries.Select(ace =>
-                    new ApplicationChecklistData(ace.ApplicationChecklistEntryTypeId, ace.ApplicationChecklistEntryStatusId))
-            })
+            .Select(companyApplication => new CompanyApplicationWithStatus(
+                    companyApplication.Id,
+                    companyApplication.ApplicationStatusId,
+                    companyApplication.ApplicationChecklistEntries.Select(ace =>
+                        new ApplicationChecklistData(ace.ApplicationChecklistEntryTypeId, ace.ApplicationChecklistEntryStatusId))))
             .AsAsyncEnumerable();
 
     public CompanyUser CreateCompanyUser(Guid identityId, string? firstName, string? lastName, string email) =>

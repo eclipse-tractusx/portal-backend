@@ -289,21 +289,18 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories,
             null!);
-        var resultList = new List<CompanyApplicationWithStatus>
-        {
-            new()
-            {
-                ApplicationId = _fixture.Create<Guid>(),
-                ApplicationStatus = CompanyApplicationStatusId.VERIFY,
-                ApplicationChecklistDatas = new[]{
+        var resultList = new[]{
+            new CompanyApplicationWithStatus(
+                _fixture.Create<Guid>(),
+                CompanyApplicationStatusId.VERIFY,
+                new[]{
                     new ApplicationChecklistData(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.DONE),
                     new ApplicationChecklistData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE),
                     new ApplicationChecklistData(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE),
                     new ApplicationChecklistData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.IN_PROGRESS),
                     new ApplicationChecklistData(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.FAILED),
                     new ApplicationChecklistData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO)
-                }
-            }
+                })
         };
         A.CallTo(() => _userRepository.GetApplicationsWithStatusUntrackedAsync(userCompanyId))
             .Returns(resultList.ToAsyncEnumerable());
@@ -313,12 +310,12 @@ public class RegistrationBusinessLogicTest
         result.Should().ContainSingle();
         result.Single().ApplicationStatus.Should().Be(CompanyApplicationStatusId.VERIFY);
         result.Single().ApplicationChecklist.Should().NotBeNull().And.HaveCount(6).And.Satisfy(
-            X => X.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && X.StatusId == ApplicationChecklistEntryStatusId.DONE,
-            X => X.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && X.StatusId == ApplicationChecklistEntryStatusId.DONE,
-            X => X.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && X.StatusId == ApplicationChecklistEntryStatusId.DONE,
-            X => X.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && X.StatusId == ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            X => X.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && X.StatusId == ApplicationChecklistEntryStatusId.FAILED,
-            X => X.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && X.StatusId == ApplicationChecklistEntryStatusId.TO_DO
+            x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.IN_PROGRESS,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.FAILED,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
         );
     }
 

@@ -194,19 +194,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
 
-    public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(Guid companyId)
-    {
-        await foreach (var applicationWithStatus in _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(companyId).ConfigureAwait(false))
-        {
-            yield return new CompanyApplicationData
-            {
-                ApplicationId = applicationWithStatus.ApplicationId,
-                ApplicationStatus = applicationWithStatus.ApplicationStatus,
-                ApplicationChecklist = applicationWithStatus.ApplicationChecklistDatas!.Select(acd =>
-                    new ApplicationChecklistDetails(acd.TypeId, acd.StatusId))
-            };
-        }
-    }
+    public IAsyncEnumerable<CompanyApplicationWithStatus> GetAllApplicationsForUserWithStatus(Guid companyId) =>
+        _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(companyId);
 
     public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, Guid companyId)
     {
