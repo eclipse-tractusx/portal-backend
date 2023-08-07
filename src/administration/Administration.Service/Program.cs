@@ -20,7 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -67,8 +66,7 @@ WebApplicationBuildRunner
         builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
             .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
-        builder.Services.AddDapsService(builder.Configuration)
-                        .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
+        builder.Services.AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
                         .AddOfferSubscriptionProcess();
 
         builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()

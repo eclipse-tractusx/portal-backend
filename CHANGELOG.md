@@ -2,6 +2,30 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.6.0-RC5
+
+### Change
+* Administration Service
+  * add validation to endpoint /api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId} to check if requesting user is either owner or provider
+  * enable search of clientId for GET /api/administration/serviceaccount/owncompany/serviceaccounts
+* Daps
+  * Remove Daps calls from all business logic
+
+### Technical Support
+* update of the portal_welcome_email template
+* add check whether an endpoint should only be callable for a service account user
+* add check whether an endpoint should only be callable for a company user
+ 
+### Bugfix
+* Logging
+  * configure serilog for backend services
+
+### Known Knowns
+* Registration process additional invited user receives 'Welcome Email' without personal salutation due to missing first and last name
+* New service account is created with identity "Company User" inside identity table - however the user mapping to company_service_accounts is assigned correctly
+* Managed technical users (for offer customers) are not fetched in the GET /serviceAccounts call
+* Changing an app instance type (/api/apps/AppReleaseProcess/instance-type/{appId}) is not blocked as soon as the app is submitted for release
+
 ## 1.6.0-RC4
 
 ### Change

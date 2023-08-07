@@ -47,6 +47,26 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
+    #region GetAllCompanyConnectorsForCompanyId
+
+    [Fact]
+    public async Task GetAllCompanyConnectorsForCompanyId_ReturnsExpectedAppCount()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllCompanyConnectorsForCompanyId(_userCompanyId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2).And.Satisfy(
+            x => x.Name == "Test Connector 6",
+            x => x.Name == "Test Connector 1");
+    }
+
+    #endregion
+
     #region CreateConnector
 
     [Fact]
@@ -261,7 +281,6 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.IsValidConnectorId.Should().BeTrue();
         result.IsProvidingOrHostCompany.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().BeNull();
-        result.DocumentStatusId.Should().BeNull();
     }
 
     [Fact]
@@ -309,53 +328,6 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result.IsValidConnectorId.Should().BeFalse();
         result.SelfDescriptionDocumentId.Should().BeNull();
-        result.DocumentStatusId.Should().BeNull();
-    }
-
-    #endregion
-
-    #region CreateConnectorClientDetails
-
-    [Fact]
-    public async Task CreateConnectorClientDetails_ReturnsExpected()
-    {
-        // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.CreateConnectorClientDetails(new Guid("ca7259eb-a3a3-4cc6-9e53-463bf0700af5"), "12345");
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<ConnectorClientDetail>().Which.ClientId.Should().Be("12345");
-    }
-
-    #endregion
-
-    #region DeleteConnectorClientDetails
-
-    [Fact]
-    public async Task DeleteConnectorClientDetails_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.DeleteConnectorClientDetails(new Guid("f032a035-d035-11ec-9d64-0242ac120002"));
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        var entry = changedEntries.Single();
-        entry.Entity.Should().BeOfType<ConnectorClientDetail>();
-        entry.State.Should().Be(EntityState.Deleted);
     }
 
     #endregion
@@ -454,6 +426,77 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
                 grouped.Select(x => x.Key).Should().HaveSameCount(bpns).And.AllSatisfy(x => bpns.Should().Contain(x));
             }
         }
+    }
+
+    #endregion
+
+    #region DeleteConnector
+
+    [Fact]
+    public async Task DeleteConnector_ExecutesExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.DeleteConnector(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var removedEntity = changedEntries.Single();
+        removedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    #endregion
+
+    #region CreateConnectorAssignedSubscriptions
+
+    [Fact]
+    public async Task CreateConnectorAssignedSubscriptions_ExecutesExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = sut.CreateConnectorAssignedSubscriptions(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"), new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        result.OfferSubscriptionId.Should().Be("0b2ca541-206d-48ad-bc02-fb61fbcb5552");
+        result.ConnectorId.Should().Be("7e86a0b8-6903-496b-96d1-0ef508206833");
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().State.Should().Be(EntityState.Added);
+        changedEntries.Single().Entity.Should().BeOfType<ConnectorAssignedOfferSubscription>().Which.OfferSubscriptionId.Should().Be("0b2ca541-206d-48ad-bc02-fb61fbcb5552");
+    }
+
+    #endregion
+
+    #region DeleteConnector
+
+    [Fact]
+    public async Task DeleteConnectorAssignedSubscriptions_ExecutesExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.DeleteConnectorAssignedSubscriptions(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"), Enumerable.Repeat(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), 1));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var removedEntity = changedEntries.Single();
+        removedEntity.State.Should().Be(EntityState.Deleted);
     }
 
     #endregion

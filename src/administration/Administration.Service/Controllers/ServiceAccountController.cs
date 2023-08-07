@@ -154,13 +154,15 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<ServiceAccountDetails> ResetServiceAccountCredentials([FromRoute] Guid serviceAccountId) =>
-        this.WithCompanyId(companyId => _logic.ExecuteResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId));
+        this.WithCompanyId(companyId => _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId));
 
     /// <summary>
     /// Gets the service account data as pagination
     /// </summary>
     /// <param name="page">the page of service account data</param>
     /// <param name="size">number of service account data</param>
+    /// <param name="isOwner">isOwner either true or false</param>
+    /// <param name="clientId">clientId is string clientclientid</param>
     /// <returns>Returns the specific number of service account data for the given page.</returns>
     /// <remarks>Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
@@ -169,8 +171,8 @@ public class ServiceAccountController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size) =>
-        this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, companyId));
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId) =>
+        this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, companyId, clientId, isOwner));
 
     /// <summary>
     /// Get all service account roles
