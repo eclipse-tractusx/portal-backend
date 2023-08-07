@@ -138,8 +138,14 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
     /// <param name="companyId">Id of the company</param>
-    /// <returns>Returns the response data</returns>
     Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId);
+
+    /// <summary>
+    /// Triggers the activation of a single instance app subscription.
+    /// </summary>
+    /// <param name="offerSubscriptionId">The offer subscription id</param>
+    /// <param name="companyId">Id of the company</param>
+    Task ActivateSingleInstance(Guid offerSubscriptionId, Guid companyId);
 
     /// <summary>
     /// Gets the app agreement data
