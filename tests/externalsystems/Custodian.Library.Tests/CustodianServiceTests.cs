@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -41,6 +42,7 @@ public class CustodianServiceTests
     private readonly ITokenService _tokenService;
     private readonly IOptions<CustodianSettings> _options;
     private readonly IFixture _fixture;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     public CustodianServiceTests()
     {
@@ -62,22 +64,24 @@ public class CustodianServiceTests
             KeycloakTokenAddress = "https://key.cloak.com"
         });
         _tokenService = A.Fake<ITokenService>();
+        _dateTimeProvider = A.Fake<IDateTimeProvider>();
     }
 
     #endregion
 
     #region Create Wallet
 
-    [Theory]
-    [InlineData("did:sov:GamAMqXnXr1chS4viYXoxB", true)]
-    [InlineData(null, false)]
-    public async Task CreateWallet_WithValidData_DoesNotThrowException(string DID, bool IsCreatedAt)
+    [Fact]
+    public async Task CreateWallet_WithValidData_DoesNotThrowException()
     {
         // Arrange
         const string bpn = "123";
         const string name = "test";
-        var data = JsonSerializer.Serialize(
-            new WalletCreationResponse(DID, IsCreatedAt ? DateTimeOffset.UtcNow : default), JsonOptions);
+        const string did = "did:sov:GamAMqXnXr1chS4viYXoxB";
+        var now = DateTimeOffset.UtcNow;
+        A.CallTo(() => _dateTimeProvider.OffsetNow)
+            .Returns(now);
+        var data = JsonSerializer.Serialize(new WalletCreationResponse(did), JsonOptions);
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/json"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
@@ -86,14 +90,14 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         var result = await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().Be(data);
+        result.Should().Be($"{{\"did\":\"{did}\",\"createdAt\":\"{now:O}\"}}");
     }
 
     [Theory]
@@ -116,7 +120,7 @@ public class CustodianServiceTests
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
@@ -142,7 +146,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         var result = await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
@@ -174,7 +178,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         var result = await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
@@ -203,7 +207,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         async Task Act() => await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
@@ -223,7 +227,7 @@ public class CustodianServiceTests
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         async Task Act() => await sut.GetWalletByBpnAsync("invalidBpn", CancellationToken.None).ConfigureAwait(false);
@@ -249,7 +253,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         var result = await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
@@ -270,7 +274,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         var result = await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
@@ -295,7 +299,7 @@ public class CustodianServiceTests
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         async Task Act() => await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
@@ -324,7 +328,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None).ConfigureAwait(false);
@@ -358,7 +362,7 @@ public class CustodianServiceTests
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         async Task Act() => await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None).ConfigureAwait(false);
@@ -386,7 +390,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None).ConfigureAwait(false);
@@ -417,7 +421,7 @@ public class CustodianServiceTests
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+        var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
         async Task Act() => await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None).ConfigureAwait(false);
