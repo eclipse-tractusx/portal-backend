@@ -193,7 +193,6 @@ public class CompanyDataController : ControllerBase
     /// <response code="200">Returns a collection of certificates.</response>
     [HttpGet]
     [Authorize(Roles = "request_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificateTypes")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
@@ -274,7 +273,7 @@ public class CompanyDataController : ControllerBase
     /// <response code="204">Successfully approved the credentials.</response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("credentials/{credentialId}/approval")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> ApproveCredential([FromRoute] Guid credentialId, CancellationToken cts)
@@ -287,12 +286,12 @@ public class CompanyDataController : ControllerBase
     /// Creates the ssiCertificate
     /// </summary>
     /// <remarks>Example: PUT: api/administration/companydata/credentials/{credentialId}/reject</remarks>
-    /// <param name="credentialId">Id of the entry that should be approved</param>
+    /// <param name="credentialId">Id of the entry that should be rejected</param>
     /// <returns>No Content</returns>
     /// <response code="204">Successfully rejected the credentials.</response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("credentials/{credentialId}/reject")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> RejectCredential([FromRoute] Guid credentialId)

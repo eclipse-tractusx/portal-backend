@@ -116,6 +116,7 @@ public class RegistrationController : ControllerBase
     /// <response code="409">Bpn is already assigned or alphanumeric or application for company is not pending</response>
     [HttpPost]
     [Route("application/{applicationId}/{bpn}/bpn")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Authorize(Roles = "approve_new_partner")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -136,6 +137,7 @@ public class RegistrationController : ControllerBase
     /// <response code="404">Application ID not found.</response>
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("applications/{applicationId}/approve")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -159,7 +161,7 @@ public class RegistrationController : ControllerBase
     /// <response code="404">Application ID not found.</response>
     [HttpPost]
     [Authorize(Roles = "decline_new_partner")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("applications/{applicationId}/decline")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -220,6 +222,7 @@ public class RegistrationController : ControllerBase
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("application/{applicationId}/override-clearinghouse")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -241,6 +244,7 @@ public class RegistrationController : ControllerBase
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("application/{applicationId}/retrigger-clearinghouse")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -262,6 +266,7 @@ public class RegistrationController : ControllerBase
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("application/{applicationId}/trigger-identity-wallet")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -283,6 +288,7 @@ public class RegistrationController : ControllerBase
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("application/{applicationId}/trigger-self-description")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -305,6 +311,7 @@ public class RegistrationController : ControllerBase
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("application/{applicationId}/trigger-bpn")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -327,6 +334,7 @@ public class RegistrationController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "update_application_checklist_value")]
     [Route("clearinghouse/selfDescription")]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

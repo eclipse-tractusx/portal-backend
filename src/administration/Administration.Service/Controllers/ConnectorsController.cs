@@ -66,7 +66,7 @@ public class ConnectorsController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ConnectorData>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithCompanyId(companyId => _businessLogic.GetAllCompanyConnectorDatas(companyId, page, size));
+        _businessLogic.GetAllCompanyConnectorDatas(page, size);
 
     /// <summary>
     /// Retrieves all company connectors for currently logged in user.
@@ -85,7 +85,7 @@ public class ConnectorsController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithCompanyId(companyId => _businessLogic.GetManagedConnectorForCompany(companyId, page, size));
+        _businessLogic.GetManagedConnectorForCompany(page, size);
 
     /// <summary>
     /// Retrieves company connector details for the given connetor id.
@@ -103,7 +103,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ConnectorData> GetCompanyConnectorByIdForCurrentUserAsync([FromRoute] Guid connectorId) =>
-        this.WithCompanyId(companyId => _businessLogic.GetCompanyConnectorData(connectorId, companyId));
+        _businessLogic.GetCompanyConnectorData(connectorId);
 
     /// <summary>
     /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
@@ -119,13 +119,12 @@ public class ConnectorsController : ControllerBase
     [Route("")]
     [Authorize(Roles = "add_connectors")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromForm] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorId = await this.WithCompanyId(companyId => _businessLogic.CreateConnectorAsync(connectorInputModel, companyId, cancellationToken)).ConfigureAwait(false);
+        var connectorId = await _businessLogic.CreateConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
     }
 
@@ -143,48 +142,19 @@ public class ConnectorsController : ControllerBase
     [Route("managed")]
     [Authorize(Roles = "add_connectors")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorId = await this.WithCompanyId(companyId => _businessLogic.CreateManagedConnectorAsync(connectorInputModel, companyId, cancellationToken)).ConfigureAwait(false);
+        var connectorId = await _businessLogic.CreateManagedConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
     }
-
-    /// <summary>
-    /// Triggers the daps endpoint for the given connector.
-    /// </summary>
-    /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">Id of the connector to trigger the daps call.</param>
-    /// <param name="certificate"></param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>View model of the created connector.</returns>
-    /// <remarks>Example: POST: /api/administration/connectors/trigger-daps/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
-    /// <response code="200">Returns true if the daps call was successful, otherwise false.</response>
-    /// <response code="400">Input parameter are invalid.</response>
-    /// <response code="404">Connector was not found.</response>
-    /// <response code="503">Access to SD factory failed with the given status code.</response>
-    /// <response code="403">user does not belong to company of companyUserId.</response>
-    [Obsolete("this endpoint will be removed in the near future")]
-    [HttpPost]
-    [Route("trigger-daps/{connectorId:guid}")]
-    [Authorize(Roles = "notexistingrole")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<bool> TriggerDapsAuth([FromRoute] Guid connectorId, [FromForm] IFormFile certificate, CancellationToken cancellationToken) =>
-        await this.WithUserIdAndCompanyId(identity => _businessLogic.TriggerDapsAsync(connectorId, certificate, identity, cancellationToken)).ConfigureAwait(false);
 
     /// <summary>
     /// Removes a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the connector to be deleted.</param>
-    /// <param name="cancellationToken">cancellation token</param>
     /// <remarks>Example: DELETE: /api/administration/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">Record not found.</response>
@@ -196,9 +166,9 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId)
     {
-        await this.WithCompanyId(companyId => _businessLogic.DeleteConnectorAsync(connectorId, companyId, cancellationToken));
+        await _businessLogic.DeleteConnectorAsync(connectorId);
         return NoContent();
     }
 
@@ -227,13 +197,13 @@ public class ConnectorsController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "submit_connector_sd")]
     [Route("clearinghouse/selfDescription")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        await this.WithUserId(userId => _businessLogic.ProcessClearinghouseSelfDescription(data, userId, cancellationToken).ConfigureAwait(false));
+        await _businessLogic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -242,7 +212,6 @@ public class ConnectorsController : ControllerBase
     /// </summary>
     /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">Id of the connector to trigger the daps call.</param>
     /// <param name="data">The update data</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>NoContent Result.</returns>
     /// <remarks>Example: PUT: /api/administration/connectors/{connectorId}/connectorUrl</remarks>
     /// <response code="204">Url was successfully updated.</response>
@@ -253,16 +222,15 @@ public class ConnectorsController : ControllerBase
     [HttpPut]
     [Route("{connectorId:guid}/connectorUrl")]
     [Authorize(Roles = "modify_connectors")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<NoContentResult> UpdateConnectorUrl([FromRoute] Guid connectorId, [FromBody] ConnectorUpdateRequest data, CancellationToken cancellationToken)
+    public async Task<NoContentResult> UpdateConnectorUrl([FromRoute] Guid connectorId, [FromBody] ConnectorUpdateRequest data)
     {
-        await this.WithUserIdAndCompanyId(identity => _businessLogic.UpdateConnectorUrl(connectorId, data, identity, cancellationToken))
+        await _businessLogic.UpdateConnectorUrl(connectorId, data)
             .ConfigureAwait(false);
         return NoContent();
     }
@@ -281,5 +249,5 @@ public class ConnectorsController : ControllerBase
     [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData([FromQuery] bool? connectorIdSet) =>
-        this.WithCompanyId(companyId => _businessLogic.GetConnectorOfferSubscriptionData(connectorIdSet, companyId));
+        _businessLogic.GetConnectorOfferSubscriptionData(connectorIdSet);
 }

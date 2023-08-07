@@ -8,8 +8,7 @@
     "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "location_id": "DE",
-    "self_description_document_id": null,
-    "daps_registration_successful": null
+    "self_description_document_id": null
   },
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206834",
@@ -20,8 +19,7 @@
     "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "location_id": "DE",
-    "self_description_document_id": null,
-    "daps_registration_successful": null
+    "self_description_document_id": null
   },
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206835",
@@ -32,8 +30,7 @@
     "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "location_id": "DE",
-    "self_description_document_id": null,
-    "daps_registration_successful": null
+    "self_description_document_id": null
   },
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206836",
@@ -44,8 +41,7 @@
     "provider_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
     "host_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
     "location_id": "DE",
-    "self_description_document_id": null,
-    "daps_registration_successful": null
+    "self_description_document_id": null
   },
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206837",
@@ -56,8 +52,7 @@
     "provider_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
     "host_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
     "location_id": "DE",
-    "self_description_document_id": null,
-    "daps_registration_successful": null
+    "self_description_document_id": null
   },
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206838",
@@ -68,7 +63,6 @@
     "provider_id": "cac8fa6a-9db7-4bad-9cbd-56298b74bac2",
     "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "location_id": "DE",
-    "self_description_document_id": null,
-    "daps_registration_successful": null
+    "self_description_document_id": null
   }
 ]

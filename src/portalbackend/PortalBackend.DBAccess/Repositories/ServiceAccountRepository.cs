@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -115,7 +116,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
                 serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                serviceAccount.Identity.CompanyId == companyId)
+                (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
                     serviceAccount.ClientId,
@@ -145,7 +146,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             serviceAccount.OfferSubscription.Id)))
             .SingleOrDefaultAsync();
 
-    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -153,7 +154,9 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 .AsNoTracking()
                 .Where(serviceAccount =>
                     serviceAccount.Identity!.CompanyId == userCompanyId &&
-                    serviceAccount.Identity.UserStatusId == UserStatusId.ACTIVE)
+                    serviceAccount.Identity.UserStatusId == UserStatusId.ACTIVE &&
+                    (!isOwner.HasValue || (isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider == null) || (!isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider != null)) &&
+                    (clientId == null || EF.Functions.ILike(serviceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
                 .GroupBy(serviceAccount => serviceAccount.Identity!.CompanyId),
             serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
             serviceAccount => new CompanyServiceAccountData(
@@ -184,10 +187,5 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 sa.Id == technicalUserId &&
                 sa.Identity!.UserStatusId == UserStatusId.ACTIVE &&
                 sa.Identity.CompanyId == companyId)
-            .AnyAsync();
-
-    public Task<bool> IsCompanyServiceAccountLinkedCompany(Guid serviceAccountId, Guid companyId) =>
-        _dbContext.CompanyLinkedServiceAccounts
-            .Where(x => x.ServiceAccountId == serviceAccountId && (x.Provider == companyId || x.Owners == companyId))
             .AnyAsync();
 }
