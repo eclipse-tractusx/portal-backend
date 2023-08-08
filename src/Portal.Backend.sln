@@ -208,6 +208,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.ProcessIdentity",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.PublicInfos", "framework\Framework.PublicInfos\Framework.PublicInfos.csproj", "{47E089E3-E875-4045-9E58-C1223BE899E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.PublicInfos.Tests", "..\tests\framework\Framework.PublicInfos.Tests\Framework.PublicInfos.Tests.csproj", "{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1298,6 +1300,18 @@ Global
 		{47E089E3-E875-4045-9E58-C1223BE899E9}.Release|x64.Build.0 = Release|Any CPU
 		{47E089E3-E875-4045-9E58-C1223BE899E9}.Release|x86.ActiveCfg = Release|Any CPU
 		{47E089E3-E875-4045-9E58-C1223BE899E9}.Release|x86.Build.0 = Release|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Debug|x64.Build.0 = Debug|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Debug|x86.Build.0 = Debug|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Release|x64.ActiveCfg = Release|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Release|x64.Build.0 = Release|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Release|x86.ActiveCfg = Release|Any CPU
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1396,5 +1410,6 @@ Global
 		{CB9FFDD9-7F41-44DA-BFA8-C157A96D51F6} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{4CA307AB-A0F8-4AA5-A09D-91F47DA3054A} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{47E089E3-E875-4045-9E58-C1223BE899E9} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
+		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 	EndGlobalSection
 EndGlobal

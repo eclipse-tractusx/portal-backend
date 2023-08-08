@@ -50,7 +50,7 @@ public class OpenInformationController : ControllerBase
     /// <response code="200">Successfully executed the invitation.</response>
     [HttpGet]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<UrlInformation>), StatusCodes.Status200OK)]
     public Task<IEnumerable<UrlInformation>> GetOpenUrls() =>
-        this.WithCompanyId(companyId => _publicInformationBusinessLogic.GetPublicUrls(companyId));
+        _publicInformationBusinessLogic.GetPublicUrls();
 }

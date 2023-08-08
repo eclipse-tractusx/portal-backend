@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
@@ -32,33 +33,31 @@ public class PublicInformationBusinessLogic : IPublicInformationBusinessLogic
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IIdentityService _identityService;
 
     /// <summary>
     /// Creates a new instance of <see cref="PublicInformationBusinessLogic"/>
     /// </summary>
     /// <param name="actionDescriptorCollectionProvider">The actionDescriptorCollectionProvider</param>
     /// <param name="portalRepositories"></param>
-    public PublicInformationBusinessLogic(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, IPortalRepositories portalRepositories)
+    /// <param name="identityService"></param>
+    public PublicInformationBusinessLogic(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, IPortalRepositories portalRepositories, IIdentityService identityService)
     {
         _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
         _portalRepositories = portalRepositories;
+        _identityService = identityService;
     }
 
-    public async Task<IEnumerable<UrlInformation>> GetPublicUrls(Guid companyId)
+    public async Task<IEnumerable<UrlInformation>> GetPublicUrls()
     {
-        var companyRoleIds = await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyRolesAsync(companyId).ConfigureAwait(false);
-        var result = new List<UrlInformation>();
-        foreach (var item in _actionDescriptorCollectionProvider.ActionDescriptors.Items
-                     .Where(x => x.ActionConstraints != null)
-                     .OfType<ControllerActionDescriptor>()
-                     .Where(x => x.MethodInfo.GetCustomAttribute<PublicUrlAttribute>() != null && x.MethodInfo.GetCustomAttribute<PublicUrlAttribute>()!.CompanyRoleIds.Any(y => companyRoleIds.Contains(y))))
-        {
-            var actionConstraintMetadata = item.ActionConstraints!.OfType<HttpMethodActionConstraint>();
-            var httpMethods = actionConstraintMetadata.SelectMany(x => x.HttpMethods).Distinct();
-            var url = item.AttributeRouteInfo?.Template ?? throw new ConflictException($"There must be an url for {item.DisplayName}");
-            result.Add(new UrlInformation(string.Join(", ", httpMethods), url.ToLower()));
-        }
-
-        return result;
+        var companyRoleIds = await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyRolesAsync(_identityService.IdentityData.CompanyId).ToArrayAsync().ConfigureAwait(false);
+        return _actionDescriptorCollectionProvider.ActionDescriptors.Items
+            .Where(item => item.ActionConstraints != null && item.ActionConstraints.OfType<HttpMethodActionConstraint>().Any())
+            .OfType<ControllerActionDescriptor>()
+            .Where(item => item.MethodInfo.GetCustomAttribute<PublicUrlAttribute>()?.CompanyRoleIds.Intersect(companyRoleIds).Any() ?? false)
+            .Select(item =>
+                new UrlInformation(
+                    string.Join(", ", item.ActionConstraints!.OfType<HttpMethodActionConstraint>().SelectMany(x => x.HttpMethods).Distinct()),
+                    (item.AttributeRouteInfo?.Template ?? throw new ConflictException($"There must be an url for {item.DisplayName}")).ToLower()));
     }
 }
