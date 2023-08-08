@@ -90,5 +90,5 @@ public interface ICompanySsiDetailsRepository
     Task<(bool exists, SsiApprovalData data)> GetSsiApprovalData(Guid credentialId);
     Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetSsiRejectionData(Guid credentialId);
     void AttachAndModifyCompanySsiDetails(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields);
-    IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes();
+    IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes(Guid companyId);
 }

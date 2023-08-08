@@ -411,7 +411,20 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCertificateTypes(_validCompanyId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetCertificateTypes_WithoutCertificate_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCertificateTypes(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().ContainSingle().Which.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);

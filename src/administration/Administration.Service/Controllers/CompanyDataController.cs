@@ -213,7 +213,7 @@ public class CompanyDataController : ControllerBase
     [Route("certificateTypes")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
-        _logic.GetCertificateTypes();
+        this.WithCompanyId(companyId => _logic.GetCertificateTypes(companyId));
 
     /// <summary>
     /// Creates the useCaseParticipation

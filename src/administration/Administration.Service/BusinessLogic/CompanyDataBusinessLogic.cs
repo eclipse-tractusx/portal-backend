@@ -492,6 +492,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
-        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes();
+    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes(Guid companyId) =>
+        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(companyId);
 }
