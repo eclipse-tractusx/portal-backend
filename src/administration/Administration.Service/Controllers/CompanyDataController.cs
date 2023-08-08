@@ -209,7 +209,6 @@ public class CompanyDataController : ControllerBase
     /// <response code="200">Returns a collection of certificates.</response>
     [HttpGet]
     [Authorize(Roles = "request_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificateTypes")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
@@ -305,7 +304,7 @@ public class CompanyDataController : ControllerBase
     /// </response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("credentials/{credentialId}/approval")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -320,14 +319,14 @@ public class CompanyDataController : ControllerBase
     /// Creates the ssiCertificate
     /// </summary>
     /// <remarks>Example: PUT: api/administration/companydata/credentials/{credentialId}/reject</remarks>
-    /// <param name="credentialId">Id of the entry that should be approved</param>
+    /// <param name="credentialId">Id of the entry that should be rejected</param>
     /// <returns>No Content</returns>
     /// <response code="204">Successfully rejected the credentials.</response>
     /// <response code="404">CompanySsiDetail does not exists</response>
     /// <response code="409">CredentialSsiDetail is in Incorrect State</response>
     [HttpPut]
     [Authorize(Roles = "decision_ssicredential")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("credentials/{credentialId}/reject")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
