@@ -166,7 +166,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             return;
         }
-        
+
         var identity = _identityService.IdentityData;
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var result = await companyRepositories.GetCompanyRolesDataAsync(identity.CompanyId, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
