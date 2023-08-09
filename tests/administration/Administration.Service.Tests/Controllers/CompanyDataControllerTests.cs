@@ -34,8 +34,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class CompanyDataControllerTests
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly ICompanyDataBusinessLogic _logic;
     private readonly CompanyDataController _controller;
     private readonly Fixture _fixture;
@@ -45,7 +43,6 @@ public class CompanyDataControllerTests
         _fixture = new Fixture();
         _logic = A.Fake<ICompanyDataBusinessLogic>();
         this._controller = new CompanyDataController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId, _identity);
     }
 
     [Fact]
@@ -53,7 +50,7 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var companyAddressDetailData = _fixture.Create<CompanyAddressDetailData>();
-        A.CallTo(() => _logic.GetCompanyDetailsAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetCompanyDetailsAsync())
             .Returns(companyAddressDetailData);
 
         // Act
@@ -61,7 +58,7 @@ public class CompanyDataControllerTests
 
         // Assert
         result.Should().BeOfType<CompanyAddressDetailData>();
-        A.CallTo(() => _logic.GetCompanyDetailsAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyDetailsAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -69,14 +66,14 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var companyRoleConsentDatas = _fixture.CreateMany<CompanyAssignedUseCaseData>(2).ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetCompanyAssigendUseCaseDetailsAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetCompanyAssigendUseCaseDetailsAsync())
             .Returns(companyRoleConsentDatas);
 
         // Act
         await this._controller.GetCompanyAssigendUseCaseDetailsAsync().ToListAsync();
 
         // Assert
-        A.CallTo(() => _logic.GetCompanyAssigendUseCaseDetailsAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyAssigendUseCaseDetailsAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -84,14 +81,14 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var useCaseData = _fixture.Create<UseCaseIdDetails>();
-        A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(A<Guid>._))
             .Returns(true);
 
         // Act
         var result = await this._controller.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(_identity.CompanyId, useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<StatusCodeResult>();
         result.StatusCode.Should().Be((int)HttpStatusCode.Created);
     }
@@ -101,14 +98,14 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var useCaseData = _fixture.Create<UseCaseIdDetails>();
-        A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(A<Guid>._))
             .Returns(false);
 
         // Act
         var result = await this._controller.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(_identity.CompanyId, useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
         result.StatusCode.Should().Be((int)HttpStatusCode.NoContent);
     }
@@ -123,7 +120,7 @@ public class CompanyDataControllerTests
         var result = await this._controller.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(_identity.CompanyId, useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -133,14 +130,14 @@ public class CompanyDataControllerTests
         // Arrange
         var languageShortName = "en";
         var companyRoleConsentDatas = _fixture.CreateMany<CompanyRoleConsentViewData>(2).ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(A<string>._))
             .Returns(companyRoleConsentDatas);
 
         // Act
         await this._controller.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(_identity.CompanyId, languageShortName)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -153,7 +150,7 @@ public class CompanyDataControllerTests
         var result = await this._controller.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(new(_identity.UserId, _identity.CompanyId), companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -161,14 +158,14 @@ public class CompanyDataControllerTests
     public async Task GetUseCaseParticipation_WithValidRequest_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null))
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(null))
             .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
 
         // Act
         var result = await _controller.GetUseCaseParticipation(null).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync(null)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
@@ -176,14 +173,14 @@ public class CompanyDataControllerTests
     public async Task GetUseCaseParticipation_WithLanguageExplicitlySet_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de"))
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync("de"))
             .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
 
         // Act
         var result = await _controller.GetUseCaseParticipation("de").ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync(_identity.CompanyId, "de")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetUseCaseParticipationAsync("de")).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
@@ -191,14 +188,14 @@ public class CompanyDataControllerTests
     public async Task GetSsiCertificationData_WithValidData_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _logic.GetSsiCertificatesAsync(_identity.CompanyId))
+        A.CallTo(() => _logic.GetSsiCertificatesAsync())
             .Returns(_fixture.CreateMany<SsiCertificateData>(5));
 
         // Act
         var result = await _controller.GetSsiCertificationData().ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetSsiCertificatesAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetSsiCertificatesAsync()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
@@ -213,7 +210,7 @@ public class CompanyDataControllerTests
         await _controller.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateUseCaseParticipation(A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateUseCaseParticipation(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -227,7 +224,7 @@ public class CompanyDataControllerTests
         await _controller.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateSsiCertificate(A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateSsiCertificate(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -240,7 +237,7 @@ public class CompanyDataControllerTests
         await _controller.ApproveCredential(credentialId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.ApproveCredential(_identity.UserId, credentialId, A<CancellationToken>._))
+        A.CallTo(() => _logic.ApproveCredential(credentialId, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -254,7 +251,7 @@ public class CompanyDataControllerTests
         await _controller.RejectCredential(credentialId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.RejectCredential(_identity.UserId, credentialId))
+        A.CallTo(() => _logic.RejectCredential(credentialId))
             .MustHaveHappenedOnceExactly();
     }
 
