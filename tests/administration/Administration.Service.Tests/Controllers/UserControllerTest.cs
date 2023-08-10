@@ -44,9 +44,8 @@ public class UserControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<IUserBusinessLogic>();
         _rolesLogic = A.Fake<IUserRolesBusinessLogic>();
-        var logger = A.Fake<ILogger<UserController>>();
         var uploadBusinessLogic = A.Fake<IUserUploadBusinessLogic>();
-        this._controller = new UserController(logger, _logic, uploadBusinessLogic, _rolesLogic);
+        this._controller = new UserController(_logic, uploadBusinessLogic, _rolesLogic);
         _controller.AddControllerContextWithClaim(IamUserId, _identity);
     }
 
