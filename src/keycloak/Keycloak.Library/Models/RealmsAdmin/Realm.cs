@@ -147,7 +147,7 @@ public class Realm
     [JsonProperty("eventsListeners")]
     public IEnumerable<string>? EventsListeners { get; set; }
     [JsonProperty("enabledEventTypes")]
-    public IEnumerable<object>? EnabledEventTypes { get; set; }
+    public IEnumerable<string>? EnabledEventTypes { get; set; }
     [JsonProperty("adminEventsEnabled")]
     public bool? AdminEventsEnabled { get; set; }
     [JsonProperty("adminEventsDetailsEnabled")]
@@ -157,7 +157,7 @@ public class Realm
     [JsonProperty("internationalizationEnabled")]
     public bool? InternationalizationEnabled { get; set; }
     [JsonProperty("supportedLocales")]
-    public IEnumerable<object>? SupportedLocales { get; set; }
+    public IEnumerable<string>? SupportedLocales { get; set; }
     [JsonProperty("browserFlow")]
     public string? BrowserFlow { get; set; }
     [JsonProperty("registrationFlow")]

@@ -153,6 +153,7 @@ public class UsersUpdater : IUsersUpdater
 
     private static User CreateUpdateUser(string? id, UserModel update) => new User
     {
+        // Access, ClientConsents, Credentials, FederatedIdentities, FederationLink, Origin, Self are not in scope
         Id = id,
         CreatedTimestamp = update.CreatedTimestamp,
         UserName = update.Username,
@@ -165,19 +166,13 @@ public class UsersUpdater : IUsersUpdater
         DisableableCredentialTypes = update.DisableableCredentialTypes,
         RequiredActions = update.RequiredActions,
         NotBefore = update.NotBefore,
-        // Access = update.Access,
         Attributes = update.Attributes?.ToDictionary(x => x.Key, x => x.Value),
-        // ClientConsents = update.ClientConsents,
-        // Credentials = update.Credentials,
-        // FederatedIdentities: doesn't update
-        // FederationLink = update.FederationLink,
         Groups = update.Groups,
-        // Origin = update.Origin,
-        // Self = update.Self,
         ServiceAccountClientId = update.ServiceAccountClientId
     };
 
     private static bool CompareUser(User user, UserModel update) =>
+        // Access, ClientConsents, Credentials, FederatedIdentities, FederationLink, Origin, Self are not in scope
         user.CreatedTimestamp == update.CreatedTimestamp &&
         user.UserName == update.Username &&
         user.Enabled == update.Enabled &&
@@ -186,18 +181,11 @@ public class UsersUpdater : IUsersUpdater
         user.FirstName == update.FirstName &&
         user.LastName == update.LastName &&
         user.Email == update.Email &&
-        user.DisableableCredentialTypes == update.DisableableCredentialTypes &&
-        user.RequiredActions == update.RequiredActions &&
+        user.DisableableCredentialTypes.NullOrContentEqual(update.DisableableCredentialTypes) &&
+        user.RequiredActions.NullOrContentEqual(update.RequiredActions) &&
         user.NotBefore == update.NotBefore &&
-        // Access == update.Access &&
         user.Attributes.NullOrContentEqual(update.Attributes) &&
-        // ClientConsents == update.ClientConsents &&
-        // Credentials == update.Credentials &&
-        // CompareFederatedIdentities(user.FederatedIdentities, update.FederatedIdentities) && // doesn't update
-        // FederationLink == update.FederationLink &&
         user.Groups.NullOrContentEqual(update.Groups) &&
-        // Origin == update.Origin &&
-        // Self == update.Self &&
         user.ServiceAccountClientId == update.ServiceAccountClientId;
 
     private static bool CompareFederatedIdentity(FederatedIdentity identity, FederatedIdentityModel update) =>

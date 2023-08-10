@@ -76,17 +76,16 @@ try
         e.Cancel = true;
     };
 
-    using (var scope = host.Services.CreateScope())
-    {
-        Log.Information("Start seeding");
-        var seederInstance = scope.ServiceProvider.GetRequiredService<IKeycloakSeeder>();
-        await seederInstance.Seed(tokenSource.Token).ConfigureAwait(false);
-        Log.Information("Execution finished shutting down");
-    }
+    using var scope = host.Services.CreateScope();
+    Log.Information("Start seeding");
+    var seederInstance = scope.ServiceProvider.GetRequiredService<IKeycloakSeeder>();
+    await seederInstance.Seed(tokenSource.Token).ConfigureAwait(false);
+    Log.Information("Execution finished shutting down");
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
     Log.Fatal(ex, "Unhandled exception");
+    Environment.ExitCode = 1;
 }
 finally
 {

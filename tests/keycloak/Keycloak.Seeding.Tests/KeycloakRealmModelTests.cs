@@ -143,7 +143,6 @@ public class KeycloakRealmModelTests
                 x.WebAuthnPolicyPasswordlessAcceptableAaguids != null &&
                 x.WebAuthnPolicyPasswordlessAcceptableAaguids.SequenceEqual(Enumerable.Empty<string>()) &&
                 x.Users != null &&
-                x.Users == users &&
                 x.ScopeMappings != null &&
                 x.ClientScopeMappings != null &&
                 x.Clients != null &&
@@ -327,7 +326,7 @@ public class KeycloakRealmModelTests
                         null
                     ));
 
-        users.Should().ContainSingle().Which.Should().Match<UserModel>(
+        users.Should().HaveCount(2).And.Satisfy(
             x =>
                 x.Id == "345577d1-6232-4fac-ad44-6ef8e3924993" &&
                 x.CreatedTimestamp == 1690020450507 &&
@@ -342,6 +341,29 @@ public class KeycloakRealmModelTests
                 !x.RequiredActions.Any() &&
                 x.RealmRoles != null &&
                 x.RealmRoles.SequenceEqual(new[] { "default-roles-testrealm" }) &&
+                x.NotBefore == 0 &&
+                x.Groups != null &&
+                !x.Groups.Any(),
+            x =>
+                x.Id == "502dabcf-01c7-47d9-a88e-0be4279097b5" &&
+                x.CreatedTimestamp == 1652788086549 &&
+                x.Username == "testuser1" &&
+                x.Enabled == true &&
+                x.Totp == false &&
+                x.EmailVerified == false &&
+                x.FirstName == "Test" &&
+                x.LastName == "User" &&
+                x.Email == "test.user@mail.org" &&
+                x.Attributes.NullOrContentEqual(new Dictionary<string, IEnumerable<string>> { { "foo", new[] { "DEADBEEF", "deadbeef" } } }, null) &&
+                x.Credentials != null &&
+                !x.Credentials.Any() &&
+                x.DisableableCredentialTypes != null &&
+                !x.DisableableCredentialTypes.Any() &&
+                x.FederatedIdentities != null &&
+                x.FederatedIdentities.Select(i => new ValueTuple<string?, string?, string?>(i.IdentityProvider, i.UserId, i.UserName)).NullOrContentEqual(new[] { new ValueTuple<string?, string?, string?>("Test Identity Provider", "testIdentityProviderUserId1", "testIdentityProviderUserName1") }, null) &&
+                x.RealmRoles != null &&
+                x.RealmRoles.SequenceEqual(new[] { "default-roles-testrealm", "test_realm_role_1" }) &&
+                x.ClientRoles.NullOrContentEqual(new Dictionary<string, IEnumerable<string>> { { "TestClientId", new[] { "test_role_1" } } }, null) &&
                 x.NotBefore == 0 &&
                 x.Groups != null &&
                 !x.Groups.Any());

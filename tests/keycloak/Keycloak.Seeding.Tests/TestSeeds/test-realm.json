@@ -523,6 +523,39 @@
       ],
       "notBefore": 0,
       "groups": []
+    },
+    {
+      "id" : "502dabcf-01c7-47d9-a88e-0be4279097b5",
+      "createdTimestamp" : 1652788086549,
+      "username" : "testuser1",
+      "enabled" : true,
+      "totp" : false,
+      "emailVerified" : false,
+      "firstName" : "Test",
+      "lastName" : "User",
+      "email" : "test.user@mail.org",
+      "attributes" : {
+        "foo" : [ "DEADBEEF", "deadbeef" ]
+      },
+      "credentials" : [ ],
+      "disableableCredentialTypes" : [ ],
+      "requiredActions" : [ ],
+      "federatedIdentities" : [ {
+        "identityProvider" : "Test Identity Provider",
+        "userId" : "testIdentityProviderUserId1",
+        "userName" : "testIdentityProviderUserName1"
+      } ],
+      "realmRoles" : [
+        "default-roles-testrealm",
+        "test_realm_role_1"
+      ],
+      "clientRoles" : {
+        "TestClientId": [
+          "test_role_1"
+        ]
+      },
+      "notBefore" : 0,
+      "groups" : [ ]
     }
   ],
   "scopeMappings": [

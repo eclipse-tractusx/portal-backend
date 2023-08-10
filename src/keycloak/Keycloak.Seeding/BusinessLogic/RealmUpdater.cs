@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
@@ -172,14 +173,14 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.QuickLoginCheckMilliSeconds == seedRealm.QuickLoginCheckMilliSeconds &&
         keycloakRealm.MaxDeltaTimeSeconds == seedRealm.MaxDeltaTimeSeconds &&
         keycloakRealm.FailureFactor == seedRealm.FailureFactor &&
-        keycloakRealm.RequiredCredentials == seedRealm.RequiredCredentials &&
+        keycloakRealm.RequiredCredentials.NullOrContentEqual(seedRealm.RequiredCredentials) &&
         keycloakRealm.OtpPolicyType == seedRealm.OtpPolicyType &&
         keycloakRealm.OtpPolicyAlgorithm == seedRealm.OtpPolicyAlgorithm &&
         keycloakRealm.OtpPolicyInitialCounter == seedRealm.OtpPolicyInitialCounter &&
         keycloakRealm.OtpPolicyDigits == seedRealm.OtpPolicyDigits &&
         keycloakRealm.OtpPolicyLookAheadWindow == seedRealm.OtpPolicyLookAheadWindow &&
         keycloakRealm.OtpPolicyPeriod == seedRealm.OtpPolicyPeriod &&
-        keycloakRealm.OtpSupportedApplications == seedRealm.OtpSupportedApplications &&
+        keycloakRealm.OtpSupportedApplications.NullOrContentEqual(seedRealm.OtpSupportedApplications) &&
         keycloakRealm.PasswordPolicy == seedRealm.PasswordPolicy &&
         CompareBrowserSecurityHeaders(keycloakRealm.BrowserSecurityHeaders, seedRealm.BrowserSecurityHeaders) &&
         CompareSmtpServer(keycloakRealm.SmtpServer, seedRealm.SmtpServer) &&
@@ -188,12 +189,12 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.AdminTheme == seedRealm.AdminTheme &&
         keycloakRealm.EmailTheme == seedRealm.EmailTheme &&
         keycloakRealm.EventsEnabled == seedRealm.EventsEnabled &&
-        keycloakRealm.EventsListeners == seedRealm.EventsListeners &&
-        keycloakRealm.EnabledEventTypes == seedRealm.EnabledEventTypes &&
+        keycloakRealm.EventsListeners.NullOrContentEqual(seedRealm.EventsListeners) &&
+        keycloakRealm.EnabledEventTypes.NullOrContentEqual(seedRealm.EnabledEventTypes) &&
         keycloakRealm.AdminEventsEnabled == seedRealm.AdminEventsEnabled &&
         keycloakRealm.AdminEventsDetailsEnabled == seedRealm.AdminEventsDetailsEnabled &&
         keycloakRealm.InternationalizationEnabled == seedRealm.InternationalizationEnabled &&
-        keycloakRealm.SupportedLocales == seedRealm.SupportedLocales &&
+        keycloakRealm.SupportedLocales.NullOrContentEqual(seedRealm.SupportedLocales) &&
         keycloakRealm.BrowserFlow == seedRealm.BrowserFlow &&
         keycloakRealm.RegistrationFlow == seedRealm.RegistrationFlow &&
         keycloakRealm.DirectGrantFlow == seedRealm.DirectGrantFlow &&
