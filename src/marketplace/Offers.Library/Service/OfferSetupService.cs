@@ -82,7 +82,7 @@ public class OfferSetupService : IOfferSetupService
 
     public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IEnumerable<UserRoleConfig> itAdminRoles, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> serviceManagerRoles)
     {
-        _logger.LogDebug("AutoSetup started from Company {CompanyId} for {{RequestId}} with OfferUrl: {{OfferUrl}}", identity.CompanyId, data.RequestId, data.OfferUrl);
+        _logger.LogDebug("AutoSetup started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", identity.CompanyId, data.RequestId, data.OfferUrl);
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await GetAndValidateOfferDetails(data.RequestId, identity.CompanyId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
 
@@ -390,7 +390,7 @@ public class OfferSetupService : IOfferSetupService
     /// <inheritdoc />
     public async Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId, OfferTypeId offerTypeId)
     {
-        _logger.LogDebug("AutoSetup Process started from Company {CompanyId} for {{RequestId}} with OfferUrl: {{OfferUrl}}", companyId, data.RequestId, data.OfferUrl);
+        _logger.LogDebug("AutoSetup Process started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", companyId, data.RequestId, data.OfferUrl);
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var details = await GetAndValidateOfferDetails(data.RequestId, companyId, offerTypeId, offerSubscriptionRepository).ConfigureAwait(false);
         if (details.InstanceData.IsSingleInstance)
