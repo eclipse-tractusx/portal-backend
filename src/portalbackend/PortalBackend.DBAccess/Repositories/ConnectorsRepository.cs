@@ -146,7 +146,8 @@ public class ConnectorsRepository : IConnectorsRepository
                 connector.SelfDescriptionDocument!.DocumentStatusId,
                 connector.StatusId,
                 connector.ConnectorAssignedOfferSubscriptions.Select(x => new ConnectorOfferSubscription(
-                    x.OfferSubscriptionId, x.OfferSubscription!.OfferSubscriptionStatusId
+                    x.OfferSubscriptionId,
+                    x.OfferSubscription!.OfferSubscriptionStatusId
                 ))
             )).SingleOrDefaultAsync();
 

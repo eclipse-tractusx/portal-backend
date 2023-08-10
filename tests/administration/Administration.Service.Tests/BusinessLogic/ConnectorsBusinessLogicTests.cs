@@ -478,7 +478,10 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var connector = new Connector(connectorId, null!, null!, null!);
         var selfDescriptionDocumentId = Guid.NewGuid();
-        var connectorOfferSubscriptions = _fixture.CreateMany<ConnectorOfferSubscription>(2);
+        var connectorOfferSubscriptions = new[] {
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+        };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
             .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions));
 
