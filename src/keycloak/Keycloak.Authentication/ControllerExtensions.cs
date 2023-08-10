@@ -62,7 +62,7 @@ public static class ControllerExtensions
     private static string GetBearerToken(this ControllerBase controller)
     {
         var authorization = controller.Request.Headers.Authorization.FirstOrDefault();
-        if (authorization == null || !authorization.StartsWith("Bearer "))
+        if (authorization == null || !authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
             throw new ControllerArgumentException("Request does not contain a Bearer-token in authorization-header",
                 nameof(authorization));
