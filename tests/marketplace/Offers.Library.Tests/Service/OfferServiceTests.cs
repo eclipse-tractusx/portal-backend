@@ -2527,7 +2527,7 @@ public class OfferServiceTests
 
         foreach (var identity in identities)
         {
-            A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+            A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
                 .Invokes((Guid _, Action<Identity>? initialize, Action<Identity> setFields) =>
                 {
                     initialize?.Invoke(identity);
@@ -2536,7 +2536,7 @@ public class OfferServiceTests
         }
         foreach (var connector in connectors)
         {
-            A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
+            A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, A<Action<Connector>>._, A<Action<Connector>>._))
                 .Invokes((Guid _, Action<Connector>? initialize, Action<Connector> setOptionalFields) =>
                 {
                     initialize?.Invoke(connector);
@@ -2557,6 +2557,11 @@ public class OfferServiceTests
             .MustHaveHappenedTwiceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
             .MustHaveHappenedTwiceExactly();
+
+        connectors.Should().AllSatisfy(x => x.StatusId.Should().Be(ConnectorStatusId.INACTIVE));
+        identities.Should().AllSatisfy(x => x.UserStatusId.Should().Be(UserStatusId.INACTIVE));
+        offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.INACTIVE);
+
     }
 
     #endregion
