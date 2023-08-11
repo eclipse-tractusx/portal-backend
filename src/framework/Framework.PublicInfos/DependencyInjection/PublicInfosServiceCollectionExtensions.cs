@@ -18,11 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+using Microsoft.Extensions.DependencyInjection;
 
-public static class Paths
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos.DependencyInjection;
+
+public static class PublicInfosServiceCollectionExtensions
 {
-    public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
+    public static IServiceCollection AddPublicInfos(this IServiceCollection services)
+    {
+        services
+            .AddTransient<IPublicInformationBusinessLogic, PublicInformationBusinessLogic>();
+
+        return services;
+    }
 }

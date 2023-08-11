@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+using System.Text.Json.Serialization;
 
-public static class Paths
-{
-    public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
+
+public record UrlInformation(
+    [property: JsonPropertyName("httpMethods")] string HttpMethods,
+    [property: JsonPropertyName("url")] string Url
+);

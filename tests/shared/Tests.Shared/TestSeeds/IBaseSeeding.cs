@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-public static class Paths
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
+
+public interface IBaseSeeding
 {
-    public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
+    Action<PortalDbContext> SeedData();
 }

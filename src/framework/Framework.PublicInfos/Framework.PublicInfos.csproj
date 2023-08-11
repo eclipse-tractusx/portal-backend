@@ -19,8 +19,8 @@
 -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</AssemblyName>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</RootNamespace>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -32,7 +32,6 @@
     <ProjectReference Include="..\Framework.Cors\Framework.Cors.csproj" />
     <ProjectReference Include="..\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
     <ProjectReference Include="..\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
-    <ProjectReference Include="..\Framework.PublicInfos\Framework.PublicInfos.csproj" />
     <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
     <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" />
     <ProjectReference Include="..\Framework.Linq\Framework.Linq.csproj" />

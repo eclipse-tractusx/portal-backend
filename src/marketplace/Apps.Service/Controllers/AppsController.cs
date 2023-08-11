@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -314,6 +315,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [PublicUrl(CompanyRoleId.APP_PROVIDER)]
     public async Task<NoContentResult> StartAutoSetupAppProcess([FromBody] OfferAutoSetupData data)
     {
         await this.WithCompanyId(companyId => _appsBusinessLogic.StartAutoSetupAsync(data, companyId)).ConfigureAwait(false);
@@ -381,6 +383,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(AppProviderSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [PublicUrl(CompanyRoleId.APP_PROVIDER)]
     public Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
         this.WithCompanyId(companyId => _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId, companyId));
 

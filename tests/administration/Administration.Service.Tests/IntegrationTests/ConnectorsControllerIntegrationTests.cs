@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EnpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.IntegrationTests.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -28,11 +29,11 @@ using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.IntegrationTests;
 
-public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTestFactory<ConnectorsController>>
+public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTestFactory<ConnectorsController, BaseSeeding>>
 {
-    private readonly IntegrationTestFactory<ConnectorsController> _factory;
+    private readonly IntegrationTestFactory<ConnectorsController, BaseSeeding> _factory;
 
-    public ConnectorsControllerIntegrationTests(IntegrationTestFactory<ConnectorsController> factory)
+    public ConnectorsControllerIntegrationTests(IntegrationTestFactory<ConnectorsController, BaseSeeding> factory)
     {
         _factory = factory;
     }

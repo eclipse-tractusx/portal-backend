@@ -18,11 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
-
-public static class Paths
-{
-    public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

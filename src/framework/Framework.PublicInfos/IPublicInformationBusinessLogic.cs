@@ -18,11 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 
-public static class Paths
+public interface IPublicInformationBusinessLogic
 {
-    public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
+    Task<IEnumerable<UrlInformation>> GetPublicUrls();
 }
