@@ -25,9 +25,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests;
 
-public class Seeding
+public class Seeding : IBaseSeeding
 {
-    public static Action<PortalDbContext> SeedData() => dbContext =>
+    public Action<PortalDbContext> SeedData() => dbContext =>
     {
         BaseSeed.SeedBaseData().Invoke(dbContext);
 

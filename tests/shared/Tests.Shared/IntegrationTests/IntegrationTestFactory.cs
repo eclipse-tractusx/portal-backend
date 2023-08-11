@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
@@ -41,24 +42,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 
 public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFactory<TTestClass>, IAsyncLifetime
     where TTestClass : class
-    where TSeedingData : class
+    where TSeedingData : class, IBaseSeeding
 {
-    protected readonly TestcontainerDatabase _container;
-
-    public IntegrationTestFactory()
-    {
-        _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            .WithDatabase(new PostgreSqlTestcontainerConfiguration
-            {
-                Database = "test_db",
-                Username = "postgres",
-                Password = "postgres",
-            })
-            .WithImage("postgres")
-            .WithCleanUp(true)
-            .WithName(Guid.NewGuid().ToString())
-            .Build();
-    }
+    protected readonly TestcontainerDatabase _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
+        .WithDatabase(new PostgreSqlTestcontainerConfiguration
+        {
+            Database = "test_db",
+            Username = "postgres",
+            Password = "postgres",
+        })
+        .WithImage("postgres")
+        .WithCleanUp(true)
+        .WithName(Guid.NewGuid().ToString())
+        .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

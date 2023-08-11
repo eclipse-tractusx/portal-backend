@@ -21,6 +21,7 @@
 using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using System.Linq.Expressions;
 using System.Net;
 using Xunit;
@@ -29,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 
 public class BasePublicUrlTests<TController, TSeeding> : IClassFixture<IntegrationTestFactory<TController, TSeeding>>
     where TController : class
-    where TSeeding : class
+    where TSeeding : class, IBaseSeeding
 {
     protected readonly IntegrationTestFactory<TController, TSeeding> Factory;
 

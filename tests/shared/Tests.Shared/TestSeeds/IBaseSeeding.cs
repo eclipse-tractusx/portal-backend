@@ -19,20 +19,10 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
-public class AppProviderSeeding : IBaseSeeding
+public interface IBaseSeeding
 {
-    public Action<PortalDbContext> SeedData() => dbContext =>
-    {
-        BaseSeed.SeedBaseData().Invoke(dbContext);
-
-        dbContext.CompanyAssignedRoles.AddRange(new[]
-        {
-            new CompanyAssignedRole(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.APP_PROVIDER)
-        });
-    };
+    Action<PortalDbContext> SeedData();
 }

@@ -24,9 +24,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
-public class ServiceProviderSeeding
+public class ServiceProviderSeeding : IBaseSeeding
 {
-    public static Action<PortalDbContext> SeedData() => dbContext =>
+    public Action<PortalDbContext> SeedData() => dbContext =>
     {
         BaseSeed.SeedBaseData().Invoke(dbContext);
 
