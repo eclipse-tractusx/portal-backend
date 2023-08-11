@@ -295,7 +295,7 @@ public class CompanyRepository : ICompanyRepository
         _context.CompanyAssignedRoles
             .Where(x => x.CompanyId == companyId)
             .Select(x => x.CompanyRoleId)
-            .ToAsyncEnumerable();
+            .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public IAsyncEnumerable<OperatorBpnData> GetOperatorBpns() =>
@@ -306,5 +306,5 @@ public class CompanyRepository : ICompanyRepository
             .Select(x => new OperatorBpnData(
                 x.Name,
                 x.BusinessPartnerNumber!))
-            .ToAsyncEnumerable();
+            .AsAsyncEnumerable();
 }

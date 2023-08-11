@@ -60,7 +60,7 @@ public class PublicInformationBusinessLogicTests
         A.CallTo(() => _identityService.IdentityData).Returns(new IdentityData("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, _participantCompany));
 
         // Act
-        var result = await this._sut.GetPublicUrls().ConfigureAwait(false);
+        var result = await _sut.GetPublicUrls().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(1).And.Satisfy(x => x.HttpMethods == "GET" && x.Url == "all");
@@ -73,7 +73,7 @@ public class PublicInformationBusinessLogicTests
         A.CallTo(() => _identityService.IdentityData).Returns(new IdentityData("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, _appProviderCompany));
 
         // Act
-        var result = await this._sut.GetPublicUrls().ConfigureAwait(false);
+        var result = await _sut.GetPublicUrls().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(3).And.Satisfy(
@@ -145,6 +145,14 @@ internal class TestController : ControllerBase
     [Route("participant")]
 #pragma warning disable CA1822
     public void OnlyAppProviderPost()
+#pragma warning restore CA1822
+    {
+    }
+
+    [HttpGet]
+    [Route("none")]
+#pragma warning disable CA1822
+    public void NoRole()
 #pragma warning restore CA1822
     {
     }
