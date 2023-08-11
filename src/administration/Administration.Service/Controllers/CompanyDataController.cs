@@ -65,7 +65,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
-        this.WithCompanyId(companyId => _logic.GetCompanyDetailsAsync(companyId));
+        _logic.GetCompanyDetailsAsync();
 
     /// <summary>
     /// Gets the CompanyAssigned UseCase details
@@ -79,7 +79,7 @@ public class CompanyDataController : ControllerBase
     [Route("preferredUseCases")]
     [ProducesResponseType(typeof(CompanyAssignedUseCaseData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
-       this.WithCompanyId(companyId => _logic.GetCompanyAssigendUseCaseDetailsAsync(companyId));
+       _logic.GetCompanyAssigendUseCaseDetailsAsync();
 
     /// <summary>
     /// Create the CompanyAssigned UseCase details
@@ -96,7 +96,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<StatusCodeResult> CreateCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data) =>
-        await this.WithCompanyId(companyId => _logic.CreateCompanyAssignedUseCaseDetailsAsync(companyId, data.useCaseId)).ConfigureAwait(false)
+        await _logic.CreateCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(false)
             ? StatusCode((int)HttpStatusCode.Created)
             : NoContent();
 
@@ -115,7 +115,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> RemoveCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
     {
-        await this.WithCompanyId(companyId => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(companyId, data.useCaseId)).ConfigureAwait(false);
+        await _logic.RemoveCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -134,7 +134,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery] string? languageShortName = null) =>
-        this.WithCompanyId(companyId => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(companyId, languageShortName));
+        _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName);
 
     /// <summary>
     /// Post the companyrole and Consent Details
@@ -153,7 +153,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateCompanyRoleAndConsentAgreementDetailsAsync([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
     {
-        await this.WithUserIdAndCompanyId(identity => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(identity, companyRoleConsentDetails));
+        await _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
         return NoContent();
     }
 
@@ -169,7 +169,7 @@ public class CompanyDataController : ControllerBase
     [Route("useCaseParticipation")]
     [ProducesResponseType(typeof(IEnumerable<UseCaseParticipationData>), StatusCodes.Status200OK)]
     public Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipation([FromQuery] string? language) =>
-        this.WithCompanyId(companyId => _logic.GetUseCaseParticipationAsync(companyId, language));
+        _logic.GetUseCaseParticipationAsync(language);
 
     /// <summary>
     /// Gets the Ssi certifications for the own company
@@ -183,7 +183,7 @@ public class CompanyDataController : ControllerBase
     [Route("certificates")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
     public Task<IEnumerable<SsiCertificateData>> GetSsiCertificationData() =>
-        this.WithCompanyId(companyId => _logic.GetSsiCertificatesAsync(companyId));
+        _logic.GetSsiCertificatesAsync();
 
     /// <summary>
     /// Gets the Ssi certifications for the own company
@@ -214,7 +214,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken)
     {
-        await this.WithUserIdAndCompanyId(identity => _logic.CreateUseCaseParticipation(identity, data, cancellationToken)).ConfigureAwait(false);
+        await _logic.CreateUseCaseParticipation(data, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -234,7 +234,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)
     {
-        await this.WithUserIdAndCompanyId(identity => _logic.CreateSsiCertificate(identity, data, cancellationToken)).ConfigureAwait(false);
+        await _logic.CreateSsiCertificate(data, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -278,7 +278,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> ApproveCredential([FromRoute] Guid credentialId, CancellationToken cts)
     {
-        await this.WithUserId(userId => _logic.ApproveCredential(userId, credentialId, cts)).ConfigureAwait(false);
+        await _logic.ApproveCredential(credentialId, cts).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -296,7 +296,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<NoContentResult> RejectCredential([FromRoute] Guid credentialId)
     {
-        await this.WithUserId(userId => _logic.RejectCredential(userId, credentialId)).ConfigureAwait(false);
+        await _logic.RejectCredential(credentialId).ConfigureAwait(false);
         return NoContent();
     }
 }
