@@ -25,7 +25,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 public static class AuditingDependencyInjection
 {
-    public static IServiceCollection AddDbAuditing(this IServiceCollection services) =>
-        services.AddTransient<IAuditHandler, AuditHandlerV1>()
+    public static IServiceCollection AddDbAuditing(this IServiceCollection services)
+    {
+        AuditValidation.ValidateAuditEntities();
+        return services.AddTransient<IAuditHandler, AuditHandlerV1>()
             .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
+    }
 }

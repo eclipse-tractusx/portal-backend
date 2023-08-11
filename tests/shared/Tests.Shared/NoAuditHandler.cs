@@ -30,6 +30,5 @@ public class NoAuditHandler : IAuditHandler
     public void HandleAuditForChangedEntries(IEnumerable<EntityEntry> changedEntries, DbContext changeTrackerContext)
 #pragma warning restore CA1822
     {
-        return;
     }
 }

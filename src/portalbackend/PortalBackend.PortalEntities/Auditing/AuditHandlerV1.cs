@@ -43,20 +43,23 @@ public class AuditHandlerV1 : IAuditHandler
     {
         foreach (var entry in changedEntries)
         {
-            // Set LastEditor
-            foreach (var prop in entry.Properties.IntersectBy(
-                                                 entry.Entity.GetType().GetProperties()
-                                                     .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute)))
-                                                     .Select(x => x.Name),
-                                                 property => property.Metadata.Name))
+            if (entry.State != EntityState.Deleted)
             {
-                prop.CurrentValue = _identityService.IdentityData.UserId;
-            }
+                // Set LastEditor
+                foreach (var prop in entry.Properties.IntersectBy(
+                             entry.Entity.GetType().GetProperties()
+                                 .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute)))
+                                 .Select(x => x.Name),
+                             property => property.Metadata.Name))
+                {
+                    prop.CurrentValue = _identityService.IdentityData.UserId;
+                }
 
-            // If existing try to set DateLastChanged
-            foreach (var prop in entry.Properties.Where(x => x.Metadata.Name == "DateLastChanged"))
-            {
-                prop.CurrentValue = _dateTimeProvider.OffsetNow;
+                // If existing try to set DateLastChanged
+                foreach (var prop in entry.Properties.Where(x => x.Metadata.Name == "DateLastChanged"))
+                {
+                    prop.CurrentValue = _dateTimeProvider.OffsetNow;
+                }
             }
 
             AddAuditEntry(entry, entry.Metadata.ClrType, context);
@@ -86,13 +89,23 @@ public class AuditHandlerV1 : IAuditHandler
         if (Activator.CreateInstance(auditEntityType) is not IAuditEntityV1 newAuditEntity)
             return;
 
+        var propertyValues = entityEntry switch
+        {
+            { State: EntityState.Added } => entityEntry.CurrentValues,
+            { State: EntityState.Modified } => entityEntry.GetDatabaseValues(),
+            { State: EntityState.Deleted } => entityEntry.GetDatabaseValues(),
+            _ => throw new ConflictException($"Entries with state {entityEntry.State} should not be audited")
+        };
+
         foreach (var targetProperty in targetProperties)
         {
             var sourceProperty = sourceProperties.FirstOrDefault(p => p.Name == targetProperty.Name);
             if (sourceProperty == null)
                 continue;
 
-            var sourceValue = sourceProperty.GetValue(entityEntry.Entity);
+            var propertyName = sourceProperty.Name;
+            var sourceValue = propertyValues?[propertyName];
+            targetProperty.SetValue(newAuditEntity, sourceValue);
             targetProperty.SetValue(newAuditEntity, sourceValue);
         }
 
