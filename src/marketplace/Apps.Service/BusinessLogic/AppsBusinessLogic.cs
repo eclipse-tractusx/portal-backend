@@ -280,6 +280,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerSetupService.StartAutoSetupAsync(data, companyId, OfferTypeId.APP);
 
     /// <inheritdoc />
+    public Task ActivateSingleInstance(Guid offerSubscriptionId, Guid companyId) =>
+        _offerSetupService.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId, companyId);
+
+    /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>
         _offerService.GetOfferAgreementsAsync(appId, OfferTypeId.APP);
 

@@ -408,7 +408,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId)
+    public async Task CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId, Guid companyId)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(false);
@@ -424,6 +424,11 @@ public class OfferSetupService : IOfferSetupService
             case true when offerDetails.AppInstanceIds.Count() != 1:
                 throw new ConflictException("There must only be one app instance for single instance apps");
             default:
+                if (offerDetails.ProviderCompanyId != companyId)
+                {
+                    throw new ConflictException("Subscription can only be activated by the provider of the offer");
+                }
+
                 _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
                     .CreateAppSubscriptionDetail(offerSubscriptionId, appSubscriptionDetail =>
                     {
@@ -431,14 +436,15 @@ public class OfferSetupService : IOfferSetupService
                         appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
                     });
 
-                return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-                    new[]
-                    {
-                        ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
-                    },
-                    ProcessStepStatusId.DONE,
-                    true,
-                    null);
+                var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
+                    ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, null, true).ConfigureAwait(false);
+
+                _offerSubscriptionProcessService.FinalizeProcessSteps(context, new[]
+                {
+                    ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
+                });
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                break;
         }
     }
 

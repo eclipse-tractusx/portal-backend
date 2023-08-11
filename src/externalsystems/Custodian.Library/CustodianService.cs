@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
@@ -36,11 +37,13 @@ public class CustodianService : ICustodianService
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly ITokenService _tokenService;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly CustodianSettings _settings;
 
-    public CustodianService(ITokenService tokenService, IOptions<CustodianSettings> settings)
+    public CustodianService(ITokenService tokenService, IDateTimeProvider dateTimeProvider, IOptions<CustodianSettings> settings)
     {
         _tokenService = tokenService;
+        _dateTimeProvider = dateTimeProvider;
         _settings = settings.Value;
     }
 
@@ -89,7 +92,7 @@ public class CustodianService : ICustodianService
                 return "Service Response for custodian-post is null";
             }
 
-            return JsonSerializer.Serialize(walletResponse, Options);
+            return JsonSerializer.Serialize(new WalletCreationLogData(walletResponse.Did, _dateTimeProvider.OffsetNow), Options);
         }
         catch (JsonException)
         {

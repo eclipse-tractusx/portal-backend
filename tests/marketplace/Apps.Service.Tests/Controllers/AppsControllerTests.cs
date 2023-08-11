@@ -311,6 +311,20 @@ public class AppsControllerTests
     }
 
     [Fact]
+    public async Task ActivateSingleInstance_ReturnsExpected()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+
+        //Act
+        var result = await this._controller.ActivateSingleInstance(offerSubscriptionId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.ActivateSingleInstance(offerSubscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
     public async Task GetAppImageDocumentContentAsync_ReturnsExpected()
     {
         //Arrange

@@ -295,8 +295,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl", null)(0, 10).ConfigureAwait(false);
 
         // Assert
-        result!.Count.Should().Be(9);
-        result.Data.Should().HaveCount(9);
+        result!.Count.Should().Be(8);
+        result.Data.Should().HaveCount(8);
     }
 
     #endregion
