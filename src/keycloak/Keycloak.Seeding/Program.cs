@@ -85,7 +85,9 @@ try
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
     Log.Fatal(ex, "Unhandled exception");
+    Log.CloseAndFlush();
     Environment.ExitCode = 1;
+    throw;
 }
 finally
 {
