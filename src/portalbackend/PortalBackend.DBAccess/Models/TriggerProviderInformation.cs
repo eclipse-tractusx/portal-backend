@@ -48,5 +48,6 @@ public record SubscriptionActivationData(
     (bool IsSingleInstance, string? InstanceUrl) InstanceData,
     IEnumerable<Guid> AppInstanceIds,
     bool HasOfferSubscriptionProcessData,
-    Guid? SalesManagerId
+    Guid? SalesManagerId,
+    Guid? ProviderCompanyId
 );
