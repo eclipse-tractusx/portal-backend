@@ -34,16 +34,6 @@ public static class ServiceCollectionExtensions
             services.Remove(descriptor);
     }
 
-    public static void EnsureProvisioningDbCreated(this IServiceCollection services)
-    {
-        var serviceProvider = services.BuildServiceProvider();
-
-        using var scope = serviceProvider.CreateScope();
-        var scopedServices = scope.ServiceProvider;
-        var context = scopedServices.GetRequiredService<ProvisioningDbContext>();
-        context.Database.Migrate();
-    }
-
     public static void EnsureDbCreatedWithSeeding<TSeedingData>(this IServiceCollection services)
     {
         var serviceProvider = services.BuildServiceProvider();
