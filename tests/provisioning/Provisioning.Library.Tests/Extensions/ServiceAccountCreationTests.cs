@@ -166,10 +166,10 @@ public class ServiceAccountCreationTests
         A.CallTo(() => _provisioningManager.SetupCentralServiceAccountClientAsync(A<string>._, A<ClientConfigRolesData>._))
             .Returns(new ServiceAccountData("internal-sa1", _iamUserId, new ClientAuthData(IamClientAuthMethod.SECRET)));
 
-        A.CallTo(() => _userRepository.CreateIdentity(_companyId, A<UserStatusId>._))
-            .Invokes((Guid companyId, UserStatusId userStatusId) =>
+        A.CallTo(() => _userRepository.CreateIdentity(_companyId, A<UserStatusId>._, IdentityTypeId.COMPANY_SERVICE_ACCOUNT))
+            .Invokes((Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId) =>
             {
-                var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, companyId, userStatusId, IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+                var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, companyId, userStatusId, identityTypeId);
                 identities?.Add(identity);
             })
             .Returns(new Identity(_identityId, default, default, default, default));
