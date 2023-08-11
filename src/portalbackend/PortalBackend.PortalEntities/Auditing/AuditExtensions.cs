@@ -18,26 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
-public static class PortalRepositoriesStartupServiceExtensions
+public static class AuditExtensions
 {
-    public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddScoped<IPortalRepositories, PortalRepositories>()
-            .AddDbAuditing()
-            .AddDbContext<PortalDbContext>(o => o
-                    .UseNpgsql(configuration.GetConnectionString("PortalDB"))
-                    .UsePostgreSqlTriggers())
-            .AddHealthChecks()
-            .AddDbContextCheck<PortalDbContext>("PortalDbContext", tags: new[] { "portaldb" });
-        return services;
-    }
+    public static AuditOperationId ToAuditOperation(this EntityState state) =>
+        state switch
+        {
+            EntityState.Added => AuditOperationId.INSERT,
+            EntityState.Deleted => AuditOperationId.DELETE,
+            EntityState.Modified => AuditOperationId.UPDATE,
+            _ => throw new ConflictException($"Entries with state {state} should not be audited")
+        };
 }

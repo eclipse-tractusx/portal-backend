@@ -23,8 +23,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEnti
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -37,17 +37,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 /// </remarks>
 public class PortalDbContext : DbContext
 {
-    private readonly IIdentityService _identityService;
+    private readonly IAuditHandler _auditHandler;
 
     protected PortalDbContext()
     {
         throw new InvalidOperationException("IdentityService should never be null");
     }
 
-    public PortalDbContext(DbContextOptions<PortalDbContext> options, IIdentityService identityService)
+    public PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHandler auditHandler)
         : base(options)
     {
-        _identityService = identityService;
+        _auditHandler = auditHandler;
     }
 
     public virtual DbSet<Address> Addresses { get; set; } = default!;
@@ -1361,16 +1361,10 @@ public class PortalDbContext : DbContext
 
     private void EnhanceChangedEntries()
     {
-        foreach (var prop in ChangeTracker.Entries()
-            .Where(entry => entry.State != EntityState.Unchanged && entry.State != EntityState.Detached && entry.Entity is IAuditableV1)
-            .SelectMany(entry =>
-                entry.Properties.IntersectBy(
-                    entry.Entity.GetType().GetProperties()
-                        .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute)))
-                        .Select(x => x.Name),
-                    property => property.Metadata.Name)))
-        {
-            prop.CurrentValue = _identityService.IdentityData.UserId;
-        }
+        _auditHandler.HandleAuditForChangedEntries(
+            ChangeTracker.Entries().Where(entry =>
+                entry.State != EntityState.Unchanged && entry.State != EntityState.Detached &&
+                entry.Entity is IAuditableV1).ToImmutableList(),
+            ChangeTracker.Context);
     }
 }

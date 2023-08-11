@@ -18,26 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
-public static class PortalRepositoriesStartupServiceExtensions
+public static class AuditingDependencyInjection
 {
-    public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddScoped<IPortalRepositories, PortalRepositories>()
-            .AddDbAuditing()
-            .AddDbContext<PortalDbContext>(o => o
-                    .UseNpgsql(configuration.GetConnectionString("PortalDB"))
-                    .UsePostgreSqlTriggers())
-            .AddHealthChecks()
-            .AddDbContextCheck<PortalDbContext>("PortalDbContext", tags: new[] { "portaldb" });
-        return services;
-    }
+    public static IServiceCollection AddDbAuditing(this IServiceCollection services) =>
+        services.AddTransient<IAuditHandler, AuditHandlerV1>()
+            .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
 }

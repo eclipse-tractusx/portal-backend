@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Serilog;
 
 LoggingExtensions.EnsureInitialized();
@@ -36,6 +37,7 @@ try
         {
             services
                 .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddDbAuditing()
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
             services.AddHostedService<BatchDeleteService>();

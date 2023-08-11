@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using Testcontainers.PostgreSql;
@@ -64,6 +65,7 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
             if (identityService != null)
                 services.Remove(identityService);
             services.AddScoped<IIdentityService, FakeIdentityService>();
+            services.AddScoped<IAuditHandler, NoAuditHandler>();
 
             services.RemoveProdDbContext<PortalDbContext>();
             services.AddDbContext<PortalDbContext>(options =>

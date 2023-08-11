@@ -61,7 +61,7 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
+        var context = new PortalDbContext(optionsBuilder.Options, new NoAuditHandler());
         await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
         foreach (var seedAction in seedActions)
         {
@@ -87,7 +87,7 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
+        var context = new PortalDbContext(optionsBuilder.Options, new NoAuditHandler());
         await context.Database.MigrateAsync();
         await context.SaveChangesAsync();
     }

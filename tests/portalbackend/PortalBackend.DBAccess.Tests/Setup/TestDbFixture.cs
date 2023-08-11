@@ -21,9 +21,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Xunit.Extensions.AssemblyFixture;
@@ -33,17 +35,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup
 
 public class TestDbFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container;
-
-    public TestDbFixture()
-    {
-        _container = new PostgreSqlBuilder()
-            .WithDatabase("test_db")
-            .WithImage("postgres")
-            .WithCleanUp(true)
-            .WithName(Guid.NewGuid().ToString())
-            .Build();
-    }
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
+        .WithDatabase("test_db")
+        .WithImage("postgres")
+        .WithCleanUp(true)
+        .WithName(Guid.NewGuid().ToString())
+        .Build();
 
     /// <summary>
     /// Foreach test a new portalDbContext will be created and filled with the custom seeding data. 
@@ -63,7 +60,7 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
+        var context = new PortalDbContext(optionsBuilder.Options, new AuditHandlerV1(new FakeIdentityService(), new UtcDateTimeProvider()));
         await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
         foreach (var seedAction in seedActions)
         {
@@ -89,7 +86,7 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
+        var context = new PortalDbContext(optionsBuilder.Options, new AuditHandlerV1(new FakeIdentityService(), new UtcDateTimeProvider()));
         await context.Database.MigrateAsync();
 
         var seederOptions = Options.Create(new SeederSettings
