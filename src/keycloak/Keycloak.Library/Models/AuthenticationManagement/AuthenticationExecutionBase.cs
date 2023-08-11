@@ -31,9 +31,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Authentica
 public abstract class AuthenticationExecutionBase
 {
     [JsonProperty("authenticator")]
-    public string Authenticator { get; set; }
+    public string? Authenticator { get; set; }
     [JsonProperty("authenticatorConfig")]
-    public string AuthenticatorConfig { get; set; }
+    public string? AuthenticatorConfig { get; set; }
     [JsonProperty("authenticatorFlow")]
     public bool? AuthenticatorFlow { get; set; }
     [JsonProperty("autheticatorFlow")]
@@ -41,5 +41,5 @@ public abstract class AuthenticationExecutionBase
     [JsonProperty("priority")]
     public int? Priority { get; set; }
     [JsonProperty("requirement")]
-    public string Requirement { get; set; }
+    public string? Requirement { get; set; }
 }

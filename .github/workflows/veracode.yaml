@@ -435,3 +435,46 @@ jobs:
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
           include: 'Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.dll'
+
+  analyze-iam-seeding:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore src/keycloak/Keycloak.Seeding
+
+      - name: Build and publish
+        run: |
+          cd src/keycloak/Keycloak.Seeding
+          dotnet build --no-restore
+          dotnet publish -c Debug  -p:PublishDir=.\publish
+
+      - name: "Bundle files to scan"
+        run: >
+          zip -r portal-iam-seeding.zip
+          src/keycloak/Keycloak.Seeding/.publish
+
+      - name: Run Veracode Upload And Scan
+        uses: veracode/veracode-uploadandscan-action@0.2.1
+        with:
+          # Specify Veracode application name
+          appname: "Portal-IAM_Seeding"
+          createprofile: true
+          teams: 'portal'
+          # Specify path to upload
+          filepath: "portal-iam-seeding.zip"
+          vid: "${{ secrets.ORG_VERACODE_API_ID }}"
+          vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.dll'

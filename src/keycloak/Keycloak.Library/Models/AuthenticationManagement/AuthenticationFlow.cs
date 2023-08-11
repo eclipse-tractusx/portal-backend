@@ -31,17 +31,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Authentica
 public class AuthenticationFlow
 {
     [JsonProperty("alias")]
-    public string Alias { get; set; }
+    public string? Alias { get; set; }
     [JsonProperty("authenticationExecutions")]
-    public IEnumerable<AuthenticationExecutionExport> AuthenticationExecutions { get; set; }
+    public IEnumerable<AuthenticationExecutionExport>? AuthenticationExecutions { get; set; }
     [JsonProperty("builtIn")]
     public bool? BuiltIn { get; set; }
     [JsonProperty("description")]
-    public string Description { get; set; }
+    public string? Description { get; set; }
     [JsonProperty("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
     [JsonProperty("providerId")]
-    public string ProviderId { get; set; }
+    public string? ProviderId { get; set; }
     [JsonProperty("topLevel")]
     public bool? TopLevel { get; set; }
 }
