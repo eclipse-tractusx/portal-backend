@@ -799,7 +799,7 @@ public class OfferSetupServiceTests
             .Returns((SubscriptionActivationData?)null);
 
         // Act
-        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -820,7 +820,7 @@ public class OfferSetupServiceTests
             .Returns(transferData);
 
         // Act
-        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -841,21 +841,53 @@ public class OfferSetupServiceTests
             .Returns(transferData);
 
         // Act
-        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("The process step is only executable for single instance apps");
     }
+
+    [Fact]
+    public async Task CreateSingleInstanceSubscriptionDetail_WithWrongCompanyId_ThrowsConflictException()
+    {
+        // Arrange
+        var transferData = _fixture.Build<SubscriptionActivationData>()
+            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
+            .With(x => x.InstanceData, new ValueTuple<bool, string?>(true, "https://www.test.de"))
+            .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
+            .With(x => x.ProviderCompanyId, Guid.NewGuid())
+            .Create();
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
+            .Returns(transferData);
+
+        // Act
+        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("Subscription can only be activated by the provider of the offer");
+    }
+
     [Fact]
     public async Task CreateSingleInstanceSubscriptionDetail_WithValidData_ReturnsExpected()
     {
         // Arrange
+        var process = _fixture.Create<Process>();
+        var manualProcessStepData = new ManualProcessStepData(
+            ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
+            process,
+            Enumerable.Repeat(new ProcessStep(Guid.NewGuid(),
+                ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, ProcessStepStatusId.TODO, process.Id,
+                DateTimeOffset.UtcNow), 1),
+            _portalRepositories);
         var offerSubscriptionId = Guid.NewGuid();
         var transferData = _fixture.Build<SubscriptionActivationData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(true, "https://www.test.de"))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
+            .With(x => x.ProviderCompanyId, _identity.CompanyId)
             .Create();
         var detail = new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId);
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
@@ -865,17 +897,18 @@ public class OfferSetupServiceTests
             {
                 setOptionalParameter.Invoke(detail);
             });
+        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
+                ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, null, true))
+            .Returns(manualProcessStepData);
 
         // Act
-        var result = await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         detail.AppSubscriptionUrl.Should().Be("https://www.test.de");
-        result.nextStepTypeIds.Should().ContainSingle().And
-            .AllSatisfy(x => x.Should().Be(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION));
-        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.modified.Should().BeTrue();
-        result.processMessage.Should().BeNull();
+        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -1088,7 +1121,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _identity.CompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid()));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _identity.CompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _identity.CompanyId));
         A.CallTo(() => _notificationRepository.CheckNotificationExistsForParam(A<Guid>._, A<NotificationTypeId>._, A<string>._, A<string>._))
             .Returns(false);
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscription.Id, A<Action<OfferSubscription>>._))

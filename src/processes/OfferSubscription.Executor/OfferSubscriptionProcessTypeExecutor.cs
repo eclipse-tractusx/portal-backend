@@ -47,7 +47,6 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
 
     private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
         ProcessStepTypeId.TRIGGER_PROVIDER,
-        ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
         ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
@@ -105,9 +104,6 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
             {
                 ProcessStepTypeId.TRIGGER_PROVIDER => await _offerProviderBusinessLogic
                     .TriggerProvider(_offerSubscriptionId, cancellationToken)
-                    .ConfigureAwait(false),
-                ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION => await _offerSetupService
-                    .CreateSingleInstanceSubscriptionDetail(_offerSubscriptionId)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => await _offerSetupService
                     .CreateClient(_offerSubscriptionId)

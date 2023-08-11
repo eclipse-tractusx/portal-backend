@@ -2,6 +2,25 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.6.0-RC6
+
+### Change
+* App Service
+  * add single app subscription activation
+  * change the endpoint subscription/{offerSubscriptionId}/activate-single-instance from post to put
+
+### Technical Support
+* update of the portal_welcome_email template
+* adjust naming of the technical user which is taken for the process worker runs
+
+### Bugfix
+* Process Worker
+  * fixed the logging of the wallet creation response to save the did in the database
+* SSI
+  * change the value of SUSTAINABILITY_CREDENTIAL which is send to custodian
+* Authentication
+  * changed case sensitive check for 'Bearer xxx' to 'bearer' xxx'
+
 ## 1.6.0-RC5
 
 ### Change
