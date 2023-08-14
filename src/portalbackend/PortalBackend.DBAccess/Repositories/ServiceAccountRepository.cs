@@ -153,8 +153,8 @@ public class ServiceAccountRepository : IServiceAccountRepository
             _dbContext.CompanyServiceAccounts
                 .AsNoTracking()
                 .Where(serviceAccount =>
-                    serviceAccount.Identity!.CompanyId == userCompanyId &&
-                    serviceAccount.Identity.UserStatusId == UserStatusId.ACTIVE &&
+                    (serviceAccount.CompaniesLinkedServiceAccount!.Owners == userCompanyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == userCompanyId) &&
+                    serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
                     (!isOwner.HasValue || (isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider == null) || (!isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider != null)) &&
                     (clientId == null || EF.Functions.ILike(serviceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
                 .GroupBy(serviceAccount => serviceAccount.Identity!.CompanyId),
