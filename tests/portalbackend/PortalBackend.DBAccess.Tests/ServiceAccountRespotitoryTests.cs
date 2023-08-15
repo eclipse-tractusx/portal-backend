@@ -207,8 +207,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyServiceAccountDetailedDataUntrackedAsync
 
     [Theory]
-    [InlineData(10, 0, 10, 10)]
-    [InlineData(10, 1, 9, 9)]
+    [InlineData(3, 0, 10, 3)]
+    [InlineData(3, 1, 9, 2)]
     public async Task GetOwnCompanyServiceAccountsUntracked_ReturnsExpectedResult(int count, int page, int size, int expected)
     {
         // Arrange
