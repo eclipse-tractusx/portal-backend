@@ -129,6 +129,7 @@ public class OfferSetupServiceTests
         var appInstances = new List<AppInstance>();
         var appSubscriptionDetails = new List<AppSubscriptionDetail>();
         var notifications = new List<Notification>();
+        var roleIds = _fixture.CreateMany<Guid>().AsEnumerable();
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
             .Invokes((string clientName) =>
             {
@@ -139,7 +140,7 @@ public class OfferSetupServiceTests
         if (technicalUserRequired)
         {
             A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
-                .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) });
+                .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds) });
         }
         var serviceManagerRoles = new[]
         {
@@ -1017,12 +1018,13 @@ public class OfferSetupServiceTests
         var companyServiceAccount = _fixture.Build<CompanyServiceAccount>()
             .With(x => x.OfferSubscriptionId, (Guid?)null)
             .Create();
+        var roleIds = _fixture.CreateMany<Guid>().AsEnumerable();
         A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
             .Returns(data);
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
-            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()) });
+            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds) });
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, CompanyUserCompanyId, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == Bpn), CompanyServiceAccountTypeId.MANAGED, false, A<Action<CompanyServiceAccount>>._))
             .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
             {
