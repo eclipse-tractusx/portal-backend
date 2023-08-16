@@ -219,7 +219,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(3);
+        result!.Count.Should().Be(count);
+        result.Data.Should().HaveCount(expected);
         if (expected > 0)
         {
             result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
