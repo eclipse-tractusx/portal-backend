@@ -19,7 +19,6 @@
  ********************************************************************************/
 // See https://aka.ms/new-console-template for more information
 
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,8 +44,7 @@ try
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
                         x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
-                            .MigrationsHistoryTable("__efmigrations_history_portal"))
-                        .UsePostgreSqlTriggers())
+                            .MigrationsHistoryTable("__efmigrations_history_portal")))
                 .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
         })
         .AddLogging()

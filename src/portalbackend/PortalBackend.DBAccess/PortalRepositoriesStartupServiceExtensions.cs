@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,8 +33,7 @@ public static class PortalRepositoriesStartupServiceExtensions
         services.AddScoped<IPortalRepositories, PortalRepositories>()
             .AddDbAuditing()
             .AddDbContext<PortalDbContext>(o => o
-                    .UseNpgsql(configuration.GetConnectionString("PortalDB"))
-                    .UsePostgreSqlTriggers())
+                    .UseNpgsql(configuration.GetConnectionString("PortalDB")))
             .AddHealthChecks()
             .AddDbContextCheck<PortalDbContext>("PortalDbContext", tags: new[] { "portaldb" });
         return services;
