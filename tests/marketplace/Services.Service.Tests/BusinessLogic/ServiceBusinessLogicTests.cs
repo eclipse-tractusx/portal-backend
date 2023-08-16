@@ -604,6 +604,23 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region UnsubscribeOwnCompanyAppSubscriptionAsync
+
+    [Fact]
+    public async Task UnsubscribeOwnCompanyAppSubscriptionAsync_ExpectedCall()
+    {
+        // Arrange
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(new ServiceSettings()));
+
+        //  Act
+        await sut.UnsubscribeOwnCompanyServiceSubscriptionAsync(_fixture.Create<Guid>(), _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.UnsubscribeOwnCompanySubscriptionAsync(A<Guid>._, A<Guid>._)).MustHaveHappened();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupPagination(int count = 5)

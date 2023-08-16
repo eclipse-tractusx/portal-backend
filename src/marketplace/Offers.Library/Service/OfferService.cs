@@ -873,4 +873,51 @@ public class OfferService : IOfferService
         }
         return await Pagination.CreateResponseAsync(page, size, 15, GetCompanySubscribedOfferSubscriptionStatusesData).ConfigureAwait(false);
     }
+    /// <inheritdoc/>
+    public async Task UnsubscribeOwnCompanySubscriptionAsync(Guid subscriptionId, Guid companyId)
+    {
+        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        var assignedOfferSubscriptionData = await offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(subscriptionId, companyId).ConfigureAwait(false);
+        if (assignedOfferSubscriptionData == default)
+        {
+            throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
+        }
+
+        var (status, isSubscribingCompany, _, connectorIds, serviceAccounts) = assignedOfferSubscriptionData;
+
+        if (!isSubscribingCompany)
+        {
+            throw new ForbiddenException("the calling user does not belong to the subscribing company");
+        }
+
+        if (status != OfferSubscriptionStatusId.ACTIVE && status != OfferSubscriptionStatusId.PENDING)
+        {
+            throw new ConflictException($"There is no active or pending subscription for company '{companyId}' and subscriptionId '{subscriptionId}'");
+        }
+
+        offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, os =>
+        {
+            os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.INACTIVE;
+        });
+
+        foreach (var cid in connectorIds)
+        {
+            connectorsRepository.AttachAndModifyConnector(cid, null, con =>
+            {
+                con.StatusId = ConnectorStatusId.INACTIVE;
+            });
+        }
+
+        foreach (var sid in serviceAccounts)
+        {
+            userRepository.AttachAndModifyIdentity(sid, null, iden =>
+            {
+                iden.UserStatusId = UserStatusId.INACTIVE;
+            });
+        }
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }
