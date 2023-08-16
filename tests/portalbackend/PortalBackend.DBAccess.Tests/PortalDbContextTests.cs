@@ -18,8 +18,10 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -27,6 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     public PortalDbContextTests(TestDbFixture testDbFixture)
     {
@@ -36,6 +39,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
 
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
+        _dateTimeProvider = A.Fake<IDateTimeProvider>();
     }
 
     #region SaveAuditableEntity
@@ -44,21 +48,29 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
     public async Task SaveAuditableEntity_SetsLastEditorId()
     {
         // Arrange
+        var now = DateTimeOffset.UtcNow;
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
+
         var sut = await CreateContext().ConfigureAwait(false);
         using var trans = await sut.Database.BeginTransactionAsync().ConfigureAwait(false);
-        var ca = await sut.CompanyApplications.FirstAsync().ConfigureAwait(false);
+        var ca = await sut.CompanyApplications.SingleAsync(x => x.Id == new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb2")).ConfigureAwait(false);
 
         // Act
-        ca.DateLastChanged = DateTimeOffset.UtcNow;
+        ca.ApplicationStatusId = CompanyApplicationStatusId.SELECT_COMPANY_ROLE;
         await sut.SaveChangesAsync().ConfigureAwait(false);
 
         // Assert
         ca.LastEditorId.Should().NotBeNull().And.Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
+        ca.DateLastChanged.Should().Be(now);
+        var auditEntries = await sut.AuditCompanyApplication20230214.Where(x => x.Id == ca.Id).ToListAsync();
+        auditEntries.Should().HaveCount(2).And.Satisfy(
+            x => x.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED && x.AuditV1OperationId == AuditOperationId.INSERT,
+            x => x.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED && x.AuditV1OperationId == AuditOperationId.UPDATE && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
         await trans.RollbackAsync().ConfigureAwait(false);
     }
 
     #endregion
 
     private async Task<PortalDbContext> CreateContext() =>
-        await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        await _dbTestDbFixture.GetPortalDbContext(_dateTimeProvider).ConfigureAwait(false);
 }

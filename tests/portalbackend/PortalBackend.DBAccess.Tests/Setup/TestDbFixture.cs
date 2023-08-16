@@ -49,9 +49,10 @@ public class TestDbFixture : IAsyncLifetime
     /// In this method the migrations don't need to get executed since they are already on the testcontainer.
     /// Because of that the EnsureCreatedAsync is enough.
     /// </remarks>
+    /// <param name="dateTimeProvider">the datetime provider</param>
     /// <param name="seedActions">Additional data for the database</param>
     /// <returns>Returns the created PortalDbContext</returns>
-    public async Task<PortalDbContext> GetPortalDbContext(params Action<PortalDbContext>[] seedActions)
+    public async Task<PortalDbContext> GetPortalDbContext(IDateTimeProvider? dateTimeProvider = null, params Action<PortalDbContext>[] seedActions)
     {
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
@@ -60,7 +61,7 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new AuditHandlerV1(new FakeIdentityService(), new UtcDateTimeProvider()));
+        var context = new PortalDbContext(optionsBuilder.Options, new AuditHandlerV1(new FakeIdentityService(), dateTimeProvider ?? new UtcDateTimeProvider()));
         await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
         foreach (var seedAction in seedActions)
         {
