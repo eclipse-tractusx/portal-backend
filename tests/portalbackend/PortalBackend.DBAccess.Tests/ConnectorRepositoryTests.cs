@@ -278,8 +278,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.IsValidConnectorId.Should().BeTrue();
-        result.IsProvidingOrHostCompany.Should().BeTrue();
+        result!.IsProvidingOrHostCompany.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().BeNull();
     }
 
@@ -294,8 +293,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.IsValidConnectorId.Should().BeTrue();
-        result.IsProvidingOrHostCompany.Should().BeTrue();
+        result!.IsProvidingOrHostCompany.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().Be(new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b3"));
         result.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
     }
@@ -311,8 +309,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.IsValidConnectorId.Should().BeTrue();
-        result.IsProvidingOrHostCompany.Should().BeFalse();
+        result!.IsProvidingOrHostCompany.Should().BeFalse();
     }
 
     [Fact]
@@ -325,9 +322,24 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetConnectorDeleteDataAsync(new Guid(), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
 
         // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetSelfDescriptionDocumentDataAsync_WithConnectorOfferSubscription_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorDeleteDataAsync(new Guid("4618c650-709c-4580-956a-85b76eecd4b8"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542")).ConfigureAwait(false);
+
+        // Assert
         result.Should().NotBeNull();
-        result.IsValidConnectorId.Should().BeFalse();
-        result.SelfDescriptionDocumentId.Should().BeNull();
+        result!.ConnectorStatus.Should().Be(ConnectorStatusId.PENDING);
+        result!.ConnectorOfferSubscriptions.Should().Satisfy(
+            x => x.AssignedOfferSubscriptionIds == new Guid("014afd09-e51a-4ecf-83ab-a5380d9af832")
+            && x.OfferSubscriptionStatus == OfferSubscriptionStatusId.PENDING);
     }
 
     #endregion
