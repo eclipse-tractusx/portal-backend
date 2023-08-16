@@ -25,5 +25,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 public interface IAuditHandler
 {
-    void HandleAuditForChangedEntries(IEnumerable<EntityEntry> changedEntries, DbContext changeTrackerContext);
+    void HandleAuditForChangedEntries(IEnumerable<EntityEntry> changedEntries, DbContext context);
 }

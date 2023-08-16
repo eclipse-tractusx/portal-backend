@@ -29,11 +29,8 @@ public static class AuditValidation
 {
     public static void ValidateAuditEntities()
     {
-        var auditableEntities = Assembly.GetExecutingAssembly().GetTypes().Where(x => x.GetInterfaces().Contains(typeof(IAuditableV1)));
-        foreach (var auditableEntity in auditableEntities)
-        {
-            auditableEntity.ValidateAuditV1();
-        }
+        var auditableEntities = Assembly.GetExecutingAssembly().GetTypes().Where(x => x.GetInterfaces().Contains(typeof(IAuditableV1))).ToList();
+        auditableEntities.ForEach(ValidateAuditV1);
     }
 
     private static void ValidateAuditV1(this Type auditableEntityType)
