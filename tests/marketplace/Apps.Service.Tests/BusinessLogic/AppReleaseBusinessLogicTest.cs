@@ -896,7 +896,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {appId} is not in Status {OfferStatusId.CREATED} or {OfferStatusId.IN_REVIEW}");
+        ex.Message.Should().Be($"App {appId} is not in Status {OfferStatusId.CREATED}");
     }
 
     [Fact]

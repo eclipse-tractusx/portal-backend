@@ -500,8 +500,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         if (!result.IsUserOfProvidingCompany)
             throw new ForbiddenException($"Company {companyId} is not the provider company");
 
-        if (result.OfferStatus is not (OfferStatusId.CREATED or OfferStatusId.IN_REVIEW))
-            throw new ConflictException($"App {appId} is not in Status {OfferStatusId.CREATED} or {OfferStatusId.IN_REVIEW}");
+        if (result.OfferStatus is not OfferStatusId.CREATED)
+            throw new ConflictException($"App {appId} is not in Status {OfferStatusId.CREATED}");
 
         await (result.SetupTransferData == null
             ? HandleAppInstanceCreation(appId, data)
