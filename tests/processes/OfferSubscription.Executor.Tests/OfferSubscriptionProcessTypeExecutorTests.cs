@@ -203,7 +203,6 @@ public class OfferSubscriptionProcessTypeExecutorTests
 
     [Theory]
     [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER, ProcessStepTypeId.START_AUTOSETUP)]
-    [InlineData(ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION, ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)]
     [InlineData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK)]
@@ -270,11 +269,11 @@ public class OfferSubscriptionProcessTypeExecutorTests
 
     [Theory]
     [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER, true)]
-    [InlineData(ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, true)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION, true)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, true)]
     [InlineData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, true)]
     [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK, true)]
+    [InlineData(ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, false)]
     [InlineData(ProcessStepTypeId.START_AUTOSETUP, false)]
     [InlineData(ProcessStepTypeId.END_CLEARING_HOUSE, false)]
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, false)]
@@ -300,10 +299,9 @@ public class OfferSubscriptionProcessTypeExecutorTests
         var result = _executor.GetExecutableStepTypeIds();
 
         // Assert
-        result.Should().HaveCount(6)
+        result.Should().HaveCount(5)
             .And.Satisfy(
                 x => x == ProcessStepTypeId.TRIGGER_PROVIDER,
-                x => x == ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
                 x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
                 x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
                 x => x == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
@@ -326,8 +324,6 @@ public class OfferSubscriptionProcessTypeExecutorTests
 
         A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_subscriptionId, A<CancellationToken>._))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.START_AUTOSETUP }, ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _offerSetupService.CreateSingleInstanceSubscriptionDetail(_subscriptionId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IEnumerable<UserRoleConfig>>._))

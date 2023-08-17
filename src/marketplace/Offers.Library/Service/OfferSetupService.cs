@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
@@ -46,6 +47,7 @@ public class OfferSetupService : IOfferSetupService
     private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
     private readonly IMailingService _mailingService;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
+    private readonly ILogger<OfferSetupService> _logger;
 
     /// <summary>
     /// Constructor.
@@ -57,6 +59,7 @@ public class OfferSetupService : IOfferSetupService
     /// <param name="offerSubscriptionProcessService">Access to offer subscription process service</param>
     /// <param name="mailingService">Mailing service to send mails to the user</param>
     /// <param name="technicalUserProfileService">Access to the technical user profile service</param>
+    /// <param name="logger">Access to the logger</param>
     public OfferSetupService(
         IPortalRepositories portalRepositories,
         IProvisioningManager provisioningManager,
@@ -64,7 +67,8 @@ public class OfferSetupService : IOfferSetupService
         INotificationService notificationService,
         IOfferSubscriptionProcessService offerSubscriptionProcessService,
         IMailingService mailingService,
-        ITechnicalUserProfileService technicalUserProfileService)
+        ITechnicalUserProfileService technicalUserProfileService,
+        ILogger<OfferSetupService> logger)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
@@ -73,10 +77,12 @@ public class OfferSetupService : IOfferSetupService
         _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _mailingService = mailingService;
         _technicalUserProfileService = technicalUserProfileService;
+        _logger = logger;
     }
 
     public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IEnumerable<UserRoleConfig> itAdminRoles, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> serviceManagerRoles)
     {
+        _logger.LogDebug("AutoSetup started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", identity.CompanyId, data.RequestId, data.OfferUrl);
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await GetAndValidateOfferDetails(data.RequestId, identity.CompanyId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
 
@@ -384,6 +390,7 @@ public class OfferSetupService : IOfferSetupService
     /// <inheritdoc />
     public async Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId, OfferTypeId offerTypeId)
     {
+        _logger.LogDebug("AutoSetup Process started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", companyId, data.RequestId, data.OfferUrl);
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var details = await GetAndValidateOfferDetails(data.RequestId, companyId, offerTypeId, offerSubscriptionRepository).ConfigureAwait(false);
         if (details.InstanceData.IsSingleInstance)
@@ -408,7 +415,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId)
+    public async Task CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId, Guid companyId)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(false);
@@ -424,6 +431,11 @@ public class OfferSetupService : IOfferSetupService
             case true when offerDetails.AppInstanceIds.Count() != 1:
                 throw new ConflictException("There must only be one app instance for single instance apps");
             default:
+                if (offerDetails.ProviderCompanyId != companyId)
+                {
+                    throw new ConflictException("Subscription can only be activated by the provider of the offer");
+                }
+
                 _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
                     .CreateAppSubscriptionDetail(offerSubscriptionId, appSubscriptionDetail =>
                     {
@@ -431,14 +443,15 @@ public class OfferSetupService : IOfferSetupService
                         appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
                     });
 
-                return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-                    new[]
-                    {
-                        ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
-                    },
-                    ProcessStepStatusId.DONE,
-                    true,
-                    null);
+                var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
+                    ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, null, true).ConfigureAwait(false);
+
+                _offerSubscriptionProcessService.FinalizeProcessSteps(context, new[]
+                {
+                    ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
+                });
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                break;
         }
     }
 

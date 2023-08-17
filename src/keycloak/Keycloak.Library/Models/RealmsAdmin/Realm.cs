@@ -25,20 +25,25 @@
  ********************************************************************************/
 
 using Newtonsoft.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class Realm
 {
     [JsonProperty("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
     [JsonProperty("realm")]
     // ReSharper disable once InconsistentNaming
-    public string _Realm { get; set; }
+    public string? _Realm { get; set; }
     [JsonProperty("displayName")]
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
+    [JsonProperty("displayNameHtml")]
+    public string? DisplayNameHtml { get; set; }
     [JsonProperty("notBefore")]
     public int? NotBefore { get; set; }
+    [JsonProperty("defaultSignatureAlgorithm")]
+    public string? DefaultSignatureAlgorithm { get; set; }
     [JsonProperty("revokeRefreshToken")]
     public bool? RevokeRefreshToken { get; set; }
     [JsonProperty("refreshTokenMaxReuse")]
@@ -74,7 +79,7 @@ public class Realm
     [JsonProperty("enabled")]
     public bool? Enabled { get; set; }
     [JsonProperty("sslRequired")]
-    public string SslRequired { get; set; }
+    public string? SslRequired { get; set; }
     [JsonProperty("registrationAllowed")]
     public bool? RegistrationAllowed { get; set; }
     [JsonProperty("registrationEmailAsUsername")]
@@ -107,14 +112,14 @@ public class Realm
     public int? MaxDeltaTimeSeconds { get; set; }
     [JsonProperty("failureFactor")]
     public int? FailureFactor { get; set; }
-    [JsonProperty("defaultRoles")]
-    public IEnumerable<string> DefaultRoles { get; set; }
+    [JsonProperty("defaultRole")]
+    public Role? DefaultRole { get; set; }
     [JsonProperty("requiredCredentials")]
-    public IEnumerable<string> RequiredCredentials { get; set; }
+    public IEnumerable<string>? RequiredCredentials { get; set; }
     [JsonProperty("otpPolicyType")]
-    public string OtpPolicyType { get; set; }
+    public string? OtpPolicyType { get; set; }
     [JsonProperty("otpPolicyAlgorithm")]
-    public string OtpPolicyAlgorithm { get; set; }
+    public string? OtpPolicyAlgorithm { get; set; }
     [JsonProperty("otpPolicyInitialCounter")]
     public int? OtpPolicyInitialCounter { get; set; }
     [JsonProperty("otpPolicyDigits")]
@@ -124,46 +129,51 @@ public class Realm
     [JsonProperty("otpPolicyPeriod")]
     public int? OtpPolicyPeriod { get; set; }
     [JsonProperty("otpSupportedApplications")]
-    public IEnumerable<string> OtpSupportedApplications { get; set; }
+    public IEnumerable<string>? OtpSupportedApplications { get; set; }
     [JsonProperty("browserSecurityHeaders")]
-    public BrowserSecurityHeaders BrowserSecurityHeaders { get; set; }
+    public BrowserSecurityHeaders? BrowserSecurityHeaders { get; set; }
     [JsonProperty("smtpServer")]
-    public SmtpServer SmtpServer { get; set; }
+    public SmtpServer? SmtpServer { get; set; }
+    [JsonProperty("loginTheme")]
+    public string? LoginTheme { get; set; }
+    [JsonProperty("accountTheme")]
+    public string? AccountTheme { get; set; }
+    [JsonProperty("adminTheme")]
+    public string? AdminTheme { get; set; }
+    [JsonProperty("emailTheme")]
+    public string? EmailTheme { get; set; }
     [JsonProperty("eventsEnabled")]
     public bool? EventsEnabled { get; set; }
     [JsonProperty("eventsListeners")]
-    public IEnumerable<string> EventsListeners { get; set; }
+    public IEnumerable<string>? EventsListeners { get; set; }
     [JsonProperty("enabledEventTypes")]
-    public IEnumerable<object> EnabledEventTypes { get; set; }
+    public IEnumerable<string>? EnabledEventTypes { get; set; }
     [JsonProperty("adminEventsEnabled")]
     public bool? AdminEventsEnabled { get; set; }
     [JsonProperty("adminEventsDetailsEnabled")]
     public bool? AdminEventsDetailsEnabled { get; set; }
     [JsonProperty("identityProviders")]
-    public IEnumerable<IdentityProvider> IdentityProviders { get; set; }
+    public IEnumerable<IdentityProvider>? IdentityProviders { get; set; }
     [JsonProperty("internationalizationEnabled")]
     public bool? InternationalizationEnabled { get; set; }
     [JsonProperty("supportedLocales")]
-    public IEnumerable<object> SupportedLocales { get; set; }
+    public IEnumerable<string>? SupportedLocales { get; set; }
     [JsonProperty("browserFlow")]
-    public string BrowserFlow { get; set; }
+    public string? BrowserFlow { get; set; }
     [JsonProperty("registrationFlow")]
-    public string RegistrationFlow { get; set; }
+    public string? RegistrationFlow { get; set; }
     [JsonProperty("directGrantFlow")]
-    public string DirectGrantFlow { get; set; }
+    public string? DirectGrantFlow { get; set; }
     [JsonProperty("resetCredentialsFlow")]
-    public string ResetCredentialsFlow { get; set; }
+    public string? ResetCredentialsFlow { get; set; }
     [JsonProperty("clientAuthenticationFlow")]
-    public string ClientAuthenticationFlow { get; set; }
+    public string? ClientAuthenticationFlow { get; set; }
     [JsonProperty("dockerAuthenticationFlow")]
-    public string DockerAuthenticationFlow { get; set; }
+    public string? DockerAuthenticationFlow { get; set; }
     [JsonProperty("attributes")]
-    public Attributes Attributes { get; set; }
+    public IDictionary<string, string>? Attributes { get; set; }
     [JsonProperty("userManagedAccessAllowed")]
     public bool? UserManagedAccessAllowed { get; set; }
     [JsonProperty("passwordPolicy")]
-    public string PasswordPolicy { get; set; }
-
-    [JsonProperty("loginTheme")]
-    public string? LoginTheme { get; set; }
+    public string? PasswordPolicy { get; set; }
 }

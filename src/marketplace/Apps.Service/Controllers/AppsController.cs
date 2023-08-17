@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -314,9 +315,30 @@ public class AppsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [PublicUrl(CompanyRoleId.APP_PROVIDER)]
     public async Task<NoContentResult> StartAutoSetupAppProcess([FromBody] OfferAutoSetupData data)
     {
         await this.WithCompanyId(companyId => _appsBusinessLogic.StartAutoSetupAsync(data, companyId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Triggers the activation of a single instance app subscription
+    /// </summary>
+    /// <remarks>Example: PUT: /api/apps/subscription/{offerSubscriptionId}/activate-single-instance</remarks>
+    /// <response code="204">The activation of the subscription has successfully been started.</response>
+    /// <response code="400">Offer Subscription is pending or not the providing company.</response>
+    /// <response code="404">Offer Subscription not found.</response>
+    [HttpPut]
+    [Route("subscription/{offerSubscriptionId}/activate-single-instance")]
+    [Authorize(Roles = "activate_subscription")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ActivateSingleInstance([FromRoute] Guid offerSubscriptionId)
+    {
+        await this.WithCompanyId(companyId => _appsBusinessLogic.ActivateSingleInstance(offerSubscriptionId, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -361,6 +383,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(AppProviderSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [PublicUrl(CompanyRoleId.APP_PROVIDER)]
     public Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
         this.WithCompanyId(companyId => _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId, companyId));
 

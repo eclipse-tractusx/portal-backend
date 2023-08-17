@@ -26,4 +26,6 @@ public record WalletErrorResponse([property: JsonPropertyName("message")] string
 
 public record MembershipErrorResponse([property: JsonPropertyName("title")] string Title);
 
-public record WalletCreationResponse([property: JsonPropertyName("DID")] string Did, [property: JsonPropertyName("CreatedAt")] DateTimeOffset CreatedAt);
+public record WalletCreationResponse([property: JsonPropertyName("did")] string Did);
+
+public record WalletCreationLogData([property: JsonPropertyName("did")] string Did, [property: JsonPropertyName("createdAt")] DateTimeOffset CreatedAt);

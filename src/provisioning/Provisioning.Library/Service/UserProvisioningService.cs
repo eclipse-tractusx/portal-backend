@@ -138,7 +138,7 @@ public class UserProvisioningService : IUserProvisioningService
             return (identity, companyUserId);
         }
 
-        identity = userRepository.CreateIdentity(companyId, UserStatusId.ACTIVE);
+        identity = userRepository.CreateIdentity(companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
         companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email).Id;
         if (businessPartnerNumber != null)
         {

@@ -241,6 +241,26 @@ public class AppBusinessLogicTests
 
     #endregion
 
+    #region ActivateSingleInstance
+
+    [Fact]
+    public async Task ActivateSingleInstance_ReturnsExcepted()
+    {
+        // Arrange
+        var offerSetupService = A.Fake<IOfferSetupService>();
+        var offerSubscriptionId = Guid.NewGuid();
+
+        var sut = new AppsBusinessLogic(null!, null!, null!, offerSetupService, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
+
+        // Act
+        await sut.ActivateSingleInstance(offerSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => offerSetupService.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     #region GetCompanyProvidedAppSubscriptionStatusesForUser
 
     [Theory]

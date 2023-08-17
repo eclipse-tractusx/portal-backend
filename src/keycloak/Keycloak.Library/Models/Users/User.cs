@@ -35,7 +35,7 @@ public class User
     [JsonProperty("createdTimestamp")]
     public long? CreatedTimestamp { get; set; }
     [JsonProperty("username")]
-    public string UserName { get; set; } = default!;
+    public string? UserName { get; set; } = default!;
     [JsonProperty("enabled")]
     public bool? Enabled { get; set; }
     [JsonProperty("totp")]
@@ -61,7 +61,7 @@ public class User
     [JsonProperty("clientConsents")]
     public IEnumerable<UserConsent>? ClientConsents { get; set; }
     [JsonProperty("clientRoles")]
-    public IDictionary<string, object>? ClientRoles { get; set; }
+    public IDictionary<string, IEnumerable<string>>? ClientRoles { get; set; }
     [JsonProperty("credentials")]
     public IEnumerable<Credentials>? Credentials { get; set; }
     [JsonProperty("federatedIdentities")]

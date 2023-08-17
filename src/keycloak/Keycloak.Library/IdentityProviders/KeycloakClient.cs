@@ -54,12 +54,12 @@ public partial class KeycloakClient
             .ReceiveJson<IDictionary<string, object>>()
             .ConfigureAwait(false);
 
-    public async Task CreateIdentityProviderAsync(string realm, IdentityProvider identityProvider) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task CreateIdentityProviderAsync(string realm, IdentityProvider identityProvider, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances")
-            .PostJsonAsync(identityProvider)
+            .PostJsonAsync(identityProvider, cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<IEnumerable<IdentityProvider>> GetIdentityProviderInstancesAsync(string realm) =>
@@ -70,13 +70,13 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<IdentityProvider>>()
             .ConfigureAwait(false);
 
-    public async Task<IdentityProvider> GetIdentityProviderAsync(string realm, string identityProviderAlias) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<IdentityProvider> GetIdentityProviderAsync(string realm, string identityProviderAlias, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
-            .GetJsonAsync<IdentityProvider>()
+            .GetJsonAsync<IdentityProvider>(cancellationToken)
             .ConfigureAwait(false);
 
     /// <summary>
@@ -95,13 +95,13 @@ public partial class KeycloakClient
             .GetJsonAsync<IdentityProviderToken>()
             .ConfigureAwait(false);
 
-    public async Task UpdateIdentityProviderAsync(string realm, string identityProviderAlias, IdentityProvider identityProvider) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateIdentityProviderAsync(string realm, string identityProviderAlias, IdentityProvider identityProvider, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
-            .PutJsonAsync(identityProvider)
+            .PutJsonAsync(identityProvider, cancellationToken)
             .ConfigureAwait(false);
 
     public async Task DeleteIdentityProviderAsync(string realm, string identityProviderAlias) =>
@@ -154,24 +154,24 @@ public partial class KeycloakClient
             .GetJsonAsync<IDictionary<string, object>>()
             .ConfigureAwait(false);
 
-    public async Task AddIdentityProviderMapperAsync(string realm, string identityProviderAlias, IdentityProviderMapper identityProviderMapper) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task AddIdentityProviderMapperAsync(string realm, string identityProviderAlias, IdentityProviderMapper identityProviderMapper, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
             .AppendPathSegment("/mappers")
-            .PostJsonAsync(identityProviderMapper)
+            .PostJsonAsync(identityProviderMapper, cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task<IEnumerable<IdentityProviderMapper>> GetIdentityProviderMappersAsync(string realm, string identityProviderAlias) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<IEnumerable<IdentityProviderMapper>> GetIdentityProviderMappersAsync(string realm, string identityProviderAlias, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
             .AppendPathSegment("/mappers")
-            .GetJsonAsync<IEnumerable<IdentityProviderMapper>>()
+            .GetJsonAsync<IEnumerable<IdentityProviderMapper>>(cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<IdentityProviderMapper> GetIdentityProviderMapperByIdAsync(string realm, string identityProviderAlias, string mapperId) =>
@@ -185,26 +185,26 @@ public partial class KeycloakClient
             .GetJsonAsync<IdentityProviderMapper>()
             .ConfigureAwait(false);
 
-    public async Task UpdateIdentityProviderMapperAsync(string realm, string identityProviderAlias, string mapperId, IdentityProviderMapper identityProviderMapper) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateIdentityProviderMapperAsync(string realm, string identityProviderAlias, string mapperId, IdentityProviderMapper identityProviderMapper, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
             .AppendPathSegment("/mappers/")
             .AppendPathSegment(mapperId, true)
-            .PutJsonAsync(identityProviderMapper)
+            .PutJsonAsync(identityProviderMapper, cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task DeleteIdentityProviderMapperAsync(string realm, string identityProviderAlias, string mapperId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task DeleteIdentityProviderMapperAsync(string realm, string identityProviderAlias, string mapperId, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
             .AppendPathSegment("/mappers/")
             .AppendPathSegment(mapperId, true)
-            .DeleteAsync()
+            .DeleteAsync(cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<IdentityProviderInfo> GetIdentityProviderByProviderIdAsync(string realm, string providerId) =>

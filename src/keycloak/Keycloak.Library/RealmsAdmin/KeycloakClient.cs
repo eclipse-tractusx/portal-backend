@@ -35,10 +35,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task ImportRealmAsync(string realm, Realm rep) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task ImportRealmAsync(string realm, Realm rep, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms")
-            .PostJsonAsync(rep)
+            .PostJsonAsync(rep, cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<IEnumerable<Realm>> GetRealmsAsync(string realm) =>
@@ -47,18 +47,18 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<Realm>>()
             .ConfigureAwait(false);
 
-    public async Task<Realm> GetRealmAsync(string realm) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<Realm> GetRealmAsync(string realm, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
-            .GetJsonAsync<Realm>()
+            .GetJsonAsync<Realm>(cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task UpdateRealmAsync(string realm, Realm rep) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateRealmAsync(string realm, Realm rep, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
-            .PutJsonAsync(rep)
+            .PutJsonAsync(rep, cancellationToken)
             .ConfigureAwait(false);
 
     public async Task DeleteRealmAsync(string realm) =>

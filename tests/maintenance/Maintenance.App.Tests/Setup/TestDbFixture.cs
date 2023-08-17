@@ -25,7 +25,6 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using Xunit.Extensions.AssemblyFixture;
 
 [assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
@@ -33,22 +32,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Test
 
 public class TestDbFixture : IAsyncLifetime
 {
-    public readonly PostgreSqlTestcontainer _container;
-
-    public TestDbFixture()
-    {
-        _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            .WithDatabase(new PostgreSqlTestcontainerConfiguration
-            {
-                Database = "test_db",
-                Username = "postgres",
-                Password = "postgres",
-            })
-            .WithImage("postgres")
-            .WithCleanUp(true)
-            .WithName(Guid.NewGuid().ToString())
-            .Build();
-    }
+    public readonly PostgreSqlTestcontainer _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
+        .WithDatabase(new PostgreSqlTestcontainerConfiguration
+        {
+            Database = "test_db",
+            Username = "postgres",
+            Password = "postgres",
+        })
+        .WithImage("postgres")
+        .WithCleanUp(true)
+        .WithName(Guid.NewGuid().ToString())
+        .Build();
 
     /// <summary>
     /// Foreach test a new portalDbContext will be created and filled with the custom seeding data. 
@@ -96,7 +90,6 @@ public class TestDbFixture : IAsyncLifetime
         );
         var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
         await context.Database.MigrateAsync();
-        BaseSeed.SeedBasedata().Invoke(context);
         await context.SaveChangesAsync();
     }
 

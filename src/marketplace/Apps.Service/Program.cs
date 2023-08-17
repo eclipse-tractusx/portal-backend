@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 var VERSION = "v2";
@@ -49,5 +50,6 @@ WebApplicationBuildRunner
             .AddOfferDocumentServices();
 
         builder.Services
-            .AddOfferServices();
+            .AddOfferServices()
+            .AddProvisioningDBAccess(builder.Configuration);
     });

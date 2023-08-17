@@ -63,14 +63,14 @@ public class UserRepository : IUserRepository
         }).Entity;
 
     /// <inheritdoc />
-    public Identity CreateIdentity(Guid companyId, UserStatusId userStatusId) =>
+    public Identity CreateIdentity(Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId) =>
         _dbContext.Identities.Add(
             new Identity(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 companyId,
                 userStatusId,
-                IdentityTypeId.COMPANY_USER)).Entity;
+                identityTypeId)).Entity;
 
     public void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? initialize, Action<CompanyUser> setOptionalParameters)
     {
