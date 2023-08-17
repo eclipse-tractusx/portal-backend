@@ -79,7 +79,7 @@ public record BpdmAddressPhysicalPostalAddress(
     string? Country,
     string? PostalCode,
     string? City,
-    BpdmStreet? Street,
+    BpdmLegalEntityStreet? Street,
     string? AdministrativeAreaLevel1,
     string? AdministrativeAreaLevel2,
     string? AdministrativeAreaLevel3,
@@ -100,4 +100,15 @@ public record BpdmAddressAlternativePostalAddress(
     string? DeliveryServiceNumber,
     string? DeliveryServiceType,
     string? DeliveryServiceQualifier
+);
+
+public record BpdmLegalEntityStreet(
+    string? NamePrefix,
+    string? AdditionalNamePrefix,
+    string Name,
+    string? NameSuffix,
+    string? AdditionalNameSuffix,
+    string? HouseNumber,
+    string? Milestone,
+    string? Direction
 );

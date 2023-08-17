@@ -60,141 +60,63 @@ public class BPNAccessTest
         HttpRequestMessage? request = null;
 
         const string json = @"{
-          ""legalName"": ""string"",
-          ""bpnl"": ""string"",
-          ""identifiers"": [
-            {
-              ""value"": ""string"",
-              ""type"": {
-                ""technicalKey"": ""string"",
-                ""name"": ""string""
-              },
-              ""issuingBody"": ""string""
-            }
-          ],
-          ""legalShortName"": ""string"",
-          ""legalForm"": {
-            ""technicalKey"": ""string"",
-            ""name"": ""string"",
-            ""abbreviation"": ""string""
-          },
-          ""states"": [
-            {
-              ""officialDenotation"": ""string"",
-              ""validFrom"": ""2023-07-24T11:23:20.887Z"",
-              ""validTo"": ""2023-07-24T11:23:20.887Z"",
-              ""type"": {
-                ""technicalKey"": ""ACTIVE"",
-                ""name"": ""string""
-              }
-            }
-          ],
-          ""classifications"": [
-            {
-              ""value"": ""string"",
-              ""code"": ""string"",
-              ""type"": {
-                ""technicalKey"": ""NACE"",
-                ""name"": ""string""
-              }
-            }
-          ],
-          ""relations"": [
-            {
-              ""type"": {
-                ""technicalKey"": ""CX_LEGAL_SUCCESSOR_OF"",
-                ""name"": ""string""
-              },
-              ""startBpn"": ""string"",
-              ""endBpn"": ""string"",
-              ""validFrom"": ""2023-07-24T11:23:20.887Z"",
-              ""validTo"": ""2023-07-24T11:23:20.887Z""
-            }
-          ],
-          ""currentness"": ""2023-07-24T11:23:20.887Z"",
-          ""createdAt"": ""2023-07-24T11:23:20.887Z"",
-          ""updatedAt"": ""2023-07-24T11:23:20.887Z"",
-          ""legalAddress"": {
-            ""bpna"": ""string"",
-            ""name"": ""string"",
-            ""states"": [
-              {
-                ""description"": ""string"",
-                ""validFrom"": ""2023-07-24T11:23:20.887Z"",
-                ""validTo"": ""2023-07-24T11:23:20.887Z"",
-                ""type"": {
-                  ""technicalKey"": ""ACTIVE"",
-                  ""name"": ""string""
-                }
-              }
-            ],
+            ""legalName"": ""CX-Test-Access"",
+            ""bpnl"": ""BPNL00000007OR16"",
             ""identifiers"": [
-              {
-                ""value"": ""string"",
-                ""type"": {
-                  ""technicalKey"": ""string"",
-                  ""name"": ""string""
+                {
+                    ""value"": ""HRB 12345"",
+                    ""type"": {
+                        ""technicalKey"": ""EU_VAT_ID_DE"",
+                        ""name"": ""Value added tax identification number""
+                    },
+                    ""issuingBody"": null
                 }
-              }
             ],
-            ""physicalPostalAddress"": {
-              ""geographicCoordinates"": {
-                ""longitude"": 0,
-                ""latitude"": 0,
-                ""altitude"": 0
-              },
-              ""country"": {
-                ""technicalKey"": ""UNDEFINED"",
-                ""name"": ""string""
-              },
-              ""postalCode"": ""string"",
-              ""city"": ""string"",
-              ""street"": {
-                ""name"": ""string"",
-                ""houseNumber"": ""string"",
-                ""milestone"": ""string"",
-                ""direction"": ""string""
-              },
-              ""administrativeAreaLevel1"": {
-                ""name"": ""string"",
-                ""regionCode"": ""string""
-              },
-              ""administrativeAreaLevel2"": ""string"",
-              ""administrativeAreaLevel3"": ""string"",
-              ""district"": ""string"",
-              ""companyPostalCode"": ""string"",
-              ""industrialZone"": ""string"",
-              ""building"": ""string"",
-              ""floor"": ""string"",
-              ""door"": ""string""
-            },
-            ""alternativePostalAddress"": {
-              ""geographicCoordinates"": {
-                ""longitude"": 0,
-                ""latitude"": 0,
-                ""altitude"": 0
-              },
-              ""country"": {
-                ""technicalKey"": ""UNDEFINED"",
-                ""name"": ""string""
-              },
-              ""postalCode"": ""string"",
-              ""city"": ""string"",
-              ""administrativeAreaLevel1"": {
-                ""name"": ""string"",
-                ""regionCode"": ""string""
-              },
-              ""deliveryServiceNumber"": ""string"",
-              ""type"": ""PO_BOX"",
-              ""deliveryServiceQualifier"": ""string""
-            },
-            ""bpnLegalEntity"": ""string"",
-            ""bpnSite"": ""string"",
-            ""createdAt"": ""2023-07-24T11:23:20.887Z"",
-            ""updatedAt"": ""2023-07-24T11:23:20.887Z"",
-            ""isLegalAddress"": true,
-            ""isMainAddress"": true
-          }
+            ""legalShortName"": ""CX-Test-Access"",
+            ""legalForm"": null,
+            ""states"": [],
+            ""classifications"": [],
+            ""relations"": [],
+            ""currentness"": ""2023-07-26T15:27:12.739650Z"",
+            ""createdAt"": ""2023-07-26T15:27:13.756713Z"",
+            ""updatedAt"": ""2023-07-26T15:27:13.756719Z"",
+            ""legalAddress"": {
+                ""bpna"": ""BPNA000000000LKR"",
+                ""name"": null,
+                ""states"": [],
+                ""identifiers"": [],
+                ""physicalPostalAddress"": {
+                    ""geographicCoordinates"": null,
+                    ""country"": {
+                        ""technicalKey"": ""DE"",
+                        ""name"": ""Germany""
+                    },
+                    ""postalCode"": ""1"",
+                    ""city"": ""Dresden"",
+                    ""street"": {
+                        ""name"": ""Onisamili Road 236"",
+                        ""houseNumber"": """",
+                        ""milestone"": null,
+                        ""direction"": null
+                    },
+                    ""administrativeAreaLevel1"": null,
+                    ""administrativeAreaLevel2"": null,
+                    ""administrativeAreaLevel3"": null,
+                    ""district"": null,
+                    ""companyPostalCode"": null,
+                    ""industrialZone"": null,
+                    ""building"": null,
+                    ""floor"": null,
+                    ""door"": null
+                },
+                ""alternativePostalAddress"": null,
+                ""bpnLegalEntity"": ""BPNL00000007OR16"",
+                ""isLegalAddress"": true,
+                ""bpnSite"": null,
+                ""isMainAddress"": false,
+                ""createdAt"": ""2023-07-26T15:27:13.756112Z"",
+                ""updatedAt"": ""2023-07-26T15:27:14.267585Z""
+            }
         }";
 
         ConfigureHttpClientFactoryFixture(new HttpResponseMessage
@@ -217,7 +139,8 @@ public class BPNAccessTest
         request.RequestUri.Query.Should().Be("?idType=BPN");
 
         result.Should().NotBeNull();
-        result.Currentness.Should().BeExactly(DateTimeOffset.Parse("2023-07-24T11:23:20.887Z"));
+        result.LegalEntityAddress.Should().NotBeNull();
+        result.LegalEntityAddress!.Bpna.Should().Be("BPNA000000000LKR");
     }
 
     [Fact]

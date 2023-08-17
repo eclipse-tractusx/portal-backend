@@ -77,7 +77,7 @@ public class BpdmService : IBpdmService
                         data.AlphaCode2,                       // Country
                         data.ZipCode,                          // PostalCode
                         data.City,                             // City
-                        new BpdmStreet(
+                        new BpdmLegalEntityStreet(
                             null,                              // NamePrefix
                             null,                              // AdditionalNamePrefix
                             data.StreetName,                   // Name
