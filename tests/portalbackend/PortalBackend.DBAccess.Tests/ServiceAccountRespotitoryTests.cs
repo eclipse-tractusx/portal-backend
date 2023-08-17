@@ -250,7 +250,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new("41fd2ab8-71cd-4546-9bef-a388d91b2542"), "sa-x-1", false)(0, 10).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new("41fd2ab8-71cd-4546-9bef-a388d91b2543"), "sa-x-2", false)(0, 10).ConfigureAwait(false);
 
         // Assert
         result!.Count.Should().Be(1);
