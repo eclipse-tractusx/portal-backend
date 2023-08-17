@@ -144,18 +144,6 @@ public interface IOfferRepository
     [Obsolete("only referenced by code that is marked as obsolte")]
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string languageShortName);
 
-    /// <summary>
-    /// Check whether the app is in status created and whether the
-    /// loggedin user belongs to the apps provider company
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="companyId"></param>
-    /// <param name="companyId"></param>
-    /// <param name="offerTypeId"></param>
-    /// <returns>ValueTuple, first item is true if the app is in status CREATED,
-    /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, Guid companyId, OfferTypeId offerTypeId);
-
     /// Get Offer Release data by Offer Id
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
