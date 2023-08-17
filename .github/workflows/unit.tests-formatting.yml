@@ -49,4 +49,4 @@ jobs:
       - name: Check Format
         run: dotnet format src --verify-no-changes --no-restore
       - name: Test
-        run: dotnet test src --no-restore --verbosity normal
+        run: dotnet test src --filter FullyQualifiedName\!~Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests --no-restore --verbosity normal

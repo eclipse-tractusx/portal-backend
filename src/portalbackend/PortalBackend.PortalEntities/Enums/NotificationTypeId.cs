@@ -126,12 +126,12 @@ public enum NotificationTypeId
     SERVICE_RELEASE_REJECTION = 20,
 
     /// <summary>
-    /// Notification when a the user roles are updated
+    /// Notification when the user roles are updated
     /// </summary>
     ROLE_UPDATE_CORE_OFFER = 21,
 
     /// <summary>
-    /// Notification when a the user roles are updated for an offer
+    /// Notification when the user roles are updated for an offer
     /// </summary>
     ROLE_UPDATE_APP_OFFER = 22,
 
