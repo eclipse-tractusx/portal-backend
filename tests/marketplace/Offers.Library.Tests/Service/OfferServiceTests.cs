@@ -2399,7 +2399,6 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
     public async Task GetCompanySubscribedOfferSubscriptionStatusesForUserAsync_ReturnsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         // Arrange
@@ -2425,7 +2424,6 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
     public async Task GetCompanySubscribedOfferSubscriptionStatusesForUserAsync_WithQueryNullResult_ReturnsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         // Arrange

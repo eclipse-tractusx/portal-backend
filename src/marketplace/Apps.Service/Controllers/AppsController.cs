@@ -162,10 +162,10 @@ public class AppsController : ControllerBase
     [Route("subscribed/subscription-status")]
     [Authorize(Roles = "view_subscription")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfferSubscriptionStatusData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size, companyId));
+    public IAsyncEnumerable<OfferSubscriptionStatusData> GetCompanySubscribedAppSubscriptionStatusesForUserAsync() =>
+        this.WithCompanyId(companyId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(companyId));
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the currently logged in user's company.

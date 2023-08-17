@@ -156,17 +156,16 @@ public class AppsControllerTests
     public async Task GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
-        var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<Guid>._))
-            .Returns(pagination);
+        var data = _fixture.CreateMany<OfferSubscriptionStatusData>(3).ToImmutableArray().ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<Guid>._))
+            .Returns(data);
 
         //Act
-        var result = await this._controller.GetCompanySubscribedAppSubscriptionStatusesForUserAsync().ConfigureAwait(false);
+        var result = await this._controller.GetCompanySubscribedAppSubscriptionStatusesForUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 15, _identity.CompanyId)).MustHaveHappenedOnceExactly();
-        result.Content.Should().HaveCount(3).And.ContainInOrder(data);
+        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(3);
     }
 
     #endregion

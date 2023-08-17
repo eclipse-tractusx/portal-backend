@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -31,9 +32,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
 /// <param name="DocumentId">Id of the documents</param>
 public record OfferSubscriptionStatusData(
-    Guid OfferId,
-    string? OfferName,
-    string Provider,
-    OfferSubscriptionStatusId OfferSubscriptionStatusId,
-    Guid? DocumentId
+    [property: JsonPropertyName("offerId")] Guid OfferId,
+    [property: JsonPropertyName("name")] string? OfferName,
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("status")] OfferSubscriptionStatusId OfferSubscriptionStatusId,
+    [property: JsonPropertyName("image")] Guid? DocumentId
 );

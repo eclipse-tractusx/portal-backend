@@ -641,20 +641,18 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(5).ToImmutableArray();
-        var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._))
-            .Returns(pagination);
+        var data = _fixture.CreateMany<OfferSubscriptionStatusData>(5).ToAsyncEnumerable();
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanySubscribedAppsOfferSubscriptionStatusesUntrackedAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._))
+            .Returns(data);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
 
         // Act
-        var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 10, identity.CompanyId).ConfigureAwait(false);
+        var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(identity.CompanyId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Meta.NumberOfElements.Should().Be(5);
-        result.Content.Should().HaveCount(5);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, identity.CompanyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanySubscribedAppsOfferSubscriptionStatusesUntrackedAsync(identity.CompanyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

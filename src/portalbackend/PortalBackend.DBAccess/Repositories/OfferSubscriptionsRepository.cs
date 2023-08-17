@@ -500,4 +500,24 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 os.ConnectorAssignedOfferSubscriptions.Select(c => c.ConnectorId)
             ))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc>
+    public IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanySubscribedAppsOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
+        _context.OfferSubscriptions
+            .AsNoTracking()
+            .Where(os =>
+                os.Offer!.OfferTypeId == offerTypeId &&
+                os.CompanyId == userCompanyId)
+            .Select(os => new OfferSubscriptionStatusData(
+                os.OfferId,
+                os.Offer!.Name,
+                os.Offer.Provider,
+                os.OfferSubscriptionStatusId,
+                os.Offer.Documents
+                    .Where(document =>
+                        document.DocumentTypeId == documentTypeId
+                        && document.DocumentStatusId == DocumentStatusId.LOCKED)
+                    .Select(document => document.Id).FirstOrDefault()
+            )).ToAsyncEnumerable();
+
 }

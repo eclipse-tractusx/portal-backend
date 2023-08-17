@@ -79,10 +79,8 @@ public interface IAppsBusinessLogic
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
     /// <param name="companyId">Id of the users company.</param>
-    /// <param name ="page">page</param>
-    /// <param name ="size">size</param>
     /// <returns>Returns the details of the subscription status for App user</returns>
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, Guid companyId);
+    public IAsyncEnumerable<OfferSubscriptionStatusData> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(Guid companyId);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.

@@ -151,8 +151,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, Guid companyId) =>
-        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, companyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
+    public IAsyncEnumerable<OfferSubscriptionStatusData> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(Guid companyId) =>
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanySubscribedAppsOfferSubscriptionStatusesUntrackedAsync(companyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
 
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, Guid companyId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
