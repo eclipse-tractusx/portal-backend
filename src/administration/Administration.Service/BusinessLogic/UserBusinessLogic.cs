@@ -42,7 +42,6 @@ public class UserBusinessLogic : IUserBusinessLogic
 {
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IProvisioningDBAccess _provisioningDbAccess;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
     private readonly ILogger<UserBusinessLogic> _logger;
@@ -53,7 +52,6 @@ public class UserBusinessLogic : IUserBusinessLogic
     /// </summary>
     /// <param name="provisioningManager">Provisioning Manager</param>
     /// <param name="userProvisioningService">User Provisioning Service</param>
-    /// <param name="provisioningDbAccess">Provisioning DBAccess</param>
     /// <param name="mailingService">Mailing Service</param>
     /// <param name="logger">logger</param>
     /// <param name="settings">Settings</param>
@@ -61,7 +59,6 @@ public class UserBusinessLogic : IUserBusinessLogic
     public UserBusinessLogic(
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
-        IProvisioningDBAccess provisioningDbAccess,
         IPortalRepositories portalRepositories,
         IMailingService mailingService,
         ILogger<UserBusinessLogic> logger,
@@ -69,7 +66,6 @@ public class UserBusinessLogic : IUserBusinessLogic
     {
         _provisioningManager = provisioningManager;
         _userProvisioningService = userProvisioningService;
-        _provisioningDbAccess = provisioningDbAccess;
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
         _logger = logger;
@@ -461,47 +457,6 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
         }
         await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId).ConfigureAwait(false);
-    }
-
-    private async Task<bool> CanResetPassword(Guid userId)
-    {
-        var now = DateTimeOffset.UtcNow;
-
-        var userInfo = (await _provisioningDbAccess.GetUserPasswordResetInfo(userId).ConfigureAwait(false))
-            ?? _provisioningDbAccess.CreateUserPasswordResetInfo(userId, now, 0);
-
-        if (now < userInfo.PasswordModifiedAt.AddHours(_settings.PasswordReset.NoOfHours))
-        {
-            if (userInfo.ResetCount < _settings.PasswordReset.MaxNoOfReset)
-            {
-                userInfo.ResetCount++;
-                await _provisioningDbAccess.SaveAsync().ConfigureAwait(false);
-                return true;
-            }
-        }
-        else
-        {
-            userInfo.ResetCount = 1;
-            userInfo.PasswordModifiedAt = now;
-            await _provisioningDbAccess.SaveAsync().ConfigureAwait(false);
-            return true;
-        }
-        return false;
-    }
-
-    public async Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, (Guid UserId, Guid CompanyId) identity)
-    {
-        var idpUserName = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdpCategoryIdByUserIdAsync(companyUserId, identity.CompanyId).ConfigureAwait(false);
-        if (idpUserName != null && !string.IsNullOrWhiteSpace(idpUserName.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName.IdpName))
-        {
-            if (await CanResetPassword(identity.UserId).ConfigureAwait(false))
-            {
-                await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
-                return true;
-            }
-            throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
-        }
-        throw new NotFoundException($"Cannot identify companyId or shared idp : userId {companyUserId} is not associated with admin users company {identity.CompanyId}");
     }
 
     public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, Guid userId, int page, int size, CompanyUserFilter filter) =>

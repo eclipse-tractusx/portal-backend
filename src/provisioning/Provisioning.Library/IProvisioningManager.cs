@@ -51,7 +51,6 @@ public interface IProvisioningManager
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
     Task AddProtocolMapperAsync(string clientId);
     Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId, string businessPartnerNumber);
-    Task ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
     Task<string> GetCentralIdentityProviderDisplayName(string alias);

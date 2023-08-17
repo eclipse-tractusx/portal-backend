@@ -145,17 +145,6 @@ public partial class ProvisioningManager : IProvisioningManager
         await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false);
     }
 
-    public async Task ResetSharedUserPasswordAsync(string realm, string userId)
-    {
-        var providerUserId = await GetProviderUserIdForCentralUserIdAsync(realm, userId).ConfigureAwait(false);
-        if (providerUserId == null)
-        {
-            throw new KeycloakEntityNotFoundException($"userId {userId} is not linked to shared realm {realm}");
-        }
-        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
-        await sharedKeycloak.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD", 1)).ConfigureAwait(false);
-    }
-
     public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
     {
         var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);

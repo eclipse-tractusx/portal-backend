@@ -37,7 +37,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 
         public virtual DbSet<ClientSequence> ClientSequences { get; set; }
         public virtual DbSet<IdentityProviderSequence> IdentityProviderSequences { get; set; }
-        public virtual DbSet<UserPasswordReset> UserPasswordResets { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

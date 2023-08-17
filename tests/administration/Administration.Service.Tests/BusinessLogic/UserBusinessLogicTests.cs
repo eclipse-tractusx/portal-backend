@@ -145,7 +145,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             null!,
             _userProvisioningService,
-            null!,
             _portalRepositories,
             _mailingService,
             _logger,
@@ -183,7 +182,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             null!,
             _userProvisioningService,
-            null!,
             _portalRepositories,
             _mailingService,
             _logger,
@@ -215,7 +213,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             null!,
             _userProvisioningService,
-            null!,
             _portalRepositories,
             _mailingService,
             _logger,
@@ -258,7 +255,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             null!,
             _userProvisioningService,
-            null!,
             _portalRepositories,
             _mailingService,
             _logger,
@@ -304,7 +300,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             null!,
             _userProvisioningService,
-            null!,
             _portalRepositories,
             _mailingService,
             _logger,
@@ -348,7 +343,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             null!,
             _userProvisioningService,
-            null!,
             _portalRepositories,
             _mailingService,
             _logger,
@@ -378,7 +372,6 @@ public class UserBusinessLogicTests
             null!,
             _userProvisioningService,
             null!,
-            null!,
             _mailingService,
             _logger,
             _options);
@@ -404,7 +397,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             null!,
             _userProvisioningService,
-            null!,
             null!,
             _mailingService,
             _logger,
@@ -434,7 +426,6 @@ public class UserBusinessLogicTests
             null!,
             _userProvisioningService,
             null!,
-            null!,
             _mailingService,
             _logger,
             _options);
@@ -458,7 +449,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             null!,
             _userProvisioningService,
-            null!,
             null!,
             _mailingService,
             _logger,
@@ -484,7 +474,6 @@ public class UserBusinessLogicTests
             null!,
             _userProvisioningService,
             null!,
-            null!,
             _mailingService,
             _logger,
             _options);
@@ -506,7 +495,6 @@ public class UserBusinessLogicTests
 
         var sut = new UserBusinessLogic(
             _provisioningManager,
-            null!,
             null!,
             _portalRepositories,
             null!,
@@ -555,7 +543,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             _provisioningManager,
             null!,
-            null!,
             _portalRepositories,
             null!,
             _logger,
@@ -582,7 +569,6 @@ public class UserBusinessLogicTests
 
         var sut = new UserBusinessLogic(
             _provisioningManager,
-            null!,
             null!,
             _portalRepositories,
             null!,
@@ -954,7 +940,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             _provisioningManager,
             null!,
-            null!,
             _portalRepositories,
             null!,
             _logger,
@@ -985,7 +970,6 @@ public class UserBusinessLogicTests
 
         var sut = new UserBusinessLogic(
             _provisioningManager,
-            null!,
             null!,
             _portalRepositories,
             null!,
@@ -1044,7 +1028,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             _provisioningManager,
             null!,
-            null!,
             _portalRepositories,
             null!,
             _logger,
@@ -1098,7 +1081,6 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(
             _provisioningManager,
             null!,
-            null!,
             _portalRepositories,
             null!,
             _logger,
@@ -1135,7 +1117,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
@@ -1161,7 +1143,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
@@ -1190,7 +1172,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns(((string?, bool, bool))default);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, (_adminIdentity.UserId, _adminIdentity.CompanyId)).ConfigureAwait(false);
@@ -1210,7 +1192,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns((string.Empty, false, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, (_adminIdentity.UserId, _adminIdentity.CompanyId)).ConfigureAwait(false);
@@ -1230,7 +1212,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns(((string?)null, true, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, (_adminIdentity.UserId, _adminIdentity.CompanyId)).ConfigureAwait(false);
@@ -1250,7 +1232,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns((Guid.NewGuid().ToString(), true, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, (_adminIdentity.UserId, _adminIdentity.CompanyId)).ConfigureAwait(false);
@@ -1270,7 +1252,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns((Guid.NewGuid().ToString(), true, true));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(_provisioningManager, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, (_adminIdentity.UserId, _adminIdentity.CompanyId)).ConfigureAwait(false);
@@ -1296,7 +1278,7 @@ public class UserBusinessLogicTests
             .Returns(userRoleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(A<Guid>._, A<IEnumerable<Guid>>._))
             .Returns(companyOwnUserDetails);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, _portalRepositories, null!, _logger, _options);
 
         // Act
         var result = await sut.GetOwnUserDetails(identity.UserId).ConfigureAwait(false);
@@ -1316,7 +1298,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(identity.UserId, A<IEnumerable<Guid>>._))
             .Returns((CompanyOwnUserDetails)default!);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, _portalRepositories, null!, _logger, _options);
 
         // Act
         async Task Act() => await sut.GetOwnUserDetails(identity.UserId).ConfigureAwait(false);

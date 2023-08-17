@@ -22,7 +22,6 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess.Tests.TestSeeds;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
@@ -95,7 +94,6 @@ public class TestDbFixture : IAsyncLifetime
         );
         var context = new ProvisioningDbContext(optionsBuilder.Options);
         await context.Database.MigrateAsync();
-        BaseSeed.SeedBasedata().Invoke(context);
         await context.SaveChangesAsync();
     }
 

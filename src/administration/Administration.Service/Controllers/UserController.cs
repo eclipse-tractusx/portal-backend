@@ -311,28 +311,6 @@ public class UserController : ControllerBase
         this.WithCompanyId(companyId => _logic.DeleteOwnCompanyUsersAsync(usersToDelete, companyId));
 
     /// <summary>
-    /// Resets the password for the given user
-    /// </summary>
-    /// <param name="companyUserId" example="ac1cf001-7fbc-1f2f-817f-bce0575a0011">Id of the user whose password should be reset.</param>
-    /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/resetPassword</remarks>
-    /// <response code="200">The password was successfully reset.</response>
-    /// <response code="400">Maximum amount of password resets reached. Password reset function is locked for the user for a certain time.</response>
-    /// <response code="404">User id not found.</response>
-    /// <response code="500">Internal Server Error, e.g. the password reset failed.</response>
-    /// <response code="502">Bad Gateway Service Error.</response>
-    [HttpPut]
-    [Authorize(Roles = "modify_user_account")]
-    [Route("owncompany/users/{companyUserId}/resetPassword")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public Task<bool> ResetOwnCompanyUserPassword([FromRoute] Guid companyUserId) =>
-        this.WithUserIdAndCompanyId(identity => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, identity));
-
-    /// <summary>
     /// Gets the core offer roles
     /// </summary>
     /// <param name="languageShortName" example="DE">The shortname of the user role description"</param>
@@ -441,13 +419,6 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
         this.WithUserId(userId => _logic.DeleteOwnUserAsync(companyUserId, userId));
-
-    [Obsolete("to be replaced by endpoint /user/owncompany/users/{companyUserId}/resetPassword. remove as soon frontend is adjusted")]
-    [HttpPut]
-    [Authorize(Roles = "modify_user_account")]
-    [Route("users/{companyUserId}/resetpassword")]
-    public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
-        this.WithUserIdAndCompanyId(identity => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, identity));
 
     /// <summary>
     /// Get for given app id all the company assigned users

@@ -79,65 +79,6 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region CreateUserPasswordResetInfo
-
-    [Fact]
-    public async Task CreateUserPasswordResetInfo_Success()
-    {
-        var userId = Guid.NewGuid();
-        var modifiedAt = DateTimeOffset.UtcNow;
-        var resetCount = _fixture.Create<int>();
-
-        // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = sut.CreateUserPasswordResetInfo(userId, modifiedAt, resetCount);
-
-        result.Should().NotBeNull();
-        result.CompanyUserId.Should().Be(userId);
-        result.PasswordModifiedAt.Should().Be(modifiedAt);
-        result.ResetCount.Should().Be(resetCount);
-
-        context.ChangeTracker.Entries<UserPasswordReset>().Should().HaveCount(1);
-        context.ChangeTracker.Entries<UserPasswordReset>().First().Entity.Should().BeEquivalentTo(result);
-    }
-
-    #endregion
-
-    #region GetUserPasswordResetInfo
-
-    [Theory]
-    [InlineData("ac1cf001-7fbc-1f2f-817f-bce058020000", 1)]
-    [InlineData("ac1cf001-7fbc-1f2f-817f-bce058020001", 2)]
-
-    public async Task GetUserPasswordResetInfo_ReturnsExpected(Guid companyUserid, int resetCount)
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetUserPasswordResetInfo(companyUserid).ConfigureAwait(false);
-
-        result.Should().NotBe(default);
-        result!.ResetCount.Should().Be(resetCount);
-    }
-
-    [Fact]
-    public async Task GetUserPasswordResetInfo_UnknownUser_ReturnsDefault()
-    {
-        var companyUserId = Guid.NewGuid();
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetUserPasswordResetInfo(companyUserId).ConfigureAwait(false);
-
-        result.Should().Be(default);
-    }
-
-    #endregion
-
     #region Setup
 
     private async Task<(IProvisioningDBAccess, ProvisioningDbContext)> CreateSut()

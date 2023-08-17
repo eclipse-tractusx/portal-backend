@@ -71,19 +71,6 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
             .SingleOrDefaultAsync();
 
-    public Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, Guid userCompanyId) =>
-        _context.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.Id == companyUserId
-                && companyUser.Identity!.CompanyId == userCompanyId)
-            .Select(companyUser => new IdpUser
-            {
-                TargetIamUserId = companyUser.Identity!.UserEntityId,
-                IdpName = companyUser.Identity!.Company!.IdentityProviders
-                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                    .SingleOrDefault()
-            }).SingleOrDefaultAsync();
-
     public Task<(string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
