@@ -52,33 +52,6 @@ public class AppReleaseProcessController : ControllerBase
     }
 
     /// <summary>
-    /// Add app details to a newly created owned app under the app release/publishing process.
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="updateModel"></param>
-    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/updateapp/74BA5AEF-1CC7-495F-ABAA-CF87840FA6E2</remarks>
-    /// <response code="204">App was successfully updated.</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
-    /// <response code="404">App does not exist.</response>
-    /// <response code="403">User does not have edit permission.</response>
-    /// <response code="409">App is in incorrect state.</response>
-    [Obsolete("This endpoint is not used anymore, Planning to delete it with release 3.1")]
-    [HttpPut]
-    [Route("updateapp/{appId}")]
-    [Authorize(Roles = "app_management")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel)
-    {
-        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, companyId)).ConfigureAwait(false);
-        return NoContent();
-    }
-
-    /// <summary>
     /// Upload document for apps in status CREATED and document in status PENDING in the marketplace for given appId for same company as user
     /// </summary>
     /// <param name="appId"></param>
