@@ -117,6 +117,16 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.ValidFrom = entry.ValidFrom;
             }, cancellationToken).ConfigureAwait(false);
 
+        await SeedTable<CompanyServiceAccount>("company_service_accounts",
+            x => x.Id,
+            x => x.dataEntity.Description != x.dbEntity.Description || x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.ClientId != x.dbEntity.ClientId,
+            (dbEntry, entry) =>
+            {
+                dbEntry.Description = entry.Description;
+                dbEntry.Name = entry.Name;
+                dbEntry.ClientId = entry.ClientId;
+            }, cancellationToken).ConfigureAwait(false);
+
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }

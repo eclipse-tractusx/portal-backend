@@ -127,7 +127,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBe(default);
-        result!.ClientId.Should().Be("7e85a0b8-0001-ab67-10d1-000000001006");
+        result!.ClientId.Should().Be("dab9dd17-0d31-46c7-b313-aca61225dcd1");
     }
 
     [Fact]
@@ -283,8 +283,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl", null)(0, 10).ConfigureAwait(false);
 
         // Assert
-        result!.Count.Should().Be(8);
-        result.Data.Should().HaveCount(8);
+        result!.Count.Should().Be(7);
+        result.Data.Should().HaveCount(7);
     }
 
     #endregion
