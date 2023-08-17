@@ -25,12 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
 public class BPNAccessTest
 {
-    private readonly IFixture _fixture;
-
-    public BPNAccessTest()
-    {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-    }
+    private readonly IFixture _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
 
     private void ConfigureHttpClientFactoryFixture(HttpResponseMessage httpResponseMessage, Action<HttpRequestMessage?>? setMessage = null)
     {
