@@ -17,7 +17,10 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Technical Support
 * Logging
   * removed machine name, processId, threadId from the logging message
-* TRG: changed license notice for images, add second license
+* TRG
+  * changed license notice for images
+  * add second license
+  * add file header to .tractusx
 
 ### Bugfix
 * Administration Service
@@ -35,6 +38,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * fixed bpn display in the welcome email
 * Registration Service
   * fixed Get: /api/registration/legalEntityAddress/{bpn}
+* Seeding
+  * TestDataEnvironments set to optional
 
 ## 1.6.0-RC6
 
