@@ -166,11 +166,19 @@ public interface IOfferSubscriptionsRepository
     IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet, Guid companyId);
 
     /// <summary>
-    /// Gets the apps offer subscription statuses for the user
+    /// Gets the apps Active offer subscription statuses for the user
     /// </summary>
     /// <param name="userCompanyId">Id of users company</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <param name="documentTypeId">Id of the document type</param>
     /// <returns>apps offer subscription statuses for the user</returns>
-    IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanySubscribedAppsOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+    IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+
+    /// <summary>
+    /// Gets the apps offer subscription statuses for the user
+    /// </summary>
+    /// <param name="userCompanyId">Id of users company</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
+    /// <returns>apps offer subscription statuses for the user</returns>
+    IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId);
 }

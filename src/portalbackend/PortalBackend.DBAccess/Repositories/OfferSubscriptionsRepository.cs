@@ -502,11 +502,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc>
-    public IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanySubscribedAppsOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
+    public IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
         _context.OfferSubscriptions
             .AsNoTracking()
             .Where(os =>
-                os.Offer!.OfferTypeId == offerTypeId &&
+                os.Offer!.OfferTypeId == offerTypeId && os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                 os.CompanyId == userCompanyId)
             .Select(os => new OfferSubscriptionStatusData(
                 os.OfferId,
@@ -520,4 +520,15 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     .Select(document => document.Id).FirstOrDefault()
             )).ToAsyncEnumerable();
 
+    /// <inheritdoc>
+    public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId) =>
+        _context.OfferSubscriptions
+            .AsNoTracking()
+            .Where(os =>
+                os.Offer!.OfferTypeId == offerTypeId && os.OfferSubscriptionStatusId != OfferSubscriptionStatusId.INACTIVE &&
+                os.CompanyId == userCompanyId)
+            .Select(os => new OfferSubscriptionData(
+                os.OfferId,
+                os.OfferSubscriptionStatusId
+            )).ToAsyncEnumerable();
 }

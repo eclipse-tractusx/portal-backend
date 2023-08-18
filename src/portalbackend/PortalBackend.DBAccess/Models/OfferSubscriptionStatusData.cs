@@ -38,3 +38,13 @@ public record OfferSubscriptionStatusData(
     [property: JsonPropertyName("status")] OfferSubscriptionStatusId OfferSubscriptionStatusId,
     [property: JsonPropertyName("image")] Guid? DocumentId
 );
+
+/// <summary>
+/// Offer Subscription data
+/// </summary>
+/// <param name="OfferId">Id of the Offer</param>
+/// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
+public record OfferSubscriptionData(
+    [property: JsonPropertyName("offerId")] Guid OfferId,
+    [property: JsonPropertyName("status")] OfferSubscriptionStatusId OfferSubscriptionStatusId
+);

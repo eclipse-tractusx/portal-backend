@@ -79,8 +79,10 @@ public interface IAppsBusinessLogic
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
     /// <param name="companyId">Id of the users company.</param>
+    /// <param name ="page">page</param>
+    /// <param name ="size">size</param>
     /// <returns>Returns the details of the subscription status for App user</returns>
-    public IAsyncEnumerable<OfferSubscriptionStatusData> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(Guid companyId);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, Guid companyId);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.
@@ -178,4 +180,18 @@ public interface IAppsBusinessLogic
     /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the details of the subscription</returns>
     Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, Guid companyId);
+
+    /// <summary>
+    /// Retrieves Active subscription statuses of subscribed apps of the provided user's company.
+    /// </summary>
+    /// <param name="companyId">Id of the users company.</param>
+    /// <returns>Returns the details of the Active subscription status for App user</returns>
+    IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(Guid companyId);
+
+    /// <summary>
+    /// Retrieves Active and Pending subscription statuses of subscribed apps of the provided user's company.
+    /// </summary>
+    /// <param name="companyId">Id of the users company.</param>
+    /// <returns>Returns the details of the Active and Pending subscription status for App user</returns>
+    IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(Guid companyId);
 }
