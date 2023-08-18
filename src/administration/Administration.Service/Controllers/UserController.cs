@@ -442,13 +442,6 @@ public class UserController : ControllerBase
     public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
         this.WithUserId(userId => _logic.DeleteOwnUserAsync(companyUserId, userId));
 
-    [Obsolete("to be replaced by endpoint /user/owncompany/users/{companyUserId}/resetPassword. remove as soon frontend is adjusted")]
-    [HttpPut]
-    [Authorize(Roles = "modify_user_account")]
-    [Route("users/{companyUserId}/resetpassword")]
-    public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
-        this.WithUserIdAndCompanyId(identity => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, identity));
-
     /// <summary>
     /// Get for given app id all the company assigned users
     /// </summary>
