@@ -20,6 +20,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -30,7 +31,6 @@
     <OutputType>Exe</OutputType>
     <!-- Exclude the project from analysis -->
     <SonarQubeExclude>true</SonarQubeExclude>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="6.3.6" />
@@ -51,27 +51,19 @@
     <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Update="secrets\appsettings.json">
+    <None Remove="appsettings.json" />
+    <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Remove="efbundle.exe" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="appsettings.json">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    
     <None Remove="Seeder\Data" />
     <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
-    <Content Update="Seeder\Data\verified_credential_external_type_use_case_detail_versions.consortia.json">
-      <LinkBase>Seeder\Data\</LinkBase>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
+
     <Folder Include="Migrations" />
   </ItemGroup>
+
   <ItemGroup>
     <Content Include="../../../LICENSE">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
