@@ -38,5 +38,7 @@ public record NotificationFilters(
     NotificationTopicId? TopicId,
     bool OnlyDueDate,
     NotificationSorting? Sorting,
-    bool? DoneState
+    bool? DoneState,
+    IEnumerable<NotificationTypeId> SearchTypeIds,
+    string? SearchQuery
 );
