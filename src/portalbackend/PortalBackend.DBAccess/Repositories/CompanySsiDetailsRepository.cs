@@ -111,7 +111,6 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                                 : new DocumentData(
                                     ssi.Document!.Id,
                                     ssi.Document.DocumentName)))
-                    .Take(2)
              ))
             .ToAsyncEnumerable();
 

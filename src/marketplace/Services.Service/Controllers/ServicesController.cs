@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -264,6 +265,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ProviderSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [PublicUrl(CompanyRoleId.SERVICE_PROVIDER)]
     public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
         this.WithCompanyId(companyId => _serviceBusinessLogic.GetSubscriptionDetailForProvider(serviceId, subscriptionId, companyId));
 

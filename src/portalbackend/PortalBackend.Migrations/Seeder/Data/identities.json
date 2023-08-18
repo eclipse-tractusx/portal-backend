@@ -42,14 +42,6 @@
     "identity_type_id": 2
   },
   {
-    "id": "7e85a0b8-0001-ab67-10d1-0ef508201025",
-    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "date_created": "2022-06-01 18:01:33.439000 +00:00",
-    "user_status_id": 1,
-    "user_entity_id": "50dfc73d-e0a1-4992-be95-75def1dadbfa",
-    "identity_type_id": 2
-  },
-  {
     "id": "7e85a0b8-0001-ab67-10d1-0ef508201026",
     "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "date_created": "2023-01-01 18:01:33.439000 +00:00",
@@ -79,6 +71,38 @@
     "date_created": "2023-01-01 18:01:33.439000 +00:00",
     "user_status_id": 1,
     "user_entity_id": "090c9121-7380-4bb0-bb10-fffd344f930a",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201029",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2023-01-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "e69c1397-eee8-434a-b83b-dc7944bb9bdd",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201030",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2023-01-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "a0bbb8fa-cc40-44e3-828d-342e782fd284",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201031",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2023-01-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "319d6b7f-bd88-4103-8124-e8ac4c791acf",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201032",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2023-01-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "b52bd8e5-98ce-48b4-af43-0b43b45d0358",
     "identity_type_id": 2
   }
 ]

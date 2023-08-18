@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
@@ -98,16 +99,33 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandlePullLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
 
         if (result == default)
         {
             throw new UnexpectedConditionException($"CompanyApplication {context.ApplicationId} does not exist");
         }
 
-        var (companyId, data) = result;
+        var sharingState = await _bpdmService.GetSharingState(context.ApplicationId, cancellationToken).ConfigureAwait(false);
+        return sharingState.SharingStateType switch
+        {
+            BpdmSharingStateType.Success =>
+                await HandlePullLegalEntityInternal(context, result.CompanyId, result.BpdmData, cancellationToken),
+            BpdmSharingStateType.Error =>
+                throw new ServiceException($"ErrorCode: {sharingState.SharingErrorCode}, ErrorMessage: {sharingState.SharingErrorMessage}"),
+            _ => new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null)
+        };
+    }
 
-        var legalEntity = await _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(false);
+    private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandlePullLegalEntityInternal(
+        IApplicationChecklistService.WorkerChecklistProcessStepData context,
+        Guid companyId,
+        BpdmData data,
+        CancellationToken cancellationToken)
+    {
+        var legalEntity = await _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), cancellationToken)
+            .ConfigureAwait(false);
 
         if (string.IsNullOrEmpty(legalEntity.Bpn))
         {

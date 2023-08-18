@@ -50,7 +50,7 @@ public class OfferSubscriptionViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.OfferSubscriptionView.ToListAsync().ConfigureAwait(false);
-        result.Should().HaveCount(12);
+        result.Should().HaveCount(13);
     }
 
     [Fact]

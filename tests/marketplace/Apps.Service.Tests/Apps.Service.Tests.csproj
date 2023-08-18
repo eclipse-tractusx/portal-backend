@@ -22,6 +22,7 @@
 
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Tests</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Tests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -52,4 +53,9 @@
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.IntegrationTests.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

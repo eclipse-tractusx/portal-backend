@@ -31,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 public class RoleComposite
 {
     [JsonProperty("client")]
-    public IDictionary<string, string> Client { get; set; }
+    public IDictionary<string, IEnumerable<string>>? Client { get; set; }
     [JsonProperty("realm")]
-    public IEnumerable<string> Realm { get; set; }
+    public IEnumerable<string>? Realm { get; set; }
 }

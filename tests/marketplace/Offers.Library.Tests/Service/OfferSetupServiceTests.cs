@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -105,7 +106,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
 
-        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _mailingService, _technicalUserProfileService);
+        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _mailingService, _technicalUserProfileService, A.Fake<ILogger<OfferSetupService>>());
     }
 
     #region AutoSetupServiceAsync
