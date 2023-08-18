@@ -56,9 +56,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="secrets\appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Remove="appsettings.json" />
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Remove="efbundle.exe" />
   </ItemGroup>
 

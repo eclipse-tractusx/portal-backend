@@ -36,26 +36,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task CreateClientAsync(string realm, Client client) =>
-        await InternalCreateClientAsync(realm, client).ConfigureAwait(false);
+    public async Task CreateClientAsync(string realm, Client client, CancellationToken cancellationToken = default) =>
+        await InternalCreateClientAsync(realm, client, cancellationToken).ConfigureAwait(false);
 
-    public async Task<string?> CreateClientAndRetrieveClientIdAsync(string realm, Client client)
+    public async Task<string?> CreateClientAndRetrieveClientIdAsync(string realm, Client client, CancellationToken cancellationToken = default)
     {
-        var response = await InternalCreateClientAsync(realm, client).ConfigureAwait(false);
+        var response = await InternalCreateClientAsync(realm, client, cancellationToken).ConfigureAwait(false);
 
         var locationPathAndQuery = response.ResponseMessage.Headers.Location?.PathAndQuery;
         return locationPathAndQuery?.Substring(locationPathAndQuery.LastIndexOf("/", StringComparison.Ordinal) + 1);
     }
 
-    private async Task<IFlurlResponse> InternalCreateClientAsync(string realm, Client client) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    private async Task<IFlurlResponse> InternalCreateClientAsync(string realm, Client client, CancellationToken cancellationToken) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients")
-            .PostJsonAsync(client)
+            .PostJsonAsync(client, cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task<IEnumerable<Client>> GetClientsAsync(string realm, string? clientId = null, bool? viewableOnly = null)
+    public async Task<IEnumerable<Client>> GetClientsAsync(string realm, string? clientId = null, bool? viewableOnly = null, CancellationToken cancellationToken = default)
     {
         var queryParams = new Dictionary<string, object?>
         {
@@ -63,12 +63,12 @@ public partial class KeycloakClient
             [nameof(viewableOnly)] = viewableOnly
         };
 
-        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        return await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients")
             .SetQueryParams(queryParams)
-            .GetJsonAsync<IEnumerable<Client>>()
+            .GetJsonAsync<IEnumerable<Client>>(cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -81,13 +81,13 @@ public partial class KeycloakClient
             .GetJsonAsync<Client>()
             .ConfigureAwait(false);
 
-    public async Task UpdateClientAsync(string realm, string clientId, Client client) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateClientAsync(string realm, string clientId, Client client, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
             .AppendPathSegment(clientId, true)
-            .PutJsonAsync(client)
+            .PutJsonAsync(client, cancellationToken)
             .ConfigureAwait(false);
 
     public async Task DeleteClientAsync(string realm, string clientId) =>

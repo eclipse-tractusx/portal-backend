@@ -52,28 +52,6 @@ public class AppReleaseProcessControllerTest
     }
 
     [Fact]
-    public async Task UpdateApp_ReturnsNoContent()
-    {
-        // Arrange
-        var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
-        var data = new AppEditableDetail(
-            new LocalizedDescription[]
-            {
-                new("en", "This is a long description", "description")
-            },
-            "https://test.provider.com",
-            null,
-            null);
-
-        // Act
-        var result = await this._controller.UpdateApp(appId, data).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.UpdateAppAsync(appId, data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
     public async Task UpdateAppDocument_ReturnsExpectedResult()
     {
         //Arrange

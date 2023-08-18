@@ -59,3 +59,15 @@ public record ManagedConnectorData(
     ConnectorStatusId Status,
     string? ProviderCompanyName,
     Guid? SelfDescriptionDocumentId);
+
+/// <summary>
+/// connector information to delete
+/// </summary>
+public record DeleteConnectorData(
+    bool IsProvidingOrHostCompany,
+    Guid? SelfDescriptionDocumentId,
+    DocumentStatusId? DocumentStatusId,
+    ConnectorStatusId ConnectorStatus,
+    IEnumerable<ConnectorOfferSubscription> ConnectorOfferSubscriptions
+);
+public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, OfferSubscriptionStatusId OfferSubscriptionStatus);

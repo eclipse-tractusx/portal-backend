@@ -38,9 +38,9 @@ public static class LoggingExtensions
         host.UseSerilog((context, configuration) =>
         {
             configuration
-                .WriteTo.Console(new JsonFormatter())
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                .ReadFrom.Configuration(context.Configuration);
+                .ReadFrom.Configuration(context.Configuration)
+                .WriteTo.Console(new JsonFormatter(renderMessage: true));
             extendLogging?.Invoke(configuration, context.Configuration);
         });
 
@@ -58,8 +58,7 @@ public static class LoggingExtensions
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-            .Enrich.FromLogContext()
-            .WriteTo.Console(new JsonFormatter())
+            .WriteTo.Console(new JsonFormatter(renderMessage: true))
             .CreateBootstrapLogger();
     }
 }

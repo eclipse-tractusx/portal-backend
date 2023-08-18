@@ -22,4 +22,4 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-public record IdentityProviderMapperModel(string Id, string Name, IdentityProviderMapperType Type, IDictionary<string, object> Config);
+public record IdentityProviderMapperModel(string Id, string Name, IdentityProviderMapperType Type, IDictionary<string, string> Config);

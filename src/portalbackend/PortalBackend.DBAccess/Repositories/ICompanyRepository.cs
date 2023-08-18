@@ -157,6 +157,7 @@ public interface ICompanyRepository
     Task<(bool IsActive, bool IsValid)> GetCompanyStatusDataAsync(Guid companyId);
 
     Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId);
+    IAsyncEnumerable<CompanyRoleId> GetOwnCompanyRolesAsync(Guid companyId);
 
     /// <summary>
     /// Gets all bpns of companies with role operator

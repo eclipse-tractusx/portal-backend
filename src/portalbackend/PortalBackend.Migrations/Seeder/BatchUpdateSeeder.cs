@@ -117,6 +117,16 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.ValidFrom = entry.ValidFrom;
             }, cancellationToken).ConfigureAwait(false);
 
+        await SeedTable<CompanyServiceAccount>("company_service_accounts",
+            x => x.Id,
+            x => x.dataEntity.Description != x.dbEntity.Description || x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.ClientId != x.dbEntity.ClientId,
+            (dbEntry, entry) =>
+            {
+                dbEntry.Description = entry.Description;
+                dbEntry.Name = entry.Name;
+                dbEntry.ClientId = entry.ClientId;
+            }, cancellationToken).ConfigureAwait(false);
+
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }
@@ -124,7 +134,8 @@ public class BatchUpdateSeeder : ICustomSeeder
     private async Task SeedTable<T>(string fileName, Func<T, object> keySelector, Func<(T dataEntity, T dbEntity), bool> whereClause, Action<T, T> updateEntries, CancellationToken cancellationToken) where T : class
     {
         _logger.LogInformation("Start seeding {Filename}", fileName);
-        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, _settings.DataPaths, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        var additionalEnvironments = _settings.TestDataEnvironments ?? Enumerable.Empty<string>();
+        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, _settings.DataPaths, cancellationToken, additionalEnvironments.ToArray()).ConfigureAwait(false);
         _logger.LogInformation("Found {ElementCount} data", data.Count);
         if (data.Any())
         {

@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Globalization;
 using System.Text.Json;
 
@@ -47,6 +48,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     private readonly IMailingService _mailingService;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IIdentityService _identityService;
     private readonly CompanyDataSettings _settings;
 
     /// <summary>
@@ -56,19 +58,22 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     /// <param name="mailingService"></param>
     /// <param name="custodianService"></param>
     /// <param name="dateTimeProvider"></param>
+    /// <param name="identityService"></param>
     /// <param name="options"></param>
-    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IOptions<CompanyDataSettings> options)
+    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IIdentityService identityService, IOptions<CompanyDataSettings> options)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
         _custodianService = custodianService;
         _dateTimeProvider = dateTimeProvider;
+        _identityService = identityService;
         _settings = options.Value;
     }
 
     /// <inheritdoc/>
-    public async Task<CompanyAddressDetailData> GetCompanyDetailsAsync(Guid companyId)
+    public async Task<CompanyAddressDetailData> GetCompanyDetailsAsync()
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyDetailsAsync(companyId).ConfigureAwait(false);
         if (result == null)
         {
@@ -78,12 +83,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(Guid companyId) =>
-        _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyAssigendUseCaseDetailsAsync(companyId);
+    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
+        _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyAssigendUseCaseDetailsAsync(_identityService.IdentityData.CompanyId);
 
     /// <inheritdoc/>
-    public async Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId)
+    public async Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(Guid useCaseId)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId).ConfigureAwait(false);
         if (!useCaseDetails.IsActiveCompanyStatus)
@@ -100,8 +106,9 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task RemoveCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId)
+    public async Task RemoveCompanyAssignedUseCaseDetailsAsync(Guid useCaseId)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId).ConfigureAwait(false);
         if (!useCaseDetails.IsActiveCompanyStatus)
@@ -116,8 +123,9 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(Guid companyId, string? languageShortName)
+    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string? languageShortName)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName).ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"language {languageShortName} is not a valid languagecode");
@@ -152,12 +160,14 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync((Guid UserId, Guid CompanyId) identity, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
+    public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync(IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
     {
         if (!companyRoleConsentDetails.Any())
         {
             return;
         }
+
+        var identity = _identityService.IdentityData;
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var result = await companyRepositories.GetCompanyRolesDataAsync(identity.CompanyId, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
         if (!result.IsValidCompany)
@@ -221,10 +231,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipationAsync(Guid companyId, string? language) =>
+    public async Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipationAsync(string? language) =>
         await _portalRepositories
             .GetInstance<ICompanySsiDetailsRepository>()
-            .GetUseCaseParticipationForCompany(companyId, language ?? Constants.DefaultLanguage)
+            .GetUseCaseParticipationForCompany(_identityService.IdentityData.CompanyId, language ?? Constants.DefaultLanguage)
             .Select(x => new UseCaseParticipationData(
                 x.UseCase,
                 x.Description,
@@ -247,27 +257,23 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             .ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync(Guid companyId) =>
+    public async Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync() =>
         await _portalRepositories
             .GetInstance<ICompanySsiDetailsRepository>()
-            .GetSsiCertificates(companyId)
+            .GetSsiCertificates(_identityService.IdentityData.CompanyId)
             .Select(x => new SsiCertificateData(
                 x.CredentialType,
-                x.SsiDetailData.CatchingInto(
-                    data => data
-                        .Select(d => new CompanySsiDetailData(
+                x.SsiDetailData.Select(d => new CompanySsiDetailData(
                             d.CredentialId,
                             d.ParticipationStatus,
                             d.ExpiryDate,
-                            d.Document))
-                        .SingleOrDefault(),
-                    (InvalidOperationException _) => new ConflictException("There should only be one pending or active ssi detail be assigned")
+                            d.Document)
                 )))
             .ToListAsync()
             .ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task CreateUseCaseParticipation((Guid UserId, Guid CompanyId) identity, UseCaseParticipationCreationData data, CancellationToken cancellationToken)
+    public async Task CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken)
     {
         var (verifiedCredentialExternalTypeDetailId, credentialTypeId, document) = data;
         var documentContentType = document.ContentType.ParseMediaTypeId();
@@ -279,11 +285,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
         }
 
-        await HandleSsiCreationAsync(identity, new(credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
+        await HandleSsiCreationAsync(credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType, companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task CreateSsiCertificate((Guid UserId, Guid CompanyId) identity, SsiCertificateCreationData data, CancellationToken cancellationToken)
+    public async Task CreateSsiCertificate(SsiCertificateCreationData data, CancellationToken cancellationToken)
     {
         var (credentialTypeId, document) = data;
         var documentContentType = document.ContentType.ParseMediaTypeId();
@@ -295,16 +301,15 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException($"{credentialTypeId} is not assigned to a certificate");
         }
 
-        await HandleSsiCreationAsync(identity, new(credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, documentContentType), companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
+        await HandleSsiCreationAsync(credentialTypeId, VerifiedCredentialTypeKindId.CERTIFICATE, null, document, documentContentType, companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task HandleSsiCreationAsync(
-        (Guid UserId, Guid CompanyId) identity,
-        (VerifiedCredentialTypeId CredentialTypeId, VerifiedCredentialTypeKindId kindId, Guid? VerifiedCredentialExternalTypeDetailId, IFormFile Document, MediaTypeId MediaTypeId) creationData,
+        VerifiedCredentialTypeId credentialTypeId, VerifiedCredentialTypeKindId kindId, Guid? verifiedCredentialExternalTypeDetailId, IFormFile document, MediaTypeId mediaTypeId,
         ICompanySsiDetailsRepository companyCredentialDetailsRepository,
         CancellationToken cancellationToken)
     {
-        var (credentialTypeId, kindId, verifiedCredentialExternalTypeDetailId, document, mediaTypeId) = creationData;
+        var identity = _identityService.IdentityData;
         if (await companyCredentialDetailsRepository.CheckSsiDetailsExistsForCompany(identity.CompanyId, credentialTypeId, kindId, verifiedCredentialExternalTypeDetailId).ConfigureAwait(false))
         {
             throw new ControllerArgumentException("Credential request already existing");
@@ -372,9 +377,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task ApproveCredential(Guid userId, Guid credentialId, CancellationToken cancellationToken)
+    public async Task ApproveCredential(Guid credentialId, CancellationToken cancellationToken)
     {
         var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
+        var userId = _identityService.IdentityData.UserId;
         var (exists, data) = await companySsiRepository.GetSsiApprovalData(credentialId).ConfigureAwait(false);
         if (!exists)
         {
@@ -445,9 +451,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task RejectCredential(Guid userId, Guid credentialId)
+    public async Task RejectCredential(Guid credentialId)
     {
         var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
+        var userId = _identityService.IdentityData.UserId;
         var (exists, status, type, requesterId, requesterEmail, requesterFirstname, requesterLastname) = await companySsiRepository.GetSsiRejectionData(credentialId).ConfigureAwait(false);
         if (!exists)
         {
@@ -492,6 +499,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes(Guid companyId) =>
-        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(companyId);
+    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
+        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(_identityService.IdentityData.CompanyId);
 }

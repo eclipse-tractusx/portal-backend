@@ -127,7 +127,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBe(default);
-        result!.ClientId.Should().Be("7e85a0b8-0001-ab67-10d1-000000001006");
+        result!.ClientId.Should().Be("dab9dd17-0d31-46c7-b313-aca61225dcd1");
     }
 
     [Fact]
@@ -220,14 +220,15 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyServiceAccountDetailedDataUntrackedAsync
 
     [Theory]
-    [InlineData(10, 0, 10, 10)]
-    [InlineData(10, 1, 9, 9)]
+    [InlineData(3, 0, 10, 3)]
+    [InlineData(3, 1, 9, 2)]
     public async Task GetOwnCompanyServiceAccountsUntracked_ReturnsExpectedResult(int count, int page, int size, int expected)
     {
         // Arrange
+        var newvalidCompanyId = new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542");
         var (sut, _) = await CreateSut().ConfigureAwait(false);
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, null)(page, size).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(newvalidCompanyId, null, null)(page, size).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -235,8 +236,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Data.Should().HaveCount(expected);
         if (expected > 0)
         {
-            result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
-            result.Data.First().IsOwner.Should().BeTrue();
+            result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+            result.Data.First().IsOwner.Should().BeFalse();
         }
     }
 
@@ -262,7 +263,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new("41fd2ab8-71cd-4546-9bef-a388d91b2542"), "sa-x-1", false)(0, 10).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new("41fd2ab8-71cd-4546-9bef-a388d91b2543"), "sa-x-2", false)(0, 10).ConfigureAwait(false);
 
         // Assert
         result!.Count.Should().Be(1);
@@ -295,8 +296,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl", null)(0, 10).ConfigureAwait(false);
 
         // Assert
-        result!.Count.Should().Be(8);
-        result.Data.Should().HaveCount(8);
+        result!.Count.Should().Be(11);
+        result.Data.Should().HaveCount(10);
     }
 
     #endregion

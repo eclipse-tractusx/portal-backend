@@ -28,11 +28,11 @@ using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.IntegrationTests;
 
-public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<NotificationController>>
+public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<NotificationController, Seeding>>
 {
-    private readonly IntegrationTestFactory<NotificationController> _factory;
+    private readonly IntegrationTestFactory<NotificationController, Seeding> _factory;
 
-    public NotificationControllerIntegrationTests(IntegrationTestFactory<NotificationController> factory)
+    public NotificationControllerIntegrationTests(IntegrationTestFactory<NotificationController, Seeding> factory)
     {
         _factory = factory;
     }

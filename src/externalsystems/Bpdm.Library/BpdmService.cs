@@ -77,7 +77,7 @@ public class BpdmService : IBpdmService
                         data.AlphaCode2,                       // Country
                         data.ZipCode,                          // PostalCode
                         data.City,                             // City
-                        new BpdmStreet(
+                        new BpdmLegalEntityStreet(
                             null,                              // NamePrefix
                             null,                              // AdditionalNamePrefix
                             data.StreetName,                   // Name
@@ -130,6 +130,31 @@ public class BpdmService : IBpdmService
         catch (JsonException je)
         {
             throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
+        }
+    }
+
+    public async Task<BpdmSharingState> GetSharingState(Guid applicationId, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
+
+        var url = $"/companies/test-company/api/catena/sharing-state?externalIds={applicationId}&businessPartnerType={BpdmSharingStateBusinessPartnerType.LEGAL_ENTITY}";
+        var result = await httpClient.GetAsync(url, cancellationToken)
+            .CatchingIntoServiceExceptionFor("bpdm-sharing-state", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+        try
+        {
+            var response = await result.Content
+                .ReadFromJsonAsync<BpdmPaginationSharingStateOutput>(Options, cancellationToken)
+                .ConfigureAwait(false);
+            if (response?.Content?.Count() != 1)
+            {
+                throw new ServiceException("Access to sharing state did not return a valid legal entity response", true);
+            }
+
+            return response.Content.Single();
+        }
+        catch (JsonException je)
+        {
+            throw new ServiceException($"Access to sharing state did not return a valid json response: {je.Message}");
         }
     }
 }

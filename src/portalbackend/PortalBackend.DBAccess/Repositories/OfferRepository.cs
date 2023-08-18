@@ -218,23 +218,6 @@ public class OfferRepository : IOfferRepository
 
     /// <inheritdoc />
     [Obsolete("only referenced by code that is marked as obsolte")]
-    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, Guid companyId, OfferTypeId offerTypeId) =>
-        _context.Offers
-            .AsNoTracking()
-            .Where(a => a.Id == appId && a.OfferTypeId == offerTypeId)
-            .Select(a =>
-                new ValueTuple<bool, bool, string?, string?, string?, IEnumerable<LocalizedDescription>>(
-                    a.OfferStatusId == OfferStatusId.CREATED,
-                    a.ProviderCompanyId == companyId,
-                    a.ContactEmail,
-                    a.ContactNumber,
-                    a.MarketingUrl,
-                    a.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort))
-                ))
-            .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    [Obsolete("only referenced by code that is marked as obsolte")]
     public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string languageShortName) =>
         _context.Offers
             .Where(app => app.Id == appId)

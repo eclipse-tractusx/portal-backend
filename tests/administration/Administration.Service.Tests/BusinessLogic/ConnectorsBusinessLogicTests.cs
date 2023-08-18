@@ -474,13 +474,16 @@ public class ConnectorsBusinessLogicTests
     public async Task DeleteConnectorAsync_WithDocumentId_ExpectedCalls()
     {
         // Arrange
-        const DocumentStatusId documentStatusId = DocumentStatusId.LOCKED;
+        const DocumentStatusId DocumentStatusId = DocumentStatusId.LOCKED;
         var connectorId = Guid.NewGuid();
         var connector = new Connector(connectorId, null!, null!, null!);
         var selfDescriptionDocumentId = Guid.NewGuid();
-        var assignedOfferSubscriptions = _fixture.CreateMany<Guid>(2);
+        var connectorOfferSubscriptions = new[] {
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+        };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns((true, true, selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.ACTIVE, assignedOfferSubscriptions));
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
@@ -514,9 +517,12 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var assignedOfferSubscriptions = _fixture.CreateMany<Guid>(2);
+        var connectorOfferSubscriptions = new[] {
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+        };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns((true, true, null, null, ConnectorStatusId.PENDING, assignedOfferSubscriptions));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions));
 
         // Act
         await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
@@ -532,12 +538,15 @@ public class ConnectorsBusinessLogicTests
     public async Task DeleteConnectorAsync_WithPendingAndDocumentId_ExpectedCalls()
     {
         // Arrange
-        const DocumentStatusId documentStatusId = DocumentStatusId.LOCKED;
+        const DocumentStatusId DocumentStatusId = DocumentStatusId.LOCKED;
         var connectorId = Guid.NewGuid();
         var selfDescriptionDocumentId = Guid.NewGuid();
-        var assignedOfferSubscriptions = _fixture.CreateMany<Guid>(2);
+        var connectorOfferSubscriptions = new[] {
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+        };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns((true, true, selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.PENDING, assignedOfferSubscriptions));
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions));
 
         // Act
         await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
@@ -554,11 +563,11 @@ public class ConnectorsBusinessLogicTests
     public async Task DeleteConnectorAsync_WithoutAssignedOfferSubscriptions_ExpectedCalls()
     {
         // Arrange
-        const DocumentStatusId documentStatusId = DocumentStatusId.LOCKED;
+        const DocumentStatusId DocumentStatusId = DocumentStatusId.LOCKED;
         var connectorId = Guid.NewGuid();
         var selfDescriptionDocumentId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns((true, true, selfDescriptionDocumentId, documentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<Guid>()));
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<ConnectorOfferSubscription>()));
 
         // Act
         await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
@@ -577,7 +586,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<Guid>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>()));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
@@ -593,7 +602,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<Guid>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>()));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
@@ -609,7 +618,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((false, false, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<Guid>()));
+            .Returns((DeleteConnectorData)default!);
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
@@ -625,7 +634,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((true, false, null, null, default, Enumerable.Empty<Guid>()));
+            .Returns(new DeleteConnectorData(false, null, null, default, Enumerable.Empty<ConnectorOfferSubscription>()));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
@@ -633,6 +642,56 @@ public class ConnectorsBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be($"company {_identity.CompanyId} is neither provider nor host-company of connector {connectorId}");
+    }
+
+    [Fact]
+    public async Task DeleteConnectorAsync_WithPendingAndWithoutDocumentId_ThrowsForbiddenException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var offerSubscriptionId1 = _fixture.Create<Guid>();
+        var offerSubscriptionId2 = _fixture.Create<Guid>();
+        var offerSubscriptionId3 = _fixture.Create<Guid>();
+        var connectorOfferSubscriptions = new[] {
+            new ConnectorOfferSubscription(offerSubscriptionId1, OfferSubscriptionStatusId.ACTIVE),
+            new ConnectorOfferSubscription(offerSubscriptionId2, OfferSubscriptionStatusId.ACTIVE),
+            new ConnectorOfferSubscription(offerSubscriptionId3, OfferSubscriptionStatusId.PENDING),
+        };
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions));
+
+        // Act
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"Deletion Failed. Connector {connectorId} connected to an active offer subscription [{offerSubscriptionId1},{offerSubscriptionId2}]");
+    }
+
+    [Fact]
+    public async Task DeleteConnectorAsync_WithPendingAndDocumentId_ThrowsForbiddenException()
+    {
+        // Arrange
+        const DocumentStatusId DocumentStatusId = DocumentStatusId.LOCKED;
+        var connectorId = Guid.NewGuid();
+        var selfDescriptionDocumentId = Guid.NewGuid();
+        var offerSubscriptionId1 = _fixture.Create<Guid>();
+        var offerSubscriptionId2 = _fixture.Create<Guid>();
+        var offerSubscriptionId3 = _fixture.Create<Guid>();
+        var connectorOfferSubscriptions = new[] {
+            new ConnectorOfferSubscription(offerSubscriptionId1, OfferSubscriptionStatusId.ACTIVE),
+            new ConnectorOfferSubscription(offerSubscriptionId2, OfferSubscriptionStatusId.ACTIVE),
+            new ConnectorOfferSubscription(offerSubscriptionId3, OfferSubscriptionStatusId.PENDING),
+        };
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions));
+
+        // Act
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"Deletion Failed. Connector {connectorId} connected to an active offer subscription [{offerSubscriptionId1},{offerSubscriptionId2}]");
     }
 
     #endregion

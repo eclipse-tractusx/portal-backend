@@ -2,6 +2,45 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.6.0-RC7
+
+### Change
+* All Services
+  * add an /api/info endpoint to retrieve specific api endpoints which can be used publicly for external services
+* Keycloak Seeding
+  * add seeding for keycloak realm-data from a json-file
+* Marketplace Service
+  * Removed PUT: /api/apps/appreleaseprocess/updateapp/{appId}
+* Process Worker:
+  * add error handling for BPDM Pull Process Steps
+
+### Technical Support
+* Logging
+  * removed machine name, processId, threadId from the logging message
+* TRG
+  * changed license notice for images
+  * add second license
+  * add file header to .tractusx
+
+### Bugfix
+* Administration Service
+  * fixed Get: api/administration/companydata/certificates when multiple certificates are in the database for a specific company
+  * add check for active offerSubscriptions when deleting a connector
+  * fixed api/administration/serviceaccount/owncompany/serviceaccounts
+* Company Service Accounts
+  * set identityTypeId when creating service accounts to company service account instead of company user
+  * change client_id of service accounts in seeding data
+  * add service accounts from cx-central base
+  * remove service account for daps
+* Marketplace Service
+  * fixed validation for /api/apps/AppReleaseProcess/instance-type/{appId} to only be executable for apps in state CREATED
+* Mail Templates
+  * fixed bpn display in the welcome email
+* Registration Service
+  * fixed Get: /api/registration/legalEntityAddress/{bpn}
+* Seeding
+  * TestDataEnvironments set to optional
+
 ## 1.6.0-RC6
 
 ### Change
