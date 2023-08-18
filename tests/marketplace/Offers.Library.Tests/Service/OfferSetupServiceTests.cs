@@ -325,7 +325,7 @@ public class OfferSetupServiceTests
         // Act
         //async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, (_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
         var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, (_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
-         result.Should().NotBeNull();
+        result.Should().NotBeNull();
         result.TechnicalUserInfo.Should().BeNull();
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>._, CompanyServiceAccountTypeId.MANAGED, false, A<Action<CompanyServiceAccount>>._)).MustNotHaveHappened();
     }
