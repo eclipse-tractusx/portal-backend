@@ -186,7 +186,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="companyId">Id of the users company.</param>
     /// <returns>Returns the details of the Active subscription status for App user</returns>
-    IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(Guid companyId);
+    IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(Guid companyId);
 
     /// <summary>
     /// Retrieves Active and Pending subscription statuses of subscribed apps of the provided user's company.

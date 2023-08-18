@@ -837,7 +837,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        var data = _fixture.CreateMany<OfferSubscriptionStatusData>(5).ToAsyncEnumerable();
+        var data = _fixture.CreateMany<ActiveOfferSubscriptionStatusData>(5).ToAsyncEnumerable();
         A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._))
             .Returns(data);
 

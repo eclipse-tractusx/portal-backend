@@ -404,7 +404,7 @@ public class AppsControllerTests
     public async Task GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = _fixture.CreateMany<OfferSubscriptionStatusData>(3).ToImmutableArray().ToAsyncEnumerable();
+        var data = _fixture.CreateMany<ActiveOfferSubscriptionStatusData>(3).ToImmutableArray().ToAsyncEnumerable();
         A.CallTo(() => _logic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(A<Guid>._))
             .Returns(data);
 

@@ -172,7 +172,7 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <param name="documentTypeId">Id of the document type</param>
     /// <returns>apps offer subscription statuses for the user</returns>
-    IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+    IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
 
     /// <summary>
     /// Gets the apps offer subscription statuses for the user

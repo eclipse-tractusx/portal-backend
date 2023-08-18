@@ -502,17 +502,16 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc>
-    public IAsyncEnumerable<OfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
+    public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
         _context.OfferSubscriptions
             .AsNoTracking()
             .Where(os =>
                 os.Offer!.OfferTypeId == offerTypeId && os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                 os.CompanyId == userCompanyId)
-            .Select(os => new OfferSubscriptionStatusData(
+            .Select(os => new ActiveOfferSubscriptionStatusData(
                 os.OfferId,
                 os.Offer!.Name,
                 os.Offer.Provider,
-                os.OfferSubscriptionStatusId,
                 os.Offer.Documents
                     .Where(document =>
                         document.DocumentTypeId == documentTypeId
