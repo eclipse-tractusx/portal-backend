@@ -237,4 +237,146 @@ public class BpdmServiceTests
     }
 
     #endregion
+
+    #region GetSharingState
+
+    [Fact]
+    public async Task GetSharingState_WithValidResult_ReturnsExpected()
+    {
+        // Arrange
+        var applicationId = new Guid("aa2eeac5-a0e9-46b0-80f0-d48dde49aa23");
+        const string json = @"{
+            ""totalElements"": 1,
+            ""totalPages"": 1,
+            ""page"": 0,
+            ""contentSize"": 1,
+            ""content"": [
+                {
+                    ""businessPartnerType"": ""LEGAL_ENTITY"",
+                    ""externalId"": ""aa2eeac5-a0e9-46b0-80f0-d48dde49aa23"",
+                    ""sharingStateType"": ""Error"",
+                    ""sharingErrorCode"": ""SharingProcessError"",
+                    ""sharingErrorMessage"": ""Address Identifier Type 'Cheese Region' does not exist (LegalAddressRegionNotFound)"",
+                    ""bpn"": null,
+                    ""sharingProcessStarted"": ""2023-08-04T14:35:30.478594""
+                }
+            ]
+        }";
+
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(
+            HttpStatusCode.OK,
+            new StringContent(json));
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        var result = await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.ExternalId.Should().Be(applicationId);
+        result.Bpn.Should().BeNull();
+        result.SharingErrorCode.Should().Be("SharingProcessError");
+        result.SharingStateType.Should().Be(BpdmSharingStateType.Error);
+        result.BusinessPartnerType.Should().Be(BpdmSharingStateBusinessPartnerType.LEGAL_ENTITY);
+        result.SharingErrorMessage.Should().Be("Address Identifier Type 'Cheese Region' does not exist (LegalAddressRegionNotFound)");
+    }
+
+    [Fact]
+    public async Task GetSharingState_WithEmtpyObjectResult_ThrowsServiceException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(
+            HttpStatusCode.OK,
+            new StringContent("{}"));
+
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com"),
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("Access to sharing state did not return a valid legal entity response");
+        ex.IsRecoverable.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetSharingState_WithEmtpyResult_ThrowsServiceException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(
+            HttpStatusCode.OK,
+            new StringContent(""));
+
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com"),
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        ex.Message.Should().StartWith("Access to sharing state did not return a valid json response");
+        ex.IsRecoverable.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetSharingState_WithNotFoundResult_ReturnsNull()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.NotFound);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        var Act = () => sut.GetSharingState(applicationId, CancellationToken.None);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetSharingState_WithInvalidData_ThrowsServiceException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Be("call to external system bpdm-sharing-state failed with statuscode 400");
+    }
+
+    #endregion
 }

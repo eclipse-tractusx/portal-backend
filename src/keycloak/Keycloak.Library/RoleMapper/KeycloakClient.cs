@@ -102,34 +102,34 @@ public partial class KeycloakClient
             .GetJsonAsync<Mapping>()
             .ConfigureAwait(false);
 
-    public async Task AddRealmRoleMappingsToUserAsync(string realm, string userId, IEnumerable<Role> roles) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task AddRealmRoleMappingsToUserAsync(string realm, string userId, IEnumerable<Role> roles, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
-            .PostJsonAsync(roles)
+            .PostJsonAsync(roles, cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task<IEnumerable<Role>> GetRealmRoleMappingsForUserAsync(string realm, string userId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<IEnumerable<Role>> GetRealmRoleMappingsForUserAsync(string realm, string userId, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
-            .GetJsonAsync<IEnumerable<Role>>()
+            .GetJsonAsync<IEnumerable<Role>>(cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task DeleteRealmRoleMappingsFromUserAsync(string realm, string userId, IEnumerable<Role> roles) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task DeleteRealmRoleMappingsFromUserAsync(string realm, string userId, IEnumerable<Role> roles, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
-            .SendJsonAsync(HttpMethod.Delete, roles)
+            .SendJsonAsync(HttpMethod.Delete, roles, cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<IEnumerable<Role>> GetAvailableRealmRoleMappingsForUserAsync(string realm, string userId) =>

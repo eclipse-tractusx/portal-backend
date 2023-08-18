@@ -187,7 +187,7 @@ public class RegistrationBusinessLogicTest
 
         var bpdmAddress = _fixture.Build<BpdmLegalEntityAddress>()
             .With(x => x.BpnLegalEntity, name)
-            .With(x => x.Bpnl, businessPartnerNumber)
+            .With(x => x.Bpna, businessPartnerNumber)
             .With(x => x.PhysicalPostalAddress, _fixture.Build<BpdmPhysicalPostalAddress>()
                 .With(x => x.Country, _fixture.Build<BpdmCountry>().With(x => x.TechnicalKey, country).Create())
                 .With(x => x.AdministrativeAreaLevel1, _fixture.Build<BpdmAdministrativeAreaLevel>().With(x => x.RegionCode, region).Create())

@@ -63,58 +63,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
-    public Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, Guid companyId)
-    {
-        if (appId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"AppId must not be empty");
-        }
-        if (updateModel.Descriptions.Any(item => string.IsNullOrWhiteSpace(item.LanguageCode)))
-        {
-            throw new ControllerArgumentException("Language Code must not be empty");
-        }
-        return EditAppAsync(appId, updateModel, companyId);
-    }
-
-    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
-    private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, Guid companyId)
-    {
-        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appResult = await appRepository.GetOfferDetailsForUpdateAsync(appId, companyId, OfferTypeId.APP).ConfigureAwait(false);
-        if (appResult == default)
-        {
-            throw new NotFoundException($"app {appId} does not exist");
-        }
-        if (!appResult.IsProviderUser)
-        {
-            throw new ForbiddenException($"Company {companyId} is not the providing company");
-        }
-        if (!appResult.IsAppCreated)
-        {
-            throw new ConflictException($"app {appId} is not in status CREATED");
-        }
-        appRepository.AttachAndModifyOffer(appId, app =>
-        {
-            if (appResult.ContactEmail != updateModel.ContactEmail)
-            {
-                app.ContactEmail = updateModel.ContactEmail;
-            }
-            if (appResult.ContactNumber != updateModel.ContactNumber)
-            {
-                app.ContactNumber = updateModel.ContactNumber;
-            }
-            if (appResult.MarketingUrl != updateModel.ProviderUri)
-            {
-                app.MarketingUrl = updateModel.ProviderUri;
-            }
-        });
-
-        _offerService.UpsertRemoveOfferDescription(appId, updateModel.Descriptions, appResult.Descriptions);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
     public Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken) =>
         UploadAppDoc(appId, documentTypeId, document, identity, OfferTypeId.APP, cancellationToken);
 
@@ -500,8 +448,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         if (!result.IsUserOfProvidingCompany)
             throw new ForbiddenException($"Company {companyId} is not the provider company");
 
-        if (result.OfferStatus is not (OfferStatusId.CREATED or OfferStatusId.IN_REVIEW))
-            throw new ConflictException($"App {appId} is not in Status {OfferStatusId.CREATED} or {OfferStatusId.IN_REVIEW}");
+        if (result.OfferStatus is not OfferStatusId.CREATED)
+            throw new ConflictException($"App {appId} is not in Status {OfferStatusId.CREATED}");
 
         await (result.SetupTransferData == null
             ? HandleAppInstanceCreation(appId, data)

@@ -31,37 +31,37 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMa
 public class Config
 {
     [JsonProperty("single")]
-    public string Single { get; set; }
-    [JsonProperty("attributenameformat")]
-    public string AttributeNameFormat { get; set; }
-    [JsonProperty("attributename")]
-    public string AttributeName { get; set; }
+    public string? Single { get; set; }
+    [JsonProperty("attribute.nameformat")]
+    public string? AttributeNameFormat { get; set; }
+    [JsonProperty("attribute.name")]
+    public string? AttributeName { get; set; }
     [JsonProperty("userinfo.token.claim")]
-    public string UserInfoTokenClaim { get; set; }
+    public string? UserInfoTokenClaim { get; set; }
     [JsonProperty("user.attribute")]
-    public string UserAttribute { get; set; }
+    public string? UserAttribute { get; set; }
     [JsonProperty("id.token.claim")]
-    public string IdTokenClaim { get; set; }
+    public string? IdTokenClaim { get; set; }
     [JsonProperty("access.token.claim")]
-    public string AccessTokenClaim { get; set; }
+    public string? AccessTokenClaim { get; set; }
     [JsonProperty("claim.name")]
-    public string ClaimName { get; set; }
+    public string? ClaimName { get; set; }
     [JsonProperty("jsonType.label")]
-    public string JsonTypelabel { get; set; }
-    [JsonProperty("userattributeformatted")]
-    public string UserAttributeFormatted { get; set; }
-    [JsonProperty("userattributecountry")]
-    public string UserAttributeCountry { get; set; }
-    [JsonProperty("userattributepostal_code")]
-    public string UserAttributePostalCode { get; set; }
-    [JsonProperty("userattributestreet")]
-    public string UserAttributeStreet { get; set; }
-    [JsonProperty("userattributeregion")]
-    public string UserAttributeRegion { get; set; }
-    [JsonProperty("userattributelocality")]
-    public string UserAttributeLocality { get; set; }
+    public string? JsonTypelabel { get; set; }
+    [JsonProperty("user.attribute.formatted")]
+    public string? UserAttributeFormatted { get; set; }
+    [JsonProperty("user.attribute.country")]
+    public string? UserAttributeCountry { get; set; }
+    [JsonProperty("user.attribute.postal_code")]
+    public string? UserAttributePostalCode { get; set; }
+    [JsonProperty("user.attribute.street")]
+    public string? UserAttributeStreet { get; set; }
+    [JsonProperty("user.attribute.region")]
+    public string? UserAttributeRegion { get; set; }
+    [JsonProperty("user.attribute.locality")]
+    public string? UserAttributeLocality { get; set; }
     [JsonProperty("included.client.audience")]
-    public string IncludedClientAudience { get; set; }
+    public string? IncludedClientAudience { get; set; }
     [JsonProperty("multivalued")]
-    public string Multivalued { get; set; }
+    public string? Multivalued { get; set; }
 }

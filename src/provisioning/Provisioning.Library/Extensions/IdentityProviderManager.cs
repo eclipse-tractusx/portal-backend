@@ -187,7 +187,7 @@ public partial class ProvisioningManager
                 Name = _Settings.MappedCompanyAttribute + "-mapper",
                 _IdentityProviderMapper = "hardcoded-attribute-idp-mapper",
                 IdentityProviderAlias = alias,
-                Config = new Dictionary<string, object>
+                Config = new Dictionary<string, string>
                 {
                     ["syncMode"] = "INHERIT",
                     ["attribute"] = _Settings.MappedCompanyAttribute,

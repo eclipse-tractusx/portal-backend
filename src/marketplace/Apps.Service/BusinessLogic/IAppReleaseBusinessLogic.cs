@@ -32,16 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 public interface IAppReleaseBusinessLogic
 {
     /// <summary>
-    /// Update an App
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="updateModel"></param>
-    /// <param name="companyId"></param>
-    /// <returns></returns>
-    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
-    Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, Guid companyId);
-
-    /// <summary>
     /// Upload document for given company user for appId
     /// </summary>
     /// <param name="appId"></param>

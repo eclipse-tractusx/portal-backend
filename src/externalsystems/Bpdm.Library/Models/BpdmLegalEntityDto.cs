@@ -29,37 +29,37 @@ public record BpdmLegalEntityDto(
     [property: JsonPropertyName("currentness")] DateTimeOffset Currentness,
     [property: JsonPropertyName("createdAt")] DateTimeOffset CreatedAt,
     [property: JsonPropertyName("updatedAt")] DateTimeOffset UpdatedAt,
-    IEnumerable<BpdmIdentifierDto> Identifiers,
-    BpdmLegalFormDto? LegalForm,
-    IEnumerable<BpdmStatusDto> Status,
-    IEnumerable<BpdmProfileClassificationDto> ProfileClassifications,
-    IEnumerable<BpdmRelationDto> Relations,
-    BpdmLegalEntityAddress LegalEntityAddress
+    [property: JsonPropertyName("identifiers")] IEnumerable<BpdmIdentifierDto> Identifiers,
+    [property: JsonPropertyName("legalForm")] BpdmLegalFormDto? LegalForm,
+    [property: JsonPropertyName("states")] IEnumerable<BpdmStatusDto> States,
+    [property: JsonPropertyName("classifications")] IEnumerable<BpdmProfileClassificationDto> Classifications,
+    [property: JsonPropertyName("relations")] IEnumerable<BpdmRelationDto> Relations,
+    [property: JsonPropertyName("legalAddress")] BpdmLegalEntityAddress? LegalEntityAddress
 );
 
 public record BpdmIdentifierDto(
     string Value,
     BpdmTechnicalKey Type,
-    string IssuingBody
+    string? IssuingBody
 );
 
 public record BpdmLegalFormDto(
-    string TechnicalKey,
-    string Name,
-    string Abbreviation
+    string? TechnicalKey,
+    string? Name,
+    string? Abbreviation
 );
 
 public record BpdmStatusDto(
-    string OfficialDenotation,
+    string? OfficialDenotation,
     DateTimeOffset ValidFrom,
     DateTimeOffset ValidUntil,
     BpdmTechnicalKey Type
 );
 
 public record BpdmProfileClassificationDto(
-    string Value,
-    string Code,
-    BpdmTechnicalKey Type
+    string? Value,
+    string? Code,
+    BpdmTechnicalKey? Type
 );
 
 public record BpdmDataDto(
@@ -74,18 +74,18 @@ public record BpdmTechnicalKey(
 
 public record BpdmRelationDto(
     BpdmTechnicalKey Type,
-    string StartBpn,
-    string EndBpn,
+    string? StartBpn,
+    string? EndBpn,
     DateTimeOffset ValidFrom,
     DateTimeOffset ValidTo
 );
 
 public record BpdmLegalEntityAddress
 (
-    string Bpnl,
-    string Name,
-    string BpnLegalEntity,
-    string BpnSite,
+    string? Bpna,
+    string? Name,
+    string? BpnLegalEntity,
+    string? BpnSite,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     bool IsLegalAddress,
@@ -98,7 +98,7 @@ public record BpdmLegalEntityAddress
 
 public record BpdmLegalEntityAddressState
 (
-    string Description,
+    string? Description,
     DateTimeOffset ValidFrom,
     DateTimeOffset ValidTo,
     BpdmTechnicalKey Type
@@ -106,7 +106,7 @@ public record BpdmLegalEntityAddressState
 
 public record BpdmLegalEntityAddressIdentifier
 (
-    string Value,
+    string? Value,
     BpdmTechnicalKey Type
 );
 
@@ -139,16 +139,13 @@ public record BpdmAlternativePostalAddress(
 );
 
 public record BpdmAdministrativeAreaLevel(
-    string? Name,
+    string? CountryCode,
+    string? RegionName,
     string? RegionCode
 );
 
 public record BpdmStreet(
-    string? NamePrefix,
-    string? AdditionalNamePrefix,
-    string Name,
-    string? NameSuffix,
-    string? AdditionalNameSuffix,
+    string? Name,
     string? HouseNumber,
     string? Milestone,
     string? Direction

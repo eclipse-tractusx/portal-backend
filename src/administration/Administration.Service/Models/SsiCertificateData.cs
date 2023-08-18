@@ -5,5 +5,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 public record SsiCertificateData
 (
     VerifiedCredentialTypeId CredentialType,
-    CompanySsiDetailData? SsiDetailData
+    IEnumerable<CompanySsiDetailData> SsiDetailData
 );

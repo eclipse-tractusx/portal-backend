@@ -36,8 +36,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [Consumes("application/json")]
 public class UserController : ControllerBase
 {
-
-    private readonly ILogger<UserController> _logger;
     private readonly IUserBusinessLogic _logic;
     private readonly IUserUploadBusinessLogic _uploadLogic;
     private readonly IUserRolesBusinessLogic _rolesLogic;
@@ -45,13 +43,11 @@ public class UserController : ControllerBase
     /// <summary>
     /// Creates a new instance of <see cref="UserController"/>
     /// </summary>
-    /// <param name="logger">The logger</param>
     /// <param name="logic">The User Business Logic</param>
     /// <param name="uploadLogic">The User Upload Business Logic</param>
     /// <param name="rolesLogic">The User Roles Management Business Logic</param>
-    public UserController(ILogger<UserController> logger, IUserBusinessLogic logic, IUserUploadBusinessLogic uploadLogic, IUserRolesBusinessLogic rolesLogic)
+    public UserController(IUserBusinessLogic logic, IUserUploadBusinessLogic uploadLogic, IUserRolesBusinessLogic rolesLogic)
     {
-        _logger = logger;
         _logic = logic;
         _uploadLogic = uploadLogic;
         _rolesLogic = rolesLogic;
