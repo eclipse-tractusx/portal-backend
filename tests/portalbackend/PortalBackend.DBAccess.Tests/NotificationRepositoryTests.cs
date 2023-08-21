@@ -393,7 +393,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, null, null, new []
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, null, null, new[]
         {
             NotificationTypeId.WELCOME_SERVICE_PROVIDER,
             NotificationTypeId.APP_RELEASE_REQUEST
