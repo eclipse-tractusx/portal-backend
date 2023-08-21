@@ -64,7 +64,7 @@ public class NotificationControllerTest
             .ReturnsLazily(() => paginationResponse);
 
         //Act
-        var result = await this._controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting, doneState: doneState).ConfigureAwait(false);
+        var result = await this._controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting, doneState: doneState, searchTypeIds: Enumerable.Empty<NotificationTypeId>()).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<Guid>._, A<NotificationFilters>.That.Matches(x => x.IsRead == isRead && x.TypeId == typeId && x.TopicId == topicId && x.OnlyDueDate == onlyDueDate && x.Sorting == sorting && x.DoneState == doneState))).MustHaveHappenedOnceExactly();
