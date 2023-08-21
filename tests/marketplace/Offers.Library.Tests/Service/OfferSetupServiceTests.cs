@@ -130,6 +130,7 @@ public class OfferSetupServiceTests
         var appInstances = new List<AppInstance>();
         var appSubscriptionDetails = new List<AppSubscriptionDetail>();
         var notifications = new List<Notification>();
+        var roleIds = _fixture.CreateMany<Guid>().AsEnumerable();
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
             .Invokes((string clientName) =>
             {
@@ -140,7 +141,7 @@ public class OfferSetupServiceTests
         if (technicalUserRequired)
         {
             A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
-                .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) });
+                .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds) });
         }
         var serviceManagerRoles = new[]
         {
@@ -283,6 +284,51 @@ public class OfferSetupServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be($"There should only be one or none technical user profile configured for {data.RequestId}");
+    }
+
+    [Fact]
+    public async Task AutoSetup_WithNoTechnicalUsersRole_ThrowsException()
+    {
+        // Arrange
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty);
+        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
+        SetupAutoSetup(OfferTypeId.APP, offerSubscription, false, companyServiceAccount);
+        var clientId = Guid.NewGuid();
+        var appInstanceId = Guid.NewGuid();
+        var clients = new List<IamClient>();
+        A.CallTo(() => _clientRepository.CreateClient(A<string>._))
+            .Invokes((string clientName) =>
+            {
+                var client = new IamClient(clientId, clientName);
+                clients.Add(client);
+            })
+            .Returns(new IamClient(clientId, "cl1"));
+        A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
+            .Returns(new ServiceAccountCreationInfo[]
+            {
+                new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>())
+            });
+
+        A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
+            .Returns(new AppInstance(appInstanceId, _existingServiceId, clientId));
+
+        var companyAdminRoles = new[]
+        {
+            new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" })
+        };
+        var serviceManagerAdminRoles = new[]
+        {
+            new UserRoleConfig("Cl2-CX-Portal", new[] { "Service Manager" })
+        };
+
+        var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
+
+        // Act
+        //async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, (_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
+        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, (_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
+        result.Should().NotBeNull();
+        result.TechnicalUserInfo.Should().BeNull();
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>._, CompanyServiceAccountTypeId.MANAGED, false, A<Action<CompanyServiceAccount>>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -1051,12 +1097,13 @@ public class OfferSetupServiceTests
         var companyServiceAccount = _fixture.Build<CompanyServiceAccount>()
             .With(x => x.OfferSubscriptionId, (Guid?)null)
             .Create();
+        var roleIds = _fixture.CreateMany<Guid>().AsEnumerable();
         A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
             .Returns(data);
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
-            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()) });
+            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds) });
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, CompanyUserCompanyId, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == Bpn), CompanyServiceAccountTypeId.MANAGED, false, A<Action<CompanyServiceAccount>>._))
             .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
             {

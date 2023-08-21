@@ -147,7 +147,7 @@ public class OfferSetupService : IOfferSetupService
             throw new UnexpectedConditionException($"There should only be one or none technical user profile configured for {subscriptionId}");
         }
 
-        if (serviceAccountCreationInfo == null)
+        if (serviceAccountCreationInfo == null || !serviceAccountCreationInfo.UserRoleIds.Any())
         {
             return null;
         }
