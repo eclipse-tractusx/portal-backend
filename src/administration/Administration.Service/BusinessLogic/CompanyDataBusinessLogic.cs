@@ -153,7 +153,8 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                     x.DocumentId,
                     x.ConsentStatus == 0
                         ? null
-                        : x.ConsentStatus
+                        : x.ConsentStatus,
+                    x.AgreementLink
                 ))
             );
         }

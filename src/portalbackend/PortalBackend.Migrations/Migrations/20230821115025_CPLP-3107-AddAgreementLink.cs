@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -17,18 +17,31 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
+ 
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+#nullable disable
 
-public record CompanyRoleConsentViewData(
-    [property: JsonPropertyName("companyRoles")]
-    CompanyRoleId CompanyRoleId,
-    [property: JsonPropertyName("roleDescription")]
-    string? RoleDescription,
-    bool CompanyRolesActive,
-    IEnumerable<ConsentAgreementViewData> Agreements
-);
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
+{
+    public partial class CPLP3107AddAgreementLink : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<string>(
+                name: "agreement_link",
+                schema: "portal",
+                table: "agreements",
+                type: "text",
+                nullable: true);
+        }
 
-public record ConsentAgreementViewData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId? ConsentStatus, string? AgreementLink);
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "agreement_link",
+                schema: "portal",
+                table: "agreements");
+        }
+    }
+}

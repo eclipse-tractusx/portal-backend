@@ -62,6 +62,7 @@ public class Agreement : IBaseEntity
     public Guid? UseCaseId { get; set; }
 
     public Guid? DocumentId { get; set; }
+    public string? Agreement_link { get; set; }
 
     // Navigation properties
     public virtual AgreementCategory? AgreementCategory { get; set; }
