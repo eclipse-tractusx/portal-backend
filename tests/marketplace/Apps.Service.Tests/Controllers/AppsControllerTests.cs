@@ -397,4 +397,45 @@ public class AppsControllerTests
         A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
+
+    #region GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUser
+
+    [Fact]
+    public async Task GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<ActiveOfferSubscriptionStatusData>(3).ToImmutableArray().ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(A<Guid>._))
+            .Returns(data);
+
+        //Act
+        var result = await this._controller.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(3);
+    }
+
+    #endregion
+
+    #region GetOwnCompanySubscribedAppOfferSubscriptionDataForUser
+
+    [Fact]
+    public async Task GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<OfferSubscriptionData>(3).ToImmutableArray().ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(A<Guid>._))
+            .Returns(data);
+
+        //Act
+        var result = await this._controller.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(3);
+    }
+
+    #endregion
+
 }

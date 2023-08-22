@@ -180,4 +180,18 @@ public interface IAppsBusinessLogic
     /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the details of the subscription</returns>
     Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, Guid companyId);
+
+    /// <summary>
+    /// Retrieves Active subscription statuses of subscribed apps of the provided user's company.
+    /// </summary>
+    /// <param name="companyId">Id of the users company.</param>
+    /// <returns>Returns the details of the Active subscription status for App user</returns>
+    IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(Guid companyId);
+
+    /// <summary>
+    /// Retrieves Active and Pending subscription statuses of subscribed apps of the provided user's company.
+    /// </summary>
+    /// <param name="companyId">Id of the users company.</param>
+    /// <returns>Returns the details of the Active and Pending subscription status for App user</returns>
+    IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(Guid companyId);
 }
