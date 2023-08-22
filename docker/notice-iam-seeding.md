@@ -4,7 +4,7 @@ DockerHub: [https://hub.docker.com/r/tractusx/portal-iam-seeding](https://hub.do
 
 Eclipse Tractus-X product(s) installed within the image:
 
-__Portal Checklist Worker__
+__Portal IAM Seeding job__
 
 - GitHub: https://github.com/eclipse-tractusx/portal-backend
 - Project home: https://projects.eclipse.org/projects/automotive.tractusx

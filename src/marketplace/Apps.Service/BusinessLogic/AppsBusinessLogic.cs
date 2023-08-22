@@ -273,4 +273,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc />
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, Guid companyId) =>
         _offerService.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, _settings.SalesManagerRoles);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(Guid companyId) =>
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(companyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(Guid companyId) =>
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(companyId, OfferTypeId.APP);
 }

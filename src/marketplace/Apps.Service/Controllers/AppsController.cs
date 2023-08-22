@@ -405,4 +405,35 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
         this.WithCompanyId(companyId => _appsBusinessLogic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, companyId));
+
+    /// <summary>
+    /// Retrieves Active subscription statuses of apps.
+    /// </summary>
+    /// <remarks>Example: GET: /api/apps/subscribed/activesubscriptions</remarks>
+    /// <response code="200">Returns list of applicable active apps subscription statuses.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    [HttpGet]
+    [Route("subscribed/activesubscriptions")]
+    [Authorize(Roles = "view_subscription")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(ActiveOfferSubscriptionStatusData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync() =>
+        this.WithCompanyId(companyId => _appsBusinessLogic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(companyId));
+
+    /// <summary>
+    /// Retrieves subscription statuses of apps.
+    /// </summary>
+    /// <remarks>Example: GET: /api/apps/subscribed/subscriptions</remarks>
+    /// <response code="200">Returns list of applicable active apps subscription statuses.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    [HttpGet]
+    [Route("subscribed/subscriptions")]
+    [Authorize(Roles = "view_subscription")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(OfferSubscriptionData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync() =>
+        this.WithCompanyId(companyId => _appsBusinessLogic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(companyId));
+
 }

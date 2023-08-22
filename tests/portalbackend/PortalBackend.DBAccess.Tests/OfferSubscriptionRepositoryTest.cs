@@ -971,23 +971,72 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetCompanyAssignedOfferSubscriptionDataForCompanyUser
+    #region GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync
 
     [Fact]
-    public async Task GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync_ReturnsExpected()
+    public async Task GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpected()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.IsSubscribingCompany.Should().BeTrue();
-        result.IsValidSubscriptionId.Should().BeTrue();
-        result.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
-        result.ConnectorIds.Should().Contain(new Guid("bd644d9c-ca12-4488-ae38-6eb902c9bec0"));
-        result.ServiceAccounts.Should().BeEmpty();
+        result.Should().NotBeNull();
+        result.Should().HaveCount(1).And.Satisfy(
+            x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
+                x.OfferName == "Trace-X" &&
+                x.Provider == "Catena-X" &&
+                x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"));
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync_ReturnsEmpty()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid.NewGuid(), OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region GetCompanyActiveSubscribedOfferSubscriptionStatuses
+
+    [Fact]
+    public async Task GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2).And.Satisfy(
+            x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
+                x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE,
+            x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
+                x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync_ReturnsEmpty()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(Guid.NewGuid(), OfferTypeId.APP).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
     }
 
     #endregion

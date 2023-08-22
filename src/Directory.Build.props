@@ -21,6 +21,6 @@
 <Project>
   <PropertyGroup>
     <VersionPrefix>1.6.0</VersionPrefix>
-    <VersionSuffix>RC7</VersionSuffix>
+    <VersionSuffix>RC8</VersionSuffix>
   </PropertyGroup>
 </Project>
