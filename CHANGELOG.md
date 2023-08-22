@@ -2,6 +2,24 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.6.0-RC8
+
+### Change
+* Administration Service
+  * remove PUT: users/{companyUserId}/resetpassword
+* Marketplace Service:
+ * add GET: /api/apps/owncompany/activesubscriptions
+ * add GET: /api/Apps/owncompany/subscriptions
+
+### Technical Support
+* Iam Seeding
+ * change base image from aspnet to runtime
+ * change name in Docker Hub notice
+* Migration Jobs
+  * change base image from aspnet to runtime
+* All Services
+  * add missing file headers
+
 ## 1.6.0-RC7
 
 ### Change
