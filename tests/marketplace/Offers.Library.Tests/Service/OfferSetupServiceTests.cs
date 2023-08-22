@@ -286,6 +286,23 @@ public class OfferSetupServiceTests
         ex.Message.Should().Be($"There should only be one or none technical user profile configured for {data.RequestId}");
     }
 
+    [Theory]
+    [InlineData("#")]
+    [InlineData("https://test.com/#/app")]
+    [InlineData("https://test.com/#")]
+    public async Task AutoSetup_WithHasAsUrl_ThrowsException(string url)
+    {
+        // Arrange
+        var data = new OfferAutoSetupData(_pendingSubscriptionId, url);
+
+        // Act
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), (_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"OfferUrl {data.OfferUrl} must not contain #");
+    }
+
     [Fact]
     public async Task AutoSetup_WithNoTechnicalUsersRole_ThrowsException()
     {
@@ -660,6 +677,26 @@ public class OfferSetupServiceTests
     #endregion
 
     #region StartAutoSetupAsync
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, "#")]
+    [InlineData(OfferTypeId.SERVICE, "#")]
+    [InlineData(OfferTypeId.APP, "https://test.com/#/app")]
+    [InlineData(OfferTypeId.SERVICE, "https://test.com/#/app")]
+    [InlineData(OfferTypeId.APP, "https://test.com/#")]
+    [InlineData(OfferTypeId.SERVICE, "https://test.com/#")]
+    public async Task StartAutoSetupAsync_WithHasAsUrl_ThrowsException(OfferTypeId offerTypeId, string url)
+    {
+        // Arrange
+        var data = new OfferAutoSetupData(Guid.NewGuid(), url);
+
+        // Act
+        async Task Act() => await _sut.StartAutoSetupAsync(data, _identity.UserId, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"OfferUrl {data.OfferUrl} must not contain #");
+    }
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
