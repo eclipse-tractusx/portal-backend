@@ -582,35 +582,7 @@ public class OfferSetupService : IOfferSetupService
                 break;
         }
 
-        switch (offerDetails)
-        {
-            case { OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false } when string.IsNullOrEmpty(offerDetails.ClientClientId):
-                throw new ConflictException($"clientId must not be empty for offerSubscription {offerSubscriptionId}");
-            case { OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false }:
-                {
-                    try
-                    {
-                        await _provisioningManager.EnableClient(offerDetails.ClientClientId!).ConfigureAwait(false);
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        throw new ServiceException(e.Message, true);
-                    }
-                }
-        }
-
-        try
-        {
-            foreach (var serviceAccountClientId in offerDetails.ServiceAccountClientIds)
-            {
-                await _provisioningManager.EnableClient(serviceAccountClientId).ConfigureAwait(false);
-            }
-        }
-        catch (Exception e)
-        {
-            throw new ServiceException(e.Message, true);
-        }
+        await EnableClientAndServiceAccount(offerSubscriptionId, offerDetails).ConfigureAwait(false);
 
         offerSubscriptionRepository.AttachAndModifyOfferSubscription(offerSubscriptionId, subscription => { subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE; });
 
@@ -677,6 +649,40 @@ public class OfferSetupService : IOfferSetupService
             ProcessStepStatusId.DONE,
             true,
             null);
+    }
+
+    private async Task EnableClientAndServiceAccount(Guid offerSubscriptionId, SubscriptionActivationData offerDetails)
+    {
+        switch (offerDetails)
+        {
+            case {OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false}
+                when string.IsNullOrEmpty(offerDetails.ClientClientId):
+                throw new ConflictException($"clientId must not be empty for offerSubscription {offerSubscriptionId}");
+            case {OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false}:
+                {
+                    try
+                    {
+                        await _provisioningManager.EnableClient(offerDetails.ClientClientId!).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new ServiceException(e.Message, true);
+                    }
+                }
+        }
+
+        try
+        {
+            foreach (var serviceAccountClientId in offerDetails.ServiceAccountClientIds)
+            {
+                await _provisioningManager.EnableClient(serviceAccountClientId).ConfigureAwait(false);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new ServiceException(e.Message, true);
+        }
     }
 
     internal record CreateTechnicalUserData(Guid CompanyId, string? OfferName, string? Bpn, string TechnicalUserName, bool EnhanceTechnicalUserName, bool Enabled);
