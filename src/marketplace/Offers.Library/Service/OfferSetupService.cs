@@ -655,10 +655,10 @@ public class OfferSetupService : IOfferSetupService
     {
         switch (offerDetails)
         {
-            case {OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false}
+            case { OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false }
                 when string.IsNullOrEmpty(offerDetails.ClientClientId):
                 throw new ConflictException($"clientId must not be empty for offerSubscription {offerSubscriptionId}");
-            case {OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false}:
+            case { OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false }:
                 {
                     try
                     {
