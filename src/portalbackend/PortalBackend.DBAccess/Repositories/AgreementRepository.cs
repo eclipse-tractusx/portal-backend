@@ -61,6 +61,7 @@ public class AgreementRepository : IAgreementRepository
             .Select(agreement => new AgreementDocumentData(
                 agreement.Id,
                 agreement.Name,
+                agreement.AgreementLink,
                 agreement.DocumentId))
             .AsAsyncEnumerable();
 
@@ -72,6 +73,7 @@ public class AgreementRepository : IAgreementRepository
             .Select(agreement => new AgreementDocumentData(
                 agreement.Id,
                 agreement.Name,
+                agreement.AgreementLink,
                 agreement.DocumentId
             ))
             .AsAsyncEnumerable();

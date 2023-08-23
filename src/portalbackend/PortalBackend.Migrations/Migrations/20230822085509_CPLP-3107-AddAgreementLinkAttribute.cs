@@ -17,18 +17,31 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-public record CompanyRoleConsentViewData(
-    [property: JsonPropertyName("companyRoles")]
-    CompanyRoleId CompanyRoleId,
-    [property: JsonPropertyName("roleDescription")]
-    string? RoleDescription,
-    bool CompanyRolesActive,
-    IEnumerable<ConsentAgreementViewData> Agreements
-);
+#nullable disable
 
-public record ConsentAgreementViewData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId? ConsentStatus, string? AgreementLink);
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
+{
+    public partial class CPLP3107AddAgreementLinkAttribute : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<string>(
+                name: "agreement_link",
+                schema: "portal",
+                table: "agreements",
+                type: "text",
+                nullable: true);
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "agreement_link",
+                schema: "portal",
+                table: "agreements");
+        }
+    }
+}
