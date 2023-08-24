@@ -137,7 +137,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
             var mailParameters = new Dictionary<string, string>()
             {
-                { "nameCreatedBy", nameCreatedBy },
+                { "nameCreatedBy", nameCreatedBy ?? "Dear User" },
                 { "url", _settings.Portal.BasePortalAddress },
             };
 

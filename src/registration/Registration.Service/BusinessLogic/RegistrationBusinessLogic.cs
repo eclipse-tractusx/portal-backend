@@ -451,7 +451,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             { "password", password },
             { "companyName", companyDisplayName },
             { "message", userCreationInfo.Message ?? "" },
-            { "nameCreatedBy", createdByName },
+            { "nameCreatedBy", createdByName ?? "Dear User" },
             { "url", _settings.BasePortalAddress },
             { "username", userCreationInfo.eMail },
         };
