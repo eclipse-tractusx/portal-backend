@@ -42,6 +42,11 @@ This project uses and has modified the following code:
 * Licence Path: https://github.com/lvermeulen/Keycloak.Net/blob/main/LICENSE
 * Source URL: https://github.com/lvermeulen/Keycloak.Net
 
+This project uses the following image content:
+
+* Image: Catena-X Logo
+* Source URL: https://catena-x.net
+
 ## Cryptography
 
 Content may contain encryption software. The country in which you are currently
