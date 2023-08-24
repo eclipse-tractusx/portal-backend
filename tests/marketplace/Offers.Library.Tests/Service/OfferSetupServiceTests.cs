@@ -1248,6 +1248,53 @@ public class OfferSetupServiceTests
 
     #endregion
 
+    #region TriggerActivateSubscription
+
+    [Fact]
+    public async Task TriggerActivateSubscription_WithCompanyNotProvider_ThrowsNotFoundException()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var processStepId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var processStep = new ProcessStep(processStepId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
+        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, null, true))
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
+        A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityService.IdentityData.CompanyId))
+            .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.TriggerActivateSubscription(offerSubscriptionId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Company {_identityService.IdentityData.CompanyId} must be provider of the offer for offerSubscription {offerSubscriptionId}");
+    }
+
+    [Fact]
+    public async Task TriggerActivateSubscription_WithNotExistingOfferSubscription_ThrowsNotFoundException()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var processStepId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var processStep = new ProcessStep(processStepId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
+        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, null, true))
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
+        A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityService.IdentityData.CompanyId))
+            .Returns(true);
+
+        // Act
+        await _sut.TriggerActivateSubscription(offerSubscriptionId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     #region Setup
 
     private IAsyncEnumerator<Guid> SetupServices(CompanyServiceAccount? companyServiceAccount = null)

@@ -558,6 +558,13 @@ public class OfferSetupService : IOfferSetupService
     public async Task TriggerActivateSubscription(Guid offerSubscriptionId)
     {
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, null, true).ConfigureAwait(false);
+        if (!await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityService.IdentityData.CompanyId).ConfigureAwait(false))
+        {
+            throw new ConflictException(
+                $"Company {_identityService.IdentityData.CompanyId} must be provider of the offer for offerSubscription {offerSubscriptionId}");
+        }
+
         _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, 1));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

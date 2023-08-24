@@ -512,7 +512,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .ToAsyncEnumerable();
 
-    /// <inheritdoc>
+    /// <inheritdoc />
     public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
         _context.OfferSubscriptions
             .AsNoTracking()
@@ -531,7 +531,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 os.Id
             )).ToAsyncEnumerable();
 
-    /// <inheritdoc>
+    /// <inheritdoc />
     public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions
             .AsNoTracking()
@@ -542,4 +542,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 os.OfferId,
                 os.OfferSubscriptionStatusId
             )).ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<bool> CheckOfferSubscriptionForProvider(Guid offerSubscriptionId, Guid providerCompanyId) =>
+        _context.OfferSubscriptions
+            .Where(x =>
+                x.Id == offerSubscriptionId &&
+                x.Offer!.ProviderCompanyId == providerCompanyId)
+            .AnyAsync();
 }
