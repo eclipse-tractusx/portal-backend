@@ -190,7 +190,7 @@ public class UserProvisioningService : IUserProvisioningService
             throw new ConflictException($"assertion failed: companyName of company {company.CompanyId} should never be null here");
         }
 
-        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, companyUser.CompanyUserId);
+        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
 
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, identityProvider.IdpAlias, identityProvider.IsSharedIdp), createdByName);
     }
@@ -218,12 +218,12 @@ public class UserProvisioningService : IUserProvisioningService
             throw new ConflictException($"user {companyUserId} is associated with more than one shared idp");
         }
 
-        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, companyUser.CompanyUserId);
+        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
 
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAliase.First(), true), createdByName);
     }
 
-    private static string CreateNameString(string? firstName, string? lastName, string? email, Guid companyUserId)
+    private static string CreateNameString(string? firstName, string? lastName, string? email)
     {
         var sb = new StringBuilder();
         if (firstName != null)
@@ -238,7 +238,7 @@ public class UserProvisioningService : IUserProvisioningService
         {
             sb.AppendFormat((firstName == null && lastName == null) ? "{0}" : " ({0})", email);
         }
-        return firstName == null && lastName == null && email == null ? companyUserId.ToString() : sb.ToString();
+        return firstName == null && lastName == null && email == null ? "Dear User" : sb.ToString();
     }
 
     public Task<string> GetIdentityProviderDisplayName(string idpAlias) =>
