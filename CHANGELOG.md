@@ -2,183 +2,63 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 1.6.0-RC8
+## 1.6.0
 
 ### Change
-* Administration Service
-  * remove PUT: users/{companyUserId}/resetpassword
-* Marketplace Service:
- * add GET: /api/apps/owncompany/activesubscriptions
- * add GET: /api/Apps/owncompany/subscriptions
-
-### Technical Support
-* Iam Seeding
- * change base image from aspnet to runtime
- * change name in Docker Hub notice
-* Migration Jobs
-  * change base image from aspnet to runtime
-* All Services
-  * add missing file headers
-
-## 1.6.0-RC7
-
-### Change
-* All Services
-  * add an /api/info endpoint to retrieve specific api endpoints which can be used publicly for external services
-* Keycloak Seeding
-  * add seeding for keycloak realm-data from a json-file
-* Marketplace Service
-  * Removed PUT: /api/apps/appreleaseprocess/updateapp/{appId}
-* Process Worker:
-  * add error handling for BPDM Pull Process Steps
-
-### Technical Support
-* Logging
-  * removed machine name, processId, threadId from the logging message
-* TRG
-  * changed license notice for images
-  * add second license
-  * add file header to .tractusx
-
-### Bugfix
-* Administration Service
-  * fixed Get: api/administration/companydata/certificates when multiple certificates are in the database for a specific company
-  * add check for active offerSubscriptions when deleting a connector
-  * fixed api/administration/serviceaccount/owncompany/serviceaccounts
-* Company Service Accounts
-  * set identityTypeId when creating service accounts to company service account instead of company user
-  * change client_id of service accounts in seeding data
-  * add service accounts from cx-central base
-  * remove service account for daps
-* Marketplace Service
-  * fixed validation for /api/apps/AppReleaseProcess/instance-type/{appId} to only be executable for apps in state CREATED
-* Mail Templates
-  * fixed bpn display in the welcome email
 * Registration Service
-  * fixed Get: /api/registration/legalEntityAddress/{bpn}
-* Seeding
-  * TestDataEnvironments set to optional
-
-## 1.6.0-RC6
-
-### Change
-* App Service
-  * add single app subscription activation
-  * change the endpoint subscription/{offerSubscriptionId}/activate-single-instance from post to put
-
-### Technical Support
-* update of the portal_welcome_email template
-* adjust naming of the technical user which is taken for the process worker runs
-
-### Bugfix
-* Process Worker
-  * fixed the logging of the wallet creation response to save the did in the database
-* SSI
-  * change the value of SUSTAINABILITY_CREDENTIAL which is send to custodian
-* Authentication
-  * changed case sensitive check for 'Bearer xxx' to 'bearer' xxx'
-
-## 1.6.0-RC5
-
-### Change
-* Administration Service
-  * add validation to endpoint /api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId} to check if requesting user is either owner or provider
-  * enable search of clientId for GET /api/administration/serviceaccount/owncompany/serviceaccounts
-* Daps
-  * Remove Daps calls from all business logic
-
-### Technical Support
-* update of the portal_welcome_email template
-* add check whether an endpoint should only be callable for a service account user
-* add check whether an endpoint should only be callable for a company user
- 
-### Bugfix
-* Logging
-  * configure serilog for backend services
-
-### Known Knowns
-* Registration process additional invited user receives 'Welcome Email' without personal salutation due to missing first and last name
-* New service account is created with identity "Company User" inside identity table - however the user mapping to company_service_accounts is assigned correctly
-* Managed technical users (for offer customers) are not fetched in the GET /serviceAccounts call
-* Changing an app instance type (/api/apps/AppReleaseProcess/instance-type/{appId}) is not blocked as soon as the app is submitted for release
-
-## 1.6.0-RC4
-
-### Change
-* Apps Service
-  * Change the appInstanceId to iamClientId for the /{appId}/subscription/{subscriptionId}/provider endpoint
-* BPDM Service
-  * BPDM Service calls are changed to the new bpdm endpoints
-
-### Technical Support
-* reinclude http request & response messages in logging
-* lastEditorId is now set whenever a auditable entity is changed
-  
-### Bugfix
-* Apps Service
-  * Fix /api/apps/business endpoint to return correct results
-  * Fix POST /api/apps/appreleaseprocess/consent/{appId}/agreementConsents to save consents and set the correct user id
-* Services Service
-  * Fix POST /api/services/servicerelease/consent/{serviceId}/agreementConsents to save consents and set the correct user id
-* Administration Service
-  * Ignore inactive credentials when trying to create a new credential
-* AutoSetup
-  * fix an error that occurred when autoSetup was executed by a service-account caused by the the creator of a notification being linked to a companyUser instead of identities
-
-## 1.6.0-RC3
-
-### Change
-* Apps Service
-  * whenever updating the offer or a related entity the offer LastDateChanged column is updated
-* Services Service
-  * whenever updating the offer or a related entity the offer LastDateChanged column is updated
-* Application Checklist Worker
-  * enhance the logging of a successful create wallet process step
-* Administration Service
-  * GET /companydata/ownCompanyDetails enhanced the response with CompanyRoles
-
-## 1.6.0-RC2
-
-### Change
-* Administration Service
-  * GET /owncompany/serviceAccount endpoint backend logic enhanced by including managed service accounts in the response of the app/service provider. Additionally, the relation is added inside the response body with the boolean value 'isOwner'
-* Apps Service
+  * removed property/attribute countryDe from all required endpoints in registration and administration service ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Notification Service
+  * added "doneState" as filter criteria for endpoint GET /api/notification
+  * changed NotificationTopicId to nullable, to mitigate database query errors of missing links for notificationTypeId and NotificationTopicId
+* Marketplace/App Service
+  * Removed PUT: /api/apps/appreleaseprocess/updateapp/{appId}
+  * added GET: /api/apps/owncompany/activesubscriptions
+  * added GET: /api/Apps/owncompany/subscriptions
+  * added single app subscription activation
+  * change the endpoint subscription/{offerSubscriptionId}/activate-single-instance from post to put ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * change the appInstanceId to iamClientId for the /{appId}/subscription/{subscriptionId}/provider endpoint
+  * LastDateChanged apps attribute configured to get updated with updating the offer or a related entity
   * endpoint PUT /apps/{subscriptionId}/activate - endpoint changed and backend business logic got updated. In case of an already existing INACTIVE subscription a new subscription record is getting created.
-  * Add AppInstanceId to the /{appId}/subscription/{subscriptionId}/provider endpoint
-* Application Checklist Worker
-  * enhanced error handling and stored error messages to better human readable information
-  * retrigger of an process step deleted the earlier stored error comment inside application_checklist.comments
-* SSI - enable Verified Credential request workflows for useCaseParticipant and company roles by certificates
-  * added 'CompanyName' property inside the GET /credentials endpoint
-
-## 1.6.0-RC1
-
-### Change
-* Apps Service
+  * added AppInstanceId to the /{appId}/subscription/{subscriptionId}/provider endpoint
   * added app tenant url inside the response body of endpoint GET apps/{appId}/subscription/{subscriptionId}/provider
   * enhanced business logic of PUT: /api/apps/appreleaseprocess/{appId}/technical-user-profiles to remove technical user profiles where no roles are submitted
   * enhanced business logic of PUT: /api/apps/appreleaseprocess/{appId}/technical-user-profiles to not allow the creation of an profile without any assigned permission
   * backend business logic updated - ignore empty technical user profiles inside the response body of following endpoints
     * GET: /api/apps/{appId}/subscription/{subscriptionId}/subscriber
     * GET: /api/apps/{appId}
+* Administration Service
+  * removed PUT /users/{companyUserId}/resetpassword
+  * removed POST /api/administration/Connectors/daps
+  * removed POST /api/administration/Connectors/managed-daps
+  * added validation to endpoint /api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId} to check if requesting user is either owner or provider
+  * enabled search of clientId for GET /api/administration/serviceaccount/owncompany/serviceaccounts
+  * enhanced response body of endpoint GET /companydata/ownCompanyDetails by CompanyRoles
+  * enhanced endpoint backend logic of endpoint GET /owncompany/serviceAccount by including managed service accounts in the response of the app/service provider. Additionally, the relation is added inside the response body with the boolean value 'isOwner'
+* BPDM Interface(s) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * BPDM Service calls are changed to the new bpdm partner endpoints (registration search, checklist worker push & pull)
 * Services Service
+  * LastDateChanged service attribute configured to get updated with updating the offer or a related entity
   * backend business logic updated - ignore empty technical user profiles inside the response body of following endpoints
     * GET: /api/services/{serviceId}
     * GET: /api/services/{serviceId}/subscription/{subscriptionId}/subscribe
-* Notification Service
-  * added "doneState" as filter criteria for endpoint GET /api/notification
-  * changed NotificationTopicId to nullable, to mitigate database query errors of missing links for notificationTypeId and NotificationTopicId
-* Registration Service
-  * removed property/attribute countryDe from all required endpoints in registration and administration service
-  
+* Application Checklist Worker
+  * enhanced the logging of a successful create wallet process step
+  * enhanced error handling and stored error messages to better human readable information
+  * retrigger of an process step deleted the earlier stored error comment inside application_checklist.comments
+* All Services
+  * added an /api/info endpoint to retrieve specific api endpoints which can be used publicly for external services
+* Email Templates
+  * added "bpn" value inside the portal_welcome email
+  * refactored email templates by removing redundant code and added additional structure for better readability and maintainability
+
 ### Feature
 * Auditing
   * added audit table for ProviderCompanyDetails (for insert ,update and delete operation)
 * SSI - enable Verified Credential request workflows for useCaseParticipant and company roles by certificates
-  * add use case description table
-  * add datamodel for the use case participation
-  * add endpoint to get the UseCaseParticipations for the own company
-  * add auditing for company ssi details
+  * added use case description table
+  * added datamodel for the use case participation
+  * added endpoint to get the UseCaseParticipations for the own company
+  * added auditing for company ssi details
   * new email templates added: 'verified_credential_approved' and 'verified_credential_declined'
   * released endpoints to submit usecaseparticipation and ssi certificates for review
   * released endpoint to fetch all "in_review" ssi vc requests
@@ -193,42 +73,78 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * enhanced validations to ensure that minimum one role need to be assigned
 * View CompanyLinkedServiceAccountsView released to easily access/view service account owner/provider
 * Managed Connector subscription connection (administration service)
-  * change request /api/administration/connectors/managed-daps to take a subscriptionId instead of the providerBpn
   * new mapping table to link connectors with offer subscriptions
   * added database view to see all offer subscription related links
-  * add /api/administration/connectors/offerSubscriptions to get all offerSubscriptions for the connector view
+  * added /api/administration/connectors/offerSubscriptions to get all offerSubscriptions for the connector view
 * Added /api/administration/staticdata/operator-bpn endpoint to receive the operator bpn
 
 ### Technical Support
+* Seeding
+  * IAM - change base image from aspnet to runtime
+  * IAM - change name in Docker Hub notice
+  * enabled configurable path of the seeding data
+  * added validation on application startup for the seeder settings
+  * added seeding for keycloak realm-data from a json-file
+* Migration Jobs
+  * change base image from aspnet to runtime
+* All Services
+  * added missing file headers
+* Logging
+  * removed machine name, processId, threadId from the logging message
+  * re-include http request & response messages in logging
+  * introduced structured logging - integration of Serilog logging across all services
+  * configure serilog for backend services
+  * fixed the logging configuration where the logger had to be instantiated multiple times
+* TRG
+  * changed license notice for images
+  * added file header to .tractusx
+* adjusted naming of the technical user used for the process worker runs
+* added check whether an endpoint should only be callable for a service account user
+* added check whether an endpoint should only be callable for a company user
+* lastEditorId configured to get set whenever an auditable entity is changed
 * introduce 'identity' table to align 'company_users' and 'company_service_account'
   * moved UserEntityId from IamUser and IamServiceAccount into the new created table 'identity'
-  * removed 'iam_users' Table
+  * removed 'iam_users' table
   * moved client_id and client_client_id into 'company_service_account' table
   * removed 'iam_service_accounts'
   * added migration to support lossless migration of the data
-* Multi language handling for language table enabled
+* multi language handling for language table enabled
   * introduced new table 'language_long_names'
   * moved language_long_names from 'languages' to 'language_long_names'
   * endpoint /api/administration/staticdata/languagetags backend logic updated to fetch data from the new added table
-* introduced structured logging - integration of Serilog logging across all services
 * introduced GitHub workflow to enable 3rd party dependencies check with the Eclipse Dash License Tool
 * changed dependencies file to '-summary' format from Dash Tool
 * added legal information to distribution / include NOTICE.md, LICENSE and DEPENDENCIES file in output
 * added copy of module Framework.Models and Framework.Linq to dockerfile of Module Portal.Migrations
-* Seeding Data
-  * enabled configurable path of the seeding data
-  * added validation on application startup for the seeder settings
-* Several swagger documentation updates (summary, description, endpoint example)
-* Remove obsolete connector endpoints
-* Change routing of the existing connector creation endpoints - daps deleted
-* Refactored email templates by removing redundant code and added additional structure for better readability and maintainability
-* fixed the logging configuration where the logger had to be instantiated multiple times
+* several swagger documentation updates (summary, description, endpoint example)
 * removed the health-check paths from request logging
-  
+
 ### Bugfix
-* Password email template updated to ensure that password field includes no spaces generated by the template
+* Administration Service
+  * added check for active offerSubscriptions when deleting a connector
+* Company Service Accounts
+  * set identityTypeId when creating service accounts to company service account instead of company user
+  * change client_id of service accounts in seeding data
+  * added service accounts from cx-central base
+* Marketplace/Apps Service
+  * fixed validation for /api/apps/AppReleaseProcess/instance-type/{appId} to only be executable for apps in state CREATED
+  * Fix POST /api/apps/appreleaseprocess/consent/{appId}/agreementConsents to save consents and set the correct user id
+* Process Worker
+  * fixed the logging of the wallet creation response to save the did in the database
+* Authentication
+  * changed case sensitive check for 'Bearer xxx' to 'bearer' xxx'
+* Services Service
+  * Fix POST /api/services/servicerelease/consent/{serviceId}/agreementConsents to save consents and set the correct user id
+* Email Template Password email updated to ensure that password field includes no spaces generated by the template
 * Notification endpoint PUT /api/Notification/{notificationId}/read logic fixed to update the read flag true/false
-* Change the Type field of the SD-Factory call from legal person to legal participant
+* Change the Type field of the SD-Factory call from "legalperson" to "legalparticipant"
+
+### Known Knowns
+* Registration process: additionally invited user receives 'Welcome Email' without personal salutation due to missing first and last name
+* Changing an app instance type (/api/apps/AppReleaseProcess/instance-type/{appId}) is not blocked as soon as the app is submitted for release
+* Missing validation for app subscription activation endpoint /api/Apps/start-autoSetup & /api/Apps/autoSetup for special character "#"
+* PUT endpoint /api/services/servicechanges/{serviceId}/deactivateService contains a typo which leads to nginx error
+* App Subscription Request endpoint is sending the subscription request email to the stored contact email instead of informing the app manager(s) and sales manager(s)
 
 ## 1.5.1
 
