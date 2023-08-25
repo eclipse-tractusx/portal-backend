@@ -869,6 +869,7 @@ public class OfferService : IOfferService
                             item.OfferName,
                             item.Provider,
                             item.OfferSubscriptionStatusId,
+                            item.OfferSubscriptionId,
                             item.DocumentId == Guid.Empty ? null : item.DocumentId)));
         }
         return await Pagination.CreateResponseAsync(page, size, 15, GetCompanySubscribedOfferSubscriptionStatusesData).ConfigureAwait(false);
