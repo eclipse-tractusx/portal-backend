@@ -765,9 +765,9 @@ public class OfferService : IOfferService
             throw new ForbiddenException($"Company {companyId} is not the providing company");
         }
 
-        if (offerProfileData.ServiceTypeIds?.All(x => x == ServiceTypeId.CONSULTANCE_SERVICE) ?? false)
+        if (offerProfileData.ServiceTypeIds?.All(x => x == ServiceTypeId.CONSULTANCY_SERVICE) ?? false)
         {
-            throw new ConflictException("Technical User Profiles can't be set for CONSULTANCE_SERVICE");
+            throw new ConflictException("Technical User Profiles can't be set for CONSULTANCY_SERVICE");
         }
 
         var notExistingRoles = data.SelectMany(ur => ur.UserRoleIds).Except(roles);
