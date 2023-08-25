@@ -1129,16 +1129,8 @@ public class OfferSetupServiceTests
 
     #region ActivateSubscription
 
-    [Theory]
-    [InlineData(null, true, OfferTypeId.APP)]
-    [InlineData(null, false, OfferTypeId.APP)]
-    [InlineData("test@email.com", true, OfferTypeId.APP)]
-    [InlineData("test@email.com", false, OfferTypeId.APP)]
-    [InlineData(null, true, OfferTypeId.SERVICE)]
-    [InlineData(null, false, OfferTypeId.SERVICE)]
-    [InlineData("test@email.com", true, OfferTypeId.SERVICE)]
-    [InlineData("test@email.com", false, OfferTypeId.SERVICE)]
-    public async Task ActivateSubscription_WithValidData_ReturnsExpected(string? requesterEmail, bool isSingleInstance, OfferTypeId offerTypeId)
+    [Fact]
+    public async Task ActivateSubscription_WithValidData_ReturnsExpected()
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
