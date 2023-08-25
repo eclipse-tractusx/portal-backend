@@ -368,7 +368,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
-        sut.RemoveServiceAssignedServiceTypes(new[] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE) });
+        sut.RemoveServiceAssignedServiceTypes(new[] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCY_SERVICE) });
 
         // Assert
         var changeTracker = dbContext.ChangeTracker;
@@ -412,7 +412,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Theory]
-    [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 1, 1)]
+    [InlineData(ServiceTypeId.CONSULTANCY_SERVICE, 0, 2, 1, 1)]
     [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 2, 2)]
     [InlineData(null, 0, 2, 4, 2)]
     [InlineData(null, 1, 1, 4, 1)]

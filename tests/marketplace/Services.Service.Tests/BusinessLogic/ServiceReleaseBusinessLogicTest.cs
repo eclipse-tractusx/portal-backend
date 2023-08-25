@@ -199,7 +199,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         var data = _fixture.Build<ServiceTypeData>()
                             .With(x => x.ServiceTypeId, 1)
-                            .With(x => x.Name, ServiceTypeId.CONSULTANCE_SERVICE.ToString())
+                            .With(x => x.Name, ServiceTypeId.CONSULTANCY_SERVICE.ToString())
                             .CreateMany()
                             .ToAsyncEnumerable();
 
@@ -215,7 +215,7 @@ public class ServiceReleaseBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         result.Should().BeOfType<List<ServiceTypeData>>();
         result.FirstOrDefault()!.ServiceTypeId.Should().Be(1);
-        result.FirstOrDefault()!.Name.Should().Be(ServiceTypeId.CONSULTANCE_SERVICE.ToString());
+        result.FirstOrDefault()!.Name.Should().Be(ServiceTypeId.CONSULTANCY_SERVICE.ToString());
     }
 
     [Fact]
@@ -249,7 +249,7 @@ public class ServiceReleaseBusinessLogicTest
             .With(x => x.Title, "test title")
             .With(x => x.ContactEmail, "info@test.de")
             .With(x => x.UseCase, (IEnumerable<AppUseCaseData>?)null)
-            .With(x => x.ServiceTypeIds, new[] { ServiceTypeId.DATASPACE_SERVICE, ServiceTypeId.CONSULTANCE_SERVICE })
+            .With(x => x.ServiceTypeIds, new[] { ServiceTypeId.DATASPACE_SERVICE, ServiceTypeId.CONSULTANCY_SERVICE })
             .Create();
 
         A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, _identity.CompanyId, OfferTypeId.SERVICE))
@@ -444,7 +444,7 @@ public class ServiceReleaseBusinessLogicTest
             },
             new List<ServiceTypeId>
             {
-                ServiceTypeId.CONSULTANCE_SERVICE
+                ServiceTypeId.CONSULTANCY_SERVICE
             },
             "43",
             "test@email.com",

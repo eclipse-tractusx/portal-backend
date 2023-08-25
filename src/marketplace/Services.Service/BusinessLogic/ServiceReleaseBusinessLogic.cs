@@ -214,7 +214,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             newServiceTypes,
             serviceTypeIdsToRemove,
             offerRepository);
-        if (data.ServiceTypeIds.All(x => x == ServiceTypeId.CONSULTANCE_SERVICE))
+        if (data.ServiceTypeIds.All(x => x == ServiceTypeId.CONSULTANCY_SERVICE))
         {
             _portalRepositories.GetInstance<ITechnicalUserProfileRepository>()
                 .RemoveTechnicalUserProfilesForOffer(serviceId);

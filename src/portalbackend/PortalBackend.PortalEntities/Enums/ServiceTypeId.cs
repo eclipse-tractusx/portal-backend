@@ -23,5 +23,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 public enum ServiceTypeId
 {
     DATASPACE_SERVICE = 1,
-    CONSULTANCE_SERVICE = 2
+    CONSULTANCY_SERVICE = 2
 }

@@ -1970,7 +1970,7 @@ public class OfferServiceTests
             }),
         };
         A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _identity.CompanyId))
-            .Returns(new OfferProfileData(true, new[] { ServiceTypeId.CONSULTANCE_SERVICE }, Enumerable.Empty<(Guid TechnicalUserProfileId, IEnumerable<Guid> UserRoleIds)>()));
+            .Returns(new OfferProfileData(true, new[] { ServiceTypeId.CONSULTANCY_SERVICE }, Enumerable.Empty<(Guid TechnicalUserProfileId, IEnumerable<Guid> UserRoleIds)>()));
         A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
@@ -1979,7 +1979,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Technical User Profiles can't be set for CONSULTANCE_SERVICE");
+        ex.Message.Should().Be("Technical User Profiles can't be set for CONSULTANCY_SERVICE");
     }
 
     [Theory]
