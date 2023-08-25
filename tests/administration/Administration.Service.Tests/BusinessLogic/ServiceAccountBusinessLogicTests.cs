@@ -45,6 +45,7 @@ public class ServiceAccountBusinessLogicTests
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
     private static readonly Guid ValidConnectorId = Guid.NewGuid();
     private static readonly Guid ValidServiceAccountId = Guid.NewGuid();
+    private static readonly Guid ValidOfferSubscriptionId = Guid.NewGuid();
     private static readonly Guid InactiveServiceAccount = Guid.NewGuid();
     private static readonly string ValidAdminId = Guid.NewGuid().ToString();
     private readonly IdentityData _identity = new(ValidAdminId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, ValidCompanyId);
@@ -408,6 +409,22 @@ public class ServiceAccountBusinessLogicTests
     }
 
     [Fact]
+    public async Task DeleteOwnCompanyServiceAccountAsync_WithExistingOfferSubscriptiom_ThrowsNotFoundException()
+    {
+        // Arrange
+        SetupDeleteOwnCompanyServiceAccountForValidOfferSubscription();
+
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
+
+        // Act
+        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Technical User is linked to an active subscription. Deactivate the subscription to delete the technical user.");
+    }
+
+    [Fact]
     public async Task DeleteOwnCompanyServiceAccountAsync_WithInvalidConnectorStatus_ThrowsConflictException()
     {
         // Arrange
@@ -566,9 +583,9 @@ public class ServiceAccountBusinessLogicTests
     private void SetupDeleteOwnCompanyServiceAccount(bool withServiceAccount, bool withClient, Connector? connector = null, Identity? identity = null)
     {
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, _identity.CompanyId))
-            .Returns((_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, statusId: ConnectorStatusId.INACTIVE));
+            .Returns((_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, statusId: ConnectorStatusId.INACTIVE, OfferSubscriptionId: null));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
-            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?))default);
+            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, Guid?))default);
 
         if (identity != null)
         {
@@ -598,9 +615,20 @@ public class ServiceAccountBusinessLogicTests
     private void SetupDeleteOwnCompanyServiceAccountForInvalidConnectorStatus()
     {
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, _identity.CompanyId))
-            .Returns((_userRoleIds, null, null, statusId: ConnectorStatusId.ACTIVE));
+            .Returns((_userRoleIds, null, null, statusId: ConnectorStatusId.ACTIVE, null));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
-            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?))default);
+            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, Guid?))default);
+
+        A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+    }
+
+    private void SetupDeleteOwnCompanyServiceAccountForValidOfferSubscription()
+    {
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, _identity.CompanyId))
+            .Returns((_userRoleIds, null, null, statusId: ConnectorStatusId.INACTIVE, ValidOfferSubscriptionId));
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
+            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, Guid?))default);
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);

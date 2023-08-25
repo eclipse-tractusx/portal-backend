@@ -97,17 +97,18 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             userRole.UserRoleText))))
             .SingleOrDefaultAsync();
 
-    public Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientId, ConnectorStatusId? statusId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId) =>
+    public Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientId, ConnectorStatusId? statusId, Guid? OfferSubscriptionId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId) =>
         _dbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
                 serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
                 (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
-            .Select(sa => new ValueTuple<IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?>(
+            .Select(sa => new ValueTuple<IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, Guid?>(
                 sa.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
                 sa.Connector!.Id,
                 sa.ClientId,
-                sa.Connector!.StatusId))
+                sa.Connector!.StatusId,
+                sa.OfferSubscriptionId))
             .SingleOrDefaultAsync();
 
     public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId) =>
