@@ -108,7 +108,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
         if (result.OfferSubscriptionId != default)
         {
-             throw new ConflictException($"Technical User is linked to an active subscription. Deactivate the subscription to delete the technical user.");
+            throw new ConflictException($"Technical User is linked to an active subscription. Deactivate the subscription to delete the technical user.");
         }
         _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
         {
