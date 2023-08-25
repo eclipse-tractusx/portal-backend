@@ -1142,14 +1142,10 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
-        var clientClientId = (isSingleInstance && offerTypeId == OfferTypeId.APP) || offerTypeId == OfferTypeId.SERVICE ? null : "cl1";
-        var serviceAccountClientIds = (isSingleInstance && offerTypeId == OfferTypeId.APP) || offerTypeId == OfferTypeId.SERVICE
-            ? Enumerable.Empty<string>()
-            : Enumerable.Repeat("sa1", 1);
         var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, Guid.NewGuid(), DateTimeOffset.Now);
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _identity.CompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _identity.CompanyId, clientClientId, serviceAccountClientIds));
+        A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscription.Id, _identity.CompanyId))
+            .Returns(true);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
