@@ -318,6 +318,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     os.Offer!.Name,
                     os.Offer.Provider,
                     os.OfferSubscriptionStatusId,
+                    os.Id,
                     os.Offer.Documents
                         .Where(document =>
                             document.DocumentTypeId == documentTypeId &&

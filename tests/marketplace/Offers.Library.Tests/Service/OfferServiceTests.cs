@@ -2415,11 +2415,11 @@ public class OfferServiceTests
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
         result.Content.Should().HaveCount(5).And.Satisfy(
-            x => x.OfferId == data[0].OfferId && x.OfferName == data[0].OfferName && x.Provider == data[0].Provider && x.OfferSubscriptionStatusId == data[0].OfferSubscriptionStatusId && x.DocumentId == data[0].DocumentId,
-            x => x.OfferId == data[1].OfferId && x.OfferName == data[1].OfferName && x.Provider == data[1].Provider && x.OfferSubscriptionStatusId == data[1].OfferSubscriptionStatusId && x.DocumentId == data[1].DocumentId,
-            x => x.OfferId == data[2].OfferId && x.OfferName == data[2].OfferName && x.Provider == data[2].Provider && x.OfferSubscriptionStatusId == data[2].OfferSubscriptionStatusId && x.DocumentId == data[2].DocumentId,
-            x => x.OfferId == data[3].OfferId && x.OfferName == data[3].OfferName && x.Provider == data[3].Provider && x.OfferSubscriptionStatusId == data[3].OfferSubscriptionStatusId && x.DocumentId == data[3].DocumentId,
-            x => x.OfferId == data[4].OfferId && x.OfferName == data[4].OfferName && x.Provider == data[4].Provider && x.OfferSubscriptionStatusId == data[4].OfferSubscriptionStatusId && x.DocumentId == data[4].DocumentId
+            x => x.OfferId == data[0].OfferId && x.OfferName == data[0].OfferName && x.Provider == data[0].Provider && x.OfferSubscriptionStatusId == data[0].OfferSubscriptionStatusId && x.OfferSubscriptionId == data[0].OfferSubscriptionId && x.DocumentId == data[0].DocumentId,
+            x => x.OfferId == data[1].OfferId && x.OfferName == data[1].OfferName && x.Provider == data[1].Provider && x.OfferSubscriptionStatusId == data[1].OfferSubscriptionStatusId && x.OfferSubscriptionId == data[1].OfferSubscriptionId && x.DocumentId == data[1].DocumentId,
+            x => x.OfferId == data[2].OfferId && x.OfferName == data[2].OfferName && x.Provider == data[2].Provider && x.OfferSubscriptionStatusId == data[2].OfferSubscriptionStatusId && x.OfferSubscriptionId == data[2].OfferSubscriptionId && x.DocumentId == data[2].DocumentId,
+            x => x.OfferId == data[3].OfferId && x.OfferName == data[3].OfferName && x.Provider == data[3].Provider && x.OfferSubscriptionStatusId == data[3].OfferSubscriptionStatusId && x.OfferSubscriptionId == data[3].OfferSubscriptionId && x.DocumentId == data[3].DocumentId,
+            x => x.OfferId == data[4].OfferId && x.OfferName == data[4].OfferName && x.Provider == data[4].Provider && x.OfferSubscriptionStatusId == data[4].OfferSubscriptionStatusId && x.OfferSubscriptionId == data[4].OfferSubscriptionId && x.DocumentId == data[4].DocumentId
         );
         A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(_identity.CompanyId, offerTypeId, documentTypeId))
             .MustHaveHappenedOnceExactly();
