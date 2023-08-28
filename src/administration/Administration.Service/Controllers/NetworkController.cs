@@ -21,41 +21,34 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
-/// <summary>
-/// Creates a new instance of <see cref="PartnerNetworkController"/>
-/// </summary>
 [ApiController]
-[Route("api/administration/[controller]")]
+[Route("api/administration/registration/[controller]")]
 [Produces("application/json")]
 [Consumes("application/json")]
-public class PartnerNetworkController : ControllerBase
+public class NetworkController : ControllerBase
 {
-    private readonly IPartnerNetworkBusinessLogic _logic;
+    private readonly INetworkBusinessLogic _logic;
 
     /// <summary>
-    /// Creates a new instance of <see cref="PartnerNetworkController"/>
+    /// Creates a new instance of <see cref="NetworkController"/>
     /// </summary>
-    /// <param name="logic">The partner network business logic</param>
-    public PartnerNetworkController(IPartnerNetworkBusinessLogic logic)
+    /// <param name="logic">The business logic for the registration</param>
+    public NetworkController(INetworkBusinessLogic logic)
     {
         _logic = logic;
     }
 
-    /// <summary> Get all member companies</summary>
-    /// <returns>Returns all the active member companies bpn.</returns>
-    /// <remarks>Example: GET: api/administration/partnernetwork/memberCompanies</remarks>
-    /// <response code="200">Returns all the active member companies bpn.</response>
-
-    [HttpGet]
-    [Authorize(Roles = "view_membership")]
-    [Route("memberCompanies")]
+    [HttpPost]
+    [Authorize(Roles = "tbd")]
+    [Route("partnerRegistration")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [PublicUrl(CompanyRoleId.ACTIVE_PARTICIPANT, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]
-    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
-        _logic.GetAllMemberCompaniesBPNAsync();
+    public async Task<OkResult> PartnerRegister([FromBody] PartnerRegistrationData data)
+    {
+        await _logic.HandlePartnerRegistration(data).ConfigureAwait(false);
+        return this.Ok();
+    }
 }

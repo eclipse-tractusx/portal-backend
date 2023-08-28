@@ -42,13 +42,16 @@ public class CompanyRepository : ICompanyRepository
     }
 
     /// <inheritdoc/>
-    public Company CreateCompany(string companyName) =>
-        _context.Companies.Add(
-            new Company(
-                Guid.NewGuid(),
-                companyName,
-                CompanyStatusId.PENDING,
-                DateTimeOffset.UtcNow)).Entity;
+    Company ICompanyRepository.CreateCompany(string companyName, Action<Company>? setOptionalParameters)
+    {
+        var company = new Company(
+            Guid.NewGuid(),
+            companyName,
+            CompanyStatusId.PENDING,
+            DateTimeOffset.UtcNow);
+        setOptionalParameters?.Invoke(company);
+        return _context.Companies.Add(company).Entity;
+    }
 
     public void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify)
     {

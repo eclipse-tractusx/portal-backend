@@ -56,7 +56,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
 
     public CompanyApplicationTypeId CompanyApplicationTypeId { get; private set; }
 
-    public Guid? OnboardingServiceProviderId { get; private set; }
+    public Guid? OnboardingServiceProviderId { get; set; }
 
     [LastEditorV1]
     public Guid? LastEditorId { get; private set; }

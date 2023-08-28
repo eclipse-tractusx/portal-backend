@@ -36,14 +36,17 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext = portalDbContext;
     }
 
-    public CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId) =>
-        _dbContext.CompanyApplications.Add(
-            new CompanyApplication(
-                Guid.NewGuid(),
-                companyId,
-                companyApplicationStatusId,
-                applicationTypeId,
-                DateTimeOffset.UtcNow)).Entity;
+    public CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields)
+    {
+        var companyApplication = new CompanyApplication(
+            Guid.NewGuid(),
+            companyId,
+            companyApplicationStatusId,
+            applicationTypeId,
+            DateTimeOffset.UtcNow);
+        setOptionalFields?.Invoke(companyApplication);
+        return _dbContext.CompanyApplications.Add(companyApplication).Entity;
+    }
 
     public void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters)
     {
