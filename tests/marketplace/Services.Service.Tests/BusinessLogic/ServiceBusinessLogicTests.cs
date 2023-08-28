@@ -152,13 +152,13 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<ValueTuple<Guid, Guid>>._, A<OfferTypeId>._, A<string>._))
+        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<ValueTuple<Guid, Guid>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(offerSubscriptionId);
         var serviceSettings = new ServiceSettings
         {
-            ServiceManagerRoles = new[]
+            SubscriptionManagerRoles = new[]
             {
-                new UserRoleConfig("portal", new [] { "ServiceManager" })
+                new UserRoleConfig("portal", new [] { "Service Manager", "Sales Manager" })
             },
             BasePortalAddress = "https://base-portal-address-test.de"
         };
@@ -174,7 +174,8 @@ public class ServiceBusinessLogicTests
             A<IEnumerable<OfferAgreementConsentData>>._,
             A<ValueTuple<Guid, Guid>>._,
             A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE),
-            A<string>._))
+            A<string>._,
+            A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -651,9 +652,9 @@ public class ServiceBusinessLogicTests
             .Returns((ServiceDetailData?)null);
 
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
-            .Returns(new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com", false));
+            .Returns(new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com", false, Guid.NewGuid()));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
-            .Returns(new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com", false));
+            .Returns(new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com", false, Guid.NewGuid()));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId || x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
             .Returns((OfferProviderDetailsData?)null);
 

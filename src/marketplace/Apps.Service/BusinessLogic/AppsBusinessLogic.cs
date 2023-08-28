@@ -178,7 +178,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
     /// <inheritdoc/>
     public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, identity, OfferTypeId.APP, _settings.BasePortalAddress);
+        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, identity, OfferTypeId.APP, _settings.BasePortalAddress, _settings.SubscriptionManagerRoles);
 
     /// <inheritdoc/>
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid subscriptionId, (Guid UserId, Guid CompanyId) identity)

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -49,10 +50,16 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients)
     {
         var companyInformation = await ValidateCompanyInformationAsync(identity.CompanyId).ConfigureAwait(false);
         var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
+
+        if (offerProviderDetails.ProviderCompanyId == null)
+        {
+            throw new ConflictException($"{offerTypeId} providing company is not set");
+        }
+
         await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(false);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
@@ -64,16 +71,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail))
-            return offerSubscription.Id;
-
-        var mailParams = new Dictionary<string, string>
-        {
-            { "offerProviderName", offerProviderDetails.ProviderName},
-            { "offerName", offerProviderDetails.OfferName! },
-            { "url", basePortalAddress },
-        };
-        await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        await SendMail(notificationRecipients, offerProviderDetails.OfferName!, basePortalAddress, offerProviderDetails.ProviderCompanyId.Value);
         return offerSubscription.Id;
     }
 
@@ -174,4 +172,33 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             OfferSubscriptionStatusId.PENDING => _offerSubcriptionStatusIdFilterPending,
             _ => _offerSubcriptionStatusIdFilterDefault
         };
+    private async Task SendMail(IEnumerable<UserRoleConfig> receiverRoles, string offerName, string basePortalAddress, Guid companyId)
+    {
+        var receiverUserRoles = receiverRoles;
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var roleData = await userRolesRepository
+            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
+        {
+            throw new ConfigurationException(
+                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
+        }
+
+        var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
+        await foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
+        {
+            var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+
+            var mailParams = new Dictionary<string, string>
+            {
+                { "offerName", offerName },
+                { "offerProviderName", !string.IsNullOrWhiteSpace(userName) ? userName : "User"},
+                { "url", basePortalAddress }
+            };
+            await _mailingService.SendMails(receiver, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        }
+    }
 }

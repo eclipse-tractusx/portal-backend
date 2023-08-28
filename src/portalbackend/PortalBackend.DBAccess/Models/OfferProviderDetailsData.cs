@@ -35,5 +35,6 @@ public record OfferProviderDetailsData(
     string? ProviderContactEmail,
     Guid? SalesManagerId,
     string? AutoSetupUrl,
-    bool IsSingleInstance
+    bool IsSingleInstance,
+    Guid? ProviderCompanyId
 );
