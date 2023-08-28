@@ -164,4 +164,6 @@ public interface ICompanyRepository
     /// </summary>
     /// <returns>Async enumerable of bpns</returns>
     IAsyncEnumerable<OperatorBpnData> GetOperatorBpns();
+
+    Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndIdentityTypeIdAsync(Guid companyId, IdentityProviderTypeId typeId);
 }

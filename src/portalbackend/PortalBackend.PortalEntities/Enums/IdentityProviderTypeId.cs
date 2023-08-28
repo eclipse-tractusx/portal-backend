@@ -20,11 +20,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum CompanyRoleId : int
+public enum IdentityProviderTypeId
 {
-    ACTIVE_PARTICIPANT = 1,
-    APP_PROVIDER = 2,
-    SERVICE_PROVIDER = 3,
-    OPERATOR = 4,
-    ONBOARDING_SERVICE_PROVIDER = 5
+    OWN = 1,
+    MANAGED = 2
 }

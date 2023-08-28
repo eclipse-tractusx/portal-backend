@@ -18,13 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public enum CompanyRoleId : int
+public class OnboardingServiceProviderDetail
 {
-    ACTIVE_PARTICIPANT = 1,
-    APP_PROVIDER = 2,
-    SERVICE_PROVIDER = 3,
-    OPERATOR = 4,
-    ONBOARDING_SERVICE_PROVIDER = 5
+    public OnboardingServiceProviderDetail()
+    {
+        CallbackUrl = null!;
+    }
+
+    public OnboardingServiceProviderDetail(Guid companyId, string callbackUrl)
+        : this()
+    {
+        CompanyId = companyId;
+        CallbackUrl = callbackUrl;
+    }
+    
+    public Guid CompanyId { get; set; }
+    
+    public string CallbackUrl { get; set; }
+
+    public virtual Company? Company { get; private set; }
 }

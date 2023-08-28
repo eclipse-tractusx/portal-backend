@@ -41,11 +41,13 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     }
 
     /// <inheritdoc/>
-    public IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory) =>
+    public IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid ownerId) =>
         _context.IdentityProviders
             .Add(new IdentityProvider(
             Guid.NewGuid(),
             identityProviderCategory,
+            identityProviderTypeId,
+            ownerId,
             DateTimeOffset.UtcNow)).Entity;
 
     public CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
@@ -56,11 +58,11 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             )).Entity;
 
     /// <inheritdoc/>
-    public IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias) =>
+    public IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias) =>
         _context.IamIdentityProviders.Add(
             new IamIdentityProvider(
                 idpAlias,
-                identityProvider.Id)).Entity;
+                identityProviderId)).Entity;
 
     public Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId) =>
         _context.IdentityProviders

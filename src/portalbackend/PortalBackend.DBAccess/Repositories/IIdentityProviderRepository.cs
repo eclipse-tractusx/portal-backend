@@ -28,8 +28,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IIdentityProviderRepository
 {
-    IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory);
-    IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
+    IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid ownerId);
+    IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias);
     CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
     Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId);
     Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, Guid userCompanyId);

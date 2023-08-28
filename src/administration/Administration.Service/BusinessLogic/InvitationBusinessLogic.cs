@@ -83,12 +83,12 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_SHARED);
+        var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_SHARED, IdentityProviderTypeId.OWN, company.Id);
         identityProvider.Companies.Add(company);
-        identityProviderRepository.CreateIamIdentityProvider(identityProvider, idpName);
+        identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, idpName);
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED);
+        var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 

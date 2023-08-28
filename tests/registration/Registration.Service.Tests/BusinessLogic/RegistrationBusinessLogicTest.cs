@@ -1581,7 +1581,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters) =>
             {
-                var companyApplication = new CompanyApplication(companyApplicationId, Guid.Empty, default!, default!);
+                var companyApplication = new CompanyApplication(companyApplicationId, Guid.Empty, default!, default!, default!);
                 setOptionalParameters.Invoke(companyApplication);
             });
         A.CallTo(() => _companyRolesRepository.RemoveCompanyAssignedRoles(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._))
@@ -1696,7 +1696,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid applicationId, Action<CompanyApplication> setOptionalParameters) =>
             {
-                application = new CompanyApplication(applicationId, Guid.Empty, default, default);
+                application = new CompanyApplication(applicationId, Guid.Empty, default, default, default);
                 setOptionalParameters(application);
             });
 

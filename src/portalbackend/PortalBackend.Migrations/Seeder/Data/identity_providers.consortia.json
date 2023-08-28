@@ -2,46 +2,64 @@
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce0571b0004",
     "date_created": "2022-05-05 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 2
+    "identity_provider_category_id": 2,
+    "identity_provider_type_id": 2,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce057230006",
     "date_created": "2022-05-05 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 1
+    "identity_provider_category_id": 1,
+    "identity_provider_type_id": 1,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce057230007",
     "date_created": "2022-05-05 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 1
+    "identity_provider_category_id": 1,
+    "identity_provider_type_id": 1,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce057230008",
     "date_created": "2022-05-05 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 1
+    "identity_provider_category_id": 1,
+    "identity_provider_type_id": 1,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce0575a0012",
     "date_created": "2022-05-05 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 1
+    "identity_provider_category_id": 1,
+    "identity_provider_type_id": 1,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce057770016",
     "date_created": "2022-05-05 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 1
+    "identity_provider_category_id": 1,
+    "identity_provider_type_id": 1,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce057770017",
     "date_created": "2022-11-01 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 1
+    "identity_provider_category_id": 1,
+    "identity_provider_type_id": 1,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   },
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce057770018",
     "date_created": "2022-11-01 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 1
+    "identity_provider_category_id": 1,
+    "identity_provider_type_id": 1,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   },
   {
     "id": "e7317720-051d-4f4c-9140-ac23c6330351",
     "date_created": "2022-11-01 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 2
+    "identity_provider_category_id": 2,
+    "identity_provider_type_id": 2,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   }
 ]

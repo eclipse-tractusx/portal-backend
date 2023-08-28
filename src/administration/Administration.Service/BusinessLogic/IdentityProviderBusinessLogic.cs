@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -40,14 +41,16 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IIdentityService _identityService;
     private readonly IdentityProviderSettings _settings;
 
     private static readonly Regex _displayNameValidationExpression = new Regex(@"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
 
-    public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IOptions<IdentityProviderSettings> options)
+    public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IIdentityService identityService, IOptions<IdentityProviderSettings> options)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
+        _identityService = identityService;
         _settings = options.Value;
     }
 
@@ -81,7 +84,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string? displayName, Guid companyId)
+    public ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, IdentityProviderTypeId typeId, string? displayName)
     {
         IdentityProviderCategoryId identityProviderCategory;
         switch (protocol)
@@ -100,12 +103,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             ValidateDisplayName(displayName);
         }
 
-        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, displayName, companyId);
+        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, typeId, displayName);
     }
 
     private static void ValidateDisplayName(string displayName)
     {
-        if (displayName.Length < 2 || displayName.Length > 30)
+        if (displayName.Length is < 2 or > 30)
         {
             throw new ControllerArgumentException("displayName length must be 2-30 characters");
         }
@@ -115,20 +118,25 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, string? displayName, Guid companyId)
+    private async ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, IdentityProviderTypeId typeId, string? displayName)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameUntrackedAsync(companyId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyAndIdentityTypeIdAsync(companyId, typeId).ConfigureAwait(false);
         if (!result.IsValidCompany)
         {
             throw new ControllerArgumentException($"company {companyId} does not exist", nameof(companyId));
         }
 
+        if (typeId == IdentityProviderTypeId.MANAGED && !result.IsAllowed)
+        {
+            throw new ForbiddenException("Not allowed to create a managed identity");
+        }
+
         var alias = await _provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, result.CompanyName, protocol).ConfigureAwait(false);
-        var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory);
+        var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory, typeId, companyId);
         identityProvider.CompanyIdentityProviders.Add(identityProviderRepository.CreateCompanyIdentityProvider(companyId, identityProvider.Id));
-        identityProviderRepository.CreateIamIdentityProvider(identityProvider, alias);
+        identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, alias);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         switch (protocol)
@@ -331,7 +339,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 }
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             }
-            _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default)));
+            _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default, default)));
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

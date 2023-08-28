@@ -14,5 +14,9 @@
   {
     "company_role_id": 4,
     "is_registration_role": false
+  },
+  {
+    "company_role_id": 5,
+    "is_registration_role": true
   }
 ]

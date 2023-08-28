@@ -80,7 +80,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
 
         var before = now.AddDays(-1);
         var id = Guid.NewGuid();
-        var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, before);
+        var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, before);
 
         var sut = await CreateContext().ConfigureAwait(false);
         using var trans = await sut.Database.BeginTransactionAsync().ConfigureAwait(false);
@@ -108,7 +108,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
 
         var before = now.AddDays(-1);
         var id = Guid.NewGuid();
-        var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, before);
+        var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, before);
 
         var sut = await CreateContext().ConfigureAwait(false);
         using var trans = await sut.Database.BeginTransactionAsync().ConfigureAwait(false);

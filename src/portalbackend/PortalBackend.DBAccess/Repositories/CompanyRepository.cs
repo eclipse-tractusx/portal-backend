@@ -308,4 +308,14 @@ public class CompanyRepository : ICompanyRepository
                 x.Name,
                 x.BusinessPartnerNumber!))
             .AsAsyncEnumerable();
+
+    public Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndIdentityTypeIdAsync(Guid companyId, IdentityProviderTypeId typeId) => 
+        _context.Companies
+            .Where(x => x.Id == companyId)
+            .Select(x => new ValueTuple<bool, string, bool>(
+                    true,
+                    x.Name,
+                    typeId == IdentityProviderTypeId.OWN || x.CompanyAssignedRoles.Any(car => car.CompanyRoleId == CompanyRoleId.OPERATOR) || x.CompanyAssignedRoles.Any(car => car.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER)
+                ))
+            .SingleOrDefaultAsync();
 }

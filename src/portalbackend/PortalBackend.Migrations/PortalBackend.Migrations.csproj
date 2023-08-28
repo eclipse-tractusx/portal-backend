@@ -59,8 +59,6 @@
 
     <None Remove="Seeder\Data" />
     <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
-
-    <Folder Include="Migrations" />
   </ItemGroup>
 
   <ItemGroup>
@@ -73,5 +71,10 @@
     <Content Include="../../../DEPENDENCIES">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20230825073236_CPLP-3165-AddN2NModels.cs" />
+    <Compile Remove="Migrations\20230825073236_CPLP-3165-AddN2NModels.Designer.cs" />
   </ItemGroup>
 </Project>
