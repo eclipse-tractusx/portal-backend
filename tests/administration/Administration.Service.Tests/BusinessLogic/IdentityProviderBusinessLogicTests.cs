@@ -170,7 +170,7 @@ public class IdentityProviderBusinessLogicTests
         var changedEmail = _fixture.Create<string>();
 
         var unchanged = _fixture.Create<TestUserData>();
-        var changed = unchanged with {Email = changedEmail};
+        var changed = unchanged with { Email = changedEmail };
 
         var users = new[] {
             _fixture.Create<TestUserData>(),
@@ -229,7 +229,7 @@ public class IdentityProviderBusinessLogicTests
         const int numUsers = 5;
 
         var unchanged = _fixture.Create<TestUserData>();
-        var changed = unchanged with {SharedIdpUserName = _fixture.Create<string>()};
+        var changed = unchanged with { SharedIdpUserName = _fixture.Create<string>() };
 
         var users = new[] {
             _fixture.Create<TestUserData>(),
@@ -272,7 +272,7 @@ public class IdentityProviderBusinessLogicTests
         const int numUsers = 5;
 
         var unchanged = _fixture.Create<TestUserData>();
-        var changed = unchanged with {OtherIdpUserName = _fixture.Create<string>()};
+        var changed = unchanged with { OtherIdpUserName = _fixture.Create<string>() };
 
         var users = new[] {
             _fixture.Create<TestUserData>(),
@@ -314,7 +314,7 @@ public class IdentityProviderBusinessLogicTests
         const int numUsers = 5;
 
         var unchanged = _fixture.Create<TestUserData>();
-        var unknown = unchanged with {CompanyUserId = _fixture.Create<Guid>()};
+        var unknown = unchanged with { CompanyUserId = _fixture.Create<Guid>() };
 
         var users = new[] {
             _fixture.Create<TestUserData>(),
@@ -367,7 +367,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(default, IdentityProviderTypeId.OWN, null).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.ParamName.Should().Be("protocol");
@@ -387,7 +387,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, display).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("displayName length must be 2-30 characters");
@@ -405,7 +405,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, "$invalid-character").ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("allowed characters in displayName: 'a-zA-Z0-9!?@&#'\"()_-=/*.,;: '");
@@ -427,7 +427,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, null).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"company {companyId} does not exist (Parameter 'companyId')");
@@ -449,7 +449,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.MANAGED, null).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be("Not allowed to create a managed identity");
@@ -474,7 +474,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Act
         var result = await sut.CreateOwnCompanyIdentityProviderAsync(protocol, IdentityProviderTypeId.OWN, "test-company").ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _provisioningManager.CreateOwnIdpAsync("test-company", "test", protocol)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -507,7 +507,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     #endregion
-    
+
     #region Setup
 
     private void SetupCreateOwnCompanyIdentityProvider(IamIdentityProviderProtocol protocol = IamIdentityProviderProtocol.OIDC, ICollection<IdentityProvider>? idps = null, ICollection<CompanyIdentityProvider>? companyIdps = null, ICollection<IamIdentityProvider>? iamIdps = null)
@@ -526,7 +526,7 @@ public class IdentityProviderBusinessLogicTests
                 {
                     var idp = new IdentityProvider(_identityProviderId, identityProviderCategory, identityProviderTypeId, ownerId, DateTimeOffset.UtcNow);
                     idps.Add(idp);
-                });    
+                });
         }
 
         if (companyIdps != null)
@@ -538,7 +538,7 @@ public class IdentityProviderBusinessLogicTests
                     companyIdps.Add(companyIdp);
                 });
         }
-        
+
         if (iamIdps != null)
         {
             A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<Guid>._, A<string>._))
@@ -546,7 +546,7 @@ public class IdentityProviderBusinessLogicTests
                 {
                     var iamIdp = new IamIdentityProvider(idpAlias, identityProviderId);
                     iamIdps.Add(iamIdp);
-                });    
+                });
         }
 
         if (protocol == IamIdentityProviderProtocol.OIDC)
@@ -562,7 +562,7 @@ public class IdentityProviderBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers(A<string>._))
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
-        
+
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
     }

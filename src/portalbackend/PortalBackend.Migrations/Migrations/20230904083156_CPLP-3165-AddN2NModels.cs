@@ -50,7 +50,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "identity_providers",
                 type: "uuid",
                 nullable: false,
-                defaultValue: Guid.NewGuid());
+                defaultValue: Guid.Empty);
 
             migrationBuilder.AddColumn<int>(
                 name: "company_application_type_id",
@@ -58,7 +58,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "company_applications",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 1);
 
             migrationBuilder.CreateTable(
                 name: "audit_company_application20230824",
@@ -178,6 +178,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "company_applications",
                 column: "onboarding_service_provider_id");
 
+            migrationBuilder.Sql("UPDATE portal.company_applications SET company_application_type_id = 1");
             migrationBuilder.Sql("UPDATE portal.identity_providers SET identity_provider_type_id = 1 WHERE identity_provider_category_id = 1");
             migrationBuilder.Sql("UPDATE portal.identity_providers SET identity_provider_type_id = 2 WHERE identity_provider_category_id != 1");
             migrationBuilder.Sql("UPDATE portal.identity_providers SET owner_id = '2dc4249f-b5ca-4d42-bef1-7a7a950a4f87'");

@@ -33,9 +33,9 @@ public class OnboardingServiceProviderDetail
         CompanyId = companyId;
         CallbackUrl = callbackUrl;
     }
-    
+
     public Guid CompanyId { get; set; }
-    
+
     public string CallbackUrl { get; set; }
 
     public virtual Company? Company { get; private set; }

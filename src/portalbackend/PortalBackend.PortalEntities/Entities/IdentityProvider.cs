@@ -47,7 +47,7 @@ public class IdentityProvider : IBaseEntity
     public IdentityProviderCategoryId IdentityProviderCategoryId { get; private set; }
 
     public IdentityProviderTypeId IdentityProviderTypeId { get; private set; }
-    
+
     public Guid OwnerId { get; private set; }
 
     // Navigation properties

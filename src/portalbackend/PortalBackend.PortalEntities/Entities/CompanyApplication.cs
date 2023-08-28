@@ -53,7 +53,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     public CompanyApplicationStatusId ApplicationStatusId { get; set; }
     public Guid CompanyId { get; private set; }
     public Guid? ChecklistProcessId { get; set; }
-    
+
     public CompanyApplicationTypeId CompanyApplicationTypeId { get; private set; }
 
     [LastEditorV1]
