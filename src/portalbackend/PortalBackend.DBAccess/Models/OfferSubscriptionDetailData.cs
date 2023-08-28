@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -87,5 +88,17 @@ public record SubscriberSubscriptionDetailData(
     string? Name,
     string Provider,
     IEnumerable<string> Contact,
-    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
+    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
+    IEnumerable<SubscriptionAssignedConnectorData> ConnectorData
 );
+
+/// <summary>
+/// offer subscription assigned connector data details
+/// </summary>
+/// <param name="ConnectorId">Id of the connector</param>
+/// <param name="ConnectorName">Name of the connector</param>
+/// <param name="ConnectorUrl">Url of the connector</param>
+public record SubscriptionAssignedConnectorData(
+    [property: JsonPropertyName("id")] Guid ConnectorId,
+    [property: JsonPropertyName("name")] string ConnectorName,
+    [property: JsonPropertyName("endpoint")] string ConnectorUrl);
