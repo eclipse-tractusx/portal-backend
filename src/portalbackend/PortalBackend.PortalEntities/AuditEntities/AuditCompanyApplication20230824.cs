@@ -46,7 +46,9 @@ public class AuditCompanyApplication20230824 : IAuditEntityV1
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    public CompanyApplicationTypeId CompanyApplicationTypeId { get; private set; }
+    public CompanyApplicationTypeId CompanyApplicationTypeId { get; set; }
+
+    public Guid? OnboardingServiceProviderId { get; set; }
 
     public Guid? LastEditorId { get; set; }
 
