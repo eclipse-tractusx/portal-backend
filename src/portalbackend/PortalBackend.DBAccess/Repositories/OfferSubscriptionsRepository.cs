@@ -268,7 +268,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         x.Subscription.Offer!.Name,
                         x.ProviderCompany!.Name,
                         x.ProviderCompany.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
-                        x.Subscription.CompanyServiceAccounts.Where(x => x.Identity!.IdentityAssignedRoles.Any()).Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))))
+                        x.Subscription.CompanyServiceAccounts.Where(x => x.Identity!.IdentityAssignedRoles.Any()).Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
+                        x.Subscription.ConnectorAssignedOfferSubscriptions.Select(caos => new SubscriptionAssignedConnectorData(
+                            caos.Connector!.Id,
+                            caos.Connector.Name,
+                            caos.Connector.ConnectorUrl)))
                     : null))
             .SingleOrDefaultAsync();
 
