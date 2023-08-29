@@ -45,7 +45,6 @@ public class ServiceAccountBusinessLogicTests
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
     private static readonly Guid ValidConnectorId = Guid.NewGuid();
     private static readonly Guid ValidServiceAccountId = Guid.NewGuid();
-    private static readonly Guid ValidOfferSubscriptionId = Guid.NewGuid();
     private static readonly Guid InactiveServiceAccount = Guid.NewGuid();
     private static readonly string ValidAdminId = Guid.NewGuid().ToString();
     private readonly IdentityData _identity = new(ValidAdminId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, ValidCompanyId);
