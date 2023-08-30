@@ -21,12 +21,16 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -40,13 +44,15 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityService _identityService;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IUserProvisioningService _userProvisioningService;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IProvisioningManager provisioningManager, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IProvisioningManager provisioningManager, IUserProvisioningService userProvisioningService, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _provisioningManager = provisioningManager;
+        _userProvisioningService = userProvisioningService;
         _settings = options.Value;
     }
 
@@ -55,6 +61,16 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var companyId = _identityService.IdentityData.CompanyId;
         await ValidatePartnerRegistrationData(data).ConfigureAwait(false);
 
+        IEnumerable<UserRoleData> roleDatas;
+        try
+        {
+            roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            throw new ConfigurationException($"{nameof(_settings.InitialRoles)}: {e.Message}");
+        }
+        
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var address = companyRepository.CreateAddress(data.City, data.StreetName,
             data.CountryAlpha2Code,
@@ -79,11 +95,24 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         foreach (var idp in identityProviderIds)
         {
-            (Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias) companyIdp;
-            if (identityProviderIds.Any(x => x == null))
+            var identityProviderId = idp;
+            if (idp == null)
             {
-                companyIdp = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(companyId).SingleAsync().ConfigureAwait(false);
+                var idpData = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(companyId).SingleAsync().ConfigureAwait(false);
+                identityProviderId = idpData.IdentityProviderId;
             }
+            
+            var users = data.UserDetails
+                .Where(x => x.IdentityProviderId == identityProviderId)
+                .Select(user => new UserCreationRoleDataIdpInfo(
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    roleDatas,
+                    user.Email,
+                    user.ProviderId
+                )).ToAsyncEnumerable();
+            await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(new CompanyNameIdpAliasData(company.Id, company.Name, company.BusinessPartnerNumber, "idp", false), users).AwaitAll().ConfigureAwait(false); // TODO (PS): clarify idp alias
 
             var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.MANAGED, companyId);
             identityProvider.Companies.Add(company);
