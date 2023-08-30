@@ -20,7 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -34,7 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService _mailingService;
+    private readonly IRoleBaseMailService _roleBaseMailService;
 
     /// <summary>
     /// Constructor.
@@ -43,10 +43,10 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     /// <param name="mailingService">Mail service.</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories,
-        IMailingService mailingService)
+        IRoleBaseMailService roleBaseMailService)
     {
         _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
+        _roleBaseMailService = roleBaseMailService;
     }
 
     /// <inheritdoc />
@@ -71,7 +71,13 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        await SendMail(notificationRecipients, offerProviderDetails.OfferName!, basePortalAddress, offerProviderDetails.ProviderCompanyId.Value);
+        var mailParams = new Dictionary<string, string>
+            {
+                { "offerName", offerProviderDetails.OfferName! },
+                { "offerProviderName", "User"},
+                { "url", basePortalAddress }
+            };
+        await _roleBaseMailService.RoleBaseSendMail(notificationRecipients, mailParams, new List<string> { "subscription-request" }, offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(false);
         return offerSubscription.Id;
     }
 
@@ -172,33 +178,4 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             OfferSubscriptionStatusId.PENDING => _offerSubcriptionStatusIdFilterPending,
             _ => _offerSubcriptionStatusIdFilterDefault
         };
-    private async Task SendMail(IEnumerable<UserRoleConfig> receiverRoles, string offerName, string basePortalAddress, Guid companyId)
-    {
-        var receiverUserRoles = receiverRoles;
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
-        {
-            throw new ConfigurationException(
-                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
-        }
-
-        var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
-        await foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
-        {
-            var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-
-            var mailParams = new Dictionary<string, string>
-            {
-                { "offerName", offerName },
-                { "offerProviderName", !string.IsNullOrWhiteSpace(userName) ? userName : "User"},
-                { "url", basePortalAddress }
-            };
-            await _mailingService.SendMails(receiver, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
-        }
-    }
 }
