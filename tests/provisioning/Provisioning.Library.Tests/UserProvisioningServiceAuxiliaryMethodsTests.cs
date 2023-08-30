@@ -74,6 +74,26 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
+    public async void TestCompanyNameIdpAliaswithNullCompanyNameAndEmailDataFixtureSetup()
+    {
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._))
+            .Returns(_resultComposer.With(
+                x => x.CompanyUser,
+                    _fixture.Build<(Guid CompanyUserId, string? FirstName, string? LastName, string? Email)>()
+                        .With(x => x.FirstName, (string?)null)
+                        .With(x => x.LastName, (string?)null)
+                        .With(x => x.Email, (string?)null)
+                        .Create())
+                .Create());
+        var sut = new UserProvisioningService(null!, _portalRepositories);
+
+        var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
+        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
+        result.Should().NotBeNull();
+        result.NameCreatedBy.Should().Be("Dear User");
+    }
+
+    [Fact]
     public async void TestCompanyNameIdpAliasDataNotFound()
     {
         ((Guid, string?, string?), (Guid, string?, string?, string?), (string?, bool)) notfound = default;
@@ -144,6 +164,29 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         result.Should().NotBeNull();
     }
 
+    [Fact]
+    public async void TestGetCompanyNameSharedIdpwithNullCompanyNameAndEmailAliasDataFixtureSetup()
+    {
+        // Arrange
+        var data = new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>>(
+            new ValueTuple<Guid, string?, string?>(Guid.NewGuid(), _fixture.Create<string>(), _fixture.Create<string>()),
+            new ValueTuple<Guid, string?, string?, string?>(Guid.NewGuid(), null, null, null),
+            _fixture.CreateMany<string>(1)
+
+        );
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+            .Returns(data);
+
+        // Act
+        var sut = new UserProvisioningService(null!, _portalRepositories);
+
+        // Assert
+        var result = await sut.GetCompanyNameSharedIdpAliasData(_companyUserId).ConfigureAwait(false);
+        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
+        result.Should().NotBeNull();
+        result.NameCreatedBy.Should().Be("Dear User");
+    }
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataNotFound()
     {

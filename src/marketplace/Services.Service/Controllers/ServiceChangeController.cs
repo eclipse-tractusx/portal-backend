@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 /// Controller providing actions for updating applications.
 /// </summary>
 
-[Route("api/service/[controller]")]
+[Route("api/services/[controller]")]
 [ApiController]
 [Produces("application/json")]
 [Consumes("application/json")]
