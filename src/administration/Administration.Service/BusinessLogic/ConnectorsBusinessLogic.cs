@@ -278,7 +278,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ForbiddenException($"company {companyId} is neither provider nor host-company of connector {connectorId}");
         }
         if (result.ServiceAccountId.HasValue && result.UserStatusOd != UserStatusId.INACTIVE)
-        { 
+        {
             var validServiceAccountId = result.ServiceAccountId.Value;
             _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(validServiceAccountId, null, i =>
             {
