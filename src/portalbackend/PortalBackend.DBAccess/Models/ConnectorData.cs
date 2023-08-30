@@ -18,8 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.CodeAnalysis;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Eventing.Reader;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -68,6 +70,8 @@ public record DeleteConnectorData(
     Guid? SelfDescriptionDocumentId,
     DocumentStatusId? DocumentStatusId,
     ConnectorStatusId ConnectorStatus,
-    IEnumerable<ConnectorOfferSubscription> ConnectorOfferSubscriptions
+    IEnumerable<ConnectorOfferSubscription> ConnectorOfferSubscriptions,
+    UserStatusId? UserStatusOd,
+    Guid? ServiceAccountId
 );
 public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, OfferSubscriptionStatusId OfferSubscriptionStatus);
