@@ -18,12 +18,32 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public enum UserStatusId
+public class CompanyUserAssignedIdentityProvider
 {
-    ACTIVE = 1,
-    INACTIVE = 2,
-    DELETED = 3,
-    PENDING = 4
+    public CompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName, Guid processStepId)
+    {
+        CompanyUserId = companyUserId;
+        IdentityProviderId = identityProviderId;
+        ProviderId = providerId;
+        UserName = userName;
+        ProcessStepId = processStepId;
+    }
+
+    public Guid CompanyUserId { get; set; }
+
+    public Guid IdentityProviderId { get; set; }
+
+    public string ProviderId { get; set; }
+
+    public string UserName { get; set; }
+
+    public Guid ProcessStepId { get; set; }
+
+    public virtual CompanyUser? CompanyUser { get; set; }
+
+    public virtual IdentityProvider? IdentityProvider { get; set; }
+
+    public virtual ProcessStep? ProcessStep { get; set; }
 }

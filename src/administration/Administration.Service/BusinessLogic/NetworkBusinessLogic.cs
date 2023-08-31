@@ -43,15 +43,13 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityService _identityService;
-    private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IProvisioningManager provisioningManager, IUserProvisioningService userProvisioningService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
-        _provisioningManager = provisioningManager;
         _userProvisioningService = userProvisioningService;
         _settings = options.Value;
     }
@@ -70,7 +68,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         {
             throw new ConfigurationException($"{nameof(_settings.InitialRoles)}: {e.Message}");
         }
-        
+
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var address = companyRepository.CreateAddress(data.City, data.StreetName,
             data.CountryAlpha2Code,
@@ -90,41 +88,44 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         companyRepository.CreateUpdateDeleteIdentifiers(company.Id, data.UniqueIds, Enumerable.Empty<(UniqueIdentifierId, string)>());
         _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(company.Id, data.CompanyRoles);
 
-        // TODO (PS): clarify how to handle userDetails
-        var identityProviderIds = data.UserDetails.GroupBy(x => x.IdentityProviderId).Select(x => x.Key).Distinct();
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-        foreach (var idp in identityProviderIds)
-        {
-            var identityProviderId = idp;
-            if (idp == null)
-            {
-                var idpData = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(companyId).SingleAsync().ConfigureAwait(false);
-                identityProviderId = idpData.IdentityProviderId;
-            }
-            
-            var users = data.UserDetails
-                .Where(x => x.IdentityProviderId == identityProviderId)
-                .Select(user => new UserCreationRoleDataIdpInfo(
-                    user.FirstName,
-                    user.LastName,
-                    user.Email,
-                    roleDatas,
-                    user.Email,
-                    user.ProviderId
-                )).ToAsyncEnumerable();
-            await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(new CompanyNameIdpAliasData(company.Id, company.Name, company.BusinessPartnerNumber, "idp", false), users).AwaitAll().ConfigureAwait(false); // TODO (PS): clarify idp alias
-
-            var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.MANAGED, companyId);
-            identityProvider.Companies.Add(company);
-            identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, "idpName"); // TODO (PS): clarify idpName
-        }
-
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
             ca =>
             {
                 ca.OnboardingServiceProviderId = companyId;
             });
+
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var process = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION);
+
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+
+        var idps = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(companyId).ToListAsync().ConfigureAwait(false);
+        foreach (var user in data.UserDetails)
+        {
+
+            var identity = userRepository.CreateIdentity(companyId, UserStatusId.PENDING, IdentityTypeId.COMPANY_USER);
+            var companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email).Id;
+            if (data.Bpn != null)
+            {
+                businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, data.Bpn);
+            }
+
+            foreach (var role in roleDatas)
+            {
+                userRolesRepository.CreateIdentityAssignedRole(companyUserId, role.UserRoleId);
+            }
+
+            foreach (var idpLink in user.IdentityProviderLinks)
+            {
+                var idpData = idps.Single(x => idpLink.IdentityProviderId == null || x.IdentityProviderId == idpLink.IdentityProviderId.Value);
+                var processStepId = processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id), 1)).Single().Id;
+                userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, idpData.IdentityProviderId, idpLink.ProviderId, idpLink.Username, processStepId);
+            }
+        }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -160,14 +161,14 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             }
         }
 
-        if (data.UserDetails.Any(x => x.IdentityProviderId == null) &&
-            await _portalRepositories
-                .GetInstance<ICompanyRepository>().GetLinkedIdpCount(_identityService.IdentityData.CompanyId)
-                .ConfigureAwait(false) != 1)
+        var identityProviderIds = data.UserDetails.SelectMany(x => x.IdentityProviderLinks.Select(y => y.IdentityProviderId)).Distinct();
+        var idps = await _portalRepositories
+            .GetInstance<ICompanyRepository>().GetLinkedIdpCount(_identityService.IdentityData.CompanyId, identityProviderIds)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (idps.Count != identityProviderIds.Count(x => x != null))
         {
-            throw new ControllerArgumentException(
-                "Company has more than one identity provider linked, therefor identityProviderId must be set for all users",
-                nameof(data.UserDetails));
+            throw new ControllerArgumentException($"Idps {string.Join("", idps.Where(x => !identityProviderIds.Any(i => i == x)))} do not exist");
         }
 
         if (data.CompanyRoles.Any())

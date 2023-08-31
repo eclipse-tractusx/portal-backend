@@ -76,6 +76,7 @@ public class Company : IBaseEntity
 
     // Navigation properties
     public virtual Address? Address { get; set; }
+    public virtual NetworkRegistration? NetworkRegistration { get; set; }
     public virtual OnboardingServiceProviderDetail? OnboardingServiceProviderDetail { get; set; }
     public virtual ProviderCompanyDetail? ProviderCompanyDetail { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }

@@ -18,12 +18,32 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
-public enum UserStatusId
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+
+public class NetworkRegistration : IBaseEntity
 {
-    ACTIVE = 1,
-    INACTIVE = 2,
-    DELETED = 3,
-    PENDING = 4
+    public NetworkRegistration(Guid id, Guid externalId, Guid companyId, Guid processId, DateTimeOffset dateCreated)
+    {
+        Id = id;
+        ExternalId = externalId;
+        CompanyId = companyId;
+        ProcessId = processId;
+        DateCreated = dateCreated;
+    }
+
+    public Guid Id { get; }
+
+    public DateTimeOffset DateCreated { get; set; }
+
+    public Guid ExternalId { get; set; }
+
+    public Guid CompanyId { get; set; }
+
+    public Guid ProcessId { get; set; }
+
+    public virtual Company? Company { get; private set; }
+
+    public virtual Process? Process { get; private set; }
 }

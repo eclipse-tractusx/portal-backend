@@ -39,9 +39,10 @@ public record PartnerRegistrationData
 );
 
 public record UserDetailData(
-    Guid? IdentityProviderId,
-    string ProviderId,
+    IEnumerable<UserIdentityProviderLink> IdentityProviderLinks,
     string FirstName,
     string LastName,
     string Email
 );
+
+public record UserIdentityProviderLink(Guid? IdentityProviderId, string ProviderId, string Username);

@@ -108,6 +108,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; set; } = default!;
+    public virtual DbSet<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; set; } = default!;
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
     public virtual DbSet<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
@@ -135,6 +136,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<LanguageLongName> LanguageLongNames { get; set; } = default!;
     public virtual DbSet<LicenseType> LicenseTypes { get; set; } = default!;
     public virtual DbSet<MediaType> MediaTypes { get; set; } = default!;
+    public virtual DbSet<NetworkRegistration> NetworkRegistrations { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; set; } = default!;
     public virtual DbSet<Offer> Offers { get; set; } = default!;
@@ -1392,6 +1394,18 @@ public class PortalDbContext : DbContext
                 .WithOne(x => x.OnboardingServiceProviderDetail)
                 .HasForeignKey<OnboardingServiceProviderDetail>(x => x.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<NetworkRegistration>(entity =>
+        {
+            entity.HasOne(x => x.Company)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.Process)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.ProcessId);
         });
     }
 

@@ -218,6 +218,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailing.Service", "mailing\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailing.Service.Tests", "..\tests\mailing\Mailing.Service.Tests\Mailing.Service.Tests.csproj", "{1EAF34DA-6D16-4F5E-86F4-344185F53942}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkRegistration.Executor", "processes\NetworkRegistration.Executor\NetworkRegistration.Executor.csproj", "{19639645-A115-4824-865F-5559DA8B892A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1368,6 +1370,18 @@ Global
 		{1EAF34DA-6D16-4F5E-86F4-344185F53942}.Release|x64.Build.0 = Release|Any CPU
 		{1EAF34DA-6D16-4F5E-86F4-344185F53942}.Release|x86.ActiveCfg = Release|Any CPU
 		{1EAF34DA-6D16-4F5E-86F4-344185F53942}.Release|x86.Build.0 = Release|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Debug|x64.Build.0 = Debug|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Debug|x86.Build.0 = Debug|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Release|x64.ActiveCfg = Release|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Release|x64.Build.0 = Release|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Release|x86.ActiveCfg = Release|Any CPU
+		{19639645-A115-4824-865F-5559DA8B892A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1471,5 +1485,6 @@ Global
 		{9D574E57-75A6-4965-AF23-ACE0BB9CD0B3} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{E1D41A07-F468-4D13-8185-35F127230B17} = {46383371-8252-4598-9350-A97692851408}
 		{6113B579-C995-47F8-9AC1-4CC6EFDDD883} = {68D43DB1-DFC5-4F15-A2B4-6BA18B875F9E}
+		{19639645-A115-4824-865F-5559DA8B892A} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
 	EndGlobalSection
 EndGlobal

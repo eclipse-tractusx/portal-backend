@@ -339,6 +339,14 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
+    public Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(process => process.Id == processId)
+            .Select(process => process.NetworkRegistration!.Id)
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
     public Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)

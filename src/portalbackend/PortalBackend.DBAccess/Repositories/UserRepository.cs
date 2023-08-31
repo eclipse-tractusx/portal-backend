@@ -442,4 +442,28 @@ public class UserRepository : IUserRepository
         modify.Invoke(updatedEntity);
         return updatedEntity;
     }
+
+    public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid idpDataIdentityProviderId, string providerId, string userName, Guid processStepId) =>
+        _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, idpDataIdentityProviderId, providerId, userName, processStepId)).Entity;
+
+    public IAsyncEnumerable<CompanyUserIdentityProviderProcessData>
+        GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
+        _dbContext.NetworkRegistrations
+            .Where(x => x.Id == networkRegistrationId)
+            .SelectMany(x => x.Company!.Identities.Where(i => i.UserStatusId == UserStatusId.PENDING)
+                .SelectMany(i => i.CompanyUser!.CompanyUserAssignedIdentityProviders
+                    .Where(x => x.ProcessStep!.ProcessStepStatusId == ProcessStepStatusId.TODO)
+                    .Select(cuaip => new CompanyUserIdentityProviderProcessData(
+                            cuaip.CompanyUserId,
+                            cuaip.CompanyUser!.Firstname,
+                            cuaip.CompanyUser!.Lastname,
+                            cuaip.CompanyUser!.Email,
+                            cuaip.UserName,
+                            cuaip.CompanyUser!.Identity!.UserEntityId,
+                            cuaip.CompanyUser!.Identity!.Company!.Name,
+                            cuaip.CompanyUser.Identity.Company.BusinessPartnerNumber,
+                            cuaip.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
+                            cuaip.ProviderId
+                        ))))
+            .ToAsyncEnumerable();
 }

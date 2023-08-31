@@ -123,4 +123,6 @@ public interface IUserRepository
 
     Task<IdentityData?> GetActiveUserDataByUserEntityId(string userEntityId);
     Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify);
+    CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid idpDataIdentityProviderId, string providerId, string userName, Guid processStepId);
+    IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId);
 }

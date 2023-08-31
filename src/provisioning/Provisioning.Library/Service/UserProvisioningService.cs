@@ -77,21 +77,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
 
-                var centralUserId = await _provisioningManager.CreateCentralUserAsync(
-                    new UserProfile(
-                        companyUserId.ToString(),
-                        user.FirstName,
-                        user.LastName,
-                        user.Email
-                    ),
-                    _provisioningManager.GetStandardAttributes(
-                        organisationName: companyName,
-                        businessPartnerNumber: businessPartnerNumber
-                    )
-                ).ConfigureAwait(false);
-
-                await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId, new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
-
+                var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, alias, providerUserId);
                 userdata = new(centralUserId, companyUserId);
                 if (identity == null)
                 {
@@ -120,6 +106,27 @@ public class UserProvisioningService : IUserProvisioningService
 
             yield return new(userdata.CompanyUserId, user.UserName, nextPassword, error);
         }
+    }
+
+    public async Task<string> CreateCentralUserWithProviderLinks(Guid companyUserId, UserCreationRoleDataIdpInfo user, string companyName, string? businessPartnerNumber, string alias, string providerUserId)
+    {
+        var centralUserId = await _provisioningManager.CreateCentralUserAsync(
+            new UserProfile(
+                companyUserId.ToString(),
+                user.FirstName,
+                user.LastName,
+                user.Email
+            ),
+            _provisioningManager.GetStandardAttributes(
+                organisationName: companyName,
+                businessPartnerNumber: businessPartnerNumber
+            )
+        ).ConfigureAwait(false);
+
+        await _provisioningManager
+            .AddProviderUserLinkToCentralUserAsync(centralUserId,
+                new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
+        return centralUserId;
     }
 
     private async Task<(Identity? identity, Guid companyUserId)> GetOrCreateCompanyUser(
@@ -276,7 +283,7 @@ public class UserProvisioningService : IUserProvisioningService
         return existingCompanyUserId;
     }
 
-    private async Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleData> roleDatas, (string UserEntityId, Guid CompanyUserId) userdata)
+    public async Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleData> roleDatas, (string UserEntityId, Guid CompanyUserId) userdata)
     {
         if (roleDatas.Any())
         {

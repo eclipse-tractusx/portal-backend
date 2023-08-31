@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2023 BMW Group AG
- * Copyright (c) 2021,2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum ProcessTypeId
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor;
+
+public static class NetworkRegistrationExtensisons
 {
-    APPLICATION_CHECKLIST = 1,
-    OFFER_SUBSCRIPTION = 3,
-    PARTNER_REGISTRATION = 4,
+    public static IEnumerable<ProcessStepTypeId>? GetRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
+        processStepTypeId switch
+        {
+            ProcessStepTypeId.SYNCHRONIZE_USER => new[] { ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER },
+            _ => null
+        };
 }

@@ -52,7 +52,8 @@ try
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddApplicationChecklistCreation()
                 .AddApplicationActivation(hostContext.Configuration)
-                .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"));
+                .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddNetworkRegistrationProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {
