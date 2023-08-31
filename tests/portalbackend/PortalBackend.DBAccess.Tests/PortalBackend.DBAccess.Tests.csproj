@@ -117,7 +117,7 @@
     <Content Update="Seeder\Data\company_identifiers.consortia.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
-    <Content Update="Seeder\Data\company_identity_providers.json">
+    <Content Update="Seeder\Data\company_identity_providers.test.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
     <Content Update="Seeder\Data\company_identity_providers.consortia.json">
@@ -319,6 +319,15 @@
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
     <Content Update="Seeder\Data\verified_credential_external_type_use_case_details.test.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_identity_providers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\identity_providers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_identity_providers.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
   </ItemGroup>

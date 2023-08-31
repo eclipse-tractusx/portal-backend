@@ -30,6 +30,9 @@ public record IdentityProviderEditableDetails(string displayName)
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IdentityProviderEditableDetailsSaml? saml { get; init; } = null;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? companyId { get; init; } = null;
 }
 
 public record IdentityProviderEditableDetailsOidc(string metadataUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId)

@@ -1,0 +1,10 @@
+[
+  {
+    "iam_idp_alias": "Idp-123",
+    "identity_provider_id": "38f56465-ce26-4f25-9745-1791620dc198"
+  },
+  {
+    "iam_idp_alias": "Test-Alias",
+    "identity_provider_id": "38f56465-ce26-4f25-9745-1791620dc199"
+  }
+]
