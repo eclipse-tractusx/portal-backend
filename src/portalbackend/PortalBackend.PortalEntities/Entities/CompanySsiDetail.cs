@@ -50,6 +50,7 @@ public class CompanySsiDetail : IAuditableV1, IBaseEntity
     public Guid CreatorUserId { get; set; }
     public DateTimeOffset? ExpiryDate { get; set; }
     public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
+    [AuditLastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; private set; }

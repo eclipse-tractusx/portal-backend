@@ -18,16 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
-public static class AuditingDependencyInjection
+public static partial class AuditExtensions
 {
-    public static IServiceCollection AddDbAuditing(this IServiceCollection services)
-    {
-        return services.AddTransient<IAuditHandler, AuditHandlerV1>()
-            .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
-    }
+    public record AuditPropertyInformation
+    (
+        Type AuditEntityType,
+        List<PropertyInfo> SourceProperties,
+        IEnumerable<PropertyInfo> AuditProperties,
+        IEnumerable<PropertyInfo> TargetProperties
+    );
 }

@@ -22,7 +22,6 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using Testcontainers.PostgreSql;
 using Xunit.Extensions.AssemblyFixture;
 

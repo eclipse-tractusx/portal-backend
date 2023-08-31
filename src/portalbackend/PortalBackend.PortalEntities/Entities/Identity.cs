@@ -54,6 +54,7 @@ public class Identity : IBaseEntity, IAuditableV1
 
     public IdentityTypeId IdentityTypeId { get; set; }
 
+    [AuditLastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [AuditLastEditorV1]

@@ -22,9 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
@@ -41,72 +39,54 @@ public class AuditHandlerV1 : IAuditHandler
 
     public void HandleAuditForChangedEntries(IEnumerable<EntityEntry> changedEntries, DbContext context)
     {
-        foreach (var entry in changedEntries)
+        var now = _dateTimeProvider.OffsetNow;
+        foreach (var groupedEntries in changedEntries
+                     .GroupBy(entry => entry.Metadata.ClrType)
+                     .Where(group => (AuditEntityV1Attribute?)Attribute.GetCustomAttribute(group.Key, typeof(AuditEntityV1Attribute)) != null))
         {
-            if (entry.State != EntityState.Deleted)
+            var lastEditorNames = groupedEntries.Key.GetProperties()
+                .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute))).Select(x => x.Name)
+                .ToList();
+            var lastChangedNames = groupedEntries.Key.GetProperties()
+                .Where(x => Attribute.IsDefined(x, typeof(AuditLastChangedV1Attribute))).Select(x => x.Name)
+                .ToList();
+
+            foreach (var entry in groupedEntries.Where(entry => entry.State != EntityState.Deleted))
             {
                 // Set LastEditor
-                foreach (var prop in entry.Properties.IntersectBy(
-                             entry.Entity.GetType().GetProperties()
-                                 .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute)))
-                                 .Select(x => x.Name),
-                             property => property.Metadata.Name))
+                foreach (var prop in entry.Properties.Where(x => lastEditorNames.Any(lcn => lcn == x.Metadata.Name)))
                 {
                     prop.CurrentValue = _identityService.IdentityData.UserId;
                 }
 
                 // If existing try to set DateLastChanged
-                foreach (var prop in entry.Properties.Where(x => x.Metadata.Name == "DateLastChanged"))
+                foreach (var prop in entry.Properties.Where(x => lastChangedNames.Any(lcn => lcn == x.Metadata.Name)))
                 {
-                    prop.CurrentValue = _dateTimeProvider.OffsetNow;
+                    prop.CurrentValue = now;
                 }
             }
 
-            AddAuditEntry(entry, entry.Metadata.ClrType, context);
+            foreach (var entry in groupedEntries.Where(entry => entry.State == EntityState.Deleted))
+            {
+                AddAuditEntry(entry, entry.Metadata.ClrType, context);
+            }
         }
     }
 
     private void AddAuditEntry(EntityEntry entityEntry, Type entityType, DbContext context)
     {
-        var auditEntityAttribute = (AuditEntityV1Attribute?)Attribute.GetCustomAttribute(entityType, typeof(AuditEntityV1Attribute));
-        if (auditEntityAttribute == null)
-        {
-            throw new ConfigurationException($"{entityType} must be annotated with {nameof(AuditEntityV1Attribute)}");
-        }
-
-        var auditEntityType = auditEntityAttribute.AuditEntityType;
-        var sourceProperties = new List<PropertyInfo>();
-        if (typeof(IBaseEntity).IsAssignableFrom(entityType))
-        {
-            sourceProperties.AddRange(typeof(IBaseEntity).GetProperties());
-        }
-        sourceProperties.AddRange(entityType.GetProperties(BindingFlags.Public |
-                                                           BindingFlags.Instance |
-                                                           BindingFlags.DeclaredOnly).Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)));
-        var auditProperties = typeof(IAuditEntityV1).GetProperties();
-        var targetProperties = auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name);
-
+        var (auditEntityType, sourceProperties, _, targetProperties) = entityType.GetAuditPropertyInformation();
         if (Activator.CreateInstance(auditEntityType) is not IAuditEntityV1 newAuditEntity)
-            return;
+            throw new UnexpectedConditionException($"AuditEntityV1Attribute can only be used on types implementing IAuditEntityV1 but Type {entityType} isn't");
 
-        var propertyValues = entityEntry switch
+        var propertyValues = entityEntry.CurrentValues;
+        foreach (var joined in targetProperties.Join(
+                     sourceProperties,
+                     t => t.Name,
+                     s => s.Name,
+                     (t, s) => (Target: t, Value: propertyValues?[s.Name])))
         {
-            { State: EntityState.Added } => entityEntry.CurrentValues,
-            { State: EntityState.Modified } => entityEntry.GetDatabaseValues(),
-            { State: EntityState.Deleted } => entityEntry.GetDatabaseValues(),
-            _ => throw new ConflictException($"Entries with state {entityEntry.State} should not be audited")
-        };
-
-        foreach (var targetProperty in targetProperties)
-        {
-            var sourceProperty = sourceProperties.FirstOrDefault(p => p.Name == targetProperty.Name);
-            if (sourceProperty == null)
-                continue;
-
-            var propertyName = sourceProperty.Name;
-            var sourceValue = propertyValues?[propertyName];
-            targetProperty.SetValue(newAuditEntity, sourceValue);
-            targetProperty.SetValue(newAuditEntity, sourceValue);
+            joined.Target.SetValue(newAuditEntity, joined.Value);
         }
 
         newAuditEntity.AuditV1Id = Guid.NewGuid();

@@ -46,6 +46,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
 
     public DateTimeOffset DateCreated { get; private set; }
 
+    [AuditLastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     public CompanyApplicationStatusId ApplicationStatusId { get; set; }

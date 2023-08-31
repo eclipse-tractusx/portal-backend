@@ -90,6 +90,7 @@ public class Offer : IAuditableV1, IBaseEntity
 
     public LicenseTypeId LicenseTypeId { get; set; }
 
+    [AuditLastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [AuditLastEditorV1]
