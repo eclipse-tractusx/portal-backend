@@ -200,21 +200,32 @@ public class OfferRepository : IOfferRepository
     public void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds) =>
         _context.RemoveRange(appLanguageIds.Select(x => new AppLanguage(x.appId, x.languageShortName)));
 
-    public IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, Guid userCompanyId) =>
-        _context.Offers
-            .AsNoTracking()
-            .Where(offer =>
-                offer.OfferTypeId == offerTypeId &&
-                offer.ProviderCompanyId == userCompanyId)
-            .Select(offer => new AllOfferData(
+    public Func<int, int, Task<Pagination.Source<AllOfferData>?>> GetProvidedOffersData(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, Guid userCompanyId, OfferSorting? sorting, string? offerName) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.Offers.AsNoTracking()
+                .Where(offer => offer.OfferTypeId == offerTypeId &&
+                    offer.ProviderCompanyId == userCompanyId &&
+                    offerStatusIds.Contains(offer.OfferStatusId) && (offerName == null || EF.Functions.ILike(offer.Name!, $"%{offerName!.EscapeForILike()}%")))
+                .GroupBy(offer => offer.OfferTypeId),
+            sorting switch
+            {
+                OfferSorting.DateAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.DateCreated),
+                OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
+                _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+            },
+            offer => new AllOfferData(
                 offer.Id,
                 offer.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.Provider,
                 offer.OfferStatusId,
                 offer.DateLastChanged
-            ))
-            .AsAsyncEnumerable();
+                ))
+            .SingleOrDefaultAsync();
+
+
 
     /// <inheritdoc />
     [Obsolete("only referenced by code that is marked as obsolte")]
