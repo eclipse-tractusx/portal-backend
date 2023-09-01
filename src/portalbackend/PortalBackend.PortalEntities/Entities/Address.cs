@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -47,6 +48,7 @@ public class Address : IBaseEntity
 
     public DateTimeOffset DateCreated { get; private set; }
 
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [MaxLength(255)]

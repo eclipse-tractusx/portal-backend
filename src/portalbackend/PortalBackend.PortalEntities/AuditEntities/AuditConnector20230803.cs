@@ -66,7 +66,7 @@ public class AuditConnector20230803 : IAuditEntityV1
 
     public Guid? CompanyServiceAccountId { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />

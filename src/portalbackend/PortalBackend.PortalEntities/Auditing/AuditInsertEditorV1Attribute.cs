@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 /// <summary>
 /// Attribute to mark the creators id in the base class.
-/// The usage is optional. If not set <see cref="AuditLastEditorV1Attribute"/>
+/// The usage is optional. If not set <see cref="LastEditorV1Attribute"/>
 /// is being used to determine the creators id.
 /// </summary>
 /// <remarks>

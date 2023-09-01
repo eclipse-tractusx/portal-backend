@@ -72,5 +72,11 @@ public static class VerifyApplicationChecklistDataExtensions
     }
 
     public static IApplicationChecklistService.ManualChecklistProcessStepData CreateManualChecklistProcessStepData(this VerifyChecklistData checklistData, Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStep processStep) =>
-        new IApplicationChecklistService.ManualChecklistProcessStepData(applicationId, checklistData.Process!, processStep.Id, entryTypeId, checklistData.Checklist!.ToImmutableDictionary(entry => entry.TypeId, entry => new ValueTuple<ApplicationChecklistEntryStatusId, string?>(entry.StatusId, entry.Comment)), checklistData.ProcessSteps!);
+        new IApplicationChecklistService.ManualChecklistProcessStepData(
+            applicationId,
+            checklistData.Process ?? throw new UnexpectedConditionException("checklistData.Process should never be null here"),
+            processStep.Id,
+            entryTypeId,
+            checklistData.Checklist?.ToImmutableDictionary(entry => entry.TypeId, entry => new ValueTuple<ApplicationChecklistEntryStatusId, string?>(entry.StatusId, entry.Comment)) ?? throw new UnexpectedConditionException("checklistData.Checklist should never be null here"),
+            checklistData.ProcessSteps ?? throw new UnexpectedConditionException("checklistData.ProcessSteps should never be null here"));
 }

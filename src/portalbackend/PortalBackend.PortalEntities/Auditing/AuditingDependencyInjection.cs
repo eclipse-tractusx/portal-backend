@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
-/// <summary>
-/// Attribute to mark the last editor id in the base class
-/// </summary>
-/// <remarks>
-/// The implementation of this Attribute must not be changed.
-/// When changes are needed create a V2 of it.
-/// </remarks>
-[AttributeUsage(AttributeTargets.Property)]
-public class AuditLastEditorV1Attribute : Attribute
+public static class AuditingDependencyInjection
 {
+    public static IServiceCollection AddDbAuditing(this IServiceCollection services)
+    {
+        return services.AddTransient<IAuditHandler, AuditHandlerV1>()
+            .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
+    }
 }

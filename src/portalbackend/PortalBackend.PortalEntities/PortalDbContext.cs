@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -37,17 +38,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 /// </remarks>
 public class PortalDbContext : DbContext
 {
-    private readonly IIdentityService _identityService;
+    private readonly IAuditHandler _auditHandler;
 
     protected PortalDbContext()
     {
         throw new InvalidOperationException("IdentityService should never be null");
     }
 
-    public PortalDbContext(DbContextOptions<PortalDbContext> options, IIdentityService identityService)
+    public PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHandler auditHandler)
         : base(options)
     {
-        _identityService = identityService;
+        _auditHandler = auditHandler;
     }
 
     public virtual DbSet<Address> Addresses { get; set; } = default!;
@@ -619,7 +620,6 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<CompanyAssignedRole>(entity =>
         {
             entity.HasKey(e => new { e.CompanyId, e.CompanyRoleId });
-            entity.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
 
             entity.HasOne(d => d.Company!)
                 .WithMany(p => p.CompanyAssignedRoles)
@@ -630,10 +630,14 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p.CompanyAssignedRoles)
                 .HasForeignKey(d => d.CompanyRoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
         });
 
-        modelBuilder.Entity<UserRole>()
-            .HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+        });
 
         modelBuilder.Entity<UserRoleCollection>(entity =>
         {
@@ -734,6 +738,7 @@ public class PortalDbContext : DbContext
                 .WithOne(d => d.CompanyUser);
 
             entity.HasAuditV1Triggers<CompanyUser, AuditCompanyUser20230522>();
+
             entity.ToTable("company_users");
         });
 
@@ -772,6 +777,7 @@ public class PortalDbContext : DbContext
                 .WithMany(e => e.IdentityAssignedRoles)
                 .HasForeignKey(d => d.IdentityId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
             entity.HasAuditV1Triggers<IdentityAssignedRole, AuditIdentityAssignedRole20230522>();
         });
 
@@ -1361,16 +1367,10 @@ public class PortalDbContext : DbContext
 
     private void EnhanceChangedEntries()
     {
-        foreach (var prop in ChangeTracker.Entries()
-            .Where(entry => entry.State != EntityState.Unchanged && entry.State != EntityState.Detached && entry.Entity is IAuditableV1)
-            .SelectMany(entry =>
-                entry.Properties.IntersectBy(
-                    entry.Entity.GetType().GetProperties()
-                        .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute)))
-                        .Select(x => x.Name),
-                    property => property.Metadata.Name)))
-        {
-            prop.CurrentValue = _identityService.IdentityData.UserId;
-        }
+        _auditHandler.HandleAuditForChangedEntries(
+            ChangeTracker.Entries().Where(entry =>
+                entry.State != EntityState.Unchanged && entry.State != EntityState.Detached &&
+                entry.Entity is IAuditableV1).ToImmutableList(),
+            ChangeTracker.Context);
     }
 }

@@ -35,7 +35,7 @@ public class IdentityAssignedRole : IAuditableV1
     public Guid IdentityId { get; private set; }
     public Guid UserRoleId { get; private set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
