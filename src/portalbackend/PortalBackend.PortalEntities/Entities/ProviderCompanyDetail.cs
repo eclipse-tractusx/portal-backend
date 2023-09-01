@@ -51,10 +51,10 @@ public class ProviderCompanyDetail : IAuditableV1, IBaseEntity
 
     public Guid CompanyId { get; set; }
 
-    [AuditLastChangedV1]
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // Navigation properties

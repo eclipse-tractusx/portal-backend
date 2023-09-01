@@ -63,7 +63,7 @@ public class Consent : IAuditableV1, IBaseEntity
     public Guid? DocumentId { get; set; }
     public Guid CompanyUserId { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // Navigation properties

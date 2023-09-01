@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -72,7 +73,8 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
             {
                 options.UseNpgsql(_container.GetConnectionString(),
                     x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
-                        .MigrationsHistoryTable("__efmigrations_history_portal"));
+                        .MigrationsHistoryTable("__efmigrations_history_portal"))
+                    .UsePostgreSqlTriggers();
             });
             services.EnsureDbCreatedWithSeeding<TSeedingData>();
             services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();

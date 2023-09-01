@@ -46,14 +46,14 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
 
     public DateTimeOffset DateCreated { get; private set; }
 
-    [AuditLastChangedV1]
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     public CompanyApplicationStatusId ApplicationStatusId { get; set; }
     public Guid CompanyId { get; private set; }
     public Guid? ChecklistProcessId { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // Navigation properties

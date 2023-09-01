@@ -64,12 +64,12 @@ public class Connector : IAuditableV1, IBaseEntity
 
     public string? SelfDescriptionMessage { get; set; }
 
-    [AuditLastChangedV1]
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     public Guid? CompanyServiceAccountId { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // Navigation properties

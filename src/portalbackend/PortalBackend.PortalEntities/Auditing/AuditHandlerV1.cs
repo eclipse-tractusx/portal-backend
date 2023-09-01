@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
@@ -41,41 +42,49 @@ public class AuditHandlerV1 : IAuditHandler
     {
         var now = _dateTimeProvider.OffsetNow;
         foreach (var groupedEntries in changedEntries
-                     .GroupBy(entry => entry.Metadata.ClrType)
-                     .Where(group => (AuditEntityV1Attribute?)Attribute.GetCustomAttribute(group.Key, typeof(AuditEntityV1Attribute)) != null))
+                     .GroupBy(entry => entry.Metadata.ClrType))
         {
             var lastEditorNames = groupedEntries.Key.GetProperties()
-                .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute))).Select(x => x.Name)
-                .ToList();
+                .Where(x => Attribute.IsDefined(x, typeof(LastEditorV1Attribute)))
+                .Select(x => x.Name)
+                .Distinct()
+                .ToHashSet();
             var lastChangedNames = groupedEntries.Key.GetProperties()
-                .Where(x => Attribute.IsDefined(x, typeof(AuditLastChangedV1Attribute))).Select(x => x.Name)
-                .ToList();
+                .Where(x => Attribute.IsDefined(x, typeof(LastChangedV1Attribute)))
+                .Select(x => x.Name)
+                .Distinct()
+                .ToHashSet();
 
             foreach (var entry in groupedEntries.Where(entry => entry.State != EntityState.Deleted))
             {
-                // Set LastEditor
-                foreach (var prop in entry.Properties.Where(x => lastEditorNames.Any(lcn => lcn == x.Metadata.Name)))
+                foreach (var prop in entry.Properties.IntersectBy(
+                             lastEditorNames,
+                             property => property.Metadata.Name))
                 {
                     prop.CurrentValue = _identityService.IdentityData.UserId;
                 }
 
-                // If existing try to set DateLastChanged
-                foreach (var prop in entry.Properties.Where(x => lastChangedNames.Any(lcn => lcn == x.Metadata.Name)))
+                foreach (var prop in entry.Properties.IntersectBy(
+                             lastChangedNames,
+                             property => property.Metadata.Name))
                 {
                     prop.CurrentValue = now;
                 }
             }
 
+            if ((AuditEntityV1Attribute?)Attribute.GetCustomAttribute(groupedEntries.Key, typeof(AuditEntityV1Attribute)) == null)
+                continue;
+
+            var (auditEntityType, sourceProperties, _, targetProperties) = groupedEntries.Key.GetAuditPropertyInformation();
             foreach (var entry in groupedEntries.Where(entry => entry.State == EntityState.Deleted))
             {
-                AddAuditEntry(entry, entry.Metadata.ClrType, context);
+                AddAuditEntry(entry, entry.Metadata.ClrType, context, auditEntityType, sourceProperties, targetProperties);
             }
         }
     }
 
-    private void AddAuditEntry(EntityEntry entityEntry, Type entityType, DbContext context)
+    private void AddAuditEntry(EntityEntry entityEntry, Type entityType, DbContext context, Type auditEntityType, IEnumerable<PropertyInfo> sourceProperties, IEnumerable<PropertyInfo> targetProperties)
     {
-        var (auditEntityType, sourceProperties, _, targetProperties) = entityType.GetAuditPropertyInformation();
         if (Activator.CreateInstance(auditEntityType) is not IAuditEntityV1 newAuditEntity)
             throw new UnexpectedConditionException($"AuditEntityV1Attribute can only be used on types implementing IAuditEntityV1 but Type {entityType} isn't");
 

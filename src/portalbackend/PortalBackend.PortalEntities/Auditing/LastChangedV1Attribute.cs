@@ -28,6 +28,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 /// When changes are needed create a V2 of it.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property)]
-public class AuditLastEditorV1Attribute : Attribute
+public class LastChangedV1Attribute : Attribute
 {
 }

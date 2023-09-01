@@ -65,7 +65,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         var auditEntries = await sut.AuditCompanyApplication20230214.Where(x => x.Id == ca.Id).ToListAsync();
         auditEntries.Should().HaveCount(2).And.Satisfy(
             x => x.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED && x.AuditV1OperationId == AuditOperationId.INSERT,
-            x => x.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED && x.AuditV1OperationId == AuditOperationId.UPDATE && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
+            x => x.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE && x.AuditV1OperationId == AuditOperationId.UPDATE && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
         await trans.RollbackAsync().ConfigureAwait(false);
     }
 

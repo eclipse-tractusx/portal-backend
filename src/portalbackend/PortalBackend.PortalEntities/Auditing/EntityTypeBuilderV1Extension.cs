@@ -56,9 +56,10 @@ public static class EntityTypeBuilderV1Extension
         }
 
         var insertEditorProperty = sourceProperties.SingleOrDefault(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(AuditInsertEditorV1Attribute)));
-        var lastEditorProperty = sourceProperties.SingleOrDefault(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(AuditLastEditorV1Attribute)));
+        var lastEditorProperty = sourceProperties.SingleOrDefault(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(LastEditorV1Attribute)));
 
-        return builder.AfterInsert(trigger => trigger
+        return builder
+            .AfterInsert(trigger => trigger
             .Action(action => action
                 .Insert(CreateNewAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, insertEditorProperty ?? lastEditorProperty))))
             .AfterUpdate(trigger => trigger
@@ -68,34 +69,47 @@ public static class EntityTypeBuilderV1Extension
 
     private static Expression<Func<NewTableRef<TEntity>, TAuditEntity>> CreateNewAuditEntityExpression<TEntity, TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty) where TEntity : class
     {
-        var newValue = Expression.Parameter(typeof(NewTableRef<TEntity>), "newEntity");
+        var entity = Expression.Parameter(typeof(NewTableRef<TEntity>), "entity");
 
+        var newPropertyInfo = typeof(NewTableRef<TEntity>).GetProperty("New");
+        if (newPropertyInfo == null)
+        {
+            throw new UnexpectedConditionException($"{nameof(NewTableRef<TEntity>)} must have property New");
+        }
+
+        var propertyExpression = Expression.Property(entity, newPropertyInfo);
         return Expression.Lambda<Func<NewTableRef<TEntity>, TAuditEntity>>(
-            CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.INSERT, newValue, lastEditorProperty, "New"),
-            newValue);
+            CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.INSERT, propertyExpression, lastEditorProperty),
+            entity);
     }
 
     private static Expression<Func<OldAndNewTableRefs<TEntity>, TAuditEntity>> CreateUpdateAuditEntityExpression<TEntity, TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty) where TEntity : class
     {
-        var oldEntity = Expression.Parameter(typeof(OldAndNewTableRefs<TEntity>), "oldEntity");
-        // var newEntity = Expression.Parameter(typeof(OldAndNewTableRefs<TEntity>), "newEntity");
+        var entity = Expression.Parameter(typeof(OldAndNewTableRefs<TEntity>), "entity");
 
+        var newPropertyInfo = typeof(OldAndNewTableRefs<TEntity>).GetProperty("New");
+        if (newPropertyInfo == null)
+        {
+            throw new UnexpectedConditionException($"{nameof(OldAndNewTableRefs<TEntity>)} must have property New");
+        }
+
+        var propertyExpression = Expression.Property(entity, newPropertyInfo);
         return Expression.Lambda<Func<OldAndNewTableRefs<TEntity>, TAuditEntity>>(
-            CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.UPDATE, oldEntity, lastEditorProperty, "Old"),
-            oldEntity);
+            CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.UPDATE, propertyExpression, lastEditorProperty),
+            entity);
     }
 
-    private static MemberInitExpression CreateAuditEntityExpression<TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, AuditOperationId auditOperationId, ParameterExpression entity, PropertyInfo? lastEditorProperty, string propertyName)
+    private static MemberInitExpression CreateAuditEntityExpression<TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, AuditOperationId auditOperationId, Expression entity, PropertyInfo? lastEditorProperty)
     {
         var memberBindings = sourceProperties.Select(p =>
-                CreateMemberAssignment(typeof(TAuditEntity).GetMember(p.Name)[0], Expression.Property(Expression.Property(entity, propertyName), p)))
+                CreateMemberAssignment(typeof(TAuditEntity).GetMember(p.Name)[0], Expression.Property(entity, p)))
                     .Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1Id.ToString())[0], Expression.New(typeof(Guid))))
                     .Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1OperationId.ToString())[0], Expression.Constant(auditOperationId)))
                     .Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1DateLastChanged.ToString())[0], Expression.New(typeof(DateTimeOffset))));
 
         if (lastEditorProperty != null)
         {
-            memberBindings = memberBindings.Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1LastEditorId.ToString())[0], Expression.Property(Expression.Property(entity, propertyName), lastEditorProperty)));
+            memberBindings = memberBindings.Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1LastEditorId.ToString())[0], Expression.Property(entity, lastEditorProperty)));
         }
 
         return Expression.MemberInit(

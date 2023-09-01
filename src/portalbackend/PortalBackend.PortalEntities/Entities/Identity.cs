@@ -54,10 +54,10 @@ public class Identity : IBaseEntity, IAuditableV1
 
     public IdentityTypeId IdentityTypeId { get; set; }
 
-    [AuditLastChangedV1]
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
