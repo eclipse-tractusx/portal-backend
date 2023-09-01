@@ -48,12 +48,10 @@ public class AuditHandlerV1 : IAuditHandler
             var lastEditorNames = groupedEntries.Key.GetProperties()
                 .Where(x => Attribute.IsDefined(x, typeof(LastEditorV1Attribute)))
                 .Select(x => x.Name)
-                .Distinct()
                 .ToImmutableHashSet();
             var lastChangedNames = groupedEntries.Key.GetProperties()
                 .Where(x => Attribute.IsDefined(x, typeof(LastChangedV1Attribute)))
                 .Select(x => x.Name)
-                .Distinct()
                 .ToImmutableHashSet();
 
             foreach (var properties in groupedEntries.Where(entry => entry.State != EntityState.Deleted).Select(entry => entry.Properties))
