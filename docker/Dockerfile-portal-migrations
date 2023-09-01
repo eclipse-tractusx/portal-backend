@@ -31,6 +31,7 @@ COPY /src/framework/Framework.ErrorHandling.Library /src/framework/Framework.Err
 COPY /src/framework/Framework.BaseDependencies /src/framework/Framework.BaseDependencies
 COPY /src/framework/Framework.ProcessIdentity /src/framework/Framework.ProcessIdentity/
 COPY /src/framework/Framework.Seeding /src/framework/Framework.Seeding
+COPY /src/framework/Framework.DateTimeProvider /src/framework/Framework.DateTimeProvider
 WORKDIR /src/portalbackend/PortalBackend.Migrations
 RUN dotnet build "PortalBackend.Migrations.csproj" -c Release -o /migrations/build
 
