@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using System.Collections.Immutable;
 using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
@@ -48,23 +49,23 @@ public class AuditHandlerV1 : IAuditHandler
                 .Where(x => Attribute.IsDefined(x, typeof(LastEditorV1Attribute)))
                 .Select(x => x.Name)
                 .Distinct()
-                .ToHashSet();
+                .ToImmutableHashSet();
             var lastChangedNames = groupedEntries.Key.GetProperties()
                 .Where(x => Attribute.IsDefined(x, typeof(LastChangedV1Attribute)))
                 .Select(x => x.Name)
                 .Distinct()
-                .ToHashSet();
+                .ToImmutableHashSet();
 
-            foreach (var entry in groupedEntries.Where(entry => entry.State != EntityState.Deleted))
+            foreach (var properties in groupedEntries.Where(entry => entry.State != EntityState.Deleted).Select(entry => entry.Properties))
             {
-                foreach (var prop in entry.Properties.IntersectBy(
+                foreach (var prop in properties.IntersectBy(
                              lastEditorNames,
                              property => property.Metadata.Name))
                 {
                     prop.CurrentValue = _identityService.IdentityData.UserId;
                 }
 
-                foreach (var prop in entry.Properties.IntersectBy(
+                foreach (var prop in properties.IntersectBy(
                              lastChangedNames,
                              property => property.Metadata.Name))
                 {
@@ -72,10 +73,11 @@ public class AuditHandlerV1 : IAuditHandler
                 }
             }
 
-            if ((AuditEntityV1Attribute?)Attribute.GetCustomAttribute(groupedEntries.Key, typeof(AuditEntityV1Attribute)) == null)
+            var auditPropertyInformation = groupedEntries.Key.GetAuditPropertyInformation();
+            if (auditPropertyInformation == null)
                 continue;
+            var (auditEntityType, sourceProperties, _, targetProperties) = auditPropertyInformation;
 
-            var (auditEntityType, sourceProperties, _, targetProperties) = groupedEntries.Key.GetAuditPropertyInformation();
             foreach (var entry in groupedEntries.Where(entry => entry.State == EntityState.Deleted))
             {
                 AddAuditEntry(entry, entry.Metadata.ClrType, context, auditEntityType, sourceProperties, targetProperties);

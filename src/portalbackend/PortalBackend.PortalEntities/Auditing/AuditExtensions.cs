@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
@@ -37,13 +38,13 @@ public static partial class AuditExtensions
             _ => throw new ConflictException($"Entries with state {state} should not be audited")
         };
 
-    public static AuditPropertyInformation GetAuditPropertyInformation(this Type auditableEntityType)
+    public static AuditPropertyInformation? GetAuditPropertyInformation(this Type auditableEntityType)
     {
         var auditEntityAttribute =
             (AuditEntityV1Attribute?)Attribute.GetCustomAttribute(auditableEntityType, typeof(AuditEntityV1Attribute));
         if (auditEntityAttribute == null)
         {
-            throw new ConfigurationException($"{auditableEntityType.Name} must be annotated with {nameof(AuditEntityV1Attribute)}");
+            return null;
         }
 
         var auditEntityType = auditEntityAttribute.AuditEntityType;
@@ -57,7 +58,7 @@ public static partial class AuditExtensions
             Enumerable.Empty<PropertyInfo>()).Concat(auditableEntityType
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                 .Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)))
-            .ToList();
+            .ToImmutableHashSet();
         var auditProperties = typeof(IAuditEntityV1).GetProperties();
 
         return new AuditPropertyInformation(

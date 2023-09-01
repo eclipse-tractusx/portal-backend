@@ -22,6 +22,7 @@ using Laraue.EfCoreTriggers.Common.Extensions;
 using Laraue.EfCoreTriggers.Common.TriggerBuilders.TableRefs;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
@@ -33,20 +34,19 @@ public static class EntityTypeBuilderV1Extension
 {
     public static EntityTypeBuilder<TEntity> HasAuditV1Triggers<TEntity, TAuditEntity>(this EntityTypeBuilder<TEntity> builder) where TEntity : class, IAuditableV1 where TAuditEntity : class, IAuditEntityV1
     {
-        var auditEntityAttribute = (AuditEntityV1Attribute?)Attribute.GetCustomAttribute(typeof(TEntity), typeof(AuditEntityV1Attribute));
-        var (_, sourceProperties, auditProperties, targetProperties) = typeof(TEntity).GetAuditPropertyInformation();
+        var (auditEntityType, sourceProperties, auditProperties, targetProperties) = typeof(TEntity).GetAuditPropertyInformation() ?? throw new ConfigurationException($"{typeof(TEntity)} must be annotated with {nameof(AuditEntityV1Attribute)}");
+        if (typeof(TAuditEntity) != auditEntityType)
+        {
+            throw new ConfigurationException($"{typeof(TEntity).Name} is annotated with {nameof(AuditEntityV1Attribute)} referring to a different audit entity type {auditEntityType.Name} then {typeof(TAuditEntity).Name}");
+        }
 
         var illegalProperties = sourceProperties.IntersectBy(auditProperties.Select(x => x.Name), p => p.Name);
-        if (illegalProperties.Any())
-        {
-            throw new ConfigurationException($"{typeof(TEntity).Name} is must not declare any of the following properties: {string.Join(", ", illegalProperties.Select(x => x.Name))}");
-        }
+        illegalProperties.IfAny(
+            illegal => throw new ConfigurationException($"{typeof(TEntity).Name} is must not declare any of the following properties: {string.Join(", ", illegal.Select(x => x.Name))}"));
 
         var missingProperties = sourceProperties.ExceptBy(targetProperties.Select(x => x.Name), p => p.Name);
-        if (missingProperties.Any())
-        {
-            throw new ArgumentException($"{auditEntityAttribute.AuditEntityType.Name} is missing the following properties: {string.Join(", ", missingProperties.Select(x => x.Name))}");
-        }
+        missingProperties.IfAny(
+            missing => throw new ArgumentException($"{typeof(TAuditEntity).Name} is missing the following properties: {string.Join(", ", missing.Select(x => x.Name))}"));
 
         if (!Array.Exists(
             typeof(TAuditEntity).GetProperties(),

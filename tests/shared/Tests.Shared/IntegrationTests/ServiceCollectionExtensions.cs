@@ -42,7 +42,7 @@ public static class ServiceCollectionExtensions
         var scopedServices = scope.ServiceProvider;
         var context = scopedServices.GetRequiredService<PortalDbContext>();
         context.Database.Migrate();
-        var result = ((IBaseSeeding)Activator.CreateInstance(typeof(TSeedingData)))?.SeedData();
+        var result = (Activator.CreateInstance(typeof(TSeedingData)) as IBaseSeeding)?.SeedData();
         result?.Invoke(context);
 
         context.SaveChanges();
