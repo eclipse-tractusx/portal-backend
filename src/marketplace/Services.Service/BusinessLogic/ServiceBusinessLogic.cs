@@ -152,10 +152,28 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.GetOfferDocumentContentAsync(serviceId, documentId, _settings.ServiceImageDocumentTypeIds, OfferTypeId.SERVICE, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, Guid companyId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId) =>
-        Pagination.CreateResponseAsync(page, size, 15,
-            _portalRepositories.GetInstance<IOfferRepository>()
-                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, companyId, sorting ?? OfferSorting.DateDesc, offerName));
+    public async Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, Guid companyId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId)
+    {
+        async Task<Pagination.Source<AllOfferStatusData>?> GetCompanyProvidedServiceStatusData(int skip, int take)
+        {
+            var companyProvidedServiceStatusData = await _portalRepositories.GetInstance<IOfferRepository>()
+                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, companyId, sorting ?? OfferSorting.DateDesc, offerName)(skip, take).ConfigureAwait(false);
+
+            return companyProvidedServiceStatusData == null
+                ? null
+                : new Pagination.Source<AllOfferStatusData>(
+                    companyProvidedServiceStatusData.Count,
+                    companyProvidedServiceStatusData.Data.Select(item =>
+                        new AllOfferStatusData(
+                            item.Id,
+                            item.Name,
+                            item.LeadPictureId == Guid.Empty ? null : item.LeadPictureId,
+                            item.Provider,
+                            item.Status,
+                            item.LastChanged)));
+        }
+        return await Pagination.CreateResponseAsync(page, size, 15, GetCompanyProvidedServiceStatusData).ConfigureAwait(false);
+    }
 
     private static IEnumerable<OfferStatusId> GetOfferStatusIds(ServiceStatusIdFilter? serviceStatusIdFilter)
     {

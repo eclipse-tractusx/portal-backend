@@ -712,8 +712,10 @@ public class OfferRepository : IOfferRepository
             offer => new AllOfferStatusData(
                 offer.Id,
                 offer.Name,
+                offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ProviderCompany!.Name,
-                offer.OfferStatusId
+                offer.OfferStatusId,
+                offer.DateLastChanged
                 ))
             .SingleOrDefaultAsync();
 
