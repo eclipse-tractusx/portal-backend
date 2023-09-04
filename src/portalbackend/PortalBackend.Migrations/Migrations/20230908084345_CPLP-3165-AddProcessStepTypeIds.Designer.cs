@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230908083654_CPLP-3165-AddProcessStepTypeIds")]
+    [Migration("20230908084345_CPLP-3165-AddProcessStepTypeIds")]
     partial class CPLP3165AddProcessStepTypeIds
     {
         /// <inheritdoc />
