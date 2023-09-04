@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Collections.Immutable;
@@ -36,6 +37,7 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserProvisioningService _userProvisioningService;
+    private readonly IProvisioningManager _provisioningManager;
 
     private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
         ProcessStepTypeId.SYNCHRONIZE_USER);
@@ -46,10 +48,12 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
     public NetworkRegistrationProcessTypeExecutor(
         IPortalRepositories portalRepositories,
         IUserProvisioningService userProvisioningService,
+        IProvisioningManager provisioningManager,
         IOptions<NetworkRegistrationProcessSettings> options)
     {
         _portalRepositories = portalRepositories;
         _userProvisioningService = userProvisioningService;
+        _provisioningManager = provisioningManager;
 
         _settings = options.Value;
     }
@@ -61,7 +65,7 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
-        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetNetworkRegistrationDataForProcessIdAsync(processId).ConfigureAwait(false); // TODO (PS): Move to other repo
+        var result = await _portalRepositories.GetInstance<INetworkRepository>().GetNetworkRegistrationDataForProcessIdAsync(processId).ConfigureAwait(false);
         if (result == Guid.Empty)
         {
             throw new NotFoundException($"process {processId} does not exist or is not associated with an offer subscription");
@@ -111,7 +115,22 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
 
         foreach (var cu in companyAssignedIdentityProviders)
         {
-            await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName, cu.LastName, cu.Email, roleData, cu.UserName, cu.UserId), cu.CompanyName, cu.Bpn, cu.Alias, cu.ProviderUserId);
+            var userId = await _provisioningManager.GetUserByUserName(cu.CompanyUserId.ToString()).ConfigureAwait(false);
+            if (userId == null)
+            {
+                userId = await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName, cu.LastName, cu.Email, roleData, string.Empty, string.Empty), cu.CompanyName, cu.Bpn, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias, x.ProviderUserId, x.UserName)));
+            }
+
+            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(cu.CompanyUserId, i =>
+                {
+                    i.UserStatusId = UserStatusId.PENDING;
+                    i.UserEntityId = null;
+                },
+                i =>
+                {
+                    i.UserStatusId = UserStatusId.ACTIVE;
+                    i.UserEntityId = userId;
+                });
         }
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(

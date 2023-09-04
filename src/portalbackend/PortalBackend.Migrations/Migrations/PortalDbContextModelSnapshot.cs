@@ -2771,9 +2771,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasIndex("IdentityProviderId")
                         .HasDatabaseName("ix_company_user_assigned_identity_providers_identity_provider_");
 
-                    b.HasIndex("ProcessStepId")
-                        .HasDatabaseName("ix_company_user_assigned_identity_providers_process_step_id");
-
                     b.ToTable("company_user_assigned_identity_providers", "portal");
                 });
 
@@ -6275,18 +6272,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_user_assigned_identity_providers_identity_providers");
 
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStep", "ProcessStep")
-                        .WithMany()
-                        .HasForeignKey("ProcessStepId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_company_user_assigned_identity_providers_process_steps_proc");
-
                     b.Navigation("CompanyUser");
 
                     b.Navigation("IdentityProvider");
-
-                    b.Navigation("ProcessStep");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", b =>

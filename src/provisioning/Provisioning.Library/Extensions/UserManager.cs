@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -46,6 +47,24 @@ public partial class ProvisioningManager
             user.LastName = lastName;
             user.Email = email;
             await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false);
+        }
+    }
+
+    public async Task<string?> GetUserByUserName(string userName)
+    {
+        try
+        {
+            var users = await _CentralIdp.GetUsersAsync(_Settings.CentralRealm, username: userName).ConfigureAwait(false);
+            return users.Count() != 1 ? null : users.Single().Id;
+        }
+        catch (FlurlHttpException ex)
+        {
+            if (ex.StatusCode == 404)
+            {
+                return null;
+            }
+
+            throw;
         }
     }
 

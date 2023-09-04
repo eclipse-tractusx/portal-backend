@@ -44,6 +44,4 @@ public class CompanyUserAssignedIdentityProvider
     public virtual CompanyUser? CompanyUser { get; set; }
 
     public virtual IdentityProvider? IdentityProvider { get; set; }
-
-    public virtual ProcessStep? ProcessStep { get; set; }
 }

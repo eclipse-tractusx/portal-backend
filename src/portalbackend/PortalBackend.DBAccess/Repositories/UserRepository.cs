@@ -446,24 +446,22 @@ public class UserRepository : IUserRepository
     public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid idpDataIdentityProviderId, string providerId, string userName, Guid processStepId) =>
         _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, idpDataIdentityProviderId, providerId, userName, processStepId)).Entity;
 
-    public IAsyncEnumerable<CompanyUserIdentityProviderProcessData>
-        GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
+    public IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
         _dbContext.NetworkRegistrations
             .Where(x => x.Id == networkRegistrationId)
-            .SelectMany(x => x.Company!.Identities.Where(i => i.UserStatusId == UserStatusId.PENDING)
-                .SelectMany(i => i.CompanyUser!.CompanyUserAssignedIdentityProviders
-                    .Where(x => x.ProcessStep!.ProcessStepStatusId == ProcessStepStatusId.TODO)
-                    .Select(cuaip => new CompanyUserIdentityProviderProcessData(
-                            cuaip.CompanyUserId,
-                            cuaip.CompanyUser!.Firstname,
-                            cuaip.CompanyUser!.Lastname,
-                            cuaip.CompanyUser!.Email,
-                            cuaip.UserName,
-                            cuaip.CompanyUser!.Identity!.UserEntityId,
-                            cuaip.CompanyUser!.Identity!.Company!.Name,
-                            cuaip.CompanyUser.Identity.Company.BusinessPartnerNumber,
-                            cuaip.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
-                            cuaip.ProviderId
-                        ))))
+            .SelectMany(x => x.Company!.Identities
+                .Where(i => i.UserStatusId == UserStatusId.PENDING)
+                .Select(i => i.CompanyUser!)
+                .Select(i =>
+                    new CompanyUserIdentityProviderProcessData(
+                        i.Id,
+                        i.Firstname!,
+                        i.Lastname!,
+                        i.Email!,
+                        i.Identity!.UserEntityId,
+                        i.Identity!.Company!.Name,
+                        i.Identity.Company.BusinessPartnerNumber,
+                        i.CompanyUserAssignedIdentityProviders.Select(cu => new ProviderLinkData(cu.UserName, cu.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, cu.ProviderId))
+                    )))
             .ToAsyncEnumerable();
 }

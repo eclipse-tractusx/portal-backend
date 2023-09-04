@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -34,4 +35,15 @@ public class NetworkRepository : INetworkRepository
 
     public NetworkRegistration CreateNetworkRegistration(Guid externalId, Guid companyId, Guid processId) =>
         _context.NetworkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, processId, DateTimeOffset.UtcNow)).Entity;
+
+    public Task<bool> CheckExternalIdExists(Guid externalId) =>
+        _context.NetworkRegistrations.AnyAsync(x => x.ExternalId == externalId);
+
+    /// <inheritdoc />
+    public Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(process => process.Id == processId)
+            .Select(process => process.NetworkRegistration!.Id)
+            .SingleOrDefaultAsync();
 }

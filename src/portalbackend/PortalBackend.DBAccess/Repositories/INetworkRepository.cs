@@ -25,4 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 public interface INetworkRepository
 {
     NetworkRegistration CreateNetworkRegistration(Guid externalId, Guid companyId, Guid processId);
+    Task<bool> CheckExternalIdExists(Guid externalId);
+    Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId);
 }

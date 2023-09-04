@@ -22,6 +22,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
@@ -43,6 +46,8 @@ public static class NetworkRegistrationProcessCollectionExtensions
             .ValidateDistinctValues(section)
             .ValidateOnStart();
 
-        return services;
+        return services
+            .AddTransient<IUserProvisioningService, UserProvisioningService>()
+            .AddTransient<IProcessTypeExecutor, NetworkRegistrationProcessTypeExecutor>();
     }
 }

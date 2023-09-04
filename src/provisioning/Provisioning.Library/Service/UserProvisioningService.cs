@@ -77,7 +77,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
 
-                var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, alias, providerUserId);
+                var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, Enumerable.Repeat(new IdentityProviderLink(user.UserName, alias, providerUserId), 1));
                 userdata = new(centralUserId, companyUserId);
                 if (identity == null)
                 {
@@ -108,7 +108,7 @@ public class UserProvisioningService : IUserProvisioningService
         }
     }
 
-    public async Task<string> CreateCentralUserWithProviderLinks(Guid companyUserId, UserCreationRoleDataIdpInfo user, string companyName, string? businessPartnerNumber, string alias, string providerUserId)
+    public async Task<string> CreateCentralUserWithProviderLinks(Guid companyUserId, UserCreationRoleDataIdpInfo user, string companyName, string? businessPartnerNumber, IEnumerable<IdentityProviderLink> identityProviderLinks)
     {
         var centralUserId = await _provisioningManager.CreateCentralUserAsync(
             new UserProfile(
@@ -123,9 +123,12 @@ public class UserProvisioningService : IUserProvisioningService
             )
         ).ConfigureAwait(false);
 
-        await _provisioningManager
-            .AddProviderUserLinkToCentralUserAsync(centralUserId,
-                new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
+        foreach (var identityProviderLink in identityProviderLinks)
+        {
+            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId,
+                    new IdentityProviderLink(identityProviderLink.Alias, identityProviderLink.UserId, identityProviderLink.UserName)).ConfigureAwait(false);
+        }
+
         return centralUserId;
     }
 

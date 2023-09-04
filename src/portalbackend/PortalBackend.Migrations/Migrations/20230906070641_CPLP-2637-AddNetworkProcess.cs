@@ -18,15 +18,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore.Migrations;
 using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
+    /// <inheritdoc />
     public partial class CPLP2637AddNetworkProcess : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -55,13 +59,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalSchema: "portal",
                         principalTable: "identity_providers",
                         principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_company_user_assigned_identity_providers_process_steps_proc",
-                        column: x => x.process_step_id,
-                        principalSchema: "portal",
-                        principalTable: "process_steps",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -122,12 +119,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "identity_provider_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_company_user_assigned_identity_providers_process_step_id",
-                schema: "portal",
-                table: "company_user_assigned_identity_providers",
-                column: "process_step_id");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_network_registrations_company_id",
                 schema: "portal",
                 table: "network_registrations",
@@ -149,6 +140,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 unique: true);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

@@ -73,8 +73,4 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Migrations\20230825073236_CPLP-3165-AddN2NModels.cs" />
-    <Compile Remove="Migrations\20230825073236_CPLP-3165-AddN2NModels.Designer.cs" />
-  </ItemGroup>
 </Project>

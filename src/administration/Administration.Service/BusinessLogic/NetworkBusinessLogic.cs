@@ -53,18 +53,8 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     public async Task HandlePartnerRegistration(PartnerRegistrationData data)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
-        await ValidatePartnerRegistrationData(data).ConfigureAwait(false);
-
-        IEnumerable<UserRoleData> roleDatas;
-        try
-        {
-            roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            throw new ConfigurationException($"{nameof(_settings.InitialRoles)}: {e.Message}");
-        }
+        var ownerCompanyId = _identityService.IdentityData.CompanyId;
+        var roleDatas = await ValidatePartnerRegistrationData(data).ConfigureAwait(false);
 
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var address = companyRepository.CreateAddress(data.City, data.StreetName,
@@ -87,25 +77,26 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         var process = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION);
+        var processStepId = processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id), 1)).Single().Id;
 
-        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
             ca =>
             {
-                ca.OnboardingServiceProviderId = companyId;
+                ca.OnboardingServiceProviderId = ownerCompanyId;
             });
 
         _portalRepositories.GetInstance<INetworkRepository>().CreateNetworkRegistration(data.ExternalId, company.Id, process.Id);
 
+        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-        var idps = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(companyId).ToListAsync().ConfigureAwait(false);
+        var idps = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(ownerCompanyId).ToListAsync().ConfigureAwait(false);
         foreach (var user in data.UserDetails)
         {
-            var identity = userRepository.CreateIdentity(companyId, UserStatusId.PENDING, IdentityTypeId.COMPANY_USER);
+            var identity = userRepository.CreateIdentity(company.Id, UserStatusId.PENDING, IdentityTypeId.COMPANY_USER);
             var companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email).Id;
             if (data.Bpn != null)
             {
@@ -120,7 +111,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             foreach (var idpLink in user.IdentityProviderLinks)
             {
                 var idpData = idps.Single(x => idpLink.IdentityProviderId == null || x.IdentityProviderId == idpLink.IdentityProviderId.Value);
-                var processStepId = processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id), 1)).Single().Id;
                 userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, idpData.IdentityProviderId, idpLink.ProviderId, idpLink.Username, processStepId);
             }
         }
@@ -128,17 +118,11 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task ValidatePartnerRegistrationData(PartnerRegistrationData data)
+    private async Task<IEnumerable<UserRoleData>> ValidatePartnerRegistrationData(PartnerRegistrationData data)
     {
         if (!string.IsNullOrWhiteSpace(data.Bpn) && !BpnRegex.IsMatch(data.Bpn))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
-        }
-
-        if (!await _portalRepositories.GetInstance<ICountryRepository>()
-                .CheckCountryExistsByAlpha2CodeAsync(data.CountryAlpha2Code).ConfigureAwait(false))
-        {
-            throw new ControllerArgumentException($"Location {data.CountryAlpha2Code} does not exist", nameof(data.CountryAlpha2Code));
         }
 
         foreach (var user in data.UserDetails)
@@ -159,19 +143,47 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             }
         }
 
+        if (!data.CompanyRoles.Any())
+        {
+            throw new ControllerArgumentException("At least one company role must be selected", nameof(data.CompanyRoles));
+        }
+
+        if (await _portalRepositories.GetInstance<INetworkRepository>().CheckExternalIdExists(data.ExternalId)
+                .ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"ExternalId {data.ExternalId} already exists");
+        }
+
+        if (!await _portalRepositories.GetInstance<ICountryRepository>()
+                .CheckCountryExistsByAlpha2CodeAsync(data.CountryAlpha2Code).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"Location {data.CountryAlpha2Code} does not exist", nameof(data.CountryAlpha2Code));
+        }
+
         var identityProviderIds = data.UserDetails.SelectMany(x => x.IdentityProviderLinks.Select(y => y.IdentityProviderId)).Distinct();
         var idps = await _portalRepositories
-            .GetInstance<ICompanyRepository>().GetLinkedIdpCount(_identityService.IdentityData.CompanyId, identityProviderIds)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (idps.Count != identityProviderIds.Count(x => x != null))
+                    .GetInstance<ICompanyRepository>().GetLinkedIdpCount(_identityService.IdentityData.CompanyId, identityProviderIds)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+        if (identityProviderIds.Any(x => x == null) && idps.Count != 1)
+        {
+            throw new ControllerArgumentException(
+                "Company has more than one identity provider linked, therefor identityProviderId must be set for all users",
+                nameof(data.UserDetails));
+        }
+
+        if (idps.All(x => !identityProviderIds.Where(y => y != null).Contains(x)))
         {
             throw new ControllerArgumentException($"Idps {string.Join("", idps.Where(x => !identityProviderIds.Any(i => i == x)))} do not exist");
         }
 
-        if (!data.CompanyRoles.Any())
+        try
         {
-            throw new ControllerArgumentException("At least one company role must be selected", nameof(data.CompanyRoles));
+            return await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            throw new ConfigurationException($"{nameof(_settings.InitialRoles)}: {e.Message}");
         }
     }
 }
