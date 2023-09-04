@@ -49,6 +49,7 @@ public class PortalRepositories : IPortalRepositories
         { typeof(IInvitationRepository), context => new InvitationRepository(context) },
         { typeof(ILanguageRepository), context => new LanguageRepository(context) },
         { typeof(INotificationRepository), context => new NotificationRepository(context) },
+        { typeof(INetworkRepository), context => new NetworkRepository(context) },
         { typeof(IOfferRepository), context => new OfferRepository(context) },
         { typeof(IOfferSubscriptionsRepository), context => new OfferSubscriptionsRepository(context) },
         { typeof(IProcessStepRepository), context => new ProcessStepRepository(context) },

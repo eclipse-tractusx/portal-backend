@@ -21,15 +21,12 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Text.RegularExpressions;
 
@@ -37,9 +34,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class NetworkBusinessLogic : INetworkBusinessLogic
 {
-    private static readonly Regex name = new(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex email = new(@"^(([^<>()[\]\\.,;:\s@""]+(\.[^<>()[\]\\.,;:\s@""]+)*)|("".+""))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-z0-9-]+\.)+[a-z]{2,}))$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex bpnRegex = new(@"^BPNL[\w|\d]{12}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex Name = new(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex Email = new(@"^(([^<>()[\]\\.,;:\s@""]+(\.[^<>()[\]\\.,;:\s@""]+)*)|("".+""))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-z0-9-]+\.)+[a-z]{2,}))$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex BpnRegex = new(@"^BPNL[\w|\d]{12}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityService _identityService;
@@ -85,8 +82,11 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             c.BusinessPartnerNumber = data.Bpn;
         });
 
-        companyRepository.CreateUpdateDeleteIdentifiers(company.Id, data.UniqueIds, Enumerable.Empty<(UniqueIdentifierId, string)>());
+        companyRepository.CreateUpdateDeleteIdentifiers(company.Id, Enumerable.Empty<(UniqueIdentifierId, string)>(), data.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
         _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(company.Id, data.CompanyRoles);
+
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var process = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
@@ -96,8 +96,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 ca.OnboardingServiceProviderId = companyId;
             });
 
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var process = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION);
+        _portalRepositories.GetInstance<INetworkRepository>().CreateNetworkRegistration(data.ExternalId, company.Id, process.Id);
 
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -106,7 +105,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var idps = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(companyId).ToListAsync().ConfigureAwait(false);
         foreach (var user in data.UserDetails)
         {
-
             var identity = userRepository.CreateIdentity(companyId, UserStatusId.PENDING, IdentityTypeId.COMPANY_USER);
             var companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email).Id;
             if (data.Bpn != null)
@@ -132,7 +130,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     private async Task ValidatePartnerRegistrationData(PartnerRegistrationData data)
     {
-        if (!string.IsNullOrWhiteSpace(data.Bpn) && !bpnRegex.IsMatch(data.Bpn))
+        if (!string.IsNullOrWhiteSpace(data.Bpn) && !BpnRegex.IsMatch(data.Bpn))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
         }
@@ -145,17 +143,17 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
         foreach (var user in data.UserDetails)
         {
-            if (!email.IsMatch(user.Email))
+            if (!Email.IsMatch(user.Email))
             {
                 throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
             }
 
-            if (!name.IsMatch(user.FirstName))
+            if (!Name.IsMatch(user.FirstName))
             {
                 throw new ControllerArgumentException("Firstname does not match expected format");
             }
 
-            if (!name.IsMatch(user.LastName))
+            if (!Name.IsMatch(user.LastName))
             {
                 throw new ControllerArgumentException("Lastname does not match expected format");
             }
@@ -171,7 +169,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ControllerArgumentException($"Idps {string.Join("", idps.Where(x => !identityProviderIds.Any(i => i == x)))} do not exist");
         }
 
-        if (data.CompanyRoles.Any())
+        if (!data.CompanyRoles.Any())
         {
             throw new ControllerArgumentException("At least one company role must be selected", nameof(data.CompanyRoles));
         }

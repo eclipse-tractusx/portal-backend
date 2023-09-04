@@ -43,7 +43,7 @@ public class NetworkController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "tbd")]
+    // [Authorize(Roles = "tbd")]
     [Route("partnerRegistration")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<OkResult> PartnerRegister([FromBody] PartnerRegistrationData data)

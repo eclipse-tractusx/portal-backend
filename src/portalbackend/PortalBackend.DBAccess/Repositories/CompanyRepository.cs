@@ -63,16 +63,15 @@ public class CompanyRepository : ICompanyRepository
 
     public Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null)
     {
-        var address = _context.Addresses.Add(
-            new Address(
-                Guid.NewGuid(),
-                city,
-                streetname,
-                countryAlpha2Code,
-                DateTimeOffset.UtcNow
-            )).Entity;
+        var address = new Address(
+            Guid.NewGuid(),
+            city,
+            streetname,
+            countryAlpha2Code,
+            DateTimeOffset.UtcNow
+        );
         setOptionalParameters?.Invoke(address);
-        return address;
+        return _context.Addresses.Add(address).Entity;
     }
 
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)

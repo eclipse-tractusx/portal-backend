@@ -24,7 +24,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class NetworkRegistration : IBaseEntity
 {
+    private NetworkRegistration()
+    {
+    }
+
     public NetworkRegistration(Guid id, Guid externalId, Guid companyId, Guid processId, DateTimeOffset dateCreated)
+        : this()
     {
         Id = id;
         ExternalId = externalId;

@@ -1398,6 +1398,11 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<NetworkRegistration>(entity =>
         {
+            entity.HasKey(x => x.Id);
+
+            entity.HasIndex(x => x.ExternalId)
+                .IsUnique();
+
             entity.HasOne(x => x.Company)
                 .WithOne(x => x.NetworkRegistration)
                 .HasForeignKey<NetworkRegistration>(x => x.CompanyId)
@@ -1406,6 +1411,21 @@ public class PortalDbContext : DbContext
             entity.HasOne(x => x.Process)
                 .WithOne(x => x.NetworkRegistration)
                 .HasForeignKey<NetworkRegistration>(x => x.ProcessId);
+        });
+
+        modelBuilder.Entity<CompanyUserAssignedIdentityProvider>(entity =>
+        {
+            entity.HasKey(e => new { e.CompanyUserId, e.IdentityProviderId });
+
+            entity.HasOne(e => e.CompanyUser)
+                .WithMany(e => e.CompanyUserAssignedIdentityProviders)
+                .HasForeignKey(e => e.CompanyUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(e => e.IdentityProvider)
+                .WithMany(e => e.CompanyUserAssignedIdentityProviders)
+                .HasForeignKey(e => e.IdentityProviderId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 

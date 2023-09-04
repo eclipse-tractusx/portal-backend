@@ -72,7 +72,9 @@ WebApplicationBuildRunner
         builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
             .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
-        builder.Services.AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>();
+        builder.Services
+            .AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>()
+            .AddPartnerRegistration(builder.Configuration.GetSection("Network2Network"));
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
     });
