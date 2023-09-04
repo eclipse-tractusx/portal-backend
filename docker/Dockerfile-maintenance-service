@@ -31,6 +31,7 @@ COPY src/framework/Framework.Models/ src/framework/Framework.Models/
 COPY src/framework/Framework.Logging/ src/framework/Framework.Logging/
 COPY src/framework/Framework.ErrorHandling.Library/ src/framework/Framework.ErrorHandling.Library/
 COPY src/framework/Framework.ProcessIdentity/ src/framework/Framework.ProcessIdentity/
+COPY /src/framework/Framework.DateTimeProvider /src/framework/Framework.DateTimeProvider
 RUN dotnet restore "src/maintenance/Maintenance.App/Maintenance.App.csproj"
 WORKDIR /src/maintenance/Maintenance.App
 RUN dotnet build "Maintenance.App.csproj" -c Release -o /app/build
