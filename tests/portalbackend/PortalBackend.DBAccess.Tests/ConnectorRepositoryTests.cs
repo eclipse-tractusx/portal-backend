@@ -56,13 +56,16 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllCompanyConnectorsForCompanyId(_userCompanyId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllCompanyConnectorsForCompanyId(_userCompanyId).Invoke(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(2).And.Satisfy(
-            x => x.Name == "Test Connector 6",
-            x => x.Name == "Test Connector 1");
+        result!.Data.Should().HaveCount(2).And.Satisfy(
+            x => x.Name == "Test Connector 6"
+                && x.TechnicalUsers!.Id == new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca")
+                && x.TechnicalUsers.Name == "test-user-service-accounts",
+            x => x.Name == "Test Connector 1"
+                && x.TechnicalUsers == null);
     }
 
     #endregion
@@ -157,6 +160,8 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result.IsProviderCompany.Should().BeTrue();
+        result.ConnectorData.Name.Should().Be("Test Connector 1");
+        result.ConnectorData.TechnicalUsers.Should().BeNull();
     }
 
     [Fact]
@@ -358,7 +363,13 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
-        result.Data.Should().ContainSingle().Which.Name.Should().Be("Test Connector 3");
+        result.Data.Should().ContainSingle().And.Satisfy(
+            x => x.Name == "Test Connector 3" &&
+                x.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE &&
+                x.Status == ConnectorStatusId.PENDING &&
+                x.TechnicalUsers!.Id == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f4") &&
+                x.TechnicalUsers.Name == "sa-test" &&
+                x.TechnicalUsers.Description == "SA with connector");
     }
 
     [Fact]

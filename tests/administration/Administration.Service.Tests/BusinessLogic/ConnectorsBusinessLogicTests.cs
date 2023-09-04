@@ -109,20 +109,30 @@ public class ConnectorsBusinessLogicTests
 
     #region GetAllCompanyConnectorDatas
 
-    [Fact]
-    public async Task GetAllCompanyConnectorDatas_WithValidData_ReturnsExpected()
+    [Theory]
+    [InlineData(0, 10, 5, 1, 0, 5)]
+    [InlineData(1, 10, 5, 1, 1, 0)]
+    [InlineData(0, 10, 20, 2, 0, 10)]
+    [InlineData(1, 10, 20, 2, 1, 10)]
+    [InlineData(1, 15, 20, 2, 1, 5)]
+    public async Task GetAllCompanyConnectorDatas_WithValidData_ReturnsExpected(int page, int size, int numberOfElements, int numberOfPages, int resultPage, int resultPageSize)
     {
-        // Arrange
-        var connectors = new AsyncEnumerableStub<Connector>(_fixture.CreateMany<Connector>(5));
-        A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(_identity.CompanyId))
-            .Returns(connectors.AsQueryable());
+        var data = _fixture.CreateMany<ConnectorData>(numberOfElements).ToImmutableArray();
+
+        A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(A<Guid>._))
+            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<ConnectorData>?)new Pagination.Source<ConnectorData>(data.Length, data.Skip(skip).Take(take))));
 
         // Act
-        var result = await _logic.GetAllCompanyConnectorDatas(0, 10).ConfigureAwait(false);
+        var result = await _logic.GetAllCompanyConnectorDatas(page, size);
 
         // Assert
-        result.Content.Should().HaveCount(connectors.Count());
-        result.Meta.NumberOfElements.Should().Be(connectors.Count());
+        A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+        result.Meta.NumberOfElements.Should().Be(numberOfElements);
+        result.Meta.NumberOfPages.Should().Be(numberOfPages);
+        result.Meta.Page.Should().Be(resultPage);
+        result.Meta.PageSize.Should().Be(resultPageSize);
+        result.Content.Should().HaveCount(resultPageSize);
     }
 
     #endregion
