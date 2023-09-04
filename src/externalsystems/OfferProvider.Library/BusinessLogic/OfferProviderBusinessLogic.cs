@@ -194,6 +194,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             {
                 throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
             }
+
             var authData = await _provisioningManager.GetCentralClientAuthDataAsync(serviceAccount.TechnicalClientId).ConfigureAwait(false);
             technicalUserInfoData = new CallbackTechnicalUserInfoData(
                 serviceAccount.TechnicalUserId,

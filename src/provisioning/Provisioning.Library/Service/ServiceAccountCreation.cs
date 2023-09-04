@@ -64,6 +64,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
         IEnumerable<string> bpns,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         bool enhanceTechnicalUserName,
+        bool enabled,
         Action<CompanyServiceAccount>? setOptionalParameter)
     {
         var (name, description, iamClientAuthMethod, userRoleIds) = creationData;
@@ -95,7 +96,8 @@ public class ServiceAccountCreation : IServiceAccountCreation
                         userRole.ClientClientId)
                     .ToDictionary(group =>
                             group.Key,
-                        group => group.Select(userRole => userRole.UserRoleText)))).ConfigureAwait(false);
+                        group => group.Select(userRole => userRole.UserRoleText))),
+            enabled).ConfigureAwait(false);
 
         if (bpns.Any())
         {

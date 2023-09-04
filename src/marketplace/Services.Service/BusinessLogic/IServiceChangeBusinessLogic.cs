@@ -29,6 +29,5 @@ public interface IServiceChangeBusinessLogic
     /// Deactivate Offer Status by serviceId
     /// </summary>
     /// <param name="serviceId">Id of the service</param>
-    /// <param name="companyId">CompanyId of the user</param>
-    public Task DeactivateOfferByServiceIdAsync(Guid serviceId, Guid companyId);
+    public Task DeactivateOfferByServiceIdAsync(Guid serviceId);
 }

@@ -392,7 +392,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Offer!.AppInstances.Select(ai => ai.Id),
                 x.OfferSubscriptionProcessData != null,
                 x.Offer.SalesManagerId,
-                x.Offer.ProviderCompanyId
+                x.Offer.ProviderCompanyId,
+                x.Offer.OfferTypeId == OfferTypeId.APP && (x.Offer.AppInstanceSetup == null || !x.Offer.AppInstanceSetup!.IsSingleInstance) ?
+                    x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId :
+                    null,
+                x.CompanyServiceAccounts.Where(sa => sa.ClientClientId != null).Select(sa => sa.ClientClientId!)
             ))
             .SingleOrDefaultAsync();
 

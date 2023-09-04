@@ -111,7 +111,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<OfferAgreementConsent> GetServiceAgreementConsentByIdAsync([FromRoute] Guid serviceId) =>
-       this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.GetServiceAgreementConsentAsync(serviceId, companyId));
+       _serviceReleaseBusinessLogic.GetServiceAgreementConsentAsync(serviceId);
 
     /// <summary>
     /// Return app detail with status
@@ -129,7 +129,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync([FromRoute] Guid serviceId) =>
-        this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId, companyId));
+        _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId);
 
     /// <summary>
     /// Update or Insert Consent
@@ -149,8 +149,8 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid serviceId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
-        await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents, identity));
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid serviceId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
+        _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents);
 
     /// <summary>
     /// Retrieves all in review status service in the marketplace .
@@ -192,7 +192,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> DeleteServiceDocumentsAsync([FromRoute] Guid documentId)
     {
-        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId, companyId));
+        await _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId);
         return NoContent();
     }
 
@@ -211,7 +211,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
     {
-        var id = await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.CreateServiceOfferingAsync(data, identity)).ConfigureAwait(false);
+        var id = await _serviceReleaseBusinessLogic.CreateServiceOfferingAsync(data).ConfigureAwait(false);
         return CreatedAtRoute(nameof(ServiceReleaseController.GetServiceDetailsForStatusAsync), new { controller = "ServiceRelease", serviceId = id }, id);
     }
 
@@ -259,7 +259,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
     {
-        await this.WithUserId(userId => _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId, userId)).ConfigureAwait(false);
+        await _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -282,7 +282,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
     {
-        await this.WithUserId(userId => _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
+        await _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -310,7 +310,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
     {
-        await this.WithUserId(userId => _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
+        await _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, data).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -360,7 +360,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TechnicalUserProfileInformation>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid serviceId) =>
-        this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, companyId));
+        _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId);
 
     /// <summary>
     /// Creates and updates the technical user profiles
@@ -380,7 +380,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid serviceId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
     {
-        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, companyId)).ConfigureAwait(false);
+        await _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data).ConfigureAwait(false);
         return NoContent();
     }
 }

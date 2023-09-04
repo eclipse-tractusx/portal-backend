@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -34,24 +35,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IIdentityService _identityService;
     private readonly IRoleBaseMailService _roleBaseMailService;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
+    /// <param name="identityService">Access to the identity of the user</param>
     /// <param name="mailingService">Mail service.</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories,
+        IIdentityService identityService,
         IRoleBaseMailService roleBaseMailService)
     {
         _portalRepositories = portalRepositories;
+        _identityService = identityService;
         _roleBaseMailService = roleBaseMailService;
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients)
     {
+        var identity = _identityService.IdentityData;
         var companyInformation = await ValidateCompanyInformationAsync(identity.CompanyId).ConfigureAwait(false);
         var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
 

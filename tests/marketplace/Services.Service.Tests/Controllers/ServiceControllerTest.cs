@@ -76,7 +76,7 @@ public class ServiceControllerTest
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId)))
+        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -84,7 +84,7 @@ public class ServiceControllerTest
         var result = await this._controller.AddServiceSubscription(serviceId, consentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(offerSubscriptionId);
     }
@@ -95,14 +95,14 @@ public class ServiceControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var serviceDetailData = _fixture.Create<ServiceDetailResponse>();
-        A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._, _identity.CompanyId))
+        A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._))
             .Returns(serviceDetailData);
 
         //Act
         var result = await this._controller.GetServiceDetails(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en")).MustHaveHappenedOnceExactly();
         Assert.IsType<ServiceDetailResponse>(result);
         result.Should().Be(serviceDetailData);
     }
@@ -113,14 +113,14 @@ public class ServiceControllerTest
         //Arrange
         var subscriptionId = Guid.NewGuid();
         var detailData = new SubscriptionDetailData(subscriptionId, "Service", OfferSubscriptionStatusId.ACTIVE);
-        A.CallTo(() => _logic.GetSubscriptionDetailAsync(subscriptionId, _identity.CompanyId))
+        A.CallTo(() => _logic.GetSubscriptionDetailAsync(subscriptionId))
             .Returns(detailData);
 
         //Act
         var result = await this._controller.GetSubscriptionDetail(subscriptionId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetSubscriptionDetailAsync(subscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetSubscriptionDetailAsync(subscriptionId)).MustHaveHappenedOnceExactly();
         Assert.IsType<SubscriptionDetailData>(result);
         result.Should().Be(detailData);
     }
@@ -171,14 +171,14 @@ public class ServiceControllerTest
             new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"),
             new ClientInfoData(Guid.NewGuid().ToString(), "http://www.google.com")
         );
-        A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId)))
+        A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._))
             .Returns(responseData);
 
         //Act
         var result = await this._controller.AutoSetupService(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AutoSetupServiceAsync(data, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AutoSetupServiceAsync(data)).MustHaveHappenedOnceExactly();
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
     }
@@ -192,14 +192,14 @@ public class ServiceControllerTest
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5);
         var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<Guid>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
+        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
             .Returns(pagination);
 
         //Act
         var result = await this._controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync(offerId: offerId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 15, _identity.CompanyId, null, null, offerId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 15, null, null, offerId)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
@@ -231,14 +231,14 @@ public class ServiceControllerTest
         //Arrange
         var data = _fixture.CreateMany<AllOfferStatusData>(5);
         var paginationResponse = new Pagination.Response<AllOfferStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15, _identity.CompanyId, null, null, null))
+        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15, null, null, null))
             .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetCompanyProvidedServiceStatusDataAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15, _identity.CompanyId, null, null, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15, null, null, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
@@ -253,7 +253,7 @@ public class ServiceControllerTest
         var result = await this._controller.StartAutoSetupServiceProcess(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.StartAutoSetupAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.StartAutoSetupAsync(data)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -264,14 +264,14 @@ public class ServiceControllerTest
         var serviceId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var data = _fixture.Create<ProviderSubscriptionDetailData>();
-        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(serviceId, subscriptionId, _identity.CompanyId))
+        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(serviceId, subscriptionId))
             .Returns(data);
 
         // Act
         var result = await this._controller.GetSubscriptionDetailForProvider(serviceId, subscriptionId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(serviceId, subscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(serviceId, subscriptionId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
 
@@ -282,14 +282,14 @@ public class ServiceControllerTest
         var serviceId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var data = _fixture.Create<SubscriberSubscriptionDetailData>();
-        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, _identity.CompanyId))
+        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId))
             .Returns(data);
 
         // Act
         var result = await this._controller.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
 
@@ -301,14 +301,14 @@ public class ServiceControllerTest
         //Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
         var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<Guid>._))
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._))
             .Returns(pagination);
 
         //Act
         var result = await this._controller.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(3).And.ContainInOrder(data);
     }
 
@@ -324,7 +324,7 @@ public class ServiceControllerTest
         var result = await this._controller.UnsubscribeCompanyServiceSubscriptionAsync(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UnsubscribeOwnCompanyServiceSubscriptionAsync(serviceId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UnsubscribeOwnCompanyServiceSubscriptionAsync(serviceId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 }

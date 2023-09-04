@@ -61,26 +61,23 @@ public interface IAppReleaseBusinessLogic
     /// Return Offer Agreement Consent
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, Guid companyId);
+    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId);
 
     /// <summary>
     /// Update Agreement Consent
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="offerAgreementConsents"></param>
-    /// <param name="identity"></param>
     /// <returns></returns>
-    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, (Guid UserId, Guid CompanyId) identity);
+    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents);
 
     /// <summary>
     /// Return Offer with Consent Status
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, Guid companyId);
+    Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId);
 
     /// <summary>
     /// Delete User Role by appId and roleId
@@ -124,17 +121,15 @@ public interface IAppReleaseBusinessLogic
     /// Update app status and create notification
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="userId"></param>
     /// <returns></returns>
-    Task SubmitAppReleaseRequestAsync(Guid appId, Guid userId);
+    Task SubmitAppReleaseRequestAsync(Guid appId);
 
     /// <summary>
     /// Approve App Status from IN_Review to Active
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="userId"></param>
     /// <returns></returns>
-    Task ApproveAppRequestAsync(Guid appId, Guid userId);
+    Task ApproveAppRequestAsync(Guid appId);
 
     /// <summary>
     /// Get All Privacy Policy
@@ -146,9 +141,8 @@ public interface IAppReleaseBusinessLogic
     /// Declines the app request
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="userId">Id of the User</param>
     /// <param name="data">The decline request data</param>
-    Task DeclineAppRequestAsync(Guid appId, Guid userId, OfferDeclineRequest data);
+    Task DeclineAppRequestAsync(Guid appId, OfferDeclineRequest data);
 
     /// <summary>
     /// Gets InReview App Details Data by Id
@@ -160,9 +154,8 @@ public interface IAppReleaseBusinessLogic
     /// Delete the App Document
     /// </summary>
     /// <param name="documentId"></param>
-    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task DeleteAppDocumentsAsync(Guid documentId, Guid companyId);
+    Task DeleteAppDocumentsAsync(Guid documentId);
 
     ///<summary>
     /// Delete App
@@ -184,15 +177,13 @@ public interface IAppReleaseBusinessLogic
     /// Get technical user profiles for a specific offer
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
-    /// <param name="companyId">Id of the users company</param>
     /// <returns>AsyncEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, Guid companyId);
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId);
 
     /// <summary>
     /// Creates or updates the technical user profiles
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="data">The technical user profiles</param>
-    /// <param name="companyId">Id of the users company</param>
-    Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, Guid companyId);
+    Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data);
 }

@@ -34,12 +34,11 @@ public interface IOfferSetupService
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
     /// <param name="itAdminRoles">Roles that will be assigned to the company admin</param>
-    /// <param name="identity">Identity of the user</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
     /// <param name="basePortalAddress">Address of the portal</param>
     /// <param name="serviceManagerRoles">Roles of the service Managers</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IEnumerable<UserRoleConfig> itAdminRoles, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> serviceManagerRoles);
+    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IEnumerable<UserRoleConfig> itAdminRoles, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> serviceManagerRoles);
 
     /// <summary>
     /// Setup a single instance app
@@ -73,20 +72,20 @@ public interface IOfferSetupService
     /// Internally auto setup the offer.
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="companyId">Id of the company</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
-    Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId, OfferTypeId offerTypeId);
+    Task StartAutoSetupAsync(OfferAutoSetupData data, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Creates the single instance subscription detail and creates the activation step.
     /// </summary>
     /// <param name="offerSubscriptionId">The offer subscription id and url for the service</param>
-    /// <param name="companyId">Id of the company</param>
-    Task CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId, Guid companyId);
+    Task CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId);
 
     Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateClient(Guid offerSubscriptionId);
 
     Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IEnumerable<UserRoleConfig> itAdminRoles);
 
     Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IEnumerable<UserRoleConfig> itAdminRoles, IEnumerable<UserRoleConfig> serviceManagerRoles, string basePortalAddress);
+
+    Task TriggerActivateSubscription(Guid offerSubscriptionId);
 }

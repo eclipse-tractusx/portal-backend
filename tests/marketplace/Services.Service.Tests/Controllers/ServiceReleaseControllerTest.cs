@@ -108,7 +108,7 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var data = _fixture.Create<OfferAgreementConsent>();
-        A.CallTo(() => _logic.GetServiceAgreementConsentAsync(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _logic.GetServiceAgreementConsentAsync(A<Guid>._))
             .Returns(data);
 
         //Act
@@ -116,7 +116,7 @@ public class ServiceReleaseControllerTest
 
         // Assert 
         result.Should().Be(data);
-        A.CallTo(() => _logic.GetServiceAgreementConsentAsync(serviceId, _identity.CompanyId))
+        A.CallTo(() => _logic.GetServiceAgreementConsentAsync(serviceId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -126,7 +126,7 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var data = _fixture.Create<ServiceProviderResponse>();
-        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(A<Guid>._))
             .Returns(data);
 
         //Act
@@ -134,7 +134,7 @@ public class ServiceReleaseControllerTest
 
         // Assert 
         result.Should().Be(data);
-        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(serviceId, _identity.CompanyId))
+        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(serviceId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -144,17 +144,16 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
-        var identitytestData = (_identity.UserId, _identity.CompanyId);
         var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
         var offerAgreementConsentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._, A<(Guid, Guid)>._))
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._))
             .Returns(Enumerable.Repeat(consentStatusData, 1));
 
         //Act
         var result = await this._controller.SubmitOfferConsentToAgreementsAsync(serviceId, offerAgreementConsentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, offerAgreementConsentData, identitytestData)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, offerAgreementConsentData)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(1);
     }
 
@@ -185,7 +184,7 @@ public class ServiceReleaseControllerTest
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.DeleteServiceDocumentsAsync(documentId, _identity.CompanyId))
+        A.CallTo(() => _logic.DeleteServiceDocumentsAsync(documentId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -195,14 +194,14 @@ public class ServiceReleaseControllerTest
         //Arrange
         var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
         var serviceOfferingData = _fixture.Create<ServiceOfferingData>();
-        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<ServiceOfferingData>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId)))
+        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<ServiceOfferingData>._))
             .Returns(id);
 
         //Act
         var result = await this._controller.CreateServiceOffering(serviceOfferingData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateServiceOfferingAsync(serviceOfferingData, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateServiceOfferingAsync(serviceOfferingData)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(id);
     }
@@ -231,7 +230,7 @@ public class ServiceReleaseControllerTest
         await this._controller.SubmitService(ServiceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SubmitServiceAsync(ServiceId, _identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SubmitServiceAsync(ServiceId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -244,7 +243,7 @@ public class ServiceReleaseControllerTest
         var result = await this._controller.ApproveServiceRequest(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.ApproveServiceRequestAsync(serviceId, _identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ApproveServiceRequestAsync(serviceId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -259,7 +258,7 @@ public class ServiceReleaseControllerTest
         var result = await this._controller.DeclineServiceRequest(serviceId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeclineServiceRequestAsync(serviceId, _identity.UserId, data)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeclineServiceRequestAsync(serviceId, data)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -285,14 +284,14 @@ public class ServiceReleaseControllerTest
         var offerId = Guid.NewGuid();
 
         var data = _fixture.CreateMany<TechnicalUserProfileInformation>(5);
-        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, _identity.CompanyId))
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId))
             .Returns(data);
 
         //Act
         var result = await this._controller.GetTechnicalUserProfiles(offerId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
@@ -307,7 +306,7 @@ public class ServiceReleaseControllerTest
         var result = await this._controller.CreateAndUpdateTechnicalUserProfiles(offerId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5))).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }
