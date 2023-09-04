@@ -78,7 +78,7 @@ public class CustodianServiceTests
         const string bpn = "123";
         const string name = "test";
         const string did = "did:sov:GamAMqXnXr1chS4viYXoxB";
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTimeOffset.Parse("2023-09-04T07:11:21.2022371+00:00");
         A.CallTo(() => _dateTimeProvider.OffsetNow)
             .Returns(now);
         var data = JsonSerializer.Serialize(new WalletCreationResponse(did), JsonOptions);
