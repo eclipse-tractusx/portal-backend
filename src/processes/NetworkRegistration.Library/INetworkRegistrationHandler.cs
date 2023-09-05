@@ -18,27 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public class CompanyUserAssignedIdentityProvider
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
+
+public interface INetworkRegistrationHandler
 {
-    public CompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName)
-    {
-        CompanyUserId = companyUserId;
-        IdentityProviderId = identityProviderId;
-        ProviderId = providerId;
-        UserName = userName;
-    }
-
-    public Guid CompanyUserId { get; set; }
-
-    public Guid IdentityProviderId { get; set; }
-
-    public string ProviderId { get; set; }
-
-    public string UserName { get; set; }
-
-    public virtual CompanyUser? CompanyUser { get; set; }
-
-    public virtual IdentityProvider? IdentityProvider { get; set; }
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string?processMessage)> SynchronizeUser(Guid networkRegistrationId);
 }

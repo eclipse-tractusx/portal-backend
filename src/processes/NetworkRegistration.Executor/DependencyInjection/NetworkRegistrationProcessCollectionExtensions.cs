@@ -20,34 +20,12 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.DependencyInjection;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
-
-public class NetworkRegistrationProcessSettings
-{
-    [Required]
-    [DistinctValues("x => x.ClientId")]
-    public IEnumerable<UserRoleConfig> InitialRoles { get; set; } = null!;
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 
 public static class NetworkRegistrationProcessCollectionExtensions
 {
-    public static IServiceCollection AddNetworkRegistrationProcessExecutor(this IServiceCollection services, IConfiguration config)
-    {
-        var section = config.GetSection("NetworkRegistration");
-        services.AddOptions<NetworkRegistrationProcessSettings>()
-            .Bind(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
-
-        return services
-            .AddTransient<IUserProvisioningService, UserProvisioningService>()
-            .AddTransient<IProcessTypeExecutor, NetworkRegistrationProcessTypeExecutor>();
-    }
+    public static IServiceCollection AddNetworkRegistrationProcessExecutor(this IServiceCollection services, IConfiguration config) =>
+        services.AddNetworkRegistrationHandler(config);
 }

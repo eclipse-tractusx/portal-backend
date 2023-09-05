@@ -82,6 +82,66 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region Create Company
+
+    [Fact]
+    public async Task CreateCompany_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateCompany("Test Company", entity =>
+        {
+            entity.CompanyStatusId = CompanyStatusId.ACTIVE;
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.Name.Should().Be("Test Company");
+        results.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<Company>();
+        var company = changedEntries.Single().Entity as Company;
+        company!.Name.Should().Be("Test Company");
+        company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+    }
+
+    #endregion
+
+    #region Create Address
+
+    [Fact]
+    public async Task CreateAddress_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateAddress("Munich", "Street", "DE", a =>
+        {
+            a.Streetnumber = "5";
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.Streetnumber.Should().Be("5");
+        results.City.Should().Be("Munich");
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<Address>();
+        var address = changedEntries.Single().Entity as Address;
+        address!.City.Should().Be("Munich");
+        address.Streetnumber.Should().Be("5");
+    }
+
+    #endregion
+
     #region Create ServiceProviderCompanyDetail
 
     [Fact]
@@ -808,6 +868,24 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
         entry.State.Should().Be(EntityState.Added);
+    }
+
+    #endregion
+
+    #region GetLinkedIdpIds
+
+    [Fact]
+    public async Task GetLinkedIdpIds_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetLinkedIdpIds(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle()
+            .Which.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce057770015"));
     }
 
     #endregion

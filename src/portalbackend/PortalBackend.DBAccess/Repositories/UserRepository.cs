@@ -443,8 +443,8 @@ public class UserRepository : IUserRepository
         return updatedEntity;
     }
 
-    public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid idpDataIdentityProviderId, string providerId, string userName, Guid processStepId) =>
-        _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, idpDataIdentityProviderId, providerId, userName, processStepId)).Entity;
+    public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid idpDataIdentityProviderId, string providerId, string userName) =>
+        _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, idpDataIdentityProviderId, providerId, userName)).Entity;
 
     public IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
         _dbContext.NetworkRegistrations

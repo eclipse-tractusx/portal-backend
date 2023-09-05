@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;

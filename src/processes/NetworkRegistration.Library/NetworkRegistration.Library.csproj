@@ -21,16 +21,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor</AssemblyName>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor</RootNamespace>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetworkRegistration.Library\NetworkRegistration.Library.csproj" />
+    <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
+    <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
+    <ProjectReference Include="..\Processes.Library\Processes.Library.csproj" />
   </ItemGroup>
 
 </Project>

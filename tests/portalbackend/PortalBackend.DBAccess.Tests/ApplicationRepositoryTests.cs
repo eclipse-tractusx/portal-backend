@@ -20,6 +20,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -459,6 +461,37 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region CreateCompanyApplication
+
+    [Fact]
+    public async Task CreateCompanyApplication_WithValidData_Creates()
+    {
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        var application = sut.CreateCompanyApplication(CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL,
+            a =>
+            {
+                a.OnboardingServiceProviderId = CompanyId;
+            });
+
+        // Assert
+        application.Id.Should().NotBeEmpty();
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<CompanyApplication>().Which.OnboardingServiceProviderId.Should().Be(CompanyId);
+    }
+
+    #endregion
+    
+    private async Task<(ApplicationRepository sut, PortalDbContext context)> CreateSutWithContext()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new ApplicationRepository(context);
+        return (sut, context);
+    }
     private async Task<ApplicationRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

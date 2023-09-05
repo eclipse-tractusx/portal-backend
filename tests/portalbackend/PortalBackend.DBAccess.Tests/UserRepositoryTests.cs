@@ -21,6 +21,8 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -380,6 +382,57 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+
+    #region AddCompanyUserAssignedIdentityProvider
+    
+    [Fact]
+    public async Task AddCompanyUserAssignedIdentityProvider_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        var results = sut.AddCompanyUserAssignedIdentityProvider(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"), new Guid("ac1cf001-7fbc-1f2f-817f-bce057770015"), "123", "testuser");
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.UserName.Should().Be("testuser");
+        results.ProviderId.Should().Be("123");
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<CompanyUserAssignedIdentityProvider>();
+        var companyUserAssignedIdentityProvider = changedEntries.Single().Entity as CompanyUserAssignedIdentityProvider;
+        companyUserAssignedIdentityProvider!.UserName.Should().Be("testuser");
+        companyUserAssignedIdentityProvider.ProviderId.Should().Be("123");
+    }
+
+    #endregion
+    
+    #region GetUserAssignedIdentityProviderForNetworkRegistration
+    
+    [Fact]
+    public async Task GetUserAssignedIdentityProviderForNetworkRegistration_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetUserAssignedIdentityProviderForNetworkRegistration(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        results.Should().ContainSingle().And.Satisfy(x => x.ProviderLinkData.Single().UserName == "drstrange" && x.Email == "test@email.com" && x.Bpn == "BPNL00000003AYRE");
+    }
+
+    #endregion
+
+    private async Task<(UserRepository sut, PortalDbContext context)> CreateSutWithContext()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new UserRepository(context);
+        return (sut, context);
+    }
 
     private async Task<UserRepository> CreateSut()
     {

@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,27 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-
-public class CompanyUserAssignedIdentityProvider
-{
-    public CompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName)
-    {
-        CompanyUserId = companyUserId;
-        IdentityProviderId = identityProviderId;
-        ProviderId = providerId;
-        UserName = userName;
-    }
-
-    public Guid CompanyUserId { get; set; }
-
-    public Guid IdentityProviderId { get; set; }
-
-    public string ProviderId { get; set; }
-
-    public string UserName { get; set; }
-
-    public virtual CompanyUser? CompanyUser { get; set; }
-
-    public virtual IdentityProvider? IdentityProvider { get; set; }
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

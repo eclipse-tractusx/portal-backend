@@ -54,9 +54,10 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     public async Task HandlePartnerRegistration(PartnerRegistrationData data)
     {
         var ownerCompanyId = _identityService.IdentityData.CompanyId;
-        var roleDatas = await ValidatePartnerRegistrationData(data).ConfigureAwait(false);
-
+        var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+        var roleDatas = await ValidatePartnerRegistrationData(data, networkRepository, companyRepository).ConfigureAwait(false);
+
         var address = companyRepository.CreateAddress(data.City, data.StreetName,
             data.CountryAlpha2Code,
             a =>
@@ -76,17 +77,16 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(company.Id, data.CompanyRoles);
 
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var process = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION);
-        var processStepId = processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id), 1)).Single().Id;
+        var processId = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION).Id;
+        processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId), 1));
 
-        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
+        _portalRepositories.GetInstance<IApplicationRepository>().CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
             ca =>
             {
                 ca.OnboardingServiceProviderId = ownerCompanyId;
             });
 
-        _portalRepositories.GetInstance<INetworkRepository>().CreateNetworkRegistration(data.ExternalId, company.Id, process.Id);
+        networkRepository.CreateNetworkRegistration(data.ExternalId, company.Id, processId);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
@@ -111,36 +111,18 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             foreach (var idpLink in user.IdentityProviderLinks)
             {
                 var idpData = idps.Single(x => idpLink.IdentityProviderId == null || x.IdentityProviderId == idpLink.IdentityProviderId.Value);
-                userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, idpData.IdentityProviderId, idpLink.ProviderId, idpLink.Username, processStepId);
+                userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, idpData.IdentityProviderId, idpLink.ProviderId, idpLink.Username);
             }
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task<IEnumerable<UserRoleData>> ValidatePartnerRegistrationData(PartnerRegistrationData data)
+    private async Task<IEnumerable<UserRoleData>> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, ICompanyRepository companyRepository)
     {
-        if (!string.IsNullOrWhiteSpace(data.Bpn) && !BpnRegex.IsMatch(data.Bpn))
+        if (string.IsNullOrWhiteSpace(data.Bpn) || !BpnRegex.IsMatch(data.Bpn))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
-        }
-
-        foreach (var user in data.UserDetails)
-        {
-            if (!Email.IsMatch(user.Email))
-            {
-                throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
-            }
-
-            if (!Name.IsMatch(user.FirstName))
-            {
-                throw new ControllerArgumentException("Firstname does not match expected format");
-            }
-
-            if (!Name.IsMatch(user.LastName))
-            {
-                throw new ControllerArgumentException("Lastname does not match expected format");
-            }
         }
 
         if (!data.CompanyRoles.Any())
@@ -148,10 +130,28 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ControllerArgumentException("At least one company role must be selected", nameof(data.CompanyRoles));
         }
 
-        if (await _portalRepositories.GetInstance<INetworkRepository>().CheckExternalIdExists(data.ExternalId)
+        foreach (var user in data.UserDetails)
+        {
+            if (string.IsNullOrWhiteSpace(user.Email) || !Email.IsMatch(user.Email))
+            {
+                throw new ControllerArgumentException("User must have a valid email address");
+            }
+
+            if (string.IsNullOrWhiteSpace(user.FirstName) || !Name.IsMatch(user.FirstName))
+            {
+                throw new ControllerArgumentException("Firstname does not match expected format");
+            }
+
+            if (string.IsNullOrWhiteSpace(user.LastName) || !Name.IsMatch(user.LastName))
+            {
+                throw new ControllerArgumentException("Lastname does not match expected format");
+            }
+        }
+
+        if (await networkRepository.CheckExternalIdExists(data.ExternalId)
                 .ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"ExternalId {data.ExternalId} already exists");
+            throw new ControllerArgumentException($"ExternalId {data.ExternalId} already exists", nameof(data.ExternalId));
         }
 
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
@@ -161,8 +161,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
 
         var identityProviderIds = data.UserDetails.SelectMany(x => x.IdentityProviderLinks.Select(y => y.IdentityProviderId)).Distinct();
-        var idps = await _portalRepositories
-                    .GetInstance<ICompanyRepository>().GetLinkedIdpCount(_identityService.IdentityData.CompanyId, identityProviderIds)
+        var idps = await companyRepository.GetLinkedIdpIds(_identityService.IdentityData.CompanyId)
                     .ToListAsync()
                     .ConfigureAwait(false);
         if (identityProviderIds.Any(x => x == null) && idps.Count != 1)

@@ -18,17 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor;
@@ -36,26 +31,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Exec
 public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IProvisioningManager _provisioningManager;
+    private readonly INetworkRegistrationHandler _networkRegistrationHandler;
 
     private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
         ProcessStepTypeId.SYNCHRONIZE_USER);
 
-    private readonly NetworkRegistrationProcessSettings _settings;
     private Guid _networkRegistrationId;
 
     public NetworkRegistrationProcessTypeExecutor(
         IPortalRepositories portalRepositories,
-        IUserProvisioningService userProvisioningService,
-        IProvisioningManager provisioningManager,
-        IOptions<NetworkRegistrationProcessSettings> options)
+        INetworkRegistrationHandler networkRegistrationHandler)
     {
         _portalRepositories = portalRepositories;
-        _userProvisioningService = userProvisioningService;
-        _provisioningManager = provisioningManager;
-
-        _settings = options.Value;
+        _networkRegistrationHandler = networkRegistrationHandler;
     }
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.PARTNER_REGISTRATION;
@@ -91,7 +79,7 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
         {
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
-                ProcessStepTypeId.SYNCHRONIZE_USER => await SynchronizeUser(_networkRegistrationId)
+                ProcessStepTypeId.SYNCHRONIZE_USER => await _networkRegistrationHandler.SynchronizeUser(_networkRegistrationId)
                     .ConfigureAwait(false),
                 _ => (null, ProcessStepStatusId.TODO, false, null)
             };
@@ -103,41 +91,6 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
         }
 
         return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
-    }
-
-    private async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> SynchronizeUser(Guid networkRegistrationId)
-    {
-        var companyAssignedIdentityProviders = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetUserAssignedIdentityProviderForNetworkRegistration(networkRegistrationId)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        var roleData = await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
-
-        foreach (var cu in companyAssignedIdentityProviders)
-        {
-            var userId = await _provisioningManager.GetUserByUserName(cu.CompanyUserId.ToString()).ConfigureAwait(false);
-            if (userId == null)
-            {
-                userId = await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName, cu.LastName, cu.Email, roleData, string.Empty, string.Empty), cu.CompanyName, cu.Bpn, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias, x.ProviderUserId, x.UserName)));
-            }
-
-            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(cu.CompanyUserId, i =>
-                {
-                    i.UserStatusId = UserStatusId.PENDING;
-                    i.UserEntityId = null;
-                },
-                i =>
-                {
-                    i.UserStatusId = UserStatusId.ACTIVE;
-                    i.UserEntityId = userId;
-                });
-        }
-
-        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-                null,
-                ProcessStepStatusId.DONE,
-                false,
-                null);
     }
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId processStepTypeId)
