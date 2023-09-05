@@ -68,6 +68,8 @@ public record DeleteConnectorData(
     Guid? SelfDescriptionDocumentId,
     DocumentStatusId? DocumentStatusId,
     ConnectorStatusId ConnectorStatus,
-    IEnumerable<ConnectorOfferSubscription> ConnectorOfferSubscriptions
+    IEnumerable<ConnectorOfferSubscription> ConnectorOfferSubscriptions,
+    UserStatusId? UserStatusId,
+    Guid? ServiceAccountId
 );
 public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, OfferSubscriptionStatusId OfferSubscriptionStatus);

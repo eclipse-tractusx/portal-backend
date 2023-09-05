@@ -148,7 +148,9 @@ public class ConnectorsRepository : IConnectorsRepository
                 connector.ConnectorAssignedOfferSubscriptions.Select(x => new ConnectorOfferSubscription(
                     x.OfferSubscriptionId,
                     x.OfferSubscription!.OfferSubscriptionStatusId
-                ))
+                )),
+                connector.CompanyServiceAccount!.Identity!.UserStatusId,
+                connector.CompanyServiceAccountId
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
