@@ -53,12 +53,13 @@ public static partial class AuditExtensions
             throw new ConflictException($"{auditEntityType} must inherit from {nameof(IAuditEntityV1)}");
         }
 
-        var sourceProperties = (typeof(IBaseEntity).IsAssignableFrom(auditableEntityType) ?
-            typeof(IBaseEntity).GetProperties() :
-            Enumerable.Empty<PropertyInfo>()).Concat(auditableEntityType
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)))
-            .ToImmutableHashSet();
+        var sourceProperties = (typeof(IBaseEntity).IsAssignableFrom(auditableEntityType)
+            ? typeof(IBaseEntity).GetProperties()
+            : Enumerable.Empty<PropertyInfo>())
+                .Concat(auditableEntityType
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)))
+            .ToImmutableList();
         var auditProperties = typeof(IAuditEntityV1).GetProperties();
 
         return new AuditPropertyInformation(
