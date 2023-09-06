@@ -109,7 +109,7 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
 
         A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName))).MustHaveHappened();
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_SHARED, IdentityProviderTypeId.OWN, _companyId)).MustHaveHappened();
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, A<Action<IdentityProvider>>._)).MustHaveHappened();
         A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<Guid>._, A<string>.That.IsEqualTo(_idpName))).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(_companyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL)).MustHaveHappened();
 
@@ -271,8 +271,13 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _companyRepository.CreateCompany(A<string>._)).ReturnsLazily((string organisationName) =>
             new Company(_companyId, organisationName, CompanyStatusId.PENDING, _fixture.Create<DateTimeOffset>()));
 
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._))
-            .ReturnsLazily((IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId, Guid ownerId) => new IdentityProvider(_identityProviderId, categoryId, typeId, ownerId, _fixture.Create<DateTimeOffset>()));
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Action<IdentityProvider>?>._))
+            .ReturnsLazily((IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId, Action<IdentityProvider>? setOptionalFields) =>
+            {
+                var idp = new IdentityProvider(_identityProviderId, categoryId, typeId, _fixture.Create<DateTimeOffset>());
+                setOptionalFields?.Invoke(idp);
+                return idp;
+            });
 
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._))
             .ReturnsLazily((Guid companyId, CompanyApplicationStatusId applicationStatusId, CompanyApplicationTypeId typeId) => new CompanyApplication(_applicationId, companyId, applicationStatusId, typeId, _fixture.Create<DateTimeOffset>()));

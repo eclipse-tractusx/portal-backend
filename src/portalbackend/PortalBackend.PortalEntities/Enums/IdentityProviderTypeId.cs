@@ -23,5 +23,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 public enum IdentityProviderTypeId
 {
     OWN = 1,
-    MANAGED = 2
+    MANAGED = 2,
+    SHARED = 3
 }

@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IIdentityProviderRepository
 {
-    IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid ownerId);
+    IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Action<IdentityProvider>? setOptionalFields);
     IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias);
     CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
     Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId);
@@ -40,10 +40,8 @@ public interface IIdentityProviderRepository
     IAsyncEnumerable<(Guid IdentityProviderId, string Alias)> GetOwnCompanyIdentityProviderAliasDataUntracked(Guid companyId, IEnumerable<Guid> identityProviderIds);
     Task<(string? UserEntityId, string? Alias, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, Guid identityProviderId, Guid companyId);
 
-    Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
-        (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
-        IEnumerable<string> IdpAliase)>
-            GetCompanyNameIdpAliaseUntrackedAsync(Guid companyUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId);
+    Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<string> IdpAliase)>
+        GetCompanyNameIdpAliaseUntrackedAsync(Guid companyUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId identityProviderTypeId);
 
     Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
         (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,

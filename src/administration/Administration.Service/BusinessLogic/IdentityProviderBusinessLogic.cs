@@ -60,7 +60,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             switch (identityProviderData.CategoryId)
             {
-                case IdentityProviderCategoryId.KEYCLOAK_SHARED:
                 case IdentityProviderCategoryId.KEYCLOAK_OIDC:
                     yield return await GetIdentityProviderDetailsOidc(identityProviderData.IdentityProviderId, identityProviderData.Alias, identityProviderData.CategoryId, identityProviderData.TypeId).ConfigureAwait(false);
                     break;
@@ -135,7 +134,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
 
         var alias = await _provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, result.CompanyName, protocol).ConfigureAwait(false);
-        var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory, typeId, companyId);
+        var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory, typeId, idp =>
+        {
+            if (typeId == IdentityProviderTypeId.MANAGED)
+            {
+                idp.OwnerId = companyId;
+            }
+        });
         identityProvider.CompanyIdentityProviders.Add(identityProviderRepository.CreateCompanyIdentityProvider(companyId, identityProvider.Id));
         identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, alias);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -157,7 +162,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
         switch (category)
         {
-            case IdentityProviderCategoryId.KEYCLOAK_SHARED:
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
                 return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
@@ -174,10 +178,17 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
         }
+
         if (alias == null)
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
+
+        if (category == IdentityProviderCategoryId.KEYCLOAK_SAML && typeId is IdentityProviderTypeId.SHARED)
+        {
+            throw new ConflictException("Shared Idps must not use SAML");
+        }
+
         return new ValueTuple<string, IdentityProviderCategoryId, IdentityProviderTypeId>(alias, category, typeId);
     }
 
@@ -187,15 +198,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
         switch (category)
         {
+            case IdentityProviderCategoryId.KEYCLOAK_OIDC when typeId is IdentityProviderTypeId.SHARED:
+                await _provisioningManager.SetSharedIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
+                return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
                 await _provisioningManager.SetCentralIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 await _provisioningManager.SetCentralIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false);
-            case IdentityProviderCategoryId.KEYCLOAK_SHARED:
-                await _provisioningManager.SetSharedIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
-                return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false);
             default:
                 throw new ControllerArgumentException($"unexpected value for category '{category.ToString()}' of identityProvider '{identityProviderId}'");
         }
@@ -229,15 +240,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
         switch (category)
         {
+            case IdentityProviderCategoryId.KEYCLOAK_OIDC when typeId is IdentityProviderTypeId.SHARED:
+                await UpdateIdentityProviderShared(alias, details).ConfigureAwait(false);
+                return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
                 await UpdateIdentityProviderOidc(alias, details).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 await UpdateIdentityProviderSaml(alias, details).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false);
-            case IdentityProviderCategoryId.KEYCLOAK_SHARED:
-                await UpdateIdentityProviderShared(alias, details).ConfigureAwait(false);
-                return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false);
             default:
                 throw new ControllerArgumentException($"unexpected value for category '{category.ToString()}' of identityProvider '{identityProviderId}'");
         }
@@ -329,7 +340,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     public async ValueTask DeleteCompanyIdentityProviderAsync(Guid identityProviderId)
     {
         var companyId = _identityService.IdentityData.CompanyId;
-        var (companyCount, alias, category) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId, companyId).ConfigureAwait(false);
+        var (companyCount, alias, typeId) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId, companyId).ConfigureAwait(false);
 
         _portalRepositories.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
         if (companyCount == 1)
@@ -337,18 +348,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             if (alias != null)
             {
                 _portalRepositories.Remove(new IamIdentityProvider(alias, Guid.Empty));
-                if (category == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                if (typeId == IdentityProviderTypeId.SHARED)
                 {
                     await _provisioningManager.DeleteSharedIdpRealmAsync(alias).ConfigureAwait(false);
                 }
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             }
-            _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default, default)));
+            _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default)));
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask<(int CompanyCount, string Alias, IdentityProviderCategoryId Category)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, Guid companyId)
+    private async ValueTask<(int CompanyCount, string Alias, IdentityProviderTypeId TypeId)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, Guid companyId)
     {
         var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderDeletionDataUntrackedAsync(identityProviderId, companyId).ConfigureAwait(false);
         if (result == default)
@@ -377,7 +388,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             () => throw new ControllerArgumentException($"cannot delete indentityProvider {identityProviderId} as no other active identityProvider exists for this company")
         ).ConfigureAwait(false);
 
-        return new ValueTuple<int, string, IdentityProviderCategoryId>(companyCount, alias, category);
+        return new ValueTuple<int, string, IdentityProviderTypeId>(companyCount, alias, typeId);
     }
 
     private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsOidc(Guid identityProviderId, string alias, IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId)
@@ -616,7 +627,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private async ValueTask<(string? SharedIdpAlias, IEnumerable<string> ValidAliase)> GetCompanyAliasDataAsync(Guid companyId)
     {
         var identityProviderCategoryData = (await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderCategoryDataUntracked(companyId).ToListAsync().ConfigureAwait(false));
-        var sharedIdpAlias = identityProviderCategoryData.Where(data => data.CategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED).Select(data => data.Alias).SingleOrDefault();
+        var sharedIdpAlias = identityProviderCategoryData.Where(data => data.TypeId == IdentityProviderTypeId.SHARED).Select(data => data.Alias).SingleOrDefault();
         var validAliase = identityProviderCategoryData.Select(data => data.Alias).ToList();
         return (sharedIdpAlias, validAliase);
     }

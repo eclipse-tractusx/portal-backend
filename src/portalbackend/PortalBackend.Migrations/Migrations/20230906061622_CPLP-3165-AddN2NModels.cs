@@ -33,8 +33,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION() CASCADE;");
-            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION() CASCADE;");
+            migrationBuilder.Sql("DROP FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION\"() CASCADE;");
+            migrationBuilder.Sql("DROP FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION\"() CASCADE;");
 
             migrationBuilder.AddColumn<int>(
                 name: "identity_provider_type_id",
@@ -49,8 +49,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "identity_providers",
                 type: "uuid",
-                nullable: false,
-                defaultValue: Guid.Empty);
+                nullable: true);
 
             migrationBuilder.AddColumn<int>(
                 name: "company_application_type_id",
@@ -58,7 +57,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "company_applications",
                 type: "integer",
                 nullable: false,
-                defaultValue: 1);
+                defaultValue: 0);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "onboarding_service_provider_id",
@@ -159,13 +158,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 values: new object[,]
                 {
                     { 1, "OWN" },
-                    { 2, "MANAGED" }
+                    { 2, "MANAGED" },
+                    { 3, "SHARED" }
                 });
 
-            migrationBuilder.Sql("UPDATE portal.identity_providers SET identity_provider_type_id = 1 WHERE identity_provider_category_id = 1");
-            migrationBuilder.Sql("UPDATE portal.identity_providers SET identity_provider_type_id = 2 WHERE identity_provider_category_id != 1");
-            migrationBuilder.Sql("UPDATE portal.identity_providers SET owner_id = '2dc4249f-b5ca-4d42-bef1-7a7a950a4f87'");
-            migrationBuilder.Sql("UPDATE portal.identity_providers AS idp SET owner_id = (SELECT cip.company_id FROM portal.company_identity_providers AS cip WHERE idp.id = cip.identity_provider_id) WHERE idp.id IN (SELECT cip.identity_provider_id FROM portal.company_identity_providers AS cip);");
+            migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_type_id = 3 where identity_provider_category_id = 1;");
+            migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_category_id = 2 where identity_provider_category_id = 1;");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "identity_provider_categories",
+                keyColumn: "id",
+                keyValue: 1);
 
             migrationBuilder.CreateIndex(
                 name: "ix_identity_providers_identity_provider_type_id",
@@ -228,8 +232,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalTable: "identity_provider_types",
                 principalColumn: "id");
 
-            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_application20230824\" (\"checklist_process_id\", \"application_status_id\", \"date_created\", \"company_id\", \"onboarding_service_provider_id\", \"id\", \"company_application_type_id\", \"last_editor_id\", \"date_last_changed\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"checklist_process_id\", \r\n  NEW.\"application_status_id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"company_id\", \r\n  NEW.\"onboarding_service_provider_id\", \r\n  NEW.\"id\", \r\n  NEW.\"company_application_type_id\", \r\n  NEW.\"last_editor_id\", \r\n  NEW.\"date_last_changed\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION AFTER INSERT\r\nON \"portal\".\"company_applications\"\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION();");
-            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_application20230824\" (\"checklist_process_id\", \"application_status_id\", \"date_created\", \"company_id\", \"onboarding_service_provider_id\", \"id\", \"company_application_type_id\", \"last_editor_id\", \"date_last_changed\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"checklist_process_id\", \r\n  NEW.\"application_status_id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"company_id\", \r\n  NEW.\"onboarding_service_provider_id\", \r\n  NEW.\"id\", \r\n  NEW.\"company_application_type_id\", \r\n  NEW.\"last_editor_id\", \r\n  NEW.\"date_last_changed\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION AFTER UPDATE\r\nON \"portal\".\"company_applications\"\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION();");
+            migrationBuilder.Sql("CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_application20230824\" (\"id\", \"date_created\", \"date_last_changed\", \"application_status_id\", \"company_id\", \"checklist_process_id\", \"company_application_type_id\", \"onboarding_service_provider_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"application_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"checklist_process_id\", \r\n  NEW.\"company_application_type_id\", \r\n  NEW.\"onboarding_service_provider_id\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION AFTER INSERT\r\nON \"portal\".\"company_applications\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION\"();");
+            migrationBuilder.Sql("CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_application20230824\" (\"id\", \"date_created\", \"date_last_changed\", \"application_status_id\", \"company_id\", \"checklist_process_id\", \"company_application_type_id\", \"onboarding_service_provider_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"application_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"checklist_process_id\", \r\n  NEW.\"company_application_type_id\", \r\n  NEW.\"onboarding_service_provider_id\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION AFTER UPDATE\r\nON \"portal\".\"company_applications\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION\"();");
         }
 
         /// <inheritdoc />
@@ -238,7 +242,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("DROP FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION\"() CASCADE;");
             migrationBuilder.Sql("DROP FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION\"() CASCADE;");
 
-            migrationBuilder.Sql("DELETE FROM portal.agreement_assigned_company_roles where company_role_id = 5");
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "identity_provider_categories",
+                columns: new[] { "id", "label" },
+                values: new object[] { 1, "KEYCLOAK_SHARED" });
+
+            migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_category_id = 1 where identity_provider_type_id = 3;");
 
             migrationBuilder.DropForeignKey(
                 name: "fk_company_applications_companies_onboarding_service_provider_",

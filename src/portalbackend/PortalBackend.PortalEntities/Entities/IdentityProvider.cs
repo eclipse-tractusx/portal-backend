@@ -31,12 +31,11 @@ public class IdentityProvider : IBaseEntity
         CompanyIdentityProviders = new HashSet<CompanyIdentityProvider>();
     }
 
-    public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId identityProviderTypeId, Guid ownerId, DateTimeOffset dateCreated) : this()
+    public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId identityProviderTypeId, DateTimeOffset dateCreated) : this()
     {
         Id = id;
         IdentityProviderCategoryId = identityProviderCategoryId;
         IdentityProviderTypeId = identityProviderTypeId;
-        OwnerId = ownerId;
         DateCreated = dateCreated;
     }
 
@@ -48,7 +47,7 @@ public class IdentityProvider : IBaseEntity
 
     public IdentityProviderTypeId IdentityProviderTypeId { get; private set; }
 
-    public Guid OwnerId { get; private set; }
+    public Guid? OwnerId { get; set; }
 
     // Navigation properties
     public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }

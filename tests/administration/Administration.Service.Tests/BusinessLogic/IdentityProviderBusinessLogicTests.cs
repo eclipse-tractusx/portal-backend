@@ -488,7 +488,7 @@ public class IdentityProviderBusinessLogicTests
         var expetcedProtocol = protocol == IamIdentityProviderProtocol.OIDC
             ? IdentityProviderCategoryId.KEYCLOAK_OIDC
             : IdentityProviderCategoryId.KEYCLOAK_SAML;
-        idps.Should().HaveCount(1).And.Satisfy(x => x.OwnerId == _identity.CompanyId && x.IdentityProviderCategoryId == expetcedProtocol && x.IdentityProviderTypeId == IdentityProviderTypeId.OWN);
+        idps.Should().HaveCount(1).And.Satisfy(x => x.OwnerId == null && x.IdentityProviderCategoryId == expetcedProtocol && x.IdentityProviderTypeId == IdentityProviderTypeId.OWN);
         companyIdps.Should().HaveCount(1).And.Satisfy(x => x.CompanyId == _companyId);
         iamIdps.Should().HaveCount(1);
 
@@ -613,7 +613,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderDeletionDataUntrackedAsync(idpId, _companyId))
-            .Returns(new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, 1, "test", IdentityProviderCategoryId.KEYCLOAK_SHARED, IdentityProviderTypeId.OWN, Enumerable.Repeat("other-alias", 1)));
+            .Returns(new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, 1, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Repeat("other-alias", 1)));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(false);
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("other-alias"))
@@ -944,7 +944,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(id, companyId, companyId))
-            .Returns(new ValueTuple<bool, bool, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SHARED, IdentityProviderTypeId.OWN, Enumerable.Repeat<string>("alt-cl1", 1)));
+            .Returns(new ValueTuple<bool, bool, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Repeat<string>("alt-cl1", 1)));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("alt-cl1")).Returns(true);
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
@@ -1243,7 +1243,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(id, companyId, _identity.CompanyId))
-            .Returns(new ValueTuple<bool, bool, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SHARED, IdentityProviderTypeId.OWN, Enumerable.Empty<string>()));
+            .Returns(new ValueTuple<bool, bool, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<string>()));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(id, data).ConfigureAwait(false);
@@ -1271,7 +1271,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(id, companyId, _identity.CompanyId))
-            .Returns(new ValueTuple<bool, bool, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SHARED, IdentityProviderTypeId.OWN, Enumerable.Empty<string>()));
+            .Returns(new ValueTuple<bool, bool, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<string>()));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(id, data).ConfigureAwait(false);
@@ -1299,7 +1299,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(id, companyId, _identity.CompanyId))
-            .Returns(new ValueTuple<bool, bool, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SHARED, IdentityProviderTypeId.OWN, Enumerable.Empty<string>()));
+            .Returns(new ValueTuple<bool, bool, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<string>()));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-shared").Create());
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("cl1"))
@@ -1892,10 +1892,11 @@ public class IdentityProviderBusinessLogicTests
 
         if (idps != null)
         {
-            A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._))
-                .Invokes((IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid ownerId) =>
+            A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Action<IdentityProvider>?>._))
+                .Invokes((IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Action<IdentityProvider>? setOptionalFields) =>
                 {
-                    var idp = new IdentityProvider(_identityProviderId, identityProviderCategory, identityProviderTypeId, ownerId, DateTimeOffset.UtcNow);
+                    var idp = new IdentityProvider(_identityProviderId, identityProviderCategory, identityProviderTypeId, DateTimeOffset.UtcNow);
+                    setOptionalFields?.Invoke(idp);
                     idps.Add(idp);
                 });
         }
@@ -1962,12 +1963,17 @@ public class IdentityProviderBusinessLogicTests
             Enumerable.Empty<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias, IdentityProviderTypeId TypeId)>().ToAsyncEnumerable());
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.IsEqualTo(_companyId))).Returns(
             new[] {
-                (IdentityProviderId: _sharedIdentityProviderId, CategoryId: IdentityProviderCategoryId.KEYCLOAK_SHARED, Alias: _sharedIdpAlias, IdentityProviderTypeId.OWN),
+                (IdentityProviderId: _sharedIdentityProviderId, CategoryId: IdentityProviderCategoryId.KEYCLOAK_OIDC, Alias: _sharedIdpAlias, IdentityProviderTypeId.SHARED),
                 (IdentityProviderId: _otherIdentityProviderId, CategoryId: IdentityProviderCategoryId.KEYCLOAK_OIDC, Alias: _otherIdpAlias, IdentityProviderTypeId.OWN),
             }.ToAsyncEnumerable());
 
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._))
-            .ReturnsLazily((IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId, Guid owner) => new IdentityProvider(_sharedIdentityProviderId, categoryId, typeId, owner, _fixture.Create<DateTimeOffset>()));
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Action<IdentityProvider>?>._))
+            .ReturnsLazily((IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId, Action<IdentityProvider>? setOptionalFields) =>
+            {
+                var idp = new IdentityProvider(_sharedIdentityProviderId, categoryId, typeId, _fixture.Create<DateTimeOffset>());
+                setOptionalFields?.Invoke(idp);
+                return idp;
+            });
 
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).ReturnsLazily((string userEntityId) =>
         {

@@ -41,14 +41,17 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     }
 
     /// <inheritdoc/>
-    public IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid ownerId) =>
-        _context.IdentityProviders
-            .Add(new IdentityProvider(
+    public IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Action<IdentityProvider>? setOptionalFields)
+    {
+        var idp = new IdentityProvider(
             Guid.NewGuid(),
             identityProviderCategory,
             identityProviderTypeId,
-            ownerId,
-            DateTimeOffset.UtcNow)).Entity;
+            DateTimeOffset.UtcNow);
+        setOptionalFields?.Invoke(idp);
+        return _context.IdentityProviders
+            .Add(idp).Entity;
+    }
 
     public CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
         _context.CompanyIdentityProviders
@@ -68,7 +71,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
         _context.IdentityProviders
             .AsNoTracking()
             .Where(identityProvider =>
-                identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED &&
+                identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED &&
                 identityProvider.Companies.Any(company => company.Id == companyId))
             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
             .SingleOrDefaultAsync();
@@ -81,7 +84,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             {
                 TargetIamUserId = companyUser.Identity!.UserEntityId,
                 IdpName = companyUser.Identity!.Company!.IdentityProviders
-                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                    .Where(identityProvider => identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault()
             }).SingleOrDefaultAsync();
@@ -175,7 +178,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     public Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
                 (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
                 IEnumerable<string> IdpAliase)>
-        GetCompanyNameIdpAliaseUntrackedAsync(Guid companyUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId) =>
+        GetCompanyNameIdpAliaseUntrackedAsync(Guid companyUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId identityProviderTypeId) =>
             _context.CompanyUsers
                 .AsNoTracking()
                 .Where(companyUser => companyUser.Id == companyUserId &&
@@ -191,7 +194,9 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                         companyUser.Lastname,
                         companyUser.Email),
                     companyUser.Identity!.Company!.IdentityProviders
-                        .Where(identityProvider => identityProvider.IdentityProviderCategoryId == identityProviderCategoryId)
+                        .Where(identityProvider =>
+                            identityProvider.IdentityProviderCategoryId == identityProviderCategoryId &&
+                            identityProvider.IdentityProviderTypeId == identityProviderTypeId)
                         .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)))
                 .SingleOrDefaultAsync();
 
@@ -220,6 +225,6 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                         s.CompanyUser.Email),
                     new ValueTuple<string?, bool>(
                         s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
-                        s.IdentityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)))
+                        s.IdentityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)))
                 .SingleOrDefaultAsync();
 }

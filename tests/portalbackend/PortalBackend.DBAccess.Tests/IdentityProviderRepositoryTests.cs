@@ -169,7 +169,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         results.Should().HaveCount(2);
         results.Should().Satisfy(
-            x => x.Alias == "Idp-123" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED && x.TypeId == IdentityProviderTypeId.OWN,
+            x => x.Alias == "Idp-123" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.SHARED,
             x => x.Alias == "Test-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.OWN);
     }
 
