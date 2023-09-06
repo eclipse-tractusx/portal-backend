@@ -200,20 +200,24 @@ public class OfferRepository : IOfferRepository
     public void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds) =>
         _context.RemoveRange(appLanguageIds.Select(x => new AppLanguage(x.appId, x.languageShortName)));
 
-    public Func<int, int, Task<Pagination.Source<AllOfferData>?>> GetProvidedOffersData(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, Guid userCompanyId, OfferSorting? sorting, string? offerName) =>
+    public Func<int, int, Task<Pagination.Source<AllOfferData>?>> GetProvidedOffersData(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, Guid userCompanyId, OfferSorting sorting, string? offerName) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _context.Offers.AsNoTracking()
-                .Where(offer => offer.OfferTypeId == offerTypeId &&
+                .Where(offer =>
+                    offer.OfferTypeId == offerTypeId &&
                     offer.ProviderCompanyId == userCompanyId &&
-                    offerStatusIds.Contains(offer.OfferStatusId) && (offerName == null || EF.Functions.ILike(offer.Name!, $"%{offerName!.EscapeForILike()}%")))
+                    offerStatusIds.Contains(offer.OfferStatusId) &&
+                    (offerName == null || EF.Functions.ILike(offer.Name!, $"%{offerName.EscapeForILike()}%")))
                 .GroupBy(offer => offer.OfferTypeId),
             sorting switch
             {
                 OfferSorting.DateAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.DateCreated),
                 OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
-                _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+                OfferSorting.NameAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.Name),
+                OfferSorting.NameDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.Name),
+                _ => throw new ArgumentOutOfRangeException(nameof(sorting), sorting, null)
             },
             offer => new AllOfferData(
                 offer.Id,
@@ -224,8 +228,6 @@ public class OfferRepository : IOfferRepository
                 offer.DateLastChanged
                 ))
             .SingleOrDefaultAsync();
-
-
 
     /// <inheritdoc />
     [Obsolete("only referenced by code that is marked as obsolte")]

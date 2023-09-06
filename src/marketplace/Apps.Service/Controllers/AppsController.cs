@@ -273,7 +273,6 @@ public class AppsController : ControllerBase
     /// <returns>Collection of app data of apps that are provided by the calling users company</returns>
     /// <remarks>Example: GET: /api/apps/provided</remarks>
     /// <response code="200">Returns list of apps provided by the user assigned company.</response>
-
     [HttpGet]
     [Route("provided")]
     [Authorize(Roles = "app_management")]

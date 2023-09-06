@@ -601,18 +601,19 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var providerAppData = await sut.GetProvidedOffersData(offerTypeId, userCompanyId).ToListAsync().ConfigureAwait(false);
+        var providerAppData = await sut.GetProvidedOffersData(Enum.GetValues<OfferStatusId>(), offerTypeId, userCompanyId, OfferSorting.DateAsc, null)(0, 10).ConfigureAwait(false);
 
         // Assert
-        providerAppData.Should().HaveSameCount(offerIds);
         if (offerIds.Any())
         {
-            providerAppData.Select(x => x.Id).Should().Contain(offerIds.Select(x => new Guid(x)));
-            providerAppData.Join(offerIds.Select(x => new Guid(x)).Zip(leadPictureIds.Select(x => new Guid(x))), data => data.Id, zip => zip.First, (data, zip) => (data, zip)).Should().AllSatisfy(x => x.data.LeadPictureId.Should().Be(x.zip.Second));
+            providerAppData.Should().NotBeNull();
+            providerAppData!.Data.Should().HaveSameCount(offerIds);
+            providerAppData.Data.Select(x => x.Id).Should().Contain(offerIds.Select(x => new Guid(x)));
+            providerAppData.Data.Join(offerIds.Select(x => new Guid(x)).Zip(leadPictureIds.Select(x => new Guid(x))), data => data.Id, zip => zip.First, (data, zip) => (data, zip)).Should().AllSatisfy(x => x.data.LeadPictureId.Should().Be(x.zip.Second));
         }
         else
         {
-            providerAppData.Should().BeEmpty();
+            providerAppData.Should().BeNull();
         }
     }
 

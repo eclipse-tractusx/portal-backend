@@ -247,28 +247,14 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         Pagination.CreateResponseAsync(page, size, 15,
             _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(GetOfferStatusIds(statusId), OfferTypeId.APP, companyId, sorting ?? OfferSorting.DateDesc, offerName));
 
-    private static IEnumerable<OfferStatusId> GetOfferStatusIds(AppStatusIdFilter? apptatusIdFilter)
-    {
-        switch (apptatusIdFilter)
+    private static IEnumerable<OfferStatusId> GetOfferStatusIds(AppStatusIdFilter? appStatusIdFilter) =>
+        appStatusIdFilter switch
         {
-            case AppStatusIdFilter.Active:
-                {
-                    return new[] { OfferStatusId.ACTIVE };
-                }
-            case AppStatusIdFilter.Inactive:
-                {
-                    return new[] { OfferStatusId.INACTIVE };
-                }
-            case AppStatusIdFilter.WIP:
-                {
-                    return new[] { OfferStatusId.CREATED };
-                }
-            default:
-                {
-                    return Enum.GetValues<OfferStatusId>();
-                }
-        }
-    }
+            AppStatusIdFilter.Active => Enumerable.Repeat(OfferStatusId.ACTIVE, 1),
+            AppStatusIdFilter.Inactive => Enumerable.Repeat(OfferStatusId.INACTIVE, 1),
+            AppStatusIdFilter.WIP => Enumerable.Repeat(OfferStatusId.CREATED, 1),
+            _ => Enum.GetValues<OfferStatusId>()
+        };
 
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, (Guid UserId, Guid CompanyId) identity) =>

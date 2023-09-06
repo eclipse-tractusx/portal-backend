@@ -23,6 +23,7 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
@@ -35,7 +36,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using System.Collections.Immutable;
 using Xunit;
 
@@ -67,9 +67,12 @@ public class AppBusinessLogicTests
         _offerRepository = A.Fake<IOfferRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
+
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
+
+        _fixture.Inject(_portalRepositories);
     }
 
     [Fact]
@@ -538,20 +541,18 @@ public class AppBusinessLogicTests
     [InlineData(AppStatusIdFilter.Active, new[] { OfferStatusId.ACTIVE })]
     [InlineData(AppStatusIdFilter.Inactive, new[] { OfferStatusId.INACTIVE })]
     [InlineData(AppStatusIdFilter.WIP, new[] { OfferStatusId.CREATED })]
-    [InlineData((AppStatusIdFilter)default, new[] { OfferStatusId.CREATED, OfferStatusId.ACTIVE, OfferStatusId.INACTIVE })]
-    public async Task GetCompanyProvidedAppsDataForUserAsync_ReturnsExpectedCount(AppStatusIdFilter serviceStatusIdFilter, IEnumerable<OfferStatusId> offerStatusIds)
+    [InlineData(null, new[] { OfferStatusId.CREATED, OfferStatusId.IN_REVIEW, OfferStatusId.ACTIVE, OfferStatusId.INACTIVE })]
+    public async Task GetCompanyProvidedAppsDataForUserAsync_ReturnsExpectedCount(AppStatusIdFilter? serviceStatusIdFilter, IEnumerable<OfferStatusId> offerStatusIds)
     {
         // Arrange
         var serviceDetailData = _fixture.CreateMany<AllOfferData>(10).ToImmutableArray();
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<AllOfferData>(serviceDetailData.Length, serviceDetailData.Skip(skip).Take(take)));
-        var user = _fixture.Create<string>();
         var sorting = _fixture.Create<OfferSorting>();
         var name = _fixture.Create<string>();
 
-        A.CallTo(() => _offerRepository.GetProvidedOffersData(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<Guid>._, A<OfferSorting>._, A<string>._))
+        A.CallTo(() => _offerRepository.GetProvidedOffersData(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<Guid>._, A<OfferSorting>._, A<string?>._))!
             .Returns(paginationResult);
 
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         var sut = _fixture.Create<AppsBusinessLogic>();
 
         // Act

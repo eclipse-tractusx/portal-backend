@@ -135,7 +135,7 @@ public interface IOfferRepository
     /// <param name="userCompanyId"></param>
     /// <param name="sorting"></param>
     /// <param name="offerName"></param>
-    Func<int, int, Task<Pagination.Source<AllOfferData>?>> GetProvidedOffersData(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, Guid userCompanyId, OfferSorting? sorting, string? offerName);
+    Func<int, int, Task<Pagination.Source<AllOfferData>?>> GetProvidedOffersData(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, Guid userCompanyId, OfferSorting sorting, string? offerName);
 
     /// <summary>
     /// Gets the client roles for a specific app
