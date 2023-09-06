@@ -164,13 +164,15 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 : new Pagination.Source<AllOfferStatusData>(
                     companyProvidedServiceStatusData.Count,
                     companyProvidedServiceStatusData.Data.Select(item =>
-                        new AllOfferStatusData(
-                            item.Id,
-                            item.Name,
-                            item.LeadPictureId == Guid.Empty ? null : item.LeadPictureId,
-                            item.Provider,
-                            item.Status,
-                            item.LastChanged)));
+                        item with
+                        {
+                            Id = item.Id,
+                            Name = item.Name,
+                            LeadPictureId = item.LeadPictureId == Guid.Empty ? null : item.LeadPictureId,
+                            Provider = item.Provider,
+                            Status = item.Status,
+                            LastChanged = item.LastChanged
+                        }));
         }
         return await Pagination.CreateResponseAsync(page, size, 15, GetCompanyProvidedServiceStatusData).ConfigureAwait(false);
     }
