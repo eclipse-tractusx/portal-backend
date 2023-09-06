@@ -527,7 +527,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderDeletionDataUntrackedAsync(invalidId, _companyId))
-            .Returns(new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>());
+            .Returns(new ValueTuple<bool, int, string, IdentityProviderTypeId, IEnumerable<string>>());
 
         // Act
         async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(invalidId).ConfigureAwait(false);
@@ -548,7 +548,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderDeletionDataUntrackedAsync(idpId, _companyId))
-            .Returns(new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(false, 1, string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, new List<string>()));
+            .Returns(new ValueTuple<bool, int, string, IdentityProviderTypeId, IEnumerable<string>>(false, 1, string.Empty, IdentityProviderTypeId.OWN, new List<string>()));
 
         // Act
         async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(idpId).ConfigureAwait(false);
@@ -569,7 +569,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderDeletionDataUntrackedAsync(idpId, _companyId))
-            .Returns(new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, 1, string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.MANAGED, new List<string>()));
+            .Returns(new ValueTuple<bool, int, string, IdentityProviderTypeId, IEnumerable<string>>(true, 1, string.Empty, IdentityProviderTypeId.MANAGED, new List<string>()));
 
         // Act
         async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(idpId).ConfigureAwait(false);
@@ -590,7 +590,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderDeletionDataUntrackedAsync(idpId, _companyId))
-            .Returns(new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, 1, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, new List<string>()));
+            .Returns(new ValueTuple<bool, int, string, IdentityProviderTypeId, IEnumerable<string>>(true, 1, "test", IdentityProviderTypeId.OWN, new List<string>()));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(true);
 
@@ -613,7 +613,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderDeletionDataUntrackedAsync(idpId, _companyId))
-            .Returns(new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, 1, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Repeat("other-alias", 1)));
+            .Returns(new ValueTuple<bool, int, string, IdentityProviderTypeId, IEnumerable<string>>(true, 1, "test", IdentityProviderTypeId.SHARED, Enumerable.Repeat("other-alias", 1)));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(false);
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("other-alias"))
@@ -642,7 +642,7 @@ public class IdentityProviderBusinessLogicTests
             _identityService,
             _options);
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderDeletionDataUntrackedAsync(idpId, _companyId))
-            .Returns(new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(true, 1, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Repeat("other-alias", 1)));
+            .Returns(new ValueTuple<bool, int, string, IdentityProviderTypeId, IEnumerable<string>>(true, 1, "test", IdentityProviderTypeId.OWN, Enumerable.Repeat("other-alias", 1)));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(false);
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("other-alias"))

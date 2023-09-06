@@ -366,7 +366,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
-        var (isValidCompanyId, companyCount, alias, category, typeId, aliase) = result;
+        var (isValidCompanyId, companyCount, alias, typeId, aliase) = result;
         if (!isValidCompanyId)
         {
             throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");

@@ -119,7 +119,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool IsValidCompanyId, int LinkedCompaniesCount, string Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId TypeId, IEnumerable<string> Aliase)> GetCompanyIdentityProviderDeletionDataUntrackedAsync(Guid identityProviderId, Guid companyId) =>
+    public Task<(bool IsValidCompanyId, int LinkedCompaniesCount, string Alias, IdentityProviderTypeId TypeId, IEnumerable<string> Aliase)> GetCompanyIdentityProviderDeletionDataUntrackedAsync(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider => new
@@ -128,11 +128,10 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 Company = identityProvider.Companies.SingleOrDefault(company => company.Id == companyId)
             })
             .Select(item =>
-                new ValueTuple<bool, int, string, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<string>>(
+                new ValueTuple<bool, int, string, IdentityProviderTypeId, IEnumerable<string>>(
                     item.Company != null,
                     item.IdentityProvider.Companies.Count,
                     item.IdentityProvider.IamIdentityProvider!.IamIdpAlias,
-                    item.IdentityProvider.IdentityProviderCategoryId,
                     item.IdentityProvider.IdentityProviderTypeId,
                     item.Company!.IdentityProviders.Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                 ))
