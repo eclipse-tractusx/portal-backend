@@ -41,8 +41,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     company_user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     identity_provider_id = table.Column<Guid>(type: "uuid", nullable: false),
                     provider_id = table.Column<string>(type: "text", nullable: false),
-                    user_name = table.Column<string>(type: "text", nullable: false),
-                    process_step_id = table.Column<Guid>(type: "uuid", nullable: false)
+                    user_name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

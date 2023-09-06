@@ -2751,10 +2751,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("identity_provider_id");
 
-                    b.Property<Guid>("ProcessStepId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("process_step_id");
-
                     b.Property<string>("ProviderId")
                         .IsRequired()
                         .HasColumnType("text")
