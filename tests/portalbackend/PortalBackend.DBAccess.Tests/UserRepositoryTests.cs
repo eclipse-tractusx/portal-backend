@@ -384,7 +384,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region AddCompanyUserAssignedIdentityProvider
-    
+
     [Fact]
     public async Task AddCompanyUserAssignedIdentityProvider_ReturnsExpectedResult()
     {
@@ -409,9 +409,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetUserAssignedIdentityProviderForNetworkRegistration
-    
+
     [Fact]
     public async Task GetUserAssignedIdentityProviderForNetworkRegistration_ReturnsExpectedResult()
     {

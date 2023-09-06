@@ -41,7 +41,7 @@ public class NetworkRegistrationHandlerTests
 
     private readonly IProvisioningManager _provisioningManger;
     private readonly IUserRepository _userRepository;
-    
+
     private readonly NetworkRegistrationHandler _sut;
     private readonly NetworkRegistrationProcessSettings _settings;
 
@@ -52,7 +52,7 @@ public class NetworkRegistrationHandlerTests
 
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _provisioningManger = A.Fake<IProvisioningManager>();
-        
+
         _settings = new NetworkRegistrationProcessSettings
         {
             InitialRoles = Enumerable.Repeat(new UserRoleConfig("cl1", Enumerable.Repeat("Company Admin", 1)), 1)
@@ -61,7 +61,7 @@ public class NetworkRegistrationHandlerTests
 
         A.CallTo(() => options.Value).Returns(_settings);
         A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        
+
         _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManger, options);
     }
 
@@ -93,7 +93,7 @@ public class NetworkRegistrationHandlerTests
 
         // Act
         var result = await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _userProvisioningService.CreateCentralUserWithProviderLinks(user2.CompanyUserId, A<UserCreationRoleDataIdpInfo>._, A<string>._, A<string>._, A<IEnumerable<IdentityProviderLink>>._))
             .MustHaveHappenedOnceExactly();

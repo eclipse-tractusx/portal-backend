@@ -485,7 +485,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     private async Task<(ApplicationRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

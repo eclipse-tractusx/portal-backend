@@ -18,14 +18,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 public class NetworkBusinessLogicTests
 {
     private const string Bpnl = "BPNL00000001TEST";
-    private static Guid _existingExternalId = Guid.NewGuid();
-    private static Guid _userRoleId = Guid.NewGuid();
-    private static Guid _multiIdpCompanyId = Guid.NewGuid();
-    private static Guid _idpId = Guid.NewGuid();
+    private static readonly Guid _existingExternalId = Guid.NewGuid();
+    private static readonly Guid _userRoleId = Guid.NewGuid();
+    private static readonly Guid _multiIdpCompanyId = Guid.NewGuid();
+    private static readonly Guid _idpId = Guid.NewGuid();
 
     private readonly IFixture _fixture;
 
-    private readonly IdentityData _identity = new (Guid.NewGuid().ToString(), Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IdentityData _identity = new(Guid.NewGuid().ToString(), Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly PartnerRegistrationSettings _settings;
@@ -59,7 +59,7 @@ public class NetworkBusinessLogicTests
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _networkRepository = A.Fake<INetworkRepository>();
-        
+
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
@@ -68,10 +68,10 @@ public class NetworkBusinessLogicTests
 
         _settings = new PartnerRegistrationSettings
         {
-            InitialRoles = new[] {new UserRoleConfig("cl1", Enumerable.Repeat<string>("Company Admin", 1))}
+            InitialRoles = new[] { new UserRoleConfig("cl1", Enumerable.Repeat<string>("Company Admin", 1)) }
         };
         _options = A.Fake<IOptions<PartnerRegistrationSettings>>();
-        
+
         A.CallTo(() => _options.Value).Returns(_settings);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
@@ -101,16 +101,16 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, bpn)
             .Create();
-        
+
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'Bpn')");
         ex.ParamName.Should().Be("Bpn");
     }
-    
+
     [Fact]
     public async Task HandlePartnerRegistration_WithInvalidCompanyUserRole_ThrowsControllerArgumentException()
     {
@@ -119,16 +119,16 @@ public class NetworkBusinessLogicTests
             .With(x => x.Bpn, Bpnl)
             .With(x => x.CompanyRoles, Enumerable.Empty<CompanyRoleId>())
             .Create();
-        
+
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("At least one company role must be selected (Parameter 'CompanyRoles')");
         ex.ParamName.Should().Be("CompanyRoles");
     }
-    
+
     [Theory]
     [InlineData("")]
     [InlineData("abc")]
@@ -141,10 +141,10 @@ public class NetworkBusinessLogicTests
             .With(x => x.Bpn, Bpnl)
             .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "Test", "test", email), 1))
             .Create();
-        
+
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("User must have a valid email address");
@@ -160,10 +160,10 @@ public class NetworkBusinessLogicTests
             .With(x => x.Bpn, Bpnl)
             .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), firstName, "test", "test@email.com"), 1))
             .Create();
-        
+
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("Firstname does not match expected format");
@@ -179,10 +179,10 @@ public class NetworkBusinessLogicTests
             .With(x => x.Bpn, Bpnl)
             .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "test", lastname, "test@email.com"), 1))
             .Create();
-        
+
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("Lastname does not match expected format");
@@ -197,10 +197,10 @@ public class NetworkBusinessLogicTests
             .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "test", "test", "test@email.com"), 1))
             .With(x => x.ExternalId, _existingExternalId)
             .Create();
-        
+
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"ExternalId {data.ExternalId} already exists (Parameter 'ExternalId')");
@@ -216,10 +216,10 @@ public class NetworkBusinessLogicTests
             .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "test", "test", "test@email.com"), 1))
             .With(x => x.CountryAlpha2Code, "XX")
             .Create();
-        
+
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"Location {data.CountryAlpha2Code} does not exist (Parameter 'CountryAlpha2Code')");
@@ -235,11 +235,11 @@ public class NetworkBusinessLogicTests
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Repeat(new UserIdentityProviderLink(null, "123", "test"), 1), "test", "test", "test@email.com"), 1))
             .Create();
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with {CompanyId = _multiIdpCompanyId});
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = _multiIdpCompanyId });
 
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("Company has more than one identity provider linked, therefor identityProviderId must be set for all users (Parameter 'UserDetails')");
@@ -259,7 +259,7 @@ public class NetworkBusinessLogicTests
 
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Contain("Idps").And.Contain("do not exist");
@@ -279,7 +279,7 @@ public class NetworkBusinessLogicTests
 
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
         ex.Message.Should().Be("InitialRoles: invalid roles: clientId: 'cl1', roles: [Company Admin]");
@@ -315,7 +315,7 @@ public class NetworkBusinessLogicTests
             "00001",
             Enumerable.Repeat(new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789"), 1),
             Enumerable.Repeat(new UserDetailData(Enumerable.Repeat(new UserIdentityProviderLink(_idpId, "123", "ironman"), 1), "tony", "stark", "tony@stark.com"), 1),
-            new [] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
+            new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
             .Invokes((string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
@@ -394,10 +394,10 @@ public class NetworkBusinessLogicTests
                 });
             })
             .Returns(new CompanyUser(identityId));
-        
+
         // Act
         await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
-        
+
         // Assert
         addresses.Should().ContainSingle().And.Satisfy(x => x.Region == data.Region && x.Zipcode == data.ZipCode);
         companies.Should().ContainSingle().And.Satisfy(x => x.Name == data.Name && x.CompanyStatusId == CompanyStatusId.PENDING);
@@ -416,11 +416,11 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(identityId, _idpId, "123", "ironman")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
-    
+
     #region Setup
-    
+
     private void SetupRepos()
-    {        
+    {
         A.CallTo(() => _networkRepository.CheckExternalIdExists(_existingExternalId))
             .Returns(true);
         A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == _existingExternalId)))
@@ -435,7 +435,7 @@ public class NetworkBusinessLogicTests
             .Returns(_fixture.CreateMany<Guid>(2).ToAsyncEnumerable());
         A.CallTo(() => _companyRepository.GetLinkedIdpIds(_identity.CompanyId))
             .Returns(Enumerable.Repeat(_idpId, 1).ToAsyncEnumerable());
-        
+
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(_identity.CompanyId))
             .Returns(Enumerable.Repeat(new ValueTuple<Guid, IdentityProviderCategoryId, string, IdentityProviderTypeId>(_idpId, IdentityProviderCategoryId.KEYCLOAK_OIDC, "test-alias", IdentityProviderTypeId.MANAGED), 1).ToAsyncEnumerable());
 

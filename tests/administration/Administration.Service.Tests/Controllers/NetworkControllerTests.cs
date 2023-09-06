@@ -50,5 +50,4 @@ public class NetworkControllerTests
         result.StatusCode.Should().Be(200);
         A.CallTo(() => _logic.HandlePartnerRegistration(data)).MustHaveHappenedOnceExactly();
     }
-
 }
