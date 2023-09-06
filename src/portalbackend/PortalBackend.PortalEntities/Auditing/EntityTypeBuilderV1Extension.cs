@@ -40,13 +40,11 @@ public static class EntityTypeBuilderV1Extension
             throw new ConfigurationException($"{typeof(TEntity).Name} is annotated with {nameof(AuditEntityV1Attribute)} referring to a different audit entity type {auditEntityType.Name} then {typeof(TAuditEntity).Name}");
         }
 
-        var illegalProperties = sourceProperties.IntersectBy(auditProperties.Select(x => x.Name), p => p.Name);
-        illegalProperties.IfAny(
-            illegal => throw new ConfigurationException($"{typeof(TEntity).Name} is must not declare any of the following properties: {string.Join(", ", illegal.Select(x => x.Name))}"));
+        sourceProperties.IntersectBy(auditProperties.Select(x => x.Name), p => p.Name).IfAny(
+            illegalProperties => throw new ConfigurationException($"{typeof(TEntity).Name} is must not declare any of the following properties: {string.Join(", ", illegalProperties.Select(x => x.Name))}"));
 
-        var missingProperties = sourceProperties.ExceptBy(targetProperties.Select(x => x.Name), p => p.Name);
-        missingProperties.IfAny(
-            missing => throw new ArgumentException($"{typeof(TAuditEntity).Name} is missing the following properties: {string.Join(", ", missing.Select(x => x.Name))}"));
+        sourceProperties.ExceptBy(targetProperties.Select(x => x.Name), p => p.Name).IfAny(
+            missingProperties => throw new ArgumentException($"{typeof(TAuditEntity).Name} is missing the following properties: {string.Join(", ", missingProperties.Select(x => x.Name))}"));
 
         if (!Array.Exists(
             typeof(TAuditEntity).GetProperties(),
@@ -59,12 +57,12 @@ public static class EntityTypeBuilderV1Extension
         var lastEditorProperty = sourceProperties.SingleOrDefault(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(LastEditorV1Attribute)));
 
         return builder
-            .AfterInsert(trigger => trigger
-            .Action(action => action
-                .Insert(CreateNewAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, insertEditorProperty ?? lastEditorProperty))))
-            .AfterUpdate(trigger => trigger
-                .Action(action => action
-                    .Insert(CreateUpdateAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, lastEditorProperty))));
+            .AfterInsert(trigger =>
+                trigger.Action(action =>
+                    action.Insert(CreateNewAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, insertEditorProperty ?? lastEditorProperty))))
+            .AfterUpdate(trigger =>
+                trigger.Action(action =>
+                    action.Insert(CreateUpdateAuditEntityExpression<TEntity, TAuditEntity>(sourceProperties, lastEditorProperty))));
     }
 
     private static Expression<Func<NewTableRef<TEntity>, TAuditEntity>> CreateNewAuditEntityExpression<TEntity, TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, PropertyInfo? lastEditorProperty) where TEntity : class

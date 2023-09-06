@@ -27,7 +27,7 @@ public static partial class AuditExtensions
     public record AuditPropertyInformation
     (
         Type AuditEntityType,
-        IReadOnlySet<PropertyInfo> SourceProperties,
+        IEnumerable<PropertyInfo> SourceProperties,
         IEnumerable<PropertyInfo> AuditProperties,
         IEnumerable<PropertyInfo> TargetProperties
     );
