@@ -19,8 +19,10 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -45,5 +47,19 @@ public class NetworkRepository : INetworkRepository
             .AsNoTracking()
             .Where(process => process.Id == processId)
             .Select(process => process.NetworkRegistration!.Id)
+            .SingleOrDefaultAsync();
+
+    public Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(Guid externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        _context.NetworkRegistrations
+            .Where(x => x.ExternalId == externalId)
+            .Select(x => new ValueTuple<bool, VerifyProcessData>(
+                    true,
+                    new VerifyProcessData(
+                        x.Process,
+                        x.Process!.ProcessSteps
+                            .Where(step =>
+                                processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                                step.ProcessStepStatusId == ProcessStepStatusId.TODO))
+                ))
             .SingleOrDefaultAsync();
 }

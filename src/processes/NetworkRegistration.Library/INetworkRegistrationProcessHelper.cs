@@ -18,16 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 
-public interface INetworkRepository
+public interface INetworkRegistrationProcessHelper
 {
-    NetworkRegistration CreateNetworkRegistration(Guid externalId, Guid companyId, Guid processId);
-    Task<bool> CheckExternalIdExists(Guid externalId);
-    Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId);
-    Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(Guid externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task TriggerProcessStep(Guid externalId, ProcessStepTypeId stepToTrigger);
 }

@@ -11,6 +11,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -28,8 +29,7 @@ public class NetworkBusinessLogicTests
     private readonly IdentityData _identity = new(Guid.NewGuid().ToString(), Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly PartnerRegistrationSettings _settings;
-    private readonly IOptions<PartnerRegistrationSettings> _options;
+    private readonly INetworkRegistrationProcessHelper _networkRegistrationProcessHelper;
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRepository _companyRepository;
@@ -54,25 +54,26 @@ public class NetworkBusinessLogicTests
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityService = A.Fake<IIdentityService>();
+        _networkRegistrationProcessHelper = A.Fake<INetworkRegistrationProcessHelper>();
+
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _networkRepository = A.Fake<INetworkRepository>();
-
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _userBusinessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
 
-        _settings = new PartnerRegistrationSettings
+        var settings = new PartnerRegistrationSettings
         {
             InitialRoles = new[] { new UserRoleConfig("cl1", Enumerable.Repeat<string>("Company Admin", 1)) }
         };
-        _options = A.Fake<IOptions<PartnerRegistrationSettings>>();
+        var options = A.Fake<IOptions<PartnerRegistrationSettings>>();
 
-        A.CallTo(() => _options.Value).Returns(_settings);
+        A.CallTo(() => options.Value).Returns(settings);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
@@ -86,9 +87,12 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
 
-        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _options);
+        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, options);
+
         SetupRepos();
     }
+
+    #region HandlePartnerRegistration
 
     [Theory]
     [InlineData(null)]
@@ -416,6 +420,26 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(identityId, _idpId, "123", "ironman")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
+
+    #endregion
+
+    #region RetriggerSynchronizeUser
+
+    [Fact]
+    public async Task RetriggerSynchronizeUser_CallsExpected()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid();
+        const ProcessStepTypeId ProcessStepId = ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER;
+
+        // Act
+        await _sut.RetriggerSynchronizeUser(externalId, ProcessStepId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _networkRegistrationProcessHelper.TriggerProcessStep(externalId, ProcessStepId)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
 
     #region Setup
 

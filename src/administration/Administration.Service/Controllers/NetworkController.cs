@@ -22,6 +22,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -42,6 +45,12 @@ public class NetworkController : ControllerBase
         _logic = logic;
     }
 
+    /// <summary>
+    /// Registers a partner company
+    /// </summary>
+    /// <param name="data">Data for the registration</param>
+    /// Example: POST: api/administration/registration/network/{externalId}/retrigger-synchronize-users
+    /// <response code="200">Empty response on success.</response>
     [HttpPost]
     // [Authorize(Roles = "tbd")]
     [Route("partnerRegistration")]
@@ -50,5 +59,26 @@ public class NetworkController : ControllerBase
     {
         await _logic.HandlePartnerRegistration(data).ConfigureAwait(false);
         return this.Ok();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="externalId" example="">Id of the externalId that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/network/{externalId}/retrigger-synchronize-users
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    //[Authorize(Roles = "tbd")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{externalId}/retrigger-synchronize-users")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerSynchronizeUser([FromRoute] Guid externalId)
+    {
+        await _logic.RetriggerSynchronizeUser(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
+        return NoContent();
     }
 }

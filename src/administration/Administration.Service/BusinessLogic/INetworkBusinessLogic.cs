@@ -19,10 +19,13 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public interface INetworkBusinessLogic
 {
     Task HandlePartnerRegistration(PartnerRegistrationData data);
+
+    Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId);
 }

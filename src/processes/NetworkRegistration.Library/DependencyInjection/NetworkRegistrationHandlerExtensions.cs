@@ -48,4 +48,7 @@ public static class NetworkRegistrationHandlerExtensions
             .AddTransient<IUserProvisioningService, UserProvisioningService>()
             .AddTransient<INetworkRegistrationHandler, NetworkRegistrationHandler>();
     }
+
+    public static IServiceCollection AddNetworkRegistrationProcessHelper(this IServiceCollection services) =>
+        services.AddTransient<INetworkRegistrationProcessHelper, NetworkRegistrationProcessHelper>();
 }

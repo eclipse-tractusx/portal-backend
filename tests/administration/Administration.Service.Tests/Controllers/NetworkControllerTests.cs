@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -49,5 +50,20 @@ public class NetworkControllerTests
         // Assert
         result.StatusCode.Should().Be(200);
         A.CallTo(() => _logic.HandlePartnerRegistration(data)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerSynchronizeUser_ReturnsExpected()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid();
+
+        // Act
+        var result = await this._controller.RetriggerSynchronizeUser(externalId).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerSynchronizeUser(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER))
+            .MustHaveHappenedOnceExactly();
     }
 }

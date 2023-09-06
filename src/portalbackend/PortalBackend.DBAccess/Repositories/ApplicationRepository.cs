@@ -36,7 +36,7 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext = portalDbContext;
     }
 
-    public CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields)
+    CompanyApplication IApplicationRepository.CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields)
     {
         var companyApplication = new CompanyApplication(
             Guid.NewGuid(),

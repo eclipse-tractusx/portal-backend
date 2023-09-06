@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Text.RegularExpressions;
 
@@ -41,13 +42,15 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
+    private readonly INetworkRegistrationProcessHelper _processHelper;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _userProvisioningService = userProvisioningService;
+        _processHelper = processHelper;
         _settings = options.Value;
     }
 
@@ -56,7 +59,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var ownerCompanyId = _identityService.IdentityData.CompanyId;
         var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var roleDatas = await ValidatePartnerRegistrationData(data, networkRepository, companyRepository).ConfigureAwait(false);
+        var roleData = await ValidatePartnerRegistrationData(data, networkRepository, companyRepository).ConfigureAwait(false);
 
         var address = companyRepository.CreateAddress(data.City, data.StreetName,
             data.CountryAlpha2Code,
@@ -103,7 +106,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, data.Bpn);
             }
 
-            foreach (var role in roleDatas)
+            foreach (var role in roleData)
             {
                 userRolesRepository.CreateIdentityAssignedRole(companyUserId, role.UserRoleId);
             }
@@ -117,6 +120,9 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    public Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId) =>
+        _processHelper.TriggerProcessStep(externalId, processStepTypeId);
 
     private async Task<IEnumerable<UserRoleData>> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, ICompanyRepository companyRepository)
     {
@@ -132,20 +138,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
         foreach (var user in data.UserDetails)
         {
-            if (string.IsNullOrWhiteSpace(user.Email) || !Email.IsMatch(user.Email))
-            {
-                throw new ControllerArgumentException("User must have a valid email address");
-            }
-
-            if (string.IsNullOrWhiteSpace(user.FirstName) || !Name.IsMatch(user.FirstName))
-            {
-                throw new ControllerArgumentException("Firstname does not match expected format");
-            }
-
-            if (string.IsNullOrWhiteSpace(user.LastName) || !Name.IsMatch(user.LastName))
-            {
-                throw new ControllerArgumentException("Lastname does not match expected format");
-            }
+            ValidateUsers(user);
         }
 
         if (await networkRepository.CheckExternalIdExists(data.ExternalId)
@@ -160,10 +153,25 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ControllerArgumentException($"Location {data.CountryAlpha2Code} does not exist", nameof(data.CountryAlpha2Code));
         }
 
-        var identityProviderIds = data.UserDetails.SelectMany(x => x.IdentityProviderLinks.Select(y => y.IdentityProviderId)).Distinct();
+        await ValidateIdps(data, companyRepository).ConfigureAwait(false);
+
+        try
+        {
+            return await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            throw new ConfigurationException($"{nameof(_settings.InitialRoles)}: {e.Message}");
+        }
+    }
+
+    private async Task ValidateIdps(PartnerRegistrationData data, ICompanyRepository companyRepository)
+    {
+        var identityProviderIds = data.UserDetails
+            .SelectMany(x => x.IdentityProviderLinks.Select(y => y.IdentityProviderId)).Distinct();
         var idps = await companyRepository.GetLinkedIdpIds(_identityService.IdentityData.CompanyId)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+            .ToListAsync()
+            .ConfigureAwait(false);
         if (identityProviderIds.Any(x => x == null) && idps.Count != 1)
         {
             throw new ControllerArgumentException(
@@ -173,16 +181,26 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
         if (idps.All(x => !identityProviderIds.Where(y => y != null).Contains(x)))
         {
-            throw new ControllerArgumentException($"Idps {string.Join("", idps.Where(x => !identityProviderIds.Any(i => i == x)))} do not exist");
+            throw new ControllerArgumentException(
+                $"Idps {string.Join("", idps.Where(x => !identityProviderIds.Any(i => i == x)))} do not exist");
+        }
+    }
+
+    private static void ValidateUsers(UserDetailData user)
+    {
+        if (string.IsNullOrWhiteSpace(user.Email) || !Email.IsMatch(user.Email))
+        {
+            throw new ControllerArgumentException("User must have a valid email address");
         }
 
-        try
+        if (string.IsNullOrWhiteSpace(user.FirstName) || !Name.IsMatch(user.FirstName))
         {
-            return await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
+            throw new ControllerArgumentException("Firstname does not match expected format");
         }
-        catch (Exception e)
+
+        if (string.IsNullOrWhiteSpace(user.LastName) || !Name.IsMatch(user.LastName))
         {
-            throw new ConfigurationException($"{nameof(_settings.InitialRoles)}: {e.Message}");
+            throw new ControllerArgumentException("Lastname does not match expected format");
         }
     }
 }
