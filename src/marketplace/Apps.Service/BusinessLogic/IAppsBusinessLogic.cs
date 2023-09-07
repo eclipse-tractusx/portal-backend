@@ -121,12 +121,16 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Retrieve Company Owned App Data
     /// </summary>
-    /// <param name="companyId">Id of the users company to retrieve own app.</param>
-    /// <returns>Async enumerable of company owned apps data</returns>
-    IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(Guid companyId);
+    /// <param name="page"></param>
+    /// <param name="size"></param>
+    /// <param name="companyId"></param>
+    /// <param name="sorting"></param>
+    /// <param name="offerName"></param>
+    /// <param name="statusId"></param>
+    Task<Pagination.Response<AllOfferData>> GetCompanyProvidedAppsDataForUserAsync(int page, int size, Guid companyId, OfferSorting? sorting, string? offerName, AppStatusIdFilter? statusId);
 
     /// <summary>
-    /// Auto setup the app.
+    /// Auto setup the app.AppStatusIdFilter
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
     /// <param name="identity">Identity of the user</param>

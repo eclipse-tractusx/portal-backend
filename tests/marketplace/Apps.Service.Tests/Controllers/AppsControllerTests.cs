@@ -241,16 +241,17 @@ public class AppsControllerTests
     public async Task GetAppDataAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = new AsyncEnumerableStub<AllOfferData>(_fixture.CreateMany<AllOfferData>(5));
-        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(A<Guid>._))
-            .Returns(data.AsAsyncEnumerable());
+        var data = _fixture.CreateMany<AllOfferData>(5);
+        var paginationResponse = new Pagination.Response<AllOfferData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(0, 15, _identity.CompanyId, null, null, null))
+            .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetAppDataAsync().ToListAsync().ConfigureAwait(false);
+        var result = await this._controller.GetAppDataAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
-        result.Should().HaveSameCount(data);
+        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(0, 15, _identity.CompanyId, null, null, null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
     }
 
     [Fact]

@@ -273,14 +273,13 @@ public class AppsController : ControllerBase
     /// <returns>Collection of app data of apps that are provided by the calling users company</returns>
     /// <remarks>Example: GET: /api/apps/provided</remarks>
     /// <response code="200">Returns list of apps provided by the user assigned company.</response>
-
     [HttpGet]
     [Route("provided")]
     [Authorize(Roles = "app_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AllOfferData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AllOfferData> GetAppDataAsync() =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(companyId));
+    [ProducesResponseType(typeof(Pagination.Response<AllOfferData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<AllOfferData>> GetAppDataAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? offerName = null, [FromQuery] AppStatusIdFilter? statusId = null) =>
+        this.WithCompanyId(companyId => _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(page, size, companyId, sorting, offerName, statusId));
 
     /// <summary>
     /// Auto setup the app

@@ -130,10 +130,12 @@ public interface IOfferRepository
     /// <summary>
     /// Retrieve all app data
     /// </summary>
-    /// <param name="offerTypeId">Offer Type</param>
-    /// <param name="userCompanyId">Id of the user company</param>
-    /// <returns>Return Async Enumerable of App Data</returns>
-    IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, Guid userCompanyId);
+    /// <param name="offerStatusIds"></param>
+    /// <param name="offerTypeId"></param>
+    /// <param name="userCompanyId"></param>
+    /// <param name="sorting"></param>
+    /// <param name="offerName"></param>
+    Func<int, int, Task<Pagination.Source<AllOfferData>?>> GetProvidedOffersData(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, Guid userCompanyId, OfferSorting sorting, string? offerName);
 
     /// <summary>
     /// Gets the client roles for a specific app
