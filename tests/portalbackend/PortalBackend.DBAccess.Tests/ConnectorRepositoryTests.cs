@@ -62,10 +62,10 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Data.Should().HaveCount(2).And.Satisfy(
             x => x.Name == "Test Connector 6"
-                && x.TechnicalUsers!.Id == new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca")
-                && x.TechnicalUsers.Name == "test-user-service-accounts",
+                && x.TechnicalUser!.Id == new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca")
+                && x.TechnicalUser.Name == "test-user-service-accounts",
             x => x.Name == "Test Connector 1"
-                && x.TechnicalUsers == null);
+                && x.TechnicalUser == null);
     }
 
     #endregion
@@ -161,7 +161,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result.IsProviderCompany.Should().BeTrue();
         result.ConnectorData.Name.Should().Be("Test Connector 1");
-        result.ConnectorData.TechnicalUsers.Should().BeNull();
+        result.ConnectorData.TechnicalUser.Should().BeNull();
     }
 
     [Fact]
@@ -367,9 +367,9 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
             x => x.Name == "Test Connector 3" &&
                 x.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE &&
                 x.Status == ConnectorStatusId.PENDING &&
-                x.TechnicalUsers!.Id == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f4") &&
-                x.TechnicalUsers.Name == "sa-test" &&
-                x.TechnicalUsers.Description == "SA with connector");
+                x.TechnicalUser!.Id == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f4") &&
+                x.TechnicalUser.Name == "sa-test" &&
+                x.TechnicalUser.Description == "SA with connector");
     }
 
     [Fact]

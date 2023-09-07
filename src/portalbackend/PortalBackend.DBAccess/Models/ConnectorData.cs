@@ -37,7 +37,7 @@ public record ConnectorData(
     string? HostCompanyName,
     Guid? SelfDescriptionDocumentId,
     string? DocumentName,
-    TechnicalUserData? TechnicalUsers
+    TechnicalUserData? TechnicalUser
 );
 
 /// <summary>
@@ -61,7 +61,7 @@ public record ManagedConnectorData(
     ConnectorStatusId Status,
     string? ProviderCompanyName,
     Guid? SelfDescriptionDocumentId,
-    TechnicalUserData? TechnicalUsers);
+    TechnicalUserData? TechnicalUser);
 
 /// <summary>
 /// connector information to delete
