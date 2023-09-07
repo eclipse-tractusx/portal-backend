@@ -166,12 +166,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                     companyProvidedServiceStatusData.Data.Select(item =>
                         item with
                         {
-                            Id = item.Id,
-                            Name = item.Name,
-                            LeadPictureId = item.LeadPictureId == Guid.Empty ? null : item.LeadPictureId,
-                            Provider = item.Provider,
-                            Status = item.Status,
-                            LastChanged = item.LastChanged
+                            LeadPictureId = item.LeadPictureId == Guid.Empty ? null : item.LeadPictureId
                         }));
         }
         return await Pagination.CreateResponseAsync(page, size, 15, GetCompanyProvidedServiceStatusData).ConfigureAwait(false);
