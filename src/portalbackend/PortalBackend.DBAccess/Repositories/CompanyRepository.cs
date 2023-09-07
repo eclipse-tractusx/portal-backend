@@ -309,13 +309,13 @@ public class CompanyRepository : ICompanyRepository
                 x.BusinessPartnerNumber!))
             .AsAsyncEnumerable();
 
-    public Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndIdentityTypeIdAsync(Guid companyId, IdentityProviderTypeId typeId) =>
+    public Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndCompanyRolesAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoles) =>
         _context.Companies
             .Where(x => x.Id == companyId)
             .Select(x => new ValueTuple<bool, string, bool>(
                     true,
                     x.Name,
-                    typeId == IdentityProviderTypeId.OWN || x.CompanyAssignedRoles.Any(car => car.CompanyRoleId == CompanyRoleId.OPERATOR) || x.CompanyAssignedRoles.Any(car => car.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER)
+                    !companyRoles.Any() || x.CompanyAssignedRoles.Any(role => companyRoles.Contains(role.CompanyRoleId))
                 ))
             .SingleOrDefaultAsync();
 }

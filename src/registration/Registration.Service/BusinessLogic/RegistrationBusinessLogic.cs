@@ -93,7 +93,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
         }
 
-        var country = legalEntity.LegalEntityAddress.PhysicalPostalAddress?.Country?.TechnicalKey ??
+        var country = legalEntity.LegalEntityAddress?.PhysicalPostalAddress?.Country?.TechnicalKey ??
                       throw new ConflictException("Legal-entity-data did not contain a valid country identifier");
 
         var bpdmIdentifiers = ParseBpdmIdentifierDtos(legalEntity.Identifiers).ToList();

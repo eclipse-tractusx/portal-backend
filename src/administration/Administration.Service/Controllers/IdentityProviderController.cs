@@ -64,7 +64,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(List<IdentityProviderDetails>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<List<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails() =>
-        this.WithCompanyId(companyId => _businessLogic.GetOwnCompanyIdentityProvidersAsync(companyId).ToListAsync());
+        _businessLogic.GetOwnCompanyIdentityProvidersAsync().ToListAsync();
 
     /// <summary>
     /// Create an identity provider
@@ -112,7 +112,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
-        this.WithCompanyId(companyId => _businessLogic.GetOwnCompanyIdentityProviderAsync(identityProviderId, companyId));
+        _businessLogic.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
     /// <summary>
     /// Sets the status of the given Identity Provider
@@ -140,7 +140,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatus([FromRoute] Guid identityProviderId, [FromQuery] bool enabled) =>
-        this.WithCompanyId(companyId => _businessLogic.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, enabled, companyId));
+        _businessLogic.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, enabled);
 
     /// <summary>
     /// Updates the details of the identity provider
