@@ -18,15 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 
-public interface INetworkBusinessLogic
+/// <summary>
+/// Service for onboarding service provider related topics
+/// </summary>
+public interface IOnboardingServiceProviderService
 {
-    Task HandlePartnerRegistration(PartnerRegistrationData data);
-
-    Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId);
-    Task Submit(IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails, CancellationToken cancellationToken);
+    /// <summary>
+    /// Posts the status of an application to the onboarding service provider
+    /// </summary>
+    /// <param name="callbackUrl">Callback url of the provider</param>
+    /// <param name="callbackData">Data for the callback</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <exception cref="ServiceException"></exception>
+    Task<bool> TriggerProviderCallback(string callbackUrl, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken);
 }

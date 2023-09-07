@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -53,6 +54,8 @@ public class NetworkBusinessLogicTests
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _networkRegistrationProcessHelper;
+    private readonly IMailingService _mailingService;
+    private readonly IOnboardingServiceProviderService _onboardingServiceProviderService;
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRepository _companyRepository;
@@ -63,7 +66,6 @@ public class NetworkBusinessLogicTests
     private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly ICountryRepository _countryRepository;
     private readonly NetworkBusinessLogic _sut;
-    private readonly IMailingService _mailingService;
 
     public NetworkBusinessLogicTests()
     {
@@ -76,6 +78,8 @@ public class NetworkBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityService = A.Fake<IIdentityService>();
         _networkRegistrationProcessHelper = A.Fake<INetworkRegistrationProcessHelper>();
+        _mailingService = A.Fake<IMailingService>();
+        _onboardingServiceProviderService = A.Fake<IOnboardingServiceProviderService>();
 
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
@@ -84,7 +88,6 @@ public class NetworkBusinessLogicTests
         _networkRepository = A.Fake<INetworkRepository>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
-        _mailingService = A.Fake<IMailingService>();
 
         var settings = new PartnerRegistrationSettings
         {
@@ -102,8 +105,9 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOnboardingServiceProviderService>()).Returns(_onboardingServiceProviderService);
 
-        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _mailingService, options);
+        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _onboardingServiceProviderService, _mailingService, options);
 
         SetupRepos();
     }

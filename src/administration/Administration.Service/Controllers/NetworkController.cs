@@ -81,4 +81,26 @@ public class NetworkController : ControllerBase
         await _logic.RetriggerSynchronizeUser(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Submits the application
+    /// </summary>
+    /// <param name="companyRoleConsentDetails">The agreements for the companyRoles</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/network/partnerRegistration/submit
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    //[Authorize(Roles = "tbd")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("partnerRegistration/submit")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> Submit([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails, CancellationToken cancellationToken)
+    {
+        await _logic.Submit(companyRoleConsentDetails, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
 }

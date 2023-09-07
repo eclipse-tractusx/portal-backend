@@ -66,4 +66,19 @@ public class NetworkControllerTests
         A.CallTo(() => _logic.RetriggerSynchronizeUser(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER))
             .MustHaveHappenedOnceExactly();
     }
+
+    [Fact]
+    public async Task Submit_ReturnsExpected()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+
+        // Act
+        var result = await this._controller.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.Submit(A<IEnumerable<CompanyRoleConsentDetails>>.That.Matches(x => x.Count() == 3), A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
 }

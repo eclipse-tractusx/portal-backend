@@ -18,15 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 
-public interface INetworkBusinessLogic
-{
-    Task HandlePartnerRegistration(PartnerRegistrationData data);
-
-    Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId);
-    Task Submit(IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails, CancellationToken cancellationToken);
-}
+/// <summary>
+/// Callback data for the offer provider after the auto setup succeeded
+/// </summary>
+/// <param name="ExternalId">External id of the registration</param>
+/// <param name="ApplicationId">Id of the company application</param>
+/// <param name="Bpn">Companies bpn</param>
+/// <param name="Status">Status of the application</param>
+/// <param name="Message">OPTIONAL: Additional Message</param>
+public record OnboardingServiceProviderCallbackData(
+    [property: JsonPropertyName("externalId")] Guid ExternalId,
+    [property: JsonPropertyName("applicationId")] Guid ApplicationId,
+    [property: JsonPropertyName("bpn")] string Bpn,
+    [property: JsonPropertyName("status")] CompanyApplicationStatusId? Status,
+    [property: JsonPropertyName("message")] string? Message
+);
