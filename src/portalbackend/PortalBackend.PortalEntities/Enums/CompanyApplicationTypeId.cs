@@ -20,8 +20,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum IdentityProviderCategoryId : int
+public enum CompanyApplicationTypeId
 {
-    KEYCLOAK_OIDC = 2,
-    KEYCLOAK_SAML = 3
+    INTERNAL = 1,
+    EXTERNAL = 2
 }

@@ -495,17 +495,19 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var activeDescription = "The participant role is covering the data provider, data consumer or app user scenario. As participant you are an active member of the network with enabled services to particiapte as contributer and user.";
         var serviceDscription = "The Service Provider is able to offer 3rd party services, such as dataspace service offerings to Catena-X Members. Catena-X members can subscribe for those services.";
         var appDescription = "The App Provider is a company which is providing application software via the CX marketplace. As app provider you can participate and use the developer hub, release and offer applications to the network and manage your applications.";
+        var onboardingServiceProviderDescription = "The Onboarding service provider is a Catena-X certified role which enables the company to act as onboarding provider inside the network.";
 
         var result = await sut.GetCompanyRoleAndConsentAgreementDataAsync(companyId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
 
         result.Should().NotBeNull()
-            .And.HaveCount(3)
+            .And.HaveCount(4)
             .And.Satisfy(
                 x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT && x.RoleDescription == activeDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 3 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
                 x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER && x.RoleDescription == appDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
                 x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.RoleDescription == serviceDscription && x.CompanyRolesActive == true && x.Agreements.Count() == 2
                     && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") && agr.DocumentId == null && agr.AgreementName == "Terms & Conditions - Consultant" && agr.ConsentStatus == ConsentStatusId.ACTIVE)
-                    && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017") && agr.DocumentId == new Guid("00000000-0000-0000-0000-000000000004") && agr.AgreementName == "Terms & Conditions Service Provider" && agr.ConsentStatus == 0));
+                    && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017") && agr.DocumentId == new Guid("00000000-0000-0000-0000-000000000004") && agr.AgreementName == "Terms & Conditions Service Provider" && agr.ConsentStatus == 0),
+                x => x.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER && x.RoleDescription == onboardingServiceProviderDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0));
     }
 
     #endregion

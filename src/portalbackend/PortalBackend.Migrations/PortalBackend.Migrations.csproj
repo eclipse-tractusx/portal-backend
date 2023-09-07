@@ -59,8 +59,6 @@
 
     <None Remove="Seeder\Data" />
     <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
-
-    <Folder Include="Migrations" />
   </ItemGroup>
 
   <ItemGroup>

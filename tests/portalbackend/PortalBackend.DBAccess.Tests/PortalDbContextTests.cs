@@ -64,7 +64,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         // Assert
         ca.LastEditorId.Should().NotBeNull().And.Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
         ca.DateLastChanged.Should().Be(now);
-        var auditEntries = await sut.AuditCompanyApplication20230214.Where(x => x.Id == ca.Id).ToListAsync();
+        var auditEntries = await sut.AuditCompanyApplication20230824.Where(x => x.Id == ca.Id).ToListAsync();
         auditEntries.Should().HaveCount(2).And.Satisfy(
             x => x.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED && x.AuditV1OperationId == AuditOperationId.INSERT,
             x => x.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE && x.AuditV1OperationId == AuditOperationId.UPDATE && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
@@ -80,7 +80,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
 
         var before = now.AddDays(-1);
         var id = Guid.NewGuid();
-        var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, before);
+        var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, before);
 
         var sut = await CreateContext().ConfigureAwait(false);
         using var trans = await sut.Database.BeginTransactionAsync().ConfigureAwait(false);
@@ -92,9 +92,9 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         // Assert
         ca.LastEditorId.Should().NotBeNull().And.Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
         ca.DateLastChanged.Should().Be(now);
-        var auditEntries = await sut.AuditCompanyApplication20230214.Where(x => x.Id == id).ToListAsync();
-        auditEntries.Should().ContainSingle().Which.Should().Match<AuditCompanyApplication20230214>(
-            x => x.ApplicationStatusId == CompanyApplicationStatusId.CREATED && (x.DateCreated - before) < TimeSpan.FromSeconds(1) && x.AuditV1OperationId == AuditOperationId.INSERT && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
+        var auditEntries = await sut.AuditCompanyApplication20230824.Where(x => x.Id == id).ToListAsync();
+        auditEntries.Should().ContainSingle().Which.Should().Match<AuditCompanyApplication20230824>(
+            x => x.ApplicationStatusId == CompanyApplicationStatusId.CREATED && (x.DateCreated - before) < TimeSpan.FromSeconds(1) && x.AuditV1OperationId == AuditOperationId.INSERT && (x.AuditV1DateLastChanged - now) < TimeSpan.FromSeconds(1) && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
         await trans.RollbackAsync().ConfigureAwait(false);
     }
 
@@ -108,7 +108,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
 
         var before = now.AddDays(-1);
         var id = Guid.NewGuid();
-        var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, before);
+        var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, before);
 
         var sut = await CreateContext().ConfigureAwait(false);
         using var trans = await sut.Database.BeginTransactionAsync().ConfigureAwait(false);
@@ -122,7 +122,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         // Assert
         ca.LastEditorId.Should().NotBeNull().And.Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
         ca.DateLastChanged.Should().Be(later);
-        var auditEntries = await sut.AuditCompanyApplication20230214.Where(x => x.Id == id).ToListAsync();
+        var auditEntries = await sut.AuditCompanyApplication20230824.Where(x => x.Id == id).ToListAsync();
         auditEntries.Should().HaveCount(2).And.Satisfy(
             x => x.ApplicationStatusId == CompanyApplicationStatusId.CREATED && (x.DateCreated - before) < TimeSpan.FromSeconds(1) && x.AuditV1OperationId == AuditOperationId.INSERT && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"),
             x => x.ApplicationStatusId == CompanyApplicationStatusId.CREATED && (x.DateCreated - before) < TimeSpan.FromSeconds(1) && x.AuditV1OperationId == AuditOperationId.DELETE && (x.AuditV1DateLastChanged - later) < TimeSpan.FromSeconds(1) && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));

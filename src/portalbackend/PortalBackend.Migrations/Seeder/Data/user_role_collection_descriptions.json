@@ -38,5 +38,15 @@
     "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73",
     "language_short_name": "en",
     "description": "App Provider"
+  },
+  {
+    "user_role_collection_id": "916b09e7-7841-4e57-bdca-e0d3bd329c27",
+    "language_short_name": "de",
+    "description": "Onboarding Service Provider"
+  },
+  {
+    "user_role_collection_id": "916b09e7-7841-4e57-bdca-e0d3bd329c27",
+    "language_short_name": "en",
+    "description": "Onboarding Service Provider"
   }
 ]

@@ -1,7 +1,9 @@
 [
   {
     "id": "ac1cf001-7fbc-1f2f-817f-bce057770015",
-    "date_created": "2022-05-05 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 1
+    "identity_provider_category_id": 2,
+    "identity_provider_type_id": 3,
+    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-05-05 00:00:00.000000 +00:00"
   }
 ]

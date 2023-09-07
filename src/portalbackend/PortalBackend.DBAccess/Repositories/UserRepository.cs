@@ -210,9 +210,7 @@ public class UserRepository : IUserRepository
             .AsSplitQuery()
             .Where(companyUser => companyUser.Id == companyUserId
                                   && companyUser.Identity!.Company!.IdentityProviders
-                                      .Any(identityProvider =>
-                                          identityProvider.IdentityProviderCategoryId ==
-                                          IdentityProviderCategoryId.KEYCLOAK_SHARED))
+                                      .Any(identityProvider => identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED))
             .Select(companyUser => new CompanyUserWithIdpBusinessPartnerData(
                 new CompanyUserInformation(
                     companyUser.Id,
@@ -224,7 +222,7 @@ public class UserRepository : IUserRepository
                     companyUser.Identity.UserStatusId,
                     companyUser.Identity.UserEntityId),
                 companyUser.Identity!.Company!.IdentityProviders.Where(identityProvider =>
-                        identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                        identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault()!,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
@@ -370,7 +368,7 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers.AsNoTracking().AsSplitQuery()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new ValueTuple<string?, CompanyUserAccountData>(
-                companyUser.Identity!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)!.IamIdentityProvider!.IamIdpAlias,
+                companyUser.Identity!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)!.IamIdentityProvider!.IamIdpAlias,
                 new CompanyUserAccountData(
                     companyUser.Id,
                     companyUser.Identity!.UserEntityId,

@@ -308,4 +308,14 @@ public class CompanyRepository : ICompanyRepository
                 x.Name,
                 x.BusinessPartnerNumber!))
             .AsAsyncEnumerable();
+
+    public Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndCompanyRolesAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoles) =>
+        _context.Companies
+            .Where(x => x.Id == companyId)
+            .Select(x => new ValueTuple<bool, string, bool>(
+                    true,
+                    x.Name,
+                    !companyRoles.Any() || x.CompanyAssignedRoles.Any(role => companyRoles.Contains(role.CompanyRoleId))
+                ))
+            .SingleOrDefaultAsync();
 }

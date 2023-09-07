@@ -20,8 +20,9 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum IdentityProviderCategoryId : int
+public enum IdentityProviderTypeId
 {
-    KEYCLOAK_OIDC = 2,
-    KEYCLOAK_SAML = 3
+    OWN = 1,
+    MANAGED = 2,
+    SHARED = 3
 }
