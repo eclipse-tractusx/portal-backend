@@ -56,7 +56,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "company_applications",
                 type: "integer",
                 nullable: false,
-                defaultValue: 1);
+                defaultValue: 0);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "onboarding_service_provider_id",
@@ -162,7 +162,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_type_id = 3 where identity_provider_category_id = 1;");
-            migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_category_id = 2 where identity_provider_category_id = 1;");
+            migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_type_id = 3 where identity_provider_category_id = 1;");
+            migrationBuilder.Sql("UPDATE portal.company_applications set company_application_type_id = 1;");
 
             migrationBuilder.DeleteData(
                 schema: "portal",

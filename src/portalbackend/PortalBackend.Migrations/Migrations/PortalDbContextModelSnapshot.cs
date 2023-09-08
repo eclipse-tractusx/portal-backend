@@ -2056,9 +2056,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnName("checklist_process_id");
 
                     b.Property<int>("CompanyApplicationTypeId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(1)
                         .HasColumnName("company_application_type_id");
 
                     b.Property<Guid>("CompanyId")

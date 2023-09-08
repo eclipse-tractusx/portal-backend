@@ -576,8 +576,6 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(x => x.OnboardingServiceProviderId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.Property(x => x.CompanyApplicationTypeId).HasDefaultValue(CompanyApplicationTypeId.INTERNAL);
-
             entity.HasAuditV1Triggers<CompanyApplication, AuditCompanyApplication20230824>();
         });
 

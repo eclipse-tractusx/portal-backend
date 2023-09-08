@@ -29,7 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230908090917_CPLP-3165-AddN2NModels")]
+    [Migration("20230908093243_CPLP-3165-AddN2NModels")]
     partial class CPLP3165AddN2NModels
     {
         /// <inheritdoc />
@@ -220,9 +220,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnName("checklist_process_id");
 
                     b.Property<int>("CompanyApplicationTypeId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(1)
                         .HasColumnName("company_application_type_id");
 
                     b.Property<Guid>("CompanyId")
