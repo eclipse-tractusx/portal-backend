@@ -36,7 +36,9 @@ public record ConnectorData(
     Guid? HostId,
     string? HostCompanyName,
     Guid? SelfDescriptionDocumentId,
-    string? DocumentName);
+    string? DocumentName,
+    TechnicalUserData? TechnicalUser
+);
 
 /// <summary>
 /// Connector information for the daps call.
@@ -58,7 +60,8 @@ public record ManagedConnectorData(
     ConnectorTypeId Type,
     ConnectorStatusId Status,
     string? ProviderCompanyName,
-    Guid? SelfDescriptionDocumentId);
+    Guid? SelfDescriptionDocumentId,
+    TechnicalUserData? TechnicalUser);
 
 /// <summary>
 /// connector information to delete
@@ -73,3 +76,5 @@ public record DeleteConnectorData(
     Guid? ServiceAccountId
 );
 public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, OfferSubscriptionStatusId OfferSubscriptionStatus);
+
+public record TechnicalUserData(Guid Id, string Name, string? ClientId, string Description);
