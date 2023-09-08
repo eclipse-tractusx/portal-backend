@@ -163,6 +163,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_type_id = 3 where identity_provider_category_id = 1;");
             migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_category_id = 2 where identity_provider_category_id = 1;");
+            migrationBuilder.Sql("UPDATE portal.company_applications set company_application_type_id = 1;");
 
             migrationBuilder.DeleteData(
                 schema: "portal",
