@@ -29,7 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230908093243_CPLP-3165-AddN2NModels")]
+    [Migration("20230908111650_CPLP-3165-AddN2NModels")]
     partial class CPLP3165AddN2NModels
     {
         /// <inheritdoc />
