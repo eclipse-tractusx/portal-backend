@@ -165,7 +165,7 @@ public interface ICompanyRepository
     /// </summary>
     /// <returns>Async enumerable of bpns</returns>
     IAsyncEnumerable<OperatorBpnData> GetOperatorBpns();
-    
+
     Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndCompanyRolesAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoles);
     Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId);
     Task<(bool hasCompanyRole, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId);
@@ -173,4 +173,4 @@ public interface ICompanyRepository
     OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl);
     IAsyncEnumerable<Guid> GetLinkedIdpIds(Guid companyId);
 }
-   
+
