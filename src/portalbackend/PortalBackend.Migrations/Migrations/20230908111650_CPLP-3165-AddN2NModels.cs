@@ -288,6 +288,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 values: new object[] { 1, "KEYCLOAK_SHARED" });
 
             migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_category_id = 1 where identity_provider_type_id = 3;");
+            migrationBuilder.Sql("DELETE from portal.agreement_assigned_company_roles where company_role_id = 5");
 
             migrationBuilder.DropForeignKey(
                 name: "fk_company_applications_companies_onboarding_service_provider_",
