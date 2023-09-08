@@ -1111,15 +1111,20 @@ public class OfferServiceTests
         // Arrange
         var offer = _fixture.Create<Offer>();
         var offerId = _fixture.Create<Guid>();
-        var recipients = new[] { new UserRoleConfig("Test", new[] { "Abc" }) };
+        var recipients = new[]
+        {
+            new UserRoleConfig("Test", new[] { "Abc" })
+        };
         var roleIds = _fixture.CreateMany<Guid>();
         var documentStatusDatas = new DocumentStatusData[]
         {
             new(Guid.NewGuid(), DocumentStatusId.LOCKED),
             new(Guid.NewGuid(), DocumentStatusId.PENDING),
         };
+        var companyId = Guid.NewGuid();
+        var offerName = _fixture.Create<string>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(offerId, offerTypeId))
-            .Returns(("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), documentStatusDatas));
+            .Returns((offerName, OfferStatusId.IN_REVIEW, companyId, documentStatusDatas));
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
             {
@@ -1129,7 +1134,7 @@ public class OfferServiceTests
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, A<Guid>._))
-            .Returns(new (string Email, string? Firstname, string? Lastname)[] { new("test@email.com", "Test User 1", "cx-user-2") }.ToAsyncEnumerable());
+            .Returns(new[] { ("test@email.com", (string?)"Test User 1", (string?)"cx-user-2") }.ToAsyncEnumerable());
 
         IEnumerable<Document>? initial = null;
         IEnumerable<Document>? modified = null;
@@ -1152,15 +1157,35 @@ public class OfferServiceTests
                 ).ToImmutableArray();
             });
 
+        var declineMessage = _fixture.Create<string>();
+        var basePortalAddress = _fixture.Create<string>();
+
+        var mailParameters = new[]
+        {
+            ("offerName", offerName),
+            ("url", basePortalAddress),
+            ("declineMessage", declineMessage)
+        };
+        var userNameParameter = ("offerProviderName", "Service Manager");
+        var template = new[]
+        {
+            "offer-request-decline"
+        };
+
         // Act
-        await _sut.DeclineOfferAsync(offerId, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, recipients, string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        await _sut.DeclineOfferAsync(offerId, _identity.UserId, new OfferDeclineRequest(declineMessage), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, recipients, basePortalAddress, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(A<IEnumerable<UserRoleConfig>>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(
+            A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(recipients),
+            A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
+            userNameParameter,
+            A<IEnumerable<string>>.That.IsSameSequenceAs(template),
+            companyId)).MustHaveHappenedOnceExactly();
         offer.OfferStatusId.Should().Be(OfferStatusId.CREATED);
         A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid, Action<Document>?, Action<Document>)>>._)).MustHaveHappenedOnceExactly();
         initial.Should().HaveCount(2).And.Satisfy(

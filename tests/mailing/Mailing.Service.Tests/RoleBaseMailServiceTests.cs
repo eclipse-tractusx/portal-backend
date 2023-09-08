@@ -57,37 +57,51 @@ public class RoleBaseMailServiceTests
         _sut = new RoleBaseMailService(_portalRepositories, _mailingService);
     }
 
-    [Fact]
-    public async Task RoleBaseSendMail_ReturnsExpectedCalls()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RoleBaseSendMail_WithUserNameParameter_ReturnsExpectedCalls(bool hasUserNameParameter)
     {
         // Arrange
-        var template = new List<string> { "test-request" };
-        var mailParams = new Dictionary<string, string>
-            {
-                { "offerName", _fixture.Create<string>() },
-                { "url", BasePortalUrl},
-                { "offerProviderName", "user"},
-            };
-        var receiverRoles = new[]{
-            new UserRoleConfig("ClientId", new [] { "TestApp Manager", "TestSale Manager" })
+        var template = new[] { "test-request" };
+        var offerName = _fixture.Create<string>();
+        var mailParams = new[]
+        {
+            ("offerName", offerName),
+            ("url", BasePortalUrl)
         };
-        var companyUserData = new[]{
-            new ValueTuple<string, string?, string?>("TestApp@bmw","AppFirst","AppLast"),
-            new ValueTuple<string, string?, string?>("TestSale@bmw","SaleFirst","SaleLast")
+        var userNameParam = hasUserNameParameter
+            ? ("offerProviderName", "user")
+            : ((string, string)?)null;
+        var receiverRoles = new[]
+        {
+            new UserRoleConfig("ClientId", new[] { "TestApp Manager", "TestSale Manager" })
+        };
+        var companyUserData = new (string, string?, string?)[]
+        {
+            ("TestApp@bmw", "AppFirst", "AppLast"),
+            ("TestSale@bmw", "SaleFirst", "SaleLast")
         };
 
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.Any(y => y.ClientId == "ClientId"))))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(_userRoleIds.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>.That.IsSameSequenceAs(_userRoleIds), _companyId))
+        A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, A<Guid>._))
             .Returns(companyUserData.ToAsyncEnumerable());
 
         // Act
-        await _sut.RoleBaseSendMail(receiverRoles, mailParams, template, _companyId);
+        await _sut.RoleBaseSendMail(receiverRoles, mailParams, userNameParam, template, _companyId);
 
         // Assert
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, _companyId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedTwiceExactly();
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.Any(y => y.ClientId == "ClientId")))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>.That.IsSameSequenceAs(_userRoleIds), _companyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails(
+            "TestApp@bmw",
+            A<IDictionary<string, string>>.That.Matches(x => x.Count() == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "AppFirst AppLast")),
+            A<IEnumerable<string>>.That.IsSameSequenceAs(template))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails(
+            "TestSale@bmw",
+            A<IDictionary<string, string>>.That.Matches(x => x.Count() == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "SaleFirst SaleLast")),
+            A<IEnumerable<string>>.That.IsSameSequenceAs(template))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -95,12 +109,13 @@ public class RoleBaseMailServiceTests
     {
         // Arrange
         var template = new List<string> { "test-request" };
-        var mailParams = new Dictionary<string, string>
-            {
-                { "offerName", _fixture.Create<string>() },
-                { "url", BasePortalUrl},
-                { "offerProviderName", "user"},
-            };
+        var mailParams = new[]
+        {
+            ("offerName", _fixture.Create<string>()),
+            ("url", BasePortalUrl),
+        };
+        var userNameParam = ("offerProviderName", "user");
+
         var roleData = _fixture.CreateMany<Guid>(1);
         var receiverRoles = new[]{
             new UserRoleConfig("ClientId", new [] { "App Manager", "Sales Manager" })
@@ -110,7 +125,7 @@ public class RoleBaseMailServiceTests
             .Returns(roleData.ToAsyncEnumerable());
 
         // Act
-        async Task Action() => await _sut.RoleBaseSendMail(receiverRoles, mailParams, template, _companyId);
+        async Task Action() => await _sut.RoleBaseSendMail(receiverRoles, mailParams, userNameParam, template, _companyId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Action);

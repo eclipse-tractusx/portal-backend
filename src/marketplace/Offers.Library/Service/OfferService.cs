@@ -559,21 +559,30 @@ public class OfferService : IOfferService
             DeclineMessage = data.Message
         };
 
-        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        var content = new (string?, NotificationTypeId)[]
+        {
+            (JsonSerializer.Serialize(notificationContent), notificationTypeId)
+        };
+
         await _notificationService.CreateNotifications(notificationRecipients, userId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        var mailParams = new Dictionary<string, string>
+        await _roleBaseMailService.RoleBaseSendMail(
+            notificationRecipients,
+            new[]
             {
-                { "offerName", declineData.OfferName },
-                { "url", basePortalAddress },
-                { "declineMessage", data.Message },
-                { "offerProviderName", "Service Manager"},
-            };
-        await _roleBaseMailService.RoleBaseSendMail(notificationRecipients, mailParams, new List<string> { "offer-request-decline" }, declineData.CompanyId.Value).ConfigureAwait(false);
+                ("offerName", declineData.OfferName),
+                ("url", basePortalAddress),
+                ("declineMessage", data.Message),
+            },
+            ("offerProviderName", "Service Manager"),
+            new[]
+            {
+                "offer-request-decline"
+            },
+            declineData.CompanyId.Value).ConfigureAwait(false);
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)

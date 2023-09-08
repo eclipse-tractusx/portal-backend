@@ -34,7 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
 public class OfferSubscriptionServiceTests
 {
-    private const string BasePortalUrl = "http//base-url.com";
+    private const string BasePortalUrl = "http://base-url.com";
     private const string ClientId = "Client1";
     private readonly Guid _salesManagerId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
 
@@ -119,9 +119,15 @@ public class OfferSubscriptionServiceTests
     public async Task AddOfferSubscription_WithExistingId_CreatesServiceSubscription(OfferTypeId offerTypeId)
     {
         // Arrange
-        var subscriptionManagerRoles = offerTypeId == OfferTypeId.APP ? new[]{
-            new UserRoleConfig(ClientId, new [] { "App Manager", "Sales Manager" })} : new[]{
-            new UserRoleConfig(ClientId, new [] { "Service Manager", "Sales Manager" })};
+        var subscriptionManagerRoles = offerTypeId == OfferTypeId.APP
+            ? new[]
+                {
+                    new UserRoleConfig(ClientId, new[] { "App Manager", "Sales Manager" })
+                }
+            : new[]
+                {
+                    new UserRoleConfig(ClientId, new[] { "Service Manager", "Sales Manager" })
+                };
         A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns(false);
         var companyAssignedApps = new List<OfferSubscription>();
@@ -131,6 +137,17 @@ public class OfferSubscriptionServiceTests
                 var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId);
                 companyAssignedApps.Add(companyAssignedApp);
             });
+
+        var mailParameters = new[]
+        {
+            ("offerName", "Test Offer"),
+            ("url", BasePortalUrl)
+        };
+        var userParameter = ("offerProviderName", "User");
+        var template = new[]
+        {
+            "subscription-request"
+        };
 
         // Act
         await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, (_identity.UserId, _identity.CompanyId), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
@@ -142,7 +159,12 @@ public class OfferSubscriptionServiceTests
             A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _companyId, offerTypeId)).MustHaveHappenedOnceExactly();
         }
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_PROVIDER))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(A<IEnumerable<UserRoleConfig>>._, A<Dictionary<string, string>>._, A<List<string>>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(
+            A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(subscriptionManagerRoles),
+            A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
+            userParameter,
+            A<IEnumerable<string>>.That.IsSameSequenceAs(template),
+            _companyId)).MustHaveHappenedOnceExactly();
     }
 
     [Theory]
@@ -151,9 +173,16 @@ public class OfferSubscriptionServiceTests
     public async Task AddOfferSubscription_WithSalesManagerEqualsReceiver_CreatesServiceSubscription(OfferTypeId offerTypeId)
     {
         // Arrange
-        var subscriptionManagerRoles = offerTypeId == OfferTypeId.APP ? new[]{
-            new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })} : new[]{
-            new UserRoleConfig("portal", new [] { "Service Manager", "Sales Manager" })};
+        var subscriptionManagerRoles = offerTypeId == OfferTypeId.APP
+            ? new[]
+                {
+                    new UserRoleConfig("portal", new[] { "App Manager", "Sales Manager" })
+                }
+            : new[]
+                {
+                    new UserRoleConfig("portal", new[] { "Service Manager", "Sales Manager" })
+                };
+        var offerProviderDetails = _fixture.Create<OfferProviderDetailsData>();
         A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns(false);
         var companyAssignedApps = new List<OfferSubscription>();
@@ -163,13 +192,28 @@ public class OfferSubscriptionServiceTests
                 var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId);
                 companyAssignedApps.Add(companyAssignedApp);
             });
+        var mailParameters = new[]
+        {
+            ("offerName", "Test Offer"),
+            ("url", BasePortalUrl)
+        };
+        var userParameter = ("offerProviderName", "User");
+        var template = new[]
+        {
+            "subscription-request"
+        };
 
         // Act
         await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, (_identity.UserId, _identity.CompanyId), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(A<IEnumerable<UserRoleConfig>>._, A<Dictionary<string, string>>._, A<List<string>>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(
+            A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(subscriptionManagerRoles),
+            A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
+            userParameter,
+            A<IEnumerable<string>>.That.IsSameSequenceAs(template),
+            _companyId)).MustHaveHappenedOnceExactly();
     }
 
     [Theory]

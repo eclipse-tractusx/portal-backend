@@ -71,13 +71,20 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        var mailParams = new Dictionary<string, string>
+        await _roleBaseMailService.RoleBaseSendMail(
+            notificationRecipients,
+            new[]
             {
-                { "offerName", offerProviderDetails.OfferName! },
-                { "offerProviderName", "User"},
-                { "url", basePortalAddress }
-            };
-        await _roleBaseMailService.RoleBaseSendMail(notificationRecipients, mailParams, new List<string> { "subscription-request" }, offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(false);
+                ("offerName", offerProviderDetails.OfferName!),
+                ("url", basePortalAddress)
+            },
+            ("offerProviderName", "User"),
+            new[]
+            {
+                "subscription-request"
+            },
+            offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(false);
+
         return offerSubscription.Id;
     }
 

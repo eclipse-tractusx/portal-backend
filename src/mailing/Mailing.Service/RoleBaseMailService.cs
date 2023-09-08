@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 
@@ -37,7 +38,7 @@ public class RoleBaseMailService : IRoleBaseMailService
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
     }
-    public async Task RoleBaseSendMail(IEnumerable<UserRoleConfig> receiverRoles, IDictionary<string, string> parameters, IEnumerable<string> template, Guid companyId)
+    public async Task RoleBaseSendMail(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> template, Guid companyId)
     {
         var receiverUserRoles = receiverRoles;
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -53,16 +54,23 @@ public class RoleBaseMailService : IRoleBaseMailService
 
         var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
+
         await foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
         {
-            var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-
-            if (!string.IsNullOrWhiteSpace(userName) && parameters.Keys.Contains("offerProviderName"))
+            IEnumerable<(string ParameterName, string ParameterValue)> ParametersWithUserName()
             {
-                parameters["offerProviderName"] = userName;
+                if (userNameParameter.HasValue)
+                {
+                    var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+                    return parameters.Append(
+                        string.IsNullOrWhiteSpace(userName)
+                            ? userNameParameter.Value
+                            : new(userNameParameter.Value.ParameterName, userName));
+                }
+                return parameters;
             }
 
-            await _mailingService.SendMails(receiver, parameters, template).ConfigureAwait(false);
+            await _mailingService.SendMails(receiver, ParametersWithUserName().ToImmutableDictionary(x => x.ParameterName, x => x.ParameterValue), template).ConfigureAwait(false);
         }
     }
 }
