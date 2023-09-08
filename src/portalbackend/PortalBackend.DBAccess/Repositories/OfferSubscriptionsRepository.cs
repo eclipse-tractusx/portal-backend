@@ -523,7 +523,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     .Where(document =>
                         document.DocumentTypeId == documentTypeId
                         && document.DocumentStatusId == DocumentStatusId.LOCKED)
-                    .Select(document => document.Id).FirstOrDefault()
+                    .Select(document => document.Id).FirstOrDefault(),
+                os.Id
             )).ToAsyncEnumerable();
 
     /// <inheritdoc>
