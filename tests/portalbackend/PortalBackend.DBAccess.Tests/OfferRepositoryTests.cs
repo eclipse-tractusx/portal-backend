@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -1351,6 +1352,26 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.IsStatusActive.Should().Be(isStatusActive);
         result.IsUserCompanyProvider.Should().Be(isUserCompanyProvider);
 
+    }
+
+    #endregion
+
+    #region GetCompanyProvidedServiceStatusData
+
+    [Fact]
+    public async Task GetCompanyProvidedServiceStatusDataAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyProvidedServiceStatusDataAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), null, null)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        result!.Data.Should().NotBeNull().And.HaveCount(2).And.Satisfy(
+            x => x.Id == new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa5") && x.Name == "Newest Service",
+            x => x.Id == new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001") && x.Name == "Consulting Service - Data Readiness"
+        );
     }
 
     #endregion
