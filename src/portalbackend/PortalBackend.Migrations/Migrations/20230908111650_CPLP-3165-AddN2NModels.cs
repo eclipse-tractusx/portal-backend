@@ -22,8 +22,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
@@ -161,7 +159,48 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 3, "SHARED" }
                 });
 
-            migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_type_id = 3 where identity_provider_category_id = 1;");
+            migrationBuilder.Sql(@"UPDATE portal.identity_providers AS ip SET
+                    identity_provider_type_id = CASE
+                        WHEN ip.identity_provider_category_id = 1 THEN 3
+                        WHEN ip.identity_provider_category_id IN (2, 3) THEN
+                            CASE
+                                WHEN (
+                                         SELECT COUNT(*)
+                                         FROM portal.company_identity_providers
+                                         WHERE identity_provider_id = ip.id
+                                     ) = 1 THEN 1
+                                ELSE 2
+                                END
+                    END,
+                    owner_id = CASE
+                        WHEN ip.identity_provider_category_id = 1 THEN
+                           (SELECT c.id
+                            FROM portal.companies AS c
+                                     JOIN portal.company_assigned_roles AS cr ON c.id = cr.company_id
+                            WHERE cr.company_role_id = 4
+                            LIMIT 1)
+                       WHEN ip.identity_provider_category_id IN (2, 3) THEN
+                           CASE
+                               WHEN (
+                                        SELECT COUNT(*)
+                                        FROM portal.company_identity_providers
+                                        WHERE identity_provider_id = ip.id
+                                    ) = 1 THEN
+                                   (
+                                       SELECT company_id
+                                       FROM portal.company_identity_providers
+                                       WHERE identity_provider_id = ip.id
+                                   )
+                               ELSE
+                                   (
+                                       SELECT c.id
+                                       FROM portal.companies AS c
+                                                JOIN portal.company_assigned_roles AS cr ON c.id = cr.company_id
+                                       WHERE cr.company_role_id = 4
+                                       LIMIT 1
+                                   )
+                               END
+                        END;");
             migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_category_id = 2 where identity_provider_category_id = 1;");
             migrationBuilder.Sql("UPDATE portal.company_applications set company_application_type_id = 1;");
 
@@ -249,6 +288,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 values: new object[] { 1, "KEYCLOAK_SHARED" });
 
             migrationBuilder.Sql("UPDATE portal.identity_providers set identity_provider_category_id = 1 where identity_provider_type_id = 3;");
+            migrationBuilder.Sql("DELETE from portal.agreement_assigned_company_roles where company_role_id = 5");
+            migrationBuilder.Sql("DELETE from portal.company_assigned_roles where company_role_id = 5");
 
             migrationBuilder.DropForeignKey(
                 name: "fk_company_applications_companies_onboarding_service_provider_",
