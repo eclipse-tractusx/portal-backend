@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230908075338_CPLP-2637-AddNetworkProcess")]
+    [Migration("20230911065036_CPLP-2637-AddNetworkProcess")]
     partial class CPLP2637AddNetworkProcess
     {
         /// <inheritdoc />
