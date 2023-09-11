@@ -996,7 +996,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
                 x.OfferName == "Trace-X" &&
                 x.Provider == "Catena-X" &&
-                x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"));
+                x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1") &&
+                x.OfferSubscriptionId == new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
     }
 
     [Fact]
