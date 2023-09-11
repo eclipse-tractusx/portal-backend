@@ -30,5 +30,5 @@ public interface INetworkRepository
     Task<bool> CheckExternalIdExists(Guid externalId, Guid onboardingServiceProviderId);
     Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId);
     Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(Guid externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
-    Task<(bool Exists, IEnumerable<(Guid Id, CompanyApplicationStatusId StatusId)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleIds, string? CallbackUrl, string? Bpn, Guid? ExternalId)> GetSubmitData(Guid companyId, Guid userId, IEnumerable<Guid> roleIds);
+    Task<(bool Exists, IEnumerable<(Guid Id, CompanyApplicationStatusId StatusId, string? CallbackUrl)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleIds, string? Bpn, Guid? ExternalId)> GetSubmitData(Guid companyId, Guid userId, IEnumerable<Guid> roleIds);
 }

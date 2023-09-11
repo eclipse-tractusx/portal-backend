@@ -371,26 +371,25 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await TriggerProviderCallback(data, companyApplication, cancellationToken).ConfigureAwait(false);
+        await TriggerProviderCallback(data.Bpn, data.ExternalId, companyApplication, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task TriggerProviderCallback((bool Exists, IEnumerable<(Guid Id, CompanyApplicationStatusId StatusId)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleIds, string? CallbackUrl,
-            string? Bpn, Guid? ExternalId) data, (Guid Id, CompanyApplicationStatusId StatusId) companyApplication, CancellationToken cancellationToken)
+    private async Task TriggerProviderCallback(string? bpn, Guid? externalId, (Guid Id, CompanyApplicationStatusId StatusId, string? CallbackUrl) companyApplication, CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrWhiteSpace(data.CallbackUrl))
+        if (!string.IsNullOrWhiteSpace(companyApplication.CallbackUrl))
         {
-            if (data.ExternalId == null)
+            if (externalId == null)
             {
                 throw new UnexpectedConditionException("No external registration found");
             }
 
-            if (string.IsNullOrWhiteSpace(data.Bpn))
+            if (string.IsNullOrWhiteSpace(bpn))
             {
                 throw new UnexpectedConditionException("Bpn must be set");
             }
 
-            await _onboardingServiceProviderService.TriggerProviderCallback(data.CallbackUrl,
-                    new OnboardingServiceProviderCallbackData(data.ExternalId.Value, companyApplication.Id, data.Bpn, CompanyApplicationStatusId.SUBMITTED, "Application was submitted to be processed"),
+            await _onboardingServiceProviderService.TriggerProviderCallback(companyApplication.CallbackUrl,
+                    new OnboardingServiceProviderCallbackData(externalId.Value, companyApplication.Id, bpn, CompanyApplicationStatusId.SUBMITTED, "Application was submitted to be processed"),
                     cancellationToken)
                 .ConfigureAwait(false);
         }
