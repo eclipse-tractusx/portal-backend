@@ -18,23 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-/// <summary>
-/// Data Object for the AppProvider Details
-/// </summary>
-/// <param name="OfferName">Name of the offer</param>
-/// <param name="ProviderName">Name of the provider</param>
-/// <param name="ProviderContactEmail">Contact email of the provider</param>
-/// <param name="SalesManagerId">Id of the sales manager for the app</param>
-/// <param name="AutoSetupUrl">Url for the autosetup</param>
-/// <param name="IsSingleInstance">Defines if the offer is a single instance offer</param>
-public record OfferProviderDetailsData(
-    string? OfferName,
-    string ProviderName,
-    string? ProviderContactEmail,
-    Guid? SalesManagerId,
-    string? AutoSetupUrl,
-    bool IsSingleInstance,
-    Guid? ProviderCompanyId
-);
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

@@ -19,14 +19,13 @@
 -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests</AssemblyName>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests</RootNamespace>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Mailing.Service.Tests</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Mailing.Service.Tests</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.18.0" />
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.18.0" />
@@ -43,11 +42,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\marketplace\Offers.Library\Offers.Library.csproj" />
-    <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
-    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\mailing\Mailing.Service\Mailing.Service.csproj" />
+    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\src\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
   </ItemGroup>
 </Project>

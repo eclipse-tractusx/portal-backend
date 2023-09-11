@@ -178,10 +178,17 @@ public class AppBusinessLogicTests
             .With(x => x.UserEntityId, "44638c72-690c-42e8-bd5e-c8ac3047ff82")
             .Create();
 
+        var appsSettings = new AppsSettings
+        {
+            SubscriptionManagerRoles = new[]
+            {
+                new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })
+            }
+        };
         var offerSubscriptionId = Guid.NewGuid();
         var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<ValueTuple<Guid, Guid>>._, A<OfferTypeId>._, A<string>._))
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<ValueTuple<Guid, Guid>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(offerSubscriptionId);
         var sut = new AppsBusinessLogic(null!, offerSubscriptionService, null!, null!, Options.Create(new AppsSettings()), null!);
 
@@ -195,7 +202,8 @@ public class AppBusinessLogicTests
                 A<IEnumerable<OfferAgreementConsentData>>._,
                 A<ValueTuple<Guid, Guid>>._,
                 A<OfferTypeId>.That.Matches(x => x == OfferTypeId.APP),
-                A<string>._))
+                A<string>._,
+                A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }
 

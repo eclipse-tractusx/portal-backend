@@ -22,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -40,7 +40,7 @@ public class OfferService : IOfferService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly INotificationService _notificationService;
-    private readonly IMailingService _mailingService;
+    private readonly IRoleBaseMailService _roleBaseMailService;
     private readonly IOfferSetupService _offerSetupService;
 
     /// <summary>
@@ -52,12 +52,12 @@ public class OfferService : IOfferService
     /// <param name="offerSetupService">The offer Setup Service</param>
     public OfferService(IPortalRepositories portalRepositories,
         INotificationService notificationService,
-        IMailingService mailingService,
+        IRoleBaseMailService roleBaseMailService,
         IOfferSetupService offerSetupService)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
-        _mailingService = mailingService;
+        _roleBaseMailService = roleBaseMailService;
         _offerSetupService = offerSetupService;
     }
 
@@ -559,45 +559,30 @@ public class OfferService : IOfferService
             DeclineMessage = data.Message
         };
 
-        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        var content = new (string?, NotificationTypeId)[]
+        {
+            (JsonSerializer.Serialize(notificationContent), notificationTypeId)
+        };
+
         await _notificationService.CreateNotifications(notificationRecipients, userId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        await SendMail(notificationRecipients, declineData.OfferName, basePortalAddress, data.Message, declineData.CompanyId.Value);
-    }
-
-    private async Task SendMail(IEnumerable<UserRoleConfig> receiverRoles, string offerName, string basePortalAddress, string message, Guid companyId)
-    {
-        var receiverUserRoles = receiverRoles;
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
-        {
-            throw new ConfigurationException(
-                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
-        }
-
-        var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
-        await foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
-        {
-            var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-
-            var mailParams = new Dictionary<string, string>
+        await _roleBaseMailService.RoleBaseSendMail(
+            notificationRecipients,
+            new[]
             {
-                { "offerName", offerName },
-                { "url", basePortalAddress },
-                { "declineMessage", message },
-                { "offerProviderName", !string.IsNullOrWhiteSpace(userName) ? userName : "Service Manager"},
-            };
-            await _mailingService.SendMails(receiver, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
-        }
+                ("offerName", declineData.OfferName),
+                ("url", basePortalAddress),
+                ("declineMessage", data.Message),
+            },
+            ("offerProviderName", "Service Manager"),
+            new[]
+            {
+                "offer-request-decline"
+            },
+            declineData.CompanyId.Value).ConfigureAwait(false);
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)

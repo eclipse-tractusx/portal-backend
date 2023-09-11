@@ -19,7 +19,8 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -33,7 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService _mailingService;
+    private readonly IRoleBaseMailService _roleBaseMailService;
 
     /// <summary>
     /// Constructor.
@@ -42,17 +43,23 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     /// <param name="mailingService">Mail service.</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories,
-        IMailingService mailingService)
+        IRoleBaseMailService roleBaseMailService)
     {
         _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
+        _roleBaseMailService = roleBaseMailService;
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients)
     {
         var companyInformation = await ValidateCompanyInformationAsync(identity.CompanyId).ConfigureAwait(false);
         var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
+
+        if (offerProviderDetails.ProviderCompanyId == null)
+        {
+            throw new ConflictException($"{offerTypeId} providing company is not set");
+        }
+
         await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(false);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
@@ -64,16 +71,20 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail))
-            return offerSubscription.Id;
+        await _roleBaseMailService.RoleBaseSendMail(
+            notificationRecipients,
+            new[]
+            {
+                ("offerName", offerProviderDetails.OfferName!),
+                ("url", basePortalAddress)
+            },
+            ("offerProviderName", "User"),
+            new[]
+            {
+                "subscription-request"
+            },
+            offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(false);
 
-        var mailParams = new Dictionary<string, string>
-        {
-            { "offerProviderName", offerProviderDetails.ProviderName},
-            { "offerName", offerProviderDetails.OfferName! },
-            { "url", basePortalAddress },
-        };
-        await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
         return offerSubscription.Id;
     }
 

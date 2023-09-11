@@ -57,7 +57,8 @@ public class OfferRepository : IOfferRepository
                 c.ContactEmail,
                 c.SalesManagerId,
                 c.ProviderCompany!.ProviderCompanyDetail!.AutoSetupUrl,
-                c.AppInstanceSetup != null && c.AppInstanceSetup!.IsSingleInstance
+                c.AppInstanceSetup != null && c.AppInstanceSetup!.IsSingleInstance,
+                c.ProviderCompanyId
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
