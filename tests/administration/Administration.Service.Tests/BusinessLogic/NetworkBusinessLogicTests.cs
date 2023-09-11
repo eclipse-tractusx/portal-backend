@@ -69,7 +69,7 @@ public class NetworkBusinessLogicTests
     private readonly NetworkBusinessLogic _sut;
     private readonly PartnerRegistrationSettings _settings;
     private readonly IConsentRepository _consentRepository;
-    
+
     public NetworkBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -706,7 +706,7 @@ public class NetworkBusinessLogicTests
     #endregion
 
     #region Submit
-    
+
     [Fact]
     public async Task Submit_WithNotExistingSubmitData_ThrowsNotFoundException()
     {
@@ -722,7 +722,7 @@ public class NetworkBusinessLogicTests
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Company {_identity.CompanyId} not found");
     }
- 
+
     [Fact]
     public async Task Submit_WithUserNotInRole_ThrowsForbiddenException()
     {
@@ -795,7 +795,7 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var notExistingAgreementId = Guid.NewGuid();
-        var data = new []
+        var data = new[]
         {
             new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE)})
         };
@@ -821,7 +821,7 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var inactiveAgreementId = Guid.NewGuid();
-        var data = new []
+        var data = new[]
         {
             new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(inactiveAgreementId, ConsentStatusId.INACTIVE)})
         };
@@ -847,7 +847,7 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var agreementId1 = Guid.NewGuid();
-        var data = new []
+        var data = new[]
         {
             new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
         };
@@ -857,7 +857,7 @@ public class NetworkBusinessLogicTests
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
             .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), true, companyRoleIds, "BPNL1234567899", null));
-        
+
         // Act
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
 
@@ -873,7 +873,7 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var agreementId1 = Guid.NewGuid();
-        var data = new []
+        var data = new[]
         {
             new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
         };
@@ -900,7 +900,7 @@ public class NetworkBusinessLogicTests
         var agreementId = Guid.NewGuid();
         var agreementId1 = Guid.NewGuid();
         var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
-        var data = new []
+        var data = new[]
         {
             new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
         };
@@ -921,9 +921,9 @@ public class NetworkBusinessLogicTests
 
         // Assert
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
-        A.CallTo(() => _consentRepository.CreateConsent(agreementId, _identity.CompanyId, _identity.UserId, ConsentStatusId.ACTIVE, A< Action<Consent>?>._))
+        A.CallTo(() => _consentRepository.CreateConsent(agreementId, _identity.CompanyId, _identity.UserId, ConsentStatusId.ACTIVE, A<Action<Consent>?>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _consentRepository.CreateConsent(agreementId1, _identity.CompanyId, _identity.UserId, ConsentStatusId.ACTIVE, A< Action<Consent>?>._))
+        A.CallTo(() => _consentRepository.CreateConsent(agreementId1, _identity.CompanyId, _identity.UserId, ConsentStatusId.ACTIVE, A<Action<Consent>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
@@ -932,7 +932,7 @@ public class NetworkBusinessLogicTests
     }
 
     #endregion
-    
+
     #region Setup
 
     private void SetupRepos()
