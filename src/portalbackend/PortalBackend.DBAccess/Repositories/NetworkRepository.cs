@@ -71,7 +71,7 @@ public class NetworkRepository : INetworkRepository
             .Where(x => x.Id == companyId)
             .Select(x => new ValueTuple<bool, IEnumerable<(Guid, CompanyApplicationStatusId)>, bool, IEnumerable<(CompanyRoleId, IEnumerable<Guid>)>, string?, string?, Guid?>(
                 true,
-                x.CompanyApplications.Select(ca => new ValueTuple<Guid, CompanyApplicationStatusId>(ca.Id, ca.ApplicationStatusId)),
+                x.CompanyApplications.Where(ca => ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL).Select(ca => new ValueTuple<Guid, CompanyApplicationStatusId>(ca.Id, ca.ApplicationStatusId)),
                 x.Identities.Any(i => i.Id == userId && i.IdentityAssignedRoles.Any(roles => roleIds.Any(r => r == roles.UserRoleId))),
                 x.CompanyAssignedRoles.Where(assigned => companyRoleIds.Contains(assigned.CompanyRoleId))
                     .Select(assigned => new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(

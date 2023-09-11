@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -66,7 +67,9 @@ public class NetworkBusinessLogicTests
     private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly ICountryRepository _countryRepository;
     private readonly NetworkBusinessLogic _sut;
-
+    private readonly PartnerRegistrationSettings _settings;
+    private readonly IConsentRepository _consentRepository;
+    
     public NetworkBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -88,17 +91,19 @@ public class NetworkBusinessLogicTests
         _networkRepository = A.Fake<INetworkRepository>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
+        _consentRepository = A.Fake<IConsentRepository>();
 
-        var settings = new PartnerRegistrationSettings
+        _settings = new PartnerRegistrationSettings
         {
             InitialRoles = new[] { new UserRoleConfig("cl1", new[] { "Company Admin" }) }
         };
         var options = A.Fake<IOptions<PartnerRegistrationSettings>>();
 
-        A.CallTo(() => options.Value).Returns(settings);
+        A.CallTo(() => options.Value).Returns(_settings);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>()).Returns(_companyRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
@@ -700,6 +705,235 @@ public class NetworkBusinessLogicTests
 
     #endregion
 
+    #region Submit
+    
+    [Fact]
+    public async Task Submit_WithNotExistingSubmitData_ThrowsNotFoundException()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns(new ValueTuple<bool, IEnumerable<ValueTuple<Guid, CompanyApplicationStatusId>>, bool, IEnumerable<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>, string?, string?, Guid?>());
+
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Company {_identity.CompanyId} not found");
+    }
+ 
+    [Fact]
+    public async Task Submit_WithUserNotInRole_ThrowsForbiddenException()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId>>(), false, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null, null, null));
+
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"User must be in role {string.Join(",", _settings.InitialRoles.SelectMany(x => x.UserRoleNames))}");
+    }
+
+    [Fact]
+    public async Task Submit_WithoutCompanyApplications_ThrowsConflictException()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId>>(), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null, null, null));
+
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Company {_identity.CompanyId} has no or more than one application");
+    }
+
+    [Fact]
+    public async Task Submit_WithMultipleCompanyApplications_ThrowsConflictException()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, _fixture.CreateMany<ValueTuple<Guid, CompanyApplicationStatusId>>(2), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null, null, null));
+
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Company {_identity.CompanyId} has no or more than one application");
+    }
+
+    [Fact]
+    public async Task Submit_WithWrongApplicationStatus_ThrowsConflictException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId>>((applicationId, CompanyApplicationStatusId.VERIFY), 1), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null, null, null));
+
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Application {applicationId} is not in state CREATED");
+    }
+
+    [Fact]
+    public async Task Submit_WithOneMissingAgreement_ThrowsConflictException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var notExistingAgreementId = Guid.NewGuid();
+        var data = new []
+        {
+            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE)})
+        };
+        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        {
+            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, notExistingAgreementId})
+        };
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId>>((applicationId, CompanyApplicationStatusId.CREATED), 1), true, companyRoleIds, null, null, null));
+
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("All Agreements for the company roles must be agreed to");
+    }
+
+    [Fact]
+    public async Task Submit_WithOneInactiveAgreement_ThrowsConflictException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var inactiveAgreementId = Guid.NewGuid();
+        var data = new []
+        {
+            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(inactiveAgreementId, ConsentStatusId.INACTIVE)})
+        };
+        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        {
+            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, inactiveAgreementId})
+        };
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId>>((applicationId, CompanyApplicationStatusId.CREATED), 1), true, companyRoleIds, null, null, null));
+
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("All Agreements for the company roles must be agreed to");
+    }
+
+    [Fact]
+    public async Task Submit_WithoutExternalId_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var agreementId1 = Guid.NewGuid();
+        var data = new []
+        {
+            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
+        };
+        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        {
+            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
+        };
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._,
+                A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId>>((applicationId, CompanyApplicationStatusId.CREATED), 1), true, companyRoleIds, "https://callback.url", "BPNL1234567899", null));
+        
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        ex.Message.Should().Be("No external registration found");
+    }
+
+    [Fact]
+    public async Task Submit_WithoutBpn_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var agreementId1 = Guid.NewGuid();
+        var data = new []
+        {
+            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
+        };
+        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        {
+            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
+        };
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId>>((applicationId, CompanyApplicationStatusId.CREATED), 1), true, companyRoleIds, "https://callback.url", null, _existingExternalId));
+
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        ex.Message.Should().Be("Bpn must be set");
+    }
+
+    [Fact]
+    public async Task Submit_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var agreementId1 = Guid.NewGuid();
+        var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
+        var data = new []
+        {
+            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
+        };
+        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        {
+            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
+        };
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._, A<IEnumerable<CompanyRoleId>>._))
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId>>((applicationId, CompanyApplicationStatusId.CREATED), 1), true, companyRoleIds, "https://callback.url", "BPNL1234567899", _existingExternalId));
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
+
+        // Act
+        await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
+        A.CallTo(() => _consentRepository.CreateConsent(agreementId, _identity.CompanyId, _identity.UserId, ConsentStatusId.ACTIVE, A< Action<Consent>?>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _consentRepository.CreateConsent(agreementId1, _identity.CompanyId, _identity.UserId, ConsentStatusId.ACTIVE, A< Action<Consent>?>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync())
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback("https://callback.url", A<OnboardingServiceProviderCallbackData>._, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupRepos()

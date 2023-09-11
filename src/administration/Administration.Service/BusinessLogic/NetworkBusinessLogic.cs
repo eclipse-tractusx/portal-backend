@@ -306,4 +306,89 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ControllerArgumentException("Lastname does not match expected format");
         }
     }
+    
+    public async Task Submit(IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails, CancellationToken cancellationToken)
+    {
+        var companyId = _identityService.IdentityData.CompanyId;
+        var userId = _identityService.IdentityData.UserId;
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.InitialRoles)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var data = await _portalRepositories.GetInstance<INetworkRepository>()
+            .GetSubmitData(companyId, userId, userRoleIds, companyRoleConsentDetails.Select(x => x.CompanyRole))
+            .ConfigureAwait(false);
+        if (!data.Exists)
+        {
+            throw new NotFoundException($"Company {companyId} not found");
+        }
+
+        if (!data.IsUserInRole)
+        {
+            throw new ForbiddenException($"User must be in role {string.Join(",", _settings.InitialRoles.SelectMany(x => x.UserRoleNames))}");
+        }
+
+        if (data.CompanyApplications.Count() != 1)
+        {
+            throw new ConflictException($"Company {companyId} has no or more than one application");
+        }
+
+        var companyApplication = data.CompanyApplications.Single();
+        if (companyApplication.StatusId != CompanyApplicationStatusId.CREATED)
+        {
+            throw new ConflictException($"Application {companyApplication.Id} is not in state CREATED");
+        }
+
+        var allCompanyRolesMatched = data.CompanyRoleIds
+            .Select(companyRole => companyRoleConsentDetails
+                .Any(role =>
+                    role.CompanyRole == companyRole.CompanyRoleId &&
+                    companyRole.AgreementIds.All(agreementId =>
+                        role.Agreements.Any(agreement =>
+                            agreement.AgreementId == agreementId &&
+                            agreement.ConsentStatus == ConsentStatusId.ACTIVE))))
+            .All(allAgreementsActive => allAgreementsActive);
+        if (!allCompanyRolesMatched)
+        {
+            throw new ConflictException("All Agreements for the company roles must be agreed to");
+        }
+
+        foreach (var (agreementId, consentStatus) in companyRoleConsentDetails.SelectMany(x => x.Agreements)
+                     .DistinctBy(a => a.AgreementId).Select(x => (x.AgreementId, x.ConsentStatus)))
+        {
+            _portalRepositories.GetInstance<IConsentRepository>()
+                .CreateConsent(agreementId, companyId, userId, consentStatus);
+        }
+
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.Id,
+            ca =>
+            {
+                ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+            });
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await TriggerProviderCallback(data, companyApplication, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task TriggerProviderCallback((bool Exists, IEnumerable<(Guid Id, CompanyApplicationStatusId StatusId)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleIds, string? CallbackUrl,
+            string? Bpn, Guid? ExternalId) data, (Guid Id, CompanyApplicationStatusId StatusId) companyApplication, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(data.CallbackUrl))
+        {
+            if (data.ExternalId == null)
+            {
+                throw new UnexpectedConditionException("No external registration found");
+            }
+
+            if (string.IsNullOrWhiteSpace(data.Bpn))
+            {
+                throw new UnexpectedConditionException("Bpn must be set");
+            }
+
+            await _onboardingServiceProviderService.TriggerProviderCallback(data.CallbackUrl,
+                    new OnboardingServiceProviderCallbackData(data.ExternalId.Value, companyApplication.Id, data.Bpn, CompanyApplicationStatusId.SUBMITTED, "Application was submitted to be processed"),
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+    }
 }
