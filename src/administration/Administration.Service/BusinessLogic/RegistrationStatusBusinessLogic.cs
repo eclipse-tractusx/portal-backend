@@ -41,7 +41,7 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
     public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackAddress() =>
         _portalRepositories.GetInstance<ICompanyRepository>().GetCallbackData(_identityService.IdentityData.CompanyId);
 
-    public async Task SetCallbackAddress(OnboardingServiceProviderCallbackData data)
+    public async Task SetCallbackAddress(OnboardingServiceProviderCallbackRequestData requestData)
     {
         var companyId = _identityService.IdentityData.CompanyId;
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
@@ -62,12 +62,12 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
                 },
                 osp =>
                 {
-                    osp.CallbackUrl = data.CallbackUrl;
+                    osp.CallbackUrl = requestData.CallbackUrl;
                 });
         }
         else
         {
-            companyRepository.CreateOnboardingServiceProviderDetails(companyId, data.CallbackUrl);
+            companyRepository.CreateOnboardingServiceProviderDetails(companyId, requestData.CallbackUrl);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

@@ -53,7 +53,7 @@ public class RegistrationStatusController : ControllerBase
     [HttpGet]
     // [Authorize(Roles = "view_submitted_applications")]
     [Route("callback")]
-    [ProducesResponseType(typeof(OnboardingServiceProviderCallbackData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OnboardingServiceProviderCallbackRequestData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackAddress() =>
         _logic.GetCallbackAddress();
@@ -69,9 +69,9 @@ public class RegistrationStatusController : ControllerBase
     [Route("callback")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<NoContentResult> SetCallbackAddress(OnboardingServiceProviderCallbackData data)
+    public async Task<NoContentResult> SetCallbackAddress(OnboardingServiceProviderCallbackRequestData requestData)
     {
-        await _logic.SetCallbackAddress(data).ConfigureAwait(false);
+        await _logic.SetCallbackAddress(requestData).ConfigureAwait(false);
         return NoContent();
     }
 }

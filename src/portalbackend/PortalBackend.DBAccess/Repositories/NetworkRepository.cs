@@ -66,15 +66,14 @@ public class NetworkRepository : INetworkRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, IEnumerable<(Guid Id, CompanyApplicationStatusId StatusId)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleIds, string? CallbackUrl, string? Bpn, Guid? ExternalId)> GetSubmitData(Guid companyId, Guid userId, IEnumerable<Guid> roleIds, IEnumerable<CompanyRoleId> companyRoleIds) =>
+    public Task<(bool Exists, IEnumerable<(Guid Id, CompanyApplicationStatusId StatusId)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleIds, string? CallbackUrl, string? Bpn, Guid? ExternalId)> GetSubmitData(Guid companyId, Guid userId, IEnumerable<Guid> roleIds) =>
         _context.Companies
             .Where(x => x.Id == companyId)
             .Select(x => new ValueTuple<bool, IEnumerable<(Guid, CompanyApplicationStatusId)>, bool, IEnumerable<(CompanyRoleId, IEnumerable<Guid>)>, string?, string?, Guid?>(
                 true,
                 x.CompanyApplications.Where(ca => ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL).Select(ca => new ValueTuple<Guid, CompanyApplicationStatusId>(ca.Id, ca.ApplicationStatusId)),
                 x.Identities.Any(i => i.Id == userId && i.IdentityAssignedRoles.Any(roles => roleIds.Any(r => r == roles.UserRoleId))),
-                x.CompanyAssignedRoles.Where(assigned => companyRoleIds.Contains(assigned.CompanyRoleId))
-                    .Select(assigned => new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(
+                x.CompanyAssignedRoles.Select(assigned => new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(
                         assigned.CompanyRoleId,
                         assigned.CompanyRole!.AgreementAssignedCompanyRoles.Select(a => a.AgreementId))),
                 x.OnboardingServiceProviderDetail!.CallbackUrl,

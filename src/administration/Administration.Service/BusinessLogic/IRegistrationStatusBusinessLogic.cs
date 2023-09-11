@@ -25,5 +25,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public interface IRegistrationStatusBusinessLogic
 {
     Task<OnboardingServiceProviderCallbackResponseData> GetCallbackAddress();
-    Task SetCallbackAddress(OnboardingServiceProviderCallbackData data);
+    Task SetCallbackAddress(OnboardingServiceProviderCallbackRequestData requestData);
 }

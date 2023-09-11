@@ -153,6 +153,30 @@ public class NetworkRepositoryTests
 
     #endregion
 
+    #region GetSubmitData
+
+    [Fact]
+    public async Task GetSubmitData_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSubmitData(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93777"), Enumerable.Repeat(new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e"), 1)).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.Exists.Should().Be(true);
+        result.Bpn.Should().Be("BPNL0000000001ON");
+        result.IsUserInRole.Should().Be(true);
+        result.CompanyRoleIds.Should().HaveCount(2).And.Satisfy(
+            x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
+            x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
+        result.CompanyApplications.Should().HaveCount(1).And.Satisfy(x => x.StatusId == CompanyApplicationStatusId.CREATED);
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(NetworkRepository sut, PortalDbContext context)> CreateSutWithContext()

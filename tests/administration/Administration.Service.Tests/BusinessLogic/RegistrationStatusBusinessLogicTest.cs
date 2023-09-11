@@ -92,7 +92,7 @@ public class RegistrationStatusBusinessLogicTest
             .Returns(((bool, bool, string?))default);
 
         //Act
-        async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test.de")).ConfigureAwait(false);
+        async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de")).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -108,7 +108,7 @@ public class RegistrationStatusBusinessLogicTest
             .Returns((true, false, null));
 
         //Act
-        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test.de")).ConfigureAwait(false);
+        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de")).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))
@@ -135,7 +135,7 @@ public class RegistrationStatusBusinessLogicTest
             });
 
         //Act
-        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test-new.de")).ConfigureAwait(false);
+        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test-new.de")).ConfigureAwait(false);
 
         //Assert
         osp.Should().NotBeNull().And.Match<OnboardingServiceProviderDetail>(x =>
@@ -163,7 +163,7 @@ public class RegistrationStatusBusinessLogicTest
             });
 
         //Act
-        var Act = () => _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test-new.de"));
+        var Act = () => _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test-new.de"));
 
         //Assert
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);

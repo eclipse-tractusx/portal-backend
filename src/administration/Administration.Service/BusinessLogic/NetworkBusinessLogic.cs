@@ -25,6 +25,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -47,15 +49,17 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _processHelper;
+    private readonly IOnboardingServiceProviderService _onboardingServiceProviderService;
     private readonly IMailingService _mailingService;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOnboardingServiceProviderService onboardingServiceProviderService, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _userProvisioningService = userProvisioningService;
         _processHelper = processHelper;
+        _onboardingServiceProviderService = onboardingServiceProviderService;
         _mailingService = mailingService;
         _settings = options.Value;
     }
@@ -316,7 +320,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
         var data = await _portalRepositories.GetInstance<INetworkRepository>()
-            .GetSubmitData(companyId, userId, userRoleIds, companyRoleConsentDetails.Select(x => x.CompanyRole))
+            .GetSubmitData(companyId, userId, userRoleIds)
             .ConfigureAwait(false);
         if (!data.Exists)
         {

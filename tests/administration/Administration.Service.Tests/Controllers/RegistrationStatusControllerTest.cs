@@ -56,10 +56,10 @@ public class RegistrationStatusControllerTest
     public async Task GetCompanyWithAddressAsync_ReturnsExpectedResult()
     {
         //Act
-        var result = await this._controller.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://callback-url.com")).ConfigureAwait(false);
+        var result = await this._controller.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://callback-url.com")).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SetCallbackAddress(A<OnboardingServiceProviderCallbackData>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SetCallbackAddress(A<OnboardingServiceProviderCallbackRequestData>._)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }
