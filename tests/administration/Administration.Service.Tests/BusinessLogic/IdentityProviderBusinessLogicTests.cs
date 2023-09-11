@@ -490,12 +490,7 @@ public class IdentityProviderBusinessLogicTests
             IamIdentityProviderProtocol.SAML => IdentityProviderCategoryId.KEYCLOAK_SAML,
             _ => throw new NotImplementedException()
         };
-        var expectedOwner = typeId switch
-        {
-            IdentityProviderTypeId.OWN => (Guid?)null,
-            IdentityProviderTypeId.MANAGED => _companyId,
-            _ => throw new NotImplementedException()
-        };
+        var expectedOwner = _companyId;
 
         // Act
         var result = await sut.CreateOwnCompanyIdentityProviderAsync(protocol, typeId, "test-company").ConfigureAwait(false);
@@ -1934,10 +1929,10 @@ public class IdentityProviderBusinessLogicTests
 
         if (idps != null)
         {
-            A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Action<IdentityProvider>?>._))
-                .ReturnsLazily((IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Action<IdentityProvider>? setOptionalFields) =>
+            A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._, A<Action<IdentityProvider>?>._))
+                .ReturnsLazily((IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid owner, Action<IdentityProvider>? setOptionalFields) =>
                 {
-                    var idp = new IdentityProvider(_identityProviderId, identityProviderCategory, identityProviderTypeId, DateTimeOffset.UtcNow);
+                    var idp = new IdentityProvider(_identityProviderId, identityProviderCategory, identityProviderTypeId, owner, DateTimeOffset.UtcNow);
                     setOptionalFields?.Invoke(idp);
                     idps.Add(idp);
                     return idp;
@@ -2014,10 +2009,10 @@ public class IdentityProviderBusinessLogicTests
                 (IdentityProviderId: _otherIdentityProviderId, CategoryId: IdentityProviderCategoryId.KEYCLOAK_OIDC, Alias: _otherIdpAlias, IdentityProviderTypeId.OWN),
             }.ToAsyncEnumerable());
 
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Action<IdentityProvider>?>._))
-            .ReturnsLazily((IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId, Action<IdentityProvider>? setOptionalFields) =>
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._, A<Action<IdentityProvider>?>._))
+            .ReturnsLazily((IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId, Guid owner, Action<IdentityProvider>? setOptionalFields) =>
             {
-                var idp = new IdentityProvider(_sharedIdentityProviderId, categoryId, typeId, _fixture.Create<DateTimeOffset>());
+                var idp = new IdentityProvider(_sharedIdentityProviderId, categoryId, typeId, owner, _fixture.Create<DateTimeOffset>());
                 setOptionalFields?.Invoke(idp);
                 return idp;
             });

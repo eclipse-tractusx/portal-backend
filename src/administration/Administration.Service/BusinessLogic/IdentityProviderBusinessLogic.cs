@@ -135,13 +135,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
 
         var alias = await _provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, result.CompanyName, protocol).ConfigureAwait(false);
-        var identityProviderId = identityProviderRepository.CreateIdentityProvider(identityProviderCategory, typeId, idp =>
-        {
-            if (typeId == IdentityProviderTypeId.MANAGED)
-            {
-                idp.OwnerId = companyId;
-            }
-        }).Id;
+        var identityProviderId = identityProviderRepository.CreateIdentityProvider(identityProviderCategory, typeId, companyId, null).Id;
         if (typeId == IdentityProviderTypeId.OWN)
         {
             identityProviderRepository.CreateCompanyIdentityProvider(companyId, identityProviderId);
@@ -357,7 +351,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             }
             await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         }
-        _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default)));
+        _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default, default)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

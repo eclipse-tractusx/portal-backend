@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IIdentityProviderRepository
 {
-    IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Action<IdentityProvider>? setOptionalFields);
+    IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid owner, Action<IdentityProvider>? setOptionalFields);
     IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias);
     CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
     Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId);
