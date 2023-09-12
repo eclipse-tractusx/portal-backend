@@ -128,5 +128,15 @@
     "company_status_id": 2,
     "address_id": "081c8bfd-c6d1-4119-a5f8-a69726dfc11f",
     "self_description_document_id": null
+  },
+  {
+    "id": "2647e4f9-0d11-479f-b927-643cd9321c00",
+    "date_created": "2022-10-01 00:00:00.000000 +00:00",
+    "business_partner_number": "BPNL000000001OSP",
+    "name": "Onboarding-Provider",
+    "shortname": "Onboarding-Provider",
+    "company_status_id": 2,
+    "address_id": "f267f020-2caf-4d64-9aa1-20a6c123fe15",
+    "self_description_document_id": null
   }
 ]

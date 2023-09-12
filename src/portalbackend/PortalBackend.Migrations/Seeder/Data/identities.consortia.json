@@ -298,5 +298,13 @@
     "user_status_id": 1,
     "user_entity_id": null,
     "identity_type_id": 2
+  },
+  {
+    "id": "c3819cfb-72c2-45bf-9666-895af2e7fc19",
+    "company_id": "2647e4f9-0d11-479f-b927-643cd9321c00",
+    "date_created": "2023-01-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "01b02e4f-1c16-437e-9555-9bbcfe4bade3",
+    "identity_type_id": 1
   }
 ]

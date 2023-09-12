@@ -93,5 +93,15 @@
     "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
     "company_application_type_id": 1,
     "last_editor_id": null
+  },
+  {
+    "id": "769bbdf7-094a-4c14-9431-cb67010cbe87",
+    "date_created": "2022-05-05 18:01:33.439000 +00:00",
+    "date_last_changed": "2022-05-05 18:01:33.439000 +00:00",
+    "application_status_id": 8,
+    "company_id": "2647e4f9-0d11-479f-b927-643cd9321c00",
+    "company_application_type_id": 1,
+    "last_editor_id": null,
+    "checklist_process_id": "09d27ace-342d-47b2-8080-125f59fea6b0"
   }
 ]
