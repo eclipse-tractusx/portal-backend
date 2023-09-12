@@ -576,7 +576,8 @@ public class ServiceReleaseBusinessLogicTest
         // Assert
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, _identity.UserId, OfferTypeId.SERVICE,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
-            A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
+            A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
+            A<string>._, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

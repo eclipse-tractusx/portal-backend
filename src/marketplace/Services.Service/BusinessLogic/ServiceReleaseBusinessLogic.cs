@@ -235,7 +235,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
     /// <inheritdoc/>
     public Task ApproveServiceRequestAsync(Guid appId, Guid userId) =>
-        _offerService.ApproveOfferRequestAsync(appId, userId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
+        _offerService.ApproveOfferRequestAsync(appId, userId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles, _settings.BasePortalAddress, _settings.ActivationUserRoles);
 
     /// <inheritdoc />
     public Task DeclineServiceRequestAsync(Guid serviceId, Guid userId, OfferDeclineRequest data) =>

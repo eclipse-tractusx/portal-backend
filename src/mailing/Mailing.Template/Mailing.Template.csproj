@@ -99,6 +99,12 @@
 	 <None Update="EmailTemplates\verified_credential_declined.html">
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
+	 <None Update="EmailTemplates\appactivation_offer_release_approval.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\serviceactivation_offer_release_approval.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
   </ItemGroup>
 
 <ItemGroup>

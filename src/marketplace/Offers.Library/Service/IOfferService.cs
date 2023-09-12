@@ -139,7 +139,7 @@ public interface IOfferService
     /// <param name="submitOfferNotificationTypeIds"></param>
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task ApproveOfferRequestAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IEnumerable<UserRoleConfig> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles);
+    Task ApproveOfferRequestAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IEnumerable<UserRoleConfig> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients);
 
     /// <summary>
     /// Update offer status and create notification for App 

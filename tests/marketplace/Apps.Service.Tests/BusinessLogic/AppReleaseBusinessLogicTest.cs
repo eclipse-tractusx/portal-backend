@@ -810,6 +810,8 @@ public class AppReleaseBusinessLogicTest
                 A<IEnumerable<NotificationTypeId>>._,
                 A<IEnumerable<UserRoleConfig>>._,
                 A<IEnumerable<NotificationTypeId>>._,
+                A<IEnumerable<UserRoleConfig>>._,
+                A<string>._,
                 A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }
