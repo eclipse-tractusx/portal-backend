@@ -388,7 +388,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Requester.Firstname,
                 x.Requester.Lastname,
                 x.RequesterId,
-                new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup!.IsSingleInstance, x.Offer.AppInstanceSetup.InstanceUrl),
+                new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup != null && x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup!.InstanceUrl),
                 x.Offer!.AppInstances.Select(ai => ai.Id),
                 x.OfferSubscriptionProcessData != null,
                 x.Offer.SalesManagerId,
