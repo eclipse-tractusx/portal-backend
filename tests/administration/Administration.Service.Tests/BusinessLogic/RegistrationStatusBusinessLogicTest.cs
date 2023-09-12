@@ -41,10 +41,10 @@ public class RegistrationStatusBusinessLogicTest
     {
         var identityService = A.Fake<IIdentityService>();
         A.CallTo(() => identityService.IdentityData).Returns(_identity);
-        
+
         _portalRepositories = A.Fake<IPortalRepositories>();
         _companyRepository = A.Fake<ICompanyRepository>();
-        
+
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
 
         _logic = new RegistrationStatusBusinessLogic(_portalRepositories, identityService);
@@ -81,7 +81,7 @@ public class RegistrationStatusBusinessLogicTest
     }
 
     #endregion
-    
+
     #region SetCallbackAddress
 
     [Fact]
@@ -131,7 +131,7 @@ public class RegistrationStatusBusinessLogicTest
                 initialize?.Invoke(osp);
                 setOptionalFields.Invoke(osp);
             });
-        
+
         //Act
         await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test-new.de")).ConfigureAwait(false);
 

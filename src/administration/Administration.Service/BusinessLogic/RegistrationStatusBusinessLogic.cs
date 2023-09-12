@@ -46,13 +46,13 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
                 osp =>
                 {
                     osp.CallbackUrl = data.CallbackUrl;
-                });    
+                });
         }
         else
         {
             companyRepository.CreateOnboardingServiceProviderDetails(companyId, data.CallbackUrl);
         }
-        
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

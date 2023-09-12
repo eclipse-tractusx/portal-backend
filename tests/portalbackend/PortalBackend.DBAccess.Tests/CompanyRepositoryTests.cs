@@ -718,7 +718,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         const string url = "https://service-url.com";
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetCallbackEditData(_validOspCompanyId).ConfigureAwait(false);

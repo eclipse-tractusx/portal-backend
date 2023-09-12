@@ -319,12 +319,12 @@ public class CompanyRepository : ICompanyRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId) => 
+    public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId) =>
         _context.Companies.Where(c => c.Id == companyId)
             .Select(c => new OnboardingServiceProviderCallbackResponseData(c.OnboardingServiceProviderDetail!.CallbackUrl))
             .SingleAsync();
 
-    public Task<(bool isOnboardingServiceProvider, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId) => 
+    public Task<(bool isOnboardingServiceProvider, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId) =>
         _context.Companies.Where(c => c.Id == companyId)
             .Select(c => new ValueTuple<bool, bool, string?>(
                 c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER),
