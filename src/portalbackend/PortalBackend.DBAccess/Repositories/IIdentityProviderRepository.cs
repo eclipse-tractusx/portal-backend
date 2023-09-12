@@ -28,13 +28,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IIdentityProviderRepository
 {
-    IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Action<IdentityProvider>? setOptionalFields);
+    IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid owner, Action<IdentityProvider>? setOptionalFields);
     IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias);
     CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
     Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId);
     Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, Guid userCompanyId);
     Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnOrOwnerCompany, IdentityProviderTypeId TypeId)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, Guid companyId);
-    Task<(bool IsOwnOrOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId, bool queryAliase);
+    Task<(bool IsOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId, bool queryAliase);
     IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias, IdentityProviderTypeId TypeId)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId);
     IAsyncEnumerable<(Guid IdentityProviderId, string Alias)> GetOwnCompanyIdentityProviderAliasDataUntracked(Guid companyId, IEnumerable<Guid> identityProviderIds);
     Task<(string? UserEntityId, string? Alias, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, Guid identityProviderId, Guid companyId);

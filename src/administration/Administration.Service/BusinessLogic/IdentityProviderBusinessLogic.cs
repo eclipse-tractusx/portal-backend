@@ -135,13 +135,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
 
         var alias = await _provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, result.CompanyName, protocol).ConfigureAwait(false);
-        var identityProviderId = identityProviderRepository.CreateIdentityProvider(identityProviderCategory, typeId, idp =>
-        {
-            if (typeId == IdentityProviderTypeId.MANAGED)
-            {
-                idp.OwnerId = companyId;
-            }
-        }).Id;
+        var identityProviderId = identityProviderRepository.CreateIdentityProvider(identityProviderCategory, typeId, companyId, null).Id;
         if (typeId == IdentityProviderTypeId.OWN)
         {
             identityProviderRepository.CreateCompanyIdentityProvider(companyId, identityProviderId);
@@ -219,10 +213,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
-        var (isOwnOrOwner, alias, identityProviderCategory, identityProviderTypeId, companyIdAliase) = result;
-        if (!isOwnOrOwner)
+        var (isOwner, alias, identityProviderCategory, identityProviderTypeId, companyIdAliase) = result;
+        if (!isOwner)
         {
-            throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
+            throw new ForbiddenException($"company {companyId} is not the owner of identityProvider {identityProviderId}");
         }
         if (alias == null)
         {
@@ -268,8 +262,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
-        var (isOwnOrOwner, alias, identityProviderCategory, identityProviderTypeId, _) = result;
-        if (!isOwnOrOwner)
+        var (isOwner, alias, identityProviderCategory, identityProviderTypeId, _) = result;
+        if (!isOwner)
         {
             throw new ForbiddenException($"User not allowed to run the change for identity provider {identityProviderId}");
         }
@@ -357,7 +351,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             }
             await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         }
-        _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default)));
+        _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default, default)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -369,10 +363,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
-        var (isOwnOrOwner, alias, _, typeId, aliase) = result;
-        if (!isOwnOrOwner)
+        var (isOwner, alias, _, typeId, aliase) = result;
+        if (!isOwner)
         {
-            throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
+            throw new ForbiddenException($"company {companyId} is not the owner of identityProvider {identityProviderId}");
         }
 
         if (typeId == IdentityProviderTypeId.MANAGED)

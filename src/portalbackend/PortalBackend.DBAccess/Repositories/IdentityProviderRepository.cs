@@ -41,12 +41,13 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     }
 
     /// <inheritdoc/>
-    public IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Action<IdentityProvider>? setOptionalFields)
+    public IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid owner, Action<IdentityProvider>? setOptionalFields)
     {
         var idp = new IdentityProvider(
             Guid.NewGuid(),
             identityProviderCategory,
             identityProviderTypeId,
+            owner,
             DateTimeOffset.UtcNow);
         setOptionalFields?.Invoke(idp);
         return _context.IdentityProviders
@@ -100,12 +101,12 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                     identityProvider.IdentityProviderTypeId))
             .SingleOrDefaultAsync();
 
-    public Task<(bool IsOwnOrOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId, bool queryAliase) =>
+    public Task<(bool IsOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId, bool queryAliase) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>
                 new ValueTuple<bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?>(
-                    identityProvider.Owner == null && identityProvider.Companies.Any(c => c.Id == companyId) && identityProvider.Companies.Count == 1 || identityProvider.OwnerId == companyId,
+                    identityProvider.OwnerId == companyId,
                     identityProvider.IamIdentityProvider!.IamIdpAlias,
                     identityProvider.IdentityProviderCategoryId,
                     identityProvider.IdentityProviderTypeId,
@@ -118,7 +119,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias, IdentityProviderTypeId TypeId)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId) =>
         _context.IdentityProviders
             .AsNoTracking()
-            .Where(identityProvider => identityProvider.OwnerId == companyId || identityProvider.Companies.Any(company => company.Id == companyId) && identityProvider.OwnerId == null)
+            .Where(identityProvider => identityProvider.OwnerId == companyId || identityProvider.Companies.Any(company => company.Id == companyId))
             .Select(identityProvider => new ValueTuple<Guid, IdentityProviderCategoryId, string, IdentityProviderTypeId>(
                 identityProvider.Id,
                 identityProvider.IdentityProviderCategoryId,
