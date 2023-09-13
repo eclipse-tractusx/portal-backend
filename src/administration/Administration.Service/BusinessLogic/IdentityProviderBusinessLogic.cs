@@ -384,7 +384,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
         if (!string.IsNullOrWhiteSpace(alias))
         {
-            var aliasExisting = true; 
+            var aliasExisting = true;
             try
             {
                 identityProviderDataOidc = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias)
@@ -407,26 +407,26 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             alias,
             categoryId,
             typeId,
-            identityProviderDataOidc?.DisplayName, 
+            identityProviderDataOidc?.DisplayName,
             identityProviderDataOidc?.RedirectUrl,
             identityProviderDataOidc?.Enabled,
             identityProviderMapper)
         {
-            oidc = identityProviderDataOidc == null ? 
+            oidc = identityProviderDataOidc == null ?
                 null :
                 new IdentityProviderDetailsOidc(
                     identityProviderDataOidc.AuthorizationUrl,
                     identityProviderDataOidc.ClientId,
                     identityProviderDataOidc.ClientAuthMethod)
-            {
-                signatureAlgorithm = identityProviderDataOidc.SignatureAlgorithm
-            }
+                {
+                    signatureAlgorithm = identityProviderDataOidc.SignatureAlgorithm
+                }
         };
     }
 
     private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsSaml(Guid identityProviderId, string? alias, IdentityProviderTypeId typeId)
     {
-        
+
         IdentityProviderConfigSaml? identityProviderDataSaml = null;
         List<IdentityProviderMapperModel>? identityProviderMapper = null;
         if (!string.IsNullOrWhiteSpace(alias))

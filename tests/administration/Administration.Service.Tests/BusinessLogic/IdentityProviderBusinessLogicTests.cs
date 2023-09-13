@@ -822,7 +822,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(new ValueTuple<string, IdentityProviderCategoryId, bool, IdentityProviderTypeId>("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Throws(new KeycloakEntityNotFoundException("cl1 not existing"));
-       
+
         // Act
         var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
 
