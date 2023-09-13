@@ -75,4 +75,11 @@ public interface IAppChangeBusinessLogic
     /// <param name="data">the data to update the url</param>
     /// <param name="companyId"></param>
     Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, Guid companyId);
+
+    /// <summary>
+    /// Gets the Active App Documents
+    /// </summary>
+    /// <param name="appId">Id of the offer</param>
+    /// <param name="companyId"></param>
+    Task<ActiveAppDocumentData> GetActiveAppDocumentTypeDataAsync(Guid appId, Guid companyId);
 }

@@ -22,7 +22,10 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Flurl.Util;
 using Microsoft.Extensions.Options;
+using MimeKit.Encodings;
+using Org.BouncyCastle.Utilities.Collections;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
@@ -92,6 +95,13 @@ public class AppChangeBusinessLogicTest
             CompanyAdminRoles = new[]
             {
                 new UserRoleConfig(ClientId, new [] { "Company Admin" })
+            },
+            ActiveAppDocumentTypeIds = new[]
+            {
+                DocumentTypeId.APP_IMAGE,
+                DocumentTypeId.APP_TECHNICAL_INFORMATION,
+                DocumentTypeId.APP_CONTRACT,
+                DocumentTypeId.ADDITIONAL_DETAILS
             }
         };
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
@@ -941,4 +951,35 @@ public class AppChangeBusinessLogicTest
     }
 
     #endregion
+
+    #region GetActiveAppDocumentTypeDataAsync
+
+    [Fact]
+    public async Task GetActiveAppDocumentTypeDataAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId1 = _fixture.Create<Guid>();
+        var documenntData = new[] {
+            new DocumentTypeData(DocumentTypeId.APP_IMAGE, documentId1, "TestDoc1")
+        };
+
+        A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._))
+            .Returns(documenntData);
+
+        // Act
+        var result = await _sut.GetActiveAppDocumentTypeDataAsync(appId, _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappened();
+        result.Documents.Should().NotBeNull().And.HaveCount(4).And.Satisfy(
+            x => x.Key == DocumentTypeId.APP_IMAGE && x.Value.Any(y => y!.DocumentId == documentId1 && y.DocumentName == "TestDoc1"),
+            x => x.Key == DocumentTypeId.APP_TECHNICAL_INFORMATION && !x.Value.Any(),
+            x => x.Key == DocumentTypeId.APP_CONTRACT && !x.Value.Any(),
+            x => x.Key == DocumentTypeId.ADDITIONAL_DETAILS && !x.Value.Any()
+        );
+    }
+
+    #endregion
+
 }

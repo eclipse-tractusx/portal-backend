@@ -147,4 +147,18 @@ public class AppChangeControllerTest
         A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task GetActiveAppDocuments_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+
+        //Act
+        await this._controller.GetActiveAppDocuments(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetActiveAppDocumentTypeDataAsync(appId, _identity.CompanyId)).MustHaveHappened();
+
+    }
 }

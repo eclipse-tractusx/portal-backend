@@ -822,4 +822,19 @@ public class OfferRepository : IOfferRepository
                 o.Offer.Name
             ))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<IEnumerable<DocumentTypeData>?> GetActiveOfferDocumentTypeDataAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds) =>
+        _context.Offers
+        .Where(o => o.Id == offerId &&
+            o.OfferStatusId == OfferStatusId.ACTIVE &&
+            o.OfferTypeId == offerTypeId &&
+            o.ProviderCompanyId == userCompanyId)
+        .Select(o => o.Documents.Where(doc => documentTypeIds.Contains(doc.DocumentTypeId))
+            .Select(doc => new DocumentTypeData(
+                doc.DocumentTypeId,
+                doc.Id,
+                doc.DocumentName)))
+        .SingleOrDefaultAsync();
+
 }

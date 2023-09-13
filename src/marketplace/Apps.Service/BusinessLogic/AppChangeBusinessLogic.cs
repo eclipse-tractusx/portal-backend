@@ -283,4 +283,17 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public async Task<ActiveAppDocumentData> GetActiveAppDocumentTypeDataAsync(Guid appId, Guid companyId)
+    {
+        var documentData = new Dictionary<DocumentTypeId, IEnumerable<DocumentData?>>();
+        var results = await _portalRepositories.GetInstance<IOfferRepository>().GetActiveOfferDocumentTypeDataAsync(appId, companyId, OfferTypeId.APP, _settings.ActiveAppDocumentTypeIds).ConfigureAwait(false);
+        var appDocTypeData = results!.GroupBy(d => d.DocumentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.DocumentId, d.DocumentName)));
+        foreach (var doctype in _settings.ActiveAppDocumentTypeIds)
+        {
+            documentData.Add(doctype, appDocTypeData.Where(x => x.Key == doctype).SelectMany(x => x.Value));
+        }
+        return new ActiveAppDocumentData(documentData);
+    }
 }
