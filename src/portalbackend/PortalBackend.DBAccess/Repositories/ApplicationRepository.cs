@@ -409,10 +409,17 @@ public class ApplicationRepository : IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the company id</returns>
-    public Task<(Guid CompanyId, string CompanyName)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? CallbackUrl, string? Bpn, Guid? ExternalId)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(x => new ValueTuple<Guid, string>(x.CompanyId, x.Company!.Name))
+            .Select(x => new ValueTuple<Guid, string, string?, string?, Guid?>(
+                x.CompanyId,
+                x.Company!.Name,
+                x.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL ? 
+                    x.OnboardingServiceProvider!.OnboardingServiceProviderDetail!.CallbackUrl :
+                    null,
+                x.Company.BusinessPartnerNumber,
+                x.Company!.NetworkRegistration!.ExternalId))
             .SingleOrDefaultAsync();
 
     public Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId) =>

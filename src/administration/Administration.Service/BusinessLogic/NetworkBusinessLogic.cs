@@ -49,18 +49,18 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _processHelper;
-    private readonly IOnboardingServiceProviderService _onboardingServiceProviderService;
     private readonly IMailingService _mailingService;
+    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOnboardingServiceProviderService onboardingServiceProviderService, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOnboardingServiceProviderBusinessLogic onboardingServiceProviderBusinessLogic, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _userProvisioningService = userProvisioningService;
         _processHelper = processHelper;
-        _onboardingServiceProviderService = onboardingServiceProviderService;
         _mailingService = mailingService;
+        _onboardingServiceProviderBusinessLogic = onboardingServiceProviderBusinessLogic;
         _settings = options.Value;
     }
 
@@ -371,27 +371,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await TriggerProviderCallback(data.Bpn, data.ExternalId, companyApplication, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task TriggerProviderCallback(string? bpn, Guid? externalId, (Guid Id, CompanyApplicationStatusId StatusId, string? CallbackUrl) companyApplication, CancellationToken cancellationToken)
-    {
-        if (!string.IsNullOrWhiteSpace(companyApplication.CallbackUrl))
-        {
-            if (externalId == null)
-            {
-                throw new UnexpectedConditionException("No external registration found");
-            }
-
-            if (string.IsNullOrWhiteSpace(bpn))
-            {
-                throw new UnexpectedConditionException("Bpn must be set");
-            }
-
-            await _onboardingServiceProviderService.TriggerProviderCallback(companyApplication.CallbackUrl,
-                    new OnboardingServiceProviderCallbackData(externalId.Value, companyApplication.Id, bpn, CompanyApplicationStatusId.SUBMITTED, "Application was submitted to be processed"),
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
+        await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(companyApplication.CallbackUrl, data.Bpn, data.ExternalId, companyApplication.Id, "Application was submitted to be processed", cancellationToken).ConfigureAwait(false);
     }
 }

@@ -42,6 +42,7 @@ public static class OnboardingServiceProviderServiceCollectionExtension
         var settings = sp.GetRequiredService<IOptions<OnboardingServiceProviderSettings>>();
         return services
             .AddCustomHttpClientWithAuthentication<OnboardingServiceProviderService>(null, settings.Value.KeycloakTokenAddress)
+            .AddTransient<IOnboardingServiceProviderBusinessLogic, OnboardingServiceProviderBusinessLogic>()
             .AddTransient<IOnboardingServiceProviderService, OnboardingServiceProviderService>();
     }
 }

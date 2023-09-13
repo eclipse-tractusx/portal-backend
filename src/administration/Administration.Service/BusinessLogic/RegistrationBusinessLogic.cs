@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -40,13 +41,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
+    private static readonly Regex BpnRegex = new(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
     private readonly IMailingService _mailingService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories,
@@ -54,7 +57,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IMailingService mailingService,
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
-        ISdFactoryBusinessLogic sdFactoryBusinessLogic)
+        ISdFactoryBusinessLogic sdFactoryBusinessLogic,
+        IOnboardingServiceProviderBusinessLogic onboardingServiceProviderBusinessLogic)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
@@ -62,6 +66,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
+        _onboardingServiceProviderBusinessLogic = onboardingServiceProviderBusinessLogic;
     }
 
     public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
@@ -187,7 +192,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     /// <inheritdoc />
     public Task UpdateCompanyBpn(Guid applicationId, string bpn)
     {
-        if (!bpnRegex.IsMatch(bpn))
+        if (!BpnRegex.IsMatch(bpn))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
         }
@@ -403,7 +408,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task DeclineRegistrationVerification(Guid applicationId, string comment)
+    public async Task DeclineRegistrationVerification(Guid applicationId, string comment, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (result == default)
@@ -411,7 +416,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
 
-        var (companyId, companyName) = result;
+        var (companyId, companyName, callbackUrl, bpn, externalId) = result;
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -446,6 +451,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(callbackUrl, bpn, externalId, applicationId, comment, cancellationToken).ConfigureAwait(false);
         await PostRegistrationCancelEmailAsync(applicationId, companyName, comment).ConfigureAwait(false);
     }
 

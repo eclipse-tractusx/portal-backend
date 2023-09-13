@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -41,17 +42,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class RegistrationBusinessLogicTest
 {
+    private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
+    private const string AlreadyTakenBpn = "BPNL123698762666";
+    private const string ValidBpn = "BPNL123698762345";
+    private const string CompanyName = "TestCompany";
     private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid NotExistingApplicationId = new("9f0cfd0d-c512-438e-a07e-3198bce873bf");
     private static readonly Guid ActiveApplicationCompanyId = new("045abf01-7762-468b-98fb-84a30c39b7c7");
     private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
-    private static readonly string CompanyName = "TestCompany";
-
+    private static readonly Guid ExistingExternalId = Guid.NewGuid();
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
     private static readonly Guid ApplicationId = new("6084d6e0-0e01-413c-850d-9f944a6c494c");
-    private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
-    private const string AlreadyTakenBpn = "BPNL123698762666";
-    private const string ValidBpn = "BPNL123698762345";
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
@@ -66,6 +67,7 @@ public class RegistrationBusinessLogicTest
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IMailingService _mailingService;
     private readonly IDocumentRepository _documentRepository;
+    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     public RegistrationBusinessLogicTest()
     {
@@ -81,6 +83,7 @@ public class RegistrationBusinessLogicTest
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
+        _onboardingServiceProviderBusinessLogic = A.Fake<IOnboardingServiceProviderBusinessLogic>();
 
         var options = A.Fake<IOptions<RegistrationSettings>>();
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
@@ -98,7 +101,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(settings);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _onboardingServiceProviderBusinessLogic);
     }
 
     #region GetCompanyApplicationDetailsAsync
@@ -455,7 +458,7 @@ public class RegistrationBusinessLogicTest
         SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId);
 
         // Act
-        await _logic.DeclineRegistrationVerification(IdWithBpn, comment).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(IdWithBpn, comment, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -466,6 +469,8 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _checklistService.SkipProcessSteps(
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.VERIFY_REGISTRATION)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(A<string>._, A<string>._, A<Guid>._, IdWithBpn, comment, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -798,7 +803,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName));
+            .Returns((CompanyId, CompanyName, "https://callback.url", "BPNL1234567899", ExistingExternalId));
     }
 
     private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId)
@@ -821,7 +826,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName));
+            .Returns((CompanyId, CompanyName, "https://callback.url", "BPNL1234567899", ExistingExternalId));
 
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> initial, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>

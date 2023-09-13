@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
-using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -56,7 +55,7 @@ public class NetworkBusinessLogicTests
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _networkRegistrationProcessHelper;
     private readonly IMailingService _mailingService;
-    private readonly IOnboardingServiceProviderService _onboardingServiceProviderService;
+    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRepository _companyRepository;
@@ -82,7 +81,7 @@ public class NetworkBusinessLogicTests
         _identityService = A.Fake<IIdentityService>();
         _networkRegistrationProcessHelper = A.Fake<INetworkRegistrationProcessHelper>();
         _mailingService = A.Fake<IMailingService>();
-        _onboardingServiceProviderService = A.Fake<IOnboardingServiceProviderService>();
+        _onboardingServiceProviderBusinessLogic = A.Fake<IOnboardingServiceProviderBusinessLogic>();
 
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
@@ -110,9 +109,9 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IOnboardingServiceProviderService>()).Returns(_onboardingServiceProviderService);
+        A.CallTo(() => _portalRepositories.GetInstance<IOnboardingServiceProviderBusinessLogic>()).Returns(_onboardingServiceProviderBusinessLogic);
 
-        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _onboardingServiceProviderService, _mailingService, options);
+        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _onboardingServiceProviderBusinessLogic, _mailingService, options);
 
         SetupRepos();
     }
@@ -841,58 +840,6 @@ public class NetworkBusinessLogicTests
     }
 
     [Fact]
-    public async Task Submit_WithoutExternalId_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var agreementId = Guid.NewGuid();
-        var agreementId1 = Guid.NewGuid();
-        var data = new[]
-        {
-            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
-        };
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
-        {
-            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
-        };
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), true, companyRoleIds, "BPNL1234567899", null));
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("No external registration found");
-    }
-
-    [Fact]
-    public async Task Submit_WithoutBpn_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var agreementId = Guid.NewGuid();
-        var agreementId1 = Guid.NewGuid();
-        var data = new[]
-        {
-            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
-        };
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
-        {
-            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
-        };
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), true, companyRoleIds, null, ExistingExternalId));
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("Bpn must be set");
-    }
-
-    [Fact]
     public async Task Submit_WithValidData_CallsExpected()
     {
         // Arrange
@@ -927,7 +874,7 @@ public class NetworkBusinessLogicTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback("https://callback.url", A<OnboardingServiceProviderCallbackData>._, A<CancellationToken>._))
+        A.CallTo(() => _onboardingServiceProviderBusinessLogic.TriggerProviderCallback("https://callback.url", "BPNL1234567899", ExistingExternalId, applicationId, A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
