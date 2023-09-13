@@ -28,13 +28,6 @@
     "owner_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542"
   },
   {
-    "id": "ac1cf001-7fbc-1f2f-817f-bce0575a0012",
-    "date_created": "2022-05-05 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 2,
-    "identity_provider_type_id": 3,
-    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
-  },
-  {
     "id": "ac1cf001-7fbc-1f2f-817f-bce057770016",
     "date_created": "2022-05-05 00:00:00.000000 +00:00",
     "identity_provider_category_id": 2,
@@ -54,12 +47,5 @@
     "identity_provider_category_id": 2,
     "identity_provider_type_id": 3,
     "owner_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cde"
-  },
-  {
-    "id": "e7317720-051d-4f4c-9140-ac23c6330351",
-    "date_created": "2022-11-01 00:00:00.000000 +00:00",
-    "identity_provider_category_id": 2,
-    "identity_provider_type_id": 2,
-    "owner_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"
   }
 ]
