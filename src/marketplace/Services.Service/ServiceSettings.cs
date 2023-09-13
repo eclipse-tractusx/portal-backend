@@ -147,6 +147,13 @@ public class ServiceSettings
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> SubscriptionManagerRoles { get; init; } = null!;
 
+    /// <summary>
+    /// Roles to notify when a new Activation was created
+    /// </summary>
+    [Required]
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ActivationUserRoles { get; init; } = null!;
+
 }
 
 public static class ServiceSettingsExtension

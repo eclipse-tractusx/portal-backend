@@ -21,7 +21,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -839,9 +838,26 @@ public class OfferServiceTests
         {
             new UserRoleConfig("catenax-portal", new [] { "Sales Manager" })
         };
+        var recipients = new[]
+        {
+            new UserRoleConfig("catenax-portal", new [] { "Sales Manager", "App Manager" })
+        };
+        var basePortalAddress = _fixture.Create<string>();
+
+        var mailParameters = new[]
+        {
+            ("offerName", offer.Name),
+            ("portalBaseUrl", basePortalAddress),
+            ("appId", offer.Id.ToString())
+        };
+        var userNameParameter = ("offerProviderName", "User");
+        var template = new[]
+        {
+            "offer-release-activation"
+        };
 
         //Act
-        await _sut.ApproveOfferRequestAsync(offer.Id, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        await _sut.ApproveOfferRequestAsync(offer.Id, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offer.Id, OfferTypeId.APP)).MustHaveHappened();
@@ -862,6 +878,12 @@ public class OfferServiceTests
             A.CallTo(() => _offerSetupService.ActivateSingleInstanceAppAsync(offer.Id))
                 .MustNotHaveHappened();
         }
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(
+            A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(recipients),
+            A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
+            userNameParameter,
+            A<IEnumerable<string>>.That.IsSameSequenceAs(template),
+            companyId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -882,9 +904,14 @@ public class OfferServiceTests
         {
             new UserRoleConfig("catenax-portal", new [] { "Sales Manager" })
         };
+        var recipients = new[]
+        {
+            new UserRoleConfig("catenax-portal", new [] { "Sales Manager", "App Manager" })
+        };
+        var basePortalAddress = _fixture.Create<string>();
 
         //Act
-        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>());
+        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -909,9 +936,14 @@ public class OfferServiceTests
         {
             new UserRoleConfig("catenax-portal", new [] { "Sales Manager" })
         };
+        var recipients = new[]
+        {
+            new UserRoleConfig("catenax-portal", new [] { "Sales Manager", "App Manager" })
+        };
+        var basePortalAddress = _fixture.Create<string>();
 
         //Act
-        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>());
+        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);

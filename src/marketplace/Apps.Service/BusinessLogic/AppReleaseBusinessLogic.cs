@@ -321,7 +321,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc/>
     public Task ApproveAppRequestAsync(Guid appId, Guid userId) =>
-        _offerService.ApproveOfferRequestAsync(appId, userId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
+        _offerService.ApproveOfferRequestAsync(appId, userId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.BasePortalAddress, _settings.ActivationUserRoles);
 
     private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
     {
