@@ -539,6 +539,7 @@ public class IdentityProviderBusinessLogicTests
             x.IamIdpAlias == idpName);
 
         result.Should().Match<IdentityProviderDetails>(x =>
+            x.mappers != null &&
             x.mappers.Count() == 3 &&
             x.enabled == true &&
             x.redirectUrl == "https://redirect.com/*" &&
@@ -735,8 +736,8 @@ public class IdentityProviderBusinessLogicTests
             _logger);
         var oidcGuid = Guid.NewGuid();
         var samlGuid = Guid.NewGuid();
-        var oidc = new ValueTuple<Guid, IdentityProviderCategoryId, string, IdentityProviderTypeId>(oidcGuid, IdentityProviderCategoryId.KEYCLOAK_OIDC, "oidc-alias", IdentityProviderTypeId.OWN);
-        var saml = new ValueTuple<Guid, IdentityProviderCategoryId, string, IdentityProviderTypeId>(samlGuid, IdentityProviderCategoryId.KEYCLOAK_SAML, "saml-alias", IdentityProviderTypeId.OWN);
+        var oidc = (oidcGuid, IdentityProviderCategoryId.KEYCLOAK_OIDC, (string?)"oidc-alias", IdentityProviderTypeId.OWN);
+        var saml = (samlGuid, IdentityProviderCategoryId.KEYCLOAK_SAML, (string?)"saml-alias", IdentityProviderTypeId.OWN);
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>._))
             .Returns(new[] { oidc, saml }.ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("oidc-alias"))
@@ -754,8 +755,8 @@ public class IdentityProviderBusinessLogicTests
         // Assert
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(_companyId)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(2).And.Satisfy(
-            x => x.displayName == "dis-oidc" && x.mappers.Count() == 3,
-            x => x.displayName == "dis-saml" && x.mappers.Count() == 2
+            x => x.displayName == "dis-oidc" && x.mappers != null && x.mappers.Count() == 3,
+            x => x.displayName == "dis-saml" && x.mappers != null && x.mappers.Count() == 2
         );
     }
 
@@ -797,7 +798,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
-            .Returns(new ValueTuple<string?, IdentityProviderCategoryId, bool, IdentityProviderTypeId>(null, IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN));
+            .Returns((null, IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN));
 
         // Act
         async Task Act() => await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
@@ -819,7 +820,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
-            .Returns(new ValueTuple<string, IdentityProviderCategoryId, bool, IdentityProviderTypeId>("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN));
+            .Returns(("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Throws(new KeycloakEntityNotFoundException("cl1 not existing"));
 
@@ -844,7 +845,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
-            .Returns(new ValueTuple<string, IdentityProviderCategoryId, bool, IdentityProviderTypeId>("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN));
+            .Returns(("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("cl1"))
@@ -871,7 +872,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
-            .Returns(new ValueTuple<string, IdentityProviderCategoryId, bool, IdentityProviderTypeId>("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN));
+            .Returns(("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataSAMLAsync("saml-alias"))
             .Throws(new KeycloakEntityNotFoundException("saml-alias"));
 
@@ -896,7 +897,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
-            .Returns(new ValueTuple<string, IdentityProviderCategoryId, bool, IdentityProviderTypeId>("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN));
+            .Returns(("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataSAMLAsync("saml-alias"))
             .Returns(_fixture.Build<IdentityProviderConfigSaml>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-saml").Create());
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("saml-alias"))
@@ -1469,7 +1470,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>());
+            .Returns(((string?, string?, bool))default);
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data, companyId).ConfigureAwait(false);
@@ -1496,7 +1497,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(null, "cl1", false));
+            .Returns((null, "cl1", false));
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data, companyId).ConfigureAwait(false);
@@ -1524,7 +1525,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), null, false));
+            .Returns((userEntityId.ToString(), null, false));
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data, companyId).ConfigureAwait(false);
@@ -1552,7 +1553,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", false));
+            .Returns((userEntityId.ToString(), "cl1", false));
 
         // Act
         async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data, companyId).ConfigureAwait(false);
@@ -1580,7 +1581,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", true));
+            .Returns((userEntityId.ToString(), "cl1", true));
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId.ToString(), A<IdentityProviderLink>._))
             .Throws(new KeycloakEntityConflictException("test"));
 
@@ -1611,7 +1612,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", true));
+            .Returns((userEntityId.ToString(), "cl1", true));
 
         // Act
         var result = await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data, companyId).ConfigureAwait(false);
@@ -1643,7 +1644,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>());
+            .Returns(((string?, string?, bool))default);
 
         // Act
         async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data, companyId).ConfigureAwait(false);
@@ -1670,7 +1671,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(null, "cl1", false));
+            .Returns((null, "cl1", false));
 
         // Act
         async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data, companyId).ConfigureAwait(false);
@@ -1698,7 +1699,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), null, false));
+            .Returns((userEntityId.ToString(), null, false));
 
         // Act
         async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data, companyId).ConfigureAwait(false);
@@ -1726,7 +1727,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", false));
+            .Returns((userEntityId.ToString(), "cl1", false));
 
         // Act
         async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data, companyId).ConfigureAwait(false);
@@ -1754,7 +1755,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", true));
+            .Returns((userEntityId.ToString(), "cl1", true));
 
         // Act
         var result = await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data, companyId).ConfigureAwait(false);
@@ -1785,7 +1786,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>());
+            .Returns(((string?, string?, bool))default);
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
@@ -1809,7 +1810,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(null, "cl1", false));
+            .Returns((null, "cl1", false));
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
@@ -1834,7 +1835,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), null, false));
+            .Returns((userEntityId.ToString(), null, false));
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
@@ -1859,7 +1860,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", false));
+            .Returns((userEntityId.ToString(), "cl1", false));
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
@@ -1884,7 +1885,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", true));
+            .Returns((userEntityId.ToString(), "cl1", true));
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId.ToString()))
             .Returns(Enumerable.Empty<IdentityProviderLink>().ToAsyncEnumerable());
 
@@ -1911,7 +1912,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", true));
+            .Returns((userEntityId.ToString(), "cl1", true));
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId.ToString()))
             .Returns(Enumerable.Repeat(new IdentityProviderLink("cl1", userEntityId.ToString(), "user-name"), 1).ToAsyncEnumerable());
 
@@ -1941,7 +1942,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", true));
+            .Returns((userEntityId.ToString(), "cl1", true));
         A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId.ToString(), "cl1"))
             .Throws(new KeycloakEntityNotFoundException("just a test"));
 
@@ -1968,7 +1969,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", true));
+            .Returns((userEntityId.ToString(), "cl1", true));
 
         // Act
         await sut.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(false);
@@ -1997,7 +1998,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId))
-            .Returns(new ValueTuple<string?, string?, bool>(userEntityId.ToString(), "cl1", true));
+            .Returns((userEntityId.ToString(), "cl1", true));
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUsersIdentityProviderDataAsync(Enumerable.Empty<Guid>(), companyId, false).ToListAsync().ConfigureAwait(false);
@@ -2020,7 +2021,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasDataUntracked(companyId, A<IEnumerable<Guid>>._))
-            .Returns(Enumerable.Empty<ValueTuple<Guid, string>>().ToAsyncEnumerable());
+            .Returns(Enumerable.Empty<(Guid, string)>().ToAsyncEnumerable());
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUsersIdentityProviderDataAsync(Enumerable.Repeat(identityProviderId, 1), companyId, false).ToListAsync().ConfigureAwait(false);
@@ -2037,11 +2038,11 @@ public class IdentityProviderBusinessLogicTests
     private void SetupCreateOwnCompanyIdentityProvider(IamIdentityProviderProtocol protocol = IamIdentityProviderProtocol.OIDC, ICollection<IdentityProvider>? idps = null, ICollection<CompanyIdentityProvider>? companyIdps = null, ICollection<IamIdentityProvider>? iamIdps = null)
     {
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._))
-            .Returns(new ValueTuple<bool, string, bool>(true, "test", true));
+            .Returns((true, "test", true));
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_invalidCompanyId, A<IEnumerable<CompanyRoleId>>._))
-            .Returns(new ValueTuple<bool, string, bool>(true, "test", false));
+            .Returns((true, "test", false));
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(A<Guid>.That.Not.Matches(x => x == _identity.CompanyId || x == _invalidCompanyId), A<IEnumerable<CompanyRoleId>>._))
-            .Returns(new ValueTuple<bool, string, bool>());
+            .Returns(((bool, string, bool))default);
 
         if (idps != null)
         {
@@ -2102,7 +2103,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _options.Value).Returns(new IdentityProviderSettings { CsvSettings = _csvSettings });
 
         A.CallTo(() => _document.ContentType).Returns(_options.Value.CsvSettings.ContentType);
-        A.CallTo(() => _document.OpenReadStream()).ReturnsLazily(() => new AsyncEnumerableStringStream(lines.ToAsyncEnumerable(), _encoding));
+        A.CallTo(() => _document.OpenReadStream()).Returns(new AsyncEnumerableStringStream(lines.ToAsyncEnumerable(), _encoding));
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
@@ -2111,18 +2112,18 @@ public class IdentityProviderBusinessLogicTests
             userData.Where(d => d.CompanyUserId == companyUserId)
                 .Select(d =>
                     (
-                        UserEntityId: d.UserEntityId,
-                        FirstName: d.FirstName,
-                        LastName: d.LastName,
-                        Email: d.Email
+                        d.UserEntityId,
+                        d.FirstName,
+                        d.LastName,
+                        d.Email
                     )).FirstOrDefault());
 
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.Not.IsEqualTo(_companyId))).Returns(
-            Enumerable.Empty<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias, IdentityProviderTypeId TypeId)>().ToAsyncEnumerable());
+            Enumerable.Empty<(Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId)>().ToAsyncEnumerable());
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.IsEqualTo(_companyId))).Returns(
-            new[] {
-                (IdentityProviderId: _sharedIdentityProviderId, CategoryId: IdentityProviderCategoryId.KEYCLOAK_OIDC, Alias: _sharedIdpAlias, IdentityProviderTypeId.SHARED),
-                (IdentityProviderId: _otherIdentityProviderId, CategoryId: IdentityProviderCategoryId.KEYCLOAK_OIDC, Alias: _otherIdpAlias, IdentityProviderTypeId.OWN),
+            new (Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId)[] {
+                (_sharedIdentityProviderId, IdentityProviderCategoryId.KEYCLOAK_OIDC, _sharedIdpAlias, IdentityProviderTypeId.SHARED),
+                (_otherIdentityProviderId, IdentityProviderCategoryId.KEYCLOAK_OIDC, _otherIdpAlias, IdentityProviderTypeId.OWN),
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._, A<Action<IdentityProvider>?>._))

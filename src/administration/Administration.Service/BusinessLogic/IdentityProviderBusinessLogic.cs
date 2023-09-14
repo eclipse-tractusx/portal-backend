@@ -380,15 +380,16 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsOidc(Guid identityProviderId, string? alias, IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId)
     {
         IdentityProviderConfigOidc? identityProviderDataOidc = null;
-        List<IdentityProviderMapperModel>? identityProviderMapper = null;
+        IEnumerable<IdentityProviderMapperModel>? identityProviderMapper = null;
 
         if (!string.IsNullOrWhiteSpace(alias))
         {
-            var aliasExisting = true;
+            bool aliasExisting;
             try
             {
                 identityProviderDataOidc = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias)
                     .ConfigureAwait(false);
+                aliasExisting = true;
             }
             catch (KeycloakEntityNotFoundException ex)
             {
@@ -428,14 +429,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
 
         IdentityProviderConfigSaml? identityProviderDataSaml = null;
-        List<IdentityProviderMapperModel>? identityProviderMapper = null;
+        IEnumerable<IdentityProviderMapperModel>? identityProviderMapper = null;
         if (!string.IsNullOrWhiteSpace(alias))
         {
-            var aliasExisting = true;
+            bool aliasExisting;
             try
             {
                 identityProviderDataSaml = await _provisioningManager
                     .GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
+                aliasExisting = true;
             }
             catch (KeycloakEntityNotFoundException ex)
             {
@@ -661,8 +663,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     private async ValueTask<(string? SharedIdpAlias, IEnumerable<string> ValidAliase)> GetCompanyAliasDataAsync(Guid companyId)
     {
-        var identityProviderCategoryData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderCategoryDataUntracked(companyId).ToListAsync().ConfigureAwait(false);
-        var sharedIdpAlias = identityProviderCategoryData.Where(data => data.TypeId == IdentityProviderTypeId.SHARED).Select(data => data.Alias).SingleOrDefault();
+        var identityProviderCategoryData = await _portalRepositories.GetInstance<IIdentityProviderRepository>()
+                .GetCompanyIdentityProviderCategoryDataUntracked(companyId)
+                .Where(data => data.Alias != null)
+                .Select(data => (data.TypeId, Alias: data.Alias!))
+                .ToListAsync().ConfigureAwait(false);
+        var sharedIdpAlias = identityProviderCategoryData.SingleOrDefault(data => data.TypeId == IdentityProviderTypeId.SHARED).Alias;
         var validAliase = identityProviderCategoryData.Select(data => data.Alias).ToList();
         return (sharedIdpAlias, validAliase);
     }
