@@ -1377,6 +1377,70 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetServiceAccountProfileData
+
+    [Fact]
+    public async Task GetServiceAccountProfileData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceAccountProfileData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.ServiceAccountProfiles.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetServiceAccountProfileData_WithServiceAccountProfileWithRoles_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceAccountProfileData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.ServiceAccountProfiles.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region GetServiceAccountProfileDataForSubscription
+
+    [Fact]
+    public async Task GetServiceAccountProfileDataForSubscription_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceAccountProfileDataForSubscription(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.ServiceAccountProfiles.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetServiceAccountProfileDataForSubscription_WithServiceAccountProfileWithRoles_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceAccountProfileDataForSubscription(new Guid("92be9d79-4064-422c-bdc8-a12ca7d26e5d")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.ServiceAccountProfiles.Should().HaveCount(1);
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<OfferRepository> CreateSut()

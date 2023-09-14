@@ -41,7 +41,7 @@ public interface IProvisioningManager
     Task DeleteSharedRealmUserAsync(string realm, string userId);
     Task DeleteCentralRealmUserAsync(string userId);
     Task<string> SetupClientAsync(string redirectUrl, string? baseUrl = null, IEnumerable<string>? optionalRoleNames = null, bool enabled = true);
-    Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config);
+    Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config, bool enabled);
     Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config);
     Task DeleteCentralClientAsync(string internalClientId);
     Task UpdateClient(string clientId, string url, string redirectUrl);

@@ -68,6 +68,7 @@ public class OfferServiceTests
     private readonly IOfferSetupService _offerSetupService;
     private readonly ITechnicalUserProfileRepository _technicalUserProfileRepository;
     private readonly IConnectorsRepository _connectorsRepository;
+    private readonly IIdentityService _identityService;
 
     public OfferServiceTests()
     {
@@ -100,8 +101,10 @@ public class OfferServiceTests
         _documentRepository = A.Fake<IDocumentRepository>();
         _offerSetupService = A.Fake<IOfferSetupService>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
+        _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        _sut = new OfferService(_portalRepositories, _notificationService, _roleBaseMailService, _offerSetupService);
+        _sut = new OfferService(_portalRepositories, _notificationService, _roleBaseMailService, _identityService, _offerSetupService);
 
         SetupRepositories();
         _createNotificationsEnumerator = SetupServices();
@@ -129,7 +132,7 @@ public class OfferServiceTests
             });
 
         // Act
-        var result = await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _identity.UserId, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE);
+        var result = await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _identity.UserId, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(serviceId);
@@ -164,7 +167,7 @@ public class OfferServiceTests
         {
             ServiceTypeId.DATASPACE_SERVICE
         }, "http://google.com");
-        var result = await _sut.CreateServiceOfferingAsync(serviceOfferingData, (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE);
+        var result = await _sut.CreateServiceOfferingAsync(serviceOfferingData, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(serviceId);
@@ -178,7 +181,7 @@ public class OfferServiceTests
     {
         // Act
         var serviceTypeIds = Enumerable.Empty<ServiceTypeId>();
-        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), serviceTypeIds, "http://google.com"), _fixture.Create<ValueTuple<Guid, Guid>>(), OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), serviceTypeIds, "http://google.com"), OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -189,7 +192,7 @@ public class OfferServiceTests
     public async Task CreateServiceOffering_WithoutTitle_ThrowsException()
     {
         // Act
-        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), _fixture.Create<ValueTuple<Guid, Guid>>(), OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -204,7 +207,7 @@ public class OfferServiceTests
         {
             new ("gg", "That's a description with incorrect language short code", "Short description")
         }, new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com");
-        async Task Action() => await _sut.CreateServiceOfferingAsync(serviceOfferingData, (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateServiceOfferingAsync(serviceOfferingData, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -215,7 +218,7 @@ public class OfferServiceTests
     public async Task CreateServiceOffering_WithoutCompanyUser_ThrowsException()
     {
         // Act
-        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", Guid.NewGuid(), Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", Guid.NewGuid(), Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -271,7 +274,7 @@ public class OfferServiceTests
             });
 
         // Act
-        var result = await _sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, _existingAgreementId, statusId, _identity, OfferTypeId.SERVICE);
+        var result = await _sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, _existingAgreementId, statusId, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(consentId);
@@ -285,7 +288,7 @@ public class OfferServiceTests
         var nonExistingAgreementId = Guid.NewGuid();
 
         // Act
-        async Task Action() => await _sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, nonExistingAgreementId, ConsentStatusId.ACTIVE, _identity, OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, nonExistingAgreementId, ConsentStatusId.ACTIVE, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -296,9 +299,10 @@ public class OfferServiceTests
     public async Task CreateOfferAgreementConsentAsync_WithWrongUser_ThrowsException()
     {
         var identity = _fixture.Create<IdentityData>();
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
 
         // Act
-        async Task Action() => await _sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, identity, OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -312,7 +316,7 @@ public class OfferServiceTests
         var notExistingServiceId = Guid.NewGuid();
 
         // Act
-        async Task Action() => await _sut.CreateOfferSubscriptionAgreementConsentAsync(notExistingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, _identity, OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateOfferSubscriptionAgreementConsentAsync(notExistingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -323,7 +327,7 @@ public class OfferServiceTests
     public async Task CreateOfferAgreementConsentAsync_WithInvalidOfferType_ThrowsException()
     {
         // Act
-        async Task Action() => await _sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, _identity, OfferTypeId.APP);
+        async Task Action() => await _sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, OfferTypeId.APP);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -359,7 +363,7 @@ public class OfferServiceTests
             });
 
         // Act
-        await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(_existingServiceId, data, _identity, OfferTypeId.SERVICE);
+        await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(_existingServiceId, data, OfferTypeId.SERVICE);
 
         // Assert
         consents.Should().HaveCount(1);
@@ -376,7 +380,7 @@ public class OfferServiceTests
         };
 
         // Act
-        async Task Action() => await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(_existingServiceId, data, _identity, OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(_existingServiceId, data, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -387,14 +391,15 @@ public class OfferServiceTests
     public async Task CreateOrUpdateServiceAgreementConsentAsync_WithWrongUser_ThrowsException()
     {
         // Arrange
-        var identity = _fixture.Create<IdentityData>();
         var data = new OfferAgreementConsentData[]
         {
             new(_existingAgreementId, ConsentStatusId.ACTIVE)
         };
+        A.CallTo(() => _identityService.IdentityData)
+            .Returns(new IdentityData(Guid.NewGuid().ToString(), Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid()));
 
         // Act
-        async Task Action() => await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(_existingServiceId, data, identity, OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(_existingServiceId, data, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -412,8 +417,7 @@ public class OfferServiceTests
         };
 
         // Act
-        async Task Action() => await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(notExistingServiceId, data,
-            _identity, OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(notExistingServiceId, data, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -430,8 +434,7 @@ public class OfferServiceTests
         };
 
         // Act
-        async Task Action() => await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(_existingServiceId, data,
-            _identity, OfferTypeId.APP);
+        async Task Action() => await _sut.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(_existingServiceId, data, OfferTypeId.APP);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -478,7 +481,7 @@ public class OfferServiceTests
         SetupValidateSalesManager();
 
         //null Act
-        async Task Act() => await _sut.ValidateSalesManager(Guid.NewGuid(), _identity.CompanyId, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.ValidateSalesManager(Guid.NewGuid(), Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -492,7 +495,7 @@ public class OfferServiceTests
         SetupValidateSalesManager();
 
         // Act
-        async Task Act() => await _sut.ValidateSalesManager(_differentCompanyUserId, _identity.CompanyId, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.ValidateSalesManager(_differentCompanyUserId, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -506,7 +509,7 @@ public class OfferServiceTests
         SetupValidateSalesManager();
 
         // Act
-        async Task Act() => await _sut.ValidateSalesManager(_noSalesManagerUserId, _identity.CompanyId, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.ValidateSalesManager(_noSalesManagerUserId, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -613,7 +616,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).Returns((OfferReleaseData?)null);
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(notExistingOffer, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, Enumerable.Empty<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(notExistingOffer, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, Enumerable.Empty<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -632,7 +635,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -660,7 +663,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), submitAppDocumentTypeIds).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), submitAppDocumentTypeIds).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -681,7 +684,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -734,14 +737,14 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).Invokes(
             (Guid _,
                 Action<Offer> setOptionalParameters,
-                Action<Offer>? initializeParemeters) =>
+                Action<Offer>? initializeParemeter) =>
             {
-                initializeParemeters?.Invoke(offer);
+                initializeParemeter?.Invoke(offer);
                 setOptionalParameters.Invoke(offer);
             });
 
         // Act
-        await _sut.SubmitOfferAsync(offerId, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE }).ConfigureAwait(false);
+        await _sut.SubmitOfferAsync(offerId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE }).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, _identity.UserId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, false)).MustHaveHappenedOnceExactly();
@@ -765,10 +768,10 @@ public class OfferServiceTests
             .Create();
 
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
-        var sut = new OfferService(_portalRepositories, null!, null!, _offerSetupService);
+        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService);
 
         // Act
-        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -789,10 +792,10 @@ public class OfferServiceTests
             .Create();
 
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
-        var sut = new OfferService(_portalRepositories, null!, null!, _offerSetupService);
+        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService);
 
         // Act
-        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -857,7 +860,7 @@ public class OfferServiceTests
         };
 
         //Act
-        await _sut.ApproveOfferRequestAsync(offer.Id, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients).ConfigureAwait(false);
+        await _sut.ApproveOfferRequestAsync(offer.Id, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offer.Id, OfferTypeId.APP)).MustHaveHappened();
@@ -911,7 +914,7 @@ public class OfferServiceTests
         var basePortalAddress = _fixture.Create<string>();
 
         //Act
-        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients);
+        Task Act() => _sut.ApproveOfferRequestAsync(offerId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -943,7 +946,7 @@ public class OfferServiceTests
         var basePortalAddress = _fixture.Create<string>();
 
         //Act
-        Task Act() => _sut.ApproveOfferRequestAsync(offerId, _identity.UserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients);
+        Task Act() => _sut.ApproveOfferRequestAsync(offerId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>(), basePortalAddress, recipients);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -964,7 +967,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).Returns((OfferReleaseData?)null);
 
         // Act
-        async Task Act() => await _sut.SubmitServiceAsync(notExistingOffer, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitServiceAsync(notExistingOffer, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -982,7 +985,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
 
         // Act
-        async Task Act() => await _sut.SubmitServiceAsync(Guid.NewGuid(), _identity.UserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitServiceAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1046,7 +1049,7 @@ public class OfferServiceTests
             });
 
         // Act
-        await _sut.SubmitServiceAsync(offerId, _identity.UserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        await _sut.SubmitServiceAsync(offerId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, _identity.UserId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, A<bool?>._)).MustHaveHappenedOnceExactly();
@@ -1072,7 +1075,7 @@ public class OfferServiceTests
             .Returns(((string?, OfferStatusId, Guid?, IEnumerable<DocumentStatusData>))default);
 
         // Act
-        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1090,7 +1093,7 @@ public class OfferServiceTests
             .Returns(("test", OfferStatusId.CREATED, Guid.NewGuid(), documentStatusData));
 
         // Act
-        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1109,7 +1112,7 @@ public class OfferServiceTests
             .Returns(((string?)null, OfferStatusId.IN_REVIEW, Guid.NewGuid(), documentStatusDatas));
 
         // Act
-        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1128,7 +1131,7 @@ public class OfferServiceTests
             .Returns(("test", OfferStatusId.IN_REVIEW, null, documentStatusDatas));
 
         // Act
-        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _identity.UserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1205,7 +1208,7 @@ public class OfferServiceTests
         };
 
         // Act
-        await _sut.DeclineOfferAsync(offerId, _identity.UserId, new OfferDeclineRequest(declineMessage), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, recipients, basePortalAddress, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
+        await _sut.DeclineOfferAsync(offerId, new OfferDeclineRequest(declineMessage), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, recipients, basePortalAddress, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
@@ -1243,7 +1246,7 @@ public class OfferServiceTests
             .Returns(((bool, bool))default);
 
         // Act
-        async Task Act() => await _sut.DeactivateOfferIdAsync(notExistingId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeactivateOfferIdAsync(notExistingId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1261,7 +1264,7 @@ public class OfferServiceTests
             .Returns((true, false));
 
         // Act
-        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -1280,7 +1283,7 @@ public class OfferServiceTests
             .Returns((false, true));
 
         // Act
-        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1307,7 +1310,7 @@ public class OfferServiceTests
             });
 
         // Act
-        await _sut.DeactivateOfferIdAsync(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        await _sut.DeactivateOfferIdAsync(offerId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
@@ -1329,7 +1332,7 @@ public class OfferServiceTests
             .Returns((data, true));
 
         // Act
-        var result = await _sut.GetProviderOfferAgreementConsentById(serviceId, _identity.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await _sut.GetProviderOfferAgreementConsentById(serviceId, OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsentById(serviceId, _identity.CompanyId, OfferTypeId.SERVICE))
@@ -1347,7 +1350,7 @@ public class OfferServiceTests
             .Returns((data, false));
 
         // Act
-        async Task Act() => await _sut.GetProviderOfferAgreementConsentById(serviceId, _identity.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        async Task Act() => await _sut.GetProviderOfferAgreementConsentById(serviceId, OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -1364,7 +1367,7 @@ public class OfferServiceTests
             .Returns(((OfferAgreementConsent, bool))default);
 
         // Act
-        async Task Act() => await _sut.GetProviderOfferAgreementConsentById(serviceId, _identity.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        async Task Act() => await _sut.GetProviderOfferAgreementConsentById(serviceId, OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1383,13 +1386,12 @@ public class OfferServiceTests
         //Arrange
         var offerId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
-        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns(((OfferAgreementConsentUpdate, bool))default);
 
         // Act
-        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, identitytestdata, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1404,13 +1406,12 @@ public class OfferServiceTests
         //Arrange
         var offerId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
-        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns((new OfferAgreementConsentUpdate(Enumerable.Empty<AppAgreementConsentStatus>(), Enumerable.Empty<Guid>()), false));
 
         // Act
-        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, identitytestdata, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1427,7 +1428,6 @@ public class OfferServiceTests
         var agreementId = Guid.NewGuid();
         var additionalAgreementId = Guid.NewGuid();
         var consentId = Guid.NewGuid();
-        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE), new AgreementConsentStatus(additionalAgreementId, ConsentStatusId.ACTIVE) });
         var offerAgreementConsent = new OfferAgreementConsentUpdate(
             new[]
@@ -1442,7 +1442,7 @@ public class OfferServiceTests
             .Returns((offerAgreementConsent, true));
 
         // Act
-        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, identitytestdata, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -1463,7 +1463,6 @@ public class OfferServiceTests
         var consentId = Guid.NewGuid();
         var newCreatedConsentId = Guid.NewGuid();
         var utcNow = DateTimeOffset.UtcNow;
-        var identitytestdata = (_identity.UserId, _identity.CompanyId);
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE), new AgreementConsentStatus(additionalAgreementId, ConsentStatusId.ACTIVE) });
         var offerAgreementConsent = new OfferAgreementConsentUpdate(
             new[]
@@ -1491,7 +1490,7 @@ public class OfferServiceTests
                 setOptionalParameters(existingOffer);
             });
         // Act
-        var result = await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, identitytestdata, offerTypeId).ConfigureAwait(false);
+        var result = await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, offerTypeId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._, A<IEnumerable<AgreementConsentStatus>>._, offerId, _identity.CompanyId, _identity.UserId, A<DateTimeOffset>._))
@@ -1679,7 +1678,7 @@ public class OfferServiceTests
             .Returns((new[] { (OfferStatusId.CREATED, offerId, true) }, true, DocumentStatusId.PENDING, true));
 
         //Act
-        await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert 
         A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId))
@@ -1699,7 +1698,7 @@ public class OfferServiceTests
             .Returns(((IEnumerable<(OfferStatusId, Guid, bool)>, bool, DocumentStatusId, bool))default);
 
         //Act
-        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1716,7 +1715,7 @@ public class OfferServiceTests
             .Returns((new[] { ((OfferStatusId, Guid, bool))default }, true, DocumentStatusId.PENDING, true));
 
         //Act
-        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1741,7 +1740,7 @@ public class OfferServiceTests
                 true));
 
         //Act
-        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1760,7 +1759,7 @@ public class OfferServiceTests
             .Returns((new[] { (OfferStatusId.CREATED, offerId, false) }, true, DocumentStatusId.PENDING, true));
 
         //Act
-        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1779,7 +1778,7 @@ public class OfferServiceTests
             .Returns((new[] { (OfferStatusId.CREATED, offerId, true) }, true, DocumentStatusId.PENDING, false));
 
         //Act
-        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1798,7 +1797,7 @@ public class OfferServiceTests
             .Returns((new[] { (OfferStatusId.ACTIVE, offerId, true) }, true, DocumentStatusId.PENDING, true));
 
         //Act
-        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1817,7 +1816,7 @@ public class OfferServiceTests
             .Returns((new[] { (OfferStatusId.CREATED, offerId, true) }, false, DocumentStatusId.PENDING, true));
 
         //Act
-        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1835,7 +1834,7 @@ public class OfferServiceTests
         A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId))
             .Returns((new[] { (OfferStatusId.CREATED, offerId, true) }, true, DocumentStatusId.LOCKED, true));
         //Act
-        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _identity.CompanyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1858,7 +1857,7 @@ public class OfferServiceTests
             .Returns((true, data));
 
         // Act
-        var result = await _sut.GetTechnicalUserProfilesForOffer(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        var result = await _sut.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);
@@ -1877,7 +1876,7 @@ public class OfferServiceTests
             .Returns(((bool, IEnumerable<TechnicalUserProfileInformation>))default);
 
         // Act
-        async Task Act() => await _sut.GetTechnicalUserProfilesForOffer(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1896,7 +1895,7 @@ public class OfferServiceTests
             .Returns((false, Enumerable.Empty<TechnicalUserProfileInformation>()));
 
         // Act
-        async Task Act() => await _sut.GetTechnicalUserProfilesForOffer(offerId, _identity.CompanyId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1955,7 +1954,7 @@ public class OfferServiceTests
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1").ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _technicalUserProfileRepository.CreateTechnicalUserProfile(A<Guid>._, offerId))
@@ -2003,7 +2002,7 @@ public class OfferServiceTests
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2033,7 +2032,7 @@ public class OfferServiceTests
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2063,7 +2062,7 @@ public class OfferServiceTests
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -2093,7 +2092,7 @@ public class OfferServiceTests
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2113,7 +2112,7 @@ public class OfferServiceTests
         };
 
         // Act
-        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, _identity.CompanyId, "cl1").ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -2134,7 +2133,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
@@ -2151,7 +2150,6 @@ public class OfferServiceTests
         // Arrange
         var serviceId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
             {
                 new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2162,14 +2160,14 @@ public class OfferServiceTests
             .Returns(((bool, bool, ProviderSubscriptionDetailData))default);
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Contain($"subscription {subscriptionId} for offer {serviceId} of type {OfferTypeId.SERVICE} does not exist");
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2179,7 +2177,6 @@ public class OfferServiceTests
         // Arrange
         var serviceId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2190,14 +2187,14 @@ public class OfferServiceTests
             .Returns((true, false, _fixture.Create<ProviderSubscriptionDetailData>()));
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain($"Company {companyId} is not part of the Provider company");
+        ex.Message.Should().Contain($"Company {_identity.CompanyId} is not part of the Provider company");
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2207,7 +2204,6 @@ public class OfferServiceTests
         // Arrange
         var serviceId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2219,13 +2215,13 @@ public class OfferServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
             .Returns((true, true, data));
         // Act
-        var result = await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
+        var result = await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(data);
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, companyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, _identity.CompanyId, OfferTypeId.SERVICE, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2239,13 +2235,12 @@ public class OfferServiceTests
         // Arrange
         var offerId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = _fixture.CreateMany<UserRoleConfig>().ToImmutableArray();
 
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
@@ -2262,7 +2257,6 @@ public class OfferServiceTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2273,14 +2267,14 @@ public class OfferServiceTests
             .Returns(((bool, bool, AppProviderSubscriptionDetailData))default);
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Contain($"subscription {subscriptionId} for offer {appId} of type {OfferTypeId.APP} does not exist");
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2290,7 +2284,6 @@ public class OfferServiceTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2301,14 +2294,14 @@ public class OfferServiceTests
             .Returns((true, false, _fixture.Create<AppProviderSubscriptionDetailData>()));
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain($"Company {companyId} is not part of the Provider company");
+        ex.Message.Should().Contain($"Company {_identity.CompanyId} is not part of the Provider company");
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2318,7 +2311,6 @@ public class OfferServiceTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2331,13 +2323,13 @@ public class OfferServiceTests
             .Returns((true, true, data));
 
         // Act
-        var result = await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+        var result = await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(data);
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2351,13 +2343,12 @@ public class OfferServiceTests
         // Arrange
         var offerId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = _fixture.CreateMany<UserRoleConfig>().ToImmutableArray();
 
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
@@ -2374,7 +2365,6 @@ public class OfferServiceTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2385,14 +2375,14 @@ public class OfferServiceTests
             .Returns(((bool, bool, SubscriberSubscriptionDetailData))default);
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Contain($"subscription {subscriptionId} for offer {appId} of type {OfferTypeId.APP} does not exist");
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2402,7 +2392,6 @@ public class OfferServiceTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2413,14 +2402,14 @@ public class OfferServiceTests
             .Returns((true, false, _fixture.Create<SubscriberSubscriptionDetailData>()));
 
         // Act
-        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain($"Company {companyId} is not part of the Subscriber company");
+        ex.Message.Should().Contain($"Company {_identity.CompanyId} is not part of the Subscriber company");
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2430,7 +2419,6 @@ public class OfferServiceTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var companyAdminRoles = new[]
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
@@ -2443,13 +2431,13 @@ public class OfferServiceTests
             .Returns((true, true, data));
 
         // Act
-        var result = await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
+        var result = await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(data);
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2468,7 +2456,7 @@ public class OfferServiceTests
             .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferSubscriptionStatusData>(data.Length, data.Skip(skip).Take(take)))!);
 
         // Act
-        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, _identity.CompanyId, offerTypeId, documentTypeId).ConfigureAwait(false);
+        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, offerTypeId, documentTypeId).ConfigureAwait(false);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
@@ -2493,7 +2481,7 @@ public class OfferServiceTests
             .Returns((skip, take) => Task.FromResult((Pagination.Source<OfferSubscriptionStatusData>?)null));
 
         // Act
-        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, _identity.CompanyId, offerTypeId, documentTypeId).ConfigureAwait(false);
+        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, offerTypeId, documentTypeId).ConfigureAwait(false);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(0);
@@ -2515,7 +2503,7 @@ public class OfferServiceTests
             .Returns(((OfferSubscriptionStatusId, bool, bool, IEnumerable<Guid>, IEnumerable<Guid>))default);
 
         // Act
-        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(notExistingSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(notExistingSubscriptionId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2530,11 +2518,12 @@ public class OfferServiceTests
         // Arrange
         var identity = _fixture.Create<IdentityData>();
         var subscriptionId = _fixture.Create<Guid>();
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(A<Guid>._, A<Guid>._))
             .Returns((OfferSubscriptionStatusId.ACTIVE, false, true, _fixture.CreateMany<Guid>(), _fixture.CreateMany<Guid>()));
 
         // Act
-        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(subscriptionId, identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(subscriptionId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -2555,7 +2544,7 @@ public class OfferServiceTests
                 true, Enumerable.Empty<Guid>(), Enumerable.Empty<Guid>()));
 
         // Act
-        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(offerSubscriptionId, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(offerSubscriptionId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2602,7 +2591,7 @@ public class OfferServiceTests
                 });
         }
         // Act
-        await _sut.UnsubscribeOwnCompanySubscriptionAsync(offerSubscription.Id, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.UnsubscribeOwnCompanySubscriptionAsync(offerSubscription.Id).ConfigureAwait(false);
 
         // Assert
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.INACTIVE);

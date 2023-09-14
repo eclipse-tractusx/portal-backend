@@ -18,30 +18,33 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
+#nullable disable
 
-/// <summary>
-/// Implementation of <see cref="IServiceChangeBusinessLogic"/>.
-/// </summary>
-
-public class ServiceChangeBusinessLogic : IServiceChangeBusinessLogic
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    private readonly IOfferService _offerService;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="offerService">Access to the offer service</param>
-    public ServiceChangeBusinessLogic(IOfferService offerService)
-    {
-        _offerService = offerService;
-    }
-
     /// <inheritdoc />
-    public Task DeactivateOfferByServiceIdAsync(Guid serviceId) =>
-        _offerService.DeactivateOfferIdAsync(serviceId, OfferTypeId.SERVICE);
+    public partial class CPLP3165AddProcessStepTypeIds : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "process_step_types",
+                columns: new[] { "id", "label" },
+                values: new object[] { 111, "TRIGGER_ACTIVATE_SUBSCRIPTION" });
+        }
 
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 111);
+        }
+    }
 }

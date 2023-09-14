@@ -181,4 +181,12 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>apps offer subscription statuses for the user</returns>
     IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Checks whether the company is the provider of the offer
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offerSubscription</param>
+    /// <param name="providerCompanyId">Id of the providerCompanyId</param>
+    /// <returns><c>true</c> when the company is the provider of the offer for the offerSubscription, otherwise <c>false</c></returns>
+    Task<bool> CheckOfferSubscriptionForProvider(Guid offerSubscriptionId, Guid providerCompanyId);
 }
