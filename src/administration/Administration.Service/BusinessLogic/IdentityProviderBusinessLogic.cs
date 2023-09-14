@@ -42,16 +42,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IIdentityService _identityService;
+    private readonly ILogger<IdentityProviderBusinessLogic> _logger;
     private readonly IdentityProviderSettings _settings;
 
-    private static readonly Regex _displayNameValidationExpression = new Regex(@"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
+    private static readonly Regex DisplayNameValidationExpression = new(@"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
 
-    public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IIdentityService identityService, IOptions<IdentityProviderSettings> options)
+    public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IIdentityService identityService, IOptions<IdentityProviderSettings> options, ILogger<IdentityProviderBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
         _identityService = identityService;
         _settings = options.Value;
+        _logger = logger;
     }
 
     public async IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProvidersAsync()
@@ -59,29 +61,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var companyId = _identityService.IdentityData.CompanyId;
         await foreach (var identityProviderData in _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderCategoryDataUntracked(companyId).ConfigureAwait(false))
         {
-            switch (identityProviderData.CategoryId)
+            yield return identityProviderData.CategoryId switch
             {
-                case IdentityProviderCategoryId.KEYCLOAK_OIDC:
-                    yield return await GetIdentityProviderDetailsOidc(identityProviderData.IdentityProviderId, identityProviderData.Alias, identityProviderData.CategoryId, identityProviderData.TypeId).ConfigureAwait(false);
-                    break;
-                case IdentityProviderCategoryId.KEYCLOAK_SAML:
-                    var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(identityProviderData.Alias).ConfigureAwait(false);
-                    yield return new IdentityProviderDetails(
-                        identityProviderData.IdentityProviderId,
-                        identityProviderData.Alias,
-                        identityProviderData.CategoryId,
-                        identityProviderData.TypeId,
-                        identityProviderDataSAML.DisplayName,
-                        identityProviderDataSAML.RedirectUrl,
-                        identityProviderDataSAML.Enabled,
-                        await _provisioningManager.GetIdentityProviderMappers(identityProviderData.Alias).ToListAsync().ConfigureAwait(false))
-                    {
-                        saml = new IdentityProviderDetailsSaml(
-                                identityProviderDataSAML.EntityId,
-                                identityProviderDataSAML.SingleSignOnServiceUrl)
-                    };
-                    break;
-            }
+                IdentityProviderCategoryId.KEYCLOAK_OIDC => await GetIdentityProviderDetailsOidc(identityProviderData.IdentityProviderId, identityProviderData.Alias, identityProviderData.CategoryId, identityProviderData.TypeId).ConfigureAwait(false),
+                IdentityProviderCategoryId.KEYCLOAK_SAML => await GetIdentityProviderDetailsSaml(identityProviderData.IdentityProviderId, identityProviderData.Alias, identityProviderData.TypeId),
+                _ => throw new ControllerArgumentException($"unexpected value for category '{identityProviderData.CategoryId}'")
+            };
         }
     }
 
@@ -107,7 +92,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new ControllerArgumentException("displayName length must be 2-30 characters");
         }
-        if (!_displayNameValidationExpression.IsMatch(displayName))
+        if (!DisplayNameValidationExpression.IsMatch(displayName))
         {
             throw new ControllerArgumentException("allowed characters in displayName: 'a-zA-Z0-9!?@&#'\"()_-=/*.,;: '");
         }
@@ -392,45 +377,96 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (alias, typeId);
     }
 
-    private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsOidc(Guid identityProviderId, string alias, IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId)
+    private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsOidc(Guid identityProviderId, string? alias, IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId)
     {
-        var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
+        IdentityProviderConfigOidc? identityProviderDataOidc = null;
+        IEnumerable<IdentityProviderMapperModel>? identityProviderMapper = null;
+
+        if (!string.IsNullOrWhiteSpace(alias))
+        {
+            bool aliasExisting;
+            try
+            {
+                identityProviderDataOidc = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias)
+                    .ConfigureAwait(false);
+                aliasExisting = true;
+            }
+            catch (KeycloakEntityNotFoundException ex)
+            {
+                _logger.LogInformation("Can't receive saml data for {Alias} with following exception {Exception}", alias, ex.Message);
+                aliasExisting = false;
+            }
+
+            if (aliasExisting)
+            {
+                identityProviderMapper = await _provisioningManager.GetIdentityProviderMappers(alias).ToListAsync().ConfigureAwait(false);
+            }
+        }
+
         return new IdentityProviderDetails(
             identityProviderId,
             alias,
             categoryId,
             typeId,
-            identityProviderDataOIDC.DisplayName,
-            identityProviderDataOIDC.RedirectUrl,
-            identityProviderDataOIDC.Enabled,
-            await _provisioningManager.GetIdentityProviderMappers(alias).ToListAsync().ConfigureAwait(false))
+            identityProviderDataOidc?.DisplayName,
+            identityProviderDataOidc?.RedirectUrl,
+            identityProviderDataOidc?.Enabled,
+            identityProviderMapper)
         {
-            oidc = new IdentityProviderDetailsOidc(
-                    identityProviderDataOIDC.AuthorizationUrl,
-                    identityProviderDataOIDC.ClientId,
-                    identityProviderDataOIDC.ClientAuthMethod)
-            {
-                signatureAlgorithm = identityProviderDataOIDC.SignatureAlgorithm
-            }
+            oidc = identityProviderDataOidc == null ?
+                null :
+                new IdentityProviderDetailsOidc(
+                    identityProviderDataOidc.AuthorizationUrl,
+                    identityProviderDataOidc.ClientId,
+                    identityProviderDataOidc.ClientAuthMethod)
+                {
+                    signatureAlgorithm = identityProviderDataOidc.SignatureAlgorithm
+                }
         };
     }
 
-    private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsSaml(Guid identityProviderId, string alias, IdentityProviderTypeId typeId)
+    private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsSaml(Guid identityProviderId, string? alias, IdentityProviderTypeId typeId)
     {
-        var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
+
+        IdentityProviderConfigSaml? identityProviderDataSaml = null;
+        IEnumerable<IdentityProviderMapperModel>? identityProviderMapper = null;
+        if (!string.IsNullOrWhiteSpace(alias))
+        {
+            bool aliasExisting;
+            try
+            {
+                identityProviderDataSaml = await _provisioningManager
+                    .GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
+                aliasExisting = true;
+            }
+            catch (KeycloakEntityNotFoundException ex)
+            {
+                _logger.LogInformation("Can't receive saml data for {Alias} with following exception {Exception}", alias, ex.Message);
+                aliasExisting = false;
+            }
+
+            if (aliasExisting)
+            {
+                identityProviderMapper = await _provisioningManager.GetIdentityProviderMappers(alias).ToListAsync()
+                    .ConfigureAwait(false);
+            }
+        }
+
         return new IdentityProviderDetails(
             identityProviderId,
             alias,
             IdentityProviderCategoryId.KEYCLOAK_SAML,
             typeId,
-            identityProviderDataSAML.DisplayName,
-            identityProviderDataSAML.RedirectUrl,
-            identityProviderDataSAML.Enabled,
-            await _provisioningManager.GetIdentityProviderMappers(alias).ToListAsync().ConfigureAwait(false))
+            identityProviderDataSaml?.DisplayName,
+            identityProviderDataSaml?.RedirectUrl,
+            identityProviderDataSaml?.Enabled,
+            identityProviderMapper)
         {
-            saml = new IdentityProviderDetailsSaml(
-                    identityProviderDataSAML.EntityId,
-                    identityProviderDataSAML.SingleSignOnServiceUrl)
+            saml = identityProviderDataSaml == null ?
+                null :
+                new IdentityProviderDetailsSaml(
+                    identityProviderDataSaml.EntityId,
+                    identityProviderDataSaml.SingleSignOnServiceUrl)
         };
     }
 
@@ -627,8 +663,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     private async ValueTask<(string? SharedIdpAlias, IEnumerable<string> ValidAliase)> GetCompanyAliasDataAsync(Guid companyId)
     {
-        var identityProviderCategoryData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderCategoryDataUntracked(companyId).ToListAsync().ConfigureAwait(false);
-        var sharedIdpAlias = identityProviderCategoryData.Where(data => data.TypeId == IdentityProviderTypeId.SHARED).Select(data => data.Alias).SingleOrDefault();
+        var identityProviderCategoryData = await _portalRepositories.GetInstance<IIdentityProviderRepository>()
+                .GetCompanyIdentityProviderCategoryDataUntracked(companyId)
+                .Where(data => data.Alias != null)
+                .Select(data => (data.TypeId, Alias: data.Alias!))
+                .ToListAsync().ConfigureAwait(false);
+        var sharedIdpAlias = identityProviderCategoryData.SingleOrDefault(data => data.TypeId == IdentityProviderTypeId.SHARED).Alias;
         var validAliase = identityProviderCategoryData.Select(data => data.Alias).ToList();
         return (sharedIdpAlias, validAliase);
     }
