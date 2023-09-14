@@ -4979,6 +4979,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 111,
                             Label = "TRIGGER_ACTIVATE_SUBSCRIPTION"
+                        },
+                        new
+                        {
+                            Id = 200,
+                            Label = "SYNCHRONIZE_USER"
+                        },
+                        new
+                        {
+                            Id = 201,
+                            Label = "RETRIGGER_SYNCHRONIZE_USER"
                         });
                 });
 
