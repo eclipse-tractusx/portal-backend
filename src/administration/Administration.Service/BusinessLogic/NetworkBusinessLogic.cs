@@ -139,7 +139,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 { "osp", ospName },
                 { "url", _settings.BasePortalAddress }
             };
-            await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("NewUserOwnIdpTemplate", 1)).ConfigureAwait(false);
+            await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("OspWelcomeMail", 1)).ConfigureAwait(false);
         }
     }
 

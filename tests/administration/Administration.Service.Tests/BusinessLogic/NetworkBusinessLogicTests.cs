@@ -422,7 +422,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(identityId, _userRoleId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(identityId, _idpId, "123", "ironman")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "NewUserOwnIdpTemplate")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "OspWelcomeMail")))
             .MustHaveHappenedOnceExactly();
     }
 
