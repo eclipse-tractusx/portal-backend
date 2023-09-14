@@ -698,19 +698,21 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region GetCallbackEditData
 
-    [Fact]
-    public async Task GetCallbackEditData_WithNotExistingOspData_ReturnsExpectedResult()
+    [Theory]
+    [InlineData(CompanyRoleId.ACTIVE_PARTICIPANT, true)]
+    [InlineData(CompanyRoleId.ONBOARDING_SERVICE_PROVIDER, false)]
+    public async Task GetCallbackEditData_WithNotExistingOspData_ReturnsExpectedResult(CompanyRoleId companyRoleId, bool hasRole)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCallbackEditData(_validCompanyId).ConfigureAwait(false);
+        var result = await sut.GetCallbackEditData(_validCompanyId, companyRoleId).ConfigureAwait(false);
 
         // Assert
-        result.callbackUrl.Should().Be(null);
-        result.ospDetailsExist.Should().Be(false);
-        result.isOnboardingServiceProvider.Should().Be(false);
+        result.callbackUrl.Should().BeNull();
+        result.ospDetailsExist.Should().BeFalse();
+        result.hasCompanyRole.Should().Be(hasRole);
     }
 
     [Fact]
@@ -721,12 +723,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCallbackEditData(_validOspCompanyId).ConfigureAwait(false);
+        var result = await sut.GetCallbackEditData(_validOspCompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER).ConfigureAwait(false);
 
         // Assert
         result.callbackUrl.Should().Be(url);
-        result.ospDetailsExist.Should().Be(true);
-        result.isOnboardingServiceProvider.Should().Be(true);
+        result.ospDetailsExist.Should().BeTrue();
+        result.hasCompanyRole.Should().BeTrue();
     }
 
     #endregion

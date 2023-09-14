@@ -324,10 +324,10 @@ public class CompanyRepository : ICompanyRepository
             .Select(c => new OnboardingServiceProviderCallbackResponseData(c.OnboardingServiceProviderDetail!.CallbackUrl))
             .SingleAsync();
 
-    public Task<(bool isOnboardingServiceProvider, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId) =>
+    public Task<(bool hasCompanyRole, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
         _context.Companies.Where(c => c.Id == companyId)
             .Select(c => new ValueTuple<bool, bool, string?>(
-                c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER),
+                c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == companyRoleId),
                 c.OnboardingServiceProviderDetail != null,
                 c.OnboardingServiceProviderDetail!.CallbackUrl))
             .SingleOrDefaultAsync();

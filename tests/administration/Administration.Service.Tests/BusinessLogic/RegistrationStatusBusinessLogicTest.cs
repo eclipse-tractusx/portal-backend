@@ -77,7 +77,7 @@ public class RegistrationStatusBusinessLogicTest
         var result = await _logic.GetCallbackAddress().ConfigureAwait(false);
 
         //Assert
-        result.CallbackUrl.Should().Be(null);
+        result.CallbackUrl.Should().BeNull();
     }
 
     #endregion
@@ -88,8 +88,8 @@ public class RegistrationStatusBusinessLogicTest
     public async Task SetCallbackAddress_WithCompanyNotOsp_ReturnsExpectedCallbackUrl()
     {
         //Arrange
-        A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId))
-            .Returns(new ValueTuple<bool, bool, string?>());
+        A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
+            .Returns(((bool, bool, string?))default);
 
         //Act
         async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test.de")).ConfigureAwait(false);
@@ -97,37 +97,39 @@ public class RegistrationStatusBusinessLogicTest
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be($"Only {CompanyRoleId.ONBOARDING_SERVICE_PROVIDER} are allowed to set the callback url");
+        A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
     public async Task SetCallbackAddress_WithNonExistingOspData_InsertExpected()
     {
         //Arrange
-        A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId))
-            .Returns(new ValueTuple<bool, bool, string?>(true, false, null));
+        A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
+            .Returns((true, false, null));
 
         //Act
         await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test.de")).ConfigureAwait(false);
 
         //Assert
+        A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _companyRepository.CreateOnboardingServiceProviderDetails(_identity.CompanyId, "https://test.de"))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
     }
 
-    [Theory]
-    [InlineData("https://test-old.de")]
-    [InlineData(null)]
-    public async Task SetCallbackAddress_WithOspData_UpdatesEntry(string? existingUrl)
+    [Fact]
+    public async Task SetCallbackAddress_WithOspData_UpdatesEntry()
     {
         //Arrange
-        var osp = new OnboardingServiceProviderDetail(_identity.CompanyId, null!);
-        A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId))
-            .Returns(new ValueTuple<bool, bool, string?>(true, true, existingUrl));
-        A.CallTo(() => _companyRepository.AttachAndModifyOnboardingServiceProvider(_identity.CompanyId, A<Action<OnboardingServiceProviderDetail>>._, A<Action<OnboardingServiceProviderDetail>>._))
-            .Invokes((Guid _, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields) =>
+        OnboardingServiceProviderDetail? osp = null;
+        A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
+            .Returns((true, true, "https://test-old.de"));
+        A.CallTo(() => _companyRepository.AttachAndModifyOnboardingServiceProvider(A<Guid>._, A<Action<OnboardingServiceProviderDetail>>._, A<Action<OnboardingServiceProviderDetail>>._))
+            .Invokes((Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields) =>
             {
+                osp = new OnboardingServiceProviderDetail(companyId, null!);
                 initialize?.Invoke(osp);
                 setOptionalFields.Invoke(osp);
             });
@@ -136,9 +138,43 @@ public class RegistrationStatusBusinessLogicTest
         await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test-new.de")).ConfigureAwait(false);
 
         //Assert
-        osp.CallbackUrl.Should().Be("https://test-new.de");
+        osp.Should().NotBeNull().And.Match<OnboardingServiceProviderDetail>(x =>
+            x.CompanyId == _identity.CompanyId &&
+            x.CallbackUrl == "https://test-new.de");
+        A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetCallbackAddress_WithUnexpectedOspData_Throws()
+    {
+        //Arrange
+        OnboardingServiceProviderDetail? osp = null;
+        A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
+            .Returns((true, true, null));
+        A.CallTo(() => _companyRepository.AttachAndModifyOnboardingServiceProvider(A<Guid>._, A<Action<OnboardingServiceProviderDetail>>._, A<Action<OnboardingServiceProviderDetail>>._))
+            .Invokes((Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields) =>
+            {
+                osp = new OnboardingServiceProviderDetail(companyId, null!);
+                initialize?.Invoke(osp);
+                setOptionalFields.Invoke(osp);
+            });
+
+        //Act
+        var Act = () => _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test-new.de"));
+
+        //Assert
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("callbackUrl should never be null here");
+        osp.Should().NotBeNull().And.Match<OnboardingServiceProviderDetail>(x =>
+            x.CompanyId == _identity.CompanyId &&
+            x.CallbackUrl == null);
+        A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync())
+            .MustNotHaveHappened();
     }
 
     #endregion
