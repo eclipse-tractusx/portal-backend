@@ -5,6 +5,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -43,6 +44,7 @@ public class NetworkBusinessLogicTests
     private readonly IUserBusinessPartnerRepository _userBusinessPartnerRepository;
     private readonly ICountryRepository _countryRepository;
     private readonly NetworkBusinessLogic _sut;
+    private readonly IMailingService _mailingService;
 
     public NetworkBusinessLogicTests()
     {
@@ -66,6 +68,7 @@ public class NetworkBusinessLogicTests
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _userBusinessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
+        _mailingService = A.Fake<IMailingService>();
 
         var settings = new PartnerRegistrationSettings
         {
@@ -87,7 +90,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
 
-        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, options);
+        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _mailingService, options);
 
         SetupRepos();
     }
@@ -419,6 +422,8 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(identityId, _userRoleId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(identityId, _idpId, "123", "ironman")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "NewUserOwnIdpTemplate")))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -454,6 +459,11 @@ public class NetworkBusinessLogicTests
             .Returns(false);
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(A<string>.That.Not.Matches(x => x == "XX")))
             .Returns(true);
+
+        A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(_identity.CompanyId))
+            .Returns((true, "testCompany"));
+        A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
+            .Returns((false, ""));
 
         A.CallTo(() => _companyRepository.GetLinkedIdpIds(_multiIdpCompanyId))
             .Returns(_fixture.CreateMany<Guid>(2).ToAsyncEnumerable());

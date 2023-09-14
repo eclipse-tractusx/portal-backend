@@ -9,6 +9,12 @@ public class PartnerRegistrationSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> InitialRoles { get; set; } = null!;
+
+    /// <summary>
+    /// BasePortalAddress url required for email
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; init; } = null!;
 }
 
 public static class PartnerRegistrationSettingsExtensions

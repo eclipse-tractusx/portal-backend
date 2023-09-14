@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -29,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -43,14 +45,16 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _processHelper;
+    private readonly IMailingService _mailingService;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _userProvisioningService = userProvisioningService;
         _processHelper = processHelper;
+        _mailingService = mailingService;
         _settings = options.Value;
     }
 
@@ -60,6 +64,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var roleData = await ValidatePartnerRegistrationData(data, networkRepository, companyRepository).ConfigureAwait(false);
+        var (_, companyName) = await companyRepository.GetCompanyNameUntrackedAsync(ownerCompanyId).ConfigureAwait(false);
 
         var address = companyRepository.CreateAddress(data.City, data.StreetName,
             data.CountryAlpha2Code,
@@ -119,6 +124,23 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await SendMails(data.UserDetails.Select(x => new ValueTuple<string, string?, string?>(x.Email, x.FirstName, x.LastName)), companyName).ConfigureAwait(false);
+    }
+
+    private async Task SendMails(IEnumerable<(string Email, string? FirstName, string? LastName)> companyUserWithRoleIdForCompany, string ospName)
+    {
+        foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
+        {
+            var userName = string.Join(" ", firstName, lastName);
+            var mailParameters = new Dictionary<string, string>
+            {
+                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : receiver },
+                { "hostname", _settings.BasePortalAddress },
+                { "osp", ospName },
+                { "url", _settings.BasePortalAddress }
+            };
+            await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("NewUserOwnIdpTemplate", 1)).ConfigureAwait(false);
+        }
     }
 
     public Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId) =>
