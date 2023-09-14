@@ -36,6 +36,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
@@ -1217,6 +1218,78 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
+
+        A.CallTo(() => _provisioningManager.EnableClient(A<string>._)).MustNotHaveHappened();
+
+        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _identity.CompanyId, A<string>._, offerSubscription.Id.ToString(), null))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, notificationTypeId, false, A<Action<Notification>>._))
+            .MustHaveHappenedOnceExactly();
+        if (string.IsNullOrWhiteSpace(requesterEmail))
+        {
+            A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+        }
+        else
+        {
+            A.CallTo(() => _mailingService.SendMails(requesterEmail, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("test@email.com")]
+    public async Task ActivateMultipleInstancesSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
+    {
+        // Arrange
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
+        var subscriptionProcessData = new List<OfferSubscriptionProcessData>
+        {
+            new(offerSubscription.Id, "https://www.test.de")
+        };
+        var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, Guid.NewGuid(), DateTimeOffset.Now);
+
+        var clientClientId = _fixture.Create<string>();
+        var serviceAccountClientIds = _fixture.CreateMany<string>().ToImmutableArray();
+
+        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
+            .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _identity.CompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _identity.CompanyId, clientClientId, serviceAccountClientIds));
+        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
+
+        A.CallTo(() => _notificationRepository.CheckNotificationExistsForParam(A<Guid>._, A<NotificationTypeId>._, A<string>._, A<string>._))
+            .Returns(false);
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscription.Id, A<Action<OfferSubscription>>._))
+            .Invokes((Guid _, Action<OfferSubscription> setOptionalParameter) =>
+            {
+                setOptionalParameter.Invoke(offerSubscription);
+            });
+        A.CallTo(() => _offerSubscriptionsRepository.RemoveOfferSubscriptionProcessData(offerSubscription.Id))
+            .Invokes((Guid id) =>
+            {
+                subscriptionProcessData.Remove(subscriptionProcessData.Single(x => x.OfferSubscriptionId == id));
+            });
+        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
+        var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "ServiceManagerRoles" }), 1);
+
+        // Act
+        var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/").ConfigureAwait(false);
+
+        // Assert
+        var notificationTypeId = NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION;
+        offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+
+        result.nextStepTypeIds.Should().ContainInOrder(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK });
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+
+        A.CallTo(() => _provisioningManager.EnableClient(clientClientId)).MustHaveHappenedOnceExactly().Then(
+            A.CallTo(() => _provisioningManager.EnableClient(A<string>.That.Matches(x => serviceAccountClientIds.Contains(x)))).MustHaveHappened(serviceAccountClientIds.Length, Times.Exactly)
+        );
 
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _identity.CompanyId, A<string>._, offerSubscription.Id.ToString(), null))
             .MustHaveHappenedOnceExactly();

@@ -306,7 +306,7 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, Enumerable.Empty<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -326,7 +326,7 @@ public class OfferSubscriptionServiceTests
         var notExistingServiceId = Guid.NewGuid();
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(notExistingServiceId, new List<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(notExistingServiceId, Enumerable.Empty<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -344,7 +344,7 @@ public class OfferSubscriptionServiceTests
             new UserRoleConfig("portal", new [] { "Service Manager", "Sales Manager" })};
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferWithoutDetailsFilled, new List<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferWithoutDetailsFilled, Enumerable.Empty<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -428,7 +428,7 @@ public class OfferSubscriptionServiceTests
             .With(x => x.CompanyId, _noBpnSetCompanyId)
             .Create();
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, Enumerable.Empty<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -449,7 +449,7 @@ public class OfferSubscriptionServiceTests
             .Returns(new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", _salesManagerId, "https://www.testurl.com", false, null));
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, (_identity.UserId, _identity.CompanyId), offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, offerTypeId, BasePortalUrl, subscriptionManagerRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -521,12 +521,12 @@ public class OfferSubscriptionServiceTests
             .Returns(new CompanyInformationData(_existingActiveSubscriptionCompanyId, "The Company", "DE", "BPM00000001"));
         A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_existingInactiveSubscriptionCompanyId))
             .Returns(new CompanyInformationData(_existingInactiveSubscriptionCompanyId, "The Company", "DE", "BPM00000001"));
-        A.CallTo(() => _userRepository.GetServiceProviderCompanyUserWithRoleIdAsync(A<Guid>.That.Matches(x => x == _existingOfferId), A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == _userRoleId))))
-            .Returns(new List<Guid> { _companyUserId, _salesManagerId }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetServiceProviderCompanyUserWithRoleIdAsync(A<Guid>.That.Matches(x => x == _existingOfferId), A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _userRoleId })))
+            .Returns(new[] { _companyUserId, _salesManagerId }.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.First(y => y.ClientId == ClientId).ClientId == "Service Manager")))
-            .Returns(new List<Guid> { _userRoleId }.ToAsyncEnumerable());
+            .Returns(new[] { _userRoleId }.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Not.Matches(x => x.First(y => y.ClientId == ClientId).ClientId == "Service Manager")))
-            .Returns(new List<Guid>().ToAsyncEnumerable());
+            .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
 
         A.CallTo(() => _offerRepository.GetActiveServicesPaginationSource(A<ServiceOverviewSorting>._, A<ServiceTypeId>._, A<string>._))
             .Returns(paginationResult);

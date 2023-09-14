@@ -580,13 +580,12 @@ public class OfferSetupService : IOfferSetupService
             throw new NotFoundException($"Offer Subscription {offerSubscriptionId} does not exist");
         }
 
-        switch (offerDetails.InstanceData.IsSingleInstance)
+        if (offerDetails.InstanceData.IsSingleInstance)
         {
-            case true when offerDetails.AppInstanceIds.Count() != 1:
+            if (offerDetails.AppInstanceIds.Count() != 1)
                 throw new ConflictException("There must only be one app instance for single instance apps");
-            case true:
-                await SetNotificationsToDone(serviceManagerRoles, offerDetails.OfferTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
-                break;
+
+            await SetNotificationsToDone(serviceManagerRoles, offerDetails.OfferTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
         }
 
         await EnableClientAndServiceAccount(offerSubscriptionId, offerDetails).ConfigureAwait(false);
@@ -611,7 +610,7 @@ public class OfferSetupService : IOfferSetupService
         var userIdsOfNotifications = await _notificationService.CreateNotificationsWithExistenceCheck(
                 itAdminRoles,
                 null,
-                new List<(string?, NotificationTypeId)>
+                new (string?, NotificationTypeId)[]
                 {
                     (notificationContent, notificationTypeId)
                 },
@@ -633,7 +632,6 @@ public class OfferSetupService : IOfferSetupService
 
         if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
-
             return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
                 offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
                 ProcessStepStatusId.DONE,
@@ -660,23 +658,19 @@ public class OfferSetupService : IOfferSetupService
 
     private async Task EnableClientAndServiceAccount(Guid offerSubscriptionId, SubscriptionActivationData offerDetails)
     {
-        switch (offerDetails)
+        if (offerDetails is { OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false })
         {
-            case { OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false }
-                when string.IsNullOrEmpty(offerDetails.ClientClientId):
+            if (string.IsNullOrEmpty(offerDetails.ClientClientId))
                 throw new ConflictException($"clientId must not be empty for offerSubscription {offerSubscriptionId}");
-            case { OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false }:
-                {
-                    try
-                    {
-                        await _provisioningManager.EnableClient(offerDetails.ClientClientId!).ConfigureAwait(false);
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        throw new ServiceException(e.Message, true);
-                    }
-                }
+
+            try
+            {
+                await _provisioningManager.EnableClient(offerDetails.ClientClientId!).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                throw new ServiceException(e.Message, true);
+            }
         }
 
         try
