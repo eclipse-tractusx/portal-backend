@@ -318,4 +318,30 @@ public class CompanyRepository : ICompanyRepository
                     !companyRoles.Any() || x.CompanyAssignedRoles.Any(role => companyRoles.Contains(role.CompanyRoleId))
                 ))
             .SingleOrDefaultAsync();
+
+    public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId) =>
+        _context.Companies.Where(c => c.Id == companyId)
+            .Select(c => new OnboardingServiceProviderCallbackResponseData(c.OnboardingServiceProviderDetail!.CallbackUrl))
+            .SingleAsync();
+
+    public Task<(bool hasCompanyRole, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
+        _context.Companies.Where(c => c.Id == companyId)
+            .Select(c => new ValueTuple<bool, bool, string?>(
+                c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == companyRoleId),
+                c.OnboardingServiceProviderDetail != null,
+                c.OnboardingServiceProviderDetail!.CallbackUrl))
+            .SingleOrDefaultAsync();
+
+    public void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields)
+    {
+        var ospDetails = new OnboardingServiceProviderDetail(companyId, null!);
+        initialize?.Invoke(ospDetails);
+        _context.OnboardingServiceProviderDetails.Attach(ospDetails);
+        setOptionalFields.Invoke(ospDetails);
+    }
+
+    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl)
+    {
+        return _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl)).Entity;
+    }
 }
