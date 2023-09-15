@@ -105,6 +105,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var requiredCompanyRoles = typeId switch
         {
             IdentityProviderTypeId.OWN => Enumerable.Empty<CompanyRoleId>(),
+            IdentityProviderTypeId.SHARED => Enumerable.Empty<CompanyRoleId>(),
             IdentityProviderTypeId.MANAGED => new[] { CompanyRoleId.OPERATOR, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER },
             _ => throw new ControllerArgumentException($"creation of identityProviderType {typeId} is not supported")
         };

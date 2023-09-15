@@ -47,3 +47,12 @@ public record UserDetailData(
 );
 
 public record UserIdentityProviderLink(Guid? IdentityProviderId, string ProviderId, string Username);
+
+public record UserTransferData(
+    string FirstName,
+    string LastName,
+    string Email,
+    Guid IdentityProviderId,
+    string ProviderId,
+    string Username
+);

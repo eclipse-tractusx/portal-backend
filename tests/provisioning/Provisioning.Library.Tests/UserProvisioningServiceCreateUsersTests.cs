@@ -278,6 +278,8 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.CreateIdentity(_companyNameIdpAliasData.CompanyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<string>._, A<string>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(identityId, A<Guid>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.CreateCompanyUser(A<Guid>._, A<string?>._, A<string?>._, A<string>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
         A.CallTo(() => _userRepository.CreateCompanyUser(A<Guid>._, userInfo.FirstName, userInfo.LastName, userInfo.Email)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);

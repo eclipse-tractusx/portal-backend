@@ -58,7 +58,7 @@ public class UserProvisioningService : IUserProvisioningService
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var (companyId, companyName, businessPartnerNumber, alias, isSharedIdp) = companyNameIdpAliasData;
+        var (companyId, companyName, businessPartnerNumber, alias, identityProviderId, isSharedIdp) = companyNameIdpAliasData;
 
         var passwordProvider = new OptionalPasswordProvider(isSharedIdp);
 
@@ -75,8 +75,8 @@ public class UserProvisioningService : IUserProvisioningService
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, user.UserId, user.UserName);
                 var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
-
                 var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, Enumerable.Repeat(new IdentityProviderLink(user.UserName, alias, providerUserId), 1));
                 userdata = new(centralUserId, companyUserId);
                 if (identity == null)
@@ -202,7 +202,7 @@ public class UserProvisioningService : IUserProvisioningService
 
         var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
 
-        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, identityProvider.IdpAlias, identityProvider.IsSharedIdp), createdByName);
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, identityProvider.IdpAlias, identityProviderId, identityProvider.IsSharedIdp), createdByName);
     }
 
     public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(Guid companyUserId, Guid? applicationId = null)
@@ -230,7 +230,8 @@ public class UserProvisioningService : IUserProvisioningService
 
         var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
 
-        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAliase.First(), true), createdByName);
+        var idpAlias = idpAliase.First();
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAlias.Alias, idpAlias.Id, true), createdByName);
     }
 
     private static string CreateNameString(string? firstName, string? lastName, string? email)

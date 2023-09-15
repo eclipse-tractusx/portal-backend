@@ -4,7 +4,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjec
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -13,6 +12,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -20,10 +20,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 public class NetworkBusinessLogicTests
 {
     private const string Bpnl = "BPNL00000001TEST";
-    private static readonly Guid _existingExternalId = Guid.NewGuid();
-    private static readonly Guid _userRoleId = Guid.NewGuid();
-    private static readonly Guid _multiIdpCompanyId = Guid.NewGuid();
-    private static readonly Guid _idpId = Guid.NewGuid();
+    private static readonly Guid ExistingExternalId = Guid.NewGuid();
+    private static readonly Guid UserRoleId = Guid.NewGuid();
+    private static readonly Guid MultiIdpCompanyId = Guid.NewGuid();
+    private static readonly Guid IdpId = Guid.NewGuid();
 
     private readonly IFixture _fixture;
 
@@ -39,9 +39,6 @@ public class NetworkBusinessLogicTests
     private readonly IApplicationRepository _applicationRepository;
     private readonly INetworkRepository _networkRepository;
     private readonly IIdentityProviderRepository _identityProviderRepository;
-    private readonly IUserRepository _userRepository;
-    private readonly IUserRolesRepository _userRolesRepository;
-    private readonly IUserBusinessPartnerRepository _userBusinessPartnerRepository;
     private readonly ICountryRepository _countryRepository;
     private readonly NetworkBusinessLogic _sut;
     private readonly IMailingService _mailingService;
@@ -64,9 +61,6 @@ public class NetworkBusinessLogicTests
         _applicationRepository = A.Fake<IApplicationRepository>();
         _networkRepository = A.Fake<INetworkRepository>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
-        _userRepository = A.Fake<IUserRepository>();
-        _userRolesRepository = A.Fake<IUserRolesRepository>();
-        _userBusinessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
         _mailingService = A.Fake<IMailingService>();
 
@@ -85,9 +79,6 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
 
         _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _mailingService, options);
@@ -138,9 +129,6 @@ public class NetworkBusinessLogicTests
 
     [Theory]
     [InlineData("")]
-    [InlineData("abc")]
-    [InlineData("test.abc")]
-    [InlineData("tessadft@asds.de§")]
     public async Task HandlePartnerRegistration_WithInvalidEmail_ThrowsControllerArgumentException(string email)
     {
         // Arrange
@@ -159,7 +147,6 @@ public class NetworkBusinessLogicTests
 
     [Theory]
     [InlineData("")]
-    [InlineData("name&with$special")]
     public async Task HandlePartnerRegistration_WithInvalidFirstnameEmail_ThrowsControllerArgumentException(string firstName)
     {
         // Arrange
@@ -178,7 +165,6 @@ public class NetworkBusinessLogicTests
 
     [Theory]
     [InlineData("")]
-    [InlineData("name&with$special")]
     public async Task HandlePartnerRegistration_WithInvalidLastnameEmail_ThrowsControllerArgumentException(string lastname)
     {
         // Arrange
@@ -202,7 +188,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
             .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "test", "test", "test@email.com"), 1))
-            .With(x => x.ExternalId, _existingExternalId)
+            .With(x => x.ExternalId, ExistingExternalId)
             .Create();
 
         // Act
@@ -242,7 +228,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Repeat(new UserIdentityProviderLink(null, "123", "test"), 1), "test", "test", "test@email.com"), 1))
             .Create();
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = _multiIdpCompanyId });
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = MultiIdpCompanyId });
 
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
@@ -279,7 +265,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
             .With(x => x.CountryAlpha2Code, "DE")
-            .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Repeat(new UserIdentityProviderLink(_idpId, "123", "test"), 1), "test", "test", "test@email.com"), 1))
+            .With(x => x.UserDetails, Enumerable.Repeat(new UserDetailData(Enumerable.Repeat(new UserIdentityProviderLink(IdpId, "123", "test"), 1), "test", "test", "test@email.com"), 1))
             .Create();
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Throws(new ControllerArgumentException($"invalid roles: clientId: 'cl1', roles: [Company Admin]"));
@@ -293,22 +279,11 @@ public class NetworkBusinessLogicTests
     }
 
     [Fact]
-    public async Task HandlePartnerRegistration_WithValidData_CallsExpected()
+    public async Task HandlePartnerRegistration_WithUserCreationThrowsException_ThrowsUnexpectedConditionException()
     {
         // Arrange
         var newCompanyId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        var identityId = Guid.NewGuid();
-
-        var addresses = new List<Address>();
-        var companies = new List<Company>();
-        var companyAssignedRoles = new List<CompanyAssignedRole>();
-        var processes = new List<Process>();
-        var processSteps = new List<ProcessStep>();
-        var companyApplications = new List<CompanyApplication>();
-        var networkRegistrations = new List<NetworkRegistration>();
-        var identities = new List<Identity>();
-        var companyUsers = new List<CompanyUser>();
 
         var data = new PartnerRegistrationData(
             Guid.NewGuid(),
@@ -321,7 +296,54 @@ public class NetworkBusinessLogicTests
             "5",
             "00001",
             Enumerable.Repeat(new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789"), 1),
-            Enumerable.Repeat(new UserDetailData(Enumerable.Repeat(new UserIdentityProviderLink(_idpId, "123", "ironman"), 1), "tony", "stark", "tony@stark.com"), 1),
+            Enumerable.Repeat(new UserDetailData(Enumerable.Repeat(new UserIdentityProviderLink(IdpId, "123", "ironman"), 1), "tony", "stark", "tony@stark.com"), 1),
+            new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
+        );
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>>._))
+
+            .Returns(new Company(newCompanyId, null!, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION))
+
+            .Returns(new Process(processId, default, default));
+
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, string, string?, Exception?>(Guid.Empty, "", null, new UnexpectedConditionException("Test")), 1).ToAsyncEnumerable());
+
+        // Act
+        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Contain("Errors occured while saving the users: ");
+    }
+
+    [Fact]
+    public async Task HandlePartnerRegistration_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var newCompanyId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+
+        var addresses = new List<Address>();
+        var companies = new List<Company>();
+        var companyAssignedRoles = new List<CompanyAssignedRole>();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var companyApplications = new List<CompanyApplication>();
+        var networkRegistrations = new List<NetworkRegistration>();
+
+        var data = new PartnerRegistrationData(
+            Guid.NewGuid(),
+            "Test N2N",
+            Bpnl,
+            "Munich",
+            "Street",
+            "DE",
+            "BY",
+            "5",
+            "00001",
+            Enumerable.Repeat(new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789"), 1),
+            Enumerable.Repeat(new UserDetailData(Enumerable.Repeat(new UserIdentityProviderLink(IdpId, "123", "ironman"), 1), "tony", "stark", "tony@stark.com"), 1),
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
@@ -380,27 +402,12 @@ public class NetworkBusinessLogicTests
                 companyApplications.Add(companyApplication);
             });
         A.CallTo(() => _networkRepository.CreateNetworkRegistration(data.ExternalId, newCompanyId, processId))
-            .Invokes((Guid externalId, Guid companyId, Guid processId) =>
+            .Invokes((Guid externalId, Guid companyId, Guid pId) =>
             {
-                networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, processId, DateTimeOffset.UtcNow));
+                networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, DateTimeOffset.UtcNow));
             });
-        A.CallTo(() => _userRepository.CreateIdentity(newCompanyId, UserStatusId.PENDING, IdentityTypeId.COMPANY_USER))
-            .Invokes((Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId) =>
-            {
-                identities.Add(new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, companyId, userStatusId, identityTypeId));
-            })
-            .Returns(new Identity(identityId, DateTimeOffset.UtcNow, default, default, default));
-        A.CallTo(() => _userRepository.CreateCompanyUser(identityId, A<string>._, A<string>._, A<string>._))
-            .Invokes((Guid identityId, string? firstName, string? lastName, string email) =>
-            {
-                companyUsers.Add(new CompanyUser(identityId)
-                {
-                    Firstname = firstName,
-                    Lastname = lastName,
-                    Email = email
-                });
-            })
-            .Returns(new CompanyUser(identityId));
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, string, string?, Exception?>(Guid.NewGuid(), "ironman", "testpw", null), 1).ToAsyncEnumerable());
 
         // Act
         await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
@@ -411,16 +418,13 @@ public class NetworkBusinessLogicTests
         processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER);
         companyApplications.Should().ContainSingle().And.Satisfy(x => x.CompanyId == newCompanyId && x.ApplicationStatusId == CompanyApplicationStatusId.CREATED);
-        identities.Should().ContainSingle().And.Satisfy(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER && x.UserStatusId == UserStatusId.PENDING);
-        companyUsers.Should().ContainSingle().And.Satisfy(x => x.Email == "tony@stark.com");
         companyAssignedRoles.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
             x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
         networkRegistrations.Should().ContainSingle().And.Satisfy(x => x.ExternalId == data.ExternalId && x.ProcessId == processId);
 
-        A.CallTo(() => _userBusinessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(identityId, data.Bpn)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(identityId, _userRoleId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(identityId, _idpId, "123", "ironman")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "OspWelcomeMail")))
             .MustHaveHappenedOnceExactly();
@@ -450,9 +454,9 @@ public class NetworkBusinessLogicTests
 
     private void SetupRepos()
     {
-        A.CallTo(() => _networkRepository.CheckExternalIdExists(_existingExternalId))
+        A.CallTo(() => _networkRepository.CheckExternalIdExists(ExistingExternalId))
             .Returns(true);
-        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == _existingExternalId)))
+        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == ExistingExternalId)))
             .Returns(false);
 
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync("XX"))
@@ -465,16 +469,16 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .Returns((false, ""));
 
-        A.CallTo(() => _companyRepository.GetLinkedIdpIds(_multiIdpCompanyId))
+        A.CallTo(() => _companyRepository.GetLinkedIdpIds(MultiIdpCompanyId))
             .Returns(_fixture.CreateMany<Guid>(2).ToAsyncEnumerable());
         A.CallTo(() => _companyRepository.GetLinkedIdpIds(_identity.CompanyId))
-            .Returns(Enumerable.Repeat(_idpId, 1).ToAsyncEnumerable());
+            .Returns(Enumerable.Repeat(IdpId, 1).ToAsyncEnumerable());
 
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(_identity.CompanyId))
-            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IdentityProviderCategoryId, string, IdentityProviderTypeId>(_idpId, IdentityProviderCategoryId.KEYCLOAK_OIDC, "test-alias", IdentityProviderTypeId.MANAGED), 1).ToAsyncEnumerable());
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId>(IdpId, IdentityProviderCategoryId.KEYCLOAK_OIDC, "test-alias", IdentityProviderTypeId.MANAGED), 1).ToAsyncEnumerable());
 
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
-            .Returns(Enumerable.Repeat(new UserRoleData(_userRoleId, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
+            .Returns(Enumerable.Repeat(new UserRoleData(UserRoleId, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
     }
 
     #endregion

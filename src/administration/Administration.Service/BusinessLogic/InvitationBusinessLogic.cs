@@ -97,6 +97,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             company.Name,
             null,
             idpName,
+            identityProvider.Id,
             true
         );
 

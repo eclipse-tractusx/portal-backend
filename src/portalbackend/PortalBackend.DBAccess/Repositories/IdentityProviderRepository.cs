@@ -155,13 +155,13 @@ public class IdentityProviderRepository : IIdentityProviderRepository
 
     public Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
                 (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
-                IEnumerable<string> IdpAliase)>
+                IEnumerable<(Guid Id, string Alias)> IdpAliase)>
         GetCompanyNameIdpAliaseUntrackedAsync(Guid companyUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId identityProviderTypeId) =>
             _context.CompanyUsers
                 .AsNoTracking()
                 .Where(companyUser => companyUser.Id == companyUserId &&
                     (applicationId == null || companyUser.Identity!.Company!.CompanyApplications.Any(application => application.Id == applicationId)))
-                .Select(companyUser => new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>>(
+                .Select(companyUser => new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>>(
                     new ValueTuple<Guid, string?, string?>(
                         companyUser.Identity!.Company!.Id,
                         companyUser.Identity!.Company.Name,
@@ -175,7 +175,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                         .Where(identityProvider =>
                             identityProvider.IdentityProviderCategoryId == identityProviderCategoryId &&
                             identityProvider.IdentityProviderTypeId == identityProviderTypeId)
-                        .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)))
+                        .Select(identityProvider => new ValueTuple<Guid, string>(identityProvider.Id, identityProvider.IamIdentityProvider!.IamIdpAlias))))
                 .SingleOrDefaultAsync();
 
     public Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,

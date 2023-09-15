@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -29,17 +30,17 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class NetworkBusinessLogic : INetworkBusinessLogic
 {
-    private static readonly Regex Name = new(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex Email = new(@"^(([^<>()[\]\\.,;:\s@""]+(\.[^<>()[\]\\.,;:\s@""]+)*)|("".+""))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-z0-9-]+\.)+[a-z]{2,}))$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex BpnRegex = new(@"^BPNL[\w|\d]{12}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex Name = new(ValidationExpressions.Name, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex Email = new(ValidationExpressions.Email, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityService _identityService;
@@ -97,30 +98,60 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         networkRepository.CreateNetworkRegistration(data.ExternalId, company.Id, processId);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var idps = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(ownerCompanyId).ToListAsync().ConfigureAwait(false);
-        foreach (var user in data.UserDetails)
+        var userData = data.UserDetails
+            .SelectMany(x => x.IdentityProviderLinks
+                .Select(idp => new UserTransferData(
+                    x.FirstName,
+                    x.LastName,
+                    x.Email,
+                    idp.IdentityProviderId ?? idps.Single().IdentityProviderId,
+                    idp.ProviderId,
+                    idp.Username)))
+            .GroupBy(x => x.IdentityProviderId)
+            .Select(group =>
+            {
+                var idpAlias = idps.Single(x => x.IdentityProviderId == group.Key).Alias;
+                if (idpAlias == null)
+                {
+                    return new ValueTuple<bool, CompanyNameIdpAliasData, IEnumerable<UserCreationRoleDataIdpInfo>>();
+                }
+
+                var companyNameIdpAliasData = new CompanyNameIdpAliasData(
+                    company.Id,
+                    data.Name,
+                    data.Bpn,
+                    idpAlias,
+                    group.Key,
+                    false
+                );
+
+                var userCreationInfos = group.Select(user =>
+                    new UserCreationRoleDataIdpInfo(
+                        user.FirstName,
+                        user.LastName,
+                        user.Email,
+                        roleData,
+                        user.Username,
+                        user.ProviderId
+                    )
+                );
+
+                return new ValueTuple<bool, CompanyNameIdpAliasData, IEnumerable<UserCreationRoleDataIdpInfo>>(true, companyNameIdpAliasData, userCreationInfos);
+            });
+
+        var errors = new List<Exception>();
+        foreach (var user in userData.Where(x => x.Item1))
         {
-            var identity = userRepository.CreateIdentity(company.Id, UserStatusId.PENDING, IdentityTypeId.COMPANY_USER);
-            var companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email).Id;
-            if (data.Bpn != null)
-            {
-                businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, data.Bpn);
-            }
+            var result = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(user.Item2, user.Item3.ToAsyncEnumerable()).ToListAsync().ConfigureAwait(false);
+            var exceptions = result.Where(x => x.Error != null).Select(x => x.Error!);
+            errors.AddRange(exceptions);
+        }
 
-            foreach (var role in roleData)
-            {
-                userRolesRepository.CreateIdentityAssignedRole(companyUserId, role.UserRoleId);
-            }
-
-            foreach (var idpLink in user.IdentityProviderLinks)
-            {
-                var idpData = idps.Single(x => idpLink.IdentityProviderId == null || x.IdentityProviderId == idpLink.IdentityProviderId.Value);
-                userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, idpData.IdentityProviderId, idpLink.ProviderId, idpLink.Username);
-            }
+        if (errors.Any())
+        {
+            throw new UnexpectedConditionException($"Errors occured while saving the users: ${string.Join("", errors.Select(x => x.Message))}", errors.First());
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
