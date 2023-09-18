@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -49,7 +48,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories,
@@ -57,8 +55,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IMailingService mailingService,
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
-        ISdFactoryBusinessLogic sdFactoryBusinessLogic,
-        IOnboardingServiceProviderBusinessLogic onboardingServiceProviderBusinessLogic)
+        ISdFactoryBusinessLogic sdFactoryBusinessLogic)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
@@ -66,7 +63,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
-        _onboardingServiceProviderBusinessLogic = onboardingServiceProviderBusinessLogic;
     }
 
     public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)

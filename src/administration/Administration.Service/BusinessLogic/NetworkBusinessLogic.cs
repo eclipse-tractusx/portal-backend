@@ -25,8 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
-using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -50,17 +48,15 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _processHelper;
     private readonly IMailingService _mailingService;
-    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOnboardingServiceProviderBusinessLogic onboardingServiceProviderBusinessLogic, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _userProvisioningService = userProvisioningService;
         _processHelper = processHelper;
         _mailingService = mailingService;
-        _onboardingServiceProviderBusinessLogic = onboardingServiceProviderBusinessLogic;
         _settings = options.Value;
     }
 
@@ -347,7 +343,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         {
             throw new ConflictException($"Application {companyApplication.Id} is not in state CREATED");
         }
-        
+
         var allCompanyRolesMatched = data.CompanyRoleIds
             .Select(companyRole => companyRoleConsentDetails
                 .Any(role =>

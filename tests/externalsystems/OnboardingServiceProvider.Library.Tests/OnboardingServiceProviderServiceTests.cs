@@ -61,7 +61,7 @@ public class OnboardingServiceProviderServiceTests
             .Returns(httpClient);
         var ospDetails = new OspDetails("https://trigger.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var settings = new OnboardingServiceProviderSettings {EncryptionKey = "test123"};
+        var settings = new OnboardingServiceProviderSettings { EncryptionKey = "test123" };
         var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
 
         // Act
@@ -81,7 +81,7 @@ public class OnboardingServiceProviderServiceTests
             .Returns(httpClient);
         var ospDetails = new OspDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var settings = new OnboardingServiceProviderSettings {EncryptionKey = "test123"};
+        var settings = new OnboardingServiceProviderSettings { EncryptionKey = "test123" };
         var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
 
         // Act
@@ -102,7 +102,7 @@ public class OnboardingServiceProviderServiceTests
             .Returns(httpClient);
         var ospDetails = new OspDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var settings = new OnboardingServiceProviderSettings {EncryptionKey = "test123"};
+        var settings = new OnboardingServiceProviderSettings { EncryptionKey = "test123" };
         var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
 
         // Act

@@ -171,6 +171,5 @@ public interface ICompanyRepository
     Task<(bool hasCompanyRole, OspDetails? ospDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId);
     void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields);
     OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, string clientSecret);
-    IAsyncEnumerable<Guid> GetLinkedIdpIds(Guid companyId);
     Task<bool> CheckBpnExists(string bpn);
 }

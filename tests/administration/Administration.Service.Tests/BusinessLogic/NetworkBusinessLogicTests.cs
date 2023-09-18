@@ -55,7 +55,6 @@ public class NetworkBusinessLogicTests
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _networkRegistrationProcessHelper;
     private readonly IMailingService _mailingService;
-    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRepository _companyRepository;
@@ -81,7 +80,6 @@ public class NetworkBusinessLogicTests
         _identityService = A.Fake<IIdentityService>();
         _networkRegistrationProcessHelper = A.Fake<INetworkRegistrationProcessHelper>();
         _mailingService = A.Fake<IMailingService>();
-        _onboardingServiceProviderBusinessLogic = A.Fake<IOnboardingServiceProviderBusinessLogic>();
 
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
@@ -109,9 +107,8 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IOnboardingServiceProviderBusinessLogic>()).Returns(_onboardingServiceProviderBusinessLogic);
 
-        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _onboardingServiceProviderBusinessLogic, _mailingService, options);
+        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _mailingService, options);
 
         SetupRepos();
     }

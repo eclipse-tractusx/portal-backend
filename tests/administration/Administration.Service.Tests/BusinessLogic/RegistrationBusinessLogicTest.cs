@@ -67,7 +67,6 @@ public class RegistrationBusinessLogicTest
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IMailingService _mailingService;
     private readonly IDocumentRepository _documentRepository;
-    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     public RegistrationBusinessLogicTest()
     {
@@ -83,7 +82,6 @@ public class RegistrationBusinessLogicTest
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
-        _onboardingServiceProviderBusinessLogic = A.Fake<IOnboardingServiceProviderBusinessLogic>();
 
         var options = A.Fake<IOptions<RegistrationSettings>>();
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
@@ -101,7 +99,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(settings);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _onboardingServiceProviderBusinessLogic);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic);
     }
 
     #region GetCompanyApplicationDetailsAsync

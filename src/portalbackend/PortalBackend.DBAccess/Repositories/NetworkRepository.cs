@@ -86,11 +86,11 @@ public class NetworkRepository : INetworkRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(OspDetails? OspDetails, Guid? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string?> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) => 
+    public Task<(OspDetails? OspDetails, Guid? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string?> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
         _context.NetworkRegistrations
             .Where(x => x.Id == networkRegistrationId)
             .Select(x => new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(
-                x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null ? 
+                x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null ?
                     null :
                     new OspDetails(
                         x.OnboardingServiceProvider!.OnboardingServiceProviderDetail.CallbackUrl,
@@ -100,7 +100,7 @@ public class NetworkRepository : INetworkRepository
                 x.ExternalId,
                 x.OnboardingServiceProvider!.BusinessPartnerNumber,
                 x.ApplicationId,
-                processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? 
+                processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ?
                     x.Process!.ProcessSteps.Where(p => p.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION && p.ProcessStepStatusId == ProcessStepStatusId.FAILED).Select(step => step.Message) :
                     Enumerable.Empty<string?>()))
             .SingleOrDefaultAsync();

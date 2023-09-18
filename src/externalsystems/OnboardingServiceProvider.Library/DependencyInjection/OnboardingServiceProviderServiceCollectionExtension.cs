@@ -36,8 +36,7 @@ public static class OnboardingServiceProviderServiceCollectionExtension
             .ValidateDistinctValues(configSection)
             .ValidateOnStart();
         services.AddTransient<LoggingHandler<OnboardingServiceProviderService>>();
-
-        var sp = services.BuildServiceProvider();
+        _ = services.BuildServiceProvider();
         return services
             .AddCustomHttpClientWithAuthentication<OnboardingServiceProviderService>(null, null)
             .AddTransient<IOnboardingServiceProviderBusinessLogic, OnboardingServiceProviderBusinessLogic>()

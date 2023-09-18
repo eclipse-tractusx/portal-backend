@@ -49,7 +49,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         var portalRepositories = A.Fake<IPortalRepositories>();
 
         A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
-        
+
         _sut = new OnboardingServiceProviderBusinessLogic(_onboardingServiceProviderService, portalRepositories);
     }
 
@@ -167,7 +167,7 @@ public class OnboardingServiceProviderBusinessLogicTests
             .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, externalId, Bpn, applicationId, processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? Enumerable.Repeat("this is a test", 1) : Enumerable.Empty<string>()));
 
         // Act
-       var result = await _sut.TriggerProviderCallback(networkRegistrationId, processStepTypeId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.TriggerProviderCallback(networkRegistrationId, processStepTypeId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback(

@@ -94,7 +94,6 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
         {
             throw new ServiceException(e.Message, true);
         }
-        
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             null,

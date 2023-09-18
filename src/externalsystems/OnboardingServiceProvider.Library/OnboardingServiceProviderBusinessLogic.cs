@@ -37,7 +37,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
         _portalRepositories = portalRepositories;
     }
 
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string?processMessage)> TriggerProviderCallback(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId, CancellationToken cancellationToken) //string? callbackUrl, string? bpn, Guid? externalId, Guid applicationId, string comment, CancellationToken cancellationToken)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProviderCallback(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId, CancellationToken cancellationToken) //string? callbackUrl, string? bpn, Guid? externalId, Guid applicationId, string comment, CancellationToken cancellationToken)
     {
         var data = await _portalRepositories.GetInstance<INetworkRepository>().GetCallbackData(networkRegistrationId, processStepTypeId).ConfigureAwait(false);
 
@@ -85,7 +85,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
                 new OnboardingServiceProviderCallbackData(data.ExternalId.Value, data.ApplicationId, data.Bpn, applicationStatusId, comment),
                 cancellationToken)
             .ConfigureAwait(false);
-        
+
         return (Enumerable.Empty<ProcessStepTypeId>(), ProcessStepStatusId.DONE, false, null);
     }
 }

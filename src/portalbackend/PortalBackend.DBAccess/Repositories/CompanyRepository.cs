@@ -334,8 +334,8 @@ public class CompanyRepository : ICompanyRepository
         _context.Companies.Where(c => c.Id == companyId)
             .Select(c => new ValueTuple<bool, OspDetails?>(
                 c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == companyRoleId),
-                c.OnboardingServiceProviderDetail == null ? 
-                    null : 
+                c.OnboardingServiceProviderDetail == null ?
+                    null :
                     new OspDetails(c.OnboardingServiceProviderDetail!.CallbackUrl,
                         c.OnboardingServiceProviderDetail!.AuthUrl,
                         c.OnboardingServiceProviderDetail!.ClientId,
@@ -351,7 +351,7 @@ public class CompanyRepository : ICompanyRepository
         setOptionalFields.Invoke(ospDetails);
     }
 
-    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, string clientSecret) => 
+    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, string clientSecret) =>
         _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl, authUrl, clientId, clientSecret)).Entity;
 
     /// <inheritdoc />
