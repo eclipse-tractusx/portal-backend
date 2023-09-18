@@ -164,15 +164,19 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string, string?, IEnumerable<string>>(
+            .Select(ca => new ValueTuple<Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?>(
                 ca.CompanyId,
                 ca.Company!.Name,
                 ca.Company.BusinessPartnerNumber,
-                ca.Company.IdentityProviders.Select(x => x.IamIdentityProvider!.IamIdpAlias)))
+                ca.Company.IdentityProviders.Select(x => x.IamIdentityProvider!.IamIdpAlias),
+                ca.CompanyApplicationTypeId,
+                ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL ?
+                    ca.Company.NetworkRegistration!.ProcessId :
+                    null))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

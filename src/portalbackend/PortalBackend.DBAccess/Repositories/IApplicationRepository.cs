@@ -36,7 +36,7 @@ public interface IApplicationRepository
     IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null);
     Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId = null);
     Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId);
-    Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId);
+    Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId);
     Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId);
     IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId);
     IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId);

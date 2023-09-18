@@ -88,7 +88,7 @@ public class ApplicationActivationService : IApplicationActivationService
         {
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
         }
-        var (companyId, companyName, businessPartnerNumber, iamIdpAliasse) = result;
+        var (companyId, companyName, businessPartnerNumber, iamIdpAliasse, applicationTypeId, networkRegistrationProcessId) = result;
 
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
@@ -110,6 +110,16 @@ public class ApplicationActivationService : IApplicationActivationService
         {
             c.CompanyStatusId = CompanyStatusId.ACTIVE;
         });
+
+        if (applicationTypeId == CompanyApplicationTypeId.EXTERNAL)
+        {
+            if (networkRegistrationProcessId == null)
+            {
+                throw new ConflictException("ProcessId should be set for external applications");
+            }
+
+            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, ProcessStepStatusId.TODO, networkRegistrationProcessId.Value), 1));
+        }
 
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll(cancellationToken).ConfigureAwait(false);
