@@ -35,8 +35,8 @@ public class NetworkRepository : INetworkRepository
         _context = context;
     }
 
-    public NetworkRegistration CreateNetworkRegistration(Guid externalId, Guid companyId, Guid processId) =>
-        _context.NetworkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, processId, DateTimeOffset.UtcNow)).Entity;
+    public NetworkRegistration CreateNetworkRegistration(Guid externalId, Guid companyId, Guid processId, Guid ospId, Guid applicationId) =>
+        _context.NetworkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, processId, ospId, applicationId, DateTimeOffset.UtcNow)).Entity;
 
     public Task<bool> CheckExternalIdExists(Guid externalId) =>
         _context.NetworkRegistrations.AnyAsync(x => x.ExternalId == externalId);

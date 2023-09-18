@@ -68,7 +68,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     external_id = table.Column<Guid>(type: "uuid", nullable: false),
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    process_id = table.Column<Guid>(type: "uuid", nullable: false)
+                    onboarding_service_provider_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    application_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    process_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    company_application_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,6 +81,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_network_registrations_companies_onboarding_service_provider",
+                        column: x => x.onboarding_service_provider_id,
+                        principalSchema: "portal",
+                        principalTable: "companies",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_network_registrations_company_applications_company_applicat",
+                        column: x => x.company_application_id,
+                        principalSchema: "portal",
+                        principalTable: "company_applications",
                         principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_network_registrations_processes_process_id",
@@ -117,6 +133,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "identity_provider_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_network_registrations_company_application_id",
+                schema: "portal",
+                table: "network_registrations",
+                column: "company_application_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_network_registrations_company_id",
                 schema: "portal",
                 table: "network_registrations",
@@ -129,6 +151,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "network_registrations",
                 column: "external_id",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_network_registrations_onboarding_service_provider_id",
+                schema: "portal",
+                table: "network_registrations",
+                column: "onboarding_service_provider_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_network_registrations_process_id",

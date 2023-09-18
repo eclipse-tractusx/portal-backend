@@ -323,6 +323,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var newCompanyId = Guid.NewGuid();
         var processId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
 
         var addresses = new List<Address>();
         var companies = new List<Company>();
@@ -400,11 +401,12 @@ public class NetworkBusinessLogicTests
                     DateTimeOffset.UtcNow);
                 setOptionalFields?.Invoke(companyApplication);
                 companyApplications.Add(companyApplication);
-            });
-        A.CallTo(() => _networkRepository.CreateNetworkRegistration(data.ExternalId, newCompanyId, processId))
-            .Invokes((Guid externalId, Guid companyId, Guid pId) =>
+            })
+            .Returns(new CompanyApplication(applicationId, default, default, default, default));
+        A.CallTo(() => _networkRepository.CreateNetworkRegistration(data.ExternalId, newCompanyId, processId, _identity.CompanyId, applicationId))
+            .Invokes((Guid externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
             {
-                networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, DateTimeOffset.UtcNow));
+                networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
             });
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
             .Returns(Enumerable.Repeat(new ValueTuple<Guid, string, string?, Exception?>(Guid.NewGuid(), "ironman", "testpw", null), 1).ToAsyncEnumerable());

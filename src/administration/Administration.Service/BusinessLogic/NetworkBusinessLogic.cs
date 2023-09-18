@@ -89,13 +89,13 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var processId = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION).Id;
         processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId), 1));
 
-        _portalRepositories.GetInstance<IApplicationRepository>().CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
+        var applicationId = _portalRepositories.GetInstance<IApplicationRepository>().CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
             ca =>
             {
                 ca.OnboardingServiceProviderId = ownerCompanyId;
-            });
+            }).Id;
 
-        networkRepository.CreateNetworkRegistration(data.ExternalId, company.Id, processId);
+        networkRepository.CreateNetworkRegistration(data.ExternalId, company.Id, processId, ownerCompanyId, applicationId);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 

@@ -49,9 +49,11 @@ public class NetworkRepositoryTests
         var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
         var externalId = Guid.NewGuid();
         var processId = new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe07");
+        var ospId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
 
         // Act
-        var results = sut.CreateNetworkRegistration(externalId, _validCompanyId, processId);
+        var results = sut.CreateNetworkRegistration(externalId, _validCompanyId, processId, ospId, applicationId);
 
         // Assert
         var changeTracker = context.ChangeTracker;

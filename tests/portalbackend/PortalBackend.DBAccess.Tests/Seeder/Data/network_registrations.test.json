@@ -4,6 +4,8 @@
     "date_created": "2023-09-05 07:45:33.480439 +00:00",
     "external_id": "c5547c9a-6ace-4ab7-9253-af65a66278f2",
     "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
-    "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe07"
+    "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe07",
+    "onboarding_service_provider_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2"
   }
 ]

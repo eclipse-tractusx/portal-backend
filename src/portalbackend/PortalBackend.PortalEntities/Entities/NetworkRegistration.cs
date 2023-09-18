@@ -28,13 +28,15 @@ public class NetworkRegistration : IBaseEntity
     {
     }
 
-    public NetworkRegistration(Guid id, Guid externalId, Guid companyId, Guid processId, DateTimeOffset dateCreated)
+    public NetworkRegistration(Guid id, Guid externalId, Guid companyId, Guid processId, Guid onboardingServiceProviderId, Guid applicationId, DateTimeOffset dateCreated)
         : this()
     {
         Id = id;
         ExternalId = externalId;
         CompanyId = companyId;
         ProcessId = processId;
+        OnboardingServiceProviderId = onboardingServiceProviderId;
+        ApplicationId = applicationId;
         DateCreated = dateCreated;
     }
 
@@ -46,9 +48,16 @@ public class NetworkRegistration : IBaseEntity
 
     public Guid CompanyId { get; set; }
 
+    public Guid OnboardingServiceProviderId { get; set; }
+
+    public Guid ApplicationId { get; set; }
+
     public Guid ProcessId { get; set; }
 
     public virtual Company? Company { get; private set; }
 
+    public virtual Company? OnboardingServiceProvider { get; private set; }
+
+    public virtual CompanyApplication? CompanyApplication { get; private set; }
     public virtual Process? Process { get; private set; }
 }
