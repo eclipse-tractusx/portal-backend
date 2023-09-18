@@ -148,7 +148,7 @@ public class ServicesController : ControllerBase
     /// <response code="200">Returns the service agreement data.</response>
     [HttpGet]
     [Route("serviceAgreementData/{serviceId}")]
-    [Authorize(Roles = "subscribe_service_offering")]
+    [Authorize(Roles = "subscribe_service")]
     [ProducesResponseType(typeof(AgreementData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AgreementData> GetServiceAgreement([FromRoute] Guid serviceId) =>
         _serviceBusinessLogic.GetServiceAgreement(serviceId);
