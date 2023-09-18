@@ -28,6 +28,7 @@ public static class NetworkRegistrationExtensisons
         processStepTypeId switch
         {
             ProcessStepTypeId.SYNCHRONIZE_USER => new[] { ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER },
+            ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP },
             _ => null
         };
 }

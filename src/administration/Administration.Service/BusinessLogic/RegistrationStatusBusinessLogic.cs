@@ -18,12 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -31,11 +35,13 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityService _identityService;
+    private readonly OnboardingServiceProviderSettings _settings;
 
-    public RegistrationStatusBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService)
+    public RegistrationStatusBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IOptions<OnboardingServiceProviderSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
+        _settings = options.Value;
     }
 
     public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackAddress() =>
@@ -45,7 +51,7 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
     {
         var companyId = _identityService.IdentityData.CompanyId;
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var (hasCompanyRole, ospDetailsExist, callbackUrl) = await companyRepository
+        var (hasCompanyRole, ospDetails) = await companyRepository
             .GetCallbackEditData(companyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER)
             .ConfigureAwait(false);
 
@@ -54,20 +60,40 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
             throw new ForbiddenException($"Only {CompanyRoleId.ONBOARDING_SERVICE_PROVIDER} are allowed to set the callback url");
         }
 
-        if (ospDetailsExist)
+        var toEncryptedArray = Encoding.UTF8.GetBytes(requestData.ClientSecret);
+        var md5 = MD5.Create();
+        var securityKeyArray = md5.ComputeHash(Encoding.UTF8.GetBytes(_settings.EncryptionKey));
+        md5.Clear();
+        var tripleDes = TripleDES.Create();
+        tripleDes.Key = securityKeyArray;
+        tripleDes.Mode = CipherMode.ECB;
+        tripleDes.Padding = PaddingMode.PKCS7;
+
+        var encryptor = tripleDes.CreateEncryptor();
+        var secretResult = encryptor.TransformFinalBlock(toEncryptedArray, 0, toEncryptedArray.Length);
+        tripleDes.Clear();
+        var secret = Convert.ToBase64String(secretResult, 0, secretResult.Length);
+
+        if (ospDetails != null)
         {
             companyRepository.AttachAndModifyOnboardingServiceProvider(companyId, osp =>
                 {
-                    osp.CallbackUrl = callbackUrl ?? throw new UnexpectedConditionException("callbackUrl should never be null here");
+                    osp.CallbackUrl = ospDetails.CallbackUrl;
+                    osp.AuthUrl = ospDetails.AuthUrl;
+                    osp.ClientId = ospDetails.ClientId;
+                    osp.ClientSecret = secret;
                 },
                 osp =>
                 {
                     osp.CallbackUrl = requestData.CallbackUrl;
+                    osp.AuthUrl = requestData.AuthUrl;
+                    osp.ClientId = requestData.ClientId;
+                    osp.ClientSecret = secret;
                 });
         }
         else
         {
-            companyRepository.CreateOnboardingServiceProviderDetails(companyId, requestData.CallbackUrl);
+            companyRepository.CreateOnboardingServiceProviderDetails(companyId, requestData.CallbackUrl, requestData.AuthUrl, requestData.ClientId, secret);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

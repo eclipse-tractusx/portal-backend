@@ -18,10 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 
-public class OnboardingServiceProviderSettings : KeyVaultAuthSettings
+public class OnboardingServiceProviderSettings
 {
+    /// <summary>
+    /// The key used to encrypt the callback data
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string EncryptionKey { get; set; } = null!;
 }

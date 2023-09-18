@@ -323,29 +323,36 @@ public class CompanyRepository : ICompanyRepository
 
     public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId) =>
         _context.Companies.Where(c => c.Id == companyId)
-            .Select(c => new OnboardingServiceProviderCallbackResponseData(c.OnboardingServiceProviderDetail!.CallbackUrl))
+            .Select(c => new OnboardingServiceProviderCallbackResponseData(
+                c.OnboardingServiceProviderDetail!.CallbackUrl,
+                c.OnboardingServiceProviderDetail!.AuthUrl,
+                c.OnboardingServiceProviderDetail!.ClientId
+                ))
             .SingleAsync();
 
-    public Task<(bool hasCompanyRole, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
+    public Task<(bool hasCompanyRole, OspDetails? ospDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
         _context.Companies.Where(c => c.Id == companyId)
-            .Select(c => new ValueTuple<bool, bool, string?>(
+            .Select(c => new ValueTuple<bool, OspDetails?>(
                 c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == companyRoleId),
-                c.OnboardingServiceProviderDetail != null,
-                c.OnboardingServiceProviderDetail!.CallbackUrl))
+                c.OnboardingServiceProviderDetail == null ? 
+                    null : 
+                    new OspDetails(c.OnboardingServiceProviderDetail!.CallbackUrl,
+                        c.OnboardingServiceProviderDetail!.AuthUrl,
+                        c.OnboardingServiceProviderDetail!.ClientId,
+                        c.OnboardingServiceProviderDetail!.ClientSecret)
+                ))
             .SingleOrDefaultAsync();
 
     public void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields)
     {
-        var ospDetails = new OnboardingServiceProviderDetail(companyId, null!);
+        var ospDetails = new OnboardingServiceProviderDetail(companyId, null!, null!, null!, null!);
         initialize?.Invoke(ospDetails);
         _context.OnboardingServiceProviderDetails.Attach(ospDetails);
         setOptionalFields.Invoke(ospDetails);
     }
 
-    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl)
-    {
-        return _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl)).Entity;
-    }
+    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, string clientSecret) => 
+        _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl, authUrl, clientId, clientSecret)).Entity;
 
     /// <inheritdoc />
     public Task<bool> CheckBpnExists(string bpn) =>

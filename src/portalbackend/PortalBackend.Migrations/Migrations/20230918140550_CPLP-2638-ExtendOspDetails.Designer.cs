@@ -22,6 +22,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -31,9 +32,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230918140550_CPLP-2638-ExtendOspDetails")]
+    partial class CPLP2638ExtendOspDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3909,6 +3912,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("application_id");
 
+                    b.Property<Guid?>("CompanyApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_application_id");
+
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
@@ -3932,13 +3939,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasKey("Id")
                         .HasName("pk_network_registrations");
 
-                    b.HasIndex("ApplicationId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_network_registrations_application_id");
+                    b.HasIndex("CompanyApplicationId")
+                        .HasDatabaseName("ix_network_registrations_company_application_id");
 
                     b.HasIndex("CompanyId")
                         .IsUnique()
                         .HasDatabaseName("ix_network_registrations_company_id");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_network_registrations_external_id");
 
                     b.HasIndex("OnboardingServiceProviderId")
                         .HasDatabaseName("ix_network_registrations_onboarding_service_provider_id");
@@ -3946,10 +3956,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasIndex("ProcessId")
                         .IsUnique()
                         .HasDatabaseName("ix_network_registrations_process_id");
-
-                    b.HasIndex("ExternalId", "OnboardingServiceProviderId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_network_registrations_external_id_onboarding_service_provid");
 
                     b.ToTable("network_registrations", "portal");
                 });
@@ -6718,11 +6724,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", "CompanyApplication")
-                        .WithOne("NetworkRegistration")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", "ApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_network_registrations_company_applications_application_id");
+                        .WithMany()
+                        .HasForeignKey("CompanyApplicationId")
+                        .HasConstraintName("fk_network_registrations_company_applications_company_applicat");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithOne("NetworkRegistration")
@@ -6731,7 +6735,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_network_registrations_companies_company_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "OnboardingServiceProvider")
-                        .WithMany("OnboardedNetworkRegistrations")
+                        .WithMany()
                         .HasForeignKey("OnboardingServiceProviderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -7363,8 +7367,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("OfferSubscriptions");
 
-                    b.Navigation("OnboardedNetworkRegistrations");
-
                     b.Navigation("OnboardingServiceProviderDetail");
 
                     b.Navigation("OwnedIdentityProviders");
@@ -7383,8 +7385,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ApplicationChecklistEntries");
 
                     b.Navigation("Invitations");
-
-                    b.Navigation("NetworkRegistration");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>

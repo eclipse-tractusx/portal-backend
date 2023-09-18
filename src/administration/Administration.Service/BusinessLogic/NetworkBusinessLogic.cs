@@ -337,12 +337,17 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ConflictException($"Company {companyId} has no or more than one application");
         }
 
+        if (data.ProcessId == null)
+        {
+            throw new ConflictException("There must be an process");
+        }
+
         var companyApplication = data.CompanyApplications.Single();
         if (companyApplication.StatusId != CompanyApplicationStatusId.CREATED)
         {
             throw new ConflictException($"Application {companyApplication.Id} is not in state CREATED");
         }
-
+        
         var allCompanyRolesMatched = data.CompanyRoleIds
             .Select(companyRole => companyRoleConsentDetails
                 .Any(role =>
@@ -369,8 +374,8 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             {
                 ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
             });
+        _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepStatusId.TODO, data.ProcessId.Value), 1));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(companyApplication.CallbackUrl, data.Bpn, data.ExternalId, companyApplication.Id, "Application was submitted to be processed", cancellationToken).ConfigureAwait(false);
     }
 }

@@ -95,7 +95,7 @@ public interface IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>The id of the company for the given application</returns>
-    Task<(Guid CompanyId, string CompanyName, string? CallbackUrl, string? Bpn, Guid? ExternalId)> GetCompanyIdNameForSubmittedApplication(Guid applicationId);
+    Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId)> GetCompanyIdNameForSubmittedApplication(Guid applicationId);
 
     Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId);
 }

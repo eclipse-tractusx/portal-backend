@@ -20,6 +20,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
@@ -27,30 +29,63 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProviderBusinessLogic
 {
     private readonly IOnboardingServiceProviderService _onboardingServiceProviderService;
+    private readonly IPortalRepositories _portalRepositories;
 
-    public OnboardingServiceProviderBusinessLogic(IOnboardingServiceProviderService onboardingServiceProviderService)
+    public OnboardingServiceProviderBusinessLogic(IOnboardingServiceProviderService onboardingServiceProviderService, IPortalRepositories portalRepositories)
     {
         _onboardingServiceProviderService = onboardingServiceProviderService;
+        _portalRepositories = portalRepositories;
     }
-    
-    public async Task TriggerProviderCallback(string? callbackUrl, string? bpn, Guid? externalId, Guid applicationId, string comment, CancellationToken cancellationToken)
+
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string?processMessage)> TriggerProviderCallback(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId, CancellationToken cancellationToken) //string? callbackUrl, string? bpn, Guid? externalId, Guid applicationId, string comment, CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrWhiteSpace(callbackUrl))
+        var data = await _portalRepositories.GetInstance<INetworkRepository>().GetCallbackData(networkRegistrationId, processStepTypeId).ConfigureAwait(false);
+
+        if (data.OspDetails == null || string.IsNullOrWhiteSpace(data.OspDetails.CallbackUrl))
         {
-            if (externalId == null)
-            {
-                throw new UnexpectedConditionException("No external registration found");
-            }
-
-            if (string.IsNullOrWhiteSpace(bpn))
-            {
-                throw new UnexpectedConditionException("Bpn must be set");
-            }
-
-            await _onboardingServiceProviderService.TriggerProviderCallback(callbackUrl,
-                    new OnboardingServiceProviderCallbackData(externalId.Value, applicationId, bpn, CompanyApplicationStatusId.DECLINED, comment),
-                    cancellationToken)
-                .ConfigureAwait(false);
+            return (Enumerable.Empty<ProcessStepTypeId>(), ProcessStepStatusId.SKIPPED, false, "No callback url set");
         }
+
+        if (data.ExternalId == null)
+        {
+            throw new UnexpectedConditionException("No external registration found");
+        }
+
+        if (string.IsNullOrWhiteSpace(data.Bpn))
+        {
+            throw new UnexpectedConditionException("Bpn must be set");
+        }
+
+        if (data.Comments.Count() != 1 && processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED)
+        {
+            throw new UnexpectedConditionException("Message for decline should be set");
+        }
+
+        string? comment;
+        CompanyApplicationStatusId applicationStatusId;
+        switch (processStepTypeId)
+        {
+            case ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED:
+                comment = $"Application {data.ApplicationId} has been submitted for further processing";
+                applicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                break;
+            case ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED:
+                comment = $"Application {data.ApplicationId} has been approved";
+                applicationStatusId = CompanyApplicationStatusId.CONFIRMED;
+                break;
+            case ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED:
+                comment = $"Application {data.ApplicationId} has been declined with reason: {data.Comments.Single()}";
+                applicationStatusId = CompanyApplicationStatusId.DECLINED;
+                break;
+            default:
+                throw new ArgumentException($"{processStepTypeId} is not supported");
+        }
+
+        await _onboardingServiceProviderService.TriggerProviderCallback(data.OspDetails,
+                new OnboardingServiceProviderCallbackData(data.ExternalId.Value, data.ApplicationId, data.Bpn, applicationStatusId, comment),
+                cancellationToken)
+            .ConfigureAwait(false);
+        
+        return (Enumerable.Empty<ProcessStepTypeId>(), ProcessStepStatusId.DONE, false, null);
     }
 }

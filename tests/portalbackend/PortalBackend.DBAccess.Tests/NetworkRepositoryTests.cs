@@ -156,23 +156,43 @@ public class NetworkRepositoryTests
     #region GetSubmitData
 
     [Fact]
+    public async Task GetSubmitData_WithoutNetworkRegistration_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSubmitData(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93776"), Enumerable.Repeat(new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e"), 1)).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.Exists.Should().Be(true);
+        result.IsUserInRole.Should().Be(false);
+        result.CompanyRoleIds.Should().HaveCount(2).And.Satisfy(
+            x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
+            x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
+        result.CompanyApplications.Should().HaveCount(1).And.Satisfy(x => x.StatusId == CompanyApplicationStatusId.CREATED);
+        result.ProcessId.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetSubmitData_WithValid_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSubmitData(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93777"), Enumerable.Repeat(new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e"), 1)).ConfigureAwait(false);
+        var result = await sut.GetSubmitData(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93776"), Enumerable.Repeat(new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e"), 1)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
         result.Exists.Should().Be(true);
-        result.Bpn.Should().Be("BPNL0000000001ON");
         result.IsUserInRole.Should().Be(true);
         result.CompanyRoleIds.Should().HaveCount(2).And.Satisfy(
-            x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
-            x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
-        result.CompanyApplications.Should().HaveCount(1).And.Satisfy(x => x.StatusId == CompanyApplicationStatusId.CREATED);
+            x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT,
+            x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER);
+        result.CompanyApplications.Should().BeEmpty();
+        result.ProcessId.Should().Be("0cc208c3-bdf6-456c-af81-6c3ebe14fe07");
     }
 
     #endregion

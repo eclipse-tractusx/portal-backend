@@ -770,8 +770,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCallbackEditData(_validCompanyId, companyRoleId).ConfigureAwait(false);
 
         // Assert
-        result.callbackUrl.Should().BeNull();
-        result.ospDetailsExist.Should().BeFalse();
+        result.ospDetails.Should().BeNull();
         result.hasCompanyRole.Should().Be(hasRole);
     }
 
@@ -786,8 +785,8 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCallbackEditData(_validOspCompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER).ConfigureAwait(false);
 
         // Assert
-        result.callbackUrl.Should().Be(url);
-        result.ospDetailsExist.Should().BeTrue();
+        result.ospDetails.Should().NotBeNull();
+        result.ospDetails!.CallbackUrl.Should().Be(url);
         result.hasCompanyRole.Should().BeTrue();
     }
 
@@ -852,9 +851,10 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         const string url = "https://service-url.com/new";
         var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var secret = "test123";
 
         // Act
-        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url);
+        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url, "https//auth.url", "test", secret);
 
         // Assert
         result.CompanyId.Should().Be(_validCompanyId);

@@ -416,7 +416,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
 
-        var (companyId, companyName, callbackUrl, bpn, externalId) = result;
+        var (companyId, companyName, processId) = result;
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -450,8 +450,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             company.CompanyStatusId = CompanyStatusId.REJECTED;
         });
 
+        if (processId != null)
+        {
+            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, processId.Value), 1));
+        }
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(callbackUrl, bpn, externalId, applicationId, comment, cancellationToken).ConfigureAwait(false);
         await PostRegistrationCancelEmailAsync(applicationId, companyName, comment).ConfigureAwait(false);
     }
 

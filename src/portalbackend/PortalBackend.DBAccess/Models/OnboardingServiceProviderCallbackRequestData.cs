@@ -20,6 +20,6 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record OnboardingServiceProviderCallbackResponseData(string? CallbackUrl);
+public record OnboardingServiceProviderCallbackResponseData(string? CallbackUrl, string? AuthUrl, string? ClientId);
 
-public record OnboardingServiceProviderCallbackRequestData(string CallbackUrl);
+public record OnboardingServiceProviderCallbackRequestData(string CallbackUrl, string AuthUrl, string ClientId, string ClientSecret);

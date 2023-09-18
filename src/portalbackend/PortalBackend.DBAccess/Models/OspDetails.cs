@@ -18,30 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
-
-public static class HttpClientExtensions
-{
-    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string? baseAddress, string? authAddress) where T : class
-    {
-        services.AddHttpClient(typeof(T).Name, c =>
-        {
-            if (baseAddress != null)
-            {
-                c.BaseAddress = new Uri(baseAddress);
-            }
-        }).AddHttpMessageHandler<LoggingHandler<T>>();
-
-        services.AddHttpClient($"{typeof(T).Name}Auth", c =>
-        {
-            if (authAddress != null)
-            {
-                c.BaseAddress = new Uri(authAddress);
-            }
-        }).AddHttpMessageHandler<LoggingHandler<T>>();
-        return services;
-    }
-}
+public record OspDetails
+(
+    string CallbackUrl,
+    string AuthUrl,
+    string ClientId,
+    string ClientSecret
+);

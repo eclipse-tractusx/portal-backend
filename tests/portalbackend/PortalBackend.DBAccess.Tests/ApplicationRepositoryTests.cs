@@ -497,9 +497,6 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
         result.CompanyName.Should().Be("CX-Test-Access");
-        result.ExternalId.Should().BeNull();
-        result.Bpn.Should().Be("BPNL00000003CRHL");
-        result.CallbackUrl.Should().BeNull();
     }
 
     #endregion

@@ -712,7 +712,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns(new ValueTuple<bool, IEnumerable<ValueTuple<Guid, CompanyApplicationStatusId, string?>>, bool, IEnumerable<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>, string?, Guid?>());
+            .Returns(new ValueTuple<bool, IEnumerable<ValueTuple<Guid, CompanyApplicationStatusId, string?>>, bool, IEnumerable<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>, Guid?>());
 
         // Act
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
@@ -728,7 +728,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), false, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null, null));
+            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), false, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
 
         // Act
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
@@ -744,7 +744,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null, null));
+            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
 
         // Act
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
@@ -760,7 +760,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, _fixture.CreateMany<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(2), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null, null));
+            .Returns((true, _fixture.CreateMany<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(2), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
 
         // Act
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
@@ -777,7 +777,7 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.VERIFY, null), 1), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null, null));
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.VERIFY, null), 1), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), Guid.NewGuid()));
 
         // Act
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
@@ -803,7 +803,7 @@ public class NetworkBusinessLogicTests
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, notExistingAgreementId})
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), true, companyRoleIds, null, null));
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), true, companyRoleIds, Guid.NewGuid()));
 
         // Act
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
@@ -829,7 +829,7 @@ public class NetworkBusinessLogicTests
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, inactiveAgreementId})
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), true, companyRoleIds, null, null));
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), true, companyRoleIds, Guid.NewGuid()));
 
         // Act
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
@@ -840,12 +840,38 @@ public class NetworkBusinessLogicTests
     }
 
     [Fact]
+    public async Task Submit_WithoutProcessId_ThrowsConflictException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var agreementId1 = Guid.NewGuid();
+        var data = new[]
+        {
+            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
+        };
+        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        {
+            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
+        };
+        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), true, companyRoleIds, null));
+        // Act
+        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("There must be an process");
+    }
+
+    [Fact]
     public async Task Submit_WithValidData_CallsExpected()
     {
         // Arrange
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var agreementId1 = Guid.NewGuid();
+        var processSteps = new List<ProcessStep>();
         var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
         var data = new[]
         {
@@ -856,12 +882,19 @@ public class NetworkBusinessLogicTests
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), true, companyRoleIds, "BPNL1234567899", ExistingExternalId));
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), true, companyRoleIds, Guid.NewGuid()));
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
             {
                 setOptionalFields.Invoke(application);
             });
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x =>
+                    x.Count() == 1 &&
+                    x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED)))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> steps) =>
+                {
+                    processSteps.AddRange(steps.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+                });
 
         // Act
         await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
@@ -874,8 +907,9 @@ public class NetworkBusinessLogicTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _onboardingServiceProviderBusinessLogic.TriggerProviderCallback("https://callback.url", "BPNL1234567899", ExistingExternalId, applicationId, A<string>._, A<CancellationToken>._))
-            .MustHaveHappenedOnceExactly();
+        processSteps.Should().ContainSingle().And.Satisfy(x =>
+            x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED &&
+            x.ProcessStepStatusId == ProcessStepStatusId.TODO);
     }
 
     #endregion

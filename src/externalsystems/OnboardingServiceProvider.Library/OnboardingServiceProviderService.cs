@@ -20,10 +20,14 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 
@@ -43,11 +47,32 @@ public class OnboardingServiceProviderService : IOnboardingServiceProviderServic
         _settings = options.Value;
     }
 
-    public async Task<bool> TriggerProviderCallback(string callbackUrl, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken)
+    public async Task<bool> TriggerProviderCallback(OspDetails ospDetails, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken)
     {
-        var httpClient = await _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(_settings, cancellationToken)
+        var toEncryptArray = Convert.FromBase64String(ospDetails.ClientSecret);
+        var md5 = MD5.Create();
+        var securityKeyArray = md5.ComputeHash(Encoding.UTF8.GetBytes(_settings.EncryptionKey));
+        md5.Clear();
+
+        var des = TripleDES.Create();
+        des.Key = securityKeyArray;
+        des.Mode = CipherMode.ECB;
+        des.Padding = PaddingMode.PKCS7;
+
+        var decryptor = des.CreateDecryptor();
+        var resultArray = decryptor.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+        des.Clear();
+        var secret = Encoding.UTF8.GetString(resultArray);
+
+        var settings = new KeyVaultAuthSettings
+        {
+            KeycloakTokenAddress = ospDetails.AuthUrl,
+            ClientId = ospDetails.ClientId,
+            ClientSecret = secret
+        };
+        var httpClient = await _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(settings, cancellationToken)
             .ConfigureAwait(false);
-        await httpClient.PostAsJsonAsync(callbackUrl, callbackData, cancellationToken)
+        await httpClient.PostAsJsonAsync(ospDetails.CallbackUrl, callbackData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-onboarding-provider")
             .ConfigureAwait(false);
 

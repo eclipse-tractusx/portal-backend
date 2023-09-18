@@ -8,6 +8,7 @@ public static class PartnerRegistrationServiceCollectionExtensions
     public static IServiceCollection AddPartnerRegistration(this IServiceCollection services, IConfiguration configuration) =>
         services
             .ConfigurePartnerRegistrationSettings(configuration.GetSection("Network2Network"))
+            .AddTransient<IRegistrationStatusBusinessLogic, RegistrationStatusBusinessLogic>()
             .AddOnboardingServiceProviderService(configuration)
             .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
 }

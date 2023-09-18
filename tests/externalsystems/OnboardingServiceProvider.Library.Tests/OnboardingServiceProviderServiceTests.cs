@@ -20,9 +20,11 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Net;
 
@@ -34,7 +36,6 @@ public class OnboardingServiceProviderServiceTests
 
     private readonly IFixture _fixture;
     private readonly ITokenService _tokenService;
-    private readonly IOptions<OnboardingServiceProviderSettings> _options;
 
     public OnboardingServiceProviderServiceTests()
     {
@@ -43,16 +44,6 @@ public class OnboardingServiceProviderServiceTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _options = Options.Create(new OnboardingServiceProviderSettings
-        {
-            Password = "passWord",
-            Scope = "test",
-            Username = "user@name",
-            ClientId = "CatenaX",
-            ClientSecret = "pass@Secret",
-            GrantType = "cred",
-            KeycloakTokenAddress = "https://key.cloak.com",
-        });
         _tokenService = A.Fake<ITokenService>();
     }
 
@@ -66,14 +57,15 @@ public class OnboardingServiceProviderServiceTests
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
         var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
-        const string url = "https://trigger.com";
+        var ospDetails = new OspDetails("https://trigger.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var service = new OnboardingServiceProviderService(_tokenService, _options);
+        var settings = new OnboardingServiceProviderSettings {EncryptionKey = "test123"};
+        var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
 
         // Act
-        var result = await service.TriggerProviderCallback(url, data, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(true);
@@ -85,13 +77,15 @@ public class OnboardingServiceProviderServiceTests
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
+        var ospDetails = new OspDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var service = new OnboardingServiceProviderService(_tokenService, _options);
+        var settings = new OnboardingServiceProviderSettings {EncryptionKey = "test123"};
+        var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
 
         // Act
-        async Task Act() => await service.TriggerProviderCallback("https://callback.com", data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
@@ -104,13 +98,15 @@ public class OnboardingServiceProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
+        var ospDetails = new OspDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var service = new OnboardingServiceProviderService(_tokenService, _options);
+        var settings = new OnboardingServiceProviderSettings {EncryptionKey = "test123"};
+        var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
 
         // Act
-        async Task Act() => await service.TriggerProviderCallback("https://callback.com", data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);

@@ -40,6 +40,7 @@ public class NetworkRegistration : IBaseEntity
         DateCreated = dateCreated;
     }
 
+
     public Guid Id { get; }
 
     public DateTimeOffset DateCreated { get; set; }
@@ -47,7 +48,7 @@ public class NetworkRegistration : IBaseEntity
     public Guid ExternalId { get; set; }
 
     public Guid CompanyId { get; set; }
-
+    
     public Guid OnboardingServiceProviderId { get; set; }
 
     public Guid ApplicationId { get; set; }

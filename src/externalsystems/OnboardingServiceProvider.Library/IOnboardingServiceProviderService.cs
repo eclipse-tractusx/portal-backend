@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 
@@ -31,9 +32,9 @@ public interface IOnboardingServiceProviderService
     /// <summary>
     /// Posts the status of an application to the onboarding service provider
     /// </summary>
-    /// <param name="callbackUrl">Callback url of the provider</param>
+    /// <param name="ospDetails">Onboarding Service Provider details</param>
     /// <param name="callbackData">Data for the callback</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <exception cref="ServiceException"></exception>
-    Task<bool> TriggerProviderCallback(string callbackUrl, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken);
+    Task<bool> TriggerProviderCallback(OspDetails ospDetails, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken);
 }

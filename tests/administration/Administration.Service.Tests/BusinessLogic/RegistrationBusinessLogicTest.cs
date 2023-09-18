@@ -452,10 +452,16 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         const string comment = "application rejected because of reasons.";
+        var processSteps = new List<ProcessStep>();
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, checklistStatusId, DateTimeOffset.UtcNow);
         var company = new Company(CompanyId, null!, CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
         var application = new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.SUBMITTED, CompanyApplicationTypeId.INTERNAL, DateTimeOffset.UtcNow);
         SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId);
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepData) =>
+            {
+                processSteps.AddRange(processStepData.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+            });
 
         // Act
         await _logic.DeclineRegistrationVerification(IdWithBpn, comment, CancellationToken.None).ConfigureAwait(false);
@@ -470,8 +476,9 @@ public class RegistrationBusinessLogicTest
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.VERIFY_REGISTRATION)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(A<string>._, A<string>._, A<Guid>._, IdWithBpn, comment, A<CancellationToken>._))
-            .MustHaveHappenedOnceExactly();
+        processSteps.Should().ContainSingle().And.Satisfy(x =>
+            x.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+            x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED);
     }
 
     #endregion
@@ -803,7 +810,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName, "https://callback.url", "BPNL1234567899", ExistingExternalId));
+            .Returns((CompanyId, CompanyName, ExistingExternalId));
     }
 
     private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId)
@@ -826,7 +833,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName, "https://callback.url", "BPNL1234567899", ExistingExternalId));
+            .Returns((CompanyId, CompanyName, ExistingExternalId));
 
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> initial, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
