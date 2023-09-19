@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230918140550_CPLP-2638-ExtendOspDetails")]
+    [Migration("20230919095337_CPLP-2638-ExtendOspDetails")]
     partial class CPLP2638ExtendOspDetails
     {
         /// <inheritdoc />
@@ -5047,7 +5047,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 205,
-                            Label = "RETRIGGER_CALLBACK_OSP"
+                            Label = "RETRIGGER_CALLBACK_OSP_SUBMITTED"
+                        },
+                        new
+                        {
+                            Id = 206,
+                            Label = "RETRIGGER_CALLBACK_OSP_APPROVED"
+                        },
+                        new
+                        {
+                            Id = 207,
+                            Label = "RETRIGGER_CALLBACK_OSP_DECLINED"
                         });
                 });
 

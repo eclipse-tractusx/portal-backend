@@ -65,7 +65,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 202, "TRIGGER_CALLBACK_OSP_SUBMITTED" },
                     { 203, "TRIGGER_CALLBACK_OSP_APPROVED" },
                     { 204, "TRIGGER_CALLBACK_OSP_DECLINED" },
-                    { 205, "RETRIGGER_CALLBACK_OSP" }
+                    { 205, "RETRIGGER_CALLBACK_OSP_SUBMITTED" },
+                    { 206, "RETRIGGER_CALLBACK_OSP_APPROVED" },
+                    { 207, "RETRIGGER_CALLBACK_OSP_DECLINED" }
                 });
         }
 
@@ -95,6 +97,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "process_step_types",
                 keyColumn: "id",
                 keyValue: 205);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 206);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 207);
 
             migrationBuilder.DropColumn(
                 name: "auth_url",

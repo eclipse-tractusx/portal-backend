@@ -5041,7 +5041,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 205,
-                            Label = "RETRIGGER_CALLBACK_OSP"
+                            Label = "RETRIGGER_CALLBACK_OSP_SUBMITTED"
+                        },
+                        new
+                        {
+                            Id = 206,
+                            Label = "RETRIGGER_CALLBACK_OSP_APPROVED"
+                        },
+                        new
+                        {
+                            Id = 207,
+                            Label = "RETRIGGER_CALLBACK_OSP_DECLINED"
                         });
                 });
 

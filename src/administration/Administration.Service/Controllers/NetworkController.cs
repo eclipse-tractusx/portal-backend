@@ -52,7 +52,7 @@ public class NetworkController : ControllerBase
     /// Example: POST: api/administration/registration/network/{externalId}/retrigger-synchronize-users
     /// <response code="200">Empty response on success.</response>
     [HttpPost]
-    // [Authorize(Roles = "tbd")]
+    [Authorize(Roles = "create_partner_registration")]
     [Route("partnerRegistration")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<OkResult> PartnerRegister([FromBody] PartnerRegistrationData data)
@@ -78,7 +78,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerSynchronizeUser([FromRoute] Guid externalId)
     {
-        await _logic.RetriggerSynchronizeUser(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -92,7 +92,7 @@ public class NetworkController : ControllerBase
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">No registration found for the externalId.</response>
     [HttpPost]
-    //[Authorize(Roles = "tbd")]
+    [Authorize(Roles = "submit_registration")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("partnerRegistration/submit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -101,6 +101,69 @@ public class NetworkController : ControllerBase
     public async Task<NoContentResult> Submit([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails, CancellationToken cancellationToken)
     {
         await _logic.Submit(companyRoleConsentDetails, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="externalId" example="">Id of the externalId that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/network/{externalId}/retrigger-callback-osp-approve
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    //[Authorize(Roles = "tbd")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{externalId}/retrigger-callback-osp-approve")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCallbackOspApprove([FromRoute] Guid externalId)
+    {
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="externalId" example="">Id of the externalId that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/network/{externalId}/retrigger-callback-osp-decline
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    //[Authorize(Roles = "tbd")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{externalId}/retrigger-callback-osp-decline")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCallbackOspDecline([FromRoute] Guid externalId)
+    {
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="externalId" example="">Id of the externalId that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/network/{externalId}/retrigger-callback-osp-submitted
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    //[Authorize(Roles = "tbd")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{externalId}/retrigger-callback-osp-submitted")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCallbackOspSubmitted([FromRoute] Guid externalId)
+    {
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(false);
         return NoContent();
     }
 }

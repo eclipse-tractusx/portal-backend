@@ -693,7 +693,7 @@ public class NetworkBusinessLogicTests
         const ProcessStepTypeId ProcessStepId = ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER;
 
         // Act
-        await _sut.RetriggerSynchronizeUser(externalId, ProcessStepId).ConfigureAwait(false);
+        await _sut.RetriggerProcessStep(externalId, ProcessStepId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _networkRegistrationProcessHelper.TriggerProcessStep(externalId, ProcessStepId)).MustHaveHappenedOnceExactly();

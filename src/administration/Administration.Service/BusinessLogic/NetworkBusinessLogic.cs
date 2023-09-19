@@ -184,7 +184,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
     }
 
-    public Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId) =>
+    public Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId) =>
         _processHelper.TriggerProcessStep(externalId, processStepTypeId);
 
     private async Task<(IEnumerable<UserRoleData> RoleData, IDictionary<Guid, string>? IdentityProviderIdAliase, (Guid IdentityProviderId, string Alias)? SingleIdentityProviderIdAlias, IEnumerable<Guid> AllIdentityProviderIds)> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)

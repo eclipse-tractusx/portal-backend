@@ -63,7 +63,7 @@ public class NetworkControllerTests
 
         // Assert
         result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.RetriggerSynchronizeUser(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER))
+        A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -79,6 +79,51 @@ public class NetworkControllerTests
         // Assert
         result.StatusCode.Should().Be(204);
         A.CallTo(() => _logic.Submit(A<IEnumerable<CompanyRoleConsentDetails>>.That.Matches(x => x.Count() == 3), A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCallbackOspApprove_ReturnsExpected()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid();
+
+        // Act
+        var result = await this._controller.RetriggerCallbackOspApprove(externalId).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCallbackOspDecline_ReturnsExpected()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid();
+
+        // Act
+        var result = await this._controller.RetriggerCallbackOspDecline(externalId).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCallbackOspSubmitted_ReturnsExpected()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid();
+
+        // Act
+        var result = await this._controller.RetriggerCallbackOspSubmitted(externalId).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED))
             .MustHaveHappenedOnceExactly();
     }
 }
