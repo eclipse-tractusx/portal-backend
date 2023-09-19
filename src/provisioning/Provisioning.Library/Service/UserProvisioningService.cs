@@ -231,7 +231,7 @@ public class UserProvisioningService : IUserProvisioningService
         var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
 
         var idpAlias = idpAliase.First();
-        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAlias.Alias, idpAlias.Id, true), createdByName);
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAlias.Alias, idpAlias.IdentityProviderId, true), createdByName);
     }
 
     private static string CreateNameString(string? firstName, string? lastName, string? email)

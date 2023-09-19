@@ -53,11 +53,14 @@ try
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {
-                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak")?.Get<KeycloakSettingsMap>()?.Values
                     .Where(config => config.ConnectionString.StartsWith("https://"))
                     .Select(config => config.ConnectionString)
                     .Distinct();
-                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+                if (urlsToTrust != null)
+                {
+                    FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+                }
                 isDevelopment = true;
             }
         })

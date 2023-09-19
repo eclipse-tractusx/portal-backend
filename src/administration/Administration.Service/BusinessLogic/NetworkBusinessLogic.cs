@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -64,9 +65,58 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var ownerCompanyId = _identityService.IdentityData.CompanyId;
         var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var roleData = await ValidatePartnerRegistrationData(data, networkRepository, companyRepository).ConfigureAwait(false);
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+
+        var (roleData, identityProviderIdAliase, singleIdentityProviderIdAlias, allIdentityProviderIds) = await ValidatePartnerRegistrationData(data, networkRepository, identityProviderRepository, ownerCompanyId).ConfigureAwait(false);
+
         var (_, companyName) = await companyRepository.GetCompanyNameUntrackedAsync(ownerCompanyId).ConfigureAwait(false);
 
+        var companyId = CreatePartnerCompany(companyRepository, data);
+
+        var applicationId = _portalRepositories.GetInstance<IApplicationRepository>().CreateCompanyApplication(companyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
+            ca =>
+            {
+                ca.OnboardingServiceProviderId = ownerCompanyId;
+            }).Id;
+
+        var processId = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION).Id;
+        processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId), 1));
+
+        networkRepository.CreateNetworkRegistration(data.ExternalId, companyId, processId, ownerCompanyId, applicationId);
+
+        identityProviderRepository.CreateCompanyIdentityProviders(allIdentityProviderIds.Select(identityProviderId => (companyId, identityProviderId)));
+
+        Guid GetIdpId(Guid? identityProviderId) =>
+            identityProviderId == null
+                ? singleIdentityProviderIdAlias?.IdentityProviderId ?? throw new UnexpectedConditionException("singleIdp should never be null here")
+                : identityProviderId.Value;
+
+        string GetIdpAlias(Guid? identityProviderId) =>
+            identityProviderId == null
+                ? singleIdentityProviderIdAlias?.Alias ?? throw new UnexpectedConditionException("singleIdp should never be null here")
+                : identityProviderIdAliase?[identityProviderId.Value] ?? throw new UnexpectedConditionException("idpAliase should never be null here and should always contain an entry for identityProviderId");
+
+        async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateUsers()
+        {
+            foreach (var user in GetUserCreationData(companyId, GetIdpId, GetIdpAlias, data, roleData))
+            {
+                await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(user.AliasData, user.CreationInfos.ToAsyncEnumerable()))
+                {
+                    yield return result;
+                }
+            }
+        }
+
+        var userCreationErrors = await CreateUsers().Where(x => x.Error != null).Select(x => x.Error!).ToListAsync();
+        userCreationErrors.IfAny(errors => throw new ServiceException($"Errors occured while saving the users: ${string.Join("", errors.Select(x => x.Message))}", errors.First()));
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await SendMails(data.UserDetails.Select(x => new ValueTuple<string, string?, string?>(x.Email, x.FirstName, x.LastName)), companyName).ConfigureAwait(false);
+    }
+
+    private Guid CreatePartnerCompany(ICompanyRepository companyRepository, PartnerRegistrationData data)
+    {
         var address = companyRepository.CreateAddress(data.City, data.StreetName,
             data.CountryAlpha2Code,
             a =>
@@ -85,41 +135,26 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         companyRepository.CreateUpdateDeleteIdentifiers(company.Id, Enumerable.Empty<(UniqueIdentifierId, string)>(), data.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
         _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(company.Id, data.CompanyRoles);
 
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var processId = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION).Id;
-        processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId), 1));
+        return company.Id;
+    }
 
-        var applicationId = _portalRepositories.GetInstance<IApplicationRepository>().CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
-            ca =>
-            {
-                ca.OnboardingServiceProviderId = ownerCompanyId;
-            }).Id;
-
-        networkRepository.CreateNetworkRegistration(data.ExternalId, company.Id, processId, ownerCompanyId, applicationId);
-
-        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-
-        var idps = await identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(ownerCompanyId).ToListAsync().ConfigureAwait(false);
-        var userData = data.UserDetails
+    private static IEnumerable<(CompanyNameIdpAliasData AliasData, IEnumerable<UserCreationRoleDataIdpInfo> CreationInfos)> GetUserCreationData(Guid companyId, Func<Guid?, Guid> getIdentityProviderId, Func<Guid?, string> getIdentityProviderAlias, PartnerRegistrationData data, IEnumerable<UserRoleData> roleData) =>
+        data.UserDetails
             .SelectMany(x => x.IdentityProviderLinks
                 .Select(idp => new UserTransferData(
                     x.FirstName,
                     x.LastName,
                     x.Email,
-                    idp.IdentityProviderId ?? idps.Single().IdentityProviderId,
+                    getIdentityProviderId(idp.IdentityProviderId),
                     idp.ProviderId,
                     idp.Username)))
             .GroupBy(x => x.IdentityProviderId)
             .Select(group =>
             {
-                var idpAlias = idps.Single(x => x.IdentityProviderId == group.Key).Alias;
-                if (idpAlias == null)
-                {
-                    return new ValueTuple<bool, CompanyNameIdpAliasData, IEnumerable<UserCreationRoleDataIdpInfo>>();
-                }
+                var idpAlias = getIdentityProviderAlias(group.Key);
 
                 var companyNameIdpAliasData = new CompanyNameIdpAliasData(
-                    company.Id,
+                    companyId,
                     data.Name,
                     data.Bpn,
                     idpAlias,
@@ -138,25 +173,8 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                     )
                 );
 
-                return new ValueTuple<bool, CompanyNameIdpAliasData, IEnumerable<UserCreationRoleDataIdpInfo>>(true, companyNameIdpAliasData, userCreationInfos);
+                return (AliasData: companyNameIdpAliasData, CreationInfos: userCreationInfos);
             });
-
-        var errors = new List<Exception>();
-        foreach (var user in userData.Where(x => x.Item1))
-        {
-            var result = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(user.Item2, user.Item3.ToAsyncEnumerable()).ToListAsync().ConfigureAwait(false);
-            var exceptions = result.Where(x => x.Error != null).Select(x => x.Error!);
-            errors.AddRange(exceptions);
-        }
-
-        if (errors.Any())
-        {
-            throw new UnexpectedConditionException($"Errors occured while saving the users: ${string.Join("", errors.Select(x => x.Message))}", errors.First());
-        }
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await SendMails(data.UserDetails.Select(x => new ValueTuple<string, string?, string?>(x.Email, x.FirstName, x.LastName)), companyName).ConfigureAwait(false);
-    }
 
     private async Task SendMails(IEnumerable<(string Email, string? FirstName, string? LastName)> companyUserWithRoleIdForCompany, string ospName)
     {
@@ -177,7 +195,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     public Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId) =>
         _processHelper.TriggerProcessStep(externalId, processStepTypeId);
 
-    private async Task<IEnumerable<UserRoleData>> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, ICompanyRepository companyRepository)
+    private async Task<(IEnumerable<UserRoleData> RoleData, IDictionary<Guid, string>? IdentityProviderIdAliase, (Guid IdentityProviderId, string Alias)? SingleIdentityProviderIdAlias, IEnumerable<Guid> AllIdentityProviderIds)> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)
     {
         if (string.IsNullOrWhiteSpace(data.Bpn) || !BpnRegex.IsMatch(data.Bpn))
         {
@@ -206,37 +224,71 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ControllerArgumentException($"Location {data.CountryAlpha2Code} does not exist", nameof(data.CountryAlpha2Code));
         }
 
-        await ValidateIdps(data, companyRepository).ConfigureAwait(false);
+        var idpResult = await ValidateIdps(data, identityProviderRepository, ownerCompanyId).ConfigureAwait(false);
 
+        IEnumerable<UserRoleData> roleData;
         try
         {
-            return await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
+            roleData = await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
         }
         catch (Exception e)
         {
             throw new ConfigurationException($"{nameof(_settings.InitialRoles)}: {e.Message}");
         }
+
+        return (roleData, idpResult.IdentityProviderIdAliasData, idpResult.SingleIdp, idpResult.AllIdentityProviderIds);
     }
 
-    private async Task ValidateIdps(PartnerRegistrationData data, ICompanyRepository companyRepository)
+    private static async Task<(IDictionary<Guid, string>? IdentityProviderIdAliasData, (Guid IdentityProviderId, string Alias)? SingleIdp, IEnumerable<Guid> AllIdentityProviderIds)> ValidateIdps(PartnerRegistrationData data, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)
     {
         var identityProviderIds = data.UserDetails
-            .SelectMany(x => x.IdentityProviderLinks.Select(y => y.IdentityProviderId)).Distinct();
-        var idps = await companyRepository.GetLinkedIdpIds(_identityService.IdentityData.CompanyId)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (identityProviderIds.Any(x => x == null) && idps.Count != 1)
+                    .SelectMany(x => x.IdentityProviderLinks)
+                    .Select(x => x.IdentityProviderId);
+
+        var idpAliase = identityProviderIds
+                    .Where(id => id != null)
+                    .Select(id => id!.Value)
+                    .IfAny(async ids =>
+                        {
+                            var distinctIds = ids.Distinct();
+                            var idpAliasData = await identityProviderRepository
+                                .GetManagedIdentityProviderAliasDataUntracked(ownerCompanyId, distinctIds)
+                                .ToDictionaryAsync(
+                                    x => x.IdentityProviderId,
+                                    x => x.Alias ?? throw new ConflictException($"identityProvider {x.IdentityProviderId} has no alias")).ConfigureAwait(false);
+                            distinctIds.Except(idpAliasData.Keys).IfAny(invalidIds =>
+                                throw new ControllerArgumentException($"Idps {string.Join("", invalidIds)} do not exist"));
+                            return idpAliasData;
+                        },
+                        out var idpAliasDataTask)
+                ? await idpAliasDataTask!.ConfigureAwait(false)
+                : (IDictionary<Guid, string>?)null;
+
+        (Guid IdentityProviderId, string Alias)? singleIdpAlias;
+
+        if (identityProviderIds.Any(id => id == null))
         {
-            throw new ControllerArgumentException(
-                "Company has more than one identity provider linked, therefor identityProviderId must be set for all users",
-                nameof(data.UserDetails));
+            try
+            {
+                var single = await identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(ownerCompanyId).SingleAsync().ConfigureAwait(false);
+                singleIdpAlias = (single.IdentityProviderId, single.Alias ?? throw new ConflictException($"identityProvider {single.IdentityProviderId} has no alias"));
+            }
+            catch (InvalidOperationException)
+            {
+                throw new ControllerArgumentException($"Company {ownerCompanyId} has no or more than one identity provider linked, therefore identityProviderId must be set for all users", nameof(data.UserDetails));
+            }
+        }
+        else
+        {
+            singleIdpAlias = null;
         }
 
-        if (idps.All(x => !identityProviderIds.Where(y => y != null).Contains(x)))
-        {
-            throw new ControllerArgumentException(
-                $"Idps {string.Join("", idps.Where(x => !identityProviderIds.Any(i => i == x)))} do not exist");
-        }
+        var idpIds = idpAliase?.Keys ?? Enumerable.Empty<Guid>();
+        var allIdpIds = singleIdpAlias == null
+            ? idpIds
+            : idpIds.Append(singleIdpAlias.Value.IdentityProviderId).Distinct();
+
+        return (idpAliase, singleIdpAlias, allIdpIds);
     }
 
     private static void ValidateUsers(UserDetailData user)

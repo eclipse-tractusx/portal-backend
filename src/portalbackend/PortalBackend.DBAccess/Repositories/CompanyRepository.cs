@@ -346,10 +346,4 @@ public class CompanyRepository : ICompanyRepository
     {
         return _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl)).Entity;
     }
-
-    public IAsyncEnumerable<Guid> GetLinkedIdpIds(Guid companyId) =>
-        _context.CompanyIdentityProviders
-            .Where(x => x.CompanyId == companyId)
-            .Select(x => x.IdentityProviderId)
-            .ToAsyncEnumerable();
 }

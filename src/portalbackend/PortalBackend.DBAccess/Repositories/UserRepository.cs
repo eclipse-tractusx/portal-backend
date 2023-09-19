@@ -447,21 +447,20 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, providerId, userName)).Entity;
 
     public IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
-        _dbContext.NetworkRegistrations
-            .Where(x => x.Id == networkRegistrationId)
-            .SelectMany(x => x.Company!.Identities
-                .Where(i => i.UserStatusId == UserStatusId.PENDING)
-                .Select(i => i.CompanyUser!)
-                .Select(i =>
-                    new CompanyUserIdentityProviderProcessData(
-                        i.Id,
-                        i.Firstname!,
-                        i.Lastname!,
-                        i.Email!,
-                        i.Identity!.UserEntityId,
-                        i.Identity!.Company!.Name,
-                        i.Identity.Company.BusinessPartnerNumber,
-                        i.CompanyUserAssignedIdentityProviders.Select(cu => new ProviderLinkData(cu.UserName, cu.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, cu.ProviderId))
-                    )))
+        _dbContext.CompanyUsers
+            .Where(cu =>
+                cu.Identity!.UserStatusId == UserStatusId.PENDING &&
+                cu.Identity.Company!.NetworkRegistration!.Id == networkRegistrationId)
+            .Select(cu =>
+                new CompanyUserIdentityProviderProcessData(
+                    cu.Id,
+                    cu.Firstname,
+                    cu.Lastname,
+                    cu.Email,
+                    cu.Identity!.UserEntityId,
+                    cu.Identity.Company!.Name,
+                    cu.Identity.Company.BusinessPartnerNumber,
+                    cu.CompanyUserAssignedIdentityProviders.Select(assigned => new ProviderLinkData(assigned.UserName, assigned.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, assigned.ProviderId))
+                ))
             .ToAsyncEnumerable();
 }

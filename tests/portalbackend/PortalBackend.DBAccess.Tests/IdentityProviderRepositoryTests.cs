@@ -179,6 +179,81 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetSingleManagedIdentityProviderAliasDataUntracked
+
+    [Fact]
+    public async Task GetSingleManagedIdentityProviderAliasDataUntracked_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle()
+            .Which.Should().Match<(Guid IdentityProviderId, string? Alias)>(x => x.IdentityProviderId == new Guid("38f56465-ce26-4f25-9745-1791620dc200") && x.Alias == "Test-Alias2");
+    }
+
+    [Fact]
+    public async Task GetSingleManagedIdentityProviderAliasDataUntracked_WithCompanyOwningOwnIdp_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region GetManagedIdentityProviderAliasDataUntracked
+
+    [Fact]
+    public async Task GetManagedIdentityProviderAliasDataUntracked_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc200") }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle()
+            .Which.Should().Match<(Guid IdentityProviderId, string? Alias)>(x => x.IdentityProviderId == new Guid("38f56465-ce26-4f25-9745-1791620dc200") && x.Alias == "Test-Alias2");
+    }
+
+    [Fact]
+    public async Task GetManagedIdentityProviderAliasDataUntracked_WithOtherCompanyIdentityProviderId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc199") }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetManagedIdentityProviderAliasDataUntracked_WithCompanyOwningOwnIdp_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc199") }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region Setup    
 
     private async Task<(IdentityProviderRepository, PortalDbContext)> CreateSutWithContext()

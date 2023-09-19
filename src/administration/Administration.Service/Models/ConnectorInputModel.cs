@@ -29,7 +29,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 /// <param name="Name">Display name of the connector.</param>
 /// <param name="ConnectorUrl"> URL of the connector.</param>
 /// <param name="Location">Connector's location country code.</param>
-/// <param name="Certificate">The certificate for the daps call.</param>
 /// <param name="TechnicalUserId">Id of the technical user.</param>
 public record ConnectorInputModel(
     [MaxLength(255)] string Name,

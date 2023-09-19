@@ -872,24 +872,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetLinkedIdpIds
-
-    [Fact]
-    public async Task GetLinkedIdpIds_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetLinkedIdpIds(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ToListAsync().ConfigureAwait(false);
-
-        // Assert
-        result.Should().ContainSingle()
-            .Which.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce057770015"));
-    }
-
-    #endregion
-
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()
