@@ -306,7 +306,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ControllerArgumentException("Lastname does not match expected format");
         }
     }
-    
+
     public async Task Submit(IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails, CancellationToken cancellationToken)
     {
         var companyId = _identityService.IdentityData.CompanyId;

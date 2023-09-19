@@ -46,7 +46,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\externalsystems\OnboardingServiceProvider.Library\OnboardingServiceProvider.Library.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.Token\Framework.Token.csproj" />
-    <ProjectReference Include="..\..\..\src\processes\OnboardingServiceProvider.Library\OnboardingServiceProvider.Library.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 </Project>
