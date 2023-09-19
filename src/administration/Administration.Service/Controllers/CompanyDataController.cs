@@ -169,12 +169,12 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
-    /// Gets the UseCaseParticipations for the own company
+    /// Gets all use case frameworks and the participation status of the acting company
     /// </summary>
     /// <remarks>Example: Get: api/administration/companydata/useCaseParticipation</remarks>
-    /// <returns>All UseCaseParticipations of the own company</returns>
+    /// <returns>All UseCaseParticipations and the particiation status of the acting company</returns>
     /// <response code="200">Returns a collection of UseCaseParticipation.</response>
-    /// <response code="409">There should only be one pending or active ssi detail be assigned</response>
+    /// <response code="409">There should only be one pending or active SSI detail be assigned</response>
     [HttpGet]
     [Authorize(Roles = "view_use_case_participation")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
@@ -185,12 +185,12 @@ public class CompanyDataController : ControllerBase
         _logic.GetUseCaseParticipationAsync(language);
 
     /// <summary>
-    /// Gets the Ssi certifications for the own company
+    /// Gets all company certificate requests and their status
     /// </summary>
-    /// <returns>All ssi certifications of the own company</returns>
+    /// <returns>All SSI certifications of the own company</returns>
     /// <remarks>Example: Get: api/administration/companydata/certificates</remarks>
     /// <response code="200">Returns a collection of certificates.</response>
-    /// <response code="409">There should only be one pending or active ssi detail be assigned</response>
+    /// <response code="409">There should only be one pending or active SSI detail be assigned</response>
     [HttpGet]
     [Authorize(Roles = "view_certificates")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
@@ -201,11 +201,11 @@ public class CompanyDataController : ControllerBase
         _logic.GetSsiCertificatesAsync();
 
     /// <summary>
-    /// Gets the Ssi certifications for the own company
+    /// Gets the certificate types for which the company can apply for
     /// </summary>
-    /// <returns>All ssi certifications of the own company</returns>
+    /// <returns>All certificate types for which the company can apply for</returns>
     /// <remarks>Example: Get: api/administration/companydata/certificateTypes</remarks>
-    /// <response code="200">Returns a collection of certificates.</response>
+    /// <response code="200">Returns a collection of VerifiedCredentialTypeIds.</response>
     [HttpGet]
     [Authorize(Roles = "request_ssicredential")]
     [Route("certificateTypes")]
@@ -214,13 +214,13 @@ public class CompanyDataController : ControllerBase
         _logic.GetCertificateTypes();
 
     /// <summary>
-    /// Creates the useCaseParticipation
+    /// Creates the use case participation request
     /// </summary>
     /// <param name="data">The type and document</param>
     /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>The id of the created use case participation</returns>
+    /// <returns>The id of the created use case participation request</returns>
     /// <remarks>Example: POST: api/administration/companydata/useCaseParticipation</remarks>
-    /// <response code="204">Successfully created the use case particiation.</response>
+    /// <response code="204">Successfully created the use case participation request.</response>
     /// <response code="400">
     /// VerifiedCredentialExternalTypeDetailId does not exist <br />
     /// Credential request already exist
@@ -239,13 +239,13 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
-    /// Creates the ssiCertificate
+    /// Creates the SSI Certificate request
     /// </summary>
     /// <param name="data">The type and document</param>
     /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>The id of the created use case participation</returns>
+    /// <returns>The id of the created SSI certificate request</returns>
     /// <remarks>Example: POST: api/administration/companydata/certificates</remarks>
-    /// <response code="204">Successfully created the ssi certificate.</response>
+    /// <response code="204">Successfully created the SSI certificate request.</response>
     /// <response code="400">
     /// credentialTypeId is not assigned to a certificate <br />
     /// Credential request already exist
@@ -264,7 +264,7 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
-    ///     Gets all outstanding, existing and inactive credentials
+    /// Gets all outstanding, existing and inactive credentials
     /// </summary>
     /// <remarks>Example: Get: /api/administration/companydata/credentials/</remarks>
     /// <param name="page">The page to get</param>
@@ -289,13 +289,13 @@ public class CompanyDataController : ControllerBase
         _logic.GetCredentials(page, size, companySsiDetailStatusId, credentialTypeId, companyName, sorting);
 
     /// <summary>
-    /// Approves the given credential
+    /// Approves the given credential and triggers the verified credential creation
     /// </summary>
     /// <remarks>Example: PUT: api/administration/companydata/credentials/{credentialId}/approval</remarks>
     /// <param name="credentialId">Id of the entry that should be approved</param>
     /// <param name="cts">Cancellation Token</param>
     /// <returns>No Content</returns>
-    /// <response code="204">Successfully approved the credentials.</response>
+    /// <response code="204">Successfully approved the credentials and triggered the verified credential creation.</response>
     /// <response code="404">CompanySsiDetail does not exists</response>
     /// <response code="409">
     /// Credential is in Incorrect State <br />
@@ -315,12 +315,12 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
-    /// Creates the ssiCertificate
+    /// Rejects the given credential
     /// </summary>
     /// <remarks>Example: PUT: api/administration/companydata/credentials/{credentialId}/reject</remarks>
     /// <param name="credentialId">Id of the entry that should be rejected</param>
     /// <returns>No Content</returns>
-    /// <response code="204">Successfully rejected the credentials.</response>
+    /// <response code="204">Successfully rejected the credential.</response>
     /// <response code="404">CompanySsiDetail does not exists</response>
     /// <response code="409">CredentialSsiDetail is in Incorrect State</response>
     [HttpPut]
