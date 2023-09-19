@@ -365,10 +365,12 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 .CreateConsent(agreementId, companyId, userId, consentStatus);
         }
 
+        var processId = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.Id,
             ca =>
             {
                 ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                ca.ChecklistProcessId = processId;
             });
         _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepStatusId.TODO, data.ProcessId.Value), 1));
 
