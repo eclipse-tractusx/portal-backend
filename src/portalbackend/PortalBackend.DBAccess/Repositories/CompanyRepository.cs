@@ -346,4 +346,9 @@ public class CompanyRepository : ICompanyRepository
     {
         return _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl)).Entity;
     }
+
+    /// <inheritdoc />
+    public Task<bool> CheckBpnExists(string bpn) =>
+        _context.Companies
+            .AnyAsync(x => x.BusinessPartnerNumber == bpn);
 }

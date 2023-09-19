@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 #nullable disable
 
@@ -70,8 +71,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
                     onboarding_service_provider_id = table.Column<Guid>(type: "uuid", nullable: false),
                     application_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    process_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    company_application_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    process_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -90,11 +90,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_network_registrations_company_applications_company_applicat",
-                        column: x => x.company_application_id,
+                        name: "fk_network_registrations_company_applications_application_id",
+                        column: x => x.application_id,
                         principalSchema: "portal",
                         principalTable: "company_applications",
-                        principalColumn: "id");
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_network_registrations_processes_process_id",
                         column: x => x.process_id,
@@ -133,10 +134,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "identity_provider_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_network_registrations_company_application_id",
+                name: "ix_network_registrations_application_id",
                 schema: "portal",
                 table: "network_registrations",
-                column: "company_application_id");
+                column: "application_id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_network_registrations_company_id",
@@ -146,10 +148,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_network_registrations_external_id",
+                name: "ix_network_registrations_external_id_onboarding_service_provid",
                 schema: "portal",
                 table: "network_registrations",
-                column: "external_id",
+                columns: new[] { "external_id", "onboarding_service_provider_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

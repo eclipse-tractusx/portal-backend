@@ -202,6 +202,11 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
         }
 
+        if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(data.Bpn).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"The Bpn {data.Bpn} already exists", nameof(data.Bpn));
+        }
+
         if (!data.CompanyRoles.Any())
         {
             throw new ControllerArgumentException("At least one company role must be selected", nameof(data.CompanyRoles));
@@ -212,7 +217,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             ValidateUsers(user);
         }
 
-        if (await networkRepository.CheckExternalIdExists(data.ExternalId)
+        if (await networkRepository.CheckExternalIdExists(data.ExternalId, ownerCompanyId)
                 .ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"ExternalId {data.ExternalId} already exists", nameof(data.ExternalId));

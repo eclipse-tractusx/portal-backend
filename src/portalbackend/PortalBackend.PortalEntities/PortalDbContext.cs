@@ -1400,7 +1400,7 @@ public class PortalDbContext : DbContext
         {
             entity.HasKey(x => x.Id);
 
-            entity.HasIndex(x => x.ExternalId)
+            entity.HasIndex(x => new { x.ExternalId, x.OnboardingServiceProviderId })
                 .IsUnique();
 
             entity.HasOne(x => x.Company)
@@ -1411,6 +1411,14 @@ public class PortalDbContext : DbContext
             entity.HasOne(x => x.Process)
                 .WithOne(x => x.NetworkRegistration)
                 .HasForeignKey<NetworkRegistration>(x => x.ProcessId);
+
+            entity.HasOne(x => x.OnboardingServiceProvider)
+                .WithMany(x => x.OnboardedNetworkRegistrations)
+                .HasForeignKey(x => x.OnboardingServiceProviderId);
+
+            entity.HasOne(x => x.CompanyApplication)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.ApplicationId);
         });
 
         modelBuilder.Entity<CompanyUserAssignedIdentityProvider>(entity =>

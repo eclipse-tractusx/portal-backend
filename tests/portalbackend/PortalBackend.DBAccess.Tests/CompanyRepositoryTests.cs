@@ -872,6 +872,36 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region CheckBpnExists
+
+    [Fact]
+    public async Task CheckBpnExists_WithNotExisting_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckBpnExists("TESTNOTEXISTING").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckBpnExists_WithValid_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckBpnExists("BPNL00000003LLHA").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()

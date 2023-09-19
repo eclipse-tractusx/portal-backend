@@ -38,8 +38,11 @@ public class NetworkRepository : INetworkRepository
     public NetworkRegistration CreateNetworkRegistration(Guid externalId, Guid companyId, Guid processId, Guid ospId, Guid applicationId) =>
         _context.NetworkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, processId, ospId, applicationId, DateTimeOffset.UtcNow)).Entity;
 
-    public Task<bool> CheckExternalIdExists(Guid externalId) =>
-        _context.NetworkRegistrations.AnyAsync(x => x.ExternalId == externalId);
+    public Task<bool> CheckExternalIdExists(Guid externalId, Guid onboardingServiceProviderId) =>
+        _context.NetworkRegistrations
+            .AnyAsync(x =>
+                x.OnboardingServiceProviderId == onboardingServiceProviderId &&
+                x.ExternalId == externalId);
 
     /// <inheritdoc />
     public Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId) =>

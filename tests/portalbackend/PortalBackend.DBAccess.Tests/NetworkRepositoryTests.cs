@@ -80,10 +80,23 @@ public class NetworkRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2")).ConfigureAwait(false);
+        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2"), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckExternalIdExists_WithOtherOsp_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2"), _validCompanyId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -93,7 +106,7 @@ public class NetworkRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckExternalIdExists(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.CheckExternalIdExists(Guid.NewGuid(), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();

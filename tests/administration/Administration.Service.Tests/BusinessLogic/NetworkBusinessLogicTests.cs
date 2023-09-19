@@ -130,6 +130,23 @@ public class NetworkBusinessLogicTests
     }
 
     [Fact]
+    public async Task HandlePartnerRegistration_WithoutExistingBpn_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var data = _fixture.Build<PartnerRegistrationData>()
+            .With(x => x.Bpn, "BPNL00000001FAIL")
+            .Create();
+
+        // Act
+        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"The Bpn {data.Bpn} already exists (Parameter 'Bpn')");
+        ex.ParamName.Should().Be("Bpn");
+    }
+
+    [Fact]
     public async Task HandlePartnerRegistration_WithInvalidCompanyUserRole_ThrowsControllerArgumentException()
     {
         // Arrange
@@ -477,10 +494,13 @@ public class NetworkBusinessLogicTests
 
     private void SetupRepos()
     {
-        A.CallTo(() => _networkRepository.CheckExternalIdExists(ExistingExternalId))
+        A.CallTo(() => _networkRepository.CheckExternalIdExists(ExistingExternalId, _identity.CompanyId))
             .Returns(true);
-        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == ExistingExternalId)))
+        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == ExistingExternalId), _identity.CompanyId))
             .Returns(false);
+
+        A.CallTo(() => _companyRepository.CheckBpnExists(Bpnl)).Returns(false);
+        A.CallTo(() => _companyRepository.CheckBpnExists(A<string>.That.Not.Matches(x => x == Bpnl))).Returns(true);
 
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync("XX"))
             .Returns(false);

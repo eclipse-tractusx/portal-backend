@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -63,6 +64,34 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
 
         _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManger, options);
+    }
+
+    [Theory]
+    [InlineData(null, "stark", "tony@stark.com")]
+    [InlineData("tony", null, "tony@stark.com")]
+    [InlineData("tony", "stark", null)]
+    public async Task SynchronizeUser_WithUserDataNull_ThrowsConflictException(string? firstName, string? lastName, string? email)
+    {
+        // Arrange
+        var user1Id = Guid.NewGuid();
+        var user1 = new CompanyUserIdentityProviderProcessData(user1Id, firstName, lastName, email,
+            "123456789", "Test Company", "BPNL00000001TEST",
+            Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
+
+        A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
+            .Returns(new List<CompanyUserIdentityProviderProcessData>
+            {
+                user1,
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
+
+        // Act
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Firstname, Lastname & Email of CompanyUser {user1Id} must not be null here");
     }
 
     [Fact]
