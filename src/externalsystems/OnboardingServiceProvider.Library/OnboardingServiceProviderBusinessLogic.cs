@@ -18,11 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 
@@ -30,11 +34,13 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
 {
     private readonly IOnboardingServiceProviderService _onboardingServiceProviderService;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly OnboardingServiceProviderSettings _settings;
 
-    public OnboardingServiceProviderBusinessLogic(IOnboardingServiceProviderService onboardingServiceProviderService, IPortalRepositories portalRepositories)
+    public OnboardingServiceProviderBusinessLogic(IOnboardingServiceProviderService onboardingServiceProviderService, IPortalRepositories portalRepositories, IOptions<OnboardingServiceProviderSettings> options)
     {
         _onboardingServiceProviderService = onboardingServiceProviderService;
         _portalRepositories = portalRepositories;
+        _settings = options.Value;
     }
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProviderCallback(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId, CancellationToken cancellationToken) //string? callbackUrl, string? bpn, Guid? externalId, Guid applicationId, string comment, CancellationToken cancellationToken)
@@ -81,7 +87,16 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
                 throw new ArgumentException($"{processStepTypeId} is not supported");
         }
 
-        await _onboardingServiceProviderService.TriggerProviderCallback(data.OspDetails,
+        var toEncryptArray = Convert.FromBase64String(data.OspDetails.ClientSecret);
+        using var aes = Aes.Create();
+        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
+        aes.Mode = CipherMode.ECB;
+        aes.Padding = PaddingMode.PKCS7;
+        var decryptor = aes.CreateDecryptor();
+        var resultArray = decryptor.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+        var secret = Encoding.UTF8.GetString(resultArray);
+
+        await _onboardingServiceProviderService.TriggerProviderCallback(data.OspDetails with { ClientSecret = secret },
                 new OnboardingServiceProviderCallbackData(data.ExternalId.Value, data.ApplicationId, data.Bpn, applicationStatusId, comment),
                 cancellationToken)
             .ConfigureAwait(false);

@@ -18,11 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -61,8 +59,7 @@ public class OnboardingServiceProviderServiceTests
             .Returns(httpClient);
         var ospDetails = new OspDetails("https://trigger.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var settings = new OnboardingServiceProviderSettings { EncryptionKey = "test123" };
-        var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
+        var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
         var result = await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
@@ -81,8 +78,7 @@ public class OnboardingServiceProviderServiceTests
             .Returns(httpClient);
         var ospDetails = new OspDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var settings = new OnboardingServiceProviderSettings { EncryptionKey = "test123" };
-        var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
+        var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
         async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
@@ -102,8 +98,7 @@ public class OnboardingServiceProviderServiceTests
             .Returns(httpClient);
         var ospDetails = new OspDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
-        var settings = new OnboardingServiceProviderSettings { EncryptionKey = "test123" };
-        var service = new OnboardingServiceProviderService(_tokenService, Options.Create(settings));
+        var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
         async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);

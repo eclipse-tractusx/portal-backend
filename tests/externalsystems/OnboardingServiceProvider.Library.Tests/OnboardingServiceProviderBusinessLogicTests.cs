@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Tests;
 
@@ -50,7 +51,8 @@ public class OnboardingServiceProviderBusinessLogicTests
 
         A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
 
-        _sut = new OnboardingServiceProviderBusinessLogic(_onboardingServiceProviderService, portalRepositories);
+        var settings = new OnboardingServiceProviderSettings { EncryptionKey = "mysmallkey1234551298765134567890" };
+        _sut = new OnboardingServiceProviderBusinessLogic(_onboardingServiceProviderService, portalRepositories, Options.Create(settings));
     }
 
     #endregion
@@ -80,7 +82,7 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
-        var secret = "test123";
+        var secret = "g/nTrpQDtBIqwo/KhPqwrMFsFbgjTTC1oCowwj+OQ9M=";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
             .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, null, null, Guid.NewGuid(), Enumerable.Empty<string>()));
@@ -98,7 +100,7 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
-        var secret = "test123";
+        var secret = "g/nTrpQDtBIqwo/KhPqwrMFsFbgjTTC1oCowwj+OQ9M=";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
             .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, Guid.NewGuid(), null, Guid.NewGuid(), Enumerable.Empty<string>()));
@@ -116,7 +118,7 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
-        var secret = "test123";
+        var secret = "g/nTrpQDtBIqwo/KhPqwrMFsFbgjTTC1oCowwj+OQ9M=";
         const string Bpn = "BPNL00000001TEST";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED))
@@ -135,7 +137,7 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
-        var secret = "test123";
+        var secret = "g/nTrpQDtBIqwo/KhPqwrMFsFbgjTTC1oCowwj+OQ9M=";
         const string Bpn = "BPNL00000001TEST";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP))
@@ -158,11 +160,12 @@ public class OnboardingServiceProviderBusinessLogicTests
         // Act
         const string CallbackUrl = "https://callback.url";
         const string Bpn = "BPNL00000001TEST";
-        var secret = "test123";
+        var secret = "g/nTrpQDtBIqwo/KhPqwrMFsFbgjTTC1oCowwj+OQ9M=";
         var externalId = Guid.NewGuid();
         var applicationId = new Guid("2b965267-555c-4834-a323-09b7858c29ae");
         var networkRegistrationId = Guid.NewGuid();
         var details = new OspDetails(CallbackUrl, "https://auth.url", "test1", secret);
+        var resultDetails = details with { ClientSecret = "Sup3rS3cureTest!" };
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, processStepTypeId))
             .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, externalId, Bpn, applicationId, processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? Enumerable.Repeat("this is a test", 1) : Enumerable.Empty<string>()));
 
@@ -171,7 +174,7 @@ public class OnboardingServiceProviderBusinessLogicTests
 
         // Assert
         A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback(
-                details,
+                resultDetails,
                 new OnboardingServiceProviderCallbackData(externalId, applicationId, Bpn, applicationStatusId, message),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();

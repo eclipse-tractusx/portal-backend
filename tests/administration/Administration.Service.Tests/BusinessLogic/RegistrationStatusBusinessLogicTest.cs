@@ -53,7 +53,7 @@ public class RegistrationStatusBusinessLogicTest
 
         var options = new OnboardingServiceProviderSettings
         {
-            EncryptionKey = "test123"
+            EncryptionKey = "mysmallkey1234551298765134567890"
         };
         _logic = new RegistrationStatusBusinessLogic(_portalRepositories, identityService, Options.Create(options));
     }
@@ -100,7 +100,7 @@ public class RegistrationStatusBusinessLogicTest
             .Returns(((bool, OspDetails?))default);
 
         //Act
-        async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https//auth.url", "test", "test123")).ConfigureAwait(false);
+        async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https//auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);

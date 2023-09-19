@@ -61,17 +61,12 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
         }
 
         var toEncryptedArray = Encoding.UTF8.GetBytes(requestData.ClientSecret);
-        var md5 = MD5.Create();
-        var securityKeyArray = md5.ComputeHash(Encoding.UTF8.GetBytes(_settings.EncryptionKey));
-        md5.Clear();
-        var tripleDes = TripleDES.Create();
-        tripleDes.Key = securityKeyArray;
-        tripleDes.Mode = CipherMode.ECB;
-        tripleDes.Padding = PaddingMode.PKCS7;
-
-        var encryptor = tripleDes.CreateEncryptor();
+        using var aes = Aes.Create();
+        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
+        aes.Mode = CipherMode.ECB;
+        aes.Padding = PaddingMode.PKCS7;
+        using var encryptor = aes.CreateEncryptor();
         var secretResult = encryptor.TransformFinalBlock(toEncryptedArray, 0, toEncryptedArray.Length);
-        tripleDes.Clear();
         var secret = Convert.ToBase64String(secretResult, 0, secretResult.Length);
 
         if (ospDetails != null)
