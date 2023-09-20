@@ -115,7 +115,8 @@ public class UserProvisioningService : IUserProvisioningService
                 companyUserId.ToString(),
                 user.FirstName,
                 user.LastName,
-                user.Email
+                user.Email,
+                user.Enabled
             ),
             _provisioningManager.GetStandardAttributes(
                 organisationName: companyName,
@@ -148,7 +149,7 @@ public class UserProvisioningService : IUserProvisioningService
             return (identity, companyUserId);
         }
 
-        identity = userRepository.CreateIdentity(companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
+        identity = userRepository.CreateIdentity(companyId, user.UserStatusId, IdentityTypeId.COMPANY_USER);
         companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email).Id;
         if (businessPartnerNumber != null)
         {
@@ -179,6 +180,7 @@ public class UserProvisioningService : IUserProvisioningService
                     user.FirstName,
                     user.LastName,
                     user.Email,
+                    user.Enabled,
                     password))
             : Task.FromResult(user.UserId);
 

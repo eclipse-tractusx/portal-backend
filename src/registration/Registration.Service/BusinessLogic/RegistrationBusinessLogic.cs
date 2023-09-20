@@ -415,7 +415,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             userCreationInfo.eMail,
             userRoleDatas ?? Enumerable.Empty<UserRoleData>(),
             userCreationInfo.userName ?? userCreationInfo.eMail,
-            ""
+            "",
+            UserStatusId.ACTIVE,
+            true
         )}.ToAsyncEnumerable();
 
         var (newCompanyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);

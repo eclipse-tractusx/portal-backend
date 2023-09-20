@@ -67,8 +67,13 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 throw new ConflictException($"Firstname, Lastname & Email of CompanyUser {cu.CompanyUserId} must not be null here");
             }
 
+            if (cu.ProviderLinkData.Any(x => string.IsNullOrWhiteSpace(x.Alias)))
+            {
+                throw new ConflictException($"Alias must be set for all ProviderLinkData of CompanyUser {cu.CompanyUserId}");
+            }
+
             var userId = await _provisioningManager.GetUserByUserName(cu.CompanyUserId.ToString()).ConfigureAwait(false) ??
-                         await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty), cu.CompanyName, cu.Bpn, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias, x.ProviderUserId, x.UserName)));
+                         await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyName, cu.Bpn, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias, x.ProviderUserId, x.UserName)));
 
             userRepository.AttachAndModifyIdentity(cu.CompanyUserId, i =>
                 {

@@ -40,13 +40,13 @@ public record PartnerRegistrationData
 );
 
 public record UserDetailData(
-    IEnumerable<UserIdentityProviderLink> IdentityProviderLinks,
+    Guid? IdentityProviderId,
+    string ProviderId,
+    string Username,
     string FirstName,
     string LastName,
     string Email
 );
-
-public record UserIdentityProviderLink(Guid? IdentityProviderId, string ProviderId, string Username);
 
 public record UserTransferData(
     string FirstName,

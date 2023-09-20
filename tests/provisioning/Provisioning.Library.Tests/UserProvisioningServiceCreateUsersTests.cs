@@ -455,7 +455,10 @@ public class UserProvisioningServiceCreateUsersTests
         {
             yield return (indexUser == _indexSpecialUser && createInvalidUser != null)
                 ? createInvalidUser()
-                : _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles().DistinctBy(role => role.UserRoleText).ToList()).Create();
+                : _fixture.Build<UserCreationRoleDataIdpInfo>()
+                    .With(x => x.RoleDatas, PickValidRoles().DistinctBy(role => role.UserRoleText).ToList())
+                    .With(x => x.UserStatusId, UserStatusId.ACTIVE)
+                    .Create();
             indexUser++;
         }
     }

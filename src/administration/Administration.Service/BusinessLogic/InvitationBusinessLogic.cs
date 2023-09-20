@@ -117,7 +117,9 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             invitationData.email,
             roleDatas,
             string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
-            ""
+            "",
+            UserStatusId.ACTIVE,
+            true
         )}.ToAsyncEnumerable();
 
         var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);

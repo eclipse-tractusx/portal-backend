@@ -135,6 +135,7 @@ public partial class ProvisioningManager
         newUser.FirstName = profile.FirstName;
         newUser.LastName = profile.LastName;
         newUser.Email = profile.Email;
+        newUser.Enabled = profile.Enabled;
         if (attributes.Any())
         {
             newUser.Attributes = attributes.Where(a => a.Values.Any()).ToDictionary(a => a.Name, a => a.Values);

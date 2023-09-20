@@ -140,14 +140,13 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     private static IEnumerable<(CompanyNameIdpAliasData AliasData, IEnumerable<UserCreationRoleDataIdpInfo> CreationInfos)> GetUserCreationData(Guid companyId, Func<Guid?, Guid> getIdentityProviderId, Func<Guid?, string> getIdentityProviderAlias, PartnerRegistrationData data, IEnumerable<UserRoleData> roleData) =>
         data.UserDetails
-            .SelectMany(x => x.IdentityProviderLinks
                 .Select(idp => new UserTransferData(
-                    x.FirstName,
-                    x.LastName,
-                    x.Email,
+                    idp.FirstName,
+                    idp.LastName,
+                    idp.Email,
                     getIdentityProviderId(idp.IdentityProviderId),
                     idp.ProviderId,
-                    idp.Username)))
+                    idp.Username))
             .GroupBy(x => x.IdentityProviderId)
             .Select(group =>
             {
@@ -169,7 +168,9 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                         user.Email,
                         roleData,
                         user.Username,
-                        user.ProviderId
+                        user.ProviderId,
+                        UserStatusId.PENDING,
+                        false
                     )
                 );
 
@@ -247,7 +248,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private static async Task<(IDictionary<Guid, string>? IdentityProviderIdAliasData, (Guid IdentityProviderId, string Alias)? SingleIdp, IEnumerable<Guid> AllIdentityProviderIds)> ValidateIdps(PartnerRegistrationData data, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)
     {
         var identityProviderIds = data.UserDetails
-                    .SelectMany(x => x.IdentityProviderLinks)
                     .Select(x => x.IdentityProviderId);
 
         (Guid IdentityProviderId, string Alias)? singleIdpAlias;

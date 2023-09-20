@@ -172,7 +172,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
-            .With(x => x.UserDetails, new[] { new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "Test", "test", email) })
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "Test", "test", email) })
             .Create();
 
         // Act
@@ -190,7 +190,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
-            .With(x => x.UserDetails, new[] { new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), firstName, "test", "test@email.com") })
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", firstName, "test", "test@email.com") })
             .Create();
 
         // Act
@@ -208,7 +208,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
-            .With(x => x.UserDetails, new[] { new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "test", lastname, "test@email.com") })
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", lastname, "test@email.com") })
             .Create();
 
         // Act
@@ -225,7 +225,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
-            .With(x => x.UserDetails, new[] { new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "test", "test", "test@email.com") })
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.ExternalId, ExistingExternalId)
             .Create();
 
@@ -244,7 +244,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
-            .With(x => x.UserDetails, new[] { new UserDetailData(Enumerable.Empty<UserIdentityProviderLink>(), "test", "test", "test@email.com") })
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.CountryAlpha2Code, "XX")
             .Create();
 
@@ -283,7 +283,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
             .With(x => x.CountryAlpha2Code, "DE")
-            .With(x => x.UserDetails, new[] { new UserDetailData(new[] { new UserIdentityProviderLink(null, "123", "test") }, "test", "test", "test@email.com") })
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .Create();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = MultiIdpCompanyId });
 
@@ -304,7 +304,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
             .With(x => x.CountryAlpha2Code, "DE")
-            .With(x => x.UserDetails, new[] { new UserDetailData(new[] { new UserIdentityProviderLink(notExistingIdpId, "123", "test") }, "test", "test", "test@email.com") })
+            .With(x => x.UserDetails, new[] { new UserDetailData(notExistingIdpId, "123", "test", "test", "test", "test@email.com") })
             .Create();
 
         // Act
@@ -322,7 +322,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
             .With(x => x.CountryAlpha2Code, "DE")
-            .With(x => x.UserDetails, new[] { new UserDetailData(new[] { new UserIdentityProviderLink(IdpId, "123", "test") }, "test", "test", "test@email.com") })
+            .With(x => x.UserDetails, new[] { new UserDetailData(IdpId, "123", "test", "test", "test", "test@email.com") })
             .Create();
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Throws(new ControllerArgumentException($"invalid roles: clientId: 'cl1', roles: [Company Admin]"));
@@ -353,7 +353,7 @@ public class NetworkBusinessLogicTests
             "5",
             "00001",
             new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
-            new[] { new UserDetailData(new[] { new UserIdentityProviderLink(IdpId, "123", "ironman") }, "tony", "stark", "tony@stark.com") },
+            new[] { new UserDetailData(IdpId, "123", "ironman", "tony", "stark", "tony@stark.com") },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
         A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>>._))
@@ -400,7 +400,7 @@ public class NetworkBusinessLogicTests
             "5",
             "00001",
             new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
-            new[] { new UserDetailData(new[] { new UserIdentityProviderLink(IdpId, "123", "ironman") }, "tony", "stark", "tony@stark.com") },
+            new[] { new UserDetailData(IdpId, "123", "ironman", "tony", "stark", "tony@stark.com") },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))

@@ -95,6 +95,30 @@ public class NetworkRegistrationHandlerTests
     }
 
     [Fact]
+    public async Task SynchronizeUser_WithAliasNull_ThrowsConflictException()
+    {
+        // Arrange
+        var user1Id = Guid.NewGuid();
+        var user1 = new CompanyUserIdentityProviderProcessData(user1Id, "tony", "stark", "tony@stark.com", "123456789", "Test Company", "BPNL00000001TEST",
+            Enumerable.Repeat(new ProviderLinkData("ironman", null, "id1234"), 1));
+
+        A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
+            .Returns(new List<CompanyUserIdentityProviderProcessData>
+            {
+                user1,
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
+
+        // Act
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Alias must be set for all ProviderLinkData of CompanyUser {user1Id}");
+    }
+
+    [Fact]
     public async Task SynchronizeUser_WithValidData_ReturnsExpected()
     {
         // Arrange
