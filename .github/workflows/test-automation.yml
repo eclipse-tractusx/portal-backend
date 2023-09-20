@@ -58,14 +58,14 @@ jobs:
       - name: Update JSON file
         env:
           project: ${{ secrets.REPORTPORTAL_PROJECT }}
-          uuid: ${{ secrets.REPORTPORTAL_AUTHENTICATION_UUID }}
+          apiKey: ${{ secrets.REPORTPORTAL_AUTHENTICATION_UUID }}
           url: ${{ vars.REPORTPORTAL_URL }}
         run: |
           cd tests/endtoend
           jq --arg project "$project" \
-          --arg uuid "$uuid" \
+          --arg apiKey "$apiKey" \
           --arg url "$url" \
-          '.server |= ( .project = $project | .authentication.uuid = $uuid | .url = $url )' \
+          '.server |= ( .project = $project | .apiKey = $apiKey | .url = $url )' \
           ReportPortal.config.json > temp.json
           mv temp.json ReportPortal.config.json
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
