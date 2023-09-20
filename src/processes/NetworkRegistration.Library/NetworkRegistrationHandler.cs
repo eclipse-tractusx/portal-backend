@@ -73,7 +73,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             }
 
             var userId = await _provisioningManager.GetUserByUserName(cu.CompanyUserId.ToString()).ConfigureAwait(false) ??
-                         await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyName, cu.Bpn, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias, x.ProviderUserId, x.UserName)));
+                         await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyName, cu.Bpn, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)));
 
             userRepository.AttachAndModifyIdentity(cu.CompanyUserId, i =>
                 {

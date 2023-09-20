@@ -30,7 +30,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.FlurlSetup;
 using Config = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.Config;
-using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.IdentityProvider;
+using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
+using Idp = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests;
 
@@ -68,7 +69,7 @@ public class ProvisioningManagerTests
                 RedirectUris = new List<string>()
             },
             CentralRealm = CentralRealm,
-            CentralIdentityProvider = new IdentityProvider
+            CentralIdentityProvider = new Idp.IdentityProvider
             {
                 ProviderId = "keycloak-oidc",
                 FirstBrokerLoginFlowAlias = "first broker login",
@@ -144,7 +145,7 @@ public class ProvisioningManagerTests
                 JwksUri = new Uri("https://test.com/jwksUri"),
                 Issuer = new Uri("https://test.com/issuer")
             })
-            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider { Config = new Config() });
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Config = new IdentityProvider.Config() });
 
         // Act
         await _sut.SetupSharedIdpAsync(ValidClientName, OrgName, LoginTheme).ConfigureAwait(false);
@@ -177,7 +178,7 @@ public class ProvisioningManagerTests
         const string id = "123";
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider { DisplayName = "test", Config = new Config() })
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { DisplayName = "test", Config = new IdentityProvider.Config() })
             .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
@@ -201,7 +202,7 @@ public class ProvisioningManagerTests
         const string id = "123";
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider { DisplayName = "test", Config = new Config() })
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { DisplayName = "test", Config = new IdentityProvider.Config() })
             .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -473,6 +474,26 @@ public class IdentityProviderBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be("Not allowed to create an identityProvider of type MANAGED");
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_invalidCompanyId, A<IEnumerable<CompanyRoleId>>.That.IsSameSequenceAs(new[] { CompanyRoleId.OPERATOR, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER }))).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task CreateOwnCompanyIdentityProviderAsync_WithShared_ThrowsForbiddenException()
+    {
+        // Arrange
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _options,
+            _logger);
+
+        // Act
+        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.OIDC, IdentityProviderTypeId.SHARED, null).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"creation of identityProviderType {IdentityProviderTypeId.SHARED} is not supported");
+        A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_invalidCompanyId, A<IEnumerable<CompanyRoleId>>._)).MustNotHaveHappened();
     }
 
     [Theory]

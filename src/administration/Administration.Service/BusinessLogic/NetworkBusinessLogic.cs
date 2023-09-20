@@ -140,13 +140,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     private static IEnumerable<(CompanyNameIdpAliasData AliasData, IEnumerable<UserCreationRoleDataIdpInfo> CreationInfos)> GetUserCreationData(Guid companyId, Func<Guid?, Guid> getIdentityProviderId, Func<Guid?, string> getIdentityProviderAlias, PartnerRegistrationData data, IEnumerable<UserRoleData> roleData) =>
         data.UserDetails
-                .Select(idp => new UserTransferData(
-                    idp.FirstName,
-                    idp.LastName,
-                    idp.Email,
-                    getIdentityProviderId(idp.IdentityProviderId),
-                    idp.ProviderId,
-                    idp.Username))
             .GroupBy(x => x.IdentityProviderId)
             .Select(group =>
             {
@@ -157,7 +150,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                     data.Name,
                     data.Bpn,
                     idpAlias,
-                    group.Key,
+                    getIdentityProviderId(group.Key),
                     false
                 );
 

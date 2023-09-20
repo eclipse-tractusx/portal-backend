@@ -45,6 +45,7 @@ public class NetworkBusinessLogicTests
     private static readonly Guid MultiIdpCompanyId = Guid.NewGuid();
     private static readonly Guid NoIdpCompanyId = Guid.NewGuid();
     private static readonly Guid IdpId = Guid.NewGuid();
+    private static readonly Guid NoAliasIdpCompanyId = Guid.NewGuid();
 
     private readonly IFixture _fixture;
 
@@ -374,6 +375,155 @@ public class NetworkBusinessLogicTests
     }
 
     [Fact]
+    public async Task HandlePartnerRegistration_WithSingleIdpWithoutAlias_ThrowsServiceException()
+    {
+        // Arrange
+        var newCompanyId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+
+        var data = new PartnerRegistrationData(
+            Guid.NewGuid(),
+            "Test N2N",
+            Bpnl,
+            "Munich",
+            "Street",
+            "DE",
+            "BY",
+            "5",
+            "00001",
+            new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
+            new[] { new UserDetailData(null, "123", "ironman", "tony", "stark", "tony@stark.com") },
+            new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
+        );
+        A.CallTo(() => _identityService.IdentityData)
+            .Returns(_identity with { CompanyId = NoAliasIdpCompanyId });
+
+        // Act
+        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Contain($"identityProvider {IdpId} has no alias");
+    }
+
+    [Fact]
+    public async Task HandlePartnerRegistration_WithIdpNotSetAndOnlyOneIdp_CallsExpected()
+    {
+        // Arrange
+        var newCompanyId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+
+        var addresses = new List<Address>();
+        var companies = new List<Company>();
+        var companyAssignedRoles = new List<CompanyAssignedRole>();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var companyApplications = new List<CompanyApplication>();
+        var networkRegistrations = new List<NetworkRegistration>();
+
+        var data = new PartnerRegistrationData(
+            Guid.NewGuid(),
+            "Test N2N",
+            Bpnl,
+            "Munich",
+            "Street",
+            "DE",
+            "BY",
+            "5",
+            "00001",
+            new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
+            new[] { new UserDetailData(null, "123", "ironman", "tony", "stark", "tony@stark.com") },
+            new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
+        );
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .Invokes((string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
+                {
+                    var address = new Address(
+                        Guid.NewGuid(),
+                        city,
+                        streetname,
+                        countryAlpha2Code,
+                        DateTimeOffset.UtcNow
+                    );
+                    setOptionalParameters?.Invoke(address);
+                    addresses.Add(address);
+                });
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>>._))
+            .Invokes((string name, Action<Company>? setOptionalParameters) =>
+            {
+                var company = new Company(
+                    Guid.NewGuid(),
+                    name,
+                    CompanyStatusId.PENDING,
+                    DateTimeOffset.UtcNow
+                );
+                setOptionalParameters?.Invoke(company);
+                companies.Add(company);
+            })
+            .Returns(new Company(newCompanyId, null!, default, default));
+        A.CallTo(() => _companyRolesRepository.CreateCompanyAssignedRoles(newCompanyId, A<IEnumerable<CompanyRoleId>>._))
+            .Invokes((Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
+            {
+                companyAssignedRoles.AddRange(companyRoleIds.Select(x => new CompanyAssignedRole(companyId, x)));
+            });
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepData) =>
+            {
+                processSteps.AddRange(processStepData.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+            });
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(newCompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, A<Action<CompanyApplication>>._))
+            .Invokes((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
+            {
+                var companyApplication = new CompanyApplication(
+                    Guid.NewGuid(),
+                    companyId,
+                    companyApplicationStatusId,
+                    applicationTypeId,
+                    DateTimeOffset.UtcNow);
+                setOptionalFields?.Invoke(companyApplication);
+                companyApplications.Add(companyApplication);
+            })
+            .Returns(new CompanyApplication(applicationId, default, default, default, default));
+        A.CallTo(() => _networkRepository.CreateNetworkRegistration(data.ExternalId, newCompanyId, processId, _identity.CompanyId, applicationId))
+            .Invokes((Guid externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
+            {
+                networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+            .Returns(new[] { (Guid.NewGuid(), "ironman", (string?)"testpw", (Exception?)null) }.ToAsyncEnumerable());
+
+        // Act
+        await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+
+        // Assert
+        addresses.Should().ContainSingle().And.Satisfy(x => x.Region == data.Region && x.Zipcode == data.ZipCode);
+        companies.Should().ContainSingle().And.Satisfy(x => x.Name == data.Name && x.CompanyStatusId == CompanyStatusId.PENDING);
+        processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER);
+        companyApplications.Should().ContainSingle().And.Satisfy(x => x.CompanyId == newCompanyId && x.ApplicationStatusId == CompanyApplicationStatusId.CREATED);
+        companyAssignedRoles.Should().HaveCount(2).And.Satisfy(
+            x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
+            x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
+        networkRegistrations.Should().ContainSingle().And.Satisfy(x => x.ExternalId == data.ExternalId && x.ProcessId == processId);
+
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "OspWelcomeMail")))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
     public async Task HandlePartnerRegistration_WithValidData_CallsExpected()
     {
         // Arrange
@@ -514,9 +664,9 @@ public class NetworkBusinessLogicTests
 
     private void SetupRepos()
     {
-        A.CallTo(() => _networkRepository.CheckExternalIdExists(ExistingExternalId, _identity.CompanyId))
+        A.CallTo(() => _networkRepository.CheckExternalIdExists(ExistingExternalId, A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns(true);
-        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == ExistingExternalId), _identity.CompanyId))
+        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == ExistingExternalId), A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns(false);
 
         A.CallTo(() => _companyRepository.CheckBpnExists(Bpnl)).Returns(false);
@@ -527,7 +677,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(A<string>.That.Not.Matches(x => x == "XX")))
             .Returns(true);
 
-        A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(_identity.CompanyId))
+        A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns((true, "testCompany"));
         A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .Returns((false, ""));
@@ -535,13 +685,16 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(_identity.CompanyId))
             .Returns((IdpId, (string?)"test-alias"));
 
+        A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(NoAliasIdpCompanyId))
+            .Returns((IdpId, (string?)null));
+
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(NoIdpCompanyId))
             .Returns(((Guid, string?))default);
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(MultiIdpCompanyId))
             .Throws(new InvalidOperationException("Sequence contains more than one element."));
 
-        A.CallTo(() => _identityProviderRepository.GetManagedIdentityProviderAliasDataUntracked(_identity.CompanyId, A<IEnumerable<Guid>>._))
+        A.CallTo(() => _identityProviderRepository.GetManagedIdentityProviderAliasDataUntracked(A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId), A<IEnumerable<Guid>>._))
             .Returns(new[] { (IdpId, (string?)"test-alias") }.ToAsyncEnumerable());
 
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
