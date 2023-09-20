@@ -82,19 +82,23 @@ public class NetworkRegistrationProcessHelperTests
         ex.Message.Should().Be($"external registration {externalId} does not exist");
     }
 
-    [Fact]
-    public async Task TriggerProcessStep_WithValidData_CallsExpected()
+    [Theory]
+    [InlineData(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, ProcessStepTypeId.SYNCHRONIZE_USER)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED)]
+    public async Task TriggerProcessStep_WithValidData_CallsExpected(ProcessStepTypeId processStepTypeId, ProcessStepTypeId retriggeredStep)
     {
         // Arrange
         var externalId = Guid.NewGuid();
         var processId = Guid.NewGuid();
         var processSteps = new List<ProcessStep>();
 
-        var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow);
+        var processStep = new ProcessStep(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow);
         var data = new VerifyProcessData(
             new Process(processId, ProcessTypeId.PARTNER_REGISTRATION, Guid.NewGuid()),
             new[] { processStep });
-        A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == StepToRetrigger)))
+        A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == processStepTypeId)))
             .Returns((true, data));
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
@@ -113,13 +117,13 @@ public class NetworkRegistrationProcessHelperTests
                 });
 
         // Act
-        await _sut.TriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
+        await _sut.TriggerProcessStep(externalId, processStepTypeId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         processSteps.Should().ContainSingle()
             .Which.Should().Match<ProcessStep>(x =>
-                x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER &&
+                x.ProcessStepTypeId == retriggeredStep &&
                 x.ProcessStepStatusId == ProcessStepStatusId.TODO);
         processStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
     }

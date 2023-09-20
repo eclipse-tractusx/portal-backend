@@ -102,6 +102,6 @@ public class NetworkRepository : INetworkRepository
                 x.ApplicationId,
                 processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ?
                     x.Process!.ProcessSteps.Where(p => p.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION && p.ProcessStepStatusId == ProcessStepStatusId.FAILED).Select(step => step.Message) :
-                    Enumerable.Empty<string?>()))
+                    new List<string?>()))
             .SingleOrDefaultAsync();
 }

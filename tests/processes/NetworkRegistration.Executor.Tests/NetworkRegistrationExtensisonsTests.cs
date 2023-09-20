@@ -24,15 +24,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Exec
 
 public class NetworkRegistrationExtensisonsTests
 {
-    [Fact]
-    public void GetRetriggerStep_WithValid_ReturnsExpected()
+    [Theory]
+    [InlineData(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED)]
+    public void GetRetriggerStep_WithValid_ReturnsExpected(ProcessStepTypeId processStep, ProcessStepTypeId expectedStep)
     {
         // Act
-        var result = ProcessStepTypeId.SYNCHRONIZE_USER.GetRetriggerStep();
+        var result = processStep.GetRetriggerStep();
 
         // Assert
         result.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER);
+            .Which.Should().Be(expectedStep);
     }
 
     [Fact]

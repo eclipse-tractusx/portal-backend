@@ -37,7 +37,9 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
 
     private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
         ProcessStepTypeId.SYNCHRONIZE_USER,
-        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED);
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED);
 
     private Guid _networkRegistrationId;
 

@@ -197,6 +197,28 @@ public class NetworkRepositoryTests
 
     #endregion
 
+    #region GetCallbackData
+
+    [Fact]
+    public async Task GetCallbackData_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCallbackData(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd"), ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.OspDetails.Should().BeNull();
+        result.ExternalId.Should().Be(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2"));
+        result.ApplicationId.Should().Be(new Guid("7f31e08c-4420-4eac-beab-9540fbd55595"));
+        result.Comments.Should().BeEmpty();
+        result.Bpn.Should().Be("BPNL00000003AYRE");
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(NetworkRepository sut, PortalDbContext context)> CreateSutWithContext()
