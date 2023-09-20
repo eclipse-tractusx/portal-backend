@@ -77,7 +77,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, user.UserId, user.UserName);
                 var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
-                var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, Enumerable.Repeat(new IdentityProviderLink(user.UserName, alias, providerUserId), 1));
+                var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, Enumerable.Repeat(new IdentityProviderLink(alias, providerUserId, user.UserName), 1));
                 userdata = new(centralUserId, companyUserId);
                 if (identity == null)
                 {
