@@ -250,6 +250,27 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                     .SelectMany(x => x.IdentityProviderLinks)
                     .Select(x => x.IdentityProviderId);
 
+        (Guid IdentityProviderId, string Alias)? singleIdpAlias;
+
+        if (identityProviderIds.Any(id => id == null))
+        {
+            try
+            {
+                var single = await identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(ownerCompanyId).ConfigureAwait(false);
+                if (single.IdentityProviderId == Guid.Empty)
+                    throw new ConflictException($"company {ownerCompanyId} has no managed identityProvider");
+                singleIdpAlias = (single.IdentityProviderId, single.Alias ?? throw new ConflictException($"identityProvider {single.IdentityProviderId} has no alias"));
+            }
+            catch (InvalidOperationException)
+            {
+                throw new ControllerArgumentException($"Company {ownerCompanyId} has more than one identity provider linked, therefore identityProviderId must be set for all users", nameof(data.UserDetails));
+            }
+        }
+        else
+        {
+            singleIdpAlias = null;
+        }
+
         var idpAliase = identityProviderIds
                     .Where(id => id != null)
                     .Select(id => id!.Value)
@@ -268,25 +289,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                         out var idpAliasDataTask)
                 ? await idpAliasDataTask!.ConfigureAwait(false)
                 : (IDictionary<Guid, string>?)null;
-
-        (Guid IdentityProviderId, string Alias)? singleIdpAlias;
-
-        if (identityProviderIds.Any(id => id == null))
-        {
-            try
-            {
-                var single = await identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(ownerCompanyId).SingleAsync().ConfigureAwait(false);
-                singleIdpAlias = (single.IdentityProviderId, single.Alias ?? throw new ConflictException($"identityProvider {single.IdentityProviderId} has no alias"));
-            }
-            catch (InvalidOperationException)
-            {
-                throw new ControllerArgumentException($"Company {ownerCompanyId} has no or more than one identity provider linked, therefore identityProviderId must be set for all users", nameof(data.UserDetails));
-            }
-        }
-        else
-        {
-            singleIdpAlias = null;
-        }
 
         var idpIds = idpAliase?.Keys ?? Enumerable.Empty<Guid>();
         var allIdpIds = singleIdpAlias == null

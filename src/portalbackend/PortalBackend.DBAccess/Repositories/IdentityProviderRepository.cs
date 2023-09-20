@@ -147,7 +147,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             ))
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid IdentityProviderId, string? Alias)> GetSingleManagedIdentityProviderAliasDataUntracked(Guid companyId) =>
+    public Task<(Guid IdentityProviderId, string? Alias)> GetSingleManagedIdentityProviderAliasDataUntracked(Guid companyId) =>
         _context.IdentityProviders
             .AsNoTracking()
             .Where(identityProvider =>
@@ -157,8 +157,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 identityProvider.Id,
                 identityProvider.IamIdentityProvider!.IamIdpAlias
             ))
-            .Take(2)
-            .ToAsyncEnumerable();
+            .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<(Guid IdentityProviderId, string? Alias)> GetManagedIdentityProviderAliasDataUntracked(Guid companyId, IEnumerable<Guid> identityProviderIds) =>
         _context.IdentityProviders

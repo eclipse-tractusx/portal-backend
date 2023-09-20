@@ -43,6 +43,7 @@ public class NetworkBusinessLogicTests
     private static readonly Guid ExistingExternalId = Guid.NewGuid();
     private static readonly Guid UserRoleId = Guid.NewGuid();
     private static readonly Guid MultiIdpCompanyId = Guid.NewGuid();
+    private static readonly Guid NoIdpCompanyId = Guid.NewGuid();
     private static readonly Guid IdpId = Guid.NewGuid();
 
     private readonly IFixture _fixture;
@@ -257,7 +258,26 @@ public class NetworkBusinessLogicTests
     }
 
     [Fact]
-    public async Task HandlePartnerRegistration_WithNoIdpIdSetAndMultipleIdps_ThrowsControllerArgumentException()
+    public async Task HandlePartnerRegistration_WithNoIdpIdSetAndNoManagedIdps_ThrowsConflictException()
+    {
+        // Arrange
+        var data = _fixture.Build<PartnerRegistrationData>()
+            .With(x => x.Bpn, Bpnl)
+            .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.UserDetails, new[] { new UserDetailData(new[] { new UserIdentityProviderLink(null, "123", "test") }, "test", "test", "test@email.com") })
+            .Create();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = NoIdpCompanyId });
+
+        // Act
+        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"company {NoIdpCompanyId} has no managed identityProvider");
+    }
+
+    [Fact]
+    public async Task HandlePartnerRegistration_WithNoIdpIdSetAndMultipleManagedIdps_ThrowsControllerArgumentException()
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
@@ -272,7 +292,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Company {MultiIdpCompanyId} has no or more than one identity provider linked, therefore identityProviderId must be set for all users (Parameter 'UserDetails')");
+        ex.Message.Should().Be($"Company {MultiIdpCompanyId} has more than one identity provider linked, therefore identityProviderId must be set for all users (Parameter 'UserDetails')");
         ex.ParamName.Should().Be("UserDetails");
     }
 
@@ -513,10 +533,13 @@ public class NetworkBusinessLogicTests
             .Returns((false, ""));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(_identity.CompanyId))
-            .Returns(new[] { (IdpId, (string?)"test-alias") }.ToAsyncEnumerable());
+            .Returns((IdpId, (string?)"test-alias"));
+
+        A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(NoIdpCompanyId))
+            .Returns(((Guid, string?))default);
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(MultiIdpCompanyId))
-            .Returns(_fixture.CreateMany<(Guid, string?)>(2).ToAsyncEnumerable());
+            .Throws(new InvalidOperationException("Sequence contains more than one element."));
 
         A.CallTo(() => _identityProviderRepository.GetManagedIdentityProviderAliasDataUntracked(_identity.CompanyId, A<IEnumerable<Guid>>._))
             .Returns(new[] { (IdpId, (string?)"test-alias") }.ToAsyncEnumerable());

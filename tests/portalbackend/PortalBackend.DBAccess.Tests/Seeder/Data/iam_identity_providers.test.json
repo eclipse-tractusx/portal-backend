@@ -14,5 +14,9 @@
   {
     "iam_idp_alias": "Shared-Alias",
     "identity_provider_id": "38f56465-ce26-4f25-9745-1791620dc201"
+  },
+  {
+    "iam_idp_alias": "Managed-Alias",
+    "identity_provider_id": "38f56465-ce26-4f25-9745-1791620dc202"
   }
 ]
