@@ -67,7 +67,7 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
     {
         if (_networkRegistrationId == Guid.Empty)
         {
-            throw new UnexpectedConditionException("offerSubscriptionId should never be empty here");
+            throw new UnexpectedConditionException("networkRegistrationId should never be empty here");
         }
 
         IEnumerable<ProcessStepTypeId>? nextStepTypeIds;

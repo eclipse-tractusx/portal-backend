@@ -264,7 +264,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.Bpn, Bpnl)
             .With(x => x.CountryAlpha2Code, "DE")
-            .With(x => x.UserDetails, new[] { new UserDetailData(new[] { new UserIdentityProviderLink(null, "123", "test") }, "test", "test", "test@email.com") })
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .Create();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = NoIdpCompanyId });
 

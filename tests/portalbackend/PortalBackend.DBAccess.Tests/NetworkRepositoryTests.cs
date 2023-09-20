@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
@@ -127,6 +128,27 @@ public class NetworkRepositoryTests
 
         // Assert
         result.Should().Be(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd"));
+    }
+
+    #endregion
+
+    #region IsValidRegistration
+
+    [Fact]
+    public async Task IsValidRegistration_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsValidRegistration(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2"), Enumerable.Repeat(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, 1)).ConfigureAwait(false);
+
+        // Assert
+        result.RegistrationIdExists.Should().BeTrue();
+        result.processData.Process.Should().NotBeNull();
+        result.processData.Process!.Id.Should().Be(new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe07"));
+        result.processData.ProcessSteps.Should().ContainSingle().And
+            .Satisfy(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO);
     }
 
     #endregion

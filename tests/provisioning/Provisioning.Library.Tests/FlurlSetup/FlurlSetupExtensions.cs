@@ -17,12 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Flurl;
+using Flurl.Http;
 using Flurl.Http.Testing;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using System.Net;
 using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.IdentityProvider;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.FlurlSetup;
@@ -101,11 +104,41 @@ public static class FlurlSetupExtensions
         return testClient;
     }
 
+    public static HttpTest With(this HttpTest testClient, string alias, string clientId, Client client)
+    {
+        testClient.ForCallsTo($"*/admin/realms/{alias}/clients/{clientId}")
+            .WithVerb(HttpMethod.Get)
+            .RespondWithJson(client);
+        return testClient;
+    }
+
     public static HttpTest WithGetRealmAsync(this HttpTest testClient, string alias, Realm realm)
     {
         testClient.ForCallsTo($"*/admin/realms/{alias}")
             .WithVerb(HttpMethod.Get)
             .RespondWithJson(realm);
+        return testClient;
+    }
+
+    public static HttpTest WithGetUsersAsync(this HttpTest testClient, IEnumerable<User> users)
+    {
+        testClient.ForCallsTo("*/admin/realms/*/users")
+            .WithVerb(HttpMethod.Get)
+            .RespondWithJson(users);
+        return testClient;
+    }
+
+    public static HttpTest WithGetUsersFailing(this HttpTest testClient, HttpStatusCode statusCode)
+    {
+        testClient.ForCallsTo("*/admin/realms/*/users")
+            .WithVerb(HttpMethod.Get)
+            .SimulateException(new FlurlHttpException(new FlurlCall
+            {
+                HttpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "/test"),
+                Request = new FlurlRequest(new Uri("https://test.de")),
+                HttpResponseMessage = new HttpResponseMessage(statusCode) { ReasonPhrase = "test" },
+                Response = new FlurlResponse(new HttpResponseMessage(statusCode))
+            }));
         return testClient;
     }
 }
