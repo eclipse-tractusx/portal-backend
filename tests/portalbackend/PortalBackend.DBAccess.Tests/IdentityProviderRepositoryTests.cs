@@ -286,8 +286,8 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(2);
+        changedEntries.Should().NotBeEmpty()
+            .And.HaveCount(2);
         changedEntries.Select(x => x.Entity).Should().AllBeOfType<CompanyIdentityProvider>().Which.Should().Satisfy(
                 idp => idp.CompanyId == _companyId && idp.IdentityProviderId == identityProviderId,
                 idp => idp.CompanyId == _companyId && idp.IdentityProviderId == identityProviderId2

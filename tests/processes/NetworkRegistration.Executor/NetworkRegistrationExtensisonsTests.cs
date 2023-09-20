@@ -31,7 +31,8 @@ public class NetworkRegistrationExtensisonsTests
         var result = ProcessStepTypeId.SYNCHRONIZE_USER.GetRetriggerStep();
 
         // Assert
-        result.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER);
+        result.Should().ContainSingle()
+            .Which.Should().Be(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER);
     }
 
     [Fact]

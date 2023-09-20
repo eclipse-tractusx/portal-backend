@@ -370,8 +370,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetApplicationsWithStatusUntrackedAsync(new("41fd2ab8-71cd-4546-9bef-a388d91b2542")).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull().And.Satisfy(x => x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e")
-            && x.ApplicationStatus == CompanyApplicationStatusId.SUBMITTED);
+        result.Should().NotBeNull().And.Satisfy(x =>
+            x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e") &&
+            x.ApplicationStatus == CompanyApplicationStatusId.SUBMITTED);
         result.Single().ApplicationChecklist.Should().Satisfy(
             y => y.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
             y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE,
@@ -400,12 +401,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.UserName.Should().Be("testuser");
         results.ProviderId.Should().Be("123");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<CompanyUserAssignedIdentityProvider>();
-        var companyUserAssignedIdentityProvider = changedEntries.Single().Entity as CompanyUserAssignedIdentityProvider;
-        companyUserAssignedIdentityProvider!.UserName.Should().Be("testuser");
-        companyUserAssignedIdentityProvider.ProviderId.Should().Be("123");
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyUserAssignedIdentityProvider>()
+            .Which.Should().Match<CompanyUserAssignedIdentityProvider>(x =>
+                x.UserName == "testuser" &&
+                x.ProviderId == "123"
+            );
     }
 
     #endregion
@@ -422,7 +423,11 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetUserAssignedIdentityProviderForNetworkRegistration(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd")).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        results.Should().ContainSingle().And.Satisfy(x => x.ProviderLinkData.Single().UserName == "drstrange" && x.Email == "test@email.com" && x.Bpn == "BPNL00000003AYRE");
+        results.Should().ContainSingle()
+            .Which.Should().Match<CompanyUserIdentityProviderProcessData>(x =>
+                x.ProviderLinkData.Single().UserName == "drstrange" &&
+                x.Email == "test@email.com" &&
+                x.Bpn == "BPNL00000003AYRE");
     }
 
     #endregion

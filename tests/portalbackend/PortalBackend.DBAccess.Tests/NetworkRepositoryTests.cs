@@ -62,12 +62,12 @@ public class NetworkRepositoryTests
         results.CompanyId.Should().Be(_validCompanyId);
         results.ProcessId.Should().Be(processId);
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<NetworkRegistration>();
-        var networkRegistration = changedEntries.Single().Entity as NetworkRegistration;
-        networkRegistration!.CompanyId.Should().Be(_validCompanyId);
-        networkRegistration.ProcessId.Should().Be(processId);
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<NetworkRegistration>()
+            .Which.Should().Match<NetworkRegistration>(x =>
+                x.CompanyId == _validCompanyId &&
+                x.ProcessId == processId
+            );
     }
 
     #endregion
@@ -147,8 +147,8 @@ public class NetworkRepositoryTests
         result.RegistrationIdExists.Should().BeTrue();
         result.processData.Process.Should().NotBeNull();
         result.processData.Process!.Id.Should().Be(new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe07"));
-        result.processData.ProcessSteps.Should().ContainSingle().And
-            .Satisfy(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO);
+        result.processData.ProcessSteps.Should().ContainSingle()
+            .Which.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
     }
 
     #endregion

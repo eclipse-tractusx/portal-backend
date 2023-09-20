@@ -81,7 +81,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             }).Id;
 
         var processId = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION).Id;
-        processStepRepository.CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId), 1));
+        processStepRepository.CreateProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId);
 
         networkRepository.CreateNetworkRegistration(data.ExternalId, companyId, processId, ownerCompanyId, applicationId);
 
@@ -89,13 +89,13 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
         Guid GetIdpId(Guid? identityProviderId) =>
             identityProviderId == null
-                ? singleIdentityProviderIdAlias?.IdentityProviderId ?? throw new UnexpectedConditionException("singleIdp should never be null here")
+                ? singleIdentityProviderIdAlias?.IdentityProviderId ?? throw new UnexpectedConditionException("singleIdentityProviderIdAlias should never be null here")
                 : identityProviderId.Value;
 
         string GetIdpAlias(Guid? identityProviderId) =>
             identityProviderId == null
-                ? singleIdentityProviderIdAlias?.Alias ?? throw new UnexpectedConditionException("singleIdp should never be null here")
-                : identityProviderIdAliase?[identityProviderId.Value] ?? throw new UnexpectedConditionException("idpAliase should never be null here and should always contain an entry for identityProviderId");
+                ? singleIdentityProviderIdAlias?.Alias ?? throw new UnexpectedConditionException("singleIdentityProviderIdAlias should never be null here")
+                : identityProviderIdAliase?[identityProviderId.Value] ?? throw new UnexpectedConditionException("identityProviderIdAliase should never be null here and should always contain an entry for identityProviderId");
 
         async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateUsers()
         {
@@ -143,13 +143,11 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             .GroupBy(x => x.IdentityProviderId)
             .Select(group =>
             {
-                var idpAlias = getIdentityProviderAlias(group.Key);
-
                 var companyNameIdpAliasData = new CompanyNameIdpAliasData(
                     companyId,
                     data.Name,
                     data.Bpn,
-                    idpAlias,
+                    getIdentityProviderAlias(group.Key),
                     getIdentityProviderId(group.Key),
                     false
                 );

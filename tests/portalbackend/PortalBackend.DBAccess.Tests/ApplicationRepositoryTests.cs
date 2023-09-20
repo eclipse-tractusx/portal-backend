@@ -456,7 +456,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetCompanyIdSubmissionStatusForApplication(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        data.Should().Be(((bool, Guid, bool))default);
+        data.Should().Be(default);
     }
 
     #endregion
@@ -477,11 +477,10 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         application.Id.Should().NotBeEmpty();
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<CompanyApplication>().Which.OnboardingServiceProviderId.Should().Be(CompanyId);
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyApplication>()
+            .Which.OnboardingServiceProviderId.Should().Be(CompanyId);
     }
 
     #endregion

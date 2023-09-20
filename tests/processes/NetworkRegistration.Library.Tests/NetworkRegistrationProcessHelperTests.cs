@@ -18,14 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.Tests;
 
@@ -74,7 +72,7 @@ public class NetworkRegistrationProcessHelperTests
         // Arrange
         var externalId = Guid.NewGuid();
         A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == StepToRetrigger)))
-            .Returns(new ValueTuple<bool, VerifyProcessData>(false, _fixture.Create<VerifyProcessData>()));
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
 
         // Act
         async Task Act() => await _sut.TriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
@@ -95,9 +93,9 @@ public class NetworkRegistrationProcessHelperTests
         var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow);
         var data = new VerifyProcessData(
             new Process(processId, ProcessTypeId.PARTNER_REGISTRATION, Guid.NewGuid()),
-            Enumerable.Repeat(processStep, 1));
+            new[] { processStep });
         A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == StepToRetrigger)))
-            .Returns(new ValueTuple<bool, VerifyProcessData>(true, data));
+            .Returns((true, data));
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
                 {
@@ -119,7 +117,10 @@ public class NetworkRegistrationProcessHelperTests
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
+        processSteps.Should().ContainSingle()
+            .Which.Should().Match<ProcessStep>(x =>
+                x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER &&
+                x.ProcessStepStatusId == ProcessStepStatusId.TODO);
         processStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
     }
 }

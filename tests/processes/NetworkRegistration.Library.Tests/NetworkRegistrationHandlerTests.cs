@@ -79,7 +79,7 @@ public class NetworkRegistrationHandlerTests
             Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
 
         A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
-            .Returns(new List<CompanyUserIdentityProviderProcessData>
+            .Returns(new[]
             {
                 user1,
             }.ToAsyncEnumerable());
@@ -103,7 +103,7 @@ public class NetworkRegistrationHandlerTests
             Enumerable.Repeat(new ProviderLinkData("ironman", null, "id1234"), 1));
 
         A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
-            .Returns(new List<CompanyUserIdentityProviderProcessData>
+            .Returns(new[]
             {
                 user1,
             }.ToAsyncEnumerable());
@@ -132,7 +132,7 @@ public class NetworkRegistrationHandlerTests
             Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "id9876"), 1));
 
         A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
-            .Returns(new List<CompanyUserIdentityProviderProcessData>
+            .Returns(new[]
             {
                 user1,
                 user2

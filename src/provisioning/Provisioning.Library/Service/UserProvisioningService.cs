@@ -289,7 +289,7 @@ public class UserProvisioningService : IUserProvisioningService
         return existingCompanyUserId;
     }
 
-    public async Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleData> roleDatas, (string UserEntityId, Guid CompanyUserId) userdata)
+    private async Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleData> roleDatas, (string UserEntityId, Guid CompanyUserId) userdata)
     {
         if (roleDatas.Any())
         {

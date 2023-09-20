@@ -411,8 +411,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var newCompanyId = Guid.NewGuid();
-        var processId = Guid.NewGuid();
-        var applicationId = Guid.NewGuid();
+        var newProcessId = Guid.NewGuid();
+        var newApplicationId = Guid.NewGuid();
 
         var addresses = new List<Address>();
         var companies = new List<Company>();
@@ -450,49 +450,49 @@ public class NetworkBusinessLogicTests
                     addresses.Add(address);
                 });
         A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>>._))
-            .Invokes((string name, Action<Company>? setOptionalParameters) =>
+            .ReturnsLazily((string name, Action<Company>? setOptionalParameters) =>
             {
                 var company = new Company(
-                    Guid.NewGuid(),
+                    newCompanyId,
                     name,
                     CompanyStatusId.PENDING,
                     DateTimeOffset.UtcNow
                 );
                 setOptionalParameters?.Invoke(company);
                 companies.Add(company);
-            })
-            .Returns(new Company(newCompanyId, null!, default, default));
+                return company;
+            });
         A.CallTo(() => _companyRolesRepository.CreateCompanyAssignedRoles(newCompanyId, A<IEnumerable<CompanyRoleId>>._))
             .Invokes((Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
             {
                 companyAssignedRoles.AddRange(companyRoleIds.Select(x => new CompanyAssignedRole(companyId, x)));
             });
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION))
-            .Invokes((ProcessTypeId processTypeId) =>
+            .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
-                processes.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid()));
-            })
-            .Returns(new Process(processId, default, default));
-
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
-            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepData) =>
-            {
-                processSteps.AddRange(processStepData.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+                var process = new Process(newProcessId, processTypeId, Guid.NewGuid());
+                processes.Add(process);
+                return process;
             });
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(newCompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, A<Action<CompanyApplication>>._))
-            .Invokes((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._, A<Action<CompanyApplication>>._))
+            .ReturnsLazily((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
             {
                 var companyApplication = new CompanyApplication(
-                    Guid.NewGuid(),
+                    newApplicationId,
                     companyId,
                     companyApplicationStatusId,
                     applicationTypeId,
                     DateTimeOffset.UtcNow);
                 setOptionalFields?.Invoke(companyApplication);
                 companyApplications.Add(companyApplication);
-            })
-            .Returns(new CompanyApplication(applicationId, default, default, default, default));
-        A.CallTo(() => _networkRepository.CreateNetworkRegistration(data.ExternalId, newCompanyId, processId, _identity.CompanyId, applicationId))
+                return companyApplication;
+            });
+        A.CallTo(() => _networkRepository.CreateNetworkRegistration(A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._))
             .Invokes((Guid externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
             {
                 networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
@@ -504,15 +504,33 @@ public class NetworkBusinessLogicTests
         await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
 
         // Assert
-        addresses.Should().ContainSingle().And.Satisfy(x => x.Region == data.Region && x.Zipcode == data.ZipCode);
-        companies.Should().ContainSingle().And.Satisfy(x => x.Name == data.Name && x.CompanyStatusId == CompanyStatusId.PENDING);
-        processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
-        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER);
-        companyApplications.Should().ContainSingle().And.Satisfy(x => x.CompanyId == newCompanyId && x.ApplicationStatusId == CompanyApplicationStatusId.CREATED);
+        addresses.Should().ContainSingle()
+            .Which.Should().Match<Address>(x =>
+                x.Region == data.Region &&
+                x.Zipcode == data.ZipCode);
+        companies.Should().ContainSingle()
+            .Which.Should().Match<Company>(x =>
+                x.Name == data.Name &&
+                x.CompanyStatusId == CompanyStatusId.PENDING);
+        processes.Should().ContainSingle()
+            .Which.Should().Match<Process>(
+                x => x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
+        processSteps.Should().ContainSingle()
+            .Which.Should().Match<ProcessStep>(x =>
+                x.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER);
+        companyApplications.Should().ContainSingle()
+            .Which.Should().Match<CompanyApplication>(x =>
+                x.CompanyId == newCompanyId &&
+                x.ApplicationStatusId == CompanyApplicationStatusId.CREATED);
         companyAssignedRoles.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
             x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
-        networkRegistrations.Should().ContainSingle().And.Satisfy(x => x.ExternalId == data.ExternalId && x.ProcessId == processId);
+        networkRegistrations.Should().ContainSingle()
+            .Which.Should().Match<NetworkRegistration>(x =>
+                x.ExternalId == data.ExternalId &&
+                x.ProcessId == newProcessId &&
+                x.ApplicationId == newApplicationId);
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
@@ -528,8 +546,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var newCompanyId = Guid.NewGuid();
-        var processId = Guid.NewGuid();
-        var applicationId = Guid.NewGuid();
+        var newProcessId = Guid.NewGuid();
+        var newApplicationId = Guid.NewGuid();
 
         var addresses = new List<Address>();
         var companies = new List<Company>();
@@ -567,49 +585,49 @@ public class NetworkBusinessLogicTests
                     addresses.Add(address);
                 });
         A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>>._))
-            .Invokes((string name, Action<Company>? setOptionalParameters) =>
+            .ReturnsLazily((string name, Action<Company>? setOptionalParameters) =>
             {
                 var company = new Company(
-                    Guid.NewGuid(),
+                    newCompanyId,
                     name,
                     CompanyStatusId.PENDING,
                     DateTimeOffset.UtcNow
                 );
                 setOptionalParameters?.Invoke(company);
                 companies.Add(company);
-            })
-            .Returns(new Company(newCompanyId, null!, default, default));
-        A.CallTo(() => _companyRolesRepository.CreateCompanyAssignedRoles(newCompanyId, A<IEnumerable<CompanyRoleId>>._))
+                return company;
+            });
+        A.CallTo(() => _companyRolesRepository.CreateCompanyAssignedRoles(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
             .Invokes((Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
             {
                 companyAssignedRoles.AddRange(companyRoleIds.Select(x => new CompanyAssignedRole(companyId, x)));
             });
-        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION))
-            .Invokes((ProcessTypeId processTypeId) =>
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
-                processes.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid()));
-            })
-            .Returns(new Process(processId, default, default));
-
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
-            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepData) =>
-            {
-                processSteps.AddRange(processStepData.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+                var process = new Process(newProcessId, processTypeId, Guid.NewGuid());
+                processes.Add(process);
+                return process;
             });
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(newCompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, A<Action<CompanyApplication>>._))
-            .Invokes((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._, A<Action<CompanyApplication>>._))
+            .ReturnsLazily((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
             {
                 var companyApplication = new CompanyApplication(
-                    Guid.NewGuid(),
+                    newApplicationId,
                     companyId,
                     companyApplicationStatusId,
                     applicationTypeId,
                     DateTimeOffset.UtcNow);
                 setOptionalFields?.Invoke(companyApplication);
                 companyApplications.Add(companyApplication);
-            })
-            .Returns(new CompanyApplication(applicationId, default, default, default, default));
-        A.CallTo(() => _networkRepository.CreateNetworkRegistration(data.ExternalId, newCompanyId, processId, _identity.CompanyId, applicationId))
+                return companyApplication;
+            });
+        A.CallTo(() => _networkRepository.CreateNetworkRegistration(A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._))
             .Invokes((Guid externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
             {
                 networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
@@ -621,15 +639,33 @@ public class NetworkBusinessLogicTests
         await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
 
         // Assert
-        addresses.Should().ContainSingle().And.Satisfy(x => x.Region == data.Region && x.Zipcode == data.ZipCode);
-        companies.Should().ContainSingle().And.Satisfy(x => x.Name == data.Name && x.CompanyStatusId == CompanyStatusId.PENDING);
-        processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
-        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER);
-        companyApplications.Should().ContainSingle().And.Satisfy(x => x.CompanyId == newCompanyId && x.ApplicationStatusId == CompanyApplicationStatusId.CREATED);
+        addresses.Should().ContainSingle()
+            .Which.Should().Match<Address>(x =>
+                x.Region == data.Region &&
+                x.Zipcode == data.ZipCode);
+        companies.Should().ContainSingle()
+            .Which.Should().Match<Company>(x =>
+                x.Name == data.Name &&
+                x.CompanyStatusId == CompanyStatusId.PENDING);
+        processes.Should().ContainSingle()
+            .Which.Should().Match<Process>(x =>
+                x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
+        processSteps.Should().ContainSingle()
+            .Which.Should().Match<ProcessStep>(x =>
+                x.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER);
+        companyApplications.Should().ContainSingle()
+            .Which.Should().Match<CompanyApplication>(x =>
+                x.CompanyId == newCompanyId &&
+                x.ApplicationStatusId == CompanyApplicationStatusId.CREATED);
         companyAssignedRoles.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
             x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
-        networkRegistrations.Should().ContainSingle().And.Satisfy(x => x.ExternalId == data.ExternalId && x.ProcessId == processId);
+        networkRegistrations.Should().ContainSingle()
+            .Which.Should().Match<NetworkRegistration>(x =>
+                x.ExternalId == data.ExternalId &&
+                x.ProcessId == newProcessId &&
+                x.ApplicationId == newApplicationId);
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();

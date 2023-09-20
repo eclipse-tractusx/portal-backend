@@ -67,17 +67,17 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         results.CompanyId.Should().Be(_validCompanyId);
         results.AutoSetupUrl.Should().Be(url);
         results.AutoSetupCallbackUrl.Should().Be("https://test.de");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>();
-        var providerCompanyDetail = changedEntries.Single().Entity as ProviderCompanyDetail;
-        providerCompanyDetail!.AutoSetupUrl.Should().Be(url);
-        providerCompanyDetail.AutoSetupCallbackUrl.Should().Be("https://test.de");
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<ProviderCompanyDetail>()
+            .Which.Should().Match<ProviderCompanyDetail>(x =>
+                x.AutoSetupUrl == url &&
+                x.AutoSetupCallbackUrl == "https://test.de"
+            );
     }
 
     #endregion
@@ -98,16 +98,16 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         results.Name.Should().Be("Test Company");
         results.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<Company>();
-        var company = changedEntries.Single().Entity as Company;
-        company!.Name.Should().Be("Test Company");
-        company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Company>()
+            .Which.Should().Match<Company>(x =>
+                x.Name == "Test Company" &&
+                x.CompanyStatusId == CompanyStatusId.ACTIVE
+            );
     }
 
     #endregion
@@ -128,16 +128,16 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         results.Streetnumber.Should().Be("5");
         results.City.Should().Be("Munich");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<Address>();
-        var address = changedEntries.Single().Entity as Address;
-        address!.City.Should().Be("Munich");
-        address.Streetnumber.Should().Be("5");
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Address>()
+            .Which.Should().Match<Address>(x =>
+                x.City == "Munich" &&
+                x.Streetnumber == "5"
+            );
     }
 
     #endregion
