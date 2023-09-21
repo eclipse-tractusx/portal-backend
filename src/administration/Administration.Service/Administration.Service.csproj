@@ -80,8 +80,4 @@
     </SonarQubeSetting>
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="BusinessLogic\CompanyRoleAgreementHelper.cs" />
-  </ItemGroup>
-
 </Project>

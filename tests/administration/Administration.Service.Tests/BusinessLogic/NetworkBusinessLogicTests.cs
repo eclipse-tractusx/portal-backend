@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -805,8 +804,8 @@ public class NetworkBusinessLogicTests
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("All Agreements for the company roles must be agreed to");
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"All Agreements for the company roles must be agreed to, missing agreementIds: {notExistingAgreementId} (Parameter 'Agreements')");
     }
 
     [Fact]
@@ -834,8 +833,8 @@ public class NetworkBusinessLogicTests
         async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("All agreements must be agreed to");
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"All agreements must be agreed to. Agreements that are not active: {inactiveAgreementId} (Parameter 'Agreements')");
     }
 
     [Fact]
@@ -901,16 +900,31 @@ public class NetworkBusinessLogicTests
                 {
                     processSteps.AddRange(steps.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
                 });
-
+        var consents = new List<Consent>();
+        var now = DateTimeOffset.UtcNow;
+        A.CallTo(() => _consentRepository.CreateConsents(A<IEnumerable<(Guid, Guid, Guid, ConsentStatusId)>>._))
+            .Invokes((IEnumerable<(Guid AgreementId, Guid CompanyId, Guid CompanyUserId, ConsentStatusId ConsentStatusId)> agreementConsents) =>
+            {
+                foreach (var x in agreementConsents)
+                {
+                    consents.Add(new Consent(Guid.NewGuid(), x.AgreementId, x.CompanyId, x.CompanyUserId, x.ConsentStatusId, now));
+                }
+            });
         // Act
         await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
-        A.CallTo(() => _consentRepository.CreateConsent(agreementId, _identity.CompanyId, _identity.UserId, ConsentStatusId.ACTIVE, A<Action<Consent>?>._))
+        A.CallTo(() => _consentRepository.CreateConsents(A<IEnumerable<(Guid, Guid, Guid, ConsentStatusId)>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _consentRepository.CreateConsent(agreementId1, _identity.CompanyId, _identity.UserId, ConsentStatusId.ACTIVE, A<Action<Consent>?>._))
-            .MustHaveHappenedOnceExactly();
+        consents.Should().HaveCount(2)
+            .And.AllSatisfy(x => x.Should().Match<Consent>(x =>
+                x.CompanyId == _identity.CompanyId &&
+                x.CompanyUserId == _identity.UserId &&
+                x.ConsentStatusId == ConsentStatusId.ACTIVE))
+            .And.Satisfy(
+                x => x.AgreementId == agreementId,
+                x => x.AgreementId == agreementId1);
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
         processSteps.Should().ContainSingle().And.Satisfy(x =>

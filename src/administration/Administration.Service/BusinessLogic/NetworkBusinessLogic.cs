@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -339,44 +340,32 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
 
         var companyApplication = data.CompanyApplications.Single();
-        if (companyApplication.StatusId != CompanyApplicationStatusId.CREATED)
+        if (companyApplication.CompanyApplicationStatusId != CompanyApplicationStatusId.CREATED)
         {
-            throw new ConflictException($"Application {companyApplication.Id} is not in state CREATED");
+            throw new ConflictException($"Application {companyApplication.CompanyApplicationId} is not in state CREATED");
         }
 
-        if (submitData.Agreements.Any(x => x.ConsentStatusId != ConsentStatusId.ACTIVE))
-        {
-            throw new ConflictException("All agreements must be agreed to");
-        }
+        submitData.Agreements.Where(x => x.ConsentStatusId != ConsentStatusId.ACTIVE).IfAny(inactive =>
+            throw new ControllerArgumentException($"All agreements must be agreed to. Agreements that are not active: {string.Join(",", inactive.Select(x => x.AgreementId))}", nameof(submitData.Agreements)));
 
-        var missingRoles = data.CompanyRoleIds
-            .Where(companyRole =>
-                submitData.CompanyRoles.Any(role => role != companyRole.CompanyRoleId));
-        if (missingRoles.Any())
-        {
-            throw new ControllerArgumentException($"CompanyRoles {string.Join(",", missingRoles)} are missing");
-        }
+        data.CompanyRoleAgreementIds
+            .ExceptBy(submitData.CompanyRoles, x => x.CompanyRoleId)
+            .IfAny(missing =>
+                throw new ControllerArgumentException($"CompanyRoles {string.Join(",", missing.Select(x => x.CompanyRoleId))} are missing", nameof(submitData.CompanyRoles)));
 
-        var allAgreementsActive = data.CompanyRoleIds.SelectMany(x => x.AgreementIds)
-                .Distinct()
-                .Select(agreementId => submitData.Agreements.Any(agreement =>
-                        agreement.AgreementId == agreementId &&
-                        agreement.ConsentStatusId == ConsentStatusId.ACTIVE))
-                .All(x => x);
-        if (!allAgreementsActive)
-        {
-            throw new ConflictException("All Agreements for the company roles must be agreed to");
-        }
+        var requiredAgreementIds = data.CompanyRoleAgreementIds
+            .SelectMany(x => x.AgreementIds)
+            .Distinct().ToImmutableList();
 
-        foreach (var (agreementId, consentStatus) in submitData.Agreements
-                     .DistinctBy(a => a.AgreementId).Select(x => (x.AgreementId, x.ConsentStatusId)))
-        {
-            _portalRepositories.GetInstance<IConsentRepository>()
-                .CreateConsent(agreementId, companyId, userId, consentStatus);
-        }
+        requiredAgreementIds.Except(submitData.Agreements.Where(x => x.ConsentStatusId == ConsentStatusId.ACTIVE).Select(x => x.AgreementId))
+            .IfAny(missing =>
+                throw new ControllerArgumentException($"All Agreements for the company roles must be agreed to, missing agreementIds: {string.Join(",", missing)}", nameof(submitData.Agreements)));
+
+        _portalRepositories.GetInstance<IConsentRepository>()
+            .CreateConsents(requiredAgreementIds.Select(agreementId => (agreementId, companyId, userId, ConsentStatusId.ACTIVE)));
 
         var processId = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
-        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.Id,
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.CompanyApplicationId,
             ca =>
             {
                 ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;

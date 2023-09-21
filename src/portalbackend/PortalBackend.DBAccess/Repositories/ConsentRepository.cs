@@ -42,11 +42,18 @@ public class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc/>
-    public Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields = null)
+    public Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields)
     {
         var consent = new Consent(Guid.NewGuid(), agreementId, companyId, companyUserId, consentStatusId, DateTimeOffset.UtcNow);
         setupOptionalFields?.Invoke(consent);
         return _portalDbContext.Consents.Add(consent).Entity;
+    }
+
+    public void CreateConsents(IEnumerable<(Guid AgreementId, Guid CompanyId, Guid CompanyUserId, ConsentStatusId ConsentStatusId)> consentStatusIds)
+    {
+        var now = DateTimeOffset.UtcNow;
+        _portalDbContext.Consents.AddRange(
+            consentStatusIds.Select(x => new Consent(Guid.NewGuid(), x.AgreementId, x.CompanyId, x.CompanyUserId, x.ConsentStatusId, now)));
     }
 
     /// <inheritdoc />

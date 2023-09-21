@@ -66,8 +66,9 @@ public class NetworkRepository : INetworkRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, IEnumerable<(Guid Id, CompanyApplicationStatusId StatusId, string? CallbackUrl)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleIds, Guid? ProcessId)> GetSubmitData(Guid companyId, Guid userId, IEnumerable<Guid> roleIds) =>
+    public Task<(bool Exists, IEnumerable<(Guid CompanyApplicationId, CompanyApplicationStatusId CompanyApplicationStatusId, string? CallbackUrl)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleAgreementIds, Guid? ProcessId)> GetSubmitData(Guid companyId, Guid userId, IEnumerable<Guid> roleIds) =>
         _context.Companies
+            .AsSplitQuery()
             .Where(x => x.Id == companyId)
             .Select(x => new ValueTuple<bool, IEnumerable<(Guid, CompanyApplicationStatusId, string?)>, bool, IEnumerable<(CompanyRoleId, IEnumerable<Guid>)>, Guid?>(
                 true,
