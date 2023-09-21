@@ -792,8 +792,8 @@ public class NetworkBusinessLogicTests
         var agreementId = Guid.NewGuid();
         var notExistingAgreementId = Guid.NewGuid();
         var data = new PartnerSubmitData(
-            new[] {CompanyRoleId.APP_PROVIDER},
-            new[] {new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE)});
+            new[] { CompanyRoleId.APP_PROVIDER },
+            new[] { new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE) });
         var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, notExistingAgreementId})
@@ -817,7 +817,7 @@ public class NetworkBusinessLogicTests
         var agreementId = Guid.NewGuid();
         var inactiveAgreementId = Guid.NewGuid();
         var data = new PartnerSubmitData(
-            new[] {CompanyRoleId.APP_PROVIDER},
+            new[] { CompanyRoleId.APP_PROVIDER },
             new[]
             {
                 new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
@@ -846,7 +846,7 @@ public class NetworkBusinessLogicTests
         var agreementId = Guid.NewGuid();
         var agreementId1 = Guid.NewGuid();
         var data = new PartnerSubmitData(
-            new[] {CompanyRoleId.APP_PROVIDER},
+            new[] { CompanyRoleId.APP_PROVIDER },
             new[]
             {
                 new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
@@ -875,9 +875,9 @@ public class NetworkBusinessLogicTests
         var agreementId1 = Guid.NewGuid();
         var processSteps = new List<ProcessStep>();
         var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
-        
+
         var data = new PartnerSubmitData(
-            new[] {CompanyRoleId.APP_PROVIDER},
+            new[] { CompanyRoleId.APP_PROVIDER },
             new[]
             {
                 new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
