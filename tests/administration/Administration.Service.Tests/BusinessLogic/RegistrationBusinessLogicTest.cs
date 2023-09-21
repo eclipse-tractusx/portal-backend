@@ -473,7 +473,7 @@ public class RegistrationBusinessLogicTest
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.VERIFY_REGISTRATION)))
             .MustHaveHappenedOnceExactly();
-        processSteps.Should().ContainSingle().And.Satisfy(x =>
+        processSteps.Should().ContainSingle().Which.Should().Match<ProcessStep>(x =>
             x.ProcessStepStatusId == ProcessStepStatusId.TODO &&
             x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED);
     }
@@ -599,7 +599,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context,
                 A<Action<ApplicationChecklistEntry>>._,
                 A<Action<ApplicationChecklistEntry>>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == nextStepId)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { nextStepId })))
             .MustHaveHappenedOnceExactly();
         checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(statusId);
         checklistEntry.Comment.Should().BeNull();

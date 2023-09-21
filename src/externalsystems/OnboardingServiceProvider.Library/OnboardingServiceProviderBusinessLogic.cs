@@ -62,7 +62,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
             throw new UnexpectedConditionException("Bpn must be set");
         }
 
-        if (data.Comments.Count() != 1 && processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED)
+        if (processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED && data.Comments.Count() != 1)
         {
             throw new UnexpectedConditionException("Message for decline should be set");
         }
@@ -87,26 +87,21 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
                 throw new ArgumentException($"{processStepTypeId} is not supported");
         }
 
-        var toDecodeArray = data.OspDetails.ClientSecret;
         using var aes = Aes.Create();
         aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
         aes.Mode = CipherMode.ECB;
         aes.Padding = PaddingMode.PKCS7;
         var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-        using (var msDecrypt = new MemoryStream(toDecodeArray))
+        using (var msDecrypt = new MemoryStream(data.OspDetails.ClientSecret))
         {
-            using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-            {
-                using (var srDecrypt = new StreamReader(csDecrypt))
-                {
-                    var secret = srDecrypt.ReadToEnd();
-                    await _onboardingServiceProviderService.TriggerProviderCallback(
-                            new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
-                            new OnboardingServiceProviderCallbackData(data.ExternalId.Value, data.ApplicationId, data.Bpn, applicationStatusId, comment),
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                }
-            }
+            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
+            using var srDecrypt = new StreamReader(csDecrypt, Encoding.UTF8);
+            var secret = srDecrypt.ReadToEnd();
+            await _onboardingServiceProviderService.TriggerProviderCallback(
+                    new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
+                    new OnboardingServiceProviderCallbackData(data.ExternalId.Value, data.ApplicationId, data.Bpn, applicationStatusId, comment),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return (Enumerable.Empty<ProcessStepTypeId>(), ProcessStepStatusId.DONE, false, null);

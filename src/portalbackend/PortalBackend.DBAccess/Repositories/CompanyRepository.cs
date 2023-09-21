@@ -324,9 +324,9 @@ public class CompanyRepository : ICompanyRepository
     public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId) =>
         _context.Companies.Where(c => c.Id == companyId)
             .Select(c => new OnboardingServiceProviderCallbackResponseData(
-                c.OnboardingServiceProviderDetail!.CallbackUrl,
-                c.OnboardingServiceProviderDetail!.AuthUrl,
-                c.OnboardingServiceProviderDetail!.ClientId
+                    c.OnboardingServiceProviderDetail!.CallbackUrl,
+                    c.OnboardingServiceProviderDetail.AuthUrl,
+                    c.OnboardingServiceProviderDetail.ClientId
                 ))
             .SingleAsync();
 
@@ -336,7 +336,8 @@ public class CompanyRepository : ICompanyRepository
                 c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == companyRoleId),
                 c.OnboardingServiceProviderDetail == null ?
                     null :
-                    new OspDetails(c.OnboardingServiceProviderDetail!.CallbackUrl,
+                    new OspDetails(
+                        c.OnboardingServiceProviderDetail!.CallbackUrl,
                         c.OnboardingServiceProviderDetail.AuthUrl,
                         c.OnboardingServiceProviderDetail.ClientId,
                         c.OnboardingServiceProviderDetail.ClientSecret)

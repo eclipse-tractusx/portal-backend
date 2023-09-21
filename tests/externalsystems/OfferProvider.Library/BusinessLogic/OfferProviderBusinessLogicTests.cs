@@ -347,7 +347,7 @@ public class OfferProviderBusinessLogicTests
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(new[] { userRoleId }.ToAsyncEnumerable());
 
-        A.CallTo(() => _userRepository.GetServiceProviderCompanyUserWithRoleIdAsync(_offerId, A<List<Guid>>.That.Matches(x => x.Count() == 1 && x.Single() == userRoleId)))
+        A.CallTo(() => _userRepository.GetServiceProviderCompanyUserWithRoleIdAsync(_offerId, A<List<Guid>>.That.IsSameSequenceAs(new[] { userRoleId })))
             .Returns(new[] { _receiverId }.ToAsyncEnumerable());
     }
 

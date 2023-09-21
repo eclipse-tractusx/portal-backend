@@ -71,7 +71,7 @@ public class NetworkRegistrationProcessHelperTests
     {
         // Arrange
         var externalId = Guid.NewGuid();
-        A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == StepToRetrigger)))
+        A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { StepToRetrigger })))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
 
         // Act
@@ -98,7 +98,7 @@ public class NetworkRegistrationProcessHelperTests
         var data = new VerifyProcessData(
             new Process(processId, ProcessTypeId.PARTNER_REGISTRATION, Guid.NewGuid()),
             new[] { processStep });
-        A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == processStepTypeId)))
+        A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { processStepTypeId })))
             .Returns((true, data));
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>

@@ -91,9 +91,9 @@ public class NetworkRepository : INetworkRepository
         _context.NetworkRegistrations
             .Where(x => x.Id == networkRegistrationId)
             .Select(x => new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string>>(
-                x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null ?
-                    null :
-                    new OspDetails(
+                x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null
+                    ? null
+                    : new OspDetails(
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.CallbackUrl,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.AuthUrl,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientId,
@@ -101,13 +101,13 @@ public class NetworkRepository : INetworkRepository
                 x.ExternalId,
                 x.OnboardingServiceProvider.BusinessPartnerNumber,
                 x.ApplicationId,
-                processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ?
-                    x.Process!.ProcessSteps
+                processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED
+                    ? x.Process!.ProcessSteps
                         .Where(p =>
                             p.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION &&
                             p.ProcessStepStatusId == ProcessStepStatusId.FAILED &&
                             p.Message != null)
-                        .Select(step => step.Message!) :
-                    new List<string>()))
+                        .Select(step => step.Message!)
+                    : new List<string>()))
             .SingleOrDefaultAsync();
 }

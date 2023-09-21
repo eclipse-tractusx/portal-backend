@@ -541,7 +541,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "OspWelcomeMail")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "OspWelcomeMail" })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -676,7 +676,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "OspWelcomeMail")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "OspWelcomeMail" })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -927,7 +927,7 @@ public class NetworkBusinessLogicTests
                 x => x.AgreementId == agreementId1);
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
-        processSteps.Should().ContainSingle().And.Satisfy(x =>
+        processSteps.Should().ContainSingle().Which.Should().Match<ProcessStep>(x =>
             x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED &&
             x.ProcessStepStatusId == ProcessStepStatusId.TODO);
     }

@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Tests;
 
@@ -65,7 +66,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>());
+            .Returns(((OspDetails?, Guid?, string?, Guid, IEnumerable<string>))default);
 
         // Act
         var result = await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None).ConfigureAwait(false);
@@ -82,10 +83,10 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
-        var secret = "g/nTrpQDtBIqwo/KhPqwrMFsFbgjTTC1oCowwj+OQ9M="u8.ToArray();
+        var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, null, null, Guid.NewGuid(), Enumerable.Empty<string>()));
+            .Returns((details, null, null, Guid.NewGuid(), Enumerable.Empty<string>()));
 
         // Act
         async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None).ConfigureAwait(false);
@@ -100,10 +101,10 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
-        var secret = Convert.FromBase64String("9qCKYG0aXOWKl9PXcRhrSw==");
+        var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, Guid.NewGuid(), null, Guid.NewGuid(), Enumerable.Empty<string>()));
+            .Returns((details, Guid.NewGuid(), null, Guid.NewGuid(), Enumerable.Empty<string>()));
 
         // Act
         async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None).ConfigureAwait(false);
@@ -118,11 +119,11 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
-        var secret = Convert.FromBase64String("9qCKYG0aXOWKl9PXcRhrSw==");
+        var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         const string Bpn = "BPNL00000001TEST";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED))
-            .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, Guid.NewGuid(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2)));
+            .Returns((details, Guid.NewGuid(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2)));
 
         // Act
         async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, CancellationToken.None).ConfigureAwait(false);
@@ -137,11 +138,11 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
-        var secret = Convert.FromBase64String("9qCKYG0aXOWKl9PXcRhrSw==");
+        var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         const string Bpn = "BPNL00000001TEST";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP))
-            .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, Guid.NewGuid(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
+            .Returns((details, Guid.NewGuid(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
 
         // Act
         async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP, CancellationToken.None).ConfigureAwait(false);
@@ -165,7 +166,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         var networkRegistrationId = Guid.NewGuid();
         var details = new OspDetails(CallbackUrl, "https://auth.url", "test1", Convert.FromBase64String("9qCKYG0aXOWKl9PXcRhrSw=="));
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, processStepTypeId))
-            .Returns(new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(details, externalId, Bpn, applicationId, processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? Enumerable.Repeat("this is a test", 1) : Enumerable.Empty<string>()));
+            .Returns((details, externalId, Bpn, applicationId, processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? Enumerable.Repeat("this is a test", 1) : Enumerable.Empty<string>()));
 
         // Act
         var result = await _sut.TriggerProviderCallback(networkRegistrationId, processStepTypeId, CancellationToken.None).ConfigureAwait(false);

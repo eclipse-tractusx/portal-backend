@@ -60,7 +60,6 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
             throw new ForbiddenException($"Only {CompanyRoleId.ONBOARDING_SERVICE_PROVIDER} are allowed to set the callback url");
         }
 
-        var toEncryptedArray = Encoding.UTF8.GetBytes(requestData.ClientSecret);
         using var aes = Aes.Create();
         aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
         aes.Mode = CipherMode.ECB;
@@ -70,10 +69,8 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
         {
             using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
             {
-                using (var sw = new StreamWriter(cryptoStream))
-                {
-                    sw.Write(toEncryptedArray);
-                }
+                using var sw = new StreamWriter(cryptoStream, Encoding.UTF8);
+                sw.Write(requestData.ClientSecret);
             }
             var secret = memoryStream.ToArray();
             if (ospDetails != null)
