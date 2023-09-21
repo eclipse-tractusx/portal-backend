@@ -168,10 +168,10 @@ public class NetworkRepositoryTests
         result.Should().NotBe(default);
         result.Exists.Should().Be(true);
         result.IsUserInRole.Should().Be(false);
-        result.CompanyRoleIds.Should().HaveCount(2).And.Satisfy(
+        result.CompanyRoleAgreementIds.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
             x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
-        result.CompanyApplications.Should().HaveCount(1).And.Satisfy(x => x.StatusId == CompanyApplicationStatusId.CREATED);
+        result.CompanyApplications.Should().HaveCount(1).And.Satisfy(x => x.CompanyApplicationStatusId == CompanyApplicationStatusId.CREATED);
         result.ProcessId.Should().BeNull();
     }
 
@@ -188,7 +188,7 @@ public class NetworkRepositoryTests
         result.Should().NotBe(default);
         result.Exists.Should().Be(true);
         result.IsUserInRole.Should().Be(true);
-        result.CompanyRoleIds.Should().HaveCount(2).And.Satisfy(
+        result.CompanyRoleAgreementIds.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT,
             x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER);
         result.CompanyApplications.Should().BeEmpty();

@@ -42,7 +42,7 @@ public class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc/>
-    public Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields)
+    Consent IConsentRepository.CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields)
     {
         var consent = new Consent(Guid.NewGuid(), agreementId, companyId, companyUserId, consentStatusId, DateTimeOffset.UtcNow);
         setupOptionalFields?.Invoke(consent);
