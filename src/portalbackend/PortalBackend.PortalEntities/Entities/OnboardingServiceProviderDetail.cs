@@ -30,7 +30,7 @@ public class OnboardingServiceProviderDetail
         ClientSecret = null!;
     }
 
-    public OnboardingServiceProviderDetail(Guid companyId, string callbackUrl, string authUrl, string clientId, string clientSecret)
+    public OnboardingServiceProviderDetail(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret)
         : this()
     {
         CompanyId = companyId;
@@ -48,7 +48,7 @@ public class OnboardingServiceProviderDetail
 
     public string ClientId { get; set; }
 
-    public string ClientSecret { get; set; }
+    public byte[] ClientSecret { get; set; }
 
     public virtual Company? Company { get; private set; }
 }

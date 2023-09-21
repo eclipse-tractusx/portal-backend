@@ -40,7 +40,7 @@ public class OnboardingServiceProviderService : IOnboardingServiceProviderServic
         _tokenService = tokenService;
     }
 
-    public async Task<bool> TriggerProviderCallback(OspDetails ospDetails, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken)
+    public async Task<bool> TriggerProviderCallback(OspTriggerDetails ospDetails, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken)
     {
         var settings = new KeyVaultAuthSettings
         {

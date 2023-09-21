@@ -65,32 +65,39 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
         aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
         aes.Mode = CipherMode.ECB;
         aes.Padding = PaddingMode.PKCS7;
-        using var encryptor = aes.CreateEncryptor();
-        var secretResult = encryptor.TransformFinalBlock(toEncryptedArray, 0, toEncryptedArray.Length);
-        var secret = Convert.ToBase64String(secretResult, 0, secretResult.Length);
-
-        if (ospDetails != null)
+        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+        using (var memoryStream = new MemoryStream())
         {
-            companyRepository.AttachAndModifyOnboardingServiceProvider(companyId, osp =>
+            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+            {
+                using (var sw = new StreamWriter(cryptoStream))
                 {
-                    osp.CallbackUrl = ospDetails.CallbackUrl;
-                    osp.AuthUrl = ospDetails.AuthUrl;
-                    osp.ClientId = ospDetails.ClientId;
-                    osp.ClientSecret = secret;
-                },
-                osp =>
-                {
-                    osp.CallbackUrl = requestData.CallbackUrl;
-                    osp.AuthUrl = requestData.AuthUrl;
-                    osp.ClientId = requestData.ClientId;
-                    osp.ClientSecret = secret;
-                });
+                    sw.Write(toEncryptedArray);
+                }
+            }
+            var secret = memoryStream.ToArray();
+            if (ospDetails != null)
+            {
+                companyRepository.AttachAndModifyOnboardingServiceProvider(companyId, osp =>
+                    {
+                        osp.CallbackUrl = ospDetails.CallbackUrl;
+                        osp.AuthUrl = ospDetails.AuthUrl;
+                        osp.ClientId = ospDetails.ClientId;
+                        osp.ClientSecret = secret;
+                    },
+                    osp =>
+                    {
+                        osp.CallbackUrl = requestData.CallbackUrl;
+                        osp.AuthUrl = requestData.AuthUrl;
+                        osp.ClientId = requestData.ClientId;
+                        osp.ClientSecret = secret;
+                    });
+            }
+            else
+            {
+                companyRepository.CreateOnboardingServiceProviderDetails(companyId, requestData.CallbackUrl, requestData.AuthUrl, requestData.ClientId, secret);
+            }
         }
-        else
-        {
-            companyRepository.CreateOnboardingServiceProviderDetails(companyId, requestData.CallbackUrl, requestData.AuthUrl, requestData.ClientId, secret);
-        }
-
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

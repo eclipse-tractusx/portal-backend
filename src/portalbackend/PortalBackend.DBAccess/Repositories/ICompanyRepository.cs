@@ -170,6 +170,6 @@ public interface ICompanyRepository
     Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId);
     Task<(bool hasCompanyRole, OspDetails? ospDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId);
     void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields);
-    OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, string clientSecret);
+    OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret);
     Task<bool> CheckBpnExists(string bpn);
 }

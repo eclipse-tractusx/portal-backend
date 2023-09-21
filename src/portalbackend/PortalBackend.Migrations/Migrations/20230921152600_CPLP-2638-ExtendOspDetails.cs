@@ -48,13 +48,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 nullable: false,
                 defaultValue: "");
 
-            migrationBuilder.AddColumn<string>(
+            migrationBuilder.AddColumn<byte[]>(
                 name: "client_secret",
                 schema: "portal",
                 table: "onboarding_service_provider_details",
-                type: "text",
+                type: "bytea",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: new byte[0]);
 
             migrationBuilder.InsertData(
                 schema: "portal",

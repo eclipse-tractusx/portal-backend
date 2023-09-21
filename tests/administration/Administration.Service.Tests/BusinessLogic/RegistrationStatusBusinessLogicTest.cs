@@ -121,7 +121,7 @@ public class RegistrationStatusBusinessLogicTest
         //Assert
         A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _companyRepository.CreateOnboardingServiceProviderDetails(_identity.CompanyId, "https://test.de", "https://auth.url", "test", A<string>._))
+        A.CallTo(() => _companyRepository.CreateOnboardingServiceProviderDetails(_identity.CompanyId, "https://test.de", "https://auth.url", "test", A<byte[]>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
@@ -133,7 +133,7 @@ public class RegistrationStatusBusinessLogicTest
         //Arrange
         OnboardingServiceProviderDetail? osp = null;
         A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns((true, new OspDetails("https://test-old.de", "https://auth.url", "test", "test123")));
+            .Returns((true, new OspDetails("https://test-old.de", "https://auth.url", "test", "test123"u8.ToArray())));
         A.CallTo(() => _companyRepository.AttachAndModifyOnboardingServiceProvider(A<Guid>._, A<Action<OnboardingServiceProviderDetail>>._, A<Action<OnboardingServiceProviderDetail>>._))
             .Invokes((Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields) =>
             {

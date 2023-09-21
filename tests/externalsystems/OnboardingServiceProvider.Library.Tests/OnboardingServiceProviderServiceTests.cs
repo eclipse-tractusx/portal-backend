@@ -57,7 +57,7 @@ public class OnboardingServiceProviderServiceTests
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
-        var ospDetails = new OspDetails("https://trigger.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
+        var ospDetails = new OspTriggerDetails("https://trigger.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
         var service = new OnboardingServiceProviderService(_tokenService);
 
@@ -76,7 +76,7 @@ public class OnboardingServiceProviderServiceTests
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
-        var ospDetails = new OspDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
+        var ospDetails = new OspTriggerDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
         var service = new OnboardingServiceProviderService(_tokenService);
 
@@ -96,7 +96,7 @@ public class OnboardingServiceProviderServiceTests
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
-        var ospDetails = new OspDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
+        var ospDetails = new OspTriggerDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
         var data = _fixture.Create<OnboardingServiceProviderCallbackData>();
         var service = new OnboardingServiceProviderService(_tokenService);
 

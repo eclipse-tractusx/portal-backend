@@ -87,19 +87,19 @@ public class NetworkRepository : INetworkRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(OspDetails? OspDetails, Guid? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string?> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
+    public Task<(OspDetails? OspDetails, Guid? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
         _context.NetworkRegistrations
             .Where(x => x.Id == networkRegistrationId)
-            .Select(x => new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string?>>(
+            .Select(x => new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string>>(
                 x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null ?
                     null :
                     new OspDetails(
-                        x.OnboardingServiceProvider!.OnboardingServiceProviderDetail.CallbackUrl,
-                        x.OnboardingServiceProvider!.OnboardingServiceProviderDetail.AuthUrl,
-                        x.OnboardingServiceProvider!.OnboardingServiceProviderDetail.ClientId,
-                        x.OnboardingServiceProvider!.OnboardingServiceProviderDetail.ClientSecret),
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.CallbackUrl,
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.AuthUrl,
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientId,
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientSecret),
                 x.ExternalId,
-                x.OnboardingServiceProvider!.BusinessPartnerNumber,
+                x.OnboardingServiceProvider.BusinessPartnerNumber,
                 x.ApplicationId,
                 processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ?
                     x.Process!.ProcessSteps
@@ -107,7 +107,7 @@ public class NetworkRepository : INetworkRepository
                             p.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION &&
                             p.ProcessStepStatusId == ProcessStepStatusId.FAILED &&
                             p.Message != null)
-                        .Select(step => step.Message) :
-                    new List<string?>()))
+                        .Select(step => step.Message!) :
+                    new List<string>()))
             .SingleOrDefaultAsync();
 }

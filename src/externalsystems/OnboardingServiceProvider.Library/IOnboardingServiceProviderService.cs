@@ -36,5 +36,5 @@ public interface IOnboardingServiceProviderService
     /// <param name="callbackData">Data for the callback</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <exception cref="ServiceException"></exception>
-    Task<bool> TriggerProviderCallback(OspDetails ospDetails, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken);
+    Task<bool> TriggerProviderCallback(OspTriggerDetails ospDetails, OnboardingServiceProviderCallbackData callbackData, CancellationToken cancellationToken);
 }

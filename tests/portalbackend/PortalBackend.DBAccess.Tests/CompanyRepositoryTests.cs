@@ -851,7 +851,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         const string url = "https://service-url.com/new";
         var (sut, context) = await CreateSut().ConfigureAwait(false);
-        var secret = "test123";
+        var secret = "test123"u8.ToArray();
 
         // Act
         var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url, "https//auth.url", "test", secret);

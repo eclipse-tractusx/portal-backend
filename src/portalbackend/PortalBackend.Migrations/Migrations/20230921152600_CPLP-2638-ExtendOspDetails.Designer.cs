@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230919213122_CPLP-2638-ExtendOspDetails")]
+    [Migration("20230921152600_CPLP-2638-ExtendOspDetails")]
     partial class CPLP2638ExtendOspDetails
     {
         /// <inheritdoc />
@@ -4667,9 +4667,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("client_id");
 
-                    b.Property<string>("ClientSecret")
+                    b.Property<byte[]>("ClientSecret")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("bytea")
                         .HasColumnName("client_secret");
 
                     b.HasKey("CompanyId")

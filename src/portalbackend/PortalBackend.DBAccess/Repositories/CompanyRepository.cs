@@ -337,9 +337,9 @@ public class CompanyRepository : ICompanyRepository
                 c.OnboardingServiceProviderDetail == null ?
                     null :
                     new OspDetails(c.OnboardingServiceProviderDetail!.CallbackUrl,
-                        c.OnboardingServiceProviderDetail!.AuthUrl,
-                        c.OnboardingServiceProviderDetail!.ClientId,
-                        c.OnboardingServiceProviderDetail!.ClientSecret)
+                        c.OnboardingServiceProviderDetail.AuthUrl,
+                        c.OnboardingServiceProviderDetail.ClientId,
+                        c.OnboardingServiceProviderDetail.ClientSecret)
                 ))
             .SingleOrDefaultAsync();
 
@@ -351,7 +351,7 @@ public class CompanyRepository : ICompanyRepository
         setOptionalFields.Invoke(ospDetails);
     }
 
-    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, string clientSecret) =>
+    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret) =>
         _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl, authUrl, clientId, clientSecret)).Entity;
 
     /// <inheritdoc />

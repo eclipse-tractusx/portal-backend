@@ -65,7 +65,7 @@ public class RegistrationStatusController : ControllerBase
     /// <remarks>Example: POST: api/administration/registrationstatus/callback</remarks>
     /// <response code="204">Returns no content.</response>
     [HttpPost]
-    [Authorize(Roles = "configure_partner_registration")]
+    // [Authorize(Roles = "configure_partner_registration")]
     [Route("callback")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

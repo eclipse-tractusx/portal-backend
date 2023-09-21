@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 
-public record OspDetails
+public record OspTriggerDetails
 (
     string CallbackUrl,
     string AuthUrl,
     string ClientId,
-    byte[] ClientSecret
+    string ClientSecret
 );

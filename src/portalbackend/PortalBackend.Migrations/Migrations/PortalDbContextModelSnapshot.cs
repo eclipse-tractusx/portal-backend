@@ -4664,9 +4664,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("client_id");
 
-                    b.Property<string>("ClientSecret")
+                    b.Property<byte[]>("ClientSecret")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("bytea")
                         .HasColumnName("client_secret");
 
                     b.HasKey("CompanyId")

@@ -67,7 +67,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
             throw new UnexpectedConditionException("Message for decline should be set");
         }
 
-        string? comment;
+        string comment;
         CompanyApplicationStatusId applicationStatusId;
         switch (processStepTypeId)
         {
@@ -87,19 +87,27 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
                 throw new ArgumentException($"{processStepTypeId} is not supported");
         }
 
-        var toEncryptArray = Convert.FromBase64String(data.OspDetails.ClientSecret);
+        var toDecodeArray = data.OspDetails.ClientSecret;
         using var aes = Aes.Create();
         aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
         aes.Mode = CipherMode.ECB;
         aes.Padding = PaddingMode.PKCS7;
-        var decryptor = aes.CreateDecryptor();
-        var resultArray = decryptor.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
-        var secret = Encoding.UTF8.GetString(resultArray);
-
-        await _onboardingServiceProviderService.TriggerProviderCallback(data.OspDetails with { ClientSecret = secret },
-                new OnboardingServiceProviderCallbackData(data.ExternalId.Value, data.ApplicationId, data.Bpn, applicationStatusId, comment),
-                cancellationToken)
-            .ConfigureAwait(false);
+        var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+        using (var msDecrypt = new MemoryStream(toDecodeArray))
+        {
+            using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+            {
+                using (var srDecrypt = new StreamReader(csDecrypt))
+                {
+                    var secret = srDecrypt.ReadToEnd();
+                    await _onboardingServiceProviderService.TriggerProviderCallback(
+                            new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
+                            new OnboardingServiceProviderCallbackData(data.ExternalId.Value, data.ApplicationId, data.Bpn, applicationStatusId, comment),
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
+        }
 
         return (Enumerable.Empty<ProcessStepTypeId>(), ProcessStepStatusId.DONE, false, null);
     }
