@@ -27,19 +27,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 public class KeycloakSettings
 {
-    public KeycloakSettings()
-    {
-        ConnectionString = null!;
-    }
+    public string ConnectionString { get; set; } = null!;
 
-    public string ConnectionString { get; set; }
     public string? User { get; set; }
-    public string? Password { get; set; }
-    public string? ClientId { get; set; }
-    public string? ClientSecret { get; set; }
-    public string? AuthRealm { get; set; }
 
-    public void Validate(string key)
+    public string? Password { get; set; }
+
+    public string? ClientId { get; set; }
+
+    public string? ClientSecret { get; set; }
+
+    public string? AuthRealm { get; set; }
+    public bool UseAuthTrail { get; set; }
+
+    public void Validate()
     {
         if (ConnectionString == null)
         {
@@ -78,9 +79,9 @@ public sealed class KeycloakSettingsMap : Dictionary<string, KeycloakSettings>
             throw new ConfigurationException();
         }
 
-        foreach (var (key, settings) in this)
+        foreach (var (_, settings) in this)
         {
-            settings.Validate(key);
+            settings.Validate();
         }
 
         return true;

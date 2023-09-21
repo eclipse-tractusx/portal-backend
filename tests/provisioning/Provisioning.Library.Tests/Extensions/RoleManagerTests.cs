@@ -42,7 +42,7 @@ public class RoleManagerTests
 
         var keycloakFactory = A.Fake<IKeycloakFactory>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
-            .Returns(new KeycloakClient("https://test.de", "test", "test", "test"));
+            .Returns(new KeycloakClient("https://test.de", "test", "test", "test", false));
         var settings = new ProvisioningSettings
         {
             CentralRealm = "test"
