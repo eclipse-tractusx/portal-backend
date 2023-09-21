@@ -23,7 +23,7 @@
     <PropertyGroup>
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor</AssemblyName>
         <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor</RootNamespace>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>981fce33-2c9e-4bb9-a043-a21fdd52fe7b</UserSecretsId>

@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -79,7 +78,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<BusinessAppData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppsForCurrentUserAsync() =>
-        this.WithUserId(userId => _appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
+        _appsBusinessLogic.GetAllUserUserBusinessAppsAsync();
 
     /// <summary>
     /// Retrieves app details for an app referenced by id.
@@ -97,7 +96,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(AppDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<AppDetailResponse> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, companyId, lang));
+        _appsBusinessLogic.GetAppDetailsByIdAsync(appId, lang);
 
     /// <summary>
     /// Retrieves IDs of all favourite apps of the current user (by sub claim).
@@ -112,7 +111,7 @@ public class AppsController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForCurrentUserAsync() =>
-        this.WithUserId(userId => _appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
+        _appsBusinessLogic.GetAllFavouriteAppsForUserAsync();
 
     /// <summary>
     /// Adds an app to current user's favourites.
@@ -129,7 +128,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
-        await this.WithUserId(userId => _appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId)).ConfigureAwait(false);
+        await _appsBusinessLogic.AddFavouriteAppForUserAsync(appId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -148,7 +147,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
-        await this.WithUserId(userId => _appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId)).ConfigureAwait(false);
+        await _appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -165,7 +164,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size, companyId));
+        _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the currently logged in user's company.
@@ -178,7 +177,7 @@ public class AppsController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusResponse>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null) =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, companyId, sorting, statusId, offerId));
+        _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, sorting, statusId, offerId);
 
     /// <summary>
     /// Adds an app to current user's company's subscriptions.
@@ -203,7 +202,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
     {
-        await this.WithUserIdAndCompanyId(identity => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, offerAgreementConsentData, identity));
+        await _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, offerAgreementConsentData);
         return NoContent();
     }
 
@@ -224,11 +223,10 @@ public class AppsController : ControllerBase
     /// Activates a pending app subscription.
     /// </summary>
     /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to activate.</param>
-    /// <remarks>Example: PUT: /api/apps/supscription/{subscriptiondId}/activate</remarks>
+    /// <remarks>Example: PUT: /api/apps/subscription/{subscriptiondId}/activate</remarks>
     /// <response code="204">App subscription was successfully activated.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
-    /// <response code="404">App does not exist.</response>
-    /// <response code="409">App Name not set.</response>
+    /// <response code="404">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="500">Internal Server Error.</response>
     [HttpPut]
     [Route("/subscription/{subscriptionId}/activate")]
@@ -238,11 +236,10 @@ public class AppsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid subscriptionId)
+    public async Task<IActionResult> ActivateOfferSubscription([FromRoute] Guid subscriptionId)
     {
-        await this.WithUserIdAndCompanyId(identity => _appsBusinessLogic.ActivateOwnCompanyProvidedAppSubscriptionAsync(subscriptionId, identity)).ConfigureAwait(false);
+        await _appsBusinessLogic.TriggerActivateOfferSubscription(subscriptionId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -263,7 +260,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UnsubscribeCompanyAppSubscriptionAsync([FromRoute] Guid subscriptionId)
     {
-        await this.WithCompanyId(companyId => _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(subscriptionId, companyId)).ConfigureAwait(false);
+        await _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(subscriptionId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -273,14 +270,13 @@ public class AppsController : ControllerBase
     /// <returns>Collection of app data of apps that are provided by the calling users company</returns>
     /// <remarks>Example: GET: /api/apps/provided</remarks>
     /// <response code="200">Returns list of apps provided by the user assigned company.</response>
-
     [HttpGet]
     [Route("provided")]
     [Authorize(Roles = "app_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AllOfferData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AllOfferData> GetAppDataAsync() =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(companyId));
+    [ProducesResponseType(typeof(Pagination.Response<AllOfferData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<AllOfferData>> GetAppDataAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? offerName = null, [FromQuery] AppStatusIdFilter? statusId = null) =>
+        _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(page, size, sorting, offerName, statusId);
 
     /// <summary>
     /// Auto setup the app
@@ -299,7 +295,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<OfferAutoSetupResponseData> AutoSetupApp([FromBody] OfferAutoSetupData data) =>
-        this.WithUserIdAndCompanyId(identity => _appsBusinessLogic.AutoSetupAppAsync(data, identity));
+        _appsBusinessLogic.AutoSetupAppAsync(data);
 
     /// <summary>
     /// Auto setup the app
@@ -318,7 +314,7 @@ public class AppsController : ControllerBase
     [PublicUrl(CompanyRoleId.APP_PROVIDER)]
     public async Task<NoContentResult> StartAutoSetupAppProcess([FromBody] OfferAutoSetupData data)
     {
-        await this.WithCompanyId(companyId => _appsBusinessLogic.StartAutoSetupAsync(data, companyId)).ConfigureAwait(false);
+        await _appsBusinessLogic.StartAutoSetupAsync(data).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -338,7 +334,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ActivateSingleInstance([FromRoute] Guid offerSubscriptionId)
     {
-        await this.WithCompanyId(companyId => _appsBusinessLogic.ActivateSingleInstance(offerSubscriptionId, companyId)).ConfigureAwait(false);
+        await _appsBusinessLogic.ActivateSingleInstance(offerSubscriptionId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -385,7 +381,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [PublicUrl(CompanyRoleId.APP_PROVIDER)]
     public Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId, companyId));
+        _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId);
 
     /// <summary>
     /// Retrieves the details of a subscription
@@ -404,7 +400,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, companyId));
+        _appsBusinessLogic.GetSubscriptionDetailForSubscriber(appId, subscriptionId);
 
     /// <summary>
     /// Retrieves Active subscription statuses of apps.
@@ -419,7 +415,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ActiveOfferSubscriptionStatusData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync() =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(companyId));
+        _appsBusinessLogic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync();
 
     /// <summary>
     /// Retrieves subscription statuses of apps.
@@ -434,6 +430,5 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(OfferSubscriptionData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync() =>
-        this.WithCompanyId(companyId => _appsBusinessLogic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(companyId));
-
+        _appsBusinessLogic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync();
 }

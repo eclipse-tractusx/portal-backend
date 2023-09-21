@@ -78,14 +78,14 @@ public class AppsControllerTests
     {
         //Arrange
         var data = new AsyncEnumerableStub<BusinessAppData>(_fixture.CreateMany<BusinessAppData>(5));
-        A.CallTo(() => _logic.GetAllUserUserBusinessAppsAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetAllUserUserBusinessAppsAsync())
             .Returns(data.AsAsyncEnumerable());
 
         //Act
         var result = await this._controller.GetAllBusinessAppsForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllUserUserBusinessAppsAsync(_identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllUserUserBusinessAppsAsync()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
@@ -95,14 +95,14 @@ public class AppsControllerTests
         //Arrange
         var appId = _fixture.Create<Guid>();
         var data = _fixture.Create<AppDetailResponse>();
-        A.CallTo(() => _logic.GetAppDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string?>._))
+        A.CallTo(() => _logic.GetAppDetailsByIdAsync(A<Guid>._, A<string?>._))
             .Returns(data);
 
         //Act
         var result = await this._controller.GetAppDetailsByIdAsync(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAppDetailsByIdAsync(appId, _identity.CompanyId, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAppDetailsByIdAsync(appId, null)).MustHaveHappenedOnceExactly();
         result.Should().NotBeNull();
     }
 
@@ -111,14 +111,14 @@ public class AppsControllerTests
     {
         //Arrange
         var ids = new AsyncEnumerableStub<Guid>(_fixture.CreateMany<Guid>(5));
-        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync())
             .Returns(ids.AsAsyncEnumerable());
 
         //Act
         var result = await this._controller.GetAllFavouriteAppsForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync(_identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
@@ -132,7 +132,7 @@ public class AppsControllerTests
         var result = await this._controller.AddFavouriteAppForCurrentUserAsync(id).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddFavouriteAppForUserAsync(id, _identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddFavouriteAppForUserAsync(id)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -146,7 +146,7 @@ public class AppsControllerTests
         var result = await this._controller.RemoveFavouriteAppForCurrentUserAsync(id).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.RemoveFavouriteAppForUserAsync(id, _identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.RemoveFavouriteAppForUserAsync(id)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -158,14 +158,14 @@ public class AppsControllerTests
         //Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
         var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<Guid>._))
+        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._))
             .Returns(pagination);
 
         //Act
         var result = await this._controller.GetCompanySubscribedAppSubscriptionStatusesForUserAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 15, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 15)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(3).And.ContainInOrder(data);
     }
 
@@ -180,14 +180,14 @@ public class AppsControllerTests
         var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5);
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<Guid>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
             .Returns(pagination);
 
         //Act
         var result = await this._controller.GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync(offerId: offerId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 15, _identity.CompanyId, null, null, offerId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 15, null, null, offerId)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
@@ -197,7 +197,7 @@ public class AppsControllerTests
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId)))
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -205,21 +205,7 @@ public class AppsControllerTests
         var result = await this._controller.AddCompanyAppSubscriptionAsync(serviceId, consentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, consentData, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
-        Assert.IsType<NoContentResult>(result);
-    }
-
-    [Fact]
-    public async Task ActivateCompanyAppSubscriptionAsync_ReturnsNoContent()
-    {
-        //Arrange
-        var subscriptionId = _fixture.Create<Guid>();
-
-        //Act
-        var result = await this._controller.ActivateCompanyAppSubscriptionAsync(subscriptionId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.ActivateOwnCompanyProvidedAppSubscriptionAsync(subscriptionId, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, consentData)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -233,7 +219,7 @@ public class AppsControllerTests
         var result = await this._controller.UnsubscribeCompanyAppSubscriptionAsync(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UnsubscribeOwnCompanyAppSubscriptionAsync(appId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UnsubscribeOwnCompanyAppSubscriptionAsync(appId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -241,16 +227,17 @@ public class AppsControllerTests
     public async Task GetAppDataAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = new AsyncEnumerableStub<AllOfferData>(_fixture.CreateMany<AllOfferData>(5));
-        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(A<Guid>._))
-            .Returns(data.AsAsyncEnumerable());
+        var data = _fixture.CreateMany<AllOfferData>(5);
+        var paginationResponse = new Pagination.Response<AllOfferData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(0, 15, null, null, null))
+            .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetAppDataAsync().ToListAsync().ConfigureAwait(false);
+        var result = await this._controller.GetAppDataAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
-        result.Should().HaveSameCount(data);
+        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(0, 15, null, null, null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
     }
 
     [Fact]
@@ -283,14 +270,14 @@ public class AppsControllerTests
             new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"),
             new ClientInfoData(Guid.NewGuid().ToString(), "http://www.google.com")
         );
-        A.CallTo(() => _logic.AutoSetupAppAsync(A<OfferAutoSetupData>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId)))
+        A.CallTo(() => _logic.AutoSetupAppAsync(A<OfferAutoSetupData>._))
             .Returns(responseData);
 
         //Act
         var result = await this._controller.AutoSetupApp(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AutoSetupAppAsync(data, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AutoSetupAppAsync(data)).MustHaveHappenedOnceExactly();
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
     }
@@ -306,7 +293,21 @@ public class AppsControllerTests
         var result = await this._controller.StartAutoSetupAppProcess(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.StartAutoSetupAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.StartAutoSetupAsync(data)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task ActivateAppSubscription_ReturnsExpected()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+
+        //Act
+        var result = await this._controller.ActivateOfferSubscription(offerSubscriptionId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.TriggerActivateOfferSubscription(offerSubscriptionId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -320,7 +321,7 @@ public class AppsControllerTests
         var result = await this._controller.ActivateSingleInstance(offerSubscriptionId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.ActivateSingleInstance(offerSubscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ActivateSingleInstance(offerSubscriptionId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -369,14 +370,14 @@ public class AppsControllerTests
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var data = _fixture.Create<AppProviderSubscriptionDetailData>();
-        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(appId, subscriptionId, _identity.CompanyId))
+        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(appId, subscriptionId))
             .Returns(data);
 
         // Act
         var result = await this._controller.GetSubscriptionDetailForProvider(appId, subscriptionId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(appId, subscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(appId, subscriptionId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
 
@@ -387,14 +388,14 @@ public class AppsControllerTests
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var data = _fixture.Create<SubscriberSubscriptionDetailData>();
-        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, _identity.CompanyId))
+        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(appId, subscriptionId))
             .Returns(data);
 
         // Act
         var result = await this._controller.GetSubscriptionDetailForSubscriber(appId, subscriptionId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(appId, subscriptionId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
 
@@ -405,14 +406,14 @@ public class AppsControllerTests
     {
         //Arrange
         var data = _fixture.CreateMany<ActiveOfferSubscriptionStatusData>(3).ToImmutableArray().ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync())
             .Returns(data);
 
         //Act
         var result = await this._controller.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(3);
     }
 
@@ -425,14 +426,14 @@ public class AppsControllerTests
     {
         //Arrange
         var data = _fixture.CreateMany<OfferSubscriptionData>(3).ToImmutableArray().ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync())
             .Returns(data);
 
         //Act
         var result = await this._controller.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(3);
     }
 

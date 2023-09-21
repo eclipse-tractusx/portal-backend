@@ -66,7 +66,7 @@ public class AuditConnector20230405 : IAuditEntityV1
 
     public DateTimeOffset? DateLastChanged { get; private set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />

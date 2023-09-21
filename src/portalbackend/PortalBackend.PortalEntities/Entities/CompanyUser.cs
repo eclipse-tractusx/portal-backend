@@ -57,9 +57,10 @@ public class CompanyUser : IBaseEntity, IAuditableV1
     [MaxLength(255)]
     public string? Lastname { get; set; }
 
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     public virtual Identity? Identity { get; set; }

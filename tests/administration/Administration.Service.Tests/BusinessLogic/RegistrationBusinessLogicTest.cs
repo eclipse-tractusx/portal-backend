@@ -451,7 +451,7 @@ public class RegistrationBusinessLogicTest
         const string comment = "application rejected because of reasons.";
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, checklistStatusId, DateTimeOffset.UtcNow);
         var company = new Company(CompanyId, null!, CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
-        var application = new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.SUBMITTED, DateTimeOffset.UtcNow);
+        var application = new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.SUBMITTED, CompanyApplicationTypeId.INTERNAL, DateTimeOffset.UtcNow);
         SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId);
 
         // Act

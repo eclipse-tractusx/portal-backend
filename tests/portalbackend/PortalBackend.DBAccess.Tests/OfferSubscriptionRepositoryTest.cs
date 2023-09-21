@@ -177,7 +177,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetOfferDetailsAndCheckUser
 
     [Fact]
-    public async Task GetOfferDetailsAndCheckUser_WithValidUserandSubscriptionId_ReturnsExpectedResult()
+    public async Task GetOfferDetailsAndCheckUser_WithValidUserAndSubscriptionId_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
@@ -195,6 +195,31 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.IsProviderCompany.Should().BeTrue();
         result.Bpn.Should().Be("BPNL00000003CRHK");
         result.OfferName.Should().Be("Trace-X");
+        result.InstanceData.IsSingleInstance.Should().BeTrue();
+        result.InstanceData.InstanceUrl.Should().Be("https://test.com");
+    }
+
+    [Fact]
+    public async Task GetOfferDetailsAndCheckUser_WithSubscriptionForOfferWithoutAppInstanceSetup_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferDetailsAndCheckProviderCompany(new Guid("e80b5f5c-3a16-480b-b82e-1cc06a71fddc"), new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"), OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().NotBe(default);
+        result!.OfferId.Should().Be(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfae"));
+        result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.CompanyName.Should().Be("Catena-X");
+        result.IsProviderCompany.Should().BeTrue();
+        result.Bpn.Should().Be("BPNL00000003CRHK");
+        result.OfferName.Should().Be("Service Test 123");
+        result.InstanceData.IsSingleInstance.Should().BeFalse();
+        result.InstanceData.InstanceUrl.Should().BeNull();
     }
 
     #endregion
@@ -996,7 +1021,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
                 x.OfferName == "Trace-X" &&
                 x.Provider == "Catena-X" &&
-                x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"));
+                x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1") &&
+                x.OfferSubscriptionId == new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
     }
 
     [Fact]
@@ -1045,6 +1071,38 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region CheckOfferSubscriptionForProvider
+
+    [Fact]
+    public async Task CheckOfferSubscriptionForProvider_WithProvidingCompany_ReturnsTrue()
+    {
+
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckOfferSubscriptionForProvider(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), new Guid("0dcd8209-85e2-4073-b130-ac094fb47106")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckOfferSubscriptionForProvider_WithoutProvidingCompany_ReturnsTrue()
+    {
+
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckOfferSubscriptionForProvider(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     #endregion

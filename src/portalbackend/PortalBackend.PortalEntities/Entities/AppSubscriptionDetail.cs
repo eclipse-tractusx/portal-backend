@@ -67,7 +67,7 @@ public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
     [MaxLength(255)]
     public string? AppSubscriptionUrl { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // navigational properties

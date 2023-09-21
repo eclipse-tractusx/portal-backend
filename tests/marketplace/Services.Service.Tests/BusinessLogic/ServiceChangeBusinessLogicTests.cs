@@ -22,10 +22,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Xunit;
 
@@ -33,11 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLog
 
 public class ServiceChangeBusinessLogicTests
 {
-    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IFixture _fixture;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IOfferRepository _offerRepository;
-    private readonly IDocumentRepository _documentRepository;
     private readonly IOfferService _offerService;
     private readonly ServiceChangeBusinessLogic _sut;
 
@@ -48,13 +41,8 @@ public class ServiceChangeBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _portalRepositories = A.Fake<IPortalRepositories>();
-        _offerRepository = A.Fake<IOfferRepository>();
-        _documentRepository = A.Fake<IDocumentRepository>();
         _offerService = A.Fake<IOfferService>();
 
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         _sut = new ServiceChangeBusinessLogic(_offerService);
     }
 
@@ -66,10 +54,10 @@ public class ServiceChangeBusinessLogicTests
         // Arrange
         var serviceId = _fixture.Create<Guid>();
         // Act
-        await _sut.DeactivateOfferByServiceIdAsync(serviceId, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.DeactivateOfferByServiceIdAsync(serviceId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.DeactivateOfferIdAsync(serviceId, _identity.CompanyId, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.DeactivateOfferIdAsync(serviceId, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -63,7 +64,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(List<IdentityProviderDetails>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<List<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails() =>
-        this.WithCompanyId(companyId => _businessLogic.GetOwnCompanyIdentityProvidersAsync(companyId).ToListAsync());
+        _businessLogic.GetOwnCompanyIdentityProvidersAsync().ToListAsync();
 
     /// <summary>
     /// Create an identity provider
@@ -84,9 +85,9 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(IdentityProviderDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery] IamIdentityProviderProtocol protocol, [FromQuery] string? displayName = null)
+    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery] IamIdentityProviderProtocol protocol, [FromQuery] IdentityProviderTypeId typeId, [FromQuery] string? displayName = null)
     {
-        var details = await this.WithCompanyId(companyId => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, displayName, companyId)).ConfigureAwait(false);
+        var details = await _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, typeId, displayName).ConfigureAwait(false);
         return (ActionResult<IdentityProviderDetails>)CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details);
     }
 
@@ -111,7 +112,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
-        this.WithCompanyId(companyId => _businessLogic.GetOwnCompanyIdentityProviderAsync(identityProviderId, companyId));
+        _businessLogic.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
     /// <summary>
     /// Sets the status of the given Identity Provider
@@ -139,7 +140,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatus([FromRoute] Guid identityProviderId, [FromQuery] bool enabled) =>
-        this.WithCompanyId(companyId => _businessLogic.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, enabled, companyId));
+        _businessLogic.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, enabled);
 
     /// <summary>
     /// Updates the details of the identity provider
@@ -167,7 +168,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
-        this.WithCompanyId(companyId => _businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details, companyId));
+        _businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details);
 
     /// <summary>
     /// Deletes the identity provider with the given id
@@ -187,16 +188,16 @@ public class IdentityProviderController : ControllerBase
     [Authorize(Roles = "delete_idp")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/identityproviders/{identityProviderId}")]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public async Task<ActionResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId)
+    public async Task<NoContentResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId)
     {
-        await this.WithCompanyId(companyId => _businessLogic.DeleteCompanyIdentityProviderAsync(identityProviderId, companyId)).ConfigureAwait(false);
-        return (ActionResult)NoContent();
+        await _businessLogic.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        return NoContent();
     }
 
     /// <summary>

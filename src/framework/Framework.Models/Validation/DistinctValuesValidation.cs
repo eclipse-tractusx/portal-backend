@@ -57,7 +57,7 @@ public class DistinctValuesValidation<TOptions> : BaseOptionEnumerableValidation
             throw new UnexpectedConditionException(
                 $"Attribute DistinctValues is applied to property {property.Name} which is not an IEnumerable type ({property.PropertyType})");
         }
-        var listValues = (IEnumerable)config.GetSection(propertyName).Get(property.PropertyType);
+        var listValues = config.GetSection(propertyName).Get(property.PropertyType) as IEnumerable;
         var items = listValues?.ToIEnumerable();
 
         IEnumerable<object> duplicates;

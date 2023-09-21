@@ -63,32 +63,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatas(int page, int size)
-    {
-        var connectors = _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForCompanyId(_identityService.IdentityData.CompanyId);
-
-        return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
-            new Pagination.AsyncSource<ConnectorData>
-            (
-                connectors.CountAsync(),
-                connectors.OrderByDescending(connector => connector.Name)
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(c =>
-                        new ConnectorData(
-                            c.Name,
-                            c.Location!.Alpha2Code,
-                            c.Id,
-                            c.TypeId,
-                            c.StatusId,
-                            c.HostId,
-                            c.Host!.Name,
-                            c.SelfDescriptionDocumentId,
-                            c.SelfDescriptionDocument!.DocumentName)
-                    ).AsAsyncEnumerable()
-            )
-        );
-    }
+    public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatas(int page, int size) =>
+        Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.MaxPageSize,
+            _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForCompanyId(_identityService.IdentityData.CompanyId));
 
     /// <inheritdoc/>
     public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForCompany(int page, int size) =>
@@ -276,6 +256,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         if (!result.IsProvidingOrHostCompany)
         {
             throw new ForbiddenException($"company {companyId} is neither provider nor host-company of connector {connectorId}");
+        }
+        if (result.ServiceAccountId.HasValue && result.UserStatusId != UserStatusId.INACTIVE)
+        {
+            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(result.ServiceAccountId.Value, null, i =>
+            {
+                i.UserStatusId = UserStatusId.INACTIVE;
+            });
         }
 
         switch (result.ConnectorStatus)

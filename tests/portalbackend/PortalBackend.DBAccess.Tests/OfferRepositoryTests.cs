@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -94,6 +95,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         offerDetail.Should().NotBeNull();
         offerDetail!.OfferName.Should().Be("Trace-X");
+        offerDetail.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
     }
 
     [Fact]
@@ -601,18 +603,19 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var providerAppData = await sut.GetProvidedOffersData(offerTypeId, userCompanyId).ToListAsync().ConfigureAwait(false);
+        var providerAppData = await sut.GetProvidedOffersData(Enum.GetValues<OfferStatusId>(), offerTypeId, userCompanyId, OfferSorting.DateAsc, null)(0, 10).ConfigureAwait(false);
 
         // Assert
-        providerAppData.Should().HaveSameCount(offerIds);
         if (offerIds.Any())
         {
-            providerAppData.Select(x => x.Id).Should().Contain(offerIds.Select(x => new Guid(x)));
-            providerAppData.Join(offerIds.Select(x => new Guid(x)).Zip(leadPictureIds.Select(x => new Guid(x))), data => data.Id, zip => zip.First, (data, zip) => (data, zip)).Should().AllSatisfy(x => x.data.LeadPictureId.Should().Be(x.zip.Second));
+            providerAppData.Should().NotBeNull();
+            providerAppData!.Data.Should().HaveSameCount(offerIds);
+            providerAppData.Data.Select(x => x.Id).Should().Contain(offerIds.Select(x => new Guid(x)));
+            providerAppData.Data.Join(offerIds.Select(x => new Guid(x)).Zip(leadPictureIds.Select(x => new Guid(x))), data => data.Id, zip => zip.First, (data, zip) => (data, zip)).Should().AllSatisfy(x => x.data.LeadPictureId.Should().Be(x.zip.Second));
         }
         else
         {
-            providerAppData.Should().BeEmpty();
+            providerAppData.Should().BeNull();
         }
     }
 
@@ -1350,6 +1353,90 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.IsStatusActive.Should().Be(isStatusActive);
         result.IsUserCompanyProvider.Should().Be(isUserCompanyProvider);
 
+    }
+
+    #endregion
+
+    #region GetCompanyProvidedServiceStatusData
+
+    [Fact]
+    public async Task GetCompanyProvidedServiceStatusDataAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyProvidedServiceStatusDataAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), null, null)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        result!.Data.Should().NotBeNull().And.HaveCount(2).And.Satisfy(
+            x => x.Id == new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa5") && x.Name == "Newest Service",
+            x => x.Id == new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001") && x.Name == "Consulting Service - Data Readiness"
+        );
+    }
+
+    #endregion
+
+    #region GetServiceAccountProfileData
+
+    [Fact]
+    public async Task GetServiceAccountProfileData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceAccountProfileData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.ServiceAccountProfiles.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetServiceAccountProfileData_WithServiceAccountProfileWithRoles_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceAccountProfileData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.ServiceAccountProfiles.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region GetServiceAccountProfileDataForSubscription
+
+    [Fact]
+    public async Task GetServiceAccountProfileDataForSubscription_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceAccountProfileDataForSubscription(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.ServiceAccountProfiles.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetServiceAccountProfileDataForSubscription_WithServiceAccountProfileWithRoles_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceAccountProfileDataForSubscription(new Guid("92be9d79-4064-422c-bdc8-a12ca7d26e5d")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.ServiceAccountProfiles.Should().HaveCount(1);
     }
 
     #endregion

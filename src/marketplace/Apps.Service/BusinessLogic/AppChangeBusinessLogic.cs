@@ -200,8 +200,8 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task DeactivateOfferByAppIdAsync(Guid appId, Guid companyId) =>
-        _offerService.DeactivateOfferIdAsync(appId, companyId, OfferTypeId.APP);
+    public Task DeactivateOfferByAppIdAsync(Guid appId) =>
+        _offerService.DeactivateOfferIdAsync(appId, OfferTypeId.APP);
 
     /// <inheritdoc />
     public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, Guid companyId)

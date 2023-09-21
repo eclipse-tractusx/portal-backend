@@ -22,7 +22,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -30,7 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -44,7 +43,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
     private readonly IOfferSetupService _offerSetupService;
-    private readonly IMailingService _mailingService;
+    private readonly IIdentityService _identityService;
 
     /// <summary>
     /// Constructor.
@@ -54,20 +53,20 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="offerService">Offer service</param>
     /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="settings">Settings</param>
-    /// <param name="mailingService">Mailing service</param>
+    /// <param name="identityService">Identity </param>
     public AppsBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferSubscriptionService offerSubscriptionService,
         IOfferService offerService,
         IOfferSetupService offerSetupService,
         IOptions<AppsSettings> settings,
-        IMailingService mailingService)
+        IIdentityService identityService)
     {
         _portalRepositories = portalRepositories;
         _offerSubscriptionService = offerSubscriptionService;
         _offerService = offerService;
         _offerSetupService = offerSetupService;
-        _mailingService = mailingService;
+        _identityService = identityService;
         _settings = settings.Value;
     }
 
@@ -85,9 +84,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.UseCaseNames));
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(Guid userId) =>
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync() =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetAllBusinessAppDataForUserIdAsync(userId)
+            .GetAllBusinessAppDataForUserIdAsync(_identityService.IdentityData.UserId)
             .Select(x =>
                 new BusinessAppData(
                     x.OfferId,
@@ -98,10 +97,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     x.Provider));
 
     /// <inheritdoc/>
-    public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, Guid companyId, string? languageShortName = null)
+    public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string? languageShortName = null)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetOfferDetailsByIdAsync(appId, companyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(false);
+            .GetOfferDetailsByIdAsync(appId, _identityService.IdentityData.CompanyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(false);
         if (result == null)
         {
             throw new NotFoundException($"appId {appId} does not exist");
@@ -131,36 +130,36 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(Guid userId) =>
+    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync() =>
         _portalRepositories
             .GetInstance<IUserRepository>()
-            .GetAllFavouriteAppsForUserUntrackedAsync(userId);
+            .GetAllFavouriteAppsForUserUntrackedAsync(_identityService.IdentityData.UserId);
 
     /// <inheritdoc/>
-    public async Task RemoveFavouriteAppForUserAsync(Guid appId, Guid userId)
+    public async Task RemoveFavouriteAppForUserAsync(Guid appId)
     {
-        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, userId));
+        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, _identityService.IdentityData.UserId));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task AddFavouriteAppForUserAsync(Guid appId, Guid userId)
+    public async Task AddFavouriteAppForUserAsync(Guid appId)
     {
-        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, userId);
+        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, _identityService.IdentityData.UserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, Guid companyId) =>
-        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, companyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size) =>
+        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
 
     /// <inheritdoc/>
-    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, Guid companyId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
+    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
     {
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(companyId, OfferTypeId.APP, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId)(skip, take).ConfigureAwait(false);
+                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityService.IdentityData.CompanyId, OfferTypeId.APP, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId)(skip, take).ConfigureAwait(false);
 
             return offerCompanySubscriptionResponse == null
                 ? null
@@ -177,86 +176,42 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, identity, OfferTypeId.APP, _settings.BasePortalAddress);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, OfferTypeId.APP, _settings.BasePortalAddress, _settings.SubscriptionManagerRoles);
 
     /// <inheritdoc/>
-    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid subscriptionId, (Guid UserId, Guid CompanyId) identity)
-    {
-        var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var assignedAppData = await offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(subscriptionId, identity.CompanyId).ConfigureAwait(false);
-        if (assignedAppData == default)
-        {
-            throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
-        }
-
-        var (subscriptionStatusId, requesterId, appId, appName, isUserOfProvider, requesterData) = assignedAppData;
-        if (!isUserOfProvider)
-        {
-            throw new ForbiddenException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
-        }
-
-        if (subscriptionStatusId != OfferSubscriptionStatusId.PENDING)
-        {
-            throw new ConflictException($"subscription {subscriptionId} is not in status PENDING");
-        }
-
-        if (appName is null)
-        {
-            throw new ConflictException("App Name is not yet set.");
-        }
-
-        offerSubscriptionRepository.AttachAndModifyOfferSubscription(subscriptionId, subscription =>
-        {
-            subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
-        });
-
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId,
-            NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
-            notification =>
-            {
-                notification.CreatorUserId = identity.UserId;
-                notification.Content = JsonSerializer.Serialize(new
-                {
-                    AppId = appId,
-                    AppName = appName
-                });
-            });
-
-        var userName = string.Join(" ", requesterData.Firstname, requesterData.Lastname);
-
-        if (!string.IsNullOrWhiteSpace(requesterData.Email))
-        {
-            var mailParams = new Dictionary<string, string>
-            {
-                { "offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "App Owner" },
-                { "offerName", appName },
-                { "url", _settings.BasePortalAddress },
-            };
-            await _mailingService.SendMails(requesterData.Email, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
-        }
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
+    public Task TriggerActivateOfferSubscription(Guid subscriptionId) =>
+        _offerSetupService.TriggerActivateSubscription(subscriptionId);
 
     /// <inheritdoc/>
-    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId, Guid companyId) =>
-        _offerService.UnsubscribeOwnCompanySubscriptionAsync(subscriptionId, companyId);
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId) =>
+        _offerService.UnsubscribeOwnCompanySubscriptionAsync(subscriptionId);
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(Guid companyId) =>
-        _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(OfferTypeId.APP, companyId);
+    public Task<Pagination.Response<AllOfferData>> GetCompanyProvidedAppsDataForUserAsync(int page, int size, OfferSorting? sorting, string? offerName, AppStatusIdFilter? statusId) =>
+        Pagination.CreateResponseAsync(page, size, 15,
+            _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(GetOfferStatusIds(statusId), OfferTypeId.APP, _identityService.IdentityData.CompanyId, sorting ?? OfferSorting.DateDesc, offerName));
+
+    private static IEnumerable<OfferStatusId> GetOfferStatusIds(AppStatusIdFilter? appStatusIdFilter) =>
+        appStatusIdFilter switch
+        {
+            AppStatusIdFilter.Active => Enumerable.Repeat(OfferStatusId.ACTIVE, 1),
+            AppStatusIdFilter.Inactive => Enumerable.Repeat(OfferStatusId.INACTIVE, 1),
+            AppStatusIdFilter.WIP => Enumerable.Repeat(OfferStatusId.CREATED, 1),
+            _ => Enum.GetValues<OfferStatusId>()
+        };
 
     /// <inheritdoc />
-    public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, (Guid UserId, Guid CompanyId) identity) =>
-        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, identity, OfferTypeId.APP, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
+    public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data) =>
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, OfferTypeId.APP, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
 
     /// <inheritdoc />
-    public Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId) =>
-        _offerSetupService.StartAutoSetupAsync(data, companyId, OfferTypeId.APP);
+    public Task StartAutoSetupAsync(OfferAutoSetupData data) =>
+        _offerSetupService.StartAutoSetupAsync(data, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task ActivateSingleInstance(Guid offerSubscriptionId, Guid companyId) =>
-        _offerSetupService.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId, companyId);
+    public Task ActivateSingleInstance(Guid offerSubscriptionId) =>
+        _offerSetupService.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>
@@ -267,18 +222,18 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken);
 
     /// <inheritdoc />
-    public Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, Guid companyId) =>
-        _offerService.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, companyId, OfferTypeId.APP, _settings.CompanyAdminRoles);
+    public Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId) =>
+        _offerService.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, _settings.CompanyAdminRoles);
 
     /// <inheritdoc />
-    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, Guid companyId) =>
-        _offerService.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, companyId, OfferTypeId.APP, _settings.SalesManagerRoles);
+    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId) =>
+        _offerService.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, OfferTypeId.APP, _settings.SalesManagerRoles);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(Guid companyId) =>
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(companyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
+    public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync() =>
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(_identityService.IdentityData.CompanyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(Guid companyId) =>
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(companyId, OfferTypeId.APP);
+    public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync() =>
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(_identityService.IdentityData.CompanyId, OfferTypeId.APP);
 }
