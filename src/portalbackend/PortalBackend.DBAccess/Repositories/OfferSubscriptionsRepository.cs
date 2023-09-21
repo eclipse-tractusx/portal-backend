@@ -155,7 +155,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Requester!.Email,
                 x.Requester.Firstname,
                 x.Requester.Lastname,
-                x.Offer.AppInstanceSetup == null ? new ValueTuple<bool, string?>() : new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup.InstanceUrl),
+                new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup != null && x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup!.InstanceUrl),
                 x.Offer.AppInstances.Select(ai => ai.Id),
                 x.Offer.SalesManagerId
             ))
@@ -268,7 +268,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         x.Subscription.Offer!.Name,
                         x.ProviderCompany!.Name,
                         x.ProviderCompany.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
-                        x.Subscription.CompanyServiceAccounts.Where(x => x.Identity!.IdentityAssignedRoles.Any()).Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))))
+                        x.Subscription.CompanyServiceAccounts.Where(x => x.Identity!.IdentityAssignedRoles.Any()).Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
+                        x.Subscription.ConnectorAssignedOfferSubscriptions.Select(caos => new SubscriptionAssignedConnectorData(
+                            caos.Connector!.Id,
+                            caos.Connector.Name,
+                            caos.Connector.ConnectorUrl)))
                     : null))
             .SingleOrDefaultAsync();
 
@@ -384,13 +388,15 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Requester.Firstname,
                 x.Requester.Lastname,
                 x.RequesterId,
-                x.Offer.AppInstanceSetup == null
-                    ? new ValueTuple<bool, string?>()
-                    : new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup.InstanceUrl),
-                x.Offer.AppInstances.Select(ai => ai.Id),
+                new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup != null && x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup!.InstanceUrl),
+                x.Offer!.AppInstances.Select(ai => ai.Id),
                 x.OfferSubscriptionProcessData != null,
                 x.Offer.SalesManagerId,
-                x.Offer.ProviderCompanyId
+                x.Offer.ProviderCompanyId,
+                x.Offer.OfferTypeId == OfferTypeId.APP && (x.Offer.AppInstanceSetup == null || !x.Offer.AppInstanceSetup!.IsSingleInstance) ?
+                    x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId :
+                    null,
+                x.CompanyServiceAccounts.Where(sa => sa.ClientClientId != null).Select(sa => sa.ClientClientId!)
             ))
             .SingleOrDefaultAsync();
 
@@ -506,7 +512,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .ToAsyncEnumerable();
 
-    /// <inheritdoc>
+    /// <inheritdoc />
     public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
         _context.OfferSubscriptions
             .AsNoTracking()
@@ -521,10 +527,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     .Where(document =>
                         document.DocumentTypeId == documentTypeId
                         && document.DocumentStatusId == DocumentStatusId.LOCKED)
-                    .Select(document => document.Id).FirstOrDefault()
+                    .Select(document => document.Id).FirstOrDefault(),
+                os.Id
             )).ToAsyncEnumerable();
 
-    /// <inheritdoc>
+    /// <inheritdoc />
     public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions
             .AsNoTracking()
@@ -535,4 +542,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 os.OfferId,
                 os.OfferSubscriptionStatusId
             )).ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<bool> CheckOfferSubscriptionForProvider(Guid offerSubscriptionId, Guid providerCompanyId) =>
+        _context.OfferSubscriptions
+            .Where(x =>
+                x.Id == offerSubscriptionId &&
+                x.Offer!.ProviderCompanyId == providerCompanyId)
+            .AnyAsync();
 }

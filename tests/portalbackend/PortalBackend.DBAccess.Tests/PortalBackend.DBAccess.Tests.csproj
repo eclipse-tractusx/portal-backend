@@ -21,27 +21,26 @@
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.17.0" />
-    <PackageReference Include="AutoFixture.Xunit2" Version="4.17.0" />
-    <PackageReference Include="FakeItEasy" Version="7.3.1" />
-    <PackageReference Include="FluentAssertions" Version="6.7.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.7" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-    <PackageReference Include="AutoFixture" Version="4.17.0" />
-    <PackageReference Include="Testcontainers" Version="2.1.0" />
-    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.18.0" />
+    <PackageReference Include="AutoFixture.Xunit2" Version="4.18.0" />
+    <PackageReference Include="FakeItEasy" Version="7.4.0" />
+    <PackageReference Include="FluentAssertions" Version="6.11.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.10" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
+    <PackageReference Include="AutoFixture" Version="4.18.0" />
+    <PackageReference Include="xunit" Version="2.5.0" />
     <PackageReference Include="Xunit.Extensions.AssemblyFixture" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="3.1.0">
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -118,7 +117,7 @@
     <Content Update="Seeder\Data\company_identifiers.consortia.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
-    <Content Update="Seeder\Data\company_identity_providers.json">
+    <Content Update="Seeder\Data\company_identity_providers.test.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
     <Content Update="Seeder\Data\company_identity_providers.consortia.json">
@@ -320,6 +319,15 @@
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
     <Content Update="Seeder\Data\verified_credential_external_type_use_case_details.test.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_identity_providers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\identity_providers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_identity_providers.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
   </ItemGroup>

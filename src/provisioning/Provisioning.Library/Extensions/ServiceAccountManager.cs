@@ -27,9 +27,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    public async Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config)
+    public async Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config, bool enabled)
     {
-        var internalClientId = await CreateServiceAccountClient(_CentralIdp, _Settings.CentralRealm, clientId, config.Name, config.IamClientAuthMethod);
+        var internalClientId = await CreateServiceAccountClient(_CentralIdp, _Settings.CentralRealm, clientId, config.Name, config.IamClientAuthMethod, enabled);
         var serviceAccountUser = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
         if (serviceAccountUser.Id == null)
         {
@@ -57,7 +57,7 @@ public partial class ProvisioningManager
     {
         var sharedIdp = _Factory.CreateKeycloakClient("shared");
         var clientId = GetServiceAccountClientId(realm);
-        var internalClientId = await CreateServiceAccountClient(sharedIdp, "master", clientId, clientId, IamClientAuthMethod.SECRET);
+        var internalClientId = await CreateServiceAccountClient(sharedIdp, "master", clientId, clientId, IamClientAuthMethod.SECRET, true);
         var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync("master", internalClientId).ConfigureAwait(false);
         var roleCreateRealm = await sharedIdp.GetRoleByNameAsync("master", "create-realm").ConfigureAwait(false);
 
@@ -83,12 +83,13 @@ public partial class ProvisioningManager
         await keycloak.DeleteClientAsync("master", internalClientId).ConfigureAwait(false);
     }
 
-    private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod)
+    private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod, bool enabled)
     {
         var newClient = Clone(_Settings.ServiceAccountClient);
         newClient.ClientId = clientId;
         newClient.Name = name;
         newClient.ClientAuthenticatorType = IamClientAuthMethodToInternal(iamClientAuthMethod);
+        newClient.Enabled = enabled;
         var newClientId = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, newClient).ConfigureAwait(false);
         if (newClientId == null)
         {

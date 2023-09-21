@@ -22,7 +22,7 @@
 
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Mailing.Template</AssemblyName>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -34,8 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -97,6 +97,12 @@
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
 	 <None Update="EmailTemplates\verified_credential_declined.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\appactivation_offer_release_approval.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\serviceactivation_offer_release_approval.html">
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
   </ItemGroup>

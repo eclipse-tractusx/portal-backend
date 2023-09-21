@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -37,17 +38,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 /// </remarks>
 public class PortalDbContext : DbContext
 {
-    private readonly IIdentityService _identityService;
+    private readonly IAuditHandler _auditHandler;
 
     protected PortalDbContext()
     {
         throw new InvalidOperationException("IdentityService should never be null");
     }
 
-    public PortalDbContext(DbContextOptions<PortalDbContext> options, IIdentityService identityService)
+    public PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHandler auditHandler)
         : base(options)
     {
-        _identityService = identityService;
+        _auditHandler = auditHandler;
     }
 
     public virtual DbSet<Address> Addresses { get; set; } = default!;
@@ -73,6 +74,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication20230824> AuditCompanyApplication20230824 { get; set; } = default!;
     public virtual DbSet<AuditCompanySsiDetail20230621> AuditCompanySsiDetail20230621 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20230522> AuditCompanyUser20230523 { get; set; } = default!;
@@ -90,6 +92,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
+    public virtual DbSet<CompanyApplicationType> CompanyApplicationTypes { get; set; } = default!;
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompanyIdentifier> CompanyIdentifiers { get; set; } = default!;
@@ -123,6 +126,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Identity> Identities { get; set; } = default!;
     public virtual DbSet<IdentityAssignedRole> IdentityAssignedRoles { get; set; } = default!;
     public virtual DbSet<IdentityProvider> IdentityProviders { get; set; } = default!;
+    public virtual DbSet<IdentityProviderType> IdentityProviderTypes { get; set; } = default!;
     public virtual DbSet<IdentityProviderCategory> IdentityProviderCategories { get; set; } = default!;
     public virtual DbSet<IdentityUserStatus> IdentityUserStatuses { get; set; } = default!;
     public virtual DbSet<Invitation> Invitations { get; set; } = default!;
@@ -145,6 +149,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; } = default!;
+    public virtual DbSet<OnboardingServiceProviderDetail> OnboardingServiceProviderDetails { get; set; } = default!;
     public virtual DbSet<Process> Processes { get; set; } = default!;
     public virtual DbSet<ProcessStep> ProcessSteps { get; set; } = default!;
     public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;
@@ -557,11 +562,21 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<CompanyApplication>(entity =>
         {
             entity.HasOne(d => d.Company)
-                .WithMany(p => p!.CompanyApplications)
+                .WithMany(p => p.CompanyApplications)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<CompanyApplication, AuditCompanyApplication20230214>();
+            entity.HasOne(d => d.Company)
+                .WithMany(p => p.CompanyApplications)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.OnboardingServiceProvider)
+                .WithMany(x => x.ProvidedApplications)
+                .HasForeignKey(x => x.OnboardingServiceProviderId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<CompanyApplication, AuditCompanyApplication20230824>();
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -569,6 +584,13 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(CompanyApplicationStatusId))
                     .Cast<CompanyApplicationStatusId>()
                     .Select(e => new CompanyApplicationStatus(e))
+            );
+
+        modelBuilder.Entity<CompanyApplicationType>()
+            .HasData(
+                Enum.GetValues(typeof(CompanyApplicationTypeId))
+                    .Cast<CompanyApplicationTypeId>()
+                    .Select(e => new CompanyApplicationType(e))
             );
 
         modelBuilder.Entity<ApplicationChecklistEntry>(entity =>
@@ -619,7 +641,6 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<CompanyAssignedRole>(entity =>
         {
             entity.HasKey(e => new { e.CompanyId, e.CompanyRoleId });
-            entity.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
 
             entity.HasOne(d => d.Company!)
                 .WithMany(p => p.CompanyAssignedRoles)
@@ -630,10 +651,14 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p.CompanyAssignedRoles)
                 .HasForeignKey(d => d.CompanyRoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
         });
 
-        modelBuilder.Entity<UserRole>()
-            .HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+        });
 
         modelBuilder.Entity<UserRoleCollection>(entity =>
         {
@@ -734,6 +759,7 @@ public class PortalDbContext : DbContext
                 .WithOne(d => d.CompanyUser);
 
             entity.HasAuditV1Triggers<CompanyUser, AuditCompanyUser20230522>();
+
             entity.ToTable("company_users");
         });
 
@@ -772,6 +798,7 @@ public class PortalDbContext : DbContext
                 .WithMany(e => e.IdentityAssignedRoles)
                 .HasForeignKey(d => d.IdentityId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
             entity.HasAuditV1Triggers<IdentityAssignedRole, AuditIdentityAssignedRole20230522>();
         });
 
@@ -885,11 +912,30 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<IamIdentityProvider>(d => d.IdentityProviderId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-        modelBuilder.Entity<IdentityProvider>()
-            .HasOne(d => d.IdentityProviderCategory)
-                .WithMany(p => p!.IdentityProviders)
-                .HasForeignKey(d => d.IdentityProviderCategoryId)
+        modelBuilder.Entity<IdentityProvider>(entity =>
+        {
+            entity.HasOne(x => x.IdentityProviderCategory)
+                .WithMany(x => x.IdentityProviders)
+                .HasForeignKey(x => x.IdentityProviderCategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.IdentityProviderType)
+                .WithMany(x => x.IdentityProviders)
+                .HasForeignKey(x => x.IdentityProviderTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.Owner)
+                .WithMany(x => x.OwnedIdentityProviders)
+                .HasForeignKey(x => x.OwnerId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<IdentityProviderType>()
+            .HasData(
+                Enum.GetValues(typeof(IdentityProviderTypeId))
+                    .Cast<IdentityProviderTypeId>()
+                    .Select(e => new IdentityProviderType(e))
+            );
 
         modelBuilder.Entity<IdentityProviderCategory>()
             .HasData(
@@ -1337,6 +1383,16 @@ public class PortalDbContext : DbContext
                   .WithOne(x => x.CompanyServiceAccount)
                   .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.ServiceAccountId);
         });
+
+        modelBuilder.Entity<OnboardingServiceProviderDetail>(entity =>
+        {
+            entity.HasKey(x => x.CompanyId);
+
+            entity.HasOne(x => x.Company)
+                .WithOne(x => x.OnboardingServiceProviderDetail)
+                .HasForeignKey<OnboardingServiceProviderDetail>(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
     }
 
     /// <inheritdoc />
@@ -1361,16 +1417,10 @@ public class PortalDbContext : DbContext
 
     private void EnhanceChangedEntries()
     {
-        foreach (var prop in ChangeTracker.Entries()
-            .Where(entry => entry.State != EntityState.Unchanged && entry.State != EntityState.Detached && entry.Entity is IAuditableV1)
-            .SelectMany(entry =>
-                entry.Properties.IntersectBy(
-                    entry.Entity.GetType().GetProperties()
-                        .Where(x => Attribute.IsDefined(x, typeof(AuditLastEditorV1Attribute)))
-                        .Select(x => x.Name),
-                    property => property.Metadata.Name)))
-        {
-            prop.CurrentValue = _identityService.IdentityData.UserId;
-        }
+        _auditHandler.HandleAuditForChangedEntries(
+            ChangeTracker.Entries().Where(entry =>
+                entry.State != EntityState.Unchanged && entry.State != EntityState.Detached &&
+                entry.Entity is IAuditableV1).ToImmutableList(),
+            ChangeTracker.Context);
     }
 }

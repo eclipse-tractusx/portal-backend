@@ -96,7 +96,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// </summary>
     public Guid RequesterId { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     public Guid? ProcessId { get; set; }

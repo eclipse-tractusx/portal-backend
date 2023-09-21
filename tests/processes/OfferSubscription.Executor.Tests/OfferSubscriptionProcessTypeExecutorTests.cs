@@ -279,6 +279,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, false)]
     [InlineData(ProcessStepTypeId.DECLINE_APPLICATION, false)]
     [InlineData(ProcessStepTypeId.CREATE_IDENTITY_WALLET, false)]
+    [InlineData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, false)]
     public void IsExecutableProcessStep_ReturnsExpected(ProcessStepTypeId processStepTypeId, bool expectedResult)
     {
         // Act

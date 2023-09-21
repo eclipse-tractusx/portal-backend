@@ -38,7 +38,7 @@ public class CompanyAssignedRole : IAuditableV1
     public Guid CompanyId { get; private set; }
     public CompanyRoleId CompanyRoleId { get; private set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // Navigation properties

@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Serilog;
 using System.Reflection;
 
@@ -40,11 +41,12 @@ try
         {
             services
                 .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddDbAuditing()
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
                         x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
                             .MigrationsHistoryTable("__efmigrations_history_portal"))
-                        .UsePostgreSqlTriggers())
+                    .UsePostgreSqlTriggers())
                 .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
         })
         .AddLogging()

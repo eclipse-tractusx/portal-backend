@@ -57,7 +57,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._)).Returns(
             _resultComposer.Create());
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._)).Returns(
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._)).Returns(
             _sharedIdpComposer.With(x => x.IdpAliase, new[] { _fixture.Create<string>() }).Create());
     }
 
@@ -71,6 +71,26 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
         result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async void TestCompanyNameIdpAliaswithNullCompanyNameAndEmailDataFixtureSetup()
+    {
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._))
+            .Returns(_resultComposer.With(
+                x => x.CompanyUser,
+                    _fixture.Build<(Guid CompanyUserId, string? FirstName, string? LastName, string? Email)>()
+                        .With(x => x.FirstName, (string?)null)
+                        .With(x => x.LastName, (string?)null)
+                        .With(x => x.Email, (string?)null)
+                        .Create())
+                .Create());
+        var sut = new UserProvisioningService(null!, _portalRepositories);
+
+        var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
+        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
+        result.Should().NotBeNull();
+        result.NameCreatedBy.Should().Be("Dear User");
     }
 
     [Fact]
@@ -145,11 +165,34 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
+    public async void TestGetCompanyNameSharedIdpwithNullCompanyNameAndEmailAliasDataFixtureSetup()
+    {
+        // Arrange
+        var data = new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>>(
+            new ValueTuple<Guid, string?, string?>(Guid.NewGuid(), _fixture.Create<string>(), _fixture.Create<string>()),
+            new ValueTuple<Guid, string?, string?, string?>(Guid.NewGuid(), null, null, null),
+            _fixture.CreateMany<string>(1)
+
+        );
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
+            .Returns(data);
+
+        // Act
+        var sut = new UserProvisioningService(null!, _portalRepositories);
+
+        // Assert
+        var result = await sut.GetCompanyNameSharedIdpAliasData(_companyUserId).ConfigureAwait(false);
+        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
+        result.Should().NotBeNull();
+        result.NameCreatedBy.Should().Be("Dear User");
+    }
+    [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataNotFound()
     {
         ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(notfound);
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
@@ -165,7 +208,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(notfound);
 
         var applicationId = _fixture.Create<Guid>();
@@ -181,7 +224,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataNoIdpAliasThrows()
     {
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(_sharedIdpComposer.With(x => x.IdpAliase, Enumerable.Empty<string>()).Create());
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
@@ -195,7 +238,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataMultipleIdpAliaseThrows()
     {
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(_sharedIdpComposer.With(x => x.IdpAliase, _fixture.CreateMany<string>(2)).Create());
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
@@ -211,7 +254,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var companyId = _fixture.Create<Guid>();
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(_sharedIdpComposer
                 .With(x => x.Company,
                     _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()

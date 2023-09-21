@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -44,6 +45,7 @@ public class ProcessStep : IBaseEntity
 
     public DateTimeOffset DateCreated { get; private set; }
 
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     public string? Message { get; set; }

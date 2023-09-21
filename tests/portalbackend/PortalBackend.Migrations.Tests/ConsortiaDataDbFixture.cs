@@ -18,9 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,28 +25,18 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Testcontainers.PostgreSql;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Tests;
 
 public class ConsortiaDataDbFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlTestcontainer _container;
-
-    public ConsortiaDataDbFixture()
-    {
-        _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            .WithDatabase(new PostgreSqlTestcontainerConfiguration
-            {
-                Database = "test_db",
-                Username = "postgres",
-                Password = "postgres",
-                Environments = { { "Include Error Detail", "true" } }
-            })
-            .WithImage("postgres")
-            .WithCleanUp(true)
-            .WithName(Guid.NewGuid().ToString())
-            .Build();
-    }
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
+        .WithDatabase("test_db")
+        .WithImage("postgres")
+        .WithCleanUp(true)
+        .WithName(Guid.NewGuid().ToString())
+        .Build();
 
     /// <summary>
     /// Foreach test a new portalDbContext will be created and filled with the custom seeding data. 
@@ -64,11 +51,11 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
         optionsBuilder.UseNpgsql(
-            _container.ConnectionString,
+            _container.GetConnectionString(),
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
+        var context = new PortalDbContext(optionsBuilder.Options, new NoAuditHandler());
         return context;
     }
 
@@ -83,11 +70,11 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
         optionsBuilder.UseNpgsql(
-            _container.ConnectionString,
+            _container.GetConnectionString(),
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
+        var context = new PortalDbContext(optionsBuilder.Options, new NoAuditHandler());
         await context.Database.MigrateAsync();
 
         var seederOptions = Options.Create(new SeederSettings

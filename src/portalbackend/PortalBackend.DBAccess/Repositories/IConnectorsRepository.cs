@@ -21,7 +21,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -35,7 +34,7 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="companyId">The id of the provider company.</param>
     /// <returns>Queryable of connectors that allows transformation.</returns>
-    IQueryable<Connector> GetAllCompanyConnectorsForCompanyId(Guid companyId);
+    Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllCompanyConnectorsForCompanyId(Guid companyId);
 
     /// <summary>
     /// Get all managed connectors of a user's company by iam user ID.

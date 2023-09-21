@@ -604,10 +604,10 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
 
         // Act
-        await _sut.DeactivateOfferByAppIdAsync(appId, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.DeactivateOfferByAppIdAsync(appId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, _identity.CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

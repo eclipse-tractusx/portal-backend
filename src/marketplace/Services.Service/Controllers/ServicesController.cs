@@ -88,7 +88,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
     {
-        var serviceSubscriptionId = await this.WithUserIdAndCompanyId(identity => _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData, identity)).ConfigureAwait(false);
+        var serviceSubscriptionId = await _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetSubscriptionDetail), new { subscriptionId = serviceSubscriptionId }, serviceSubscriptionId);
     }
 
@@ -106,7 +106,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(SubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriptionDetailData> GetSubscriptionDetail([FromRoute] Guid subscriptionId) =>
-        this.WithCompanyId(companyId => _serviceBusinessLogic.GetSubscriptionDetailAsync(subscriptionId, companyId));
+        _serviceBusinessLogic.GetSubscriptionDetailAsync(subscriptionId);
 
     /// <summary>
     /// Retrieves service offer details for the respective service id.
@@ -123,7 +123,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ServiceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ServiceDetailResponse> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") =>
-        this.WithCompanyId(companyId => _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!, companyId));
+        _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!);
 
     /// <summary>
     /// Gets the service agreement consent details.
@@ -148,7 +148,7 @@ public class ServicesController : ControllerBase
     /// <response code="200">Returns the service agreement data.</response>
     [HttpGet]
     [Route("serviceAgreementData/{serviceId}")]
-    [Authorize(Roles = "subscribe_service_offering")]
+    [Authorize(Roles = "subscribe_service")]
     [ProducesResponseType(typeof(AgreementData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AgreementData> GetServiceAgreement([FromRoute] Guid serviceId) =>
         _serviceBusinessLogic.GetServiceAgreement(serviceId);
@@ -169,8 +169,8 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data)
-        => await this.WithUserIdAndCompanyId(identity => _serviceBusinessLogic.AutoSetupServiceAsync(data, identity));
+    public Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data) =>
+        _serviceBusinessLogic.AutoSetupServiceAsync(data);
 
     /// <summary>
     /// Auto setup the app
@@ -188,7 +188,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> StartAutoSetupServiceProcess([FromBody] OfferAutoSetupData data)
     {
-        await this.WithCompanyId(companyId => _serviceBusinessLogic.StartAutoSetupAsync(data, companyId)).ConfigureAwait(false);
+        await _serviceBusinessLogic.StartAutoSetupAsync(data).ConfigureAwait(false);
         return NoContent();
     }
     /// <summary>
@@ -204,7 +204,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null) =>
-        this.WithCompanyId(companyId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, companyId, sorting, statusId, offerId));
+        _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, sorting, statusId, offerId);
 
     /// <summary>
     /// Retrieve Document Content for Service by ID
@@ -247,7 +247,7 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(Pagination.Response<AllOfferStatusData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? offerName = null, [FromQuery] ServiceStatusIdFilter? statusId = null) =>
-        this.WithCompanyId(companyId => _serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, companyId, sorting, offerName, statusId));
+        _serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, sorting, offerName, statusId);
 
     /// <summary>
     /// Retrieves the details of a subscription
@@ -267,7 +267,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [PublicUrl(CompanyRoleId.SERVICE_PROVIDER)]
     public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
-        this.WithCompanyId(companyId => _serviceBusinessLogic.GetSubscriptionDetailForProvider(serviceId, subscriptionId, companyId));
+        _serviceBusinessLogic.GetSubscriptionDetailForProvider(serviceId, subscriptionId);
 
     /// <summary>
     /// Retrieves the details of a subscription
@@ -286,7 +286,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
-        this.WithCompanyId(companyId => _serviceBusinessLogic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, companyId));
+        _serviceBusinessLogic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId);
 
     /// <summary>
     /// Retrieves subscription statuses of services.
@@ -301,7 +301,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithCompanyId(companyId => _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size, companyId));
+        _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size);
 
     /// <summary>
     /// Unsubscribes an service from the current user's company's subscriptions.
@@ -320,7 +320,31 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UnsubscribeCompanyServiceSubscriptionAsync([FromRoute] Guid subscriptionId)
     {
-        await this.WithCompanyId(companyId => _serviceBusinessLogic.UnsubscribeOwnCompanyServiceSubscriptionAsync(subscriptionId, companyId)).ConfigureAwait(false);
+        await _serviceBusinessLogic.UnsubscribeOwnCompanyServiceSubscriptionAsync(subscriptionId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Activates a pending service subscription.
+    /// </summary>
+    /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to activate.</param>
+    /// <remarks>Example: PUT: /api/services/supscription/{subscriptiondId}/activate</remarks>
+    /// <response code="204">Service subscription was successfully activated.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="500">Internal Server Error.</response>
+    [HttpPut]
+    [Route("/subscription/{subscriptionId}/activate")]
+    [Authorize(Roles = "activate_subscription")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid subscriptionId)
+    {
+        await _serviceBusinessLogic.TriggerActivateOfferSubscription(subscriptionId).ConfigureAwait(false);
         return NoContent();
     }
 }

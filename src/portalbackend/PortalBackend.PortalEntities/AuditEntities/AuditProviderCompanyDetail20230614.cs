@@ -52,7 +52,7 @@ public class AuditProviderCompanyDetail20230614 : IAuditEntityV1
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />
