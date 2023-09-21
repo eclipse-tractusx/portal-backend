@@ -68,4 +68,5 @@ public interface IProvisioningManager
     IEnumerable<(string AttributeName, IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null);
     Task DeleteClientRolesFromCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
     ValueTask UpdateSharedRealmTheme(string alias, string loginTheme);
+    Task<string?> GetUserByUserName(string userName);
 }

@@ -38,6 +38,7 @@ public class RoleBaseMailService : IRoleBaseMailService
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
     }
+
     public async Task RoleBaseSendMail(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> template, Guid companyId)
     {
         var receiverUserRoles = receiverRoles;

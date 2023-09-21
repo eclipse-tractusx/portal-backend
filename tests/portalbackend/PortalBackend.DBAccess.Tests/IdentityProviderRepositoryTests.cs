@@ -171,10 +171,171 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        results.Should().HaveCount(2);
+        results.Should().HaveCount(3);
         results.Should().Satisfy(
             x => x.Alias == "Idp-123" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED,
-            x => x.Alias == "Shared-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.SHARED);
+            x => x.Alias == "Shared-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.SHARED,
+            x => x.Alias == "Managed-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED);
+    }
+
+    #endregion
+
+    #region GetSingleManagedIdentityProviderAliasDataUntracked
+
+    [Fact]
+    public async Task GetSingleManagedIdentityProviderAliasDataUntracked_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Match<(Guid IdentityProviderId, string? Alias)>(x => x.IdentityProviderId == new Guid("38f56465-ce26-4f25-9745-1791620dc200") && x.Alias == "Test-Alias2");
+    }
+
+    [Fact]
+    public async Task GetSingleManagedIdentityProviderAliasDataUntracked_WithCompanyOwningMultipleManagedIdps_Throws()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var Act = () => sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
+
+        // Assert
+        var result = await Assert.ThrowsAsync<InvalidOperationException>(Act).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task GetSingleManagedIdentityProviderAliasDataUntracked_WithCompanyOwningOwnIdp_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(((Guid, string?))default);
+    }
+
+    #endregion
+
+    #region GetManagedIdentityProviderAliasDataUntracked
+
+    [Fact]
+    public async Task GetManagedIdentityProviderAliasDataUntracked_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc200") }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle()
+            .Which.Should().Match<(Guid IdentityProviderId, string? Alias)>(x => x.IdentityProviderId == new Guid("38f56465-ce26-4f25-9745-1791620dc200") && x.Alias == "Test-Alias2");
+    }
+
+    [Fact]
+    public async Task GetManagedIdentityProviderAliasDataUntracked_WithOtherCompanyIdentityProviderId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc199") }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetManagedIdentityProviderAliasDataUntracked_WithCompanyOwningOwnIdp_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc199") }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region CreateCompanyIdentityProviders
+
+    [Fact]
+    public async Task CreateCompanyIdentityProviders_WithValid_ReturnsExpected()
+    {
+        var identityProviderId = new Guid("38f56465-ce26-4f25-9745-1791620dc198");
+        var identityProviderId2 = new Guid("07543ffd-fac9-436a-b60e-5f599e9bc748");
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        sut.CreateCompanyIdentityProviders(new ValueTuple<Guid, Guid>[]
+        {
+            (_companyId, identityProviderId),
+            (_companyId, identityProviderId2)
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty()
+            .And.HaveCount(2);
+        changedEntries.Select(x => x.Entity).Should().AllBeOfType<CompanyIdentityProvider>().Which.Should().Satisfy(
+                idp => idp.CompanyId == _companyId && idp.IdentityProviderId == identityProviderId,
+                idp => idp.CompanyId == _companyId && idp.IdentityProviderId == identityProviderId2
+            );
+    }
+
+    #endregion
+
+    #region GetCompanyNameIdpAliaseUntrackedAsync
+
+    [Fact]
+    public async Task GetCompanyNameIdpAliaseUntrackedAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyNameIdpAliaseUntrackedAsync(new Guid("8b42e6de-7b59-4217-a63c-198e83d93776"), null, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.Company.CompanyId.Should().Be(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
+        result.Company.CompanyName.Should().Be("Bayerische Motorenwerke AG");
+        result.IdpAliase.Should().HaveCount(1).And.Satisfy(x => x.IdentityProviderId == new Guid("38f56465-ce26-4f25-9745-1791620dc201") && x.Alias == "Shared-Alias");
+    }
+
+    #endregion
+
+    #region GetCompanyNameIdpAliasUntrackedAsync
+
+    [Fact]
+    public async Task GetCompanyNameIdpAliasUntrackedAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyNameIdpAliasUntrackedAsync(new Guid("38f56465-ce26-4f25-9745-1791620dc201"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93776")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.Company.CompanyId.Should().Be(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
+        result.Company.CompanyName.Should().Be("Bayerische Motorenwerke AG");
+        result.CompanyUser.Email.Should().Be("test@email.com");
+        result.CompanyUser.FirstName.Should().Be("First");
+        result.CompanyUser.LastName.Should().Be("User");
+        result.IdentityProvider.IdpAlias.Should().Be("Shared-Alias");
+        result.IdentityProvider.IsSharedIdp.Should().Be(true);
     }
 
     #endregion

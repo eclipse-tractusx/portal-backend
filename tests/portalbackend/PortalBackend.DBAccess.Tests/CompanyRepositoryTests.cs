@@ -67,17 +67,77 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         results.CompanyId.Should().Be(_validCompanyId);
         results.AutoSetupUrl.Should().Be(url);
         results.AutoSetupCallbackUrl.Should().Be("https://test.de");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>();
-        var providerCompanyDetail = changedEntries.Single().Entity as ProviderCompanyDetail;
-        providerCompanyDetail!.AutoSetupUrl.Should().Be(url);
-        providerCompanyDetail.AutoSetupCallbackUrl.Should().Be("https://test.de");
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<ProviderCompanyDetail>()
+            .Which.Should().Match<ProviderCompanyDetail>(x =>
+                x.AutoSetupUrl == url &&
+                x.AutoSetupCallbackUrl == "https://test.de"
+            );
+    }
+
+    #endregion
+
+    #region Create Company
+
+    [Fact]
+    public async Task CreateCompany_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateCompany("Test Company", entity =>
+        {
+            entity.CompanyStatusId = CompanyStatusId.ACTIVE;
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        results.Name.Should().Be("Test Company");
+        results.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Company>()
+            .Which.Should().Match<Company>(x =>
+                x.Name == "Test Company" &&
+                x.CompanyStatusId == CompanyStatusId.ACTIVE
+            );
+    }
+
+    #endregion
+
+    #region Create Address
+
+    [Fact]
+    public async Task CreateAddress_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateAddress("Munich", "Street", "DE", a =>
+        {
+            a.Streetnumber = "5";
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        results.Streetnumber.Should().Be("5");
+        results.City.Should().Be("Munich");
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Address>()
+            .Which.Should().Match<Address>(x =>
+                x.City == "Munich" &&
+                x.Streetnumber == "5"
+            );
     }
 
     #endregion
@@ -808,6 +868,36 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
         entry.State.Should().Be(EntityState.Added);
+    }
+
+    #endregion
+
+    #region CheckBpnExists
+
+    [Fact]
+    public async Task CheckBpnExists_WithNotExisting_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckBpnExists("TESTNOTEXISTING").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckBpnExists_WithValid_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckBpnExists("BPNL00000003LLHA").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
     }
 
     #endregion

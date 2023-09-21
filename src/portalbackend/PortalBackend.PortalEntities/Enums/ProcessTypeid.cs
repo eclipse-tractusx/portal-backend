@@ -24,4 +24,5 @@ public enum ProcessTypeId
 {
     APPLICATION_CHECKLIST = 1,
     OFFER_SUBSCRIPTION = 3,
+    PARTNER_REGISTRATION = 4,
 }

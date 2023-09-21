@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Runtime.CompilerServices;
@@ -83,7 +84,9 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     parsed.Email,
                     await GetUserRoleDatas(parsed.Roles, validRoleData, identity.CompanyId).ConfigureAwait(false),
                     parsed.ProviderUserName,
-                    parsed.ProviderUserId);
+                    parsed.ProviderUserId,
+                    UserStatusId.ACTIVE,
+                    true);
             },
             lines => (companyNameIdpAliasData.IsSharedIdp
                 ? _userProvisioningService
@@ -211,7 +214,9 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     parsed.Email,
                     await GetUserRoleDatas(parsed.Roles, validRoleData, identity.CompanyId).ConfigureAwait(false),
                     parsed.Email,
-                    "");
+                    "",
+                    UserStatusId.ACTIVE,
+                    true);
             },
             lines =>
                 _userProvisioningService

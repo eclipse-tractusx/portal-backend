@@ -442,4 +442,25 @@ public class UserRepository : IUserRepository
         modify.Invoke(updatedEntity);
         return updatedEntity;
     }
+
+    public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName) =>
+        _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, providerId, userName)).Entity;
+
+    public IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
+        _dbContext.CompanyUsers
+            .Where(cu =>
+                cu.Identity!.UserStatusId == UserStatusId.PENDING &&
+                cu.Identity.Company!.NetworkRegistration!.Id == networkRegistrationId)
+            .Select(cu =>
+                new CompanyUserIdentityProviderProcessData(
+                    cu.Id,
+                    cu.Firstname,
+                    cu.Lastname,
+                    cu.Email,
+                    cu.Identity!.UserEntityId,
+                    cu.Identity.Company!.Name,
+                    cu.Identity.Company.BusinessPartnerNumber,
+                    cu.CompanyUserAssignedIdentityProviders.Select(assigned => new ProviderLinkData(assigned.UserName, assigned.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, assigned.ProviderId))
+                ))
+            .ToAsyncEnumerable();
 }

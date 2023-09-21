@@ -48,6 +48,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\framework\Framework.ProcessIdentity\Framework.ProcessIdentity.csproj" />
         <ProjectReference Include="..\OfferSubscription.Executor\OfferSubscription.Executor.csproj" />
+        <ProjectReference Include="..\NetworkRegistration.Executor\NetworkRegistration.Executor.csproj" />
         <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
         <ProjectReference Include="..\ApplicationChecklist.Executor\ApplicationChecklist.Executor.csproj" />
     </ItemGroup>

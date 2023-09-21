@@ -134,5 +134,21 @@
     "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe06",
     "date_created": "2023-02-21 08:15:20.479000 +00:00",
     "date_last_changed": null
+  },
+  {
+    "id": "72616420-72a0-42cc-bbdd-0b1a95f68067",
+    "process_step_type_id": 200,
+    "process_step_status_id": 4,
+    "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe07",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "72616420-72a0-42cc-bbdd-0b1a95f68068",
+    "process_step_type_id": 201,
+    "process_step_status_id": 1,
+    "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe07",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
   }
 ]

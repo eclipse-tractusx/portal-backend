@@ -33,8 +33,9 @@ public interface ICompanyRepository
     /// Creates new company entity from persistence layer.
     /// </summary>
     /// <param name="companyName">Name of the company to create the new entity for.</param>
+    /// <param name="setOptionalParameters">Sets the optional Parameters</param>
     /// <returns>Created company entity.</returns>
-    Company CreateCompany(string companyName);
+    Company CreateCompany(string companyName, Action<Company>? setOptionalParameters = null);
 
     void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
 
@@ -170,4 +171,5 @@ public interface ICompanyRepository
     Task<(bool hasCompanyRole, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId);
     void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields);
     OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl);
+    Task<bool> CheckBpnExists(string bpn);
 }

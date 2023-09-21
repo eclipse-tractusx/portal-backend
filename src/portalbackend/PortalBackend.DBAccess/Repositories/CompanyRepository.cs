@@ -42,13 +42,16 @@ public class CompanyRepository : ICompanyRepository
     }
 
     /// <inheritdoc/>
-    public Company CreateCompany(string companyName) =>
-        _context.Companies.Add(
-            new Company(
-                Guid.NewGuid(),
-                companyName,
-                CompanyStatusId.PENDING,
-                DateTimeOffset.UtcNow)).Entity;
+    Company ICompanyRepository.CreateCompany(string companyName, Action<Company>? setOptionalParameters)
+    {
+        var company = new Company(
+            Guid.NewGuid(),
+            companyName,
+            CompanyStatusId.PENDING,
+            DateTimeOffset.UtcNow);
+        setOptionalParameters?.Invoke(company);
+        return _context.Companies.Add(company).Entity;
+    }
 
     public void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify)
     {
@@ -60,16 +63,15 @@ public class CompanyRepository : ICompanyRepository
 
     public Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null)
     {
-        var address = _context.Addresses.Add(
-            new Address(
-                Guid.NewGuid(),
-                city,
-                streetname,
-                countryAlpha2Code,
-                DateTimeOffset.UtcNow
-            )).Entity;
+        var address = new Address(
+            Guid.NewGuid(),
+            city,
+            streetname,
+            countryAlpha2Code,
+            DateTimeOffset.UtcNow
+        );
         setOptionalParameters?.Invoke(address);
-        return address;
+        return _context.Addresses.Add(address).Entity;
     }
 
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
@@ -344,4 +346,9 @@ public class CompanyRepository : ICompanyRepository
     {
         return _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl)).Entity;
     }
+
+    /// <inheritdoc />
+    public Task<bool> CheckBpnExists(string bpn) =>
+        _context.Companies
+            .AnyAsync(x => x.BusinessPartnerNumber == bpn);
 }

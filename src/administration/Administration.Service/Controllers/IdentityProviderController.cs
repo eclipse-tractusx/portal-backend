@@ -70,6 +70,7 @@ public class IdentityProviderController : ControllerBase
     /// Create an identity provider
     /// </summary>
     /// <param name="protocol">Type of the protocol the identity provider should be created for</param>
+    /// <param name="typeId">IdentityProvider type (OWN or MANAGED)</param>
     /// <param name="displayName">displayName of identityprovider to be set up (optional)</param>
     /// <returns>Returns details of the created identity provider</returns>
     /// <remarks>

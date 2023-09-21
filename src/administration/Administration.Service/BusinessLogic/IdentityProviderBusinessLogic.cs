@@ -78,12 +78,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             IamIdentityProviderProtocol.OIDC => IdentityProviderCategoryId.KEYCLOAK_OIDC,
             _ => throw new ControllerArgumentException($"unexcepted value of protocol: '{protocol}'", nameof(protocol))
         };
+        var requiredCompanyRoles = typeId switch
+        {
+            IdentityProviderTypeId.OWN => Enumerable.Empty<CompanyRoleId>(),
+            IdentityProviderTypeId.MANAGED => new[] { CompanyRoleId.OPERATOR, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER },
+            _ => throw new ControllerArgumentException($"creation of identityProviderType {typeId} is not supported")
+        };
         if (displayName != null)
         {
             ValidateDisplayName(displayName);
         }
 
-        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, typeId, displayName);
+        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, typeId, displayName, requiredCompanyRoles);
     }
 
     private static void ValidateDisplayName(string displayName)
@@ -98,16 +104,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, IdentityProviderTypeId typeId, string? displayName)
+    private async ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, IdentityProviderTypeId typeId, string? displayName, IEnumerable<CompanyRoleId> requiredCompanyRoles)
     {
         var companyId = _identityService.IdentityData.CompanyId;
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var requiredCompanyRoles = typeId switch
-        {
-            IdentityProviderTypeId.OWN => Enumerable.Empty<CompanyRoleId>(),
-            IdentityProviderTypeId.MANAGED => new[] { CompanyRoleId.OPERATOR, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER },
-            _ => throw new ControllerArgumentException($"creation of identityProviderType {typeId} is not supported")
-        };
         var result = await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyAndCompanyRolesAsync(companyId, requiredCompanyRoles).ConfigureAwait(false);
         if (!result.IsValidCompany)
         {

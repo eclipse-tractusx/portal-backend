@@ -58,7 +58,7 @@ public class UserProvisioningService : IUserProvisioningService
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var (companyId, companyName, businessPartnerNumber, alias, isSharedIdp) = companyNameIdpAliasData;
+        var (companyId, companyName, businessPartnerNumber, alias, identityProviderId, isSharedIdp) = companyNameIdpAliasData;
 
         var passwordProvider = new OptionalPasswordProvider(isSharedIdp);
 
@@ -75,23 +75,9 @@ public class UserProvisioningService : IUserProvisioningService
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, user.UserId, user.UserName);
                 var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
-
-                var centralUserId = await _provisioningManager.CreateCentralUserAsync(
-                    new UserProfile(
-                        companyUserId.ToString(),
-                        user.FirstName,
-                        user.LastName,
-                        user.Email
-                    ),
-                    _provisioningManager.GetStandardAttributes(
-                        organisationName: companyName,
-                        businessPartnerNumber: businessPartnerNumber
-                    )
-                ).ConfigureAwait(false);
-
-                await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId, new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
-
+                var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, Enumerable.Repeat(new IdentityProviderLink(alias, providerUserId, user.UserName), 1));
                 userdata = new(centralUserId, companyUserId);
                 if (identity == null)
                 {
@@ -122,6 +108,31 @@ public class UserProvisioningService : IUserProvisioningService
         }
     }
 
+    public async Task<string> CreateCentralUserWithProviderLinks(Guid companyUserId, UserCreationRoleDataIdpInfo user, string companyName, string? businessPartnerNumber, IEnumerable<IdentityProviderLink> identityProviderLinks)
+    {
+        var centralUserId = await _provisioningManager.CreateCentralUserAsync(
+            new UserProfile(
+                companyUserId.ToString(),
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                user.Enabled
+            ),
+            _provisioningManager.GetStandardAttributes(
+                organisationName: companyName,
+                businessPartnerNumber: businessPartnerNumber
+            )
+        ).ConfigureAwait(false);
+
+        foreach (var identityProviderLink in identityProviderLinks)
+        {
+            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId,
+                    new IdentityProviderLink(identityProviderLink.Alias, identityProviderLink.UserId, identityProviderLink.UserName)).ConfigureAwait(false);
+        }
+
+        return centralUserId;
+    }
+
     private async Task<(Identity? identity, Guid companyUserId)> GetOrCreateCompanyUser(
         IUserRepository userRepository,
         string alias,
@@ -138,7 +149,7 @@ public class UserProvisioningService : IUserProvisioningService
             return (identity, companyUserId);
         }
 
-        identity = userRepository.CreateIdentity(companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
+        identity = userRepository.CreateIdentity(companyId, user.UserStatusId, IdentityTypeId.COMPANY_USER);
         companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email).Id;
         if (businessPartnerNumber != null)
         {
@@ -169,6 +180,7 @@ public class UserProvisioningService : IUserProvisioningService
                     user.FirstName,
                     user.LastName,
                     user.Email,
+                    user.Enabled,
                     password))
             : Task.FromResult(user.UserId);
 
@@ -192,7 +204,7 @@ public class UserProvisioningService : IUserProvisioningService
 
         var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
 
-        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, identityProvider.IdpAlias, identityProvider.IsSharedIdp), createdByName);
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, identityProvider.IdpAlias, identityProviderId, identityProvider.IsSharedIdp), createdByName);
     }
 
     public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(Guid companyUserId, Guid? applicationId = null)
@@ -220,7 +232,8 @@ public class UserProvisioningService : IUserProvisioningService
 
         var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
 
-        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAliase.First(), true), createdByName);
+        var idpAlias = idpAliase.First();
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAlias.Alias, idpAlias.IdentityProviderId, true), createdByName);
     }
 
     private static string CreateNameString(string? firstName, string? lastName, string? email)

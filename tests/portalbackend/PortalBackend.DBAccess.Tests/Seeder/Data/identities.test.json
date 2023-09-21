@@ -134,5 +134,13 @@
     "user_status_id": 1,
     "user_entity_id": null,
     "identity_type_id": 2
+  },
+  {
+    "id": "8b42e6de-7b59-4217-a63c-198e83d93776",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "user_status_id": 4,
+    "user_entity_id": null,
+    "identity_type_id": 1
   }
 ]

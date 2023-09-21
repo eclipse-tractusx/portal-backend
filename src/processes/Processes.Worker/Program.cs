@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
@@ -52,15 +53,19 @@ try
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddApplicationChecklistCreation()
                 .AddApplicationActivation(hostContext.Configuration)
-                .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"));
+                .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddNetworkRegistrationProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {
-                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak")?.Get<KeycloakSettingsMap>()?.Values
                     .Where(config => config.ConnectionString.StartsWith("https://"))
                     .Select(config => config.ConnectionString)
                     .Distinct();
-                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+                if (urlsToTrust != null)
+                {
+                    FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+                }
             }
         })
         .AddLogging()

@@ -108,6 +108,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; set; } = default!;
+    public virtual DbSet<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; set; } = default!;
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
     public virtual DbSet<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
@@ -135,6 +136,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<LanguageLongName> LanguageLongNames { get; set; } = default!;
     public virtual DbSet<LicenseType> LicenseTypes { get; set; } = default!;
     public virtual DbSet<MediaType> MediaTypes { get; set; } = default!;
+    public virtual DbSet<NetworkRegistration> NetworkRegistrations { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; set; } = default!;
     public virtual DbSet<Offer> Offers { get; set; } = default!;
@@ -1391,6 +1393,46 @@ public class PortalDbContext : DbContext
             entity.HasOne(x => x.Company)
                 .WithOne(x => x.OnboardingServiceProviderDetail)
                 .HasForeignKey<OnboardingServiceProviderDetail>(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<NetworkRegistration>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasIndex(x => new { x.ExternalId, x.OnboardingServiceProviderId })
+                .IsUnique();
+
+            entity.HasOne(x => x.Company)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.Process)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.ProcessId);
+
+            entity.HasOne(x => x.OnboardingServiceProvider)
+                .WithMany(x => x.OnboardedNetworkRegistrations)
+                .HasForeignKey(x => x.OnboardingServiceProviderId);
+
+            entity.HasOne(x => x.CompanyApplication)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.ApplicationId);
+        });
+
+        modelBuilder.Entity<CompanyUserAssignedIdentityProvider>(entity =>
+        {
+            entity.HasKey(e => new { e.CompanyUserId, e.IdentityProviderId });
+
+            entity.HasOne(e => e.CompanyUser)
+                .WithMany(e => e.CompanyUserAssignedIdentityProviders)
+                .HasForeignKey(e => e.CompanyUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(e => e.IdentityProvider)
+                .WithMany(e => e.CompanyUserAssignedIdentityProviders)
+                .HasForeignKey(e => e.IdentityProviderId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }

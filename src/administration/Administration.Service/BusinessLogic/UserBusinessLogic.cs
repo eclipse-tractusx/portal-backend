@@ -106,7 +106,9 @@ public class UserBusinessLogic : IUserBusinessLogic
                 user.eMail,
                 roleDatas.IntersectBy(user.Roles, roleData => roleData.UserRoleText),
                 user.userName ?? user.eMail,
-                ""
+                "",
+                UserStatusId.ACTIVE,
+                true
             )).ToAsyncEnumerable();
 
         var emailData = userList.ToDictionary(
@@ -176,7 +178,9 @@ public class UserBusinessLogic : IUserBusinessLogic
                     userCreationInfo.Email,
                     roleDatas,
                     userCreationInfo.UserName,
-                    userCreationInfo.UserId
+                    userCreationInfo.UserId,
+                    UserStatusId.ACTIVE,
+                    true
                 ), 1).ToAsyncEnumerable())
             .FirstAsync()
             .ConfigureAwait(false);
