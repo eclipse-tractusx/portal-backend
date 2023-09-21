@@ -26,5 +26,5 @@ public interface IKeycloakFactory
 {
     KeycloakClient CreateKeycloakClient(string instance);
 
-    KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret);
+    KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret, bool useAuthTrail);
 }

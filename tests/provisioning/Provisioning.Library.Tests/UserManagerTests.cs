@@ -55,11 +55,11 @@ public class UserManagerTests
         var keycloakFactory = A.Fake<IKeycloakFactory>();
         _provisioningDbAccess = A.Fake<IProvisioningDBAccess>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
-            .Returns(new KeycloakClient(CentralUrl, "test", "test", "test"));
+            .Returns(new KeycloakClient(CentralUrl, "test", "test", "test", false));
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared"))
-            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test"));
-        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._))
-            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test"));
+            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
+        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._, A<bool>._))
+            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
         var settings = new ProvisioningSettings
         {
             ClientPrefix = "cl",
