@@ -102,7 +102,12 @@ public class NetworkRepository : INetworkRepository
                 x.OnboardingServiceProvider!.BusinessPartnerNumber,
                 x.ApplicationId,
                 processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ?
-                    x.Process!.ProcessSteps.Where(p => p.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION && p.ProcessStepStatusId == ProcessStepStatusId.FAILED).Select(step => step.Message).Where(message => message != null) :
+                    x.Process!.ProcessSteps
+                        .Where(p =>
+                            p.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION &&
+                            p.ProcessStepStatusId == ProcessStepStatusId.FAILED &&
+                            p.Message != null)
+                        .Select(step => step.Message) :
                     new List<string?>()))
             .SingleOrDefaultAsync();
 }
