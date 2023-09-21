@@ -85,7 +85,7 @@ public class NetworkController : ControllerBase
     /// <summary>
     /// Submits the application
     /// </summary>
-    /// <param name="companyRoleConsentDetails">The agreements for the companyRoles</param>
+    /// <param name="data">The agreements for the companyRoles</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/network/partnerRegistration/submit
@@ -98,9 +98,9 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> Submit([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails, CancellationToken cancellationToken)
+    public async Task<NoContentResult> Submit([FromBody] PartnerSubmitData data, CancellationToken cancellationToken)
     {
-        await _logic.Submit(companyRoleConsentDetails, cancellationToken).ConfigureAwait(false);
+        await _logic.Submit(data, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 

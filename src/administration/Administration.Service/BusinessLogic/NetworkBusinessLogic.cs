@@ -307,7 +307,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
     }
 
-    public async Task Submit(IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails, CancellationToken cancellationToken)
+    public async Task Submit(PartnerSubmitData submitData, CancellationToken cancellationToken)
     {
         var companyId = _identityService.IdentityData.CompanyId;
         var userId = _identityService.IdentityData.UserId;
@@ -344,22 +344,32 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             throw new ConflictException($"Application {companyApplication.Id} is not in state CREATED");
         }
 
-        var allCompanyRolesMatched = data.CompanyRoleIds
-            .Select(companyRole => companyRoleConsentDetails
-                .Any(role =>
-                    role.CompanyRole == companyRole.CompanyRoleId &&
-                    companyRole.AgreementIds.All(agreementId =>
-                        role.Agreements.Any(agreement =>
-                            agreement.AgreementId == agreementId &&
-                            agreement.ConsentStatus == ConsentStatusId.ACTIVE))))
-            .All(allAgreementsActive => allAgreementsActive);
-        if (!allCompanyRolesMatched)
+        if (submitData.Agreements.Any(x => x.ConsentStatusId != ConsentStatusId.ACTIVE))
+        {
+            throw new ConflictException("All agreements must be agreed to");
+        }
+
+        var missingRoles = data.CompanyRoleIds
+            .Where(companyRole =>
+                submitData.CompanyRoles.Any(role => role != companyRole.CompanyRoleId));
+        if (missingRoles.Any())
+        {
+            throw new ControllerArgumentException($"CompanyRoles {string.Join(",", missingRoles)} are missing");
+        }
+
+        var allAgreementsActive = data.CompanyRoleIds.SelectMany(x => x.AgreementIds)
+                .Distinct()
+                .Select(agreementId => submitData.Agreements.Any(agreement =>
+                        agreement.AgreementId == agreementId &&
+                        agreement.ConsentStatusId == ConsentStatusId.ACTIVE))
+                .All(x => x);
+        if (!allAgreementsActive)
         {
             throw new ConflictException("All Agreements for the company roles must be agreed to");
         }
 
-        foreach (var (agreementId, consentStatus) in companyRoleConsentDetails.SelectMany(x => x.Agreements)
-                     .DistinctBy(a => a.AgreementId).Select(x => (x.AgreementId, x.ConsentStatus)))
+        foreach (var (agreementId, consentStatus) in submitData.Agreements
+                     .DistinctBy(a => a.AgreementId).Select(x => (x.AgreementId, x.ConsentStatusId)))
         {
             _portalRepositories.GetInstance<IConsentRepository>()
                 .CreateConsent(agreementId, companyId, userId, consentStatus);

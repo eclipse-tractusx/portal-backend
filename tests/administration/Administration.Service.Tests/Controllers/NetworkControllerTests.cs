@@ -71,14 +71,14 @@ public class NetworkControllerTests
     public async Task Submit_ReturnsExpected()
     {
         // Arrange
-        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        var data = _fixture.Create<PartnerSubmitData>();
 
         // Act
         var result = await this._controller.Submit(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.Submit(A<IEnumerable<CompanyRoleConsentDetails>>.That.Matches(x => x.Count() == 3), A<CancellationToken>._))
+        A.CallTo(() => _logic.Submit(A<PartnerSubmitData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 

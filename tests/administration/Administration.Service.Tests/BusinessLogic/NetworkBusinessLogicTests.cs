@@ -707,7 +707,7 @@ public class NetworkBusinessLogicTests
     public async Task Submit_WithNotExistingSubmitData_ThrowsNotFoundException()
     {
         // Arrange
-        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
             .Returns(new ValueTuple<bool, IEnumerable<ValueTuple<Guid, CompanyApplicationStatusId, string?>>, bool, IEnumerable<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>, Guid?>());
 
@@ -723,7 +723,7 @@ public class NetworkBusinessLogicTests
     public async Task Submit_WithUserNotInRole_ThrowsForbiddenException()
     {
         // Arrange
-        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
             .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), false, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
 
@@ -739,7 +739,7 @@ public class NetworkBusinessLogicTests
     public async Task Submit_WithoutCompanyApplications_ThrowsConflictException()
     {
         // Arrange
-        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
             .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
 
@@ -755,7 +755,7 @@ public class NetworkBusinessLogicTests
     public async Task Submit_WithMultipleCompanyApplications_ThrowsConflictException()
     {
         // Arrange
-        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
             .Returns((true, _fixture.CreateMany<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(2), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
 
@@ -772,7 +772,7 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var data = _fixture.CreateMany<CompanyRoleConsentDetails>(3);
+        var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
             .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.VERIFY, null), 1), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), Guid.NewGuid()));
 
@@ -791,10 +791,9 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var notExistingAgreementId = Guid.NewGuid();
-        var data = new[]
-        {
-            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE)})
-        };
+        var data = new PartnerSubmitData(
+            new[] {CompanyRoleId.APP_PROVIDER},
+            new[] {new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE)});
         var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, notExistingAgreementId})
@@ -817,10 +816,13 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var inactiveAgreementId = Guid.NewGuid();
-        var data = new[]
-        {
-            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(inactiveAgreementId, ConsentStatusId.INACTIVE)})
-        };
+        var data = new PartnerSubmitData(
+            new[] {CompanyRoleId.APP_PROVIDER},
+            new[]
+            {
+                new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
+                new AgreementConsentData(inactiveAgreementId, ConsentStatusId.INACTIVE),
+            });
         var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, inactiveAgreementId})
@@ -833,7 +835,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("All Agreements for the company roles must be agreed to");
+        ex.Message.Should().Be("All agreements must be agreed to");
     }
 
     [Fact]
@@ -843,10 +845,13 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var agreementId1 = Guid.NewGuid();
-        var data = new[]
-        {
-            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
-        };
+        var data = new PartnerSubmitData(
+            new[] {CompanyRoleId.APP_PROVIDER},
+            new[]
+            {
+                new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
+                new AgreementConsentData(agreementId1, ConsentStatusId.ACTIVE),
+            });
         var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
@@ -870,10 +875,14 @@ public class NetworkBusinessLogicTests
         var agreementId1 = Guid.NewGuid();
         var processSteps = new List<ProcessStep>();
         var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
-        var data = new[]
-        {
-            new CompanyRoleConsentDetails(CompanyRoleId.APP_PROVIDER, new []{ new ConsentDetails(agreementId, ConsentStatusId.ACTIVE), new ConsentDetails(agreementId1, ConsentStatusId.ACTIVE)})
-        };
+        
+        var data = new PartnerSubmitData(
+            new[] {CompanyRoleId.APP_PROVIDER},
+            new[]
+            {
+                new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
+                new AgreementConsentData(agreementId1, ConsentStatusId.ACTIVE),
+            });
         var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
