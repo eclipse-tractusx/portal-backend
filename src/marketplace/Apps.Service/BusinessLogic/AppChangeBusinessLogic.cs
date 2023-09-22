@@ -298,7 +298,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     public async Task<ActiveAppDocumentData> GetActiveAppDocumentTypeDataAsync(Guid appId)
     {
         var appDocTypeData = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetActiveOfferDocumentTypeDataAsync(appId, _identityService.IdentityData.CompanyId, OfferTypeId.APP, _settings.ActiveAppDocumentTypeIds)
+            .GetActiveOfferDocumentTypeDataOrderedAsync(appId, _identityService.IdentityData.CompanyId, OfferTypeId.APP, _settings.ActiveAppDocumentTypeIds)
             .PreSortedGroupBy(result => result.DocumentTypeId)
             .ToDictionaryAsync(
                 group => group.Key,

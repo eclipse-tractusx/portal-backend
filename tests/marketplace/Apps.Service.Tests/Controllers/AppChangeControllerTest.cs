@@ -159,6 +159,5 @@ public class AppChangeControllerTest
 
         //Assert
         A.CallTo(() => _logic.GetActiveAppDocumentTypeDataAsync(appId)).MustHaveHappened();
-
     }
 }

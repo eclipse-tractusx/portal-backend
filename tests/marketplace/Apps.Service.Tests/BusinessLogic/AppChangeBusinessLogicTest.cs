@@ -962,26 +962,33 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId1 = _fixture.Create<Guid>();
-        var documenntData = new[] {
-            new DocumentTypeData(DocumentTypeId.APP_IMAGE, documentId1, "TestDoc1")
+        var documentId2 = _fixture.Create<Guid>();
+        var documentId3 = _fixture.Create<Guid>();
+        var documentId4 = _fixture.Create<Guid>();
+        var documentId5 = _fixture.Create<Guid>();
+        var documentData = new[] {
+            new DocumentTypeData(DocumentTypeId.ADDITIONAL_DETAILS, documentId1, "TestDoc1"),
+            new DocumentTypeData(DocumentTypeId.ADDITIONAL_DETAILS, documentId2, "TestDoc2"),
+            new DocumentTypeData(DocumentTypeId.APP_IMAGE, documentId3, "TestDoc3"),
+            new DocumentTypeData(DocumentTypeId.APP_IMAGE, documentId4, "TestDoc4"),
+            new DocumentTypeData(DocumentTypeId.APP_TECHNICAL_INFORMATION, documentId5, "TestDoc5"),
         }.ToAsyncEnumerable();
 
-        A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(documenntData);
+        A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataOrderedAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._))
+            .Returns(documentData);
 
         // Act
         var result = await _sut.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappened();
+        A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataOrderedAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappened();
         result.Documents.Should().NotBeNull().And.HaveCount(4).And.Satisfy(
-            x => x.Key == DocumentTypeId.APP_IMAGE && x.Value.Any(y => y!.DocumentId == documentId1 && y.DocumentName == "TestDoc1"),
-            x => x.Key == DocumentTypeId.APP_TECHNICAL_INFORMATION && !x.Value.Any(),
+            x => x.Key == DocumentTypeId.APP_IMAGE && x.Value.SequenceEqual(new DocumentData[] { new(documentId3, "TestDoc3"), new(documentId4, "TestDoc4") }),
+            x => x.Key == DocumentTypeId.APP_TECHNICAL_INFORMATION && x.Value.SequenceEqual(new DocumentData[] { new(documentId5, "TestDoc5") }),
             x => x.Key == DocumentTypeId.APP_CONTRACT && !x.Value.Any(),
-            x => x.Key == DocumentTypeId.ADDITIONAL_DETAILS && !x.Value.Any()
+            x => x.Key == DocumentTypeId.ADDITIONAL_DETAILS && x.Value.SequenceEqual(new DocumentData[] { new(documentId1, "TestDoc1"), new(documentId2, "TestDoc2") })
         );
     }
 
     #endregion
-
 }

@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -825,7 +824,7 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<DocumentTypeData> GetActiveOfferDocumentTypeDataAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds) =>
+    public IAsyncEnumerable<DocumentTypeData> GetActiveOfferDocumentTypeDataOrderedAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds) =>
         _context.OfferAssignedDocuments
         .Where(oad => oad.OfferId == offerId &&
             oad.Offer!.OfferStatusId == OfferStatusId.ACTIVE &&
@@ -836,6 +835,6 @@ public class OfferRepository : IOfferRepository
             oad.Document!.DocumentTypeId,
             oad.Document.Id,
             oad.Document.DocumentName))
+        .OrderBy(x => x.DocumentTypeId)
         .ToAsyncEnumerable();
-
 }

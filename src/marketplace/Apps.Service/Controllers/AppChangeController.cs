@@ -197,6 +197,7 @@ public class AppChangeController : ControllerBase
     [HttpGet]
     [Route("{appId}/documents")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(ActiveAppDocumentData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActiveAppDocumentData> GetActiveAppDocuments([FromRoute] Guid appId) =>
