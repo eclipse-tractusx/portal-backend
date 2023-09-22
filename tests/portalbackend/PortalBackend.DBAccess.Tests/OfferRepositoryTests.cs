@@ -1456,11 +1456,16 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetActiveOfferDocumentTypeDataAsync(new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP, activeDocumentType).ConfigureAwait(false);
+        var result = await sut.GetActiveOfferDocumentTypeDataAsync(
+            new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            OfferTypeId.APP, activeDocumentType).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull().And.HaveCount(1).And.Satisfy(
-            x => x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2") && x.DocumentName == "Default_App_Image.png" && x.DocumentTypeId == DocumentTypeId.APP_IMAGE
+            x => x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2") &&
+            x.DocumentName == "Default_App_Image.png" &&
+            x.DocumentTypeId == DocumentTypeId.APP_IMAGE
         );
     }
 

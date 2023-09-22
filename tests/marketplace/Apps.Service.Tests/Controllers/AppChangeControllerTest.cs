@@ -158,7 +158,7 @@ public class AppChangeControllerTest
         await this._controller.GetActiveAppDocuments(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetActiveAppDocumentTypeDataAsync(appId, _identity.CompanyId)).MustHaveHappened();
+        A.CallTo(() => _logic.GetActiveAppDocumentTypeDataAsync(appId)).MustHaveHappened();
 
     }
 }

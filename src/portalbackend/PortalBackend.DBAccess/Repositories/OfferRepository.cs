@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Linq.Expressions;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -824,17 +825,17 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<IEnumerable<DocumentTypeData>?> GetActiveOfferDocumentTypeDataAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds) =>
-        _context.Offers
-        .Where(o => o.Id == offerId &&
-            o.OfferStatusId == OfferStatusId.ACTIVE &&
-            o.OfferTypeId == offerTypeId &&
-            o.ProviderCompanyId == userCompanyId)
-        .Select(o => o.Documents.Where(doc => documentTypeIds.Contains(doc.DocumentTypeId))
-            .Select(doc => new DocumentTypeData(
-                doc.DocumentTypeId,
-                doc.Id,
-                doc.DocumentName)))
-        .SingleOrDefaultAsync();
+    public IAsyncEnumerable<DocumentTypeData> GetActiveOfferDocumentTypeDataAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds) =>
+        _context.OfferAssignedDocuments
+        .Where(oad => oad.OfferId == offerId &&
+            oad.Offer!.OfferStatusId == OfferStatusId.ACTIVE &&
+            oad.Offer.OfferTypeId == offerTypeId &&
+            oad.Offer.ProviderCompanyId == userCompanyId &&
+            documentTypeIds.Contains(oad.Document!.DocumentTypeId))
+        .Select(oad => new DocumentTypeData(
+            oad.Document!.DocumentTypeId,
+            oad.Document.Id,
+            oad.Document.DocumentName))
+        .ToAsyncEnumerable();
 
 }

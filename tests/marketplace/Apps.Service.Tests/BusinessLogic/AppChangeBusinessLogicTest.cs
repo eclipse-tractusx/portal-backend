@@ -63,6 +63,7 @@ public class AppChangeBusinessLogicTest
     private readonly IDocumentRepository _documentRepository;
     private readonly INotificationService _notificationService;
     private readonly IOfferService _offerService;
+    private readonly IIdentityService _identityService;
     private readonly AppChangeBusinessLogic _sut;
 
     public AppChangeBusinessLogicTest()
@@ -81,6 +82,7 @@ public class AppChangeBusinessLogicTest
         _documentRepository = A.Fake<IDocumentRepository>();
         _notificationService = A.Fake<INotificationService>();
         _offerService = A.Fake<IOfferService>();
+        _identityService = A.Fake<IIdentityService>();
 
         var settings = new AppsSettings
         {
@@ -109,7 +111,7 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, Options.Create(settings));
+        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, Options.Create(settings), _identityService);
     }
 
     #region  AddActiveAppUserRole
@@ -962,13 +964,13 @@ public class AppChangeBusinessLogicTest
         var documentId1 = _fixture.Create<Guid>();
         var documenntData = new[] {
             new DocumentTypeData(DocumentTypeId.APP_IMAGE, documentId1, "TestDoc1")
-        };
+        }.ToAsyncEnumerable();
 
         A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._))
             .Returns(documenntData);
 
         // Act
-        var result = await _sut.GetActiveAppDocumentTypeDataAsync(appId, _identity.CompanyId).ConfigureAwait(false);
+        var result = await _sut.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappened();

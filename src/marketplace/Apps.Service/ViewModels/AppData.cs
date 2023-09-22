@@ -46,7 +46,7 @@ public record AppData(
     IEnumerable<string> UseCases);
 
 /// <summary>
-/// View model of an application's base data.
+/// View model of an Active App Documents
 /// </summary>
 /// <param name="Documents">Id of the App.</param>
-public record ActiveAppDocumentData(IDictionary<DocumentTypeId, IEnumerable<DocumentData?>> Documents);
+public record ActiveAppDocumentData(IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents);

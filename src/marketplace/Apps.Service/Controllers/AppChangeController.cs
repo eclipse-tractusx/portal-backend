@@ -200,5 +200,5 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ActiveAppDocumentData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActiveAppDocumentData> GetActiveAppDocuments([FromRoute] Guid appId) =>
-        await this.WithCompanyId(companyId => _businessLogic.GetActiveAppDocumentTypeDataAsync(appId, companyId)).ConfigureAwait(false);
+        await _businessLogic.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
 }

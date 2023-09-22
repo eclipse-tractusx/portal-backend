@@ -495,5 +495,5 @@ public interface IOfferRepository
     /// <param name="offerTypeId"></param>
     /// <param name="documentTypeIds"></param>
     /// <returns></returns>
-    Task<IEnumerable<DocumentTypeData>?> GetActiveOfferDocumentTypeDataAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds);
+    IAsyncEnumerable<DocumentTypeData> GetActiveOfferDocumentTypeDataAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds);
 }
