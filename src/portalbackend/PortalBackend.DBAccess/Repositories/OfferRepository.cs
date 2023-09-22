@@ -831,10 +831,10 @@ public class OfferRepository : IOfferRepository
             oad.Offer.OfferTypeId == offerTypeId &&
             oad.Offer.ProviderCompanyId == userCompanyId &&
             documentTypeIds.Contains(oad.Document!.DocumentTypeId))
+        .OrderBy(oad => oad.Document!.DocumentTypeId)
         .Select(oad => new DocumentTypeData(
             oad.Document!.DocumentTypeId,
             oad.Document.Id,
             oad.Document.DocumentName))
-        .OrderBy(x => x.DocumentTypeId)
         .ToAsyncEnumerable();
 }
