@@ -105,10 +105,10 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.DeclineApplication(applicationId, new RegistrationDeclineData("test")).ConfigureAwait(false);
+        var result = await this._controller.DeclineApplication(applicationId, new RegistrationDeclineData("test"), CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeclineRegistrationVerification(applicationId, "test")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeclineRegistrationVerification(applicationId, "test", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

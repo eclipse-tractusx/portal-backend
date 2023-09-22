@@ -108,7 +108,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_PROVIDER)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.TRIGGER_PROVIDER })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -129,7 +129,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -150,7 +150,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -171,7 +171,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK })))
             .MustHaveHappenedOnceExactly();
     }
 

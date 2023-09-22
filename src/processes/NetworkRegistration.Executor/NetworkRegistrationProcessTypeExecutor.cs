@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -32,18 +33,24 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly INetworkRegistrationHandler _networkRegistrationHandler;
+    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
-        ProcessStepTypeId.SYNCHRONIZE_USER);
+        ProcessStepTypeId.SYNCHRONIZE_USER,
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED);
 
     private Guid _networkRegistrationId;
 
     public NetworkRegistrationProcessTypeExecutor(
         IPortalRepositories portalRepositories,
-        INetworkRegistrationHandler networkRegistrationHandler)
+        INetworkRegistrationHandler networkRegistrationHandler,
+        IOnboardingServiceProviderBusinessLogic onboardingServiceProviderBusinessLogic)
     {
         _portalRepositories = portalRepositories;
         _networkRegistrationHandler = networkRegistrationHandler;
+        _onboardingServiceProviderBusinessLogic = onboardingServiceProviderBusinessLogic;
     }
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.PARTNER_REGISTRATION;
@@ -80,6 +87,12 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
                 ProcessStepTypeId.SYNCHRONIZE_USER => await _networkRegistrationHandler.SynchronizeUser(_networkRegistrationId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, cancellationToken)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, cancellationToken)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, cancellationToken)
                     .ConfigureAwait(false),
                 _ => (null, ProcessStepStatusId.TODO, false, null)
             };

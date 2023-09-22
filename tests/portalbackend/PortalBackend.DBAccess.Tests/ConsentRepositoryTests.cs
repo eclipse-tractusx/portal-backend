@@ -52,7 +52,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateConsent_ReturnsExpectedAppCount()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
         var result = sut.CreateConsent(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"), ConsentStatusId.ACTIVE, consent =>
@@ -80,7 +80,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetConsentDetailData_WithValidId_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetConsentDetailData(new Guid("925d02e7-0ef4-4a47-a087-0bdf6af4f4f5"), OfferTypeId.SERVICE);
@@ -94,7 +94,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetConsentDetailData_WithInvalidId_ReturnsNull()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetConsentDetailData(Guid.NewGuid(), OfferTypeId.APP);
@@ -107,7 +107,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetConsentDetailData_WithInvalidOfferType_ReturnsNull()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), OfferTypeId.SERVICE);
@@ -124,7 +124,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveConsents_WithExistingConsent_RemovesConsent()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSut().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
         sut.RemoveConsents(new[] { dbContext.Consents.First() });
@@ -148,7 +148,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifiesConsents_WithValidConsents_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
         sut.AttachAndModifiesConsents(new[]
@@ -170,6 +170,8 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion AddAttachAndModifyConsents
+
+    #region AddAttachAndModifyConsents
 
     [Fact]
     public async Task AddAttachAndModifyConsents_ReturnsExpected()
@@ -204,7 +206,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
             new(agreementId_4, consentId_4, ConsentStatusId.ACTIVE),
         };
 
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
         //Act
         var result = sut.AddAttachAndModifyOfferConsents(appAgreementConsentStatus, agreementConsentStatus, offerId, companyId, companyUserId, utcNow);
@@ -270,7 +272,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
             new( consentId_4,agreementId_4, ConsentStatusId.ACTIVE),
         };
 
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
         //Act
         var result = sut.AddAttachAndModifyConsents(consentStatusDetails, agreementAssingedConsenetData, companyId, companyUserId, utcNow);
@@ -295,14 +297,24 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_6 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE
             );
     }
-    #region
 
     #endregion
 
-    private async Task<(ConsentRepository, PortalDbContext)> CreateSut()
+    #region Setup
+
+    private async Task<(IConsentRepository, PortalDbContext)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new ConsentRepository(context);
         return (sut, context);
     }
+
+    private async Task<IConsentRepository> CreateSut()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new ConsentRepository(context);
+        return sut;
+    }
+
+    #endregion
 }

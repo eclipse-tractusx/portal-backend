@@ -485,6 +485,22 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetCompanyIdNameForSubmittedApplication
+
+    [Fact]
+    public async Task GetCompanyIdNameForSubmittedApplication_WithValidData_Creates()
+    {
+        var (sut, _) = await CreateSutWithContext().ConfigureAwait(false);
+
+        var result = await sut.GetCompanyIdNameForSubmittedApplication(SubmittedApplicationWithBpn).ConfigureAwait(false);
+
+        // Assert
+        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
+        result.CompanyName.Should().Be("CX-Test-Access");
+    }
+
+    #endregion
+
     private async Task<(IApplicationRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

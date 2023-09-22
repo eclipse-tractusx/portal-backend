@@ -64,7 +64,8 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             if (string.IsNullOrWhiteSpace(cu.FirstName) || string.IsNullOrWhiteSpace(cu.LastName) ||
                 string.IsNullOrWhiteSpace(cu.Email))
             {
-                throw new ConflictException($"Firstname, Lastname & Email of CompanyUser {cu.CompanyUserId} must not be null here");
+                throw new ConflictException(
+                    $"Firstname, Lastname & Email of CompanyUser {cu.CompanyUserId} must not be null here");
             }
 
             if (cu.ProviderLinkData.Any(x => string.IsNullOrWhiteSpace(x.Alias)))
@@ -72,19 +73,26 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 throw new ConflictException($"Alias must be set for all ProviderLinkData of CompanyUser {cu.CompanyUserId}");
             }
 
-            var userId = await _provisioningManager.GetUserByUserName(cu.CompanyUserId.ToString()).ConfigureAwait(false) ??
-                         await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyName, cu.Bpn, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)));
+            try
+            {
+                var userId = await _provisioningManager.GetUserByUserName(cu.CompanyUserId.ToString()).ConfigureAwait(false) ??
+                             await _userProvisioningService.CreateCentralUserWithProviderLinks(cu.CompanyUserId, new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyName, cu.Bpn, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)));
 
-            userRepository.AttachAndModifyIdentity(cu.CompanyUserId, i =>
-                {
-                    i.UserStatusId = UserStatusId.PENDING;
-                    i.UserEntityId = null;
-                },
-                i =>
-                {
-                    i.UserStatusId = UserStatusId.ACTIVE;
-                    i.UserEntityId = userId;
-                });
+                userRepository.AttachAndModifyIdentity(cu.CompanyUserId, i =>
+                    {
+                        i.UserStatusId = UserStatusId.PENDING;
+                        i.UserEntityId = null;
+                    },
+                    i =>
+                    {
+                        i.UserStatusId = UserStatusId.ACTIVE;
+                        i.UserEntityId = userId;
+                    });
+            }
+            catch (Exception e)
+            {
+                throw new ServiceException(e.Message, true);
+            }
         }
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(

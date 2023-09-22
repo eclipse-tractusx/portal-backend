@@ -29,6 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\externalsystems\OnboardingServiceProvider.Library\OnboardingServiceProvider.Library.csproj" />
     <ProjectReference Include="..\NetworkRegistration.Library\NetworkRegistration.Library.csproj" />
     <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
   </ItemGroup>

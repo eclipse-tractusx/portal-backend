@@ -65,4 +65,49 @@ public class NetworkRepository : INetworkRepository
                                 step.ProcessStepStatusId == ProcessStepStatusId.TODO))
                 ))
             .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, IEnumerable<(Guid CompanyApplicationId, CompanyApplicationStatusId CompanyApplicationStatusId, string? CallbackUrl)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleAgreementIds, Guid? ProcessId)> GetSubmitData(Guid companyId, Guid userId, IEnumerable<Guid> roleIds) =>
+        _context.Companies
+            .AsSplitQuery()
+            .Where(x => x.Id == companyId)
+            .Select(x => new ValueTuple<bool, IEnumerable<(Guid, CompanyApplicationStatusId, string?)>, bool, IEnumerable<(CompanyRoleId, IEnumerable<Guid>)>, Guid?>(
+                true,
+                x.CompanyApplications
+                    .Where(ca => ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL)
+                    .Select(ca => new ValueTuple<Guid, CompanyApplicationStatusId, string?>(
+                        ca.Id,
+                        ca.ApplicationStatusId,
+                        ca.OnboardingServiceProvider!.OnboardingServiceProviderDetail!.CallbackUrl)),
+                x.Identities
+                    .Any(i => i.Id == userId && i.IdentityAssignedRoles.Any(roles => roleIds.Any(r => r == roles.UserRoleId))),
+                x.CompanyAssignedRoles.Select(assigned => new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(
+                        assigned.CompanyRoleId,
+                        assigned.CompanyRole!.AgreementAssignedCompanyRoles.Select(a => a.AgreementId))),
+                x.NetworkRegistration!.ProcessId
+                ))
+            .SingleOrDefaultAsync();
+
+    public Task<(OspDetails? OspDetails, Guid? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
+        _context.NetworkRegistrations
+            .Where(x => x.Id == networkRegistrationId)
+            .Select(x => new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string>>(
+                x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null
+                    ? null
+                    : new OspDetails(
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.CallbackUrl,
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.AuthUrl,
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientId,
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientSecret),
+                x.ExternalId,
+                x.OnboardingServiceProvider.BusinessPartnerNumber,
+                x.ApplicationId,
+                processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED
+                    ? x.Process!.ProcessSteps
+                        .Where(p =>
+                            p.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION &&
+                            p.ProcessStepStatusId == ProcessStepStatusId.FAILED &&
+                            p.Message != null)
+                        .Select(step => step.Message!)
+                    : new List<string>()))
+            .SingleOrDefaultAsync();
 }

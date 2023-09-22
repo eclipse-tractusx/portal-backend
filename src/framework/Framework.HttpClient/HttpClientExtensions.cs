@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 public static class HttpClientExtensions
 {
-    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string? baseAddress, string authAddress) where T : class
+    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string? baseAddress, string? authAddress) where T : class
     {
         services.AddHttpClient(typeof(T).Name, c =>
         {
@@ -37,7 +37,10 @@ public static class HttpClientExtensions
 
         services.AddHttpClient($"{typeof(T).Name}Auth", c =>
         {
-            c.BaseAddress = new Uri(authAddress);
+            if (authAddress != null)
+            {
+                c.BaseAddress = new Uri(authAddress);
+            }
         }).AddHttpMessageHandler<LoggingHandler<T>>();
         return services;
     }

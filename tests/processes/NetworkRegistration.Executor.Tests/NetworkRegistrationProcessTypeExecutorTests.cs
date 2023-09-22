@@ -20,6 +20,7 @@
 
 using Microsoft.AspNetCore.Mvc.Filters;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -31,6 +32,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
 {
     private readonly INetworkRepository _networkRepository;
     private readonly INetworkRegistrationHandler _networkRegistrationHandler;
+    private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     private readonly NetworkRegistrationProcessTypeExecutor _sut;
 
@@ -44,10 +46,11 @@ public class NetworkRegistrationProcessTypeExecutorTests
         var portalRepositories = A.Fake<IPortalRepositories>();
         _networkRepository = A.Fake<INetworkRepository>();
         _networkRegistrationHandler = A.Fake<INetworkRegistrationHandler>();
+        _onboardingServiceProviderBusinessLogic = A.Fake<IOnboardingServiceProviderBusinessLogic>();
 
         A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
 
-        _sut = new NetworkRegistrationProcessTypeExecutor(portalRepositories, _networkRegistrationHandler);
+        _sut = new NetworkRegistrationProcessTypeExecutor(portalRepositories, _networkRegistrationHandler, _onboardingServiceProviderBusinessLogic);
     }
 
     [Fact]
@@ -107,7 +110,11 @@ public class NetworkRegistrationProcessTypeExecutorTests
     public void GetExecutableStepTypeIds_ReturnsExpected()
     {
         // Assert
-        _sut.GetExecutableStepTypeIds().Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.SYNCHRONIZE_USER);
+        _sut.GetExecutableStepTypeIds().Should().HaveCount(4).And.Satisfy(
+            x => x == ProcessStepTypeId.SYNCHRONIZE_USER,
+            x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,
+            x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
+            x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED);
     }
 
     [Fact]
@@ -191,6 +198,40 @@ public class NetworkRegistrationProcessTypeExecutorTests
 
         // Act
         var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Modified.Should().BeFalse();
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ProcessMessage.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)]
+    public async Task ExecuteProcessStep_WithValidTriggerData_CallsExpected(ProcessStepTypeId processStepTypeId)
+    {
+        // Arrange InitializeProcess
+        var validProcessId = Guid.NewGuid();
+        var networkRegistrationId = Guid.NewGuid();
+        A.CallTo(() => _networkRepository.GetNetworkRegistrationDataForProcessIdAsync(validProcessId))
+            .Returns(networkRegistrationId);
+
+        // Act InitializeProcess
+        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+
+        // Assert InitializeProcess
+        initializeResult.Modified.Should().BeFalse();
+        initializeResult.ScheduleStepTypeIds.Should().BeNull();
+
+        // Arrange
+        A.CallTo(() => _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(networkRegistrationId, processStepTypeId, CancellationToken.None))
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, false, null));
+
+        // Act
+        var result = await _sut.ExecuteProcessStep(processStepTypeId, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Modified.Should().BeFalse();
