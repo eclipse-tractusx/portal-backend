@@ -94,7 +94,8 @@ public class ServiceReleaseBusinessLogicTest
             {
                 OfferStatusId.ACTIVE ,
                 OfferStatusId.IN_REVIEW
-            }
+            },
+            ActivationPortalAddress = "https://acitvationServiceTest.com"
         };
         _options = Options.Create(serviceSettings);
         _fixture.Inject(_options);
@@ -561,7 +562,7 @@ public class ServiceReleaseBusinessLogicTest
     {
         // Arrange
         var appId = Guid.NewGuid();
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _options);
 
         // Act
         await sut.ApproveServiceRequestAsync(appId).ConfigureAwait(false);
@@ -570,7 +571,8 @@ public class ServiceReleaseBusinessLogicTest
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, OfferTypeId.SERVICE,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
-            A<string>._, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
+            A<string>.That.Matches(x => x.Length == _options.Value.ActivationPortalAddress.Length && x == _options.Value.ActivationPortalAddress),
+            A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
