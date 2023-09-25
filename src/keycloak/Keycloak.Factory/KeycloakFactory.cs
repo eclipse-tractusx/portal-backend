@@ -42,11 +42,11 @@ public class KeycloakFactory : IKeycloakFactory
 
         var settings = _settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
         return settings.ClientSecret == null
-            ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm)
-            : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.AuthRealm);
+            ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm, settings.UseAuthTrail)
+            : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.UseAuthTrail, settings.AuthRealm);
     }
 
-    public KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret)
+    public KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret, bool useAuthTrail)
     {
         if (!_settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
@@ -54,6 +54,6 @@ public class KeycloakFactory : IKeycloakFactory
         }
 
         var settings = _settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
-        return KeycloakClient.CreateWithClientId(settings.ConnectionString, clientId, secret, settings.AuthRealm);
+        return KeycloakClient.CreateWithClientId(settings.ConnectionString, clientId, secret, useAuthTrail, settings.AuthRealm);
     }
 }

@@ -54,7 +54,7 @@ public partial class ProvisioningManager : IProvisioningManager
         await CreateCentralIdentityProviderAsync(idpName, organisationName, _Settings.CentralIdentityProvider).ConfigureAwait(false);
 
         var (clientId, secret) = await CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(false);
-        var sharedKeycloak = _Factory.CreateKeycloakClient("shared", clientId, secret);
+        var sharedKeycloak = _Factory.CreateKeycloakClient("shared", clientId, secret, _Settings.UseAuthTrail);
 
         await CreateSharedRealmAsync(sharedKeycloak, idpName, organisationName, loginTheme).ConfigureAwait(false);
 
@@ -285,7 +285,7 @@ public partial class ProvisioningManager : IProvisioningManager
     private async Task<KeycloakClient> GetSharedKeycloakClient(string realm)
     {
         var (clientId, secret) = await GetSharedIdpServiceAccountSecretAsync(realm).ConfigureAwait(false);
-        return _Factory.CreateKeycloakClient("shared", clientId, secret);
+        return _Factory.CreateKeycloakClient("shared", clientId, secret, _Settings.UseAuthTrail);
     }
 
     private static T Clone<T>(T cloneObject)

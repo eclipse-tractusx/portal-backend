@@ -56,11 +56,11 @@ public class ProvisioningManagerTests
         var keycloakFactory = A.Fake<IKeycloakFactory>();
         _provisioningDbAccess = A.Fake<IProvisioningDBAccess>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
-            .Returns(new KeycloakClient(CentralUrl, "test", "test", "test"));
+            .Returns(new KeycloakClient(CentralUrl, "test", "test", "test", false));
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared"))
-            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test"));
-        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._))
-            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test"));
+            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
+        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._, A<bool>._))
+            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
         var settings = new ProvisioningSettings
         {
             ClientPrefix = "cl",
@@ -117,10 +117,10 @@ public class ProvisioningManagerTests
         await _sut.SetupClientAsync($"{url}/*", url, new[] { "adminRole" }).ConfigureAwait(false);
 
         // Assert
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{newClientId}/protocol-mappers/models")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{newClientId}/protocol-mappers/models")
             .WithVerb(HttpMethod.Post)
             .Times(1);
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{newClientId}/roles")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{newClientId}/roles")
             .WithVerb(HttpMethod.Post)
             .Times(1);
     }
@@ -151,22 +151,22 @@ public class ProvisioningManagerTests
         await _sut.SetupSharedIdpAsync(ValidClientName, OrgName, LoginTheme).ConfigureAwait(false);
 
         // Assert
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/identity-provider/instances")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/identity-provider/instances")
             .WithVerb(HttpMethod.Post)
             .Times(1);
-        httpTest.ShouldHaveCalled($"{SharedUrl}/auth/admin/realms/master/clients")
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/clients")
             .WithVerb(HttpMethod.Post)
             .Times(1);
-        httpTest.ShouldHaveCalled($"{SharedUrl}/auth/admin/realms/master/users/{userId}/role-mappings/realm")
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/users/{userId}/role-mappings/realm")
             .WithVerb(HttpMethod.Post)
             .Times(1);
-        httpTest.ShouldHaveCalled($"{SharedUrl}/auth/admin/realms")
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms")
             .WithVerb(HttpMethod.Post)
             .Times(1);
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/identity-provider/instances/{ValidClientName}")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/identity-provider/instances/{ValidClientName}")
             .WithVerb(HttpMethod.Put)
             .Times(2);
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/identity-provider/instances/{ValidClientName}/mappers")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/identity-provider/instances/{ValidClientName}/mappers")
             .WithVerb(HttpMethod.Post)
             .Times(1);
     }
@@ -187,10 +187,10 @@ public class ProvisioningManagerTests
         await _sut.UpdateSharedIdentityProviderAsync(ValidClientName, "displayName").ConfigureAwait(false);
 
         // Arrange
-        httpTest.ShouldHaveCalled($"{SharedUrl}/auth/admin/realms/{ValidClientName}")
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/{ValidClientName}")
             .WithVerb(HttpMethod.Put)
             .Times(1);
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/identity-provider/instances/{ValidClientName}")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/identity-provider/instances/{ValidClientName}")
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }
@@ -211,7 +211,7 @@ public class ProvisioningManagerTests
         await _sut.UpdateSharedRealmTheme(ValidClientName, "new-theme").ConfigureAwait(false);
 
         // Arrange
-        httpTest.ShouldHaveCalled($"{SharedUrl}/auth/admin/realms/{ValidClientName}")
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/{ValidClientName}")
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }
