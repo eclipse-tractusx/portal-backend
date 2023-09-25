@@ -39,6 +39,7 @@ public interface IConsentRepository
     /// <param name="setupOptionalFields">Action to setup the optional fields of the consent</param>
     /// <returns>Returns the newly created consent</returns>
     Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields = null);
+    void CreateConsents(IEnumerable<(Guid AgreementId, Guid CompanyId, Guid CompanyUserId, ConsentStatusId ConsentStatusId)> consentStatusIds);
 
     /// <summary>
     /// Remove the given consents from the database

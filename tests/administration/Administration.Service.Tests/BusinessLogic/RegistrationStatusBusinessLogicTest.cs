@@ -18,8 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -47,7 +51,11 @@ public class RegistrationStatusBusinessLogicTest
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
 
-        _logic = new RegistrationStatusBusinessLogic(_portalRepositories, identityService);
+        var options = new OnboardingServiceProviderSettings
+        {
+            EncryptionKey = "mysmallkey1234551298765134567890"
+        };
+        _logic = new RegistrationStatusBusinessLogic(_portalRepositories, identityService, Options.Create(options));
     }
 
     #region GetCallbackAddress
@@ -57,7 +65,7 @@ public class RegistrationStatusBusinessLogicTest
     {
         //Arrange
         A.CallTo(() => _companyRepository.GetCallbackData(_identity.CompanyId))
-            .Returns(new OnboardingServiceProviderCallbackResponseData("https://callback-url.com"));
+            .Returns(new OnboardingServiceProviderCallbackResponseData("https://callback-url.com", "https//auth.url", "test"));
 
         //Act
         var result = await _logic.GetCallbackAddress().ConfigureAwait(false);
@@ -71,7 +79,7 @@ public class RegistrationStatusBusinessLogicTest
     {
         //Arrange
         A.CallTo(() => _companyRepository.GetCallbackData(_identity.CompanyId))
-            .Returns(new OnboardingServiceProviderCallbackResponseData(null));
+            .Returns(new OnboardingServiceProviderCallbackResponseData(null, null, null));
 
         //Act
         var result = await _logic.GetCallbackAddress().ConfigureAwait(false);
@@ -89,10 +97,10 @@ public class RegistrationStatusBusinessLogicTest
     {
         //Arrange
         A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns(((bool, bool, string?))default);
+            .Returns(((bool, OspDetails?))default);
 
         //Act
-        async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test.de")).ConfigureAwait(false);
+        async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https//auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -105,15 +113,15 @@ public class RegistrationStatusBusinessLogicTest
     {
         //Arrange
         A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns((true, false, null));
+            .Returns((true, null));
 
         //Act
-        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test.de")).ConfigureAwait(false);
+        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https://auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _companyRepository.CreateOnboardingServiceProviderDetails(_identity.CompanyId, "https://test.de"))
+        A.CallTo(() => _companyRepository.CreateOnboardingServiceProviderDetails(_identity.CompanyId, "https://test.de", "https://auth.url", "test", A<byte[]>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
@@ -125,17 +133,17 @@ public class RegistrationStatusBusinessLogicTest
         //Arrange
         OnboardingServiceProviderDetail? osp = null;
         A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns((true, true, "https://test-old.de"));
+            .Returns((true, new OspDetails("https://test-old.de", "https://auth.url", "test", "test123"u8.ToArray())));
         A.CallTo(() => _companyRepository.AttachAndModifyOnboardingServiceProvider(A<Guid>._, A<Action<OnboardingServiceProviderDetail>>._, A<Action<OnboardingServiceProviderDetail>>._))
             .Invokes((Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields) =>
             {
-                osp = new OnboardingServiceProviderDetail(companyId, null!);
+                osp = new OnboardingServiceProviderDetail(companyId, null!, null!, null!, null!);
                 initialize?.Invoke(osp);
                 setOptionalFields.Invoke(osp);
             });
 
         //Act
-        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test-new.de")).ConfigureAwait(false);
+        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test-new.de", "https//auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);
 
         //Assert
         osp.Should().NotBeNull().And.Match<OnboardingServiceProviderDetail>(x =>
@@ -145,36 +153,6 @@ public class RegistrationStatusBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task SetCallbackAddress_WithUnexpectedOspData_Throws()
-    {
-        //Arrange
-        OnboardingServiceProviderDetail? osp = null;
-        A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns((true, true, null));
-        A.CallTo(() => _companyRepository.AttachAndModifyOnboardingServiceProvider(A<Guid>._, A<Action<OnboardingServiceProviderDetail>>._, A<Action<OnboardingServiceProviderDetail>>._))
-            .Invokes((Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields) =>
-            {
-                osp = new OnboardingServiceProviderDetail(companyId, null!);
-                initialize?.Invoke(osp);
-                setOptionalFields.Invoke(osp);
-            });
-
-        //Act
-        var Act = () => _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackData("https://test-new.de"));
-
-        //Assert
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be("callbackUrl should never be null here");
-        osp.Should().NotBeNull().And.Match<OnboardingServiceProviderDetail>(x =>
-            x.CompanyId == _identity.CompanyId &&
-            x.CallbackUrl == null);
-        A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync())
-            .MustNotHaveHappened();
     }
 
     #endregion

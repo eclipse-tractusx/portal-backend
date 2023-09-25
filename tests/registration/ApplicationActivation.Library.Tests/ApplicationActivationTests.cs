@@ -45,6 +45,8 @@ public class ApplicationActivationTests
     private const string CompanyName = "Shared Idp Test";
     private static readonly Guid Id = new("d90995fe-1241-4b8d-9f5c-f3909acc6383");
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
+    private static readonly Guid IdWithTypeExternal = new("8660f3d3-bf98-42ec-960d-692d4d794368");
+    private static readonly Guid IdWithTypeExternalWithoutProcess = new("8660f3d3-bf98-42ec-960d-692d4d794369");
     private static readonly Guid CompanyUserId1 = new("857b93b1-8fcb-4141-81b0-ae81950d489e");
     private static readonly Guid CompanyUserId2 = new("857b93b1-8fcb-4141-81b0-ae81950d489f");
     private static readonly Guid CompanyUserId3 = new("857b93b1-8fcb-4141-81b0-ae81950d48af");
@@ -53,6 +55,7 @@ public class ApplicationActivationTests
     private static readonly Guid CentralUserId1 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f");
     private static readonly Guid CentralUserId2 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd70");
     private static readonly Guid CentralUserId3 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd71");
+    private static readonly Guid ProcessId = new("db9d99cd-51a3-4933-a1cf-dc1b836b53bb");
 
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
@@ -60,6 +63,7 @@ public class ApplicationActivationTests
     private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserRolesRepository _rolesRepository;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly List<Notification> _notifications = new();
     private readonly List<Guid> _notifiedUserIds = new();
     private readonly INotificationService _notificationService;
@@ -88,6 +92,7 @@ public class ApplicationActivationTests
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<ApplicationActivationSettings>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
 
         var options = A.Fake<IOptions<ApplicationActivationSettings>>();
 
@@ -108,6 +113,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
         _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _mailingService, _dateTimeProvider, _custodianService, options);
@@ -353,6 +359,143 @@ public class ApplicationActivationTests
     }
 
     [Fact]
+    public async Task HandleApplicationActivation_WithoutNetworkRegistrationId_ThrowsConflictException()
+    {
+        //Arrange
+        var roles = new[] { "Company Admin" };
+        var clientRoleNames = new[]
+        {
+            new UserRoleConfig(ClientId, roles.AsEnumerable())
+        };
+        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
+
+        var processSteps = new List<ProcessStep>();
+        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
+        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
+        var companyApplication = _fixture.Build<CompanyApplication>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .Create();
+        var company = _fixture.Build<Company>()
+            .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
+            .Create();
+        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
+        SetupForDelete();
+
+        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
+            .Returns("Membership Credential successfully created");
+
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            IdWithTypeExternalWithoutProcess,
+            default,
+            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
+            }.ToImmutableDictionary(),
+            Enumerable.Empty<ProcessStepTypeId>());
+
+        //Act
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("ProcessId should be set for external applications");
+    }
+
+    [Fact]
+    public async Task HandleApplicationActivation_WithExternalApplication_ApprovesRequestAndCreatesNotifications()
+    {
+        //Arrange
+        var roles = new[] { "Company Admin" };
+        var clientRoleNames = new[]
+        {
+            new UserRoleConfig(ClientId, roles.AsEnumerable())
+        };
+        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
+
+        var processSteps = new List<ProcessStep>();
+        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
+        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
+        var companyApplication = _fixture.Build<CompanyApplication>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .Create();
+        var company = _fixture.Build<Company>()
+            .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
+            .Create();
+        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
+        SetupForDelete();
+        A.CallTo(() =>
+                _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalParameters) =>
+            {
+                setOptionalParameters.Invoke(companyApplication);
+            });
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._))
+            .Invokes((Guid _, Action<Company>? _, Action<Company> setOptionalParameters) =>
+            {
+                setOptionalParameters.Invoke(company);
+            });
+        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
+            .Returns("Membership Credential successfully created");
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x =>
+                x.Count() == 1 &&
+                x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> steps) =>
+            {
+                processSteps.AddRange(steps.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+            });
+
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            IdWithTypeExternal,
+            default,
+            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
+            }.ToImmutableDictionary(),
+            Enumerable.Empty<ProcessStepTypeId>());
+
+        //Act
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(IdWithTypeExternal)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(IdWithTypeExternal)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
+        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("1", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("2", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        processSteps.Should().ContainSingle().And.Satisfy(
+            x => x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED &&
+                 x.ProcessStepStatusId == ProcessStepStatusId.TODO);
+        _notifications.Should().HaveCount(5);
+        _notifiedUserIds.Should().HaveCount(3)
+            .And.ContainInOrder(CompanyUserId1, CompanyUserId2, CompanyUserId3);
+        companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
+        company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
+        result.ModifyChecklistEntry!.Invoke(entry);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        entry.Comment.Should().Be("Membership Credential successfully created");
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
+        result.Modified.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task HandleApplicationActivation_WithNotExistingRoles_ThrowsConfigurationException()
     {
         //Arrange
@@ -555,7 +698,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .Returns(((Guid, string, string?, IEnumerable<string>))default);
+            .Returns(((Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?))default);
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -805,9 +948,13 @@ public class ApplicationActivationTests
         };
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.INTERNAL, null));
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternal)))
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.EXTERNAL, ProcessId));
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternalWithoutProcess)))
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.EXTERNAL, null));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
-            .Returns((IdWithoutBpn, null!, null, Enumerable.Empty<string>()));
+            .Returns((IdWithoutBpn, null!, null, Enumerable.Empty<string>(), CompanyApplicationTypeId.INTERNAL, null));
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == Id)))
             .Returns((company.Id, company.Name, company.BusinessPartnerNumber));

@@ -40,13 +40,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
+    private static readonly Regex BpnRegex = new(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
     private readonly IMailingService _mailingService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories,
@@ -187,7 +188,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     /// <inheritdoc />
     public Task UpdateCompanyBpn(Guid applicationId, string bpn)
     {
-        if (!bpnRegex.IsMatch(bpn))
+        if (!BpnRegex.IsMatch(bpn))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
         }
@@ -403,7 +404,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task DeclineRegistrationVerification(Guid applicationId, string comment)
+    public async Task DeclineRegistrationVerification(Guid applicationId, string comment, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (result == default)
@@ -411,7 +412,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
 
-        var (companyId, companyName) = result;
+        var (companyId, companyName, processId) = result;
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -444,6 +445,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             company.CompanyStatusId = CompanyStatusId.REJECTED;
         });
+
+        if (processId != null)
+        {
+            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, processId.Value), 1));
+        }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await PostRegistrationCancelEmailAsync(applicationId, companyName, comment).ConfigureAwait(false);

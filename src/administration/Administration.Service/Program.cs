@@ -75,7 +75,7 @@ WebApplicationBuildRunner
 
         builder.Services
             .AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>()
-            .AddPartnerRegistration(builder.Configuration.GetSection("Network2Network"))
+            .AddPartnerRegistration(builder.Configuration)
             .AddNetworkRegistrationProcessHelper();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);

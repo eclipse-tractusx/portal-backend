@@ -115,7 +115,7 @@ public class ClientManagerTests
         await _sut.UpdateClient(clientId, $"{url}/*", url).ConfigureAwait(false);
 
         // Assert
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{clientClientId}")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{clientClientId}")
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }
@@ -157,7 +157,7 @@ public class ClientManagerTests
         await _sut.EnableClient(clientId).ConfigureAwait(false);
 
         // Assert
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{clientClientId}")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{clientClientId}")
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }

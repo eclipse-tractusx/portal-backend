@@ -20,28 +20,9 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 
-public class NetworkRegistrationExtensisonsTests
+public interface IOnboardingServiceProviderBusinessLogic
 {
-    [Fact]
-    public void GetRetriggerStep_WithValid_ReturnsExpected()
-    {
-        // Act
-        var result = ProcessStepTypeId.SYNCHRONIZE_USER.GetRetriggerStep();
-
-        // Assert
-        result.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER);
-    }
-
-    [Fact]
-    public void GetRetriggerStep_WithInvalidStep_ReturnsNull()
-    {
-        // Act
-        var result = ProcessStepTypeId.START_AUTOSETUP.GetRetriggerStep();
-
-        // Assert
-        result.Should().BeNull();
-    }
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProviderCallback(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId, CancellationToken cancellationToken);
 }

@@ -27,5 +27,6 @@ public interface INetworkBusinessLogic
 {
     Task HandlePartnerRegistration(PartnerRegistrationData data);
 
-    Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId);
+    Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId);
+    Task Submit(PartnerSubmitData submitData, CancellationToken cancellationToken);
 }

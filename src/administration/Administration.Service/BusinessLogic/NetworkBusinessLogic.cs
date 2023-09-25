@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -184,7 +185,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
     }
 
-    public Task RetriggerSynchronizeUser(Guid externalId, ProcessStepTypeId processStepTypeId) =>
+    public Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId) =>
         _processHelper.TriggerProcessStep(externalId, processStepTypeId);
 
     private async Task<(IEnumerable<UserRoleData> RoleData, IDictionary<Guid, string>? IdentityProviderIdAliase, (Guid IdentityProviderId, string Alias)? SingleIdentityProviderIdAlias, IEnumerable<Guid> AllIdentityProviderIds)> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)
@@ -305,5 +306,73 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         {
             throw new ControllerArgumentException("Lastname does not match expected format");
         }
+    }
+
+    public async Task Submit(PartnerSubmitData submitData, CancellationToken cancellationToken)
+    {
+        var companyId = _identityService.IdentityData.CompanyId;
+        var userId = _identityService.IdentityData.UserId;
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.InitialRoles)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var data = await _portalRepositories.GetInstance<INetworkRepository>()
+            .GetSubmitData(companyId, userId, userRoleIds)
+            .ConfigureAwait(false);
+        if (!data.Exists)
+        {
+            throw new NotFoundException($"Company {companyId} not found");
+        }
+
+        if (!data.IsUserInRole)
+        {
+            throw new ForbiddenException($"User must be in role {string.Join(",", _settings.InitialRoles.SelectMany(x => x.UserRoleNames))}");
+        }
+
+        if (data.CompanyApplications.Count() != 1)
+        {
+            throw new ConflictException($"Company {companyId} has no or more than one application");
+        }
+
+        if (data.ProcessId == null)
+        {
+            throw new ConflictException("There must be an process");
+        }
+
+        var companyApplication = data.CompanyApplications.Single();
+        if (companyApplication.CompanyApplicationStatusId != CompanyApplicationStatusId.CREATED)
+        {
+            throw new ConflictException($"Application {companyApplication.CompanyApplicationId} is not in state CREATED");
+        }
+
+        submitData.Agreements.Where(x => x.ConsentStatusId != ConsentStatusId.ACTIVE).IfAny(inactive =>
+            throw new ControllerArgumentException($"All agreements must be agreed to. Agreements that are not active: {string.Join(",", inactive.Select(x => x.AgreementId))}", nameof(submitData.Agreements)));
+
+        data.CompanyRoleAgreementIds
+            .ExceptBy(submitData.CompanyRoles, x => x.CompanyRoleId)
+            .IfAny(missing =>
+                throw new ControllerArgumentException($"CompanyRoles {string.Join(",", missing.Select(x => x.CompanyRoleId))} are missing", nameof(submitData.CompanyRoles)));
+
+        var requiredAgreementIds = data.CompanyRoleAgreementIds
+            .SelectMany(x => x.AgreementIds)
+            .Distinct().ToImmutableList();
+
+        requiredAgreementIds.Except(submitData.Agreements.Where(x => x.ConsentStatusId == ConsentStatusId.ACTIVE).Select(x => x.AgreementId))
+            .IfAny(missing =>
+                throw new ControllerArgumentException($"All Agreements for the company roles must be agreed to, missing agreementIds: {string.Join(",", missing)}", nameof(submitData.Agreements)));
+
+        _portalRepositories.GetInstance<IConsentRepository>()
+            .CreateConsents(requiredAgreementIds.Select(agreementId => (agreementId, companyId, userId, ConsentStatusId.ACTIVE)));
+
+        var processId = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.CompanyApplicationId,
+            ca =>
+            {
+                ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                ca.ChecklistProcessId = processId;
+            });
+        _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepStatusId.TODO, data.ProcessId.Value), 1));
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
