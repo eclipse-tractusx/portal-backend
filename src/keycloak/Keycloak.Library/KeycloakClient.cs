@@ -102,9 +102,11 @@ public partial class KeycloakClient
     private Task<IFlurlRequest> GetBaseUrlAsync(string targetRealm, CancellationToken cancellationToken = default)
     {
         var url = new Url(_url);
-        if(_useAuthTrail) 
+        if (_useAuthTrail)
+        {
             url = url
             .AppendPathSegment("/auth");
+        }
 
         return url
             .ConfigureRequest(settings => settings.JsonSerializer = _serializer)
