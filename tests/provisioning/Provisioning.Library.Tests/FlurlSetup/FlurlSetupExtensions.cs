@@ -32,7 +32,7 @@ public static class FlurlSetupExtensions
 {
     public static HttpTest WithAuthorization(this HttpTest testClient)
     {
-        testClient.ForCallsTo("*/auth/realms/*/protocol/openid-connect/token")
+        testClient.ForCallsTo("*/realms/*/protocol/openid-connect/token")
             .RespondWithJson(new { access_token = "123" });
         return testClient;
     }
@@ -72,7 +72,7 @@ public static class FlurlSetupExtensions
 
     public static HttpTest WithGetOpenIdConfigurationAsync(this HttpTest testClient, OpenIDConfiguration config)
     {
-        testClient.ForCallsTo($"*/realms/*/.well-known/openid-configuration")
+        testClient.ForCallsTo("*/realms/*/.well-known/openid-configuration")
             .WithVerb(HttpMethod.Get)
             .RespondWithJson(config);
         return testClient;
