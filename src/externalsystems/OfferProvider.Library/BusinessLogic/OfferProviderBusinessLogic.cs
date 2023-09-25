@@ -18,15 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 
@@ -35,7 +32,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferProviderService _offerProviderService;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly OfferProviderSettings _settings;
 
     /// <summary>
     /// Constructor.
@@ -47,13 +43,11 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     public OfferProviderBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferProviderService offerProviderService,
-        IProvisioningManager provisioningManager,
-        IOptions<OfferProviderSettings> options)
+        IProvisioningManager provisioningManager)
     {
         _portalRepositories = portalRepositories;
         _offerProviderService = offerProviderService;
         _provisioningManager = provisioningManager;
-        _settings = options.Value;
     }
 
     /// <inheritdoc />

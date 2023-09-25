@@ -72,19 +72,10 @@ public class OfferProviderBusinessLogicTests
         _offerProviderService = A.Fake<IOfferProviderService>();
         _provisioningManager = A.Fake<IProvisioningManager>();
 
-        var settings = new OfferProviderSettings
-        {
-            Password = "test",
-            ClientId = "123",
-            ClientSecret = "test",
-            ServiceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Portal", new[] { "Manager" }), 1)
-        };
-
         _sut = new OfferProviderBusinessLogic(
             portalRepositories,
             _offerProviderService,
-            _provisioningManager,
-            Options.Create(settings));
+            _provisioningManager);
     }
 
     #region TriggerProvider
