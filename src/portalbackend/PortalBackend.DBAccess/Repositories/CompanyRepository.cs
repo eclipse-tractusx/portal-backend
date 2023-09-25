@@ -281,7 +281,7 @@ public class CompanyRepository : ICompanyRepository
             true
         )).SingleOrDefaultAsync();
 
-    public Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId) =>
+    public Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId, Guid companyUserId) =>
         _context.Companies
             .AsNoTracking()
             .Where(c => c.Id == companyId)
@@ -289,7 +289,8 @@ public class CompanyRepository : ICompanyRepository
                 user.Id,
                 user.Name,
                 user.Address!.CountryAlpha2Code,
-                user.BusinessPartnerNumber
+                user.BusinessPartnerNumber,
+                user.Identities.Where(x => x.Id == companyUserId && x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!.Email).SingleOrDefault()
             ))
             .SingleOrDefaultAsync();
 

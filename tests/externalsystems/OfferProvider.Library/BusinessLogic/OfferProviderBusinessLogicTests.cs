@@ -44,42 +44,35 @@ public class OfferProviderBusinessLogicTests
     private readonly Guid _salesManagerId = Guid.NewGuid();
     private readonly Guid _receiverId = Guid.NewGuid();
 
-    private readonly IFixture _fixture;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly INotificationRepository _notificationRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IUserRepository _userRepository;
     private readonly IOfferProviderService _offerProviderService;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly OfferProviderSettings _settings;
     private readonly OfferProviderBusinessLogic _sut;
 
     public OfferProviderBusinessLogicTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _portalRepositories = A.Fake<IPortalRepositories>();
-        _notificationRepository = A.Fake<INotificationRepository>();
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        var portalRepositories = A.Fake<IPortalRepositories>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _userRepository = A.Fake<IUserRepository>();
 
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
+        A.CallTo(() => portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
             .Returns(_offerSubscriptionRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>())
-            .Returns(_notificationRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>())
+        A.CallTo(() => portalRepositories.GetInstance<IUserRolesRepository>())
             .Returns(_userRolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>())
+        A.CallTo(() => portalRepositories.GetInstance<IUserRepository>())
             .Returns(_userRepository);
 
         _offerProviderService = A.Fake<IOfferProviderService>();
         _provisioningManager = A.Fake<IProvisioningManager>();
 
-        _settings = new OfferProviderSettings
+        var settings = new OfferProviderSettings
         {
             Password = "test",
             ClientId = "123",
@@ -88,10 +81,10 @@ public class OfferProviderBusinessLogicTests
         };
 
         _sut = new OfferProviderBusinessLogic(
-            _portalRepositories,
+            portalRepositories,
             _offerProviderService,
             _provisioningManager,
-            Options.Create(_settings));
+            Options.Create(settings));
     }
 
     #region TriggerProvider
@@ -130,16 +123,6 @@ public class OfferProviderBusinessLogicTests
                 _offerProviderService.TriggerOfferProvider(A<OfferThirdPartyAutoSetupData>._, A<string>._,
                     A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _notificationRepository.CreateNotification(_salesManagerId,
-                offerTypeId == OfferTypeId.APP
-                    ? NotificationTypeId.APP_SUBSCRIPTION_REQUEST
-                    : NotificationTypeId.SERVICE_REQUEST, false, A<Action<Notification>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _notificationRepository.CreateNotification(_receiverId,
-                offerTypeId == OfferTypeId.APP
-                    ? NotificationTypeId.APP_SUBSCRIPTION_REQUEST
-                    : NotificationTypeId.SERVICE_REQUEST, false, A<Action<Notification>>._))
-            .MustHaveHappenedOnceExactly();
     }
 
     [Theory]
@@ -161,16 +144,6 @@ public class OfferProviderBusinessLogicTests
                 _offerProviderService.TriggerOfferProvider(A<OfferThirdPartyAutoSetupData>._, A<string>._,
                     A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _notificationRepository.CreateNotification(_salesManagerId,
-                offerTypeId == OfferTypeId.APP
-                    ? NotificationTypeId.APP_SUBSCRIPTION_REQUEST
-                    : NotificationTypeId.SERVICE_REQUEST, false, A<Action<Notification>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _notificationRepository.CreateNotification(_receiverId,
-                offerTypeId == OfferTypeId.APP
-                    ? NotificationTypeId.APP_SUBSCRIPTION_REQUEST
-                    : NotificationTypeId.SERVICE_REQUEST, false, A<Action<Notification>>._))
-            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -319,8 +292,7 @@ public class OfferProviderBusinessLogicTests
                 _offerId,
                 "Test App",
                 "https://www.test.com",
-                new CompanyInformationData(Guid.NewGuid(), "Stark", "DE", "BPNL0000123TEST"),
-                "test@email.com",
+                new CompanyInformationData(Guid.NewGuid(), "Stark", "DE", "BPNL0000123TEST", "test@email.com"),
                 offerTypeId,
                 _salesManagerId,
                 _companyUserId,
@@ -332,8 +304,8 @@ public class OfferProviderBusinessLogicTests
                 _offerId,
                 "Single Test App",
                 "https://www.test.com",
-                new CompanyInformationData(Guid.NewGuid(), "Stark", "DE", "BPNL0000123TEST"),
-                "test@email.com",
+                new CompanyInformationData(Guid.NewGuid(), "Stark", "DE", "BPNL0000123TEST",
+                    "test@email.com"),
                 offerTypeId,
                 _salesManagerId,
                 _companyUserId,

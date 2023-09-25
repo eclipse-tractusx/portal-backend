@@ -187,7 +187,7 @@ public class AppBusinessLogicTests
         var offerSubscriptionId = Guid.NewGuid();
         var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(offerSubscriptionId);
         var sut = new AppsBusinessLogic(null!, offerSubscriptionService, null!, null!, Options.Create(new AppsSettings()), _identityService);
 
@@ -201,6 +201,7 @@ public class AppBusinessLogicTests
                 A<IEnumerable<OfferAgreementConsentData>>._,
                 A<OfferTypeId>.That.Matches(x => x == OfferTypeId.APP),
                 A<string>._,
+                A<IEnumerable<UserRoleConfig>>._,
                 A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }

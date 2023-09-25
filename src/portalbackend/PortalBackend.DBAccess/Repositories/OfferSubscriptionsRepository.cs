@@ -362,9 +362,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.RequesterCompany!.Id,
                     x.RequesterCompany.Name,
                     x.RequesterCompany.Address!.CountryAlpha2Code,
-                    x.RequesterCompany.BusinessPartnerNumber
+                    x.RequesterCompany.BusinessPartnerNumber,
+                    x.Email
                 ),
-                x.Email,
                 x.OfferTypeId,
                 x.SalesManagerId,
                 x.CompanyUserId,

@@ -24,4 +24,5 @@ public record CompanyInformationData(
     Guid CompanyId,
     string OrganizationName,
     string? Country,
-    string? BusinessPartnerNumber);
+    string? BusinessPartnerNumber,
+    string? CompanyUserEmail);

@@ -77,7 +77,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
                 new OfferThirdPartyAutoSetupCustomerData(
                     data.CompanyInformationData.OrganizationName,
                     data.CompanyInformationData.Country,
-                    data.UserEmail),
+                    data.CompanyInformationData.CompanyUserEmail),
                 new OfferThirdPartyAutoSetupPropertyData(
                     data.CompanyInformationData.BusinessPartnerNumber,
                     offerSubscriptionId,
@@ -88,15 +88,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
                 .ConfigureAwait(false);
         }
 
-        var content = JsonSerializer.Serialize(new
-        {
-            AppName = data.OfferName,
-            data.OfferId,
-            RequestorCompanyName = data.CompanyInformationData.OrganizationName,
-            data.UserEmail,
-            AutoSetupExecuted = triggerProvider
-        });
-        await SendNotifications(data.OfferId, data.OfferTypeId, data.SalesManagerId, data.CompanyUserId, content).ConfigureAwait(false);
         return (
             new[] {
                 data.IsSingleInstance ?
@@ -105,56 +96,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             triggerProvider ? ProcessStepStatusId.DONE : ProcessStepStatusId.SKIPPED,
             true,
             null);
-    }
-
-    private async Task SendNotifications(
-        Guid offerId,
-        OfferTypeId offerTypeId,
-        Guid? salesManagerId,
-        Guid companyUserId,
-        string notificationContent)
-    {
-        var serviceManagerRoles = _settings.ServiceManagerRoles;
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-
-        var notificationTypeId = offerTypeId == OfferTypeId.SERVICE ? NotificationTypeId.SERVICE_REQUEST : NotificationTypeId.APP_SUBSCRIPTION_REQUEST;
-        if (salesManagerId.HasValue)
-        {
-            notificationRepository.CreateNotification(salesManagerId.Value, notificationTypeId, false,
-                notification =>
-                {
-                    notification.CreatorUserId = companyUserId;
-                    notification.Content = notificationContent;
-                });
-        }
-
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(serviceManagerRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
-        {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
-        }
-
-        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))
-        {
-            if (salesManagerId.HasValue && receiver == salesManagerId.Value)
-            {
-                continue;
-            }
-
-            notificationRepository.CreateNotification(
-                receiver,
-                notificationTypeId,
-                false,
-                notification =>
-                {
-                    notification.CreatorUserId = companyUserId;
-                    notification.Content = notificationContent;
-                });
-        }
     }
 
     /// <inheritdoc />

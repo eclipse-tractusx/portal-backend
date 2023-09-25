@@ -684,11 +684,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyInformationAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result!.OrganizationName.Should().Be("Catena-X");
+        result.CompanyUserEmail.Should().Be("inactive-user@mail.com");
     }
 
     [Fact]
@@ -698,7 +699,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyInformationAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationAsync(Guid.NewGuid(), Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
