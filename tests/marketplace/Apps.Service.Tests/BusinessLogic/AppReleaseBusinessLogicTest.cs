@@ -115,7 +115,8 @@ public class AppReleaseBusinessLogicTest
             ActiveAppCompanyAdminRoles = new[]
             {
                 new UserRoleConfig(ClientId, new [] { "Company Admin" })
-            }
+            },
+            ActivationPortalAddress = "https://acitvationAppTest.com"
         };
 
         A.CallTo(() => _options.Value).Returns(_settings);
@@ -810,7 +811,7 @@ public class AppReleaseBusinessLogicTest
                 A<IEnumerable<UserRoleConfig>>._,
                 A<IEnumerable<NotificationTypeId>>._,
                 A<IEnumerable<UserRoleConfig>>._,
-                A<string>._,
+                A<string>.That.Matches(x => x.Length == _settings.ActivationPortalAddress.Length && x == "https://acitvationAppTest.com"),
                 A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }

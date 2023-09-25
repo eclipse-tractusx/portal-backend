@@ -154,6 +154,12 @@ public class ServiceSettings
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ActivationUserRoles { get; init; } = null!;
 
+    /// <summary>
+    /// ActivationPortalAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string ActivationPortalAddress { get; init; } = null!;
+
 }
 
 public static class ServiceSettingsExtension
