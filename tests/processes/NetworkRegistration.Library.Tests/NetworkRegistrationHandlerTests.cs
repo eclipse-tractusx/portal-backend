@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -42,28 +43,47 @@ public class NetworkRegistrationHandlerTests
 
     private readonly IProvisioningManager _provisioningManger;
     private readonly IUserRepository _userRepository;
+    private readonly INetworkRepository _networkRepository;
 
     private readonly NetworkRegistrationHandler _sut;
-    private readonly NetworkRegistrationProcessSettings _settings;
+    private readonly IMailingService _mailingService;
 
     public NetworkRegistrationHandlerTests()
     {
         var portalRepositories = A.Fake<IPortalRepositories>();
         _userRepository = A.Fake<IUserRepository>();
+        _networkRepository = A.Fake<INetworkRepository>();
 
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _provisioningManger = A.Fake<IProvisioningManager>();
+        _mailingService = A.Fake<IMailingService>();
 
-        _settings = new NetworkRegistrationProcessSettings
+        var settings = new NetworkRegistrationProcessSettings
         {
             InitialRoles = Enumerable.Repeat(new UserRoleConfig("cl1", Enumerable.Repeat("Company Admin", 1)), 1)
         };
         var options = A.Fake<IOptions<NetworkRegistrationProcessSettings>>();
 
-        A.CallTo(() => options.Value).Returns(_settings);
+        A.CallTo(() => options.Value).Returns(settings);
         A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
 
-        _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManger, options);
+        _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManger, _mailingService, options);
+    }
+
+    [Fact]
+    public async Task SynchronizeUser_WithoutOspName_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
+            .Returns((string?)null);
+
+        // Act
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        ex.Message.Should().Be("Onboarding Service Provider name must be set");
     }
 
     [Theory]
@@ -78,6 +98,8 @@ public class NetworkRegistrationHandlerTests
             "123456789", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
 
+        A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
+            .Returns("Onboarding Service Provider");
         A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
             .Returns(new[]
             {
@@ -102,10 +124,12 @@ public class NetworkRegistrationHandlerTests
         var user1 = new CompanyUserIdentityProviderProcessData(user1Id, "tony", "stark", "tony@stark.com", "123456789", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("ironman", null, "id1234"), 1));
 
+        A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
+            .Returns("Onboarding Service Provider");
         A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
             .Returns(new[]
             {
-                user1,
+                user1
             }.ToAsyncEnumerable());
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
@@ -123,7 +147,6 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid().ToString();
-        var user2Id = Guid.NewGuid().ToString();
         var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
             "123456789", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
@@ -131,14 +154,14 @@ public class NetworkRegistrationHandlerTests
             "steven@strange.com", "987654321", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "id9876"), 1));
 
+        A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
+            .Returns("Onboarding Service Provider");
         A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
             .Returns(new[]
             {
                 user1,
                 user2
             }.ToAsyncEnumerable());
-        A.CallTo(() => _userProvisioningService.CreateCentralUserWithProviderLinks(user2.CompanyUserId, A<UserCreationRoleDataIdpInfo>._, A<string>._, A<string>._, A<IEnumerable<IdentityProviderLink>>._))
-            .Returns(user2Id);
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManger.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
@@ -148,12 +171,19 @@ public class NetworkRegistrationHandlerTests
         var result = await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _userProvisioningService.CreateCentralUserWithProviderLinks(user2.CompanyUserId, A<UserCreationRoleDataIdpInfo>._, A<string>._, A<string>._, A<IEnumerable<IdentityProviderLink>>._))
+        A.CallTo(() => _userProvisioningService.HandleCentralKeycloakCreation(A<UserCreationRoleDataIdpInfo>._, user1.CompanyUserId, A<string>._, A<string>._, null, A<IEnumerable<IdentityProviderLink>>._, A<IUserRepository>._, A<IUserRolesRepository>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _userProvisioningService.HandleCentralKeycloakCreation(A<UserCreationRoleDataIdpInfo>._, user2.CompanyUserId, A<string>._, A<string>._, null, A<IEnumerable<IdentityProviderLink>>._, A<IUserRepository>._, A<IUserRolesRepository>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(user1.CompanyUserId, A<Action<Identity>>._, A<Action<Identity>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(user2.CompanyUserId, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails("tony@stark.com", A<IDictionary<string, string>>._, A<IEnumerable<string>>._))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails("steven@strange.com", A<IDictionary<string, string>>._, A<IEnumerable<string>>._))
+            .MustHaveHappenedOnceExactly();
+
         result.modified.Should().BeFalse();
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);

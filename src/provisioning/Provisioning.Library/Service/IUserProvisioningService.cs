@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -30,10 +29,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 public interface IUserProvisioningService
 {
     IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken = default);
+    Task HandleCentralKeycloakCreation(UserCreationRoleDataIdpInfo user, Guid companyUserId, string companyName, string? businessPartnerNumber, Identity? identity, IEnumerable<IdentityProviderLink> identityProviderLinks, IUserRepository userRepository, IUserRolesRepository userRolesRepository);
     Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameIdpAliasData(Guid identityProviderId, Guid companyUserId);
     Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(Guid companyUserId, Guid? applicationId = null);
     Task<string> GetIdentityProviderDisplayName(string idpAlias);
     IAsyncEnumerable<UserRoleData> GetRoleDatas(IEnumerable<UserRoleConfig> clientRoles);
     Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, Guid companyId);
-    Task<string> CreateCentralUserWithProviderLinks(Guid companyUserId, UserCreationRoleDataIdpInfo user, string companyName, string? businessPartnerNumber, IEnumerable<IdentityProviderLink> identityProviderLinks);
+    Task<(Identity? identity, Guid companyUserId)> GetOrCreateCompanyUser(IUserRepository userRepository, string alias, UserCreationRoleDataIdpInfo user, Guid companyId, Guid identityProviderId, string? businessPartnerNumber);
+    Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleData> roleDatas, (string UserEntityId, Guid CompanyUserId) userdata);
 }

@@ -32,4 +32,5 @@ public interface INetworkRepository
     Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(Guid externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     Task<(bool Exists, IEnumerable<(Guid CompanyApplicationId, CompanyApplicationStatusId CompanyApplicationStatusId, string? CallbackUrl)> CompanyApplications, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleAgreementIds, Guid? ProcessId)> GetSubmitData(Guid companyId);
     Task<(OspDetails? OspDetails, Guid? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId);
+    Task<string?> GetOspCompanyName(Guid networkRegistrationId);
 }

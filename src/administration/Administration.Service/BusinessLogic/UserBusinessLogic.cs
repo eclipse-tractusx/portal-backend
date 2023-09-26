@@ -154,6 +154,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             Task.FromResult(Enumerable.Empty<UserRoleData>());
         }
+
         return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, roles, companyId);
     }
 

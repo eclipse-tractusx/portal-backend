@@ -32,6 +32,9 @@ public class NetworkRegistrationProcessSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> InitialRoles { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; set; } = null!;
 }
 
 public static class NetworkRegistrationHandlerExtensions
@@ -41,6 +44,7 @@ public static class NetworkRegistrationHandlerExtensions
         var section = config.GetSection("NetworkRegistration");
         services.AddOptions<NetworkRegistrationProcessSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateDistinctValues(section)
             .ValidateOnStart();
 

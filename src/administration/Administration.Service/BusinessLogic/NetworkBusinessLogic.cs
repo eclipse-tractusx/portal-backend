@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -46,16 +45,14 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _processHelper;
-    private readonly IMailingService _mailingService;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _userProvisioningService = userProvisioningService;
         _processHelper = processHelper;
-        _mailingService = mailingService;
         _settings = options.Value;
     }
 
@@ -68,8 +65,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
         var (roleData, identityProviderIdAliase, singleIdentityProviderIdAlias, allIdentityProviderIds) = await ValidatePartnerRegistrationData(data, networkRepository, identityProviderRepository, ownerCompanyId).ConfigureAwait(false);
-
-        var (_, companyName) = await companyRepository.GetCompanyNameUntrackedAsync(ownerCompanyId).ConfigureAwait(false);
 
         var companyId = CreatePartnerCompany(companyRepository, data);
 
@@ -96,13 +91,27 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 ? singleIdentityProviderIdAlias?.Alias ?? throw new UnexpectedConditionException("singleIdentityProviderIdAlias should never be null here")
                 : identityProviderIdAliase?[identityProviderId.Value] ?? throw new UnexpectedConditionException("identityProviderIdAliase should never be null here and should always contain an entry for identityProviderId");
 
-        async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateUsers()
+        async IAsyncEnumerable<(Guid CompanyUserId, Exception? Error)> CreateUsers()
         {
-            foreach (var user in GetUserCreationData(companyId, GetIdpId, GetIdpAlias, data, roleData))
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            await foreach (var user in GetUserCreationData(companyId, GetIdpId, GetIdpAlias, data, roleData).ToAsyncEnumerable())
             {
-                await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(user.AliasData, user.CreationInfos.ToAsyncEnumerable()))
+                foreach (var creationInfo in user.CreationInfos)
                 {
-                    yield return result;
+                    var identityId = Guid.Empty;
+                    Exception? error = null;
+                    try
+                    {
+                        var (_, companyUserId) = await _userProvisioningService.GetOrCreateCompanyUser(userRepository, user.AliasData.IdpAlias,
+                            creationInfo, companyId, user.AliasData.IdpId, data.Bpn).ConfigureAwait(false);
+                        identityId = companyUserId;
+                    }
+                    catch (Exception ex)
+                    {
+                        error = ex;
+                    }
+
+                    yield return new ValueTuple<Guid, Exception?>(identityId, error);
                 }
             }
         }
@@ -111,7 +120,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         userCreationErrors.IfAny(errors => throw new ServiceException($"Errors occured while saving the users: ${string.Join("", errors.Select(x => x.Message))}", errors.First()));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await SendMails(data.UserDetails.Select(x => new ValueTuple<string, string?, string?>(x.Email, x.FirstName, x.LastName)), companyName).ConfigureAwait(false);
     }
 
     private Guid CreatePartnerCompany(ICompanyRepository companyRepository, PartnerRegistrationData data)
@@ -166,22 +174,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
                 return (AliasData: companyNameIdpAliasData, CreationInfos: userCreationInfos);
             });
-
-    private async Task SendMails(IEnumerable<(string Email, string? FirstName, string? LastName)> companyUserWithRoleIdForCompany, string ospName)
-    {
-        foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
-        {
-            var userName = string.Join(" ", firstName, lastName);
-            var mailParameters = new Dictionary<string, string>
-            {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : receiver },
-                { "hostname", _settings.BasePortalAddress },
-                { "osp", ospName },
-                { "url", _settings.BasePortalAddress }
-            };
-            await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("OspWelcomeMail", 1)).ConfigureAwait(false);
-        }
-    }
 
     public Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId) =>
         _processHelper.TriggerProcessStep(externalId, processStepTypeId);
