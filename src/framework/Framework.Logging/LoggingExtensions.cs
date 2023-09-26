@@ -20,8 +20,10 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging.MaskingOperator;
 using Serilog;
 using Serilog.Core;
+using Serilog.Enrichers.Sensitive;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
@@ -38,6 +40,12 @@ public static class LoggingExtensions
         host.UseSerilog((context, configuration) =>
         {
             configuration
+                .Enrich.WithSensitiveDataMasking(opt =>
+                {
+                    opt.Mode = MaskingMode.Globally;
+                    opt.MaskValue = "*****";
+                    opt.MaskingOperators.Add(new SecretOperator());
+                })
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .ReadFrom.Configuration(context.Configuration)
                 .WriteTo.Console(new JsonFormatter(renderMessage: true));
@@ -57,6 +65,12 @@ public static class LoggingExtensions
             return;
 
         Log.Logger = new LoggerConfiguration()
+            .Enrich.WithSensitiveDataMasking(opt =>
+            {
+                opt.Mode = MaskingMode.Globally;
+                opt.MaskValue = "*****";
+                opt.MaskingOperators.Add(new SecretOperator());
+            })
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .WriteTo.Console(new JsonFormatter(renderMessage: true))
             .CreateBootstrapLogger();
