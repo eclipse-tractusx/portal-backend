@@ -19,7 +19,12 @@
 
 FROM mcr.microsoft.com/dotnet/runtime:7.0-alpine AS base
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine-amd64 AS publish
+ARG TARGETARCH
+ARG TARGETOS
+RUN arch=$TARGETARCH \
+    && if [ "$arch" = "amd64" ]; then arch="x64"; fi \
+    && echo $TARGETOS-$arch > /tmp/rid
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY /src/provisioning /src/provisioning
@@ -30,9 +35,6 @@ COPY /src/framework/Framework.Models /src/framework/Framework.Models
 COPY /src/framework/Framework.Linq /src/framework/Framework.Linq
 COPY /src/framework/Framework.Logging /src/framework/Framework.Logging
 WORKDIR /src/provisioning/Provisioning.Migrations
-RUN dotnet build "Provisioning.Migrations.csproj" -c Release -o /migrations/build
-
-FROM build AS publish
 RUN dotnet publish "Provisioning.Migrations.csproj" -c Release -o /migrations/publish
 
 FROM base AS final
