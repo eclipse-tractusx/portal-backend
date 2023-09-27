@@ -927,8 +927,8 @@ public class NetworkBusinessLogicTests
                 (ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO),
             });
         A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._))
-            .Returns(new[] {ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepTypeId.DECLINE_APPLICATION});
-        
+            .Returns(new[] { ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepTypeId.DECLINE_APPLICATION });
+
         // Act
         await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
 

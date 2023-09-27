@@ -53,7 +53,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IMailingService _mailingService;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IApplicationChecklistCreationService checklistService , IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IApplicationChecklistCreationService checklistService, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
