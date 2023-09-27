@@ -26,5 +26,9 @@
   {
     "company_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cde",
     "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057770018"
+  },
+  {
+    "company_id": "2647e4f9-0d11-479f-b927-643cd9321c00",
+    "identity_provider_id": "04bdc85f-496c-4f3b-93d9-5111d039bf39"
   }
 ]

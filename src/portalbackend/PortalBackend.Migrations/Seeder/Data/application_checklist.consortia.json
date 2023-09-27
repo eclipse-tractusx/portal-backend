@@ -238,5 +238,53 @@
     "date_last_changed": null,
     "application_checklist_entry_status_id": 3,
     "comment": null
+  },
+  {
+    "application_id": "769bbdf7-094a-4c14-9431-cb67010cbe87",
+    "application_checklist_entry_type_id": 1,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "769bbdf7-094a-4c14-9431-cb67010cbe87",
+    "application_checklist_entry_type_id": 2,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "769bbdf7-094a-4c14-9431-cb67010cbe87",
+    "application_checklist_entry_type_id": 3,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": "2023-01-20 07:44:39.669032 +00:00",
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "769bbdf7-094a-4c14-9431-cb67010cbe87",
+    "application_checklist_entry_type_id": 4,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "769bbdf7-094a-4c14-9431-cb67010cbe87",
+    "application_checklist_entry_type_id": 5,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "769bbdf7-094a-4c14-9431-cb67010cbe87",
+    "application_checklist_entry_type_id": 6,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
   }
 ]
