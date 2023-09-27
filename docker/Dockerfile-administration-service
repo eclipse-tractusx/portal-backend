@@ -19,12 +19,17 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS base
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS publish
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine-amd64 AS publish
+ARG TARGETARCH
+ARG TARGETOS
+RUN arch=$TARGETARCH \
+    && if [ "$arch" = "amd64" ]; then arch="x64"; fi \
+    && echo $TARGETOS-$arch > /tmp/rid
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY src/ src/
 WORKDIR /src/administration/Administration.Service
-RUN dotnet publish "Administration.Service.csproj" -c Release -o /app/publish
+RUN dotnet publish "Administration.Service.csproj" -c Release -o /app/publish -r $(cat /tmp/rid)
 
 FROM base AS final
 WORKDIR /app
