@@ -68,6 +68,7 @@ WebApplicationBuildRunner
             .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
         builder.Services.AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
+                        .AddApplicationChecklistCreation()
                         .AddOfferSubscriptionProcess();
 
         builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()

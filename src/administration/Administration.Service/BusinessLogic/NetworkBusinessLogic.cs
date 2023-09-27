@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -48,15 +49,17 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _processHelper;
+    private readonly IApplicationChecklistCreationService _checklistService;
     private readonly IMailingService _mailingService;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IApplicationChecklistCreationService checklistService , IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _userProvisioningService = userProvisioningService;
         _processHelper = processHelper;
+        _checklistService = checklistService;
         _mailingService = mailingService;
         _settings = options.Value;
     }
@@ -364,7 +367,14 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         _portalRepositories.GetInstance<IConsentRepository>()
             .CreateConsents(requiredAgreementIds.Select(agreementId => (agreementId, companyId, userId, ConsentStatusId.ACTIVE)));
 
+        var entries = await _checklistService.CreateInitialChecklistAsync(companyApplication.CompanyApplicationId);
         var processId = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
+        _portalRepositories.GetInstance<IProcessStepRepository>()
+            .CreateProcessStepRange(
+                _checklistService
+                    .GetInitialProcessStepTypeIds(entries)
+                    .Select(processStepTypeId => (processStepTypeId, ProcessStepStatusId.TODO, processId)));
+
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.CompanyApplicationId,
             ca =>
             {

@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -53,6 +54,7 @@ public class NetworkBusinessLogicTests
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _networkRegistrationProcessHelper;
+    private readonly IApplicationChecklistCreationService _checklistService;
     private readonly IMailingService _mailingService;
 
     private readonly IPortalRepositories _portalRepositories;
@@ -78,6 +80,7 @@ public class NetworkBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityService = A.Fake<IIdentityService>();
         _networkRegistrationProcessHelper = A.Fake<INetworkRegistrationProcessHelper>();
+        _checklistService = A.Fake<IApplicationChecklistCreationService>();
         _mailingService = A.Fake<IMailingService>();
 
         _companyRepository = A.Fake<ICompanyRepository>();
@@ -107,7 +110,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
 
-        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _mailingService, options);
+        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _checklistService, _mailingService, options);
 
         SetupRepos();
     }
@@ -872,6 +875,7 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var agreementId1 = Guid.NewGuid();
+        var processId = Guid.NewGuid();
         var processSteps = new List<ProcessStep>();
         var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
 
@@ -910,6 +914,21 @@ public class NetworkBusinessLogicTests
                     consents.Add(new Consent(Guid.NewGuid(), x.AgreementId, x.CompanyId, x.CompanyUserId, x.ConsentStatusId, now));
                 }
             });
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
+            .ReturnsLazily((ProcessTypeId processTypeId) => new Process(processId, processTypeId, Guid.NewGuid()));
+        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
+            .Returns(new[]
+            {
+                (ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO),
+                (ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE),
+                (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+                (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
+                (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+                (ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO),
+            });
+        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._))
+            .Returns(new[] {ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepTypeId.DECLINE_APPLICATION});
+        
         // Act
         await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
 
@@ -930,6 +949,9 @@ public class NetworkBusinessLogicTests
         processSteps.Should().ContainSingle().Which.Should().Match<ProcessStep>(x =>
             x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED &&
             x.ProcessStepStatusId == ProcessStepStatusId.TODO);
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(
+                x => x.Count(p => p.ProcessId == processId && p.ProcessStepStatusId == ProcessStepStatusId.TODO) == 2)))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
