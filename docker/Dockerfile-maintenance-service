@@ -19,7 +19,12 @@
 
 FROM mcr.microsoft.com/dotnet/runtime:7.0-alpine AS base
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS publish
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine-amd64 AS publish
+ARG TARGETARCH
+ARG TARGETOS
+RUN arch=$TARGETARCH \
+    && if [ "$arch" = "amd64" ]; then arch="x64"; fi \
+    && echo $TARGETOS-$arch > /tmp/rid
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY src/maintenance/Maintenance.App/ src/maintenance/Maintenance.App/
@@ -34,7 +39,7 @@ COPY src/framework/Framework.ProcessIdentity/ src/framework/Framework.ProcessIde
 COPY /src/framework/Framework.DateTimeProvider /src/framework/Framework.DateTimeProvider
 RUN dotnet restore "src/maintenance/Maintenance.App/Maintenance.App.csproj"
 WORKDIR /src/maintenance/Maintenance.App
-RUN dotnet publish "Maintenance.App.csproj" -c Release -o /app/publish
+RUN dotnet publish "Maintenance.App.csproj" -c Release -o /app/publish -r $(cat /tmp/rid)
 
 FROM base AS final
 WORKDIR /app
