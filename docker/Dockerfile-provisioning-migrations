@@ -19,12 +19,7 @@
 
 FROM mcr.microsoft.com/dotnet/runtime:7.0-alpine AS base
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine-amd64 AS publish
-ARG TARGETARCH
-ARG TARGETOS
-RUN arch=$TARGETARCH \
-    && if [ "$arch" = "amd64" ]; then arch="x64"; fi \
-    && echo $TARGETOS-$arch > /tmp/rid
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS publish
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY /src/provisioning /src/provisioning
