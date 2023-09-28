@@ -333,9 +333,9 @@ public class RegistrationController : ControllerBase
     /// <response code="404">Record not found.</response>
     [HttpPost]
     [AllowAnonymous]
-    // [Authorize(Roles = "update_application_checklist_value")]
+    [Authorize(Roles = "update_application_checklist_value")]
     [Route("clearinghouse/selfDescription")]
-    // [Authorize(Policy = PolicyTypes.ServiceAccount)]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

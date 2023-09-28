@@ -94,35 +94,35 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
     public async Task ProcessFinishSelfDescriptionLpForApplication(SelfDescriptionResponseData data, Guid companyId, CancellationToken cancellationToken)
     {
-        // var confirm = ValidateData(data);
-        // var context = await _checklistService
-        //     .VerifyChecklistEntryAndProcessSteps(
-        //         data.ExternalId,
-        //         ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
-        //         new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
-        //         ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
-        //         processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
-        //     .ConfigureAwait(false);
-        //
-        // if (confirm)
-        // {
+        var confirm = ValidateData(data);
+        var context = await _checklistService
+            .VerifyChecklistEntryAndProcessSteps(
+                data.ExternalId,
+                ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
+                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
+                processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
+            .ConfigureAwait(false);
+        
+        if (confirm)
+        {
             var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(false);
-            // _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
-            //     c => { c.SelfDescriptionDocumentId = documentId; });
-        // }
-        //
-        // _checklistService.FinalizeChecklistEntryAndProcessSteps(
-        //     context,
-        //     null,
-        //     item =>
-        //     {
-        //         item.ApplicationChecklistEntryStatusId =
-        //             confirm
-        //                 ? ApplicationChecklistEntryStatusId.DONE
-        //                 : ApplicationChecklistEntryStatusId.FAILED;
-        //         item.Comment = data.Message;
-        //     },
-        //     confirm ? new[] { ProcessStepTypeId.ACTIVATE_APPLICATION } : null);
+            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
+                c => { c.SelfDescriptionDocumentId = documentId; });
+        }
+        
+        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            context,
+            null,
+            item =>
+            {
+                item.ApplicationChecklistEntryStatusId =
+                    confirm
+                        ? ApplicationChecklistEntryStatusId.DONE
+                        : ApplicationChecklistEntryStatusId.FAILED;
+                item.Comment = data.Message;
+            },
+            confirm ? new[] { ProcessStepTypeId.ACTIVATE_APPLICATION } : null);
     }
 
     /// <inheritdoc />
