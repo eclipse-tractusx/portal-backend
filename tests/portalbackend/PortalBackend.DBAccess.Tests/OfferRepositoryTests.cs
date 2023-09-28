@@ -1462,10 +1462,16 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             OfferTypeId.APP, activeDocumentType).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull().And.HaveCount(1).And.Satisfy(
+        result.Should().NotBeNull().And.HaveCount(3).And.Satisfy(
             x => x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2") &&
             x.DocumentName == "Default_App_Image.png" &&
-            x.DocumentTypeId == DocumentTypeId.APP_IMAGE
+            x.DocumentTypeId == DocumentTypeId.APP_IMAGE,
+            x => x.DocumentId == new Guid("0d68c68c-d689-474c-a3be-8493f99feab2") &&
+            x.DocumentName == "AdditionalServiceDetails.pdf" &&
+            x.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS,
+            x => x.DocumentId == new Guid("3291cae8-3c7b-4862-8cec-93ea0dc8c61e") &&
+            x.DocumentName == "InactiveDocument.pdf" &&
+            x.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS
         );
     }
 
