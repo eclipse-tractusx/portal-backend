@@ -103,14 +103,14 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
                 processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
             .ConfigureAwait(false);
-        
+
         if (confirm)
         {
             var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(false);
             _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
                 c => { c.SelfDescriptionDocumentId = documentId; });
         }
-        
+
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
@@ -176,8 +176,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         await writer.FlushAsync(cancellationToken);
         var documentContent = ms.ToArray();
         var hash = sha512Hash.ComputeHash(documentContent);
-        var x = Convert.ToBase64String(documentContent); 
-        var y = Convert.ToBase64String(hash); 
+
         var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
             $"SelfDescription_{title}.json",
             documentContent,
