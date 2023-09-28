@@ -359,20 +359,20 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     /// <inheritdoc />
     public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetCompanyIdSubmissionStatusForApplication(data.ExternalId)
-            .ConfigureAwait(false);
-        if (!result.IsValidApplicationId)
-        {
-            throw new NotFoundException($"companyApplication {data.ExternalId} not found");
-        }
-        if (!result.IsSubmitted)
-        {
-            throw new ConflictException($"companyApplication {data.ExternalId} is not in status SUBMITTED");
-        }
+        // var result = await _portalRepositories.GetInstance<IApplicationRepository>()
+        //     .GetCompanyIdSubmissionStatusForApplication(data.ExternalId)
+        //     .ConfigureAwait(false);
+        // if (!result.IsValidApplicationId)
+        // {
+        //     throw new NotFoundException($"companyApplication {data.ExternalId} not found");
+        // }
+        // if (!result.IsSubmitted)
+        // {
+        //     throw new ConflictException($"companyApplication {data.ExternalId} is not in status SUBMITTED");
+        // }
 
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, result.CompanyId, cancellationToken).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, Guid.NewGuid(), cancellationToken).ConfigureAwait(false);
+        // await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />

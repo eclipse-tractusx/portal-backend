@@ -7,7 +7,7 @@
     "shortname": "CX-Test-Access",
     "company_status_id": 2,
     "address_id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fe",
-    "self_description_document_id": null
+    "self_description_document_id": "f90962ee-a358-4381-8947-c56268ff32c7"
   },
   {
     "id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
@@ -17,7 +17,7 @@
     "shortname": "BMW AG",
     "company_status_id": 2,
     "address_id": "12302f9b-418c-4b8c-aea8-3eedf67e6a02",
-    "self_description_document_id": null
+    "self_description_document_id": "efae5922-60c5-4b8a-b008-e988c20f080c"
   },
   {
     "id": "0dcd8209-85e2-4073-b130-ac094fb47106",
@@ -27,7 +27,7 @@
     "shortname": "SAP",
     "company_status_id": 1,
     "address_id": "3a52099d-4988-4a56-9787-10a669c41338",
-    "self_description_document_id": null
+    "self_description_document_id": "60e94b55-23e5-4338-926c-cf6e90da01b4"
   },
   {
     "id": "220330ac-170d-4e22-8d72-9467ed042149",
@@ -37,7 +37,7 @@
     "shortname": "Car Factory 1",
     "company_status_id": 1,
     "address_id": "aa49c0ec-4e65-4115-a01c-7adfc36d220e",
-    "self_description_document_id": null
+    "self_description_document_id": "cd71f683-fb71-4933-9767-bdd652465673"
   },
   {
     "id": "bdac6865-2a8d-4bfd-9373-9dfce8190895",
@@ -47,7 +47,7 @@
     "shortname": "Car Factory 2",
     "company_status_id": 1,
     "address_id": "c0e1d802-0c4b-4d0d-a763-b6d9d56e6f07",
-    "self_description_document_id": null
+    "self_description_document_id": "e435dd8f-4a8c-4774-9160-0bc9b4f608a7"
   },
   {
     "id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
@@ -57,7 +57,7 @@
     "shortname": "Security Company",
     "company_status_id": 1,
     "address_id": "86da3e1c-a634-41a6-ad44-9880746123e4",
-    "self_description_document_id": null
+    "self_description_document_id": "e252361b-1725-43eb-845f-886532d1e2cb"
   },
   {
     "id": "d14eba77-0b18-4e41-9d84-49ef875c0763",
@@ -67,7 +67,7 @@
     "shortname": "Dummy Corp. 1",
     "company_status_id": 1,
     "address_id": "0f562ea7-4cc1-47a9-bfee-b41b0ac67ebb",
-    "self_description_document_id": null
+    "self_description_document_id": "28d9a6d8-c766-47a5-860b-0ec56ae79728"
   },
   {
     "id": "9d049598-0dac-4d26-8a21-8f5b64c799cf",
@@ -77,7 +77,7 @@
     "shortname": "Palantir",
     "company_status_id": 1,
     "address_id": "095ca573-bef1-4092-ad60-b7f651678fcd",
-    "self_description_document_id": null
+    "self_description_document_id": "821cf8c7-1db1-4142-8141-189b8bd5708e"
   },
   {
     "id": "cac8fa6a-9db7-4bad-9cbd-56298b74bac2",
@@ -87,7 +87,7 @@
     "shortname": "BOSCH",
     "company_status_id": 2,
     "address_id": "081c8bfd-c6d1-4119-a5f8-a69726dfc11d",
-    "self_description_document_id": null
+    "self_description_document_id": "732fb249-bb3c-40a1-b653-018d9552af00"
   },
   {
     "id": "dfd90abe-b20e-4aff-87c6-f30f2bf9b104",
@@ -97,7 +97,7 @@
     "shortname": "Siemens",
     "company_status_id": 2,
     "address_id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fc",
-    "self_description_document_id": null
+    "self_description_document_id": "a421d67b-11c1-4eed-b6ee-e53a909e52a5"
   },
   {
     "id": "fe55fe20-5f19-401e-91a2-dfa37b44a0be",
@@ -107,7 +107,7 @@
     "shortname": "GEC",
     "company_status_id": 2,
     "address_id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fd",
-    "self_description_document_id": null
+    "self_description_document_id": "bcb6ae69-6910-4bb0-afd8-2a85dc7fcb9c"
   },
   {
     "id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd",
@@ -117,7 +117,7 @@
     "shortname": "SP",
     "company_status_id": 2,
     "address_id": "081c8bfd-c6d1-4119-a5f8-a69726dfc11e",
-    "self_description_document_id": null
+    "self_description_document_id": "04e62907-4933-4ef1-b428-7eb9f6491f46"
   },
   {
     "id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cde",
@@ -127,7 +127,7 @@
     "shortname": "SP",
     "company_status_id": 2,
     "address_id": "081c8bfd-c6d1-4119-a5f8-a69726dfc11f",
-    "self_description_document_id": null
+    "self_description_document_id": "25fe83de-c8cb-40d7-b0c2-cca53eb40725"
   },
   {
     "id": "2647e4f9-0d11-479f-b927-643cd9321c00",
@@ -137,6 +137,6 @@
     "shortname": "Onboarding-Provider",
     "company_status_id": 2,
     "address_id": "f267f020-2caf-4d64-9aa1-20a6c123fe15",
-    "self_description_document_id": null
+    "self_description_document_id": "ff32e8ef-1772-4a4c-b0de-91d5a04d679e"
   }
 ]
