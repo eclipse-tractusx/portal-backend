@@ -56,6 +56,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -70,6 +76,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-administration-service
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -101,6 +108,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -115,6 +128,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-processes-worker
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -146,6 +160,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -160,6 +180,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-registration-service
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -191,6 +212,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -205,6 +232,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-marketplace-app-service
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -236,6 +264,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -250,6 +284,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-portal-migrations
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -281,6 +316,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -295,6 +336,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-maintenance-service
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -326,6 +368,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -340,6 +388,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-notification-service
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -371,6 +420,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -385,6 +440,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-services-service
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -416,6 +472,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -430,6 +492,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-provisioning-migrations
+          platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
