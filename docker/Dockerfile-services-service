@@ -20,16 +20,11 @@
 FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine-amd64 AS publish
-ARG TARGETARCH
-ARG TARGETOS
-RUN arch=$TARGETARCH \
-    && if [ "$arch" = "amd64" ]; then arch="x64"; fi \
-    && echo $TARGETOS-$arch > /tmp/rid
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY src/ src/
 WORKDIR /src/marketplace/Services.Service
-RUN dotnet publish "Services.Service.csproj" -c Release -o /app/publish -r $(cat /tmp/rid)
+RUN dotnet publish "Services.Service.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
