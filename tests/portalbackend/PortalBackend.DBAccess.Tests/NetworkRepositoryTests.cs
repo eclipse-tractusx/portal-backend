@@ -162,16 +162,12 @@ public class NetworkRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSubmitData(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93776"), Enumerable.Repeat(new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e"), 1)).ConfigureAwait(false);
+        var result = await sut.GetSubmitData(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBe(default);
-        result.Exists.Should().Be(true);
-        result.IsUserInRole.Should().Be(false);
-        result.CompanyRoleAgreementIds.Should().HaveCount(2).And.Satisfy(
-            x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
-            x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER);
-        result.CompanyApplications.Should().HaveCount(1).And.Satisfy(x => x.CompanyApplicationStatusId == CompanyApplicationStatusId.CREATED);
+        result.Exists.Should().BeTrue();
+        result.CompanyApplications.Should().BeEmpty();
+        result.CompanyRoleAgreementIds.Should().Satisfy(x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.AgreementIds.Count() == 2);
         result.ProcessId.Should().BeNull();
     }
 
@@ -182,12 +178,11 @@ public class NetworkRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSubmitData(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93776"), Enumerable.Repeat(new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e"), 1)).ConfigureAwait(false);
+        var result = await sut.GetSubmitData(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
-        result.Exists.Should().Be(true);
-        result.IsUserInRole.Should().Be(true);
+        result.Exists.Should().BeTrue();
         result.CompanyRoleAgreementIds.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT,
             x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER);

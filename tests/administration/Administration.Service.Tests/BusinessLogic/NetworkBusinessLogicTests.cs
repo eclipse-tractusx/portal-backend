@@ -31,7 +31,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -54,7 +53,6 @@ public class NetworkBusinessLogicTests
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _networkRegistrationProcessHelper;
-    private readonly IApplicationChecklistCreationService _checklistService;
     private readonly IMailingService _mailingService;
 
     private readonly IPortalRepositories _portalRepositories;
@@ -66,8 +64,6 @@ public class NetworkBusinessLogicTests
     private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly ICountryRepository _countryRepository;
     private readonly NetworkBusinessLogic _sut;
-    private readonly PartnerRegistrationSettings _settings;
-    private readonly IConsentRepository _consentRepository;
 
     public NetworkBusinessLogicTests()
     {
@@ -80,7 +76,6 @@ public class NetworkBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityService = A.Fake<IIdentityService>();
         _networkRegistrationProcessHelper = A.Fake<INetworkRegistrationProcessHelper>();
-        _checklistService = A.Fake<IApplicationChecklistCreationService>();
         _mailingService = A.Fake<IMailingService>();
 
         _companyRepository = A.Fake<ICompanyRepository>();
@@ -90,19 +85,17 @@ public class NetworkBusinessLogicTests
         _networkRepository = A.Fake<INetworkRepository>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
-        _consentRepository = A.Fake<IConsentRepository>();
 
-        _settings = new PartnerRegistrationSettings
+        var settings = new PartnerRegistrationSettings
         {
             InitialRoles = new[] { new UserRoleConfig("cl1", new[] { "Company Admin" }) }
         };
         var options = A.Fake<IOptions<PartnerRegistrationSettings>>();
 
-        A.CallTo(() => options.Value).Returns(_settings);
+        A.CallTo(() => options.Value).Returns(settings);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>()).Returns(_companyRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
@@ -110,7 +103,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
 
-        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _checklistService, _mailingService, options);
+        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _mailingService, options);
 
         SetupRepos();
     }
@@ -385,9 +378,6 @@ public class NetworkBusinessLogicTests
     public async Task HandlePartnerRegistration_WithSingleIdpWithoutAlias_ThrowsServiceException()
     {
         // Arrange
-        var newCompanyId = Guid.NewGuid();
-        var processId = Guid.NewGuid();
-
         var data = new PartnerRegistrationData(
             Guid.NewGuid(),
             "Test N2N",
@@ -699,259 +689,6 @@ public class NetworkBusinessLogicTests
 
         // Assert
         A.CallTo(() => _networkRegistrationProcessHelper.TriggerProcessStep(externalId, ProcessStepId)).MustHaveHappenedOnceExactly();
-    }
-
-    #endregion
-
-    #region Submit
-
-    [Fact]
-    public async Task Submit_WithNotExistingSubmitData_ThrowsNotFoundException()
-    {
-        // Arrange
-        var data = _fixture.Create<PartnerSubmitData>();
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns(new ValueTuple<bool, IEnumerable<ValueTuple<Guid, CompanyApplicationStatusId, string?>>, bool, IEnumerable<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>, Guid?>());
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} not found");
-    }
-
-    [Fact]
-    public async Task Submit_WithUserNotInRole_ThrowsForbiddenException()
-    {
-        // Arrange
-        var data = _fixture.Create<PartnerSubmitData>();
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), false, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"User must be in role {string.Join(",", _settings.InitialRoles.SelectMany(x => x.UserRoleNames))}");
-    }
-
-    [Fact]
-    public async Task Submit_WithoutCompanyApplications_ThrowsConflictException()
-    {
-        // Arrange
-        var data = _fixture.Create<PartnerSubmitData>();
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} has no or more than one application");
-    }
-
-    [Fact]
-    public async Task Submit_WithMultipleCompanyApplications_ThrowsConflictException()
-    {
-        // Arrange
-        var data = _fixture.Create<PartnerSubmitData>();
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, _fixture.CreateMany<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(2), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} has no or more than one application");
-    }
-
-    [Fact]
-    public async Task Submit_WithWrongApplicationStatus_ThrowsConflictException()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var data = _fixture.Create<PartnerSubmitData>();
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.VERIFY, null), 1), true, Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), Guid.NewGuid()));
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Application {applicationId} is not in state CREATED");
-    }
-
-    [Fact]
-    public async Task Submit_WithOneMissingAgreement_ThrowsConflictException()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var agreementId = Guid.NewGuid();
-        var notExistingAgreementId = Guid.NewGuid();
-        var data = new PartnerSubmitData(
-            new[] { CompanyRoleId.APP_PROVIDER },
-            new[] { new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE) });
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
-        {
-            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, notExistingAgreementId})
-        };
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), true, companyRoleIds, Guid.NewGuid()));
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"All Agreements for the company roles must be agreed to, missing agreementIds: {notExistingAgreementId} (Parameter 'Agreements')");
-    }
-
-    [Fact]
-    public async Task Submit_WithOneInactiveAgreement_ThrowsConflictException()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var agreementId = Guid.NewGuid();
-        var inactiveAgreementId = Guid.NewGuid();
-        var data = new PartnerSubmitData(
-            new[] { CompanyRoleId.APP_PROVIDER },
-            new[]
-            {
-                new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
-                new AgreementConsentData(inactiveAgreementId, ConsentStatusId.INACTIVE),
-            });
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
-        {
-            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, inactiveAgreementId})
-        };
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), true, companyRoleIds, Guid.NewGuid()));
-
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"All agreements must be agreed to. Agreements that are not active: {inactiveAgreementId} (Parameter 'Agreements')");
-    }
-
-    [Fact]
-    public async Task Submit_WithoutProcessId_ThrowsConflictException()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var agreementId = Guid.NewGuid();
-        var agreementId1 = Guid.NewGuid();
-        var data = new PartnerSubmitData(
-            new[] { CompanyRoleId.APP_PROVIDER },
-            new[]
-            {
-                new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
-                new AgreementConsentData(agreementId1, ConsentStatusId.ACTIVE),
-            });
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
-        {
-            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
-        };
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), true, companyRoleIds, null));
-        // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("There must be an process");
-    }
-
-    [Fact]
-    public async Task Submit_WithValidData_CallsExpected()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var agreementId = Guid.NewGuid();
-        var agreementId1 = Guid.NewGuid();
-        var processId = Guid.NewGuid();
-        var processSteps = new List<ProcessStep>();
-        var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
-
-        var data = new PartnerSubmitData(
-            new[] { CompanyRoleId.APP_PROVIDER },
-            new[]
-            {
-                new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
-                new AgreementConsentData(agreementId1, ConsentStatusId.ACTIVE),
-            });
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
-        {
-            (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
-        };
-        A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId, _identity.UserId, A<IEnumerable<Guid>>._))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), true, companyRoleIds, Guid.NewGuid()));
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
-            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
-            {
-                setOptionalFields.Invoke(application);
-            });
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x =>
-                    x.Count() == 1 &&
-                    x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED)))
-            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> steps) =>
-                {
-                    processSteps.AddRange(steps.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
-                });
-        var consents = new List<Consent>();
-        var now = DateTimeOffset.UtcNow;
-        A.CallTo(() => _consentRepository.CreateConsents(A<IEnumerable<(Guid, Guid, Guid, ConsentStatusId)>>._))
-            .Invokes((IEnumerable<(Guid AgreementId, Guid CompanyId, Guid CompanyUserId, ConsentStatusId ConsentStatusId)> agreementConsents) =>
-            {
-                foreach (var x in agreementConsents)
-                {
-                    consents.Add(new Consent(Guid.NewGuid(), x.AgreementId, x.CompanyId, x.CompanyUserId, x.ConsentStatusId, now));
-                }
-            });
-        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
-            .ReturnsLazily((ProcessTypeId processTypeId) => new Process(processId, processTypeId, Guid.NewGuid()));
-        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
-            .Returns(new[]
-            {
-                (ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO),
-                (ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE),
-                (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
-                (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
-                (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
-                (ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO),
-            });
-        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._))
-            .Returns(new[] { ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepTypeId.DECLINE_APPLICATION });
-
-        // Act
-        await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
-        A.CallTo(() => _consentRepository.CreateConsents(A<IEnumerable<(Guid, Guid, Guid, ConsentStatusId)>>._))
-            .MustHaveHappenedOnceExactly();
-        consents.Should().HaveCount(2)
-            .And.AllSatisfy(x => x.Should().Match<Consent>(x =>
-                x.CompanyId == _identity.CompanyId &&
-                x.CompanyUserId == _identity.UserId &&
-                x.ConsentStatusId == ConsentStatusId.ACTIVE))
-            .And.Satisfy(
-                x => x.AgreementId == agreementId,
-                x => x.AgreementId == agreementId1);
-        A.CallTo(() => _portalRepositories.SaveAsync())
-            .MustHaveHappenedOnceExactly();
-        processSteps.Should().ContainSingle().Which.Should().Match<ProcessStep>(x =>
-            x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED &&
-            x.ProcessStepStatusId == ProcessStepStatusId.TODO);
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(
-                x => x.Count(p => p.ProcessId == processId && p.ProcessStepStatusId == ProcessStepStatusId.TODO) == 2)))
-            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
