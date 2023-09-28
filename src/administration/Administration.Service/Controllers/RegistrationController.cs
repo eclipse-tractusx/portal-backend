@@ -332,7 +332,6 @@ public class RegistrationController : ControllerBase
     /// <response code="400">The CompanyApplication is not in status SUBMITTED.</response>
     /// <response code="404">Record not found.</response>
     [HttpPost]
-    [AllowAnonymous]
     [Authorize(Roles = "update_application_checklist_value")]
     [Route("clearinghouse/selfDescription")]
     [Authorize(Policy = PolicyTypes.ServiceAccount)]
