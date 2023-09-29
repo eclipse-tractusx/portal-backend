@@ -73,6 +73,13 @@ public class UserProvisioningService : IUserProvisioningService
             try
             {
                 var (identity, companyUserId) = await GetOrCreateCompanyUser(userRepository, alias, user, companyId, identityProviderId, businessPartnerNumber);
+
+                userdata.CompanyUserId = companyUserId;
+                if (!string.IsNullOrWhiteSpace(identity?.UserEntityId))
+                {
+                    userdata.UserEntityId = identity.UserEntityId;
+                }
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
