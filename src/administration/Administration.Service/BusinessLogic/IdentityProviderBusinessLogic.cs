@@ -553,7 +553,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     public async ValueTask<IdentityProviderDetailsWithConnectedCompanies> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId)
     {
         var companyId = _identityService.IdentityData.CompanyId;
-        
+
         var (alias, category, isOwnOrOwnerCompany, typeId, connectedCompanies) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, companyId).ConfigureAwait(false);
         if (!isOwnOrOwnerCompany)
         {

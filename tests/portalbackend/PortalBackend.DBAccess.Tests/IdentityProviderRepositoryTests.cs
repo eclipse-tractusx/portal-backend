@@ -390,7 +390,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region Setup    
 
     private async Task<(IdentityProviderRepository, PortalDbContext)> CreateSutWithContext()

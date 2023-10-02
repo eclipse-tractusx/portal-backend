@@ -2131,7 +2131,7 @@ public class IdentityProviderBusinessLogicTests
         // Arrange
         var identityProviderId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
-        
+
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
             _provisioningManager,
