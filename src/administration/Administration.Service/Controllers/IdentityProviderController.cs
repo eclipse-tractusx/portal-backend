@@ -107,7 +107,7 @@ public class IdentityProviderController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_managed_idp")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("network/identityproviders/managed/{identityProviderId}", Name = nameof(GetOwnCompanyIdentityProvider))]
+    [Route("network/identityproviders/managed/{identityProviderId}")]
     [ProducesResponseType(typeof(IdentityProviderDetailsWithConnectedCompanies), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
