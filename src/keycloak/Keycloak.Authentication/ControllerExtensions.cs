@@ -32,23 +32,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 /// </summary>
 public static class ControllerExtensions
 {
-    public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> consumingFunction) =>
-        consumingFunction(controller.User.GetIdentityData());
-
-    public static T WithUserId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
-        consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId));
-
-    public static T WithCompanyId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
-        consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId));
-
-    public static T WithUserIdAndCompanyId<T>(this ControllerBase controller, Func<(Guid UserId, Guid CompanyId), T> consumingFunction) =>
-        consumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId)));
+    // public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> consumingFunction) =>
+    //     consumingFunction(controller.User.GetIdentityData());
+    //
+    // public static T WithUserId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
+    //     consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId));
+    //
+    // public static T WithCompanyId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
+    //     consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId));
+    //
+    // public static T WithUserIdAndCompanyId<T>(this ControllerBase controller, Func<(Guid UserId, Guid CompanyId), T> consumingFunction) =>
+    //     consumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId)));
 
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
         tokenConsumingFunction(controller.GetBearerToken());
-
-    public static T WithIdentityIdAndBearerToken<T>(this ControllerBase controller, Func<(Guid UserId, string BearerToken), T> tokenConsumingFunction) =>
-        tokenConsumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.GetBearerToken()));
+    //
+    // public static T WithIdentityIdAndBearerToken<T>(this ControllerBase controller, Func<(Guid UserId, string BearerToken), T> tokenConsumingFunction) =>
+    //     tokenConsumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.GetBearerToken()));
 
     public static IdentityData GetIdentityData(this ClaimsPrincipal user)
     {

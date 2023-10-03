@@ -26,23 +26,27 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 
 public class OfferDocumentService : IOfferDocumentService
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IIdentityService _identityService;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
-    public OfferDocumentService(IPortalRepositories portalRepositories)
+    /// <param name="identityService">Access to the identity</param>
+    public OfferDocumentService(IPortalRepositories portalRepositories, IIdentityService identityService)
     {
         _portalRepositories = portalRepositories;
+        _identityService = identityService;
     }
 
-    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, CancellationToken cancellationToken)
+    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, CancellationToken cancellationToken)
     {
         if (id == Guid.Empty)
         {
@@ -54,6 +58,7 @@ public class OfferDocumentService : IOfferDocumentService
             throw new ControllerArgumentException("File name should not be null");
         }
 
+        var identity = _identityService.IdentityData;
         var uploadContentTypeSettings = uploadDocumentTypeIdSettings.FirstOrDefault(x => x.DocumentTypeId == documentTypeId);
         if (uploadContentTypeSettings == null)
         {

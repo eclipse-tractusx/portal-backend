@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Text.Json;
 
@@ -38,26 +39,29 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
     private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IIdentityService _identityService;
     private readonly UserSettings _settings;
 
-    public UserRolesBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IOptions<UserSettings> options)
+    public UserRolesBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IIdentityService identityService, IOptions<UserSettings> options)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
+        _identityService = identityService;
         _settings = options.Value;
     }
 
-    public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(Guid companyId, string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(companyId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
+    public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(string? languageShortName) =>
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(_identityService.IdentityData.CompanyId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
             .PreSortedGroupBy(x => x.OfferId)
             .Select(x => new OfferRoleInfos(x.Key, x.Select(s => new OfferRoleInfo(s.RoleId, s.RoleText, s.Description))));
 
-    public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, Guid companyId, string? languageShortName) =>
+    public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetAppRolesAsync(appId, companyId, languageShortName ?? Constants.DefaultLanguage);
+            .GetAppRolesAsync(appId, _identityService.IdentityData.CompanyId, languageShortName ?? Constants.DefaultLanguage);
 
-    public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles, Guid companyId)
+    public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         return ModifyUserRolesInternal(
             async () =>
             {
@@ -92,13 +96,13 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             });
     }
 
-    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles, Guid companyId) =>
+    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, companyId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, _identityService.IdentityData.CompanyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, companyUserId, roles, companyId,
+            appId, companyUserId, roles, _identityService.IdentityData.CompanyId,
             data =>
             {
                 var userName = $"{data.firstname} {data.lastname}";
@@ -113,13 +117,13 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             });
 
     [Obsolete("to be replaced by endpoint UserRolesBusinessLogic.ModifyAppUserRolesAsync. Remove as soon frontend is adjusted")]
-    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, Guid companyId) =>
+    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, companyId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, _identityService.IdentityData.CompanyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, companyId, null);
+            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, _identityService.IdentityData.CompanyId, null);
 
     private async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesInternal(
         Func<Task<OfferIamUserData?>> getIamUserData,

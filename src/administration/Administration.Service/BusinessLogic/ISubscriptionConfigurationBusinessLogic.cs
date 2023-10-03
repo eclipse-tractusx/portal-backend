@@ -60,12 +60,12 @@ public interface ISubscriptionConfigurationBusinessLogic
     /// </summary>
     /// <param name="companyId">Id of the users company</param>
     /// <returns>The detail data</returns>
-    Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(Guid companyId);
+    Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync();
 
     /// <summary>
     /// Sets service provider company details
     /// </summary>
     /// <param name="data">Detail data for the service provider</param>
     /// <param name="companyId">Id of the users company</param>
-    Task SetProviderCompanyDetailsAsync(ProviderDetailData data, Guid companyId);
+    Task SetProviderCompanyDetailsAsync(ProviderDetailData data);
 }

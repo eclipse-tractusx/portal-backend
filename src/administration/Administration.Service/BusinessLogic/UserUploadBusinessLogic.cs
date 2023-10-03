@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -36,33 +37,38 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IMailingService _mailingService;
     private readonly UserSettings _settings;
+    private readonly IdentityService _identityService;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="mailingService">Mailing Service</param>
+    /// <param name="identityService">Access to the identity Service</param>
     /// <param name="settings">Settings</param>
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
         IMailingService mailingService,
+        IdentityService identityService,
         IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;
         _mailingService = mailingService;
+        _identityService = identityService;
         _settings = settings.Value;
     }
 
-    public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, CancellationToken cancellationToken)
     {
         CsvParser.ValidateContentTypeTextCSV(document.ContentType);
-        return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, identity, cancellationToken);
+        return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, cancellationToken);
     }
 
-    private async ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    private async ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, CancellationToken cancellationToken)
     {
         using var stream = document.OpenReadStream();
 
+        var identity = _identityService.IdentityData;
         var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, identity.UserId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();
@@ -182,17 +188,17 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         return (firstName, lastName, email, providerUserName, providerUserId, roles);
     }
 
-    public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, CancellationToken cancellationToken)
     {
         CsvParser.ValidateContentTypeTextCSV(document.ContentType);
-        return UploadOwnCompanySharedIdpUsersInternalAsync(document, identity, cancellationToken);
+        return UploadOwnCompanySharedIdpUsersInternalAsync(document, cancellationToken);
     }
 
-    private async ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersInternalAsync(IFormFile document,
-        (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    private async ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersInternalAsync(IFormFile document, CancellationToken cancellationToken)
     {
         using var stream = document.OpenReadStream();
 
+        var identity = _identityService.IdentityData;
         var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.UserId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();

@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -70,7 +69,7 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, mediaType) = await this.WithCompanyId(companyId => _businessLogic.GetDocumentAsync(documentId, companyId).ConfigureAwait(false));
+        var (fileName, content, mediaType) = await _businessLogic.GetDocumentAsync(documentId).ConfigureAwait(false);
         return File(content, mediaType, fileName);
     }
 
@@ -115,7 +114,7 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) =>
-        this.WithUserId(userId => _businessLogic.DeleteDocumentAsync(documentId, userId));
+        _businessLogic.DeleteDocumentAsync(documentId);
 
     /// <summary>
     /// Gets the json the seed data for a specific document

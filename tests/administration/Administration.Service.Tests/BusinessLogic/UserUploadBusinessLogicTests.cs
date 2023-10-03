@@ -48,6 +48,7 @@ public class UserUploadBusinessLogicTests
     private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Exception _error;
     private readonly Random _random;
+    private readonly IIdentityService _identityService;
 
     public UserUploadBusinessLogicTests()
     {
@@ -69,6 +70,9 @@ public class UserUploadBusinessLogicTests
         _settings = _fixture.Build<UserSettings>().With(x => x.Portal, _fixture.Build<UserSetting>().With(x => x.KeycloakClientID, _clientId).Create()).Create();
         _encoding = _fixture.Create<Encoding>();
         _identity = new(_iamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+
+        _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 

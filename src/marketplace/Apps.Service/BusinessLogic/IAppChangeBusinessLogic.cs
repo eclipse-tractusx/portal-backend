@@ -33,33 +33,29 @@ public interface IAppChangeBusinessLogic
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="appUserRolesDescription"></param>
-    /// <param name="identity"></param>
     /// <returns>List of the created AppRoles</returns>
-    Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, (Guid UserId, Guid CompanyId) identity);
+    Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription);
 
     /// <summary>
     /// Get OfferDescription by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="companyId"></param>
-    Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, Guid companyId);
+    Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId);
 
     /// <summary>
     /// Create or Update OfferDescription by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="companyId"></param>
     /// <param name="offerDescriptionDatas">OfferDescription Data</param>
-    Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, Guid companyId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
+    Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
 
     /// <summary>
     /// Upload OfferAssigned AppLeadImage Document by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="identity"></param>
     /// <param name="document">Document Data</param>
     /// <param name="cancellationToken">cancellationToken</param>
-    Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, (Guid UserId, Guid CompanyId) identity, IFormFile document, CancellationToken cancellationToken);
+    Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, IFormFile document, CancellationToken cancellationToken);
 
     /// <summary>
     /// Deactivate Offer Status by appId
@@ -73,8 +69,7 @@ public interface IAppChangeBusinessLogic
     /// <param name="offerId">Id of the offer</param>
     /// <param name="subscriptionId">If of the subscription</param>
     /// <param name="data">the data to update the url</param>
-    /// <param name="companyId"></param>
-    Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, Guid companyId);
+    Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data);
 
     /// <summary>
     /// Gets the Active App Documents

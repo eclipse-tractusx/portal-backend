@@ -65,7 +65,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
     {
-        var serviceAccountDetails = await this.WithCompanyId(companyId => _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo, companyId).ConfigureAwait(false));
+        var serviceAccountDetails = await _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo).ConfigureAwait(false);
         return CreatedAtRoute("GetServiceAccountDetails", new { serviceAccountId = serviceAccountDetails.ServiceAccountId }, serviceAccountDetails);
     }
 
@@ -86,7 +86,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteServiceAccount([FromRoute] Guid serviceAccountId) =>
-        this.WithCompanyId(companyId => _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, companyId));
+        _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId);
 
     /// <summary>
     /// Gets the service account details for the given id
@@ -105,7 +105,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ServiceAccountConnectorOfferData> GetServiceAccountDetails([FromRoute] Guid serviceAccountId) =>
-        this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAccountId, companyId));
+        _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAccountId);
 
     /// <summary>
     /// Updates the service account details with the given id.
@@ -132,7 +132,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ServiceAccountDetails> PutServiceAccountDetails([FromRoute] Guid serviceAccountId, [FromBody] ServiceAccountEditableDetails serviceAccountDetails) =>
-        this.WithCompanyId(companyId => _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAccountId, serviceAccountDetails, companyId));
+        _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAccountId, serviceAccountDetails);
 
     /// <summary>
     /// Resets the service account credentials for the given service account Id.
@@ -154,7 +154,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<ServiceAccountDetails> ResetServiceAccountCredentials([FromRoute] Guid serviceAccountId) =>
-        this.WithCompanyId(companyId => _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, companyId));
+        _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId);
 
     /// <summary>
     /// Gets the service account data as pagination
@@ -172,7 +172,7 @@ public class ServiceAccountController : ControllerBase
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId) =>
-        this.WithCompanyId(companyId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, companyId, clientId, isOwner));
+        _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner);
 
     /// <summary>
     /// Get all service account roles
@@ -187,5 +187,5 @@ public class ServiceAccountController : ControllerBase
     [Route("user/roles")]
     [ProducesResponseType(typeof(List<UserRoleWithDescription>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
-        this.WithCompanyId(companyId => _logic.GetServiceAccountRolesAsync(companyId, languageShortName));
+        _logic.GetServiceAccountRolesAsync(languageShortName);
 }
