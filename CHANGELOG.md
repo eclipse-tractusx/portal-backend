@@ -2,7 +2,7 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 1.7.0 Alpha
+## 1.7.0 alpha
 
 ### Change
 * Administration Service
