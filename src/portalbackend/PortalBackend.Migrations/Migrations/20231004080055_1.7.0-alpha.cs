@@ -67,7 +67,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "identity_providers",
                 type: "uuid",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: Guid.Empty);
 
             // set the owner of shared idps to the using company (if not ambigious)
             migrationBuilder.Sql(@"UPDATE portal.identity_providers AS ip
