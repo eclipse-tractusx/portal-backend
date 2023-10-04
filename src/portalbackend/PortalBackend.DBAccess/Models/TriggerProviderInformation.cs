@@ -49,5 +49,7 @@ public record SubscriptionActivationData(
     IEnumerable<Guid> AppInstanceIds,
     bool HasOfferSubscriptionProcessData,
     Guid? SalesManagerId,
-    Guid? ProviderCompanyId
+    Guid? ProviderCompanyId,
+    string? ClientClientId,
+    IEnumerable<string> ServiceAccountClientIds
 );

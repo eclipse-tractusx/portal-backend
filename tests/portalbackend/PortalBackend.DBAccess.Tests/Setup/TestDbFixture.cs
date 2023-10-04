@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Testcontainers.PostgreSql;
 using Xunit.Extensions.AssemblyFixture;
 
 [assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
@@ -35,23 +35,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup
 
 public class TestDbFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlTestcontainer _container;
-
-    public TestDbFixture()
-    {
-        _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            .WithDatabase(new PostgreSqlTestcontainerConfiguration
-            {
-                Database = "test_db",
-                Username = "postgres",
-                Password = "postgres",
-                Environments = { { "Include Error Detail", "true" } }
-            })
-            .WithImage("postgres")
-            .WithCleanUp(true)
-            .WithName(Guid.NewGuid().ToString())
-            .Build();
-    }
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
+        .WithDatabase("test_db")
+        .WithImage("postgres")
+        .WithCleanUp(true)
+        .WithName(Guid.NewGuid().ToString())
+        .Build();
 
     /// <summary>
     /// Foreach test a new portalDbContext will be created and filled with the custom seeding data. 
@@ -60,18 +49,19 @@ public class TestDbFixture : IAsyncLifetime
     /// In this method the migrations don't need to get executed since they are already on the testcontainer.
     /// Because of that the EnsureCreatedAsync is enough.
     /// </remarks>
+    /// <param name="dateTimeProvider">the datetime provider</param>
     /// <param name="seedActions">Additional data for the database</param>
     /// <returns>Returns the created PortalDbContext</returns>
-    public async Task<PortalDbContext> GetPortalDbContext(params Action<PortalDbContext>[] seedActions)
+    public async Task<PortalDbContext> GetPortalDbContext(IDateTimeProvider? dateTimeProvider = null, params Action<PortalDbContext>[] seedActions)
     {
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
         optionsBuilder.UseNpgsql(
-            _container.ConnectionString,
+            _container.GetConnectionString(),
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
+        var context = new PortalDbContext(optionsBuilder.Options, new AuditHandlerV1(new FakeIdentityService(), dateTimeProvider ?? new UtcDateTimeProvider()));
         await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
         foreach (var seedAction in seedActions)
         {
@@ -93,11 +83,11 @@ public class TestDbFixture : IAsyncLifetime
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
         optionsBuilder.UseNpgsql(
-            _container.ConnectionString,
+            _container.GetConnectionString(),
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        var context = new PortalDbContext(optionsBuilder.Options, new FakeIdentityService());
+        var context = new PortalDbContext(optionsBuilder.Options, new AuditHandlerV1(new FakeIdentityService(), new UtcDateTimeProvider()));
         await context.Database.MigrateAsync();
 
         var seederOptions = Options.Create(new SeederSettings

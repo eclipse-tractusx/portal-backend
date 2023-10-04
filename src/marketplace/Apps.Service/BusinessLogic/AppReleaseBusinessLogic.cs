@@ -100,25 +100,25 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _offerService.GetOfferTypeAgreements(OfferTypeId.APP);
 
     /// <inheritdoc/>
-    public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, Guid companyId)
+    public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId)
     {
-        return await _offerService.GetProviderOfferAgreementConsentById(appId, companyId, OfferTypeId.APP).ConfigureAwait(false);
+        return await _offerService.GetProviderOfferAgreementConsentById(appId, OfferTypeId.APP).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, (Guid UserId, Guid CompanyId) identity)
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents)
     {
         if (appId == Guid.Empty)
         {
             throw new ControllerArgumentException($"AppId must not be empty");
         }
-        return _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, identity, OfferTypeId.APP);
+        return _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, OfferTypeId.APP);
     }
 
     /// <inheritdoc/>
-    public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, Guid companyId)
+    public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, companyId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
         if (result.UseCase == null)
         {
             throw new UnexpectedConditionException("usecase should never be null here");
@@ -189,7 +189,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if (appRequestModel.SalesManagerId.HasValue)
         {
-            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, companyId, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, _settings.SalesManagerRoles).ConfigureAwait(false);
         }
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -257,7 +257,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (appRequestModel.SalesManagerId.HasValue)
         {
-            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, companyId, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, _settings.SalesManagerRoles).ConfigureAwait(false);
         }
 
         var newSupportedLanguages = appRequestModel.SupportedLanguageCodes.Except(appData.Languages.Where(x => x.IsMatch).Select(x => x.Shortname));
@@ -316,12 +316,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 .GetAllInReviewStatusAppsAsync(GetOfferStatusIds(offerStatusIdFilter), sorting ?? OfferSorting.DateDesc));
 
     /// <inheritdoc/>
-    public Task SubmitAppReleaseRequestAsync(Guid appId, Guid userId) =>
-        _offerService.SubmitOfferAsync(appId, userId, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.SubmitAppDocumentTypeIds);
+    public Task SubmitAppReleaseRequestAsync(Guid appId) =>
+        _offerService.SubmitOfferAsync(appId, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.SubmitAppDocumentTypeIds);
 
     /// <inheritdoc/>
-    public Task ApproveAppRequestAsync(Guid appId, Guid userId) =>
-        _offerService.ApproveOfferRequestAsync(appId, userId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
+    public Task ApproveAppRequestAsync(Guid appId) =>
+        _offerService.ApproveOfferRequestAsync(appId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.ActivationPortalAddress, _settings.ActivationUserRoles);
 
     private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
     {
@@ -345,8 +345,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task DeclineAppRequestAsync(Guid appId, Guid userId, OfferDeclineRequest data) =>
-        _offerService.DeclineOfferAsync(appId, userId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
+    public Task DeclineAppRequestAsync(Guid appId, OfferDeclineRequest data) =>
+        _offerService.DeclineOfferAsync(appId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
     public async Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync(Guid appId)
@@ -382,8 +382,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task DeleteAppDocumentsAsync(Guid documentId, Guid companyId) =>
-        _offerService.DeleteDocumentsAsync(documentId, companyId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP);
+    public Task DeleteAppDocumentsAsync(Guid documentId) =>
+        _offerService.DeleteDocumentsAsync(documentId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP);
 
     /// <inheritdoc />
     public async Task DeleteAppAsync(Guid appId, Guid companyId)
@@ -531,10 +531,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, Guid companyId) =>
-        _offerService.GetTechnicalUserProfilesForOffer(offerId, companyId, OfferTypeId.APP);
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId) =>
+        _offerService.GetTechnicalUserProfilesForOffer(offerId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, Guid companyId) =>
-        _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP, data, companyId, _settings.TechnicalUserProfileClient);
+    public Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data) =>
+        _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP, data, _settings.TechnicalUserProfileClient);
 }

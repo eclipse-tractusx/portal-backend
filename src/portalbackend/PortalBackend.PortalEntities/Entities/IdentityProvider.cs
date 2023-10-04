@@ -29,13 +29,16 @@ public class IdentityProvider : IBaseEntity
     {
         Companies = new HashSet<Company>();
         CompanyIdentityProviders = new HashSet<CompanyIdentityProvider>();
+        CompanyUserAssignedIdentityProviders = new HashSet<CompanyUserAssignedIdentityProvider>();
     }
 
-    public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, DateTimeOffset dateCreated) : this()
+    public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId identityProviderTypeId, Guid ownerId, DateTimeOffset dateCreated) : this()
     {
         Id = id;
         IdentityProviderCategoryId = identityProviderCategoryId;
+        IdentityProviderTypeId = identityProviderTypeId;
         DateCreated = dateCreated;
+        OwnerId = ownerId;
     }
 
     public Guid Id { get; private set; }
@@ -44,9 +47,16 @@ public class IdentityProvider : IBaseEntity
 
     public IdentityProviderCategoryId IdentityProviderCategoryId { get; private set; }
 
+    public IdentityProviderTypeId IdentityProviderTypeId { get; private set; }
+
+    public Guid OwnerId { get; set; }
+
     // Navigation properties
     public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }
     public virtual IamIdentityProvider? IamIdentityProvider { get; set; }
+    public virtual IdentityProviderType? IdentityProviderType { get; set; }
+    public virtual Company? Owner { get; set; }
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyIdentityProvider> CompanyIdentityProviders { get; private set; }
+    public virtual ICollection<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; private set; }
 }

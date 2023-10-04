@@ -38,6 +38,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+    private readonly Guid _validOspCompanyId = new("a45f3b2e-29f7-4b52-8bb2-15b204849d87");
 
     public CompanyRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -66,17 +67,77 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         results.CompanyId.Should().Be(_validCompanyId);
         results.AutoSetupUrl.Should().Be(url);
         results.AutoSetupCallbackUrl.Should().Be("https://test.de");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>();
-        var providerCompanyDetail = changedEntries.Single().Entity as ProviderCompanyDetail;
-        providerCompanyDetail!.AutoSetupUrl.Should().Be(url);
-        providerCompanyDetail.AutoSetupCallbackUrl.Should().Be("https://test.de");
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<ProviderCompanyDetail>()
+            .Which.Should().Match<ProviderCompanyDetail>(x =>
+                x.AutoSetupUrl == url &&
+                x.AutoSetupCallbackUrl == "https://test.de"
+            );
+    }
+
+    #endregion
+
+    #region Create Company
+
+    [Fact]
+    public async Task CreateCompany_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateCompany("Test Company", entity =>
+        {
+            entity.CompanyStatusId = CompanyStatusId.ACTIVE;
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        results.Name.Should().Be("Test Company");
+        results.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Company>()
+            .Which.Should().Match<Company>(x =>
+                x.Name == "Test Company" &&
+                x.CompanyStatusId == CompanyStatusId.ACTIVE
+            );
+    }
+
+    #endregion
+
+    #region Create Address
+
+    [Fact]
+    public async Task CreateAddress_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateAddress("Munich", "Street", "DE", a =>
+        {
+            a.Streetnumber = "5";
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        results.Streetnumber.Should().Be("5");
+        results.City.Should().Be("Munich");
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Address>()
+            .Which.Should().Match<Address>(x =>
+                x.City == "Munich" &&
+                x.Streetnumber == "5"
+            );
     }
 
     #endregion
@@ -493,19 +554,21 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
         var companyId = new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd");
         var activeDescription = "The participant role is covering the data provider, data consumer or app user scenario. As participant you are an active member of the network with enabled services to particiapte as contributer and user.";
-        var serviceDscription = "The Service Provider is able to offer 3rd party services, such as dataspace service offerings to CX Members. CX members can subscribe for those services.";
+        var serviceDscription = "The Service Provider is able to offer 3rd party services, such as dataspace service offerings to Catena-X Members. Catena-X members can subscribe for those services.";
         var appDescription = "The App Provider is a company which is providing application software via the CX marketplace. As app provider you can participate and use the developer hub, release and offer applications to the network and manage your applications.";
+        var onboardingServiceProviderDescription = "The Onboarding service provider is a Catena-X certified role which enables the company to act as onboarding provider inside the network.";
 
         var result = await sut.GetCompanyRoleAndConsentAgreementDataAsync(companyId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
 
         result.Should().NotBeNull()
-            .And.HaveCount(3)
+            .And.HaveCount(4)
             .And.Satisfy(
                 x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT && x.RoleDescription == activeDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 3 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
                 x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER && x.RoleDescription == appDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
                 x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.RoleDescription == serviceDscription && x.CompanyRolesActive == true && x.Agreements.Count() == 2
                     && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") && agr.DocumentId == null && agr.AgreementName == "Terms & Conditions - Consultant" && agr.ConsentStatus == ConsentStatusId.ACTIVE)
-                    && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017") && agr.DocumentId == new Guid("00000000-0000-0000-0000-000000000004") && agr.AgreementName == "Terms & Conditions Service Provider" && agr.ConsentStatus == 0));
+                    && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017") && agr.DocumentId == new Guid("00000000-0000-0000-0000-000000000004") && agr.AgreementName == "Terms & Conditions Service Provider" && agr.ConsentStatus == 0),
+                x => x.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER && x.RoleDescription == onboardingServiceProviderDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0));
     }
 
     #endregion
@@ -658,6 +721,183 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().ContainSingle()
             .Which.Should().BeOfType<OperatorBpnData>()
             .And.Match<OperatorBpnData>(x => x.Bpn == "BPNL00000003CRHK" && x.OperatorName == "Catena-X");
+    }
+
+    #endregion
+
+    #region GetCallbackData
+
+    [Fact]
+    public async Task GetCallbackData_WithNotExistingOspData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCallbackData(_validCompanyId).ConfigureAwait(false);
+
+        // Assert
+        result.CallbackUrl.Should().Be(null);
+    }
+
+    [Fact]
+    public async Task GetCallbackData_WithExistingOspData_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string url = "https://service-url.com";
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCallbackData(_validOspCompanyId).ConfigureAwait(false);
+
+        // Assert
+        result.CallbackUrl.Should().Be(url);
+    }
+
+    #endregion
+
+    #region GetCallbackEditData
+
+    [Theory]
+    [InlineData(CompanyRoleId.ACTIVE_PARTICIPANT, true)]
+    [InlineData(CompanyRoleId.ONBOARDING_SERVICE_PROVIDER, false)]
+    public async Task GetCallbackEditData_WithNotExistingOspData_ReturnsExpectedResult(CompanyRoleId companyRoleId, bool hasRole)
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCallbackEditData(_validCompanyId, companyRoleId).ConfigureAwait(false);
+
+        // Assert
+        result.ospDetails.Should().BeNull();
+        result.hasCompanyRole.Should().Be(hasRole);
+    }
+
+    [Fact]
+    public async Task GetCallbackEditData_WithValid_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string url = "https://service-url.com";
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCallbackEditData(_validOspCompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER).ConfigureAwait(false);
+
+        // Assert
+        result.ospDetails.Should().NotBeNull();
+        result.ospDetails!.CallbackUrl.Should().Be(url);
+        result.hasCompanyRole.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region AttachAndModifyOnboardingServiceProvider
+
+    [Fact]
+    public async Task AttachAndModifyOnboardingServiceProvider_Changed_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string url = "https://service-url.com/new";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyOnboardingServiceProvider(_validOspCompanyId,
+            detail => { detail.CallbackUrl = null!; },
+            detail => { detail.CallbackUrl = url; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
+        entry.State.Should().Be(EntityState.Modified);
+    }
+
+    [Fact]
+    public async Task AttachAndModifyOnboardingServiceProvider_Unchanged_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string url = "https://service-url.com/new";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyOnboardingServiceProvider(_validOspCompanyId,
+            detail => { detail.CallbackUrl = url; },
+            detail => { detail.CallbackUrl = url; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeFalse();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
+        entry.State.Should().Be(EntityState.Unchanged);
+    }
+
+    #endregion
+
+    #region CreateOnboardingServiceProviderDetails
+
+    [Fact]
+    public async Task CreateOnboardingServiceProviderDetails_Changed_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string url = "https://service-url.com/new";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var secret = "test123"u8.ToArray();
+
+        // Act
+        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url, "https//auth.url", "test", secret);
+
+        // Assert
+        result.CompanyId.Should().Be(_validCompanyId);
+        result.CallbackUrl.Should().Be(url);
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
+        entry.State.Should().Be(EntityState.Added);
+    }
+
+    #endregion
+
+    #region CheckBpnExists
+
+    [Fact]
+    public async Task CheckBpnExists_WithNotExisting_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckBpnExists("TESTNOTEXISTING").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckBpnExists_WithValid_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckBpnExists("BPNL00000003LLHA").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
     }
 
     #endregion

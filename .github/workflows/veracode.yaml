@@ -36,7 +36,7 @@ on:
 
 
 env:
-  DOTNET_VERSION: '6.0' # The .NET SDK version to use
+  DOTNET_VERSION: '7.0' # The .NET SDK version to use
 
 jobs:
   analyze-administration-service:

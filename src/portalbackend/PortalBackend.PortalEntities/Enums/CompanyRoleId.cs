@@ -26,4 +26,5 @@ public enum CompanyRoleId : int
     APP_PROVIDER = 2,
     SERVICE_PROVIDER = 3,
     OPERATOR = 4,
+    ONBOARDING_SERVICE_PROVIDER = 5
 }

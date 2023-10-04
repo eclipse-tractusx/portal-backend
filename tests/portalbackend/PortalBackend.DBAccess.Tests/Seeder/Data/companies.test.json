@@ -68,5 +68,25 @@
     "company_status_id": 1,
     "address_id": "86da3e1c-a634-41a6-ad44-9880746123e4",
     "self_description_document_id": null
+  },
+  {
+    "id": "a45f3b2e-29f7-4b52-8bb2-15b204849d87",
+    "date_created": "2022-03-24 18:01:33.438000 +00:00",
+    "business_partner_number": "BPNL000000001OSP",
+    "name": "OSP Company",
+    "shortname": "OSP",
+    "company_status_id": 1,
+    "address_id": "c2b23d31-3666-42e6-bba2-bb550c2cc7f6",
+    "self_description_document_id": null
+  },
+  {
+    "id": "729e0af2-6723-4a7f-85a1-833d84b39bdf",
+    "date_created": "2022-03-24 18:01:33.438000 +00:00",
+    "business_partner_number": "BPNL0000000001ON",
+    "name": "Onboarded Company",
+    "shortname": "Onboarded Company",
+    "company_status_id": 1,
+    "address_id": "27418031-d6b5-442b-8802-3f653c6679f7",
+    "self_description_document_id": null
   }
 ]

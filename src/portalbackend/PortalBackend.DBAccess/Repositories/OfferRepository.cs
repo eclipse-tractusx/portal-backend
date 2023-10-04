@@ -57,7 +57,8 @@ public class OfferRepository : IOfferRepository
                 c.ContactEmail,
                 c.SalesManagerId,
                 c.ProviderCompany!.ProviderCompanyDetail!.AutoSetupUrl,
-                c.AppInstanceSetup != null && c.AppInstanceSetup!.IsSingleInstance
+                c.AppInstanceSetup != null && c.AppInstanceSetup!.IsSingleInstance,
+                c.ProviderCompanyId
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -200,21 +201,34 @@ public class OfferRepository : IOfferRepository
     public void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds) =>
         _context.RemoveRange(appLanguageIds.Select(x => new AppLanguage(x.appId, x.languageShortName)));
 
-    public IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, Guid userCompanyId) =>
-        _context.Offers
-            .AsNoTracking()
-            .Where(offer =>
-                offer.OfferTypeId == offerTypeId &&
-                offer.ProviderCompanyId == userCompanyId)
-            .Select(offer => new AllOfferData(
+    public Func<int, int, Task<Pagination.Source<AllOfferData>?>> GetProvidedOffersData(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, Guid userCompanyId, OfferSorting sorting, string? offerName) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.Offers.AsNoTracking()
+                .Where(offer =>
+                    offer.OfferTypeId == offerTypeId &&
+                    offer.ProviderCompanyId == userCompanyId &&
+                    offerStatusIds.Contains(offer.OfferStatusId) &&
+                    (offerName == null || EF.Functions.ILike(offer.Name!, $"%{offerName.EscapeForILike()}%")))
+                .GroupBy(offer => offer.OfferTypeId),
+            sorting switch
+            {
+                OfferSorting.DateAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.DateCreated),
+                OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
+                OfferSorting.NameAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.Name),
+                OfferSorting.NameDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.Name),
+                _ => throw new ArgumentOutOfRangeException(nameof(sorting), sorting, null)
+            },
+            offer => new AllOfferData(
                 offer.Id,
                 offer.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.Provider,
                 offer.OfferStatusId,
                 offer.DateLastChanged
-            ))
-            .AsAsyncEnumerable();
+                ))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     [Obsolete("only referenced by code that is marked as obsolte")]
@@ -712,8 +726,10 @@ public class OfferRepository : IOfferRepository
             offer => new AllOfferStatusData(
                 offer.Id,
                 offer.Name,
+                offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ProviderCompany!.Name,
-                offer.OfferStatusId
+                offer.OfferStatusId,
+                offer.DateLastChanged
                 ))
             .SingleOrDefaultAsync();
 
@@ -792,7 +808,7 @@ public class OfferRepository : IOfferRepository
         _context.Offers.Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
             .Select(o => new ValueTuple<bool, IEnumerable<IEnumerable<UserRoleData>>, string?>(
                 o.AppInstanceSetup != null && o.AppInstanceSetup.IsSingleInstance,
-                o.TechnicalUserProfiles.Select(tup => tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleData(ur.UserRole!.Id, ur.UserRole.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRole.UserRoleText))),
+                o.TechnicalUserProfiles.Where(x => x.TechnicalUserProfileAssignedUserRoles.Any()).Select(tup => tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleData(ur.UserRole!.Id, ur.UserRole.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRole.UserRoleText))),
                 o.Name
             ))
             .SingleOrDefaultAsync();
@@ -802,7 +818,7 @@ public class OfferRepository : IOfferRepository
         _context.OfferSubscriptions.Where(x => x.Id == subscriptionId)
             .Select(o => new ValueTuple<bool, IEnumerable<IEnumerable<UserRoleData>>, string?>(
                 o.Offer!.AppInstanceSetup != null && o.Offer.AppInstanceSetup.IsSingleInstance,
-                o.Offer.TechnicalUserProfiles.Select(tup => tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleData(ur.UserRole!.Id, ur.UserRole.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRole.UserRoleText))),
+                o.Offer.TechnicalUserProfiles.Where(x => x.TechnicalUserProfileAssignedUserRoles.Any()).Select(tup => tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleData(ur.UserRole!.Id, ur.UserRole.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRole.UserRoleText))),
                 o.Offer.Name
             ))
             .SingleOrDefaultAsync();

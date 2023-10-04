@@ -31,9 +31,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 public abstract class SharedBaseOptionEnumerableValidation
 {
     protected static readonly ImmutableArray<Type> IgnoreTypes = ImmutableArray.Create(
-        typeof(String),
-        typeof(Boolean),
-        typeof(Decimal));
+        typeof(string),
+        typeof(bool),
+        typeof(decimal));
 }
 
 public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptionEnumerableValidation, IValidateOptions<TOptions> where TOptions : class
@@ -73,7 +73,7 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
         return validationErrors.IfAny(
             errors => errors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'."),
             out var messages)
-                ? ValidateOptionsResult.Fail(messages)
+                ? ValidateOptionsResult.Fail(messages!)
                 : ValidateOptionsResult.Success;
     }
     private IEnumerable<ValidationResult> GetValidationErrors(Type type, IConfiguration configSection) =>

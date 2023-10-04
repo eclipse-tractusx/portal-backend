@@ -55,7 +55,7 @@ public class UserRole : IAuditableV1, IBaseEntity
 
     public Guid OfferId { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
     // Navigation properties
     public virtual Offer? Offer { get; set; }

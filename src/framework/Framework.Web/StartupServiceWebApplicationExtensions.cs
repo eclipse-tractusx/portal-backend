@@ -40,11 +40,14 @@ public static class StartupServiceWebApplicationExtensions
         if (environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+            var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>()?.Values
                 .Where(config => config.ConnectionString.StartsWith("https://"))
                 .Select(config => config.ConnectionString)
                 .Distinct();
-            FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+            if (urlsToTrust != null)
+            {
+                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+            }
         }
 
         var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
@@ -75,7 +78,11 @@ public static class StartupServiceWebApplicationExtensions
         app.UseAuthorization();
 
         app.MapControllers();
-        app.MapDefaultHealthChecks(app.Configuration.GetSection("HealthChecks").Get<IEnumerable<HealthCheckSettings>>());
+        var healthCheckSettings = app.Configuration.GetSection("HealthChecks").Get<IEnumerable<HealthCheckSettings>>();
+        if (healthCheckSettings != null)
+        {
+            app.MapDefaultHealthChecks(healthCheckSettings);
+        }
 
         return app;
     }

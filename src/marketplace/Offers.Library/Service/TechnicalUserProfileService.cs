@@ -84,7 +84,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
     }
 
     private static ServiceAccountCreationInfo GetServiceAccountData(string offerName, IEnumerable<UserRoleData> serviceAccountUserRoles) =>
-        new ServiceAccountCreationInfo(
+        new(
             offerName,
             $"Technical User for app {offerName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}",
             IamClientAuthMethod.SECRET,

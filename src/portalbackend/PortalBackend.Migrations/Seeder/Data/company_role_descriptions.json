@@ -27,7 +27,7 @@
   {
     "company_role_id": 3,
     "language_short_name": "en",
-    "description": "The Service Provider is able to offer 3rd party services, such as dataspace service offerings to CX Members. CX members can subscribe for those services."
+    "description": "The Service Provider is able to offer 3rd party services, such as dataspace service offerings to Catena-X Members. Catena-X members can subscribe for those services."
   },
   {
     "company_role_id": 4,
@@ -38,5 +38,15 @@
     "company_role_id": 4,
     "language_short_name": "en",
     "description": "Operator"
+  },
+  {
+    "company_role_id": 5,
+    "language_short_name": "de",
+    "description": "Der Onboarding-Dienstleister ist eine Catena-X zertifizierte Rolle, die es dem Unternehmen ermöglicht, als Onboarding-Anbieter innerhalb des Netzwerks zu fungieren."
+  },
+  {
+    "company_role_id": 5,
+    "language_short_name": "en",
+    "description": "The Onboarding service provider is a Catena-X certified role which enables the company to act as onboarding provider inside the network."
   }
 ]

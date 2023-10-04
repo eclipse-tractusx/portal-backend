@@ -93,7 +93,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
         }
 
-        var country = legalEntity.LegalEntityAddress.PhysicalPostalAddress?.Country?.TechnicalKey ??
+        var country = legalEntity.LegalEntityAddress?.PhysicalPostalAddress?.Country?.TechnicalKey ??
                       throw new ConflictException("Legal-entity-data did not contain a valid country identifier");
 
         var bpdmIdentifiers = ParseBpdmIdentifierDtos(legalEntity.Identifiers).ToList();
@@ -194,17 +194,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
 
-    public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(Guid companyId)
-    {
-        await foreach (var applicationWithStatus in _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(companyId).ConfigureAwait(false))
-        {
-            yield return new CompanyApplicationData
-            {
-                ApplicationId = applicationWithStatus.ApplicationId,
-                ApplicationStatus = applicationWithStatus.ApplicationStatus
-            };
-        }
-    }
+    public IAsyncEnumerable<CompanyApplicationWithStatus> GetAllApplicationsForUserWithStatus(Guid companyId) =>
+        _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(companyId);
 
     public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, Guid companyId)
     {
@@ -424,7 +415,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             userCreationInfo.eMail,
             userRoleDatas ?? Enumerable.Empty<UserRoleData>(),
             userCreationInfo.userName ?? userCreationInfo.eMail,
-            ""
+            "",
+            UserStatusId.ACTIVE,
+            true
         )}.ToAsyncEnumerable();
 
         var (newCompanyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);

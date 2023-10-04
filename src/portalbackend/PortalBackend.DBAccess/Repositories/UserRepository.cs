@@ -47,11 +47,11 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(app => app.CompanyId == companyId)
-            .Select(companyApplication => new CompanyApplicationWithStatus
-            {
-                ApplicationId = companyApplication.Id,
-                ApplicationStatus = companyApplication.ApplicationStatusId
-            })
+            .Select(companyApplication => new CompanyApplicationWithStatus(
+                    companyApplication.Id,
+                    companyApplication.ApplicationStatusId,
+                    companyApplication.ApplicationChecklistEntries.Select(ace =>
+                        new ApplicationChecklistData(ace.ApplicationChecklistEntryTypeId, ace.ApplicationChecklistEntryStatusId))))
             .AsAsyncEnumerable();
 
     public CompanyUser CreateCompanyUser(Guid identityId, string? firstName, string? lastName, string email) =>
@@ -210,9 +210,7 @@ public class UserRepository : IUserRepository
             .AsSplitQuery()
             .Where(companyUser => companyUser.Id == companyUserId
                                   && companyUser.Identity!.Company!.IdentityProviders
-                                      .Any(identityProvider =>
-                                          identityProvider.IdentityProviderCategoryId ==
-                                          IdentityProviderCategoryId.KEYCLOAK_SHARED))
+                                      .Any(identityProvider => identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED))
             .Select(companyUser => new CompanyUserWithIdpBusinessPartnerData(
                 new CompanyUserInformation(
                     companyUser.Id,
@@ -224,7 +222,7 @@ public class UserRepository : IUserRepository
                     companyUser.Identity.UserStatusId,
                     companyUser.Identity.UserEntityId),
                 companyUser.Identity!.Company!.IdentityProviders.Where(identityProvider =>
-                        identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                        identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault()!,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
@@ -317,7 +315,7 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds) =>
+    public IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, IEnumerable<Guid> userRoleIds) =>
         _dbContext.Offers
             .Where(x => x.Id == offerId)
             .SelectMany(x => x.ProviderCompany!.Identities)
@@ -370,7 +368,7 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers.AsNoTracking().AsSplitQuery()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new ValueTuple<string?, CompanyUserAccountData>(
-                companyUser.Identity!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)!.IamIdentityProvider!.IamIdpAlias,
+                companyUser.Identity!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)!.IamIdentityProvider!.IamIdpAlias,
                 new CompanyUserAccountData(
                     companyUser.Id,
                     companyUser.Identity!.UserEntityId,
@@ -444,4 +442,25 @@ public class UserRepository : IUserRepository
         modify.Invoke(updatedEntity);
         return updatedEntity;
     }
+
+    public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName) =>
+        _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, providerId, userName)).Entity;
+
+    public IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
+        _dbContext.CompanyUsers
+            .Where(cu =>
+                cu.Identity!.UserStatusId == UserStatusId.PENDING &&
+                cu.Identity.Company!.NetworkRegistration!.Id == networkRegistrationId)
+            .Select(cu =>
+                new CompanyUserIdentityProviderProcessData(
+                    cu.Id,
+                    cu.Firstname,
+                    cu.Lastname,
+                    cu.Email,
+                    cu.Identity!.UserEntityId,
+                    cu.Identity.Company!.Name,
+                    cu.Identity.Company.BusinessPartnerNumber,
+                    cu.CompanyUserAssignedIdentityProviders.Select(assigned => new ProviderLinkData(assigned.UserName, assigned.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, assigned.ProviderId))
+                ))
+            .ToAsyncEnumerable();
 }

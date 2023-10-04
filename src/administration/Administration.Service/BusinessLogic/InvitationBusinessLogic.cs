@@ -83,12 +83,12 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_SHARED);
+        var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, null);
         identityProvider.Companies.Add(company);
-        identityProviderRepository.CreateIamIdentityProvider(identityProvider, idpName);
+        identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, idpName);
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED);
+        var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -97,6 +97,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             company.Name,
             null,
             idpName,
+            identityProvider.Id,
             true
         );
 
@@ -116,7 +117,9 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             invitationData.email,
             roleDatas,
             string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
-            ""
+            "",
+            UserStatusId.ACTIVE,
+            true
         )}.ToAsyncEnumerable();
 
         var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);

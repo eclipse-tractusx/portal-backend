@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -72,7 +73,7 @@ public class NotificationRepository : INotificationRepository
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting, bool? doneState) =>
+    public Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting, bool? doneState, IEnumerable<NotificationTypeId> searchTypeIds, string? searchQuery) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -83,7 +84,9 @@ public class NotificationRepository : INotificationRepository
                     (!typeId.HasValue || notification.NotificationTypeId == typeId.Value) &&
                     (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value) &&
                     (!onlyDueDate || notification.DueDate.HasValue) &&
-                    (!doneState.HasValue || notification.Done == doneState.Value))
+                    (!doneState.HasValue || notification.Done == doneState.Value) &&
+                    (!searchTypeIds.Any() || searchTypeIds.Contains(notification.NotificationTypeId) &&
+                    (searchQuery == null || notification.Content != null && EF.Functions.ILike(notification.Content, $"%{searchQuery.EscapeForILike()}%"))))
                 .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {
@@ -91,7 +94,7 @@ public class NotificationRepository : INotificationRepository
                 NotificationSorting.DateDesc => (IEnumerable<Notification> notifications) => notifications.OrderByDescending(notification => notification.DateCreated),
                 NotificationSorting.ReadStatusAsc => (IEnumerable<Notification> notifications) => notifications.OrderBy(notification => notification.IsRead),
                 NotificationSorting.ReadStatusDesc => (IEnumerable<Notification> notifications) => notifications.OrderByDescending(notification => notification.IsRead),
-                _ => (Expression<Func<IEnumerable<Notification>, IOrderedEnumerable<Notification>>>?)null
+                _ => null
             },
             notification => new NotificationDetailData(
                 notification.Id,

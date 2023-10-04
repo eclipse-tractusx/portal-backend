@@ -289,13 +289,18 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories,
             null!);
-        var resultList = new List<CompanyApplicationWithStatus>
-        {
-            new()
-            {
-                ApplicationId = _fixture.Create<Guid>(),
-                ApplicationStatus = CompanyApplicationStatusId.VERIFY
-            }
+        var resultList = new[]{
+            new CompanyApplicationWithStatus(
+                _fixture.Create<Guid>(),
+                CompanyApplicationStatusId.VERIFY,
+                new[]{
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.DONE),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.FAILED),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO)
+                })
         };
         A.CallTo(() => _userRepository.GetApplicationsWithStatusUntrackedAsync(userCompanyId))
             .Returns(resultList.ToAsyncEnumerable());
@@ -304,6 +309,14 @@ public class RegistrationBusinessLogicTest
         var result = await sut.GetAllApplicationsForUserWithStatus(identity.CompanyId).ToListAsync().ConfigureAwait(false);
         result.Should().ContainSingle();
         result.Single().ApplicationStatus.Should().Be(CompanyApplicationStatusId.VERIFY);
+        result.Single().ApplicationChecklist.Should().NotBeNull().And.HaveCount(6).And.Satisfy(
+            x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.IN_PROGRESS,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.FAILED,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
+        );
     }
 
     #endregion
@@ -1568,7 +1581,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters) =>
             {
-                var companyApplication = new CompanyApplication(companyApplicationId, Guid.Empty, default!, default!);
+                var companyApplication = new CompanyApplication(companyApplicationId, Guid.Empty, default!, default!, default!);
                 setOptionalParameters.Invoke(companyApplication);
             });
         A.CallTo(() => _companyRolesRepository.RemoveCompanyAssignedRoles(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._))
@@ -1683,7 +1696,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid applicationId, Action<CompanyApplication> setOptionalParameters) =>
             {
-                application = new CompanyApplication(applicationId, Guid.Empty, default, default);
+                application = new CompanyApplication(applicationId, Guid.Empty, default, default, default);
                 setOptionalParameters(application);
             });
 

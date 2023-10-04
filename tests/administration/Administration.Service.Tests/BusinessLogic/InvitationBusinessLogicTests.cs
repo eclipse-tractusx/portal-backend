@@ -108,10 +108,10 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
         A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
 
-        A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName))).MustHaveHappened();
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>.That.IsEqualTo(IdentityProviderCategoryId.KEYCLOAK_SHARED))).MustHaveHappened();
-        A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<IdentityProvider>.That.Matches(i => i.Companies.Single().Id == _companyId), A<string>.That.IsEqualTo(_idpName))).MustHaveHappened();
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>.That.IsEqualTo(_companyId), A<CompanyApplicationStatusId>.That.IsEqualTo(CompanyApplicationStatusId.CREATED))).MustHaveHappened();
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName), null)).MustHaveHappened();
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, A<Guid>._, A<Action<IdentityProvider>>._)).MustHaveHappened();
+        A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<Guid>._, A<string>.That.IsEqualTo(_idpName))).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(_companyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, A<Action<CompanyApplication>>._)).MustHaveHappened();
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
             A<CompanyNameIdpAliasData>.That.Matches(d => d.CompanyId == _companyId),
@@ -268,14 +268,19 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
 
-        A.CallTo(() => _companyRepository.CreateCompany(A<string>._)).ReturnsLazily((string organisationName) =>
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>?>._)).ReturnsLazily((string organisationName, Action<Company>? _) =>
             new Company(_companyId, organisationName, CompanyStatusId.PENDING, _fixture.Create<DateTimeOffset>()));
 
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._)).ReturnsLazily((IdentityProviderCategoryId categoryId) =>
-            new IdentityProvider(_identityProviderId, categoryId, _fixture.Create<DateTimeOffset>()));
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._, A<Action<IdentityProvider>?>._))
+            .ReturnsLazily((IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId, Guid owner, Action<IdentityProvider>? setOptionalFields) =>
+            {
+                var idp = new IdentityProvider(_identityProviderId, categoryId, typeId, owner, _fixture.Create<DateTimeOffset>());
+                setOptionalFields?.Invoke(idp);
+                return idp;
+            });
 
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._)).ReturnsLazily((Guid companyId, CompanyApplicationStatusId applicationStatusId) =>
-            new CompanyApplication(_applicationId, companyId, applicationStatusId, _fixture.Create<DateTimeOffset>()));
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._, A<Action<CompanyApplication>?>._))
+            .ReturnsLazily((Guid companyId, CompanyApplicationStatusId applicationStatusId, CompanyApplicationTypeId typeId, Action<CompanyApplication>? _) => new CompanyApplication(_applicationId, companyId, applicationStatusId, typeId, _fixture.Create<DateTimeOffset>()));
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).Returns(_idpName);
 

@@ -36,8 +36,10 @@ public record AgreementData(
 /// </summary>
 /// <param name="AgreementId">Id of the agreement</param>
 /// <param name="AgreementName">Name of the agreement</param>
+/// <param name="AgreementLink">Link of the agreement</param> 
 /// <param name="DocumentIds">Ids of the documents</param>
 public record AgreementDocumentData(
     [property: JsonPropertyName("agreementId")] Guid AgreementId,
     [property: JsonPropertyName("name")] string AgreementName,
+    [property: JsonPropertyName("agreementLink")] string? AgreementLink,
     [property: JsonPropertyName("documentId")] Guid? DocumentId);

@@ -100,9 +100,7 @@ public static class ManualProcessStepDataExtensions
 
     public static void FinalizeProcessStep(this ManualProcessStepData context)
     {
-        var processStepRepository = context.PortalRepositories.GetInstance<IProcessStepRepository>();
-
-        processStepRepository.AttachAndModifyProcessSteps(
+        context.PortalRepositories.GetInstance<IProcessStepRepository>().AttachAndModifyProcessSteps(
             ModifyStepStatusRange(context.ProcessSteps.Where(step => step.ProcessStepTypeId == context.ProcessStepTypeId), ProcessStepStatusId.DONE));
 
         context.PortalRepositories.Attach(context.Process);

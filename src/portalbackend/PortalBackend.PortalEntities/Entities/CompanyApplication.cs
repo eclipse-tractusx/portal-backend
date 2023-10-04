@@ -25,7 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyApplication20230214))]
+[AuditEntityV1(typeof(AuditCompanyApplication20230824))]
 public class CompanyApplication : IAuditableV1, IBaseEntity
 {
     protected CompanyApplication()
@@ -34,11 +34,12 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
         ApplicationChecklistEntries = new HashSet<ApplicationChecklistEntry>();
     }
 
-    public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
+    public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, CompanyApplicationTypeId companyApplicationTypeId, DateTimeOffset dateCreated) : this()
     {
         Id = id;
         CompanyId = companyId;
         ApplicationStatusId = applicationStatusId;
+        CompanyApplicationTypeId = companyApplicationTypeId;
         DateCreated = dateCreated;
     }
 
@@ -46,19 +47,27 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
 
     public DateTimeOffset DateCreated { get; private set; }
 
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     public CompanyApplicationStatusId ApplicationStatusId { get; set; }
     public Guid CompanyId { get; private set; }
     public Guid? ChecklistProcessId { get; set; }
 
-    [AuditLastEditorV1]
+    public CompanyApplicationTypeId CompanyApplicationTypeId { get; private set; }
+
+    public Guid? OnboardingServiceProviderId { get; set; }
+
+    [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
     // Navigation properties
     public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
     public virtual Company? Company { get; set; }
     public virtual Process? ChecklistProcess { get; set; }
+    public virtual CompanyApplicationType? CompanyApplicationType { get; set; }
+    public virtual Company? OnboardingServiceProvider { get; set; }
+    public virtual NetworkRegistration? NetworkRegistration { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
     public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
     public virtual Identity? LastEditor { get; private set; }

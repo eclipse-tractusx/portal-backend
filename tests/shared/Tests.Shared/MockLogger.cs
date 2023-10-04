@@ -36,7 +36,7 @@ public class MockLogger<T> : ILogger<T>
         _logger = logger;
     }
 
-    public IDisposable BeginScope<TState>(TState state) => new TestDisposable();
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => new TestDisposable();
 
     public bool IsEnabled(LogLevel logLevel) => true;
 

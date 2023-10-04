@@ -36,7 +36,7 @@
     "id": "351422E4-9B18-4296-9DE1-A625C6D4AF5C",
     "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
     "date_created": "2022-08-10 18:01:33.570000 +00:00",
-    "content": null,
+    "content": "{\"offerId\":\"0fc768e5-d4cf-4d3d-a0db-379efedd60f5\",\"provider\":\"DNS\"}",
     "notification_type_id": 5,
     "is_read": false,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",

@@ -54,6 +54,7 @@ public class NotificationController : ControllerBase
     ///     Gets all notifications for the logged in user
     /// </summary>
     /// <remarks>Example: Get: /api/notification/</remarks>
+    /// <param name="searchTypeIds">OPTIONAL: types for the search</param>
     /// <param name="page">The page to get</param>
     /// <param name="size">Amount of entries</param>
     /// <param name="isRead">OPTIONAL: Filter for read or unread notifications</param>
@@ -62,6 +63,7 @@ public class NotificationController : ControllerBase
     /// <param name="onlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
     /// <param name="sorting">Defines the sorting of the list</param>
     /// <param name="doneState">OPTIONAL: Defines the done state</param>
+    /// <param name="searchQuery">OPTIONAL: a search query</param>
     /// <response code="200">Collection of the unread notifications for the user.</response>
     /// <response code="400">NotificationType or NotificationStatus don't exist.</response>
     [HttpGet]
@@ -71,6 +73,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<NotificationDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<NotificationDetailData>> GetNotifications(
+        [FromQuery] IEnumerable<NotificationTypeId> searchTypeIds,
         [FromQuery] int page = 0,
         [FromQuery] int size = 15,
         [FromQuery] bool? isRead = null,
@@ -78,8 +81,10 @@ public class NotificationController : ControllerBase
         [FromQuery] NotificationTopicId? notificationTopicId = null,
         [FromQuery] bool onlyDueDate = false,
         [FromQuery] NotificationSorting? sorting = null,
-        [FromQuery] bool? doneState = null) =>
-        this.WithUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState)));
+        [FromQuery] bool? doneState = null,
+        [FromQuery] string? searchQuery = null
+        ) =>
+        this.WithUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState, searchTypeIds, searchQuery)));
 
     /// <summary>
     ///     Gets a notification for the logged in user

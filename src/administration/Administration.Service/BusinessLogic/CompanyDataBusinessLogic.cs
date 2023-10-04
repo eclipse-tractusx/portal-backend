@@ -153,7 +153,8 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                     x.DocumentId,
                     x.ConsentStatus == 0
                         ? null
-                        : x.ConsentStatus
+                        : x.ConsentStatus,
+                    x.AgreementLink
                 ))
             );
         }
@@ -500,5 +501,5 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
     /// <inheritdoc />
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
-        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes();
+        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(_identityService.IdentityData.CompanyId);
 }

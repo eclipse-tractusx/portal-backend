@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
@@ -49,6 +50,7 @@ public class Agreement : IBaseEntity
 
     public DateTimeOffset DateCreated { get; private set; }
 
+    [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
     [MaxLength(255)]
@@ -62,6 +64,7 @@ public class Agreement : IBaseEntity
     public Guid? UseCaseId { get; set; }
 
     public Guid? DocumentId { get; set; }
+    public string? AgreementLink { get; set; }
 
     // Navigation properties
     public virtual AgreementCategory? AgreementCategory { get; set; }

@@ -143,9 +143,9 @@ public class CompanyDataBusinessLogicTests
                 _fixture.Create<string>(),
                 true,
                 new ConsentAgreementData [] {
-                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), 0),
-                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.ACTIVE),
-                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.INACTIVE),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), 0, _fixture.Create<string>()),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.ACTIVE, _fixture.Create<string>()),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.INACTIVE, _fixture.Create<string>()),
                 }),
             _fixture.Create<CompanyRoleConsentData>(),
         };
@@ -173,7 +173,7 @@ public class CompanyDataBusinessLogicTests
                 z.Result.CompanyRoleId == z.Mock.CompanyRoleId &&
                 z.Result.RoleDescription == z.Mock.RoleDescription &&
                 z.Result.CompanyRolesActive == z.Mock.CompanyRolesActive &&
-                z.Result.Agreements.SequenceEqual(z.Mock.Agreements.Select(a => new ConsentAgreementViewData(a.AgreementId, a.AgreementName, a.DocumentId, a.ConsentStatus == 0 ? null : a.ConsentStatus)))));
+                z.Result.Agreements.SequenceEqual(z.Mock.Agreements.Select(a => new ConsentAgreementViewData(a.AgreementId, a.AgreementName, a.DocumentId, a.ConsentStatus == 0 ? null : a.ConsentStatus, a.AgreementLink)))));
 
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(companyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _languageRepository.IsValidLanguageCode(languageShortName)).MustHaveHappenedOnceExactly();
@@ -1030,7 +1030,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1054,7 +1054,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Credential {alreadyActiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1078,7 +1078,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Bpn should be set for company {approvalData.CompanyName}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1104,7 +1104,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1168,7 +1168,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialApproval")))
+        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
@@ -1295,7 +1295,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialRejected")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
@@ -1340,7 +1340,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialRejected")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1361,7 +1361,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Credential {alreadyInactiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialRejected")))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1397,7 +1397,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.RejectCredential(_validCredentialId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialRejected")))
+        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
@@ -1440,7 +1440,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.RejectCredential(_validCredentialId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "CredentialRejected")))
+        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
@@ -1461,7 +1461,7 @@ public class CompanyDataBusinessLogicTests
     public async Task GetCertificateTypes_WithFilter_ReturnsList()
     {
         // Arrange
-        A.CallTo(() => _companySsiDetailsRepository.GetCertificateTypes())
+        A.CallTo(() => _companySsiDetailsRepository.GetCertificateTypes(_identity.CompanyId))
             .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
 
         // Act

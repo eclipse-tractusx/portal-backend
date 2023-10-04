@@ -176,6 +176,26 @@ public class AppsSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> CompanyAdminRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Roles to notify when a new subscription was created
+    /// </summary>
+    [Required]
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> SubscriptionManagerRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Roles to notify when a new Activation was created
+    /// </summary>
+    [Required]
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> ActivationUserRoles { get; init; } = null!;
+
+    /// <summary>
+    /// ActivationPortalAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string ActivationPortalAddress { get; init; } = null!;
 }
 
 /// <summary>

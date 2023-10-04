@@ -36,6 +36,7 @@ public record OfferSubscriptionStatusData(
     [property: JsonPropertyName("name")] string? OfferName,
     [property: JsonPropertyName("provider")] string Provider,
     [property: JsonPropertyName("status")] OfferSubscriptionStatusId OfferSubscriptionStatusId,
+    [property: JsonPropertyName("subscriptionId")] Guid OfferSubscriptionId,
     [property: JsonPropertyName("image")] Guid? DocumentId
 );
 
@@ -50,7 +51,8 @@ public record ActiveOfferSubscriptionStatusData(
     [property: JsonPropertyName("offerId")] Guid OfferId,
     [property: JsonPropertyName("name")] string? OfferName,
     [property: JsonPropertyName("provider")] string Provider,
-    [property: JsonPropertyName("image")] Guid? DocumentId
+    [property: JsonPropertyName("image")] Guid? DocumentId,
+    [property: JsonPropertyName("subscriptionId")] Guid OfferSubscriptionId
 );
 
 /// <summary>

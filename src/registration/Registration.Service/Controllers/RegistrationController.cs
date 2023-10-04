@@ -163,8 +163,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [Authorize(Roles = "view_registration")]
         [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("applications")]
-        [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationData>), StatusCodes.Status200OK)]
-        public IAsyncEnumerable<CompanyApplicationData> GetApplicationsWithStatusAsync() =>
+        [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationWithStatus>), StatusCodes.Status200OK)]
+        public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusAsync() =>
             this.WithCompanyId(companyId => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(companyId));
 
         /// <summary>

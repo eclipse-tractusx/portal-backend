@@ -18,12 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess.Tests.TestSeeds;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
+using Testcontainers.PostgreSql;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -32,17 +30,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess.Tests.Setup;
 
 public class TestDbFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlTestcontainer _container;
+    private readonly PostgreSqlContainer _container;
 
     public TestDbFixture()
     {
-        _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            .WithDatabase(new PostgreSqlTestcontainerConfiguration
-            {
-                Database = "test_db",
-                Username = "postgres",
-                Password = "postgres",
-            })
+        _container = new PostgreSqlBuilder()
+            .WithDatabase("test_db")
             .WithImage("postgres")
             .WithCleanUp(true)
             .WithName(Guid.NewGuid().ToString())
@@ -63,7 +56,7 @@ public class TestDbFixture : IAsyncLifetime
         var optionsBuilder = new DbContextOptionsBuilder<ProvisioningDbContext>();
 
         optionsBuilder.UseNpgsql(
-            _container.ConnectionString,
+            _container.GetConnectionString(),
             x => x.MigrationsAssembly(typeof(ProvisioningDbContextFactory).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
@@ -89,7 +82,7 @@ public class TestDbFixture : IAsyncLifetime
         var optionsBuilder = new DbContextOptionsBuilder<ProvisioningDbContext>();
 
         optionsBuilder.UseNpgsql(
-            _container.ConnectionString,
+            _container.GetConnectionString(),
             x => x.MigrationsAssembly(typeof(ProvisioningDbContextFactory).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_provisioning")
         );

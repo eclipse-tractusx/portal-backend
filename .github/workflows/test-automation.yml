@@ -1,4 +1,4 @@
-﻿###############################################################
+###############################################################
 # Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
@@ -45,7 +45,7 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     strategy:
       matrix:
-        dotnet-version: [ '6.0' ]
+        dotnet-version: [ '7.0' ]
 
     steps:
       - name: Checkout
@@ -58,16 +58,16 @@ jobs:
       - name: Update JSON file
         env:
           project: ${{ secrets.REPORTPORTAL_PROJECT }}
-          uuid: ${{ secrets.REPORTPORTAL_AUTHENTICATION_UUID }}
+          apiKey: ${{ secrets.REPORTPORTAL_AUTHENTICATION_UUID }}
           url: ${{ vars.REPORTPORTAL_URL }}
-        run:
-          echo "project"
-          echo "uuid"
+        run: |
+          cd tests/endtoend
           jq --arg project "$project" \
-          --arg uuid "$uuid" \
+          --arg apiKey "$apiKey" \
           --arg url "$url" \
-          '.server |= ( .project = $project | .authentication.uuid = $uuid | .url = $url )' \
-          ReportPortal.config.json > temp.json && mv temp.json ReportPortal.config.json
+          '.server |= ( .project = $project | .apiKey = $apiKey | .url = $url )' \
+          ReportPortal.config.json > temp.json
+          mv temp.json ReportPortal.config.json
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v2
         with:
@@ -77,7 +77,7 @@ jobs:
       - name: Build
         run: dotnet build src --configuration Release --no-restore
       - name: Tests - Interface Health Check
-        if: contains(fromJSON('["all", "interface health check"]'), github.event.inputs.test_category)
+        if: contains(fromJSON('["interface health check"]'), github.event.inputs.test_category)
         continue-on-error: true  # required for now as health checks still fail at the moment
         env:
           ENVIRONMENT: ${{ github.event.inputs.environment }}
@@ -100,7 +100,7 @@ jobs:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2eInterfaceHealthCheckResults.html
       - name: Tests - Portal Health Check
-        if: contains(fromJSON('["all", "portal health check"]'), github.event.inputs.test_category)
+        if: contains(fromJSON('["portal health check"]'), github.event.inputs.test_category)
         continue-on-error: true  # required for now
         env:
           ENVIRONMENT: ${{ github.event.inputs.environment }}
@@ -118,7 +118,7 @@ jobs:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2ePortalHealthCheckResults.html
       - name: Tests - Registration Tests
-        if: contains(fromJSON('["all", "registration"]'), github.event.inputs.test_category)
+        if: contains(fromJSON('["registration"]'), github.event.inputs.test_category)
         continue-on-error: true  # required as registration can fail
         env:
           ENVIRONMENT: ${{ github.event.inputs.environment }}
@@ -137,7 +137,7 @@ jobs:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2eRegistrationTestResults.html
       - name: Tests - Portal Tests
-        if: contains(fromJSON('["all", "portal"]'), github.event.inputs.test_category)
+        if: contains(fromJSON('["portal"]'), github.event.inputs.test_category)
         continue-on-error: true  # required for now
         env:
           ENVIRONMENT: ${{ github.event.inputs.environment }}
@@ -156,3 +156,32 @@ jobs:
         with:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2ePortalTestResults.html
+      - name: Tests - All E2E Tests
+        if: contains(fromJSON('["all"]'), github.event.inputs.test_category)
+        continue-on-error: true
+        env:
+          ENVIRONMENT: ${{ github.event.inputs.environment }}
+          BASE_PORTAL_URL: ${{ vars.BASE_PORTAL_URL }}
+          BASE_CENTRAL_IDP_URL: ${{ vars.BASE_CENTRAL_IDP_URL }}
+          CLEARING_HOUSE_URL: ${{ vars.CLEARING_HOUSE_URL }}
+          CLEARING_HOUSE_TOKEN_URL: ${{ vars.CLEARING_HOUSE_TOKEN_URL }}
+          SD_FACTORY_BASE_URL: ${{ vars.SD_FACTORY_BASE_URL }}
+          WALLET_BASE_URL: ${{ vars.WALLET_BASE_URL }}
+          BPDM_URL: ${{ vars.BPDM_URL }}
+          INTERFACE_HEALTH_CHECK_TECH_CLIENT_ID: ${{ secrets.INTERFACE_HEALTH_CHECK_TECH_CLIENT_ID }}
+          INTERFACE_HEALTH_CHECK_TECH_CLIENT_SECRET: ${{ secrets.INTERFACE_HEALTH_CHECK_TECH_CLIENT_SECRET }}
+          CLEARING_HOUSE_CLIENT_ID: ${{ secrets.CLEARING_HOUSE_CLIENT_ID }}
+          CLEARING_HOUSE_CLIENT_SECRET: ${{ secrets.CLEARING_HOUSE_CLIENT_SECRET }}
+          NOTIFICATION_OFFER_ID: ${{ vars.NOTIFICATION_OFFER_ID }}
+          PORTAL_USER_COMPANY_NAME: ${{ vars.PORTAL_USER_COMPANY_NAME }}
+          BASE_PORTAL_BACKEND_URL: ${{ vars.BASE_PORTAL_BACKEND_URL }}
+          TEMPMAIL_APIKEY: ${{ secrets.TEMPMAIL_APIKEY }}
+          PORTAL_USER_NAME: ${{ secrets.PORTAL_USER_NAME }}
+          PORTAL_USER_PASSWORD: ${{ secrets.PORTAL_USER_PASSWORD }}
+        run: dotnet test tests/endtoend --no-restore --verbosity minimal --logger "html;logfilename=e2eAllResults.html"
+      - name: 'Upload Artifact'
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-report
+          path: tests/endtoend/TestResults/e2eAllResults.html

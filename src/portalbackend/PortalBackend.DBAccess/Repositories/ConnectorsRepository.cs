@@ -42,10 +42,30 @@ public class ConnectorsRepository : IConnectorsRepository
     }
 
     /// <inheritdoc/>
-    public IQueryable<Connector> GetAllCompanyConnectorsForCompanyId(Guid companyId) =>
-        _context.Connectors
-            .AsNoTracking()
-            .Where(x => x.ProviderId == companyId && x.StatusId != ConnectorStatusId.INACTIVE);
+    public Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllCompanyConnectorsForCompanyId(Guid companyId) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.Connectors.AsNoTracking()
+                .Where(x => x.ProviderId == companyId && x.StatusId != ConnectorStatusId.INACTIVE)
+                .GroupBy(c => c.HostId),
+            connector => connector.OrderByDescending(connector => connector.Name),
+            con => new ConnectorData(
+                con.Name,
+                con.Location!.Alpha2Code,
+                con.Id,
+                con.TypeId,
+                con.StatusId,
+                con.HostId,
+                con.Host!.Name,
+                con.SelfDescriptionDocumentId,
+                con.SelfDescriptionDocument!.DocumentName,
+                con.CompanyServiceAccountId == null ? null : new TechnicalUserData(
+                    con.CompanyServiceAccount!.Id,
+                    con.CompanyServiceAccount.Name,
+                    con.CompanyServiceAccount.ClientId!,
+                    con.CompanyServiceAccount.Description))
+        ).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
     public Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForCompany(Guid companyId) =>
@@ -65,7 +85,12 @@ public class ConnectorsRepository : IConnectorsRepository
                     c.TypeId,
                     c.StatusId,
                     c.Provider!.Name,
-                    c.SelfDescriptionDocumentId)
+                    c.SelfDescriptionDocumentId,
+                    c.CompanyServiceAccountId == default ? null : new TechnicalUserData(
+                        c.CompanyServiceAccount!.Id,
+                        c.CompanyServiceAccount.Name,
+                        c.CompanyServiceAccount.ClientId!,
+                        c.CompanyServiceAccount.Description))
         ).SingleOrDefaultAsync();
 
     public Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
@@ -82,8 +107,12 @@ public class ConnectorsRepository : IConnectorsRepository
                     connector.HostId,
                     connector.Host!.Name,
                     connector.SelfDescriptionDocumentId,
-                    connector.SelfDescriptionDocument!.DocumentName
-                ),
+                    connector.SelfDescriptionDocument!.DocumentName,
+                    connector.CompanyServiceAccountId == default ? null : new TechnicalUserData(
+                        connector.CompanyServiceAccount!.Id,
+                        connector.CompanyServiceAccount.Name,
+                        connector.CompanyServiceAccount.ClientId!,
+                        connector.CompanyServiceAccount.Description)),
                 connector.ProviderId == companyId
             ))
             .SingleOrDefaultAsync();
@@ -148,7 +177,9 @@ public class ConnectorsRepository : IConnectorsRepository
                 connector.ConnectorAssignedOfferSubscriptions.Select(x => new ConnectorOfferSubscription(
                     x.OfferSubscriptionId,
                     x.OfferSubscription!.OfferSubscriptionStatusId
-                ))
+                )),
+                connector.CompanyServiceAccount!.Identity!.UserStatusId,
+                connector.CompanyServiceAccountId
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />

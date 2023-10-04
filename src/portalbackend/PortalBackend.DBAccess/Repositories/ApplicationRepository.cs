@@ -36,17 +36,21 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext = portalDbContext;
     }
 
-    public CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId) =>
-        _dbContext.CompanyApplications.Add(
-            new CompanyApplication(
-                Guid.NewGuid(),
-                companyId,
-                companyApplicationStatusId,
-                DateTimeOffset.UtcNow)).Entity;
+    CompanyApplication IApplicationRepository.CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields)
+    {
+        var companyApplication = new CompanyApplication(
+            Guid.NewGuid(),
+            companyId,
+            companyApplicationStatusId,
+            applicationTypeId,
+            DateTimeOffset.UtcNow);
+        setOptionalFields?.Invoke(companyApplication);
+        return _dbContext.CompanyApplications.Add(companyApplication).Entity;
+    }
 
     public void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters)
     {
-        var companyApplication = _dbContext.Attach(new CompanyApplication(companyApplicationId, Guid.Empty, default, default)).Entity;
+        var companyApplication = _dbContext.Attach(new CompanyApplication(companyApplicationId, Guid.Empty, default, default, default)).Entity;
         setOptionalParameters.Invoke(companyApplication);
     }
 
@@ -160,15 +164,19 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string, string?, IEnumerable<string>>(
+            .Select(ca => new ValueTuple<Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?>(
                 ca.CompanyId,
                 ca.Company!.Name,
                 ca.Company.BusinessPartnerNumber,
-                ca.Company.IdentityProviders.Select(x => x.IamIdentityProvider!.IamIdpAlias)))
+                ca.Company.IdentityProviders.Select(x => x.IamIdentityProvider!.IamIdpAlias),
+                ca.CompanyApplicationTypeId,
+                ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL ?
+                    ca.Company.NetworkRegistration!.ProcessId :
+                    null))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -405,10 +413,13 @@ public class ApplicationRepository : IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the company id</returns>
-    public Task<(Guid CompanyId, string CompanyName)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(x => new ValueTuple<Guid, string>(x.CompanyId, x.Company!.Name))
+            .Select(x => new ValueTuple<Guid, string, Guid?>(
+                x.CompanyId,
+                x.Company!.Name,
+                x.Company!.NetworkRegistration!.ProcessId))
             .SingleOrDefaultAsync();
 
     public Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId) =>

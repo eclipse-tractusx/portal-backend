@@ -52,5 +52,6 @@ public class Process : IBaseEntity, ILockableEntity
     public virtual ProcessType? ProcessType { get; set; }
     public virtual CompanyApplication? CompanyApplication { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
+    public virtual NetworkRegistration? NetworkRegistration { get; set; }
     public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
 }

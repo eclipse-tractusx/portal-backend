@@ -22,7 +22,7 @@
 
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Mailing.Template</AssemblyName>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -34,71 +34,13 @@
   </ItemGroup>
 
   <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-   <None Update="EmailTemplates\appprovider_subscription_request.html">
-     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-   </None>
-   <None Update="EmailTemplates\portal_welcome_email.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\nextsteps.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\password.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\portal_newuser_welcome.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\README.md">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\staticTemplates\basicTemplate.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\staticTemplates\buttonTemplate.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\additional_user_invitation.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\additional_user_invitation_with_message.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\cx_admin_invitation.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-	 <None Update="EmailTemplates\registration_declined.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-	 <None Update="EmailTemplates\serviceprovider_subscription_request.html">
-	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	 </None>
-	 <None Update="EmailTemplates\serviceprovider_subscription_activation.html">
-	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	 </None>
-	 <None Update="EmailTemplates\appprovider_subscription_activation.html">
-	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	 </None>
-	 <None Update="EmailTemplates\service_request_decline.html">
-	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	 </None>
-	 <None Update="EmailTemplates\app_request_decline.html">
-	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	 </None>
-	 <None Update="EmailTemplates\new_user_account_ownidp.html">
-	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	 </None>
-	 <None Update="EmailTemplates\verified_credential_approved.html">
-	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	 </None>
-	 <None Update="EmailTemplates\verified_credential_declined.html">
-	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	 </None>
+    <None Remove="EmailTemplates" />
+    <Content Include="EmailTemplates\**" LinkBase="EmailTemplates" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
 <ItemGroup>

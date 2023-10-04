@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -72,7 +73,10 @@ WebApplicationBuildRunner
         builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
             .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
-        builder.Services.AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>();
+        builder.Services
+            .AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>()
+            .AddPartnerRegistration(builder.Configuration)
+            .AddNetworkRegistrationProcessHelper();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
     });

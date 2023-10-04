@@ -41,111 +41,101 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Get all apps that a user has been assigned roles in.
     /// </summary>
-    /// <param name="userId">Id of the user to get available apps for.</param>
     /// <returns>List of available apps for user.</returns>
-    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(Guid userId);
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync();
 
     /// <summary>
     /// Get detailed application data for a single app by id.
     /// </summary>
     /// <param name="appId">Persistence ID of the application to be retrieved.</param>
-    /// <param name="companyId">Id of the user to evaluate app purchase status for. No company purchase status if not provided.</param>
     /// <param name="languageShortName">Optional two character language specifier for the localization of the app description. No description if not provided.</param>
     /// <returns>AppDetailsViewModel of the requested application.</returns>
-    public Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, Guid companyId, string? languageShortName = null);
+    public Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string? languageShortName = null);
 
     /// <summary>
     /// Get IDs of all favourite apps of the user by ID.
     /// </summary>
-    /// <param name="userId">Id of the user to get favourite apps for.</param>
     /// <returns>List of IDs of user's favourite apps.</returns>
-    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(Guid userId);
+    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync();
 
     /// <summary>
     /// Adds an app to a user's favourites.
     /// </summary>
     /// <param name="appId">ID of the app to add to user's favourites.</param>
-    /// <param name="userId">Id of the user to add app favourite to.</param>
-    public Task AddFavouriteAppForUserAsync(Guid appId, Guid userId);
+    public Task AddFavouriteAppForUserAsync(Guid appId);
 
     /// <summary>
     /// Removes an app from a user's favourites.
     /// </summary>
     /// <param name="appId">ID of the app to remove from user's favourites.</param>
-    /// <param name="userId">Id of the user to remove app favourite from.</param>
-    public Task RemoveFavouriteAppForUserAsync(Guid appId, Guid userId);
+    public Task RemoveFavouriteAppForUserAsync(Guid appId);
 
     /// <summary>
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
-    /// <param name="companyId">Id of the users company.</param>
     /// <param name ="page">page</param>
     /// <param name ="size">size</param>
     /// <returns>Returns the details of the subscription status for App user</returns>
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, Guid companyId);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.
     /// </summary>
     /// <param name="page"></param>
     /// <param name="size"></param>
-    /// <param name="companyId"></param>
     /// <param name="sorting"></param>
     /// <param name="statusId"></param>
     /// <param name="offerId"></param>
     /// <returns>Async enumberable of user's company's provided apps' statuses.</returns>
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, Guid companyId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
 
     /// <summary>
     /// Adds a subscription relation between an application and a user's company.
     /// </summary>
     /// <param name="appId">ID of the app to subscribe to.</param>
     /// <param name="offerAgreementConsentData">The agreement consent data</param>
-    /// <param name="identity">Identity of the user that initiated app subscription for their company.</param>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
     /// </summary>
     /// <param name="subscriptionId">ID of the pending app to be activated.</param>
-    /// <param name="identity">identity of the current user.</param>
-    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid subscriptionId, (Guid UserId, Guid CompanyId) identity);
+    public Task TriggerActivateOfferSubscription(Guid subscriptionId);
 
     /// <summary>
     /// Unsubscribes an app for the current users company.
     /// </summary>
     /// <param name="subscriptionId">ID of the subscription to unsubscribe from.</param>
-    /// <param name="companyId">Id of the users company that initiated app unsubscription.</param>
-    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId, Guid companyId);
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid subscriptionId);
 
     /// <summary>
     /// Retrieve Company Owned App Data
     /// </summary>
-    /// <param name="companyId">Id of the users company to retrieve own app.</param>
-    /// <returns>Async enumerable of company owned apps data</returns>
-    IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(Guid companyId);
+    /// <param name="page"></param>
+    /// <param name="size"></param>
+    /// <param name="sorting"></param>
+    /// <param name="offerName"></param>
+    /// <param name="statusId"></param>
+    Task<Pagination.Response<AllOfferData>> GetCompanyProvidedAppsDataForUserAsync(int page, int size, OfferSorting? sorting, string? offerName, AppStatusIdFilter? statusId);
 
     /// <summary>
-    /// Auto setup the app.
+    /// Auto setup the app.AppStatusIdFilter
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="identity">Identity of the user</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, (Guid UserId, Guid CompanyId) identity);
+    Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data);
 
     /// <summary>
     /// Starts the auto setup process.
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="companyId">Id of the company</param>
-    Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId);
+    Task StartAutoSetupAsync(OfferAutoSetupData data);
 
     /// <summary>
     /// Triggers the activation of a single instance app subscription.
     /// </summary>
     /// <param name="offerSubscriptionId">The offer subscription id</param>
-    /// <param name="companyId">Id of the company</param>
-    Task ActivateSingleInstance(Guid offerSubscriptionId, Guid companyId);
+    Task ActivateSingleInstance(Guid offerSubscriptionId);
 
     /// <summary>
     /// Gets the app agreement data
@@ -168,30 +158,26 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, Guid companyId);
+    Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId);
 
     /// <summary>
     /// Gets the information for the subscription
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, Guid companyId);
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId);
 
     /// <summary>
     /// Retrieves Active subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
-    /// <param name="companyId">Id of the users company.</param>
     /// <returns>Returns the details of the Active subscription status for App user</returns>
-    IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync(Guid companyId);
+    IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync();
 
     /// <summary>
     /// Retrieves Active and Pending subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
-    /// <param name="companyId">Id of the users company.</param>
     /// <returns>Returns the details of the Active and Pending subscription status for App user</returns>
-    IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync(Guid companyId);
+    IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync();
 }

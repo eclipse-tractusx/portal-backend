@@ -21,7 +21,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
@@ -43,7 +42,7 @@ public static class ServiceCollectionExtensions
         var scopedServices = scope.ServiceProvider;
         var context = scopedServices.GetRequiredService<PortalDbContext>();
         context.Database.Migrate();
-        var result = ((IBaseSeeding)Activator.CreateInstance(typeof(TSeedingData)))?.SeedData();
+        var result = (Activator.CreateInstance(typeof(TSeedingData)) as IBaseSeeding)?.SeedData();
         result?.Invoke(context);
 
         context.SaveChanges();

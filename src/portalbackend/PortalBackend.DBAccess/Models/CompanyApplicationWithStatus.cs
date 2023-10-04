@@ -22,9 +22,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
 {
-    public class CompanyApplicationWithStatus
-    {
-        public Guid ApplicationId;
-        public CompanyApplicationStatusId? ApplicationStatus; //FIXME - this should not be nullable!
-    }
+    public record CompanyApplicationWithStatus
+    (
+        Guid ApplicationId,
+        CompanyApplicationStatusId ApplicationStatus,
+        IEnumerable<ApplicationChecklistData> ApplicationChecklist
+    );
+    public record ApplicationChecklistData(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId);
 }

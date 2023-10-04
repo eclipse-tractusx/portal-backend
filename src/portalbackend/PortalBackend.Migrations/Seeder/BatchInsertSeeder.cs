@@ -105,6 +105,8 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<UseCaseDescription>("use_case_descriptions", x => new { x.UseCaseId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<VerifiedCredentialTypeAssignedUseCase>("verified_credential_type_assigned_use_cases", x => new { x.VerifiedCredentialTypeId, x.UseCaseId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<VerifiedCredentialTypeAssignedExternalType>("verified_credential_type_assigned_external_types", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialExternalTypeId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<CompanyUserAssignedIdentityProvider>("company_user_assigned_identity_providers", e => new { e.CompanyUserId, e.IdentityProviderId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<OnboardingServiceProviderDetail>("onboarding_service_provider_details", x => x.CompanyId, cancellationToken).ConfigureAwait(false);
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
@@ -129,6 +131,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<Consent>("consents", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<Invitation>("invitations", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<Notification>("notifications", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<NetworkRegistration>("network_registrations", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<OfferLicense>("offer_licenses", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<ProviderCompanyDetail>("provider_company_details", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<OfferSubscription>("offer_subscriptions", cancellationToken).ConfigureAwait(false);

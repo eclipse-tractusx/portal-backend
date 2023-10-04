@@ -160,5 +160,14 @@
     "lastlogin": null,
     "lastname": "Provider",
     "last_editor_id": null
+  },
+  {
+    "id": "c3819cfb-72c2-45bf-9666-895af2e7fc19",
+    "date_last_changed": "2022-10-01 18:01:33.570000 +00:00",
+    "email": "onboarding-provider@osp.com",
+    "firstname": "Tester",
+    "lastlogin": null,
+    "lastname": "Onboarding Provider",
+    "last_editor_id": null
   }
 ]

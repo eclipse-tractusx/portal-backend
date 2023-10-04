@@ -27,6 +27,6 @@ public record CompanyRoleConsentData(
     IEnumerable<ConsentAgreementData> Agreements
 );
 
-public record ConsentAgreementData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId ConsentStatus);
+public record ConsentAgreementData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId ConsentStatus, string? AgreementLink);
 
 public record ConsentStatusDetails(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId);

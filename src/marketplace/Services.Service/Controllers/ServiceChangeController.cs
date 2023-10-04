@@ -21,7 +21,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
@@ -30,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 /// Controller providing actions for updating applications.
 /// </summary>
 
-[Route("api/service/[controller]")]
+[Route("api/services/[controller]")]
 [ApiController]
 [Produces("application/json")]
 [Consumes("application/json")]
@@ -67,7 +66,7 @@ public class ServiceChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateService([FromRoute] Guid serviceId)
     {
-        await this.WithCompanyId(companyId => _serviceChangeBusinessLogic.DeactivateOfferByServiceIdAsync(serviceId, companyId)).ConfigureAwait(false);
+        await _serviceChangeBusinessLogic.DeactivateOfferByServiceIdAsync(serviceId).ConfigureAwait(false);
         return NoContent();
     }
 }

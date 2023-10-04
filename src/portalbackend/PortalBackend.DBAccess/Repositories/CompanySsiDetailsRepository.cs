@@ -208,9 +208,13 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
+    public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes(Guid companyId) =>
         _context.VerifiedCredentialTypes
-            .Where(x => x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
+            .Where(x =>
+                x.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE &&
+                !x.CompanySsiDetails.Any(ssi =>
+                    ssi.CompanyId == companyId &&
+                    (ssi.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING || ssi.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE)))
             .Select(x => x.Id)
             .ToAsyncEnumerable();
 }

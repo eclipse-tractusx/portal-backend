@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// Creates a new instance of <see cref="PartnerNetworkController"/>
 /// </summary>
 [ApiController]
-[Route("api/administration/partnernetwork")]
+[Route("api/administration/[controller]")]
 [Produces("application/json")]
 [Consumes("application/json")]
 public class PartnerNetworkController : ControllerBase

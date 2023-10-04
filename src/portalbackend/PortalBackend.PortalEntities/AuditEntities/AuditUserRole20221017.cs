@@ -43,7 +43,7 @@ public class AuditUserRole20221017 : IAuditEntityV1
 
     public Guid OfferId { get; set; }
 
-    [AuditLastEditorV1]
+    [LastEditorV1]
     public Guid? LastEditorId { get; set; }
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }

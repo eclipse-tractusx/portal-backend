@@ -20,7 +20,7 @@
 
 <Project>
   <PropertyGroup>
-    <VersionPrefix>1.6.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
+    <VersionPrefix>1.7.0</VersionPrefix>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 </Project>

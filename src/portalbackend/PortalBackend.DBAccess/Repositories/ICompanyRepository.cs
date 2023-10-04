@@ -33,8 +33,9 @@ public interface ICompanyRepository
     /// Creates new company entity from persistence layer.
     /// </summary>
     /// <param name="companyName">Name of the company to create the new entity for.</param>
+    /// <param name="setOptionalParameters">Sets the optional Parameters</param>
     /// <returns>Created company entity.</returns>
-    Company CreateCompany(string companyName);
+    Company CreateCompany(string companyName, Action<Company>? setOptionalParameters = null);
 
     void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
 
@@ -164,4 +165,11 @@ public interface ICompanyRepository
     /// </summary>
     /// <returns>Async enumerable of bpns</returns>
     IAsyncEnumerable<OperatorBpnData> GetOperatorBpns();
+
+    Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndCompanyRolesAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoles);
+    Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId);
+    Task<(bool hasCompanyRole, OspDetails? ospDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId);
+    void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields);
+    OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret);
+    Task<bool> CheckBpnExists(string bpn);
 }

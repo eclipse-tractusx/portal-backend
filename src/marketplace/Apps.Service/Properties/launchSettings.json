@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "Cors__AllowedOrigins__0": "http://localhost:3000"
       },
-      "applicationUrl": "https://localhost:7202;http://localhost:5202",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "dotnetRunMessages": true
     },
     "IIS Express": {
@@ -25,7 +25,8 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "Cors__AllowedOrigins__0": "http://localhost:3000"
+        "Cors__AllowedOrigins__0": "http://localhost:3000",
+        "Cors__AllowedOrigins__1": "https://portal.example.org"
       }
     },
     "Docker": {

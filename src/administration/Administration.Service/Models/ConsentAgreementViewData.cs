@@ -31,4 +31,4 @@ public record CompanyRoleConsentViewData(
     IEnumerable<ConsentAgreementViewData> Agreements
 );
 
-public record ConsentAgreementViewData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId? ConsentStatus);
+public record ConsentAgreementViewData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId? ConsentStatus, string? AgreementLink);

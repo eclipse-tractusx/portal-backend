@@ -24,4 +24,6 @@ public static class ValidationExpressions
 {
     public const string Name = @"^.+$"; // TODO: should be @"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$";
     public const string Email = @"^.+$"; // TODO: should be @"^(([^<>()[\]\\.,;:\s@""]+(\.[^<>()[\]\\.,;:\s@""]+)*)|("".+""))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-z0-9-]+\.)+[a-z]{2,}))$";
+    public const string Bpn = @"^BPNL[\w|\d]{12}$";
+
 }

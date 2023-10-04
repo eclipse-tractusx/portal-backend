@@ -20,6 +20,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -454,12 +456,58 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetCompanyIdSubmissionStatusForApplication(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        data.Should().Be(((bool, Guid, bool))default);
+        data.Should().Be(default);
     }
 
     #endregion
 
-    private async Task<ApplicationRepository> CreateSut()
+    #region CreateCompanyApplication
+
+    [Fact]
+    public async Task CreateCompanyApplication_WithValidData_Creates()
+    {
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        var application = sut.CreateCompanyApplication(CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL,
+            a =>
+            {
+                a.OnboardingServiceProviderId = CompanyId;
+            });
+
+        // Assert
+        application.Id.Should().NotBeEmpty();
+        var changeTracker = context.ChangeTracker;
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyApplication>()
+            .Which.OnboardingServiceProviderId.Should().Be(CompanyId);
+    }
+
+    #endregion
+
+    #region GetCompanyIdNameForSubmittedApplication
+
+    [Fact]
+    public async Task GetCompanyIdNameForSubmittedApplication_WithValidData_Creates()
+    {
+        var (sut, _) = await CreateSutWithContext().ConfigureAwait(false);
+
+        var result = await sut.GetCompanyIdNameForSubmittedApplication(SubmittedApplicationWithBpn).ConfigureAwait(false);
+
+        // Assert
+        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
+        result.CompanyName.Should().Be("CX-Test-Access");
+    }
+
+    #endregion
+
+    private async Task<(IApplicationRepository sut, PortalDbContext context)> CreateSutWithContext()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new ApplicationRepository(context);
+        return (sut, context);
+    }
+    private async Task<IApplicationRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new ApplicationRepository(context);

@@ -52,7 +52,7 @@ public interface IOfferSubscriptionsRepository
 
     Task<(OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, Guid AppId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
 
-    Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
+    Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId, IEnumerable<Guid> ConnectorIds, IEnumerable<Guid> ServiceAccounts)> GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
 
     Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId);
 
@@ -151,7 +151,6 @@ public interface IOfferSubscriptionsRepository
     /// <param name="processId">Id of the process</param>
     /// <returns>Returns offer subscription process data</returns>
     Task<Guid> GetOfferSubscriptionDataForProcessIdAsync(Guid processId);
-
     Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId);
     Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId);
     Task<(bool IsValidSubscriptionId, bool IsActive)> IsActiveOfferSubscription(Guid offerSubscriptionId);
@@ -181,4 +180,12 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>apps offer subscription statuses for the user</returns>
     IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Checks whether the company is the provider of the offer
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offerSubscription</param>
+    /// <param name="providerCompanyId">Id of the providerCompanyId</param>
+    /// <returns><c>true</c> when the company is the provider of the offer for the offerSubscription, otherwise <c>false</c></returns>
+    Task<bool> CheckOfferSubscriptionForProvider(Guid offerSubscriptionId, Guid providerCompanyId);
 }
