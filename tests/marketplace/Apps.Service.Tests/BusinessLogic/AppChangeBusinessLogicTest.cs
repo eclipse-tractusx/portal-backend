@@ -65,7 +65,6 @@ public class AppChangeBusinessLogicTest
     private readonly IOfferService _offerService;
     private readonly IIdentityService _identityService;
     private readonly AppChangeBusinessLogic _sut;
-    private readonly IIdentityService _identityService;
 
     public AppChangeBusinessLogicTest()
     {

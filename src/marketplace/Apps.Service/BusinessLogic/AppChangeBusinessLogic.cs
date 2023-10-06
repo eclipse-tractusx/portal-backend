@@ -58,17 +58,15 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <param name="notificationService">the notification service</param>
     /// <param name="provisioningManager">The provisioning manager</param>
     /// <param name="identityService">Access to the identityService</param>
-    /// <param name="settings">Settings for the app change bl</param>
-    /// <param name="identityService">Identity</param>
     /// <param name="offerService">Offer Servicel</param>
+    /// <param name="settings">Settings for the app change bl</param>
     public AppChangeBusinessLogic(
         IPortalRepositories portalRepositories,
         INotificationService notificationService,
         IProvisioningManager provisioningManager,
         IOfferService offerService,
         IIdentityService identityService,
-        IOptions<AppsSettings> settings,
-        IIdentityService identityService)
+        IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;

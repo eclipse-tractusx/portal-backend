@@ -34,7 +34,7 @@ public static class ControllerExtensions
 {
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
         tokenConsumingFunction(controller.GetBearerToken());
- 
+
     public static IdentityData GetIdentityData(this ClaimsPrincipal user)
     {
         var sub = user.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
