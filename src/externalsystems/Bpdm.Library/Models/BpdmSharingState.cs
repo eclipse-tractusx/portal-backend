@@ -24,13 +24,13 @@ public record BpdmPaginationSharingStateOutput(
 );
 
 public record BpdmSharingState(
-    BpdmSharingStateBusinessPartnerType BusinessPartnerType,
+    BpdmSharingStateBusinessPartnerType? BusinessPartnerType,
     Guid ExternalId,
-    BpdmSharingStateType SharingStateType,
+    BpdmSharingStateType? SharingStateType,
     string? SharingErrorCode,
     string? SharingErrorMessage,
     string? Bpn,
-    DateTimeOffset SharingProcessStarted
+    DateTimeOffset? SharingProcessStarted
 );
 
 public enum BpdmSharingStateType
