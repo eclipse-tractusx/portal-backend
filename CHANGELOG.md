@@ -2,6 +2,106 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.7.0 alpha
+
+### Change
+* Administration Service
+  * enhanced DELETE ServiceAccount endpoint by adding a validation to allow provider as well as owner of the service account to trigger the deletion
+  * added validation for DELETE ServiceAccount to not allow to deactivate if active subscription exists
+  * enhanced DELETE connector business logic by automatically deactive technical users which (if any) are linked to the connector
+  * enhanced GET /administration/companydata/certificateTypes business logic to return only those certificateTypes which the users company is able to request
+  * added agreement_link to agreement table and enhanced existing agreement endpoint response to include the agreement link - GET api/administration/companydata/companyRolesAndConsents
+  * enhanced response body of GET /api/administration/Connectors/{connectorId}; GET /api/administration/connectors & GET /api/administration/connectors/managed by adding linked technical user data (id, name, role, etc.)
+* Registration Service
+  * enhance GET /api/registration/applications registration customer endpoint by adding the registration approval flow status
+  * added agreement_link to agreement table and enhanced existing agreement endpoint response to include the agreement link - GET /api/registration/companyRoleAgreementData
+* App Service
+  * enhanced backend logic of /autosetup process worker to only create technical users for app linked technical user profiles which have a role assigned
+  * added status filter option for endpoint GET /apps/provided
+  * enhanced GET /api/Apps/{appId}/subscription/{subscriptionId}/subscriber endpoint by responding (if existing) with connector details connected to the subscription
+  * enhanced GET /api/Apps/subscribed/subscription-status response body by adding subscriptionId
+* Services Service
+  * enhanced backend logic of /autosetup process worker to only create technical users for service linked technical user profiles which have a role assigned
+  * enhanced endpoint GET /api/services/provided by "leadPictureId" & "lastChanged" date
+  * service types renamed from 'Consultance_Service' to 'Consultancy_Service'
+ 
+### Feature
+* Administration Service
+  * added /api/administration/staticdata/operator-bpn endpoint to fetch operator bpns
+* App Service
+  * unsubscribe OfferSubscription released
+  * added email send function for endpoint PUT /api/apps/AppReleaseProcess/{appId}/approveApp
+  * introduce TRIGGER_ACTIVATE_SUBSCRIPTION process step to manually trigger the offer subscription activation enable client and service accounts when activating the offer subscription
+* Services Service
+  * unsubscribe OfferSubscription released
+  * added email send function for endpoint PUT /api/services/ServiceRelease/{serviceId}/approveService
+  * updated permission validation of endpoint /serviceAgreementData/{serviceId}
+  * introduce TRIGGER_ACTIVATE_SUBSCRIPTION process step to manually trigger the offer subscription activation enable client and service accounts when activating the offer subscription
+* Notification Service
+  * GET /api/notifications search string enabled to support search by notification content
+* Onboarding Service Provider *new function* - released onboarding service provider functionality, incl.:
+  * add new database structure for network to network
+  * add seeding for n2n
+  * enhanced POST /api/administration/identityprovider/owncompany/identityproviders endpoint by identityProviderType (managed; own; shared)
+  * network process worker registered to use process worker for onboarding service provider registration flow
+  * add seeding (test data only) for the osp realm and company including users
+  * added POST /api/administration/registration/network/partnerRegistration/submit endpoint
+  * added POST registration/network/partnerRegistration to register partners to the network
+  * add new process to synchronize users with central keycloak instance for the partnerRegistration
+  * add endpoint to get the callback url of an osp
+  * add endpoint to set the callback url of an osp
+* Email templates
+  * released new email template 'offer release approval'
+  * released new email tempülate 'welcome onboarding service provider registration company' (connected to feature release Onboarding Service Provider)
+
+### Technical Support
+* Swagger Documentation updated
+  * enhanced error documentation for all services
+  * updated endpoint summary documentation where necessary
+* Test Automation runs implemented (external service health checks & administration and registration e2e journeys) via gitHub workflow
+* added attribute logos in notice file
+* remove unused notice file (Docker Hub)
+* enhanced db table agreements by adding new attribute agreement_link to support links for agreement where needed
+* added custom migration script for identity_provider_type_id and owner_id
+* enhanced security.md file with newest release relevant guidelines regarding vulnerability/security finding handling
+* Auditing
+  * new migration has been created that recreates all triggers according to the new naming scheme being introduced by version 7.1.1 of the trigger-framework
+  * trigger-extensions have been adjusted ensuring a consistent order of properties to avoid unnecessary recreation of trigger-functions when creating new migrations
+* removed dependency on 'DateTimeOffset.OffsetNow()' in custodian unit-test by replacing that dynamic testdata by a constant value.
+* dependency to framework.DateTimeProvider was added to dockerfiles of modules 'Migrations' and 'Maintenance'
+* .NET Update
+  * upgrade .NET to v7
+  * upgrade of nuget packages
+  * removed trigger dependency
+  * enabled to write audit entities automatically on DbContext SaveChanges
+* removed e2e test files from sonar coverage check
+* support build images also for arm64, in addition to amd64
+* improve dockerfiles - 'dotnet build' not needed as implicit of 'dotnet publish'
+* change launchsettings
+  * cors for localdev env
+  * align applicationUrl for apps service
+* Keycloak auth path config updated inside the portal backend code to support auth path configuration (needed for older keycloak version)
+
+### Bugfix
+* Seeding data
+  * spelling mistakes inside agreements.json and company_role_description.json fixed
+  * 'user_entity_id' updated in identity.json file to match with the keycloak service account/client id
+  * added sd documents in company.json file
+  * fixed connectors.json file (test data file only) value connectorType with owner/provider 
+* Administration Service - adding validation for offerUrl by not supporting hash characters PUT /api/administration/identityprovider/owncompany/identityproviders/{identityProviderId}
+* GET app/provider/subscription-status endpoint results enhanced to include inactive subscriptions
+* GET service/provider/subscription-status endpoint results enhanced to include inactive subscriptions
+* Email template - nameCreatedBy handling for null values fixed by using default names in case of null
+ServiceChange service url is mismatched, now it is fixed
+* fixed GET: api/administration/identityprovider/owncompany/identityproviders to handle not existing idps in keycloak by using null values
+* fixed GET: api/administration/identityprovider/owncompany/identityproviders/{identityTypeId} to handle not existing idps in keycloak by using null values
+* autoSetup issues fixed to support scenario where no appInstanceSetup is configured
+* fixed offerSubscription request email logic to get send to the respective offer manager (Sales Manager; Service Manager; App Manager) of the company
+
+### Known Knowns
+* Endpoint GET /api/Apps/{appId} response property 'isSubscribed' can not handle multiple subscription status. In case of multiple subscription status values are existing response includes the first found value and not the latest subscription value
+
+
 ## 1.6.0
 
 ### Change
