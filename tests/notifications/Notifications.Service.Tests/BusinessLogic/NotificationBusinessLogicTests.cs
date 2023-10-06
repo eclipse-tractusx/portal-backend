@@ -68,7 +68,7 @@ public class NotificationBusinessLogicTests
 
         _identityService = A.Fake<IIdentityService>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
-        
+
         _readNotificationDetails = _fixture.Build<NotificationDetailData>()
             .CreateMany(1);
         _unreadNotificationDetails = _fixture.Build<NotificationDetailData>()
@@ -185,7 +185,7 @@ public class NotificationBusinessLogicTests
         }));
 
         var userId = Guid.NewGuid();
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with {UserId = userId});
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
         var filter = _fixture.Create<NotificationFilters>();
 
         // Act
@@ -222,6 +222,7 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
         var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15

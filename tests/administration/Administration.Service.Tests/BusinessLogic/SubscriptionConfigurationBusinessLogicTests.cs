@@ -244,7 +244,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     public async Task SetServiceProviderCompanyDetailsAsync_WithUnknownUser_ThrowsException()
     {
         //Arrange
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with {CompanyId = Guid.NewGuid()});
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
@@ -318,7 +318,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     public async Task GetProviderCompanyDetailsAsync_WithInvalidUser_ThrowsException()
     {
         //Arrange
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with {CompanyId = Guid.NewGuid()});
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
         SetupProviderCompanyDetails();
 
         //Act

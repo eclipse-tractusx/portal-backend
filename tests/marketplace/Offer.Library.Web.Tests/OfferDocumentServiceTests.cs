@@ -52,7 +52,7 @@ public class OfferDocumentServiceTests
 
         _identityService = A.Fake<IIdentityService>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
-        
+
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerRepository = A.Fake<IOfferRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();

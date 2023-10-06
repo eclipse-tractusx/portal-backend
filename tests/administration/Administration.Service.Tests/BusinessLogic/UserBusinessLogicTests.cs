@@ -1179,12 +1179,12 @@ public class UserBusinessLogicTests
         var appId = _fixture.Create<Guid>();
         var userId = Guid.NewGuid();
         var companyUsers = _fixture.CreateMany<CompanyAppUserDetails>(5);
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with {UserId = userId});
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService,null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
@@ -1205,12 +1205,12 @@ public class UserBusinessLogicTests
         var appId = _fixture.Create<Guid>();
         var userId = Guid.NewGuid();
         var companyUsers = _fixture.CreateMany<CompanyAppUserDetails>(5);
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with {UserId = userId});
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService,null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
@@ -1238,7 +1238,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns(((string?, bool, bool))default);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService,null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1258,7 +1258,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns((string.Empty, false, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService,null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1278,7 +1278,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns(((string?)null, true, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService,null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1298,7 +1298,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns((Guid.NewGuid().ToString(), true, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService,null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1318,7 +1318,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminIdentity.CompanyId, businessPartnerNumber))
             .Returns((Guid.NewGuid().ToString(), true, true));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService,null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1345,7 +1345,7 @@ public class UserBusinessLogicTests
             .Returns(userRoleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(A<Guid>._, A<IEnumerable<Guid>>._))
             .Returns(companyOwnUserDetails);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService,null!, _logger, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
 
         // Act
         var result = await sut.GetOwnUserDetails().ConfigureAwait(false);
@@ -1365,7 +1365,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(identity.UserId, A<IEnumerable<Guid>>._))
             .Returns((CompanyOwnUserDetails)default!);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService,null!, _logger, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
 
         // Act
         async Task Act() => await sut.GetOwnUserDetails().ConfigureAwait(false);

@@ -207,7 +207,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetails.ServiceAccountId}", nameof(serviceAccountId));
         }
-        
+
         var companyId = _identityService.IdentityData.CompanyId;
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, companyId).ConfigureAwait(false);

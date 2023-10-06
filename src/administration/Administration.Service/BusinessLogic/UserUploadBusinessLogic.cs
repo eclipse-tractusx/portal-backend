@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Runtime.CompilerServices;
@@ -37,7 +38,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IMailingService _mailingService;
     private readonly UserSettings _settings;
-    private readonly IdentityService _identityService;
+    private readonly IIdentityService _identityService;
 
     /// <summary>
     /// Constructor.
@@ -49,7 +50,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
         IMailingService mailingService,
-        IdentityService identityService,
+        IIdentityService identityService,
         IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;

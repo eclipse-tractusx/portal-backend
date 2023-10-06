@@ -79,7 +79,7 @@ public class ServiceAccountBusinessLogicTests
 
         _identityService = A.Fake<IIdentityService>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
-        
+
         _options = Options.Create(new ServiceAccountSettings
         {
             ClientId = ClientId
@@ -199,7 +199,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupGetOwnCompanyServiceAccountDetails();
         var invalidCompanyId = Guid.NewGuid();
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with {CompanyId = invalidCompanyId});
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = invalidCompanyId });
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
