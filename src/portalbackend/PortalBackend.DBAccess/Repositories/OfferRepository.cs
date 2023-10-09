@@ -830,6 +830,7 @@ public class OfferRepository : IOfferRepository
             oad.Offer!.OfferStatusId == OfferStatusId.ACTIVE &&
             oad.Offer.OfferTypeId == offerTypeId &&
             oad.Offer.ProviderCompanyId == userCompanyId &&
+            oad.Document!.DocumentStatusId != DocumentStatusId.INACTIVE &&
             documentTypeIds.Contains(oad.Document!.DocumentTypeId))
         .OrderBy(oad => oad.Document!.DocumentTypeId)
         .Select(oad => new DocumentTypeData(
