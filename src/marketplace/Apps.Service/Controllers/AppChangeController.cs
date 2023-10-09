@@ -186,4 +186,20 @@ public class AppChangeController : ControllerBase
         await this.WithCompanyId(companyId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, companyId)).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Returns the Active App Documents
+    /// </summary>
+    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the app.</param>
+    /// <remarks>Example: GET /apps/appchange/{appId}/documents</remarks>
+    /// <response code="200">Gets the Active Apps documents</response>
+    /// <response code="404">If App does not exists</response>
+    [HttpGet]
+    [Route("{appId}/documents")]
+    [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(ActiveAppDocumentData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActiveAppDocumentData> GetActiveAppDocuments([FromRoute] Guid appId) =>
+        await _businessLogic.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
 }

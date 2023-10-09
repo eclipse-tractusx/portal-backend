@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Text.Json;
 
@@ -48,6 +49,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     private readonly INotificationService _notificationService;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IOfferService _offerService;
+    private readonly IIdentityService _identityService;
 
     /// <summary>
     /// Constructor.
@@ -56,14 +58,22 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <param name="notificationService">the notification service</param>
     /// <param name="provisioningManager">The provisioning manager</param>
     /// <param name="settings">Settings for the app change bl</param>
+    /// <param name="identityService">Identity</param>
     /// <param name="offerService">Offer Servicel</param>
-    public AppChangeBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService, IProvisioningManager provisioningManager, IOfferService offerService, IOptions<AppsSettings> settings)
+    public AppChangeBusinessLogic(
+        IPortalRepositories portalRepositories,
+        INotificationService notificationService,
+        IProvisioningManager provisioningManager,
+        IOfferService offerService,
+        IOptions<AppsSettings> settings,
+        IIdentityService identityService)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
         _provisioningManager = provisioningManager;
         _settings = settings.Value;
         _offerService = offerService;
+        _identityService = identityService;
     }
 
     /// <inheritdoc/>
@@ -282,5 +292,26 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<ActiveAppDocumentData> GetActiveAppDocumentTypeDataAsync(Guid appId)
+    {
+        var appDocTypeData = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetActiveOfferDocumentTypeDataOrderedAsync(appId, _identityService.IdentityData.CompanyId, OfferTypeId.APP, _settings.ActiveAppDocumentTypeIds)
+            .PreSortedGroupBy(result => result.DocumentTypeId)
+            .ToDictionaryAsync(
+                group => group.Key,
+                group => group.Select(result =>
+                    new DocumentData(
+                        result.DocumentId,
+                        result.DocumentName)))
+            .ConfigureAwait(false);
+        return new ActiveAppDocumentData(
+            _settings.ActiveAppDocumentTypeIds.ToDictionary(
+                documentTypeId => documentTypeId,
+                documentTypeId => appDocTypeData.TryGetValue(documentTypeId, out var data)
+                    ? data
+                    : Enumerable.Empty<DocumentData>()));
     }
 }

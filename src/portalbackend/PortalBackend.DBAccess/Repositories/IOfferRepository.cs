@@ -487,4 +487,13 @@ public interface IOfferRepository
     /// <param name="subscriptionId"></param>
     /// <returns></returns>
     Task<(bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName)> GetServiceAccountProfileDataForSubscription(Guid subscriptionId);
+
+    /// <summary>
+    /// Gets the Active Offer DocumentType Data
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <param name="documentTypeIds"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<DocumentTypeData> GetActiveOfferDocumentTypeDataOrderedAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds);
 }

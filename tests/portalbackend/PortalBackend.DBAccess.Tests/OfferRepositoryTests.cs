@@ -1441,6 +1441,48 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetActiveOfferDocumentTypeData
+
+    [Fact]
+    public async Task GetActiveOfferDocumentTypeDataAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var activeDocumentTypes = new[]{
+            DocumentTypeId.APP_IMAGE,
+            DocumentTypeId.APP_TECHNICAL_INFORMATION,
+            DocumentTypeId.APP_CONTRACT,
+            DocumentTypeId.ADDITIONAL_DETAILS
+        };
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetActiveOfferDocumentTypeDataOrderedAsync(
+            new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            OfferTypeId.APP, activeDocumentTypes).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull()
+            .And.BeInAscendingOrder(x => x.DocumentTypeId)
+            .And.HaveCount(4)
+            .And.Satisfy(
+                x => x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2") &&
+                x.DocumentName == "Default_App_Image.png" &&
+                x.DocumentTypeId == DocumentTypeId.APP_IMAGE,
+                x => x.DocumentId == new Guid("0d68c68c-d689-474c-a3be-8493f99feab2") &&
+                x.DocumentName == "AdditionalServiceDetails.pdf" &&
+                x.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS,
+                x => x.DocumentId == new Guid("aaf53459-c36b-408e-a805-0b406ce9751e") &&
+                x.DocumentName == "AdditionalServiceDetails2.pdf" &&
+                x.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS,
+                x => x.DocumentId == new Guid("d9926bd9-bce0-4605-a083-7066ffe5147c") &&
+                x.DocumentName == "AdditionalTechnicalInfo.pdf" &&
+                x.DocumentTypeId == DocumentTypeId.APP_TECHNICAL_INFORMATION
+        );
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<OfferRepository> CreateSut()
