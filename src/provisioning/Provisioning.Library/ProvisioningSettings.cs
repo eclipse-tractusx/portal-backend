@@ -33,8 +33,6 @@ public partial class ProvisioningSettings
     public string MappedBpnAttribute { get; set; }
 
     public string UserNameMapperTemplate { get; set; }
-
-    public bool UseAuthTrail { get; set; }
 }
 
 public static class ProvisioningSettingsExtension
