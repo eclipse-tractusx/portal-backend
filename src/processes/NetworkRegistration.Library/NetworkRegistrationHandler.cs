@@ -29,6 +29,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 
@@ -113,7 +117,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             }
         }
 
-        await SendMails(companyAssignedIdentityProviders.Select(x => new UserMailInformation(x.Email!, x.FirstName, x.LastName)), ospName).ConfigureAwait(false);
+        await SendMails(companyAssignedIdentityProviders.Select(x => new UserMailInformation(x.Email!, x.FirstName, x.LastName, x.ProviderLinkData.Select(pld => pld.Alias!))), ospName).ConfigureAwait(false);
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             null,
             ProcessStepStatusId.DONE,
@@ -123,7 +127,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
 
     private async Task SendMails(IEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
     {
-        foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
+        foreach (var (receiver, firstName, lastName, idpAliasse) in companyUserWithRoleIdForCompany)
         {
             var userName = string.Join(" ", firstName, lastName);
             var mailParameters = new Dictionary<string, string>
@@ -131,7 +135,8 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : receiver },
                 { "hostname", _settings.BasePortalAddress },
                 { "osp", ospName },
-                { "url", _settings.BasePortalAddress }
+                { "url", _settings.BasePortalAddress },
+                { "idpAliasse", string.Join(",", idpAliasse) }
             };
             await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("OspWelcomeMail", 1)).ConfigureAwait(false);
         }

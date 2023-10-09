@@ -69,7 +69,6 @@ public class UserProvisioningService : IUserProvisioningService
             Exception? error = null;
 
             var nextPassword = passwordProvider.NextOptionalPassword();
-
             try
             {
                 var (identity, companyUserId) = await GetOrCreateCompanyUser(userRepository, alias, user, companyId, identityProviderId, businessPartnerNumber);
