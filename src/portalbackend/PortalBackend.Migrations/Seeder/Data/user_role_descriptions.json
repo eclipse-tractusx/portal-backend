@@ -132,32 +132,32 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "de",
-    "description": "Anzeigen und Ändern des Unternehmens-Wallets"
+    "description": "Technischer Benutzer zur Ansicht und Änderung des Unternehmens-Wallets"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "en",
-    "description": "View and modify own company wallet"
+    "description": "Technical user to view and modify own company wallet."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
     "language_short_name": "de",
-    "description": "Discovery Funktion EDC Endpoints"
+    "description": "TEchnischer Benutzer für Dataspace Discovery Endpunkte"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
     "language_short_name": "en",
-    "description": "Discovery Function EDC Endpoints"
+    "description": "Technical user for dataspace discovery endpoints."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "language_short_name": "de",
-    "description": "Service Management for Service Providers"
+    "description": "Technischer Benutzer zum Hinzufügen von Dienstangeboten, Aktivieren von Abonnementanfragen und Erstellen von verwalteten Connectorregistrierungen für Dritte."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "language_short_name": "en",
-    "description": "Service Management for Service Providers"
+    "description": "Technical user to add service offering; activate subscription requests and create managed connector registrations for 3rd parties."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
@@ -168,5 +168,55 @@
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
     "language_short_name": "en",
     "description": "App user profile for technical users of apps registered in the cx dataspace."
+  },
+  {
+    "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
+    "language_short_name": "de",
+    "description": "Technischer Benutzer zur Erstellung von Registrierungen von Drittanbietern durch Onboarding von Dienstleistungsunternehmen."
+  },
+  {
+    "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
+    "language_short_name": "en",
+    "description": "Technical user to generate 3rd party registrations by onboarding service provider companies."
+  },
+  {
+    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae538",
+    "language_short_name": "de",
+    "description": "Ermöglicht das Anzeigen und Hinzufügen von Geschäftspartnerdaten über das eigene Service gate."
+  },
+  {
+    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae538",
+    "language_short_name": "en",
+    "description": "Allows to view and add business partner data via the owned service gate."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
+    "language_short_name": "de",
+    "description": "Anzeigen der in der Pool-Datenbank verfügbaren Geschäftspartnerdaten."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
+    "language_short_name": "en",
+    "description": "View business partner data available in the pool database."
+  },
+  {
+    "user_role_id": "3940f9b0-4393-4463-b659-15463098557",
+    "language_short_name": "de",
+    "description": "Technischer Benutzer zur Ansicht semantischer Modelle."
+  },
+  {
+    "user_role_id": "3940f9b0-4393-4463-b659-15463098557",
+    "language_short_name": "en",
+    "description": "Technical user to view semantic models."
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
+    "language_short_name": "de",
+    "description": "Technischer Benutzer für den Zugang zu den Mitgliedsinformationen von Catena-X."
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
+    "language_short_name": "en",
+    "description": "Technical user to access catena-x membership information."
   }
 ]
