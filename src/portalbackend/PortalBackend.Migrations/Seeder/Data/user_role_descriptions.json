@@ -198,5 +198,15 @@
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
     "language_short_name": "en",
     "description": "Technical user to access catena-x membership information."
+  },
+  {
+    "user_role_id": "9956fa8d-e454-49ca-a3b1-83e2c106fe59",
+    "language_short_name": "de",
+    "description": "Anzeigen, hinzufügen und löschen von Geschäftspartnerdatensätzen aus dem Geschäftspartner-Datenpool."
+  },
+  {
+    "user_role_id": "9956fa8d-e454-49ca-a3b1-83e2c106fe59",
+    "language_short_name": "en",
+    "description": "View, add and delete business partner records from the business partner data pool."
   }
 ]
