@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -96,7 +95,9 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             .CreateProcessStepRange(
                 _checklistService
                     .GetInitialProcessStepTypeIds(entries)
-                    .Select(processStepTypeId => (processStepTypeId, ProcessStepStatusId.TODO, processId)));
+                    .Select(processStepTypeId => (processStepTypeId, ProcessStepStatusId.TODO, processId))
+                    // in addition to the initial steps of new process application_checklist also create next step for process network_registration
+                    .Append((ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepStatusId.TODO, data.ProcessId.Value)));
 
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.CompanyApplicationId,
             ca =>
@@ -104,7 +105,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                 ca.ChecklistProcessId = processId;
             });
-        _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepStatusId.TODO, data.ProcessId.Value), 1));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,10 +21,8 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -258,6 +255,7 @@ public class NetworkBusinessLogicTests
         var agreementId = Guid.NewGuid();
         var agreementId1 = Guid.NewGuid();
         var processId = Guid.NewGuid();
+        var submitProcessId = Guid.NewGuid();
         var processSteps = new List<ProcessStep>();
         var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
 
@@ -273,15 +271,13 @@ public class NetworkBusinessLogicTests
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), companyRoleIds, Guid.NewGuid()));
+            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), companyRoleIds, submitProcessId));
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
             {
                 setOptionalFields.Invoke(application);
             });
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x =>
-                    x.Count() == 1 &&
-                    x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED)))
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> steps) =>
                 {
                     processSteps.AddRange(steps.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
@@ -328,12 +324,12 @@ public class NetworkBusinessLogicTests
                 x => x.AgreementId == agreementId1);
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
-        processSteps.Should().ContainSingle().Which.Should().Match<ProcessStep>(x =>
-            x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED &&
-            x.ProcessStepStatusId == ProcessStepStatusId.TODO);
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(
-                x => x.Count(p => p.ProcessId == processId && p.ProcessStepStatusId == ProcessStepStatusId.TODO) == 2)))
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
             .MustHaveHappenedOnceExactly();
+        processSteps.Should().Satisfy(
+            x => x.ProcessId == processId && x.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO,
+            x => x.ProcessId == processId && x.ProcessStepTypeId == ProcessStepTypeId.DECLINE_APPLICATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO,
+            x => x.ProcessId == submitProcessId && x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
     }
 
     #endregion
