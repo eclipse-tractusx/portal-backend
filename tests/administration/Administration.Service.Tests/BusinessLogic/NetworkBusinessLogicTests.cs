@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjec
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -52,7 +51,6 @@ public class NetworkBusinessLogicTests
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _networkRegistrationProcessHelper;
-    private readonly IMailingService _mailingService;
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRepository _companyRepository;
@@ -75,7 +73,6 @@ public class NetworkBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityService = A.Fake<IIdentityService>();
         _networkRegistrationProcessHelper = A.Fake<INetworkRegistrationProcessHelper>();
-        _mailingService = A.Fake<IMailingService>();
 
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
@@ -102,7 +99,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
 
-        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, _mailingService, options);
+        _sut = new NetworkBusinessLogic(_portalRepositories, _identityService, _userProvisioningService, _networkRegistrationProcessHelper, options);
 
         SetupRepos();
     }
@@ -362,8 +359,8 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION))
             .Returns(new Process(processId, default, default));
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .Returns(new[] { (Guid.Empty, "", (string?)null, (Exception?)new UnexpectedConditionException("Test")) }.ToAsyncEnumerable());
+        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, A<string>._, A<UserCreationRoleDataIdpInfo>._, A<Guid>._, A<Guid>._, "BPNL00000001TEST"))
+            .Throws(new UnexpectedConditionException("Test message"));
 
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
@@ -528,13 +525,11 @@ public class NetworkBusinessLogicTests
                 x.ProcessId == newProcessId &&
                 x.ApplicationId == newApplicationId);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, Bpnl))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "OspWelcomeMail" })))
-            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -628,8 +623,6 @@ public class NetworkBusinessLogicTests
             {
                 networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
             });
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .Returns(new[] { (Guid.NewGuid(), "ironman", (string?)"testpw", (Exception?)null) }.ToAsyncEnumerable());
 
         // Act
         await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
@@ -663,13 +656,11 @@ public class NetworkBusinessLogicTests
                 x.ProcessId == newProcessId &&
                 x.ApplicationId == newApplicationId);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, Bpnl))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "OspWelcomeMail" })))
-            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

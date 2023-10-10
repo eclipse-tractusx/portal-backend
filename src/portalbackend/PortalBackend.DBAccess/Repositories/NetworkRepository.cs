@@ -108,4 +108,9 @@ public class NetworkRepository : INetworkRepository
                         .Select(step => step.Message!)
                     : new List<string>()))
             .SingleOrDefaultAsync();
+
+    public Task<string?> GetOspCompanyName(Guid networkRegistrationId) =>
+        _context.NetworkRegistrations.Where(x => x.Id == networkRegistrationId)
+            .Select(x => x.OnboardingServiceProvider!.Name)
+            .SingleOrDefaultAsync();
 }

@@ -17,11 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Generic;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.Models;
 
-public interface INetworkRegistrationProcessHelper
-{
-    Task TriggerProcessStep(Guid externalId, ProcessStepTypeId stepToTrigger);
-}
+public record UserMailInformation(string Email, string? FirstName, string? LastName, IEnumerable<string> IdpAliasse);

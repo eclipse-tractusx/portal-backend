@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -32,6 +31,9 @@ public class NetworkRegistrationProcessSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> InitialRoles { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; set; } = null!;
 }
 
 public static class NetworkRegistrationHandlerExtensions
@@ -41,6 +43,7 @@ public static class NetworkRegistrationHandlerExtensions
         var section = config.GetSection("NetworkRegistration");
         services.AddOptions<NetworkRegistrationProcessSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateDistinctValues(section)
             .ValidateOnStart();
 
