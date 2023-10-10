@@ -554,8 +554,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
         var companyId = _identityService.IdentityData.CompanyId;
 
-        var (alias, category, isOwnOrOwnerCompany, typeId, connectedCompanies) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, companyId).ConfigureAwait(false);
-        if (!isOwnOrOwnerCompany)
+        var (alias, category, isOwnerCompany, typeId, connectedCompanies) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, companyId).ConfigureAwait(false);
+        if (!isOwnerCompany)
         {
             throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
         }
@@ -574,7 +574,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             IdentityProviderCategoryId.KEYCLOAK_OIDC => await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false),
             IdentityProviderCategoryId.KEYCLOAK_SAML => await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false),
-            _ => throw new ControllerArgumentException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'")
+            _ => throw new UnexpectedConditionException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'")
         };
 
         return new(details.identityProviderId, details.alias, details.identityProviderCategoryId, details.IdentityProviderTypeId, details.displayName, details.redirectUrl, details.enabled, connectedCompanies);

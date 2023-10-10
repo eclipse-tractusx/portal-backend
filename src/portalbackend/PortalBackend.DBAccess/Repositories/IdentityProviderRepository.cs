@@ -108,7 +108,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                     identityProvider.IdentityProviderTypeId))
             .SingleOrDefaultAsync();
 
-    public Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnOrOwnerCompany, IdentityProviderTypeId TypeId, IEnumerable<ConnectedCompanyData> ConnectedCompanies)> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId, Guid companyId) =>
+    public Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnerCompany, IdentityProviderTypeId TypeId, IEnumerable<ConnectedCompanyData> ConnectedCompanies)> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>

@@ -351,7 +351,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Alias.Should().Be("Idp-123");
-        result.IsOwnOrOwnerCompany.Should().BeFalse();
+        result.IsOwnerCompany.Should().BeFalse();
         result.TypeId.Should().Be(IdentityProviderTypeId.MANAGED);
         result.ConnectedCompanies.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyId == new Guid("0dcd8209-85e2-4073-b130-ac094fb47106") && x.CompanyName == "SAP AG",
@@ -367,7 +367,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Alias.Should().Be("Test-Alias");
-        result.IsOwnOrOwnerCompany.Should().BeTrue();
+        result.IsOwnerCompany.Should().BeTrue();
         result.TypeId.Should().Be(IdentityProviderTypeId.OWN);
         result.ConnectedCompanies.Should().ContainSingle().And.Satisfy(x =>
             x.CompanyId == new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88") && x.CompanyName == "CX-Test-Access");
@@ -382,7 +382,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Alias.Should().Be("Idp-123");
-        result.IsOwnOrOwnerCompany.Should().BeTrue();
+        result.IsOwnerCompany.Should().BeTrue();
         result.TypeId.Should().Be(IdentityProviderTypeId.MANAGED);
         result.ConnectedCompanies.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyId == new Guid("0dcd8209-85e2-4073-b130-ac094fb47106") && x.CompanyName == "SAP AG",
