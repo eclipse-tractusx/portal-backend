@@ -93,6 +93,29 @@ public class IdentityProviderController : ControllerBase
     }
 
     /// <summary>
+    /// Gets a specific identity provider with the connected Companies
+    /// </summary>
+    /// <param name="identityProviderId">Id of the identity provider</param>
+    /// <returns>Returns details of the identity provider</returns>
+    /// <remarks>
+    /// Example: GET: api/administration/identityprovider/network/identityproviders/managed/{identityProviderId}
+    /// </remarks>
+    /// <response code="200">Return the details of the identityProvider.</response>
+    /// <response code="400">The user is not associated with the owner company.</response>
+    /// <response code="500">Unexpected value of protocol.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_managed_idp")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("network/identityproviders/managed/{identityProviderId}")]
+    [ProducesResponseType(typeof(IdentityProviderDetailsWithConnectedCompanies), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
+    public ValueTask<IdentityProviderDetailsWithConnectedCompanies> GetOwnIdentityProviderWithConnectedCompanies([FromRoute] Guid identityProviderId) =>
+        _businessLogic.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
+
+    /// <summary>
     /// Gets a specific identity provider
     /// </summary>
     /// <param name="identityProviderId">Id of the identity provider</param>

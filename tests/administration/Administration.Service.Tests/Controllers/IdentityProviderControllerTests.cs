@@ -66,4 +66,17 @@ public class IdentityProviderControllerTests
         //Assert
         A.CallTo(() => _logic.DeleteCompanyIdentityProviderAsync(id)).MustHaveHappenedOnceExactly();
     }
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var id = Guid.NewGuid();
+
+        //Act
+        await this._controller.GetOwnIdentityProviderWithConnectedCompanies(id).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnIdentityProviderWithConnectedCompanies(id)).MustHaveHappenedOnceExactly();
+    }
 }

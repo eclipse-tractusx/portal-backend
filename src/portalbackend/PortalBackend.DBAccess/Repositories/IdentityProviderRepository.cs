@@ -108,6 +108,19 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                     identityProvider.IdentityProviderTypeId))
             .SingleOrDefaultAsync();
 
+    public Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnerCompany, IdentityProviderTypeId TypeId, IEnumerable<ConnectedCompanyData> ConnectedCompanies)> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId, Guid companyId) =>
+        _context.IdentityProviders
+            .Where(identityProvider => identityProvider.Id == identityProviderId)
+            .Select(identityProvider =>
+                new ValueTuple<string?, IdentityProviderCategoryId, bool, IdentityProviderTypeId, IEnumerable<ConnectedCompanyData>>(
+                    identityProvider.IamIdentityProvider!.IamIdpAlias,
+                    identityProvider.IdentityProviderCategoryId,
+                    identityProvider.OwnerId == companyId,
+                    identityProvider.IdentityProviderTypeId,
+                    identityProvider.Companies.Select(c => new ConnectedCompanyData(c.Id, c.Name))
+                    ))
+            .SingleOrDefaultAsync();
+
     public Task<(bool IsOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId, bool queryAliase) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)

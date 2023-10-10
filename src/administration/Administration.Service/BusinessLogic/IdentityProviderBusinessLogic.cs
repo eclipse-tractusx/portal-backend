@@ -550,6 +550,36 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
+    public async ValueTask<IdentityProviderDetailsWithConnectedCompanies> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId)
+    {
+        var companyId = _identityService.IdentityData.CompanyId;
+
+        var (alias, category, isOwnerCompany, typeId, connectedCompanies) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, companyId).ConfigureAwait(false);
+        if (!isOwnerCompany)
+        {
+            throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
+        }
+
+        if (alias == null)
+        {
+            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+        }
+
+        if (category == IdentityProviderCategoryId.KEYCLOAK_SAML && typeId is IdentityProviderTypeId.SHARED)
+        {
+            throw new ConflictException("Shared Idps must not use SAML");
+        }
+
+        var details = category switch
+        {
+            IdentityProviderCategoryId.KEYCLOAK_OIDC => await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false),
+            IdentityProviderCategoryId.KEYCLOAK_SAML => await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false),
+            _ => throw new UnexpectedConditionException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'")
+        };
+
+        return new(details.identityProviderId, details.alias, details.identityProviderCategoryId, details.IdentityProviderTypeId, details.displayName, details.redirectUrl, details.enabled, connectedCompanies);
+    }
+
     public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid> identityProviderIds, Guid companyId, bool unlinkedUsersOnly)
     {
         var identityProviderAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, companyId).ConfigureAwait(false);

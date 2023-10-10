@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -2050,6 +2051,163 @@ public class IdentityProviderBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"invalid identityProviders: [{identityProviderId}] for company {companyId} (Parameter 'identityProviderIds')");
+    }
+
+    #endregion
+
+    #region GetOwnIdentityProviderWithConnectedCompanies
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithDifferentCompany_ThrowsConflictException()
+    {
+        // Arrange
+        var identityProviderId = Guid.NewGuid();
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _options,
+            _logger);
+        A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
+            .Returns((string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, false, IdentityProviderTypeId.OWN, Enumerable.Empty<ConnectedCompanyData>()));
+
+        // Act
+        async Task Act() => await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"identityProvider {identityProviderId} is not associated with company {_companyId}");
+    }
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithAliasNull_ThrowsNotFoundException()
+    {
+        // Arrange
+        var identityProviderId = Guid.NewGuid();
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _options,
+            _logger);
+        A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
+            .Returns((null, IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, Enumerable.Empty<ConnectedCompanyData>()));
+
+        // Act
+        async Task Act() => await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"identityProvider {identityProviderId} does not exist");
+    }
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithOidcWithoutExistingKeycloakClient_CallsExpected()
+    {
+        // Arrange
+        var identityProviderId = Guid.NewGuid();
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _options,
+            _logger);
+        A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
+            .Returns(("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, Enumerable.Empty<ConnectedCompanyData>()));
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
+            .Throws(new KeycloakEntityNotFoundException("cl1 not existing"));
+
+        // Act
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+
+        // Assert
+        result.DisplayName.Should().BeNull();
+        result.Enabled.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithValidOidc_CallsExpected()
+    {
+        // Arrange
+        var identityProviderId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _options,
+            _logger);
+        A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
+            .Returns(("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, Enumerable.Repeat(new ConnectedCompanyData(companyId, "Test Company"), 1)));
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
+            .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
+        A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("cl1"))
+            .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
+
+        // Act
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+
+        // Assert
+        result.DisplayName.Should().Be("dis-oidc");
+        result.Enabled.Should().BeTrue();
+        result.ConnectedCompanies.Should().ContainSingle().And.Satisfy(x => x.CompanyId == companyId);
+    }
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithSamlWithoutExistingKeycloakClient_CallsExpected()
+    {
+        // Arrange
+        var identityProviderId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _options,
+            _logger);
+        A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
+            .Returns(("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN, Enumerable.Repeat(new ConnectedCompanyData(companyId, "Test Company"), 1)));
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataSAMLAsync("saml-alias"))
+            .Throws(new KeycloakEntityNotFoundException("saml-alias"));
+
+        // Act
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+
+        // Assert
+        result.DisplayName.Should().BeNull();
+        result.Enabled.Should().BeNull();
+        result.ConnectedCompanies.Should().ContainSingle().And.Satisfy(x => x.CompanyId == companyId);
+    }
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithValidSaml_CallsExpected()
+    {
+        // Arrange
+        var identityProviderId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _options,
+            _logger);
+        A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
+            .Returns(("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN, Enumerable.Repeat(new ConnectedCompanyData(companyId, "Test Company"), 1)));
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataSAMLAsync("saml-alias"))
+            .Returns(_fixture.Build<IdentityProviderConfigSaml>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-saml").Create());
+        A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("saml-alias"))
+            .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
+
+        // Act
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+
+        // Assert
+        result.DisplayName.Should().Be("dis-saml");
+        result.Enabled.Should().BeTrue();
+        result.ConnectedCompanies.Should().ContainSingle().And.Satisfy(x => x.CompanyId == companyId);
     }
 
     #endregion
