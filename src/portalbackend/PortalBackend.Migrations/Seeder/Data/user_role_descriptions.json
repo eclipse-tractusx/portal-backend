@@ -180,12 +180,12 @@
     "description": "View business partner data available in the pool database."
   },
   {
-    "user_role_id": "3940f9b0-4393-4463-b659-15463098557",
+    "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
     "language_short_name": "de",
     "description": "Technischer Benutzer zur Ansicht semantischer Modelle."
   },
   {
-    "user_role_id": "3940f9b0-4393-4463-b659-15463098557",
+    "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
     "language_short_name": "en",
     "description": "Technical user to view semantic models."
   },
