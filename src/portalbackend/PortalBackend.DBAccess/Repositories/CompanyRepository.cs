@@ -285,12 +285,12 @@ public class CompanyRepository : ICompanyRepository
         _context.Companies
             .AsNoTracking()
             .Where(c => c.Id == companyId)
-            .Select(user => new CompanyInformationData(
-                user.Id,
-                user.Name,
-                user.Address!.CountryAlpha2Code,
-                user.BusinessPartnerNumber,
-                user.Identities.Where(x => x.Id == companyUserId && x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!.Email).SingleOrDefault()
+            .Select(company => new CompanyInformationData(
+                company.Id,
+                company.Name,
+                company.Address!.CountryAlpha2Code,
+                company.BusinessPartnerNumber,
+                company.Identities.Where(x => x.Id == companyUserId && x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!.Email).SingleOrDefault()
             ))
             .SingleOrDefaultAsync();
 
