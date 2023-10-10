@@ -23,5 +23,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
 public interface INetworkBusinessLogic
 {
-    Task Submit(PartnerSubmitData submitData, CancellationToken cancellationToken);
+    Task Submit(PartnerSubmitData submitData);
 }

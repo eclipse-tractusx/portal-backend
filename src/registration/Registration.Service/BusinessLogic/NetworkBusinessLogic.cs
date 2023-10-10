@@ -42,7 +42,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         _checklistService = checklistService;
     }
 
-    public async Task Submit(PartnerSubmitData submitData, CancellationToken cancellationToken)
+    public async Task Submit(PartnerSubmitData submitData)
     {
         var companyId = _identityService.IdentityData.CompanyId;
         var userId = _identityService.IdentityData.UserId;
