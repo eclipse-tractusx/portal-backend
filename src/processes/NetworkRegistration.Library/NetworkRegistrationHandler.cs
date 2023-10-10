@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -29,10 +28,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 
@@ -127,6 +122,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
 
     private async Task SendMails(IEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
     {
+        var templates = Enumerable.Repeat("OspWelcomeMail", 1);
         foreach (var (receiver, firstName, lastName, idpAliasse) in companyUserWithRoleIdForCompany)
         {
             var userName = string.Join(" ", firstName, lastName);
@@ -138,7 +134,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 { "url", _settings.BasePortalAddress },
                 { "idpAliasse", string.Join(",", idpAliasse) }
             };
-            await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("OspWelcomeMail", 1)).ConfigureAwait(false);
+            await _mailingService.SendMails(receiver, mailParameters, templates).ConfigureAwait(false);
         }
     }
 }

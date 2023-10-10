@@ -94,16 +94,16 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         async IAsyncEnumerable<(Guid CompanyUserId, Exception? Error)> CreateUsers()
         {
             var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-            await foreach (var user in GetUserCreationData(companyId, GetIdpId, GetIdpAlias, data, roleData).ToAsyncEnumerable())
+            await foreach (var (aliasData, creationInfos) in GetUserCreationData(companyId, GetIdpId, GetIdpAlias, data, roleData).ToAsyncEnumerable())
             {
-                foreach (var creationInfo in user.CreationInfos)
+                foreach (var creationInfo in creationInfos)
                 {
                     var identityId = Guid.Empty;
                     Exception? error = null;
                     try
                     {
-                        var (_, companyUserId) = await _userProvisioningService.GetOrCreateCompanyUser(userRepository, user.AliasData.IdpAlias,
-                            creationInfo, companyId, user.AliasData.IdpId, data.Bpn).ConfigureAwait(false);
+                        var (_, companyUserId) = await _userProvisioningService.GetOrCreateCompanyUser(userRepository, aliasData.IdpAlias,
+                            creationInfo, companyId, aliasData.IdpId, data.Bpn).ConfigureAwait(false);
                         identityId = companyUserId;
                     }
                     catch (Exception ex)
@@ -111,7 +111,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                         error = ex;
                     }
 
-                    yield return new ValueTuple<Guid, Exception?>(identityId, error);
+                    yield return (identityId, error);
                 }
             }
         }

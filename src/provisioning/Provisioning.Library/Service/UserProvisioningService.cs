@@ -103,7 +103,6 @@ public class UserProvisioningService : IUserProvisioningService
     public async Task HandleCentralKeycloakCreation(UserCreationRoleDataIdpInfo user, Guid companyUserId, string companyName, string? businessPartnerNumber, Identity? identity, IEnumerable<IdentityProviderLink> identityProviderLinks, IUserRepository userRepository, IUserRolesRepository userRolesRepository)
     {
         var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, identityProviderLinks).ConfigureAwait(false);
-        (string UserEntityId, Guid CompanyUserId) userdata = new(centralUserId, companyUserId);
         if (identity == null)
         {
             userRepository.AttachAndModifyIdentity(companyUserId, null, cu =>
@@ -118,7 +117,7 @@ public class UserProvisioningService : IUserProvisioningService
             identity.UserStatusId = user.UserStatusId;
         }
 
-        await AssignRolesToNewUserAsync(userRolesRepository, user.RoleDatas, userdata).ConfigureAwait(false);
+        await AssignRolesToNewUserAsync(userRolesRepository, user.RoleDatas, (centralUserId, companyUserId)).ConfigureAwait(false);
     }
 
     private async Task<string> CreateCentralUserWithProviderLinks(Guid companyUserId, UserCreationRoleDataIdpInfo user, string companyName, string? businessPartnerNumber, IEnumerable<IdentityProviderLink> identityProviderLinks)
