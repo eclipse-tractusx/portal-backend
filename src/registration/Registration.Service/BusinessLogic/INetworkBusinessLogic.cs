@@ -17,13 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
 public interface INetworkBusinessLogic
 {
-    Task HandlePartnerRegistration(PartnerRegistrationData data);
-    Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId);
+    Task Submit(PartnerSubmitData submitData, CancellationToken cancellationToken);
 }

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -64,21 +63,6 @@ public class NetworkControllerTests
         // Assert
         result.StatusCode.Should().Be(204);
         A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task Submit_ReturnsExpected()
-    {
-        // Arrange
-        var data = _fixture.Create<PartnerSubmitData>();
-
-        // Act
-        var result = await this._controller.Submit(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.Submit(A<PartnerSubmitData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
