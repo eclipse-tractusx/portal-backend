@@ -57,11 +57,6 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
             throw new UnexpectedConditionException("No external registration found");
         }
 
-        if (string.IsNullOrWhiteSpace(data.Bpn))
-        {
-            throw new UnexpectedConditionException("Bpn must be set");
-        }
-
         if (processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED && data.Comments.Count() != 1)
         {
             throw new UnexpectedConditionException("Message for decline should be set");

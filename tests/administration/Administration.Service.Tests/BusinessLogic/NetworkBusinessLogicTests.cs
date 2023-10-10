@@ -107,7 +107,6 @@ public class NetworkBusinessLogicTests
     #region HandlePartnerRegistration
 
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("TEST00000012")]
     [InlineData("BPNL1234567899")]
@@ -532,8 +531,10 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
-    [Fact]
-    public async Task HandlePartnerRegistration_WithValidData_CallsExpected()
+    [Theory]
+    [InlineData(Bpnl)]
+    [InlineData((string?)null)]
+    public async Task HandlePartnerRegistration_WithValidData_CallsExpected(string? bpnl)
     {
         // Arrange
         var newCompanyId = Guid.NewGuid();
@@ -551,7 +552,7 @@ public class NetworkBusinessLogicTests
         var data = new PartnerRegistrationData(
             Guid.NewGuid(),
             "Test N2N",
-            Bpnl,
+            bpnl,
             "Munich",
             "Street",
             "DE",

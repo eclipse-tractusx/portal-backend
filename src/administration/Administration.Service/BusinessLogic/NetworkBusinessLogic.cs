@@ -180,14 +180,17 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     private async Task<(IEnumerable<UserRoleData> RoleData, IDictionary<Guid, string>? IdentityProviderIdAliase, (Guid IdentityProviderId, string Alias)? SingleIdentityProviderIdAlias, IEnumerable<Guid> AllIdentityProviderIds)> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)
     {
-        if (string.IsNullOrWhiteSpace(data.Bpn) || !BpnRegex.IsMatch(data.Bpn))
+        if (data.Bpn != null)
         {
-            throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
-        }
+            if (!BpnRegex.IsMatch(data.Bpn))
+            {
+                throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
+            }
 
-        if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(data.Bpn).ConfigureAwait(false))
-        {
-            throw new ControllerArgumentException($"The Bpn {data.Bpn} already exists", nameof(data.Bpn));
+            if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(data.Bpn).ConfigureAwait(false))
+            {
+                throw new ControllerArgumentException($"The Bpn {data.Bpn} already exists", nameof(data.Bpn));
+            }
         }
 
         if (!data.CompanyRoles.Any())
