@@ -157,7 +157,7 @@ public interface ICompanyRepository
     /// <returns>Returns the CompanyStatus Data</returns>
     Task<(bool IsActive, bool IsValid)> GetCompanyStatusDataAsync(Guid companyId);
 
-    Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId);
+    Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId, Guid companyUserId);
     IAsyncEnumerable<CompanyRoleId> GetOwnCompanyRolesAsync(Guid companyId);
 
     /// <summary>

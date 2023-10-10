@@ -156,7 +156,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(offerSubscriptionId);
         var serviceSettings = new ServiceSettings
         {
@@ -178,6 +178,7 @@ public class ServiceBusinessLogicTests
             A<IEnumerable<OfferAgreementConsentData>>._,
             A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE),
             A<string>._,
+            A<IEnumerable<UserRoleConfig>>._,
             A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }

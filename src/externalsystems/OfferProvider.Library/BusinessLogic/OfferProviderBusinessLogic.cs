@@ -18,15 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 
@@ -35,7 +32,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferProviderService _offerProviderService;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly OfferProviderSettings _settings;
 
     /// <summary>
     /// Constructor.
@@ -47,13 +43,11 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     public OfferProviderBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferProviderService offerProviderService,
-        IProvisioningManager provisioningManager,
-        IOptions<OfferProviderSettings> options)
+        IProvisioningManager provisioningManager)
     {
         _portalRepositories = portalRepositories;
         _offerProviderService = offerProviderService;
         _provisioningManager = provisioningManager;
-        _settings = options.Value;
     }
 
     /// <inheritdoc />
@@ -77,7 +71,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
                 new OfferThirdPartyAutoSetupCustomerData(
                     data.CompanyInformationData.OrganizationName,
                     data.CompanyInformationData.Country,
-                    data.UserEmail),
+                    data.CompanyInformationData.CompanyUserEmail),
                 new OfferThirdPartyAutoSetupPropertyData(
                     data.CompanyInformationData.BusinessPartnerNumber,
                     offerSubscriptionId,
@@ -88,15 +82,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
                 .ConfigureAwait(false);
         }
 
-        var content = JsonSerializer.Serialize(new
-        {
-            AppName = data.OfferName,
-            data.OfferId,
-            RequestorCompanyName = data.CompanyInformationData.OrganizationName,
-            data.UserEmail,
-            AutoSetupExecuted = triggerProvider
-        });
-        await SendNotifications(data.OfferId, data.OfferTypeId, data.SalesManagerId, data.CompanyUserId, content).ConfigureAwait(false);
         return (
             new[] {
                 data.IsSingleInstance ?
@@ -105,56 +90,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             triggerProvider ? ProcessStepStatusId.DONE : ProcessStepStatusId.SKIPPED,
             true,
             null);
-    }
-
-    private async Task SendNotifications(
-        Guid offerId,
-        OfferTypeId offerTypeId,
-        Guid? salesManagerId,
-        Guid companyUserId,
-        string notificationContent)
-    {
-        var serviceManagerRoles = _settings.ServiceManagerRoles;
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-
-        var notificationTypeId = offerTypeId == OfferTypeId.SERVICE ? NotificationTypeId.SERVICE_REQUEST : NotificationTypeId.APP_SUBSCRIPTION_REQUEST;
-        if (salesManagerId.HasValue)
-        {
-            notificationRepository.CreateNotification(salesManagerId.Value, notificationTypeId, false,
-                notification =>
-                {
-                    notification.CreatorUserId = companyUserId;
-                    notification.Content = notificationContent;
-                });
-        }
-
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(serviceManagerRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
-        {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
-        }
-
-        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))
-        {
-            if (salesManagerId.HasValue && receiver == salesManagerId.Value)
-            {
-                continue;
-            }
-
-            notificationRepository.CreateNotification(
-                receiver,
-                notificationTypeId,
-                false,
-                notification =>
-                {
-                    notification.CreatorUserId = companyUserId;
-                    notification.Content = notificationContent;
-                });
-        }
     }
 
     /// <inheritdoc />
