@@ -120,16 +120,6 @@
     "description": "App Manager"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51155",
-    "language_short_name": "de",
-    "description": "Hinzufügen, Ändern und Löschen von eigenen Digitalen Zwillingen"
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51155",
-    "language_short_name": "en",
-    "description": "Add, Change and Delete own Digital Twins"
-  },
-  {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "de",
     "description": "Technischer Benutzer zur Ansicht und Änderung des Unternehmens-Wallets"
@@ -158,16 +148,6 @@
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "language_short_name": "en",
     "description": "Technical user to add service offering; activate subscription requests and create managed connector registrations for 3rd parties."
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
-    "language_short_name": "de",
-    "description": "App user profile for technical users of apps registered in the cx dataspace."
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
-    "language_short_name": "en",
-    "description": "App user profile for technical users of apps registered in the cx dataspace."
   },
   {
     "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
