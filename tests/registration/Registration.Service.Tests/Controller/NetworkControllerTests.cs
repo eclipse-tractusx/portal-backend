@@ -47,11 +47,11 @@ public class NetworkControllerTests
         var data = _fixture.Create<PartnerSubmitData>();
 
         // Act
-        var result = await this._controller.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        var result = await this._controller.Submit(data).ConfigureAwait(false);
 
         // Assert
         result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.Submit(A<PartnerSubmitData>._, A<CancellationToken>._))
+        A.CallTo(() => _logic.Submit(A<PartnerSubmitData>._))
             .MustHaveHappenedOnceExactly();
     }
 }

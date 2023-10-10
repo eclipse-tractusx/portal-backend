@@ -109,7 +109,7 @@ public class NetworkBusinessLogicTests
             .Returns(new ValueTuple<bool, IEnumerable<ValueTuple<Guid, CompanyApplicationStatusId, string?>>, IEnumerable<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>, Guid?>());
 
         // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -125,7 +125,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
 
         // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -141,7 +141,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, _fixture.CreateMany<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(2), Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
 
         // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -158,7 +158,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.VERIFY, null), 1), Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -183,7 +183,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), companyRoleIds, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -212,7 +212,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), companyRoleIds, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -239,8 +239,9 @@ public class NetworkBusinessLogicTests
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
             .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), companyRoleIds, null));
+
         // Act
-        async Task Act() => await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -308,7 +309,7 @@ public class NetworkBusinessLogicTests
             .Returns(new[] { ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepTypeId.DECLINE_APPLICATION });
 
         // Act
-        await _sut.Submit(data, CancellationToken.None).ConfigureAwait(false);
+        await _sut.Submit(data).ConfigureAwait(false);
 
         // Assert
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
