@@ -126,7 +126,7 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
-        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, Options.Create(settings), _identityService);
+        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, _identityService, Options.Create(settings));
     }
 
     #region  AddActiveAppUserRole
