@@ -364,7 +364,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, companyId, OfferTypeId.APP, _settings.DeleteActiveAppDocumentTypeIds).ConfigureAwait(false);
+        var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, companyId, OfferTypeId.APP, _settings.DeleteActiveAppDocumetTypeIds).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");

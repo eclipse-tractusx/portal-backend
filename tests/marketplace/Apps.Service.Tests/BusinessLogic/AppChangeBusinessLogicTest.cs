@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -107,7 +108,7 @@ public class AppChangeBusinessLogicTest
                 DocumentTypeId.APP_CONTRACT,
                 DocumentTypeId.ADDITIONAL_DETAILS
             },
-            DeleteActiveAppDocumentTypeIds = new[] {
+            DeleteActiveAppDocumetTypeIds = new[] {
                 DocumentTypeId.APP_IMAGE,
                 DocumentTypeId.APP_TECHNICAL_INFORMATION,
                 DocumentTypeId.APP_CONTRACT,
