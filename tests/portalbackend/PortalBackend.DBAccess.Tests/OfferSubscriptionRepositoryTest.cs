@@ -136,19 +136,19 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
 
     [Theory]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new OfferSubscriptionStatusId[] { }, 0, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, false)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfae", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 0, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.INACTIVE }, 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING }, 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE }, 2, false)]
-    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, OfferTypeId offerTypeId, IEnumerable<OfferSubscriptionStatusId> offerSubscriptionStatusIds, int count, bool technicalUser)
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true, ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new OfferSubscriptionStatusId[] { }, 0, false, null)]
+    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, false, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true, ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true, ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfae", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, true, ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 0, false, null)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false, ProcessStepTypeId.RETRIGGER_PROVIDER)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.INACTIVE }, 1, false, ProcessStepTypeId.START_AUTOSETUP)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING }, 1, false, ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE }, 2, false, ProcessStepTypeId.RETRIGGER_PROVIDER)]
+    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, OfferTypeId offerTypeId, IEnumerable<OfferSubscriptionStatusId> offerSubscriptionStatusIds, int count, bool technicalUser, ProcessStepTypeId? processStepTypeId)
     {
         // Arrange
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
@@ -165,6 +165,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             results.Data.Should().HaveCount(count);
             results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
             results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == 1 && x.First().TechnicalUser == technicalUser);
+            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().ProcessStepTypeId.Should().Match(x => x == processStepTypeId);
         }
         else
         {
@@ -297,7 +298,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x.Contact.SequenceEqual(new[] { "tobeadded@cx.com" }) &&
             x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE &&
             x.TenantUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
-            x.AppInstanceId == "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com");
+            x.AppInstanceId == "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com" &&
+            x.ProcessStepTypeId == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION);
     }
 
     [Fact]
