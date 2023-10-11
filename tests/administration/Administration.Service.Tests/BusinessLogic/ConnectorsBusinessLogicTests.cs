@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -103,8 +104,9 @@ public class ConnectorsBusinessLogicTests
 
         A.CallTo(() => options.Value).Returns(_settings);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        var logger = A.Fake<ILogger<ConnectorsBusinessLogic>>();
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, logger);
     }
 
     #region GetAllCompanyConnectorDatas
