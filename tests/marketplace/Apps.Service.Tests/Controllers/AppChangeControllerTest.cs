@@ -160,4 +160,34 @@ public class AppChangeControllerTest
         //Assert
         A.CallTo(() => _logic.GetActiveAppDocumentTypeDataAsync(appId)).MustHaveHappened();
     }
+
+    [Fact]
+    public async Task DeleteMulitipleActiveAppDocumentsAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentIds = _fixture.CreateMany<Guid>(5);
+
+        // Act
+        await _controller.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task CreateMultipleActiveAppDocumentsAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var uploadDocuments = new[] {
+            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_IMAGE, Document = FormFileHelper.GetFormFile("Test Image1", "TestImage1.jpeg", "image/jpeg")},
+            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_LEADIMAGE, Document = FormFileHelper.GetFormFile("Test Image2", "TestImage2.jpeg", "image/jpeg")}};
+
+        // Act
+        await _controller.CreateMultipleActiveAppDocumentsAsync(appId, uploadDocuments, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.CreateMultipleActiveAppDocumentsAsync(appId, uploadDocuments, CancellationToken.None)).MustHaveHappened();
+    }
 }

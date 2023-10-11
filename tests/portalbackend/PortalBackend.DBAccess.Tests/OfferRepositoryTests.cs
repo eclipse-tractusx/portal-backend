@@ -1484,6 +1484,46 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetOfferAssignedAppDocumentsById
+
+    [Fact]
+    public async Task GetOfferAssignedAppDocumentsByIdAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var documentTypeIds = new[]{
+            DocumentTypeId.APP_IMAGE,
+            DocumentTypeId.APP_TECHNICAL_INFORMATION,
+            DocumentTypeId.APP_CONTRACT,
+            DocumentTypeId.ADDITIONAL_DETAILS
+        };
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferAssignedAppDocumentsByIdAsync(
+            new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            OfferTypeId.APP, documentTypeIds).ConfigureAwait(false);
+
+        // Assert
+        result.IsStatusActive.Should().BeTrue();
+        result.IsUserOfProvider.Should().BeTrue();
+        result.documentStatusDatas.Should().NotBeNull()
+            .And.HaveCount(5)
+            .And.Satisfy(
+                x => x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2")
+                && x.StatusId == DocumentStatusId.LOCKED,
+                x => x.DocumentId == new Guid("0d68c68c-d689-474c-a3be-8493f99feab2")
+                && x.StatusId == DocumentStatusId.LOCKED,
+                x => x.DocumentId == new Guid("aaf53459-c36b-408e-a805-0b406ce9751e")
+                && x.StatusId == DocumentStatusId.LOCKED,
+                x => x.DocumentId == new Guid("d9926bd9-bce0-4605-a083-7066ffe5147c")
+                && x.StatusId == DocumentStatusId.LOCKED,
+                x => x.DocumentId == new Guid("3291cae8-3c7b-4862-8cec-93ea0dc8c61e")
+                && x.StatusId == DocumentStatusId.INACTIVE);
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<OfferRepository> CreateSut()

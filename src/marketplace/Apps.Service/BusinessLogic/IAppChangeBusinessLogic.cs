@@ -76,4 +76,19 @@ public interface IAppChangeBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the offer</param>
     Task<ActiveAppDocumentData> GetActiveAppDocumentTypeDataAsync(Guid appId);
+
+    /// <summary>
+    /// Delete multiple documents for an app id
+    /// </summary>
+    /// <param name="appId">Id of the offer</param>
+    /// <param name="documentIds">If of the documents</param>
+    ValueTask<AppDeleteDocumentStats> DeleteMulitipleActiveAppDocumentsAsync(Guid appId, IEnumerable<Guid> documentIds);
+
+    /// <summary>
+    /// Upload multiple documents for an app id
+    /// </summary>
+    /// <param name="appId">Id of the offer</param>
+    /// <param name="document"></param>
+    /// <param name="cancellationToken"></param>
+    ValueTask<AppUploadDocumentStats> CreateMultipleActiveAppDocumentsAsync(Guid appId, IList<UploadMulipleDocuments> document, CancellationToken cancellationToken);
 }

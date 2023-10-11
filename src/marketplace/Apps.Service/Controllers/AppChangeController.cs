@@ -201,4 +201,47 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActiveAppDocumentData> GetActiveAppDocuments([FromRoute] Guid appId) =>
         await _businessLogic.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
+
+    /// <summary>
+    /// Delete multiple Documets for an active apps for given appId for same company as user
+    /// </summary>
+    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the app.</param>
+    /// <param name="documentIds">Ids of the Documents.</param>
+    /// <remarks>Example: DELETE: /api/apps/AppChange/{appId}/documents</remarks>
+    /// <response code="200">returns no of documents deleted and failed</response>
+    [HttpDelete]
+    [Route("{appId}/documents")]
+    [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<AppDeleteDocumentStats> DeleteMulitipleActiveAppDocumentsAsync([FromRoute] Guid appId, [FromBody] IEnumerable<Guid> documentIds) =>
+        await _businessLogic.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds).ConfigureAwait(false);
+
+    /// <summary>
+    /// Upload Multiple document for an active apps for given appId for same company as user
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documents"></param>
+    /// <param name="cancellationToken"></param>
+    /// <remarks>Example: POST: /api/apps/AppChange/{appId}/documents</remarks>
+    /// <response code="200">returns</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="403">The user is not assigned with the app.</response>
+    /// <response code="415">Only PNG, PDF and JPEG files are supported.</response>
+    [HttpPost]
+    [Route("{appId}/documents")]
+    [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Consumes("multipart/form-data")]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [ProducesResponseType(typeof(AppUploadDocumentStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+    public async Task<AppUploadDocumentStats> CreateMultipleActiveAppDocumentsAsync([FromRoute] Guid appId, [FromForm(Name = "documents")] IList<UploadMulipleDocuments> documents, CancellationToken cancellationToken) =>
+        await _businessLogic.CreateMultipleActiveAppDocumentsAsync(appId, documents, cancellationToken);
 }

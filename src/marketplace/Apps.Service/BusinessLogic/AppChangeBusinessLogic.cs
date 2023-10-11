@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
@@ -317,5 +318,202 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
                 documentTypeId => appDocTypeData.TryGetValue(documentTypeId, out var data)
                     ? data
                     : Enumerable.Empty<DocumentData>()));
+    }
+    /// <inheritdoc />
+    public async ValueTask<AppDeleteDocumentStats> DeleteMulitipleActiveAppDocumentsAsync(Guid appId, IEnumerable<Guid> documentIds)
+    {
+        var result = await ProcessDeleteDocumentAsync(appId, documentIds).ConfigureAwait(false);
+        if (result.Success != 0)
+        {
+            _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
+                offer.DateLastChanged = DateTimeOffset.UtcNow);
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
+        return result;
+    }
+
+    private async ValueTask<AppDeleteDocumentStats> ProcessDeleteDocumentAsync(Guid appId, IEnumerable<Guid> documentIds)
+    {
+        var success = 0;
+        var errors = new List<DeleteDocumentErrorDetails>();
+        var failure = 0;
+        await foreach (var (processed, documentId, error) in DeleteActiveAppDocumentsAsync(appId, documentIds, _identityService.IdentityData.CompanyId))
+        {
+            try
+            {
+                if (error != null)
+                {
+                    failure++;
+                    errors.Add(new DeleteDocumentErrorDetails(documentId, error.Message));
+                }
+                if (processed)
+                {
+                    success++;
+                }
+            }
+            catch (Exception ex)
+            {
+                failure++;
+                errors.Add(new DeleteDocumentErrorDetails(documentId, ex.Message));
+            }
+        }
+        return new(success, failure, errors);
+    }
+
+    private async IAsyncEnumerable<(bool Processed, Guid DocumnetId, Exception? Error)> DeleteActiveAppDocumentsAsync(Guid appId, IEnumerable<Guid> documentIds, Guid companyId)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, companyId, OfferTypeId.APP, _settings.DeleteActiveAppDocumetTypeIds).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"App {appId} does not exist.");
+        }
+        if (!result.IsStatusActive)
+        {
+            throw new ConflictException("offerStatus is in incorrect State");
+        }
+        if (!result.IsUserOfProvider)
+        {
+            throw new ForbiddenException($"Company {companyId} is not the provider company of App {appId}");
+        }
+        await foreach (var docId in documentIds.ToAsyncEnumerable())
+        {
+            Exception? error = null;
+            var processed = false;
+            try
+            {
+                var (documentId, statusId) = result.documentStatusDatas
+                    .Where(x => x.DocumentId == docId)
+                    .Select(x => new ValueTuple<Guid, DocumentStatusId>(x.DocumentId, x.StatusId)).FirstOrDefault();
+                if (documentId == Guid.Empty)
+                {
+                    throw new ControllerArgumentException($"Document {docId} does not exist");
+                }
+                offerRepository.RemoveOfferAssignedDocument(appId, docId);
+                documentRepository.AttachAndModifyDocument(
+                    documentId,
+                    a => { a.DocumentStatusId = statusId; },
+                    a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                processed = true;
+            }
+            catch (Exception ex)
+            {
+                error = ex;
+            }
+            yield return new(processed, docId, error);
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<AppUploadDocumentStats> CreateMultipleActiveAppDocumentsAsync(Guid appId, IList<UploadMulipleDocuments> document, CancellationToken cancellationToken)
+    {
+        var result = await ProcessUploadDocumentAsync(appId, document, cancellationToken).ConfigureAwait(false);
+        if (result.Success != 0)
+        {
+            _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
+                offer.DateLastChanged = DateTimeOffset.UtcNow);
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
+        return result;
+    }
+
+    private async ValueTask<AppUploadDocumentStats> ProcessUploadDocumentAsync(Guid appId, IList<UploadMulipleDocuments> document, CancellationToken cancellationToken)
+    {
+        var success = 0;
+        var errors = new List<UploadDocumentErrorDetails>();
+        var failure = 0;
+        await foreach (var (processed, documentName, error) in UploadActiveAppDocumentsAsync(appId, (_identityService.IdentityData.UserId, _identityService.IdentityData.CompanyId), document, cancellationToken))
+        {
+            try
+            {
+                if (error != null)
+                {
+                    failure++;
+                    errors.Add(new UploadDocumentErrorDetails(documentName, error.Message));
+                }
+                if (processed)
+                {
+                    success++;
+                }
+            }
+            catch (Exception ex)
+            {
+                failure++;
+                errors.Add(new UploadDocumentErrorDetails(documentName, ex.Message));
+            }
+        }
+        return new(success, failure, errors);
+    }
+    private async IAsyncEnumerable<(bool processed, string documentName, Exception? error)> UploadActiveAppDocumentsAsync(Guid appId, (Guid UserId, Guid CompanyId) identity, IList<UploadMulipleDocuments> document, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (appId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"App id should not be null");
+        }
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(appId, identity.CompanyId, OfferStatusId.ACTIVE, OfferTypeId.APP).ConfigureAwait(false);
+
+        if (result == default)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+
+        if (!result.IsStatusMatching)
+        {
+            throw new ConflictException("offerStatus is in Incorrect State");
+        }
+
+        if (!result.IsUserOfProvider)
+        {
+            throw new ForbiddenException($"Company {identity.CompanyId} is not the provider company of App {appId}");
+        }
+        await foreach (var documentData in document.ToAsyncEnumerable())
+        {
+            Exception? error = null;
+            var processed = false;
+
+            try
+            {
+                if (string.IsNullOrEmpty(documentData.Document.FileName))
+                {
+                    throw new ControllerArgumentException("File name should not be null");
+                }
+                var uploadContentTypeSettings = _settings.UploadActiveAppDocumentTypeIds.FirstOrDefault(x => x.DocumentTypeId == documentData.DocumentTypeId);
+                if (uploadContentTypeSettings == null)
+                {
+                    throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.UploadActiveAppDocumentTypeIds.Select(x => x.DocumentTypeId))}");
+                }
+                // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
+                MediaTypeId mediaTypeId;
+                try
+                {
+                    mediaTypeId = documentData.Document.ContentType.ParseMediaTypeId();
+                }
+                catch (UnsupportedMediaTypeException e)
+                {
+                    throw new UnsupportedMediaTypeException($"Document type {documentData.DocumentTypeId}, {e.Message}. File with contentType :{string.Join(",", uploadContentTypeSettings.MediaTypes)} are allowed.");
+                }
+                if (!uploadContentTypeSettings.MediaTypes.Contains(mediaTypeId))
+                {
+                    throw new UnsupportedMediaTypeException($"Document type {documentData.DocumentTypeId}, mediaType '{documentData.Document.ContentType}' is not supported. File with contentType :{string.Join(",", uploadContentTypeSettings.MediaTypes)} are allowed.");
+                }
+                var (content, hash) = await documentData.Document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
+
+                var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentData.Document.FileName, content, hash, mediaTypeId, documentData.DocumentTypeId, x =>
+                {
+                    x.CompanyUserId = identity.UserId;
+                });
+                _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(appId, doc.Id);
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                processed = true;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                error = ex;
+            }
+            yield return new(processed, documentData.Document.FileName, error);
+        }
     }
 }
