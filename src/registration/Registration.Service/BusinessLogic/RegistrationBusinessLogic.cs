@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -50,6 +51,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
     private readonly IApplicationChecklistCreationService _checklistService;
+    private readonly IIdentityService _identityService;
 
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -61,7 +63,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
         IPortalRepositories portalRepositories,
-        IApplicationChecklistCreationService checklistService)
+        IApplicationChecklistCreationService checklistService,
+        IIdentityService identityService)
     {
         _settings = settings.Value;
         _mailingService = mailingService;
@@ -71,6 +74,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _logger = logger;
         _portalRepositories = portalRepositories;
         _checklistService = checklistService;
+        _identityService = identityService;
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -138,7 +142,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
+    public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(document.FileName))
         {
@@ -156,6 +160,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
         }
 
+        var identity = _identityService.IdentityData;
         var validApplicationForCompany = await _portalRepositories.GetInstance<IApplicationRepository>().IsValidApplicationForCompany(applicationId, identity.CompanyId).ConfigureAwait(false);
         if (!validApplicationForCompany)
         {
@@ -172,10 +177,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, Guid userId)
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var documentDetails = await documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, userId).ConfigureAwait(false);
+        var documentDetails = await documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identityService.IdentityData.UserId).ConfigureAwait(false);
         if (documentDetails.DocumentId == Guid.Empty)
         {
             throw new NotFoundException($"document {documentId} does not exist.");
@@ -194,12 +199,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
 
-    public IAsyncEnumerable<CompanyApplicationWithStatus> GetAllApplicationsForUserWithStatus(Guid companyId) =>
-        _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(companyId);
+    public IAsyncEnumerable<CompanyApplicationWithStatus> GetAllApplicationsForUserWithStatus() =>
+        _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(_identityService.IdentityData.CompanyId);
 
-    public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, Guid companyId)
+    public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationDetailDataAsync(applicationId, companyId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationDetailDataAsync(applicationId, _identityService.IdentityData.CompanyId).ConfigureAwait(false);
         if (result == null)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
@@ -224,7 +229,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         );
     }
 
-    public Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, Guid companyId)
+    public Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails)
     {
         if (string.IsNullOrWhiteSpace(companyDetails.Name))
         {
@@ -253,17 +258,17 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             var duplicateIds = companyDetails.UniqueIds.Except(distinctIds);
             throw new ControllerArgumentException($"uniqueIds must not contain duplicate types: '{string.Join(", ", duplicateIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
         }
-        return SetCompanyDetailDataInternal(applicationId, companyDetails, companyId);
+        return SetCompanyDetailDataInternal(applicationId, companyDetails);
     }
 
-    private async Task SetCompanyDetailDataInternal(Guid applicationId, CompanyDetailData companyDetails, Guid companyId)
+    private async Task SetCompanyDetailDataInternal(Guid applicationId, CompanyDetailData companyDetails)
     {
         await ValidateCountryAssignedIdentifiers(companyDetails).ConfigureAwait(false);
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
 
-        var companyApplicationData = await GetAndValidateApplicationData(applicationId, companyDetails, companyId, applicationRepository).ConfigureAwait(false);
+        var companyApplicationData = await GetAndValidateApplicationData(applicationId, companyDetails, applicationRepository).ConfigureAwait(false);
 
         var addressId = CreateOrModifyAddress(companyApplicationData, companyDetails, companyRepository);
 
@@ -298,10 +303,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    private static async Task<CompanyApplicationDetailData> GetAndValidateApplicationData(Guid applicationId, CompanyDetailData companyDetails, Guid companyId, IApplicationRepository applicationRepository)
+    private async Task<CompanyApplicationDetailData> GetAndValidateApplicationData(Guid applicationId, CompanyDetailData companyDetails, IApplicationRepository applicationRepository)
     {
         var companyApplicationData = await applicationRepository
-            .GetCompanyApplicationDetailDataAsync(applicationId, companyId, companyDetails.CompanyId)
+            .GetCompanyApplicationDetailDataAsync(applicationId, _identityService.IdentityData.CompanyId, companyDetails.CompanyId)
             .ConfigureAwait(false);
 
         if (companyApplicationData == null)
@@ -383,17 +388,18 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 c.AddressId = addressId;
             });
 
-    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, (Guid UserId, Guid CompanyId) identity)
+    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo)
     {
         if (string.IsNullOrEmpty(userCreationInfo.eMail))
         {
             throw new ControllerArgumentException($"email must not be empty");
         }
-        return InviteNewUserInternalAsync(applicationId, userCreationInfo, identity);
+        return InviteNewUserInternalAsync(applicationId, userCreationInfo);
     }
 
-    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, (Guid UserId, Guid CompanyId) identity)
+    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo)
     {
+        var identity = _identityService.IdentityData;
         if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, identity.CompanyId))
         {
             throw new ControllerArgumentException($"user with email {userCreationInfo.eMail} does already exist");
@@ -454,7 +460,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return modified;
     }
 
-    public async Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, Guid companyId)
+    public async Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)
     {
         if (status == 0)
         {
@@ -462,7 +468,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserDataAsync(applicationId, companyId).ConfigureAwait(false);
+        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserDataAsync(applicationId, _identityService.IdentityData.CompanyId).ConfigureAwait(false);
         if (!applicationUserData.Exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
@@ -473,9 +479,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, Guid companyId)
+    public async Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationStatusUserDataUntrackedAsync(applicationId, companyId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationStatusUserDataUntrackedAsync(applicationId, _identityService.IdentityData.CompanyId).ConfigureAwait(false);
         if (!result.Exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
@@ -487,7 +493,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return result.ApplicationStatus;
     }
 
-    public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, Guid userId, Guid companyId)
+    public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses)
     {
         var companyRoleIdsToSet = roleAgreementConsentStatuses.CompanyRoleIds;
         var agreementConsentsToSet = roleAgreementConsentStatuses.AgreementConsentStatuses;
@@ -502,6 +508,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new NotFoundException($"application {applicationId} does not exist");
         }
 
+        var companyId = _identityService.IdentityData.CompanyId;
+        var userId = _identityService.IdentityData.UserId;
         var (applicationCompanyId, applicationStatusId, companyAssignedRoleIds, consents) = companyRoleAgreementConsentData;
         if (applicationCompanyId != companyId)
         {
@@ -542,9 +550,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, Guid userId)
+    public async Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId)
     {
-        var result = await _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, userId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, _identityService.IdentityData.CompanyId).ConfigureAwait(false);
         if (result == null)
         {
             throw new ForbiddenException($"user is not assigned with CompanyApplication {applicationId}");
@@ -558,9 +566,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             (await _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
         );
 
-    public async Task<bool> SubmitRegistrationAsync(Guid applicationId, Guid userId)
+    public async Task<bool> SubmitRegistrationAsync(Guid applicationId)
     {
-        var applicationUserData = await GetAndValidateCompanyDataDetails(applicationId, userId, _settings.SubmitDocumentTypeIds).ConfigureAwait(false);
+        var applicationUserData = await GetAndValidateCompanyDataDetails(applicationId, _settings.SubmitDocumentTypeIds).ConfigureAwait(false);
 
         if (GetAndValidateUpdateApplicationStatus(applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration) != CompanyApplicationStatusId.SUBMITTED)
         {
@@ -605,14 +613,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         else
         {
-            _logger.LogInformation("user {userId} has no email-address", userId);
+            _logger.LogInformation("user {userId} has no email-address", _identityService.IdentityData.UserId);
         }
 
         return true;
     }
 
-    private async ValueTask<CompanyApplicationUserEmailData> GetAndValidateCompanyDataDetails(Guid applicationId, Guid userId, IEnumerable<DocumentTypeId> docTypeIds)
+    private async ValueTask<CompanyApplicationUserEmailData> GetAndValidateCompanyDataDetails(Guid applicationId, IEnumerable<DocumentTypeId> docTypeIds)
     {
+        var userId = _identityService.IdentityData.UserId;
         var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>()
             .GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, docTypeIds).ConfigureAwait(false);
 
@@ -681,9 +690,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    public async Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid userId)
+    public async Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId)
     {
-        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, userId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, _identityService.IdentityData.UserId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"application {applicationId} not found");
@@ -695,9 +704,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return result.Documents;
     }
 
-    public async Task<int> SetInvitationStatusAsync(Guid userId)
+    public async Task<int> SetInvitationStatusAsync()
     {
-        var invitationData = await _portalRepositories.GetInstance<IInvitationRepository>().GetInvitationStatusAsync(userId).ConfigureAwait(false);
+        var invitationData = await _portalRepositories.GetInstance<IInvitationRepository>().GetInvitationStatusAsync(_identityService.IdentityData.UserId).ConfigureAwait(false);
 
         if (invitationData == null)
         {
@@ -712,9 +721,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<CompanyRegistrationData> GetRegistrationDataAsync(Guid applicationId, Guid companyId)
+    public async Task<CompanyRegistrationData> GetRegistrationDataAsync(Guid applicationId)
     {
-        var (isValidApplicationId, isValidCompany, data) = await _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDataUntrackedAsync(applicationId, companyId, _settings.DocumentTypeIds).ConfigureAwait(false);
+        var (isValidApplicationId, isValidCompany, data) = await _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDataUntrackedAsync(applicationId, _identityService.IdentityData.CompanyId, _settings.DocumentTypeIds).ConfigureAwait(false);
         if (!isValidApplicationId)
         {
             throw new NotFoundException($"application {applicationId} does not exist");
@@ -857,14 +866,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         };
     }
 
-    public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, Guid companyId)
+    public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId)
     {
         if (documentId == Guid.Empty)
         {
             throw new ControllerArgumentException($"documentId must not be empty");
         }
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, companyId, _settings.ApplicationStatusIds).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identityService.IdentityData.CompanyId, _settings.ApplicationStatusIds).ConfigureAwait(false);
         if (details == default)
         {
             throw new NotFoundException("Document does not exist.");

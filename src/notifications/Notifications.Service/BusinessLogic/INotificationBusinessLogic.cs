@@ -34,46 +34,40 @@ public interface INotificationBusinessLogic
     /// </summary>
     /// <param name="page">the requested page</param>
     /// <param name="size">the requested size</param>
-    /// <param name="receiverUserId">The id of the current user</param>
     /// <param name="filters">additional filters to query notifications</param>
     /// <returns>Returns a collection of the users notification</returns>
-    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, Guid receiverUserId, NotificationFilters filters);
+    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, NotificationFilters filters);
 
     /// <summary>
     ///     Gets a specific notification for the given user.
     /// </summary>
-    /// <param name="userId">The id of the current user</param>
     /// <param name="notificationId">The id of the notification</param>
     /// <returns>Returns a notification</returns>
-    Task<NotificationDetailData> GetNotificationDetailDataAsync(Guid userId, Guid notificationId);
+    Task<NotificationDetailData> GetNotificationDetailDataAsync(Guid notificationId);
 
     /// <summary>
     /// Gets the notification account for the given user
     /// </summary>
-    /// <param name="userId">Id of the current identity</param>
     /// <param name="isRead">OPTIONAL: filter for read or unread notifications</param>
     /// <returns>Returns the count of the notifications</returns>
-    Task<int> GetNotificationCountAsync(Guid userId, bool? isRead);
+    Task<int> GetNotificationCountAsync(bool? isRead);
 
     /// <summary>
     /// Gets the count details of the notifications for the given user
     /// </summary>
-    /// <param name="userId">Id of the current identity</param>
     /// <returns>Returns the count details of the notifications</returns>
-    Task<NotificationCountDetails> GetNotificationCountDetailsAsync(Guid userId);
+    Task<NotificationCountDetails> GetNotificationCountDetailsAsync();
 
     /// <summary>
     /// Sets the status of the notification with the given id to read
     /// </summary>
-    /// <param name="userId">Id of the notification receiver</param>
     /// <param name="notificationId">Id of the notification</param>
     /// <param name="isRead">Read or unread</param>
-    Task SetNotificationStatusAsync(Guid userId, Guid notificationId, bool isRead);
+    Task SetNotificationStatusAsync(Guid notificationId, bool isRead);
 
     /// <summary>
     /// Deletes the given notification
     /// </summary>
-    /// <param name="userId">Id of the notification receiver</param>
     /// <param name="notificationId">Id of the notification that should be deleted</param>
-    Task DeleteNotificationAsync(Guid userId, Guid notificationId);
+    Task DeleteNotificationAsync(Guid notificationId);
 }

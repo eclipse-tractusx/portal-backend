@@ -114,7 +114,7 @@ public class SubscriptionConfigurationControllerTests
         var result = await this._controller.SetProviderCompanyDetail(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -124,14 +124,14 @@ public class SubscriptionConfigurationControllerTests
         //Arrange
         var id = Guid.NewGuid();
         var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");
-        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(_identity.CompanyId))
+        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync())
             .Returns(data);
 
         //Act
         var result = await this._controller.GetServiceProviderCompanyDetail().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync()).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<ProviderDetailReturnData>();
         result.Id.Should().Be(id);
         result.CompanyId.Should().Be(CompanyId);

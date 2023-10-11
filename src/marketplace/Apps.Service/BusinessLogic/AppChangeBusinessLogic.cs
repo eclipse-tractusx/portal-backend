@@ -57,16 +57,16 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <param name="portalRepositories">access to the repositories</param>
     /// <param name="notificationService">the notification service</param>
     /// <param name="provisioningManager">The provisioning manager</param>
-    /// <param name="settings">Settings for the app change bl</param>
-    /// <param name="identityService">Identity</param>
+    /// <param name="identityService">Access to the identityService</param>
     /// <param name="offerService">Offer Servicel</param>
+    /// <param name="settings">Settings for the app change bl</param>
     public AppChangeBusinessLogic(
         IPortalRepositories portalRepositories,
         INotificationService notificationService,
         IProvisioningManager provisioningManager,
         IOfferService offerService,
-        IOptions<AppsSettings> settings,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
@@ -77,14 +77,15 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, (Guid UserId, Guid CompanyId) identity)
+    public Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription)
     {
         AppExtensions.ValidateAppUserRole(appId, appUserRolesDescription);
-        return InsertActiveAppUserRoleAsync(appId, appUserRolesDescription, identity);
+        return InsertActiveAppUserRoleAsync(appId, appUserRolesDescription);
     }
 
-    private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, (Guid UserId, Guid CompanyId) identity)
+    private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles)
     {
+        var identity = _identityService.IdentityData;
         var result = await _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
         if (result == default)
         {
@@ -123,19 +124,19 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, Guid companyId)
+    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        return await ValidateAndGetAppDescription(appId, companyId, offerRepository);
+        return await ValidateAndGetAppDescription(appId, offerRepository);
     }
 
     /// <inheritdoc />
-    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, Guid companyId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
+    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
 
         offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
-            await ValidateAndGetAppDescription(appId, companyId, offerRepository),
+            await ValidateAndGetAppDescription(appId, offerRepository),
             offerDescriptionDatas.Select(od => new ValueTuple<string, string, string>(od.LanguageCode, od.LongDescription, od.ShortDescription)));
 
         offerRepository.AttachAndModifyOffer(appId, offer =>
@@ -143,8 +144,9 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, Guid companyId, IOfferRepository offerRepository)
+    private async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, IOfferRepository offerRepository)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, companyId).ConfigureAwait(false);
         if (result == default)
         {
@@ -170,13 +172,14 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, (Guid UserId, Guid CompanyId) identity, IFormFile document, CancellationToken cancellationToken)
+    public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, IFormFile document, CancellationToken cancellationToken)
     {
         var appLeadImageContentTypes = new[] { MediaTypeId.JPEG, MediaTypeId.PNG };
         var documentContentType = document.ContentType.ParseMediaTypeId();
         documentContentType.CheckDocumentContentType(appLeadImageContentTypes);
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var identity = _identityService.IdentityData;
         var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, identity.CompanyId, OfferTypeId.APP).ConfigureAwait(false);
 
         if (result == default)
@@ -214,14 +217,15 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         _offerService.DeactivateOfferIdAsync(appId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, Guid companyId)
+    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data)
     {
         data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
-        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, companyId);
+        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url);
     }
 
-    private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, Guid companyId)
+    private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(false);
         if (result == null)

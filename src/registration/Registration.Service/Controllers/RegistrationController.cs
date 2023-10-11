@@ -95,7 +95,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-            this.WithUserIdAndCompanyId(identity => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, identity, cancellationToken));
+            _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, cancellationToken);
 
         /// <summary>
         /// Gets a specific document by its id
@@ -116,7 +116,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
         {
-            var (fileName, content, mediaType) = await this.WithUserId(userId => _registrationBusinessLogic.GetDocumentContentAsync(documentId, userId));
+            var (fileName, content, mediaType) = await _registrationBusinessLogic.GetDocumentContentAsync(documentId);
             return File(content, mediaType, fileName);
         }
 
@@ -138,7 +138,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId) =>
-           this.WithUserId(userId => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId, documentTypeId, userId));
+           _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId, documentTypeId);
 
         /// <summary>
         /// Get all composite client roles
@@ -165,7 +165,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [Route("applications")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationWithStatus>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusAsync() =>
-            this.WithCompanyId(companyId => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(companyId));
+            _registrationBusinessLogic.GetAllApplicationsForUserWithStatus();
 
         /// <summary>
         /// Sets the status of a specific application.
@@ -187,7 +187,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<int> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status) =>
-            this.WithCompanyId(companyId => _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status, companyId));
+            _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status);
 
         /// <summary>
         /// Gets the status of an application for the given id
@@ -206,7 +206,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<CompanyApplicationStatusId> GetApplicationStatusAsync([FromRoute] Guid applicationId) =>
-            this.WithCompanyId(companyId => _registrationBusinessLogic.GetOwnCompanyApplicationStatusAsync(applicationId, companyId));
+            _registrationBusinessLogic.GetOwnCompanyApplicationStatusAsync(applicationId);
 
         /// <summary>
         /// Gets the company of a specific application with its address
@@ -225,8 +225,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<CompanyDetailData> GetCompanyDetailDataAsync([FromRoute] Guid applicationId) =>
-            this.WithCompanyId(companyId =>
-                _registrationBusinessLogic.GetCompanyDetailData(applicationId, companyId));
+            _registrationBusinessLogic.GetCompanyDetailData(applicationId);
 
         /// <summary>
         /// Sets the company with its address for the given application id
@@ -247,7 +246,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task SetCompanyDetailDataAsync([FromRoute] Guid applicationId, [FromBody] CompanyDetailData companyDetailData) =>
-            this.WithCompanyId(companyId => _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, companyId));
+            _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData);
 
         /// <summary>
         /// Invites the given user to the given application
@@ -270,7 +269,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfoWithMessage userCreationInfo) =>
-            this.WithUserIdAndCompanyId(identity => _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, identity));
+            _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo);
 
         /// <summary>
         /// Post the agreement consent status for the given application.
@@ -293,7 +292,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
-            this.WithUserIdAndCompanyId(identity => _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, identity.UserId, identity.CompanyId));
+            _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents);
 
         /// <summary>
         /// Gets the agreement consent statuses for the given application
@@ -310,7 +309,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(CompanyRoleAgreementConsents), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<CompanyRoleAgreementConsents> GetAgreementConsentStatusesAsync([FromRoute] Guid applicationId) =>
-            this.WithUserId(userId => _registrationBusinessLogic.GetRoleAgreementConsentsAsync(applicationId, userId));
+            _registrationBusinessLogic.GetRoleAgreementConsentsAsync(applicationId);
 
         /// <summary>
         /// Gets the company role agreement data
@@ -345,7 +344,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<bool> SubmitRegistrationAsync([FromRoute] Guid applicationId) =>
-            this.WithUserId(userId => _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, userId));
+            _registrationBusinessLogic.SubmitRegistrationAsync(applicationId);
 
         /// <summary>
         /// Gets all invited users for a given application
@@ -375,7 +374,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<int> SetInvitationStatusAsync() =>
-           this.WithUserId(userId => _registrationBusinessLogic.SetInvitationStatusAsync(userId));
+           _registrationBusinessLogic.SetInvitationStatusAsync();
 
         /// <summary>
         /// Gets the registration data for the given application id
@@ -396,8 +395,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
         public Task<CompanyRegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
-            this.WithCompanyId(companyId =>
-                _registrationBusinessLogic.GetRegistrationDataAsync(applicationId, companyId));
+            _registrationBusinessLogic.GetRegistrationDataAsync(applicationId);
 
         /// <summary>
         /// Gets the company roles and roles description
@@ -435,7 +433,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> DeleteRegistrationDocument([FromRoute] Guid documentId)
         {
-            await this.WithCompanyId(companyId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, companyId));
+            await _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId);
             return NoContent();
         }
 

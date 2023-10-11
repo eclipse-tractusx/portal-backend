@@ -60,14 +60,14 @@ public class NotificationControllerTest
         var sorting = _fixture.Create<NotificationSorting?>();
         var doneState = _fixture.Create<bool?>();
         var paginationResponse = new Pagination.Response<NotificationDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<NotificationDetailData>(5));
-        A.CallTo(() => _logic.GetNotificationsAsync(A<int>._, A<int>._, A<Guid>._, A<NotificationFilters>._))
+        A.CallTo(() => _logic.GetNotificationsAsync(A<int>._, A<int>._, A<NotificationFilters>._))
             .ReturnsLazily(() => paginationResponse);
 
         //Act
         var result = await this._controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting, doneState: doneState, searchTypeIds: Enumerable.Empty<NotificationTypeId>()).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<Guid>._, A<NotificationFilters>.That.Matches(x => x.IsRead == isRead && x.TypeId == typeId && x.TopicId == topicId && x.OnlyDueDate == onlyDueDate && x.Sorting == sorting && x.DoneState == doneState))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<NotificationFilters>.That.Matches(x => x.IsRead == isRead && x.TypeId == typeId && x.TopicId == topicId && x.OnlyDueDate == onlyDueDate && x.Sorting == sorting && x.DoneState == doneState))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<NotificationDetailData>>(result);
         result.Content.Should().HaveCount(5);
     }
@@ -78,14 +78,14 @@ public class NotificationControllerTest
         //Arrange
         var data = _fixture.Create<NotificationDetailData>();
         var notificationId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.GetNotificationDetailDataAsync(_identity.UserId, A<Guid>._))
+        A.CallTo(() => _logic.GetNotificationDetailDataAsync(A<Guid>._))
             .ReturnsLazily(() => data);
 
         //Act
         var result = await this._controller.GetNotification(notificationId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetNotificationDetailDataAsync(_identity.UserId, notificationId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetNotificationDetailDataAsync(notificationId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
 
@@ -94,14 +94,14 @@ public class NotificationControllerTest
     {
         //Arrange
         var data = _fixture.Create<NotificationCountDetails>();
-        A.CallTo(() => _logic.GetNotificationCountDetailsAsync(_identity.UserId))
+        A.CallTo(() => _logic.GetNotificationCountDetailsAsync())
             .ReturnsLazily(() => data);
 
         //Act
         var result = await this._controller.NotificationCountDetails().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetNotificationCountDetailsAsync(_identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetNotificationCountDetailsAsync()).MustHaveHappenedOnceExactly();
         Assert.IsType<NotificationCountDetails>(result);
         result.Should().Be(data);
     }
@@ -111,14 +111,14 @@ public class NotificationControllerTest
     {
         //Arrange
         var notificationId = Guid.NewGuid();
-        A.CallTo(() => _logic.SetNotificationStatusAsync(_identity.UserId, notificationId, A<bool>._))
+        A.CallTo(() => _logic.SetNotificationStatusAsync(notificationId, A<bool>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.SetNotificationToRead(notificationId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SetNotificationStatusAsync(_identity.UserId, notificationId, true)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SetNotificationStatusAsync(notificationId, true)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -127,14 +127,14 @@ public class NotificationControllerTest
     {
         //Arrange
         var notificationId = Guid.NewGuid();
-        A.CallTo(() => _logic.DeleteNotificationAsync(_identity.UserId, notificationId))
+        A.CallTo(() => _logic.DeleteNotificationAsync(notificationId))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeleteNotification(notificationId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeleteNotificationAsync(_identity.UserId, notificationId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeleteNotificationAsync(notificationId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 }

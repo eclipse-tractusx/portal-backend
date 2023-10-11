@@ -28,6 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 public class IdentityService : IIdentityService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private IdentityData? _identityData;
 
     public IdentityService(IHttpContextAccessor httpContextAccessor)
     {
@@ -36,6 +37,6 @@ public class IdentityService : IIdentityService
 
     /// <inheritdoc />
     public IdentityData IdentityData =>
-        _httpContextAccessor.HttpContext?.User.GetIdentityData() ??
-        throw new ConflictException("The identity should be set here");
+        _identityData ??= _httpContextAccessor.HttpContext?.User.GetIdentityData()
+            ?? throw new ConflictException("The identity should be set here");
 }

@@ -51,6 +51,7 @@ public class NotificationBusinessLogicTests
     private readonly IEnumerable<NotificationDetailData> _readNotificationDetails;
     private readonly IEnumerable<NotificationDetailData> _unreadNotificationDetails;
     private readonly IUserRepository _userRepository;
+    private readonly IIdentityService _identityService;
 
     public NotificationBusinessLogicTests()
     {
@@ -64,6 +65,9 @@ public class NotificationBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _notificationRepository = A.Fake<INotificationRepository>();
         _userRepository = A.Fake<IUserRepository>();
+
+        _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         _readNotificationDetails = _fixture.Build<NotificationDetailData>()
             .CreateMany(1);
@@ -81,13 +85,13 @@ public class NotificationBusinessLogicTests
     public async Task GetNotifications_WithStatus_ReturnsList(bool status)
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _identity.UserId, new NotificationFilters(status, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(status, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
 
         // Assert
         var expectedCount = status ?
@@ -104,13 +108,13 @@ public class NotificationBusinessLogicTests
     public async Task GetNotifications_WithoutStatus_ReturnsList(NotificationSorting sorting)
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _identity.UserId, new NotificationFilters(null, null, null, false, sorting, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(null, null, null, false, sorting, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(_notificationDetails.Count());
@@ -124,13 +128,13 @@ public class NotificationBusinessLogicTests
     public async Task GetNotifications_SecondPage_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        var results = await sut.GetNotificationsAsync(1, 3, _identity.UserId, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
+        var results = await sut.GetNotificationsAsync(1, 3, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -145,12 +149,12 @@ public class NotificationBusinessLogicTests
     public async Task GetNotifications_ExceedMaxPageSize_Throws()
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(0, 20, _identity.UserId, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null));
+        var Act = () => sut.GetNotificationsAsync(0, 20, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null));
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -160,12 +164,12 @@ public class NotificationBusinessLogicTests
     public async Task GetNotifications_NegativePage_Throws()
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(-1, 15, _identity.UserId, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null));
+        var Act = () => sut.GetNotificationsAsync(-1, 15, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null));
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -175,16 +179,17 @@ public class NotificationBusinessLogicTests
     public async Task GetNotifications_WithFilters_CallsExpected()
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 20
         }));
 
         var userId = Guid.NewGuid();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
         var filter = _fixture.Create<NotificationFilters>();
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 20, userId, filter).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 20, filter).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(userId, filter.IsRead, filter.TypeId, filter.TopicId, filter.OnlyDueDate, filter.Sorting, filter.DoneState, A<IEnumerable<NotificationTypeId>>.That.Matches(x => x.Count() == filter.SearchTypeIds.Count()), filter.SearchQuery))
@@ -199,13 +204,13 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationDetailDataAsync_WithIdAndUser_ReturnsCorrectResult()
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        var result = await sut.GetNotificationDetailDataAsync(_identity.UserId, _notificationDetail.Id).ConfigureAwait(false);
+        var result = await sut.GetNotificationDetailDataAsync(_notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
         var notificationDetailData = _unreadNotificationDetails.First();
@@ -217,13 +222,14 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        async Task Act() => await sut.GetNotificationDetailDataAsync(identity.UserId, _notificationDetail.Id).ConfigureAwait(false);
+        async Task Act() => await sut.GetNotificationDetailDataAsync(_notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -234,14 +240,14 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationDetailDataAsync_WithNotMatchingNotificationId_ThrowsNotFoundException()
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
         var notificationId = Guid.NewGuid();
-        async Task Act() => await sut.GetNotificationDetailDataAsync(_identity.UserId, notificationId).ConfigureAwait(false);
+        async Task Act() => await sut.GetNotificationDetailDataAsync(notificationId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -256,13 +262,13 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationCountAsync_WithIdAndUser_ReturnsCorrectResult()
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        var result = await sut.GetNotificationCountAsync(_identity.UserId, false).ConfigureAwait(false);
+        var result = await sut.GetNotificationCountAsync(false).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(5);
@@ -288,13 +294,13 @@ public class NotificationBusinessLogicTests
             new (false, false, NotificationTopicId.ACTION, 2),
         });
         A.CallTo(() => _notificationRepository.GetCountDetailsForUserAsync(_identity.UserId)).Returns(data.AsAsyncEnumerable());
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        var result = await sut.GetNotificationCountDetailsAsync(_identity.UserId).ConfigureAwait(false);
+        var result = await sut.GetNotificationCountDetailsAsync().ConfigureAwait(false);
 
         // Assert
         result.Read.Should().Be(9);
@@ -322,13 +328,13 @@ public class NotificationBusinessLogicTests
                 initializers.Invoke(notification);
                 dbupdatedfield.Invoke(notification);
             });
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        await sut.SetNotificationStatusAsync(_identity.UserId, _notificationDetail.Id, isRead).ConfigureAwait(false);
+        await sut.SetNotificationStatusAsync(_notificationDetail.Id, isRead).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -340,14 +346,15 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var randomNotificationId = Guid.NewGuid();
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
         var identity = _fixture.Create<IdentityData>();
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
 
         // Act
-        async Task Act() => await sut.SetNotificationStatusAsync(identity.UserId, randomNotificationId, true).ConfigureAwait(false);
+        async Task Act() => await sut.SetNotificationStatusAsync(randomNotificationId, true).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -359,13 +366,14 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        async Task Act() => await sut.SetNotificationStatusAsync(identity.UserId, _notificationDetail.Id, true).ConfigureAwait(false);
+        async Task Act() => await sut.SetNotificationStatusAsync(_notificationDetail.Id, true).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -380,13 +388,13 @@ public class NotificationBusinessLogicTests
     public async Task DeleteNotification_WithValidData_ExecutesSuccessfully()
     {
         // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        await sut.DeleteNotificationAsync(_identity.UserId, _notificationDetail.Id).ConfigureAwait(false);
+        await sut.DeleteNotificationAsync(_notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -397,13 +405,14 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        async Task Act() => await sut.DeleteNotificationAsync(identity.UserId, _notificationDetail.Id).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteNotificationAsync(_notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -415,13 +424,13 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var randomNotificationId = Guid.NewGuid();
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        async Task Act() => await sut.DeleteNotificationAsync(_identity.UserId, randomNotificationId);
+        async Task Act() => await sut.DeleteNotificationAsync(randomNotificationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);

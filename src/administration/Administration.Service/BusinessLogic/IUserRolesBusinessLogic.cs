@@ -25,8 +25,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public interface IUserRolesBusinessLogic
 {
-    IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(Guid companyId, string? languageShortName);
-    IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, Guid companyId, string? languageShortName);
+    IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(string? languageShortName);
+    IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, string? languageShortName);
 
     /// <summary>
     /// Update Role to User
@@ -34,9 +34,8 @@ public interface IUserRolesBusinessLogic
     /// <param name="offerId"></param>
     /// <param name="companyUserId"></param>
     /// <param name="roles"></param>
-    /// <param name="companyId">CompanyId of Admin User</param>
     /// <returns>messages</returns>
-    Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles, Guid companyId);
+    Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles);
 
     /// <summary>
     /// Update Role to User
@@ -44,17 +43,15 @@ public interface IUserRolesBusinessLogic
     /// <param name="appId"></param>
     /// <param name="companyUserId"></param>
     /// <param name="roles"></param>
-    /// <param name="companyId">CompanyId of Admin User</param>
     /// <returns>messages</returns>
-    Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles, Guid companyId);
+    Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles);
 
     /// <summary>
     /// Update Role to User
     /// </summary>
     /// <param name="appId">app Id</param>
     /// <param name="userRoleInfo">User and Role Information like CompanyUser Id and Role Name</param>
-    /// <param name="companyId">CompanyId of Admin User</param>
     /// <returns>messages</returns>
     [Obsolete("to be replaced by endpoint UserRolesBusinessLogic.ModifyAppUserRolesAsync. Remove as soon frontend is adjusted")]
-    Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, Guid companyId);
+    Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo);
 }
