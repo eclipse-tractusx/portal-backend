@@ -107,7 +107,7 @@ public class AppChangeBusinessLogicTest
                 DocumentTypeId.APP_CONTRACT,
                 DocumentTypeId.ADDITIONAL_DETAILS
             },
-            DeleteActiveAppDocumetTypeIds = new[] {
+            DeleteActiveAppDocumentTypeIds = new[] {
                 DocumentTypeId.APP_IMAGE,
                 DocumentTypeId.APP_TECHNICAL_INFORMATION,
                 DocumentTypeId.APP_CONTRACT,
