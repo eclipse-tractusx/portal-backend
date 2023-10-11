@@ -271,6 +271,6 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             15,
             _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(_identityService.IdentityData.CompanyId, clientId, isOwner));
 
-    IAsyncEnumerable<UserRoleWithDescription> IServiceAccountBusinessLogic.GetServiceAccountRolesAsync(string? languageShortName) =>
+    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_identityService.IdentityData.CompanyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
 }
