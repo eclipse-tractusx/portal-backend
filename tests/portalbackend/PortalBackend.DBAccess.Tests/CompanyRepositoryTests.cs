@@ -902,6 +902,30 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetAllMemberCompaniesBPN
+
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN()
+    {
+        // Arrange
+        var bpnIds = new[] {
+            "BPNL07800HZ01643",
+            "BPNL00000003AYRE",
+            "BPNL00000003LLHA",
+            "BPNL0000000001ON",
+            "BPNL07800HZ01645" };
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(2).And.Satisfy(
+            x => x == "BPNL07800HZ01643", x => x == "BPNL00000003AYRE");
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()
