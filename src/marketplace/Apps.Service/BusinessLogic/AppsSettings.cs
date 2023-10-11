@@ -211,7 +211,7 @@ public class AppsSettings
     [Required]
     [EnumEnumeration]
     [DistinctValues]
-    public IEnumerable<DocumentTypeId> DeleteActiveAppDocumetTypeIds { get; set; } = null!;
+    public IEnumerable<DocumentTypeId> DeleteActiveAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Active App Document Type Id and ContentType to be uploaded
