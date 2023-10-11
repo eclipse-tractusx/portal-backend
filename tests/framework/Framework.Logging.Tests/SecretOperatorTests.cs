@@ -17,21 +17,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging.MaskingOperator;
 using Serilog.Enrichers.Sensitive;
-using System.Text.RegularExpressions;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging.MaskingOperator;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging.Tests;
 
-public class SecretOperator : RegexMaskingOperator
+public class SecretOperatorTests
 {
-    private const string SecretPattern = "(secret|password)=(.*?)&";
-
-    public SecretOperator()
-        : base(SecretPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)
+    [Theory]
+    [InlineData("foobarsecret=1234&deadbeef", "foobarsecret=****&deadbeef", true)]
+    [InlineData("foobarpassword=1234&deadbeef", "foobarpassword=****&deadbeef", true)]
+    [InlineData("foobarSecret=1234&deadbeefPassword=5678&", "foobarSecret=****&deadbeefPassword=****&", true)]
+    [InlineData("foobarpasssword=1234&deadbeef", null, false)]
+    public void Mask_ReturnsExpected(string input, string matchResult, bool match)
     {
+        //Arrange
+        var sut = new SecretOperator();
+
+        //Act
+        var result = sut.Mask(input, "****");
+
+        //Assert
+        result.Should().Match<MaskingResult>(x =>
+            x.Match == match &&
+            x.Result == matchResult
+        );
     }
-
-    protected override string PreprocessMask(string mask, Match match) => $"{match.Groups[1]}={mask}&";
-
-    protected override bool ShouldMaskInput(string input) => input.Contains("secret=", StringComparison.InvariantCultureIgnoreCase) || input.Contains("password=", StringComparison.InvariantCultureIgnoreCase);
 }

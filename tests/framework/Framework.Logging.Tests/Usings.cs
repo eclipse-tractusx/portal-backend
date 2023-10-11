@@ -17,21 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Serilog.Enrichers.Sensitive;
-using System.Text.RegularExpressions;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging.MaskingOperator;
-
-public class SecretOperator : RegexMaskingOperator
-{
-    private const string SecretPattern = "(secret|password)=(.*?)&";
-
-    public SecretOperator()
-        : base(SecretPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)
-    {
-    }
-
-    protected override string PreprocessMask(string mask, Match match) => $"{match.Groups[1]}={mask}&";
-
-    protected override bool ShouldMaskInput(string input) => input.Contains("secret=", StringComparison.InvariantCultureIgnoreCase) || input.Contains("password=", StringComparison.InvariantCultureIgnoreCase);
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;
