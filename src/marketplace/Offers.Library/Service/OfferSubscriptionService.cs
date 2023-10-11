@@ -76,7 +76,6 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         CreateProcessSteps(offerSubscription);
         CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var content = JsonSerializer.Serialize(new
         {
@@ -87,6 +86,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl) && !offerProviderDetails.IsSingleInstance
         });
         await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, identity.UserId, content, serviceManagerRoles).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
         await _roleBaseMailService.RoleBaseSendMail(
             notificationRecipients,
             new[]
