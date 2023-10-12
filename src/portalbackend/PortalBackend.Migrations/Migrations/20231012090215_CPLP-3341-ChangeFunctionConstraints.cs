@@ -72,8 +72,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 IF EXISTS (
                     SELECT 1
                         FROM portal.verified_credential_types
-                        WHERE Id = verified_credential_type_id
-                            AND verified_credential_type_id IN (
+                        WHERE Id = NEW.verified_credential_type_id
+                            AND NEW.verified_credential_type_id IN (
                                 SELECT verified_credential_type_id
                                 FROM portal.verified_credential_type_assigned_kinds
                                 WHERE verified_credential_type_kind_id = '1'
