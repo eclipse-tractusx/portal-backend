@@ -32,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 [Collection("Portal")]
 public class ModifyCoreUserRoleScenario : EndToEndTestBase
 {
-    private static readonly string BaseUrl = "https://localhost:5001"; //TestResources.BasePortalBackendUrl;
+    private static readonly string BaseUrl = TestResources.BasePortalBackendUrl;
     private static readonly string EndPoint = "/api/notification";
     private static readonly string AdminEndPoint = "/api/administration";
     private string? _companyUserId;
