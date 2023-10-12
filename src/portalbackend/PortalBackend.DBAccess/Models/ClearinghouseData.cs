@@ -39,4 +39,4 @@ public record ParticipantDetails(
     [property: JsonPropertyName("countryAlpha2Code")] string CountryAlpha2Code
 );
 
-public record UniqueIdData(string Type, string Value);
+public record UniqueIdData([property: JsonPropertyName("type")] string Type, [property: JsonPropertyName("value")] string Value);
