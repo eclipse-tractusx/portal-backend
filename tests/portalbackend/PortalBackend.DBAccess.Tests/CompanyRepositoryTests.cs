@@ -903,6 +903,48 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetAllMemberCompaniesBPN
+
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN()
+    {
+        // Arrange
+        var bpnIds = new[] {
+            "BPNL07800HZ01643",
+            "BPNL00000003AYRE",
+            "BPNL00000003LLHA",
+            "BPNL0000000001ON",
+            "BPNL07800HZ01645" };
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(2).And.Satisfy(
+            x => x == "BPNL07800HZ01643", x => x == "BPNL00000003AYRE");
+    }
+
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN_withNull_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllMemberCompaniesBPNAsync(null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(5).And.Satisfy(
+            x => x == "BPNL07800HZ01643",
+            x => x == "BPNL00000003AYRE",
+            x => x == "BPNL00000003CRHK",
+            x => x == "BPNL00000003CRHL",
+            x => x == "BPNL00000001TEST");
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()

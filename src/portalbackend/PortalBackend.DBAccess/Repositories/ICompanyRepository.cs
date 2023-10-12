@@ -52,8 +52,9 @@ public interface ICompanyRepository
     /// <summary>
     /// Get all member companies bpn
     /// </summary>
+    /// <param name="bpnIds">Id of the users company</param>
     /// <returns> Business partner numbers of all active companies</returns>
-    IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
+    IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds);
     Task<CompanyAddressDetailData?> GetCompanyDetailsAsync(Guid companyId);
 
     /// <summary>
