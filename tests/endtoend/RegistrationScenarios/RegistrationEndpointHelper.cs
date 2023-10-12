@@ -46,31 +46,31 @@ public static class RegistrationEndpointHelper
 
     public static async Task<string> GetBpn()
     {
-        _portalUserToken =
-            await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
-                Secrets.PortalUserPassword);
+        const string endpoint = "/companies/test-company/api/catena/input/legal-entities?page=0&size=10";
+        _portalUserToken = await new AuthFlow(PortalUserCompanyName)
+            .GetAccessToken(Secrets.PortalUserName, Secrets.PortalUserPassword);
 
-        var endpoint = "/api/catena/legal-entities?page=0&size=20";
         var data = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
             .When()
-            .Get(bpdmBaseUrl + endpoint)
+                .Get($"{bpdmBaseUrl}{endpoint}")
             .Then()
-            .StatusCode(200)
             .And()
-            .Extract()
-            .Response();
-        var bpdmLegalEntityDatas =
-            DataHandleHelper.DeserializeData<Pagination.Response<BpdmContent>>(data.Content.ReadAsStringAsync().Result);
+                .StatusCode(200)
+                .And()
+                .Extract()
+                .Response();
+
+        var bpdmLegalEntityDatas = DataHandleHelper.DeserializeData<BpdmPaginationContent>(data.Content.ReadAsStringAsync().Result);
         if (bpdmLegalEntityDatas is null)
         {
             throw new Exception($"Could not get bpn from {endpoint} should not be null.");
         }
-        return bpdmLegalEntityDatas.Content.ElementAt(new Random().Next(bpdmLegalEntityDatas.Content.Count()))
-            .LegalEntity.Bpn;
+
+        return bpdmLegalEntityDatas.Content.ElementAt(new Random().Next(bpdmLegalEntityDatas.Content.Count())).Bpn;
     }
 
     //GET /api/registration/legalEntityAddress/{bpn}

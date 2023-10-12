@@ -32,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 [Collection("Portal")]
 public class ModifyCoreUserRoleScenario : EndToEndTestBase
 {
-    private static readonly string BaseUrl = TestResources.BasePortalBackendUrl;
+    private static readonly string BaseUrl = "https://localhost:5001"; //TestResources.BasePortalBackendUrl;
     private static readonly string EndPoint = "/api/notification";
     private static readonly string AdminEndPoint = "/api/administration";
     private string? _companyUserId;
@@ -77,9 +77,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
 
     private async Task GetPortalUserToken()
     {
-        _portalUserToken =
-            await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
-                Secrets.PortalUserPassword);
+        _portalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName, Secrets.PortalUserPassword);
     }
 
     //GET: api/administration/user/owncompany/roles/coreoffers

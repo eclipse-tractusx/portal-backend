@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Castle.Core.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using RestAssured.Response.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -48,9 +49,7 @@ public class WalletEndpointTests : EndToEndTestBase
     public void WalletCreationInterface_CreateAndDuplicationCheck()
     {
         Bpn = $"TestAutomation_{DateTime.Now:s}";
-        InterfaceHealthCheckTechUserToken =
-            TechTokenRetriever.GetToken(TokenUrl, Secrets.InterfaceHealthCheckTechClientId,
-                Secrets.InterfaceHealthCheckTechClientSecret);
+        InterfaceHealthCheckTechUserToken = TechTokenRetriever.GetToken(TokenUrl, Secrets.InterfaceHealthCheckTechClientId, Secrets.InterfaceHealthCheckTechClientSecret);
         if (InterfaceHealthCheckTechUserToken.IsNullOrEmpty())
             throw new Exception("Could not fetch token for interface partner health check");
         GetListOfWallets();
@@ -64,15 +63,15 @@ public class WalletEndpointTests : EndToEndTestBase
     private static void GetListOfWallets()
     {
         Given()
-            .DisableSslCertificateValidation()
-            .Header(
-                "authorization",
-                $"Bearer {InterfaceHealthCheckTechUserToken}")
-            .When()
-            .Get($"{WalletBaseUrl}{WalletEndPoint}")
-            .Then()
-            .Log(ResponseLogLevel.OnError)
-            .StatusCode(200);
+             .DisableSslCertificateValidation()
+             .Header(
+                 "authorization",
+                 $"Bearer {InterfaceHealthCheckTechUserToken}")
+             .When()
+             .Get($"{WalletBaseUrl}{WalletEndPoint}")
+             .Then()
+             .Log(ResponseLogLevel.OnError)
+             .StatusCode(200);
     }
 
     //POST: /api/wallets

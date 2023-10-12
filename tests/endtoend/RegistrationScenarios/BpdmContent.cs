@@ -17,12 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 
+public record BpdmPaginationContent(
+    [property: JsonPropertyName("total")] int Total,
+    [property: JsonPropertyName("content")] IEnumerable<BpdmContent> Content
+);
+
 public record BpdmContent(
-    [property: JsonPropertyName("score")] float Score,
-    [property: JsonPropertyName("legalEntity")] BpdmLegalEntityDto LegalEntity
+    [property: JsonPropertyName("bpn")] string Bpn
 );
