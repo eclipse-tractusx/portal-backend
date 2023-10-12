@@ -122,12 +122,12 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zur Ansicht und Änderung des Unternehmens-Wallets"
+    "description": "Technischer Benutzer zum Zugriff auf das eigene Wallet - VC abfragen, VC anfragen, VC speicher, etc."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "en",
-    "description": "Technical user to view and modify own company wallet."
+    "description": "Technical user to access own company wallet - request VC, request VP, store VC, etc."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
