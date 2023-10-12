@@ -924,6 +924,24 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
             x => x == "BPNL07800HZ01643", x => x == "BPNL00000003AYRE");
     }
 
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN_withNull_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllMemberCompaniesBPNAsync(null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(5).And.Satisfy(
+            x => x == "BPNL07800HZ01643",
+            x => x == "BPNL00000003AYRE",
+            x => x == "BPNL00000003CRHK",
+            x => x == "BPNL00000003CRHL",
+            x => x == "BPNL00000001TEST");
+    }
+
     #endregion
 
     #region Setup

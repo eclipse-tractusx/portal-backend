@@ -26,6 +26,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
         /// Get all member activecompanies bpn
         /// </summary>
         /// <param name="bpnIds">Ids of BPN</param>
-        IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string> bpnIds);
+        IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds);
     }
 }
