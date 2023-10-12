@@ -57,6 +57,6 @@ public class PartnerNetworkController : ControllerBase
     [Route("memberCompanies")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [PublicUrl(CompanyRoleId.ACTIVE_PARTICIPANT, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]
-    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync([FromBody] IEnumerable<string>? bpnIds) =>
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync([FromQuery] IEnumerable<string>? bpnIds = null) =>
         _logic.GetAllMemberCompaniesBPNAsync(bpnIds);
 }
