@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2023 BMW Group AG
- * Copyright (c) 2021,2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,12 +17,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ServiceACcountSync.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
-public enum ProcessTypeId
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ServiceAccountSync.Executor.DependencyInjection;
+
+public static class ServiceAccountSyncProcessCollectionExtensions
 {
-    APPLICATION_CHECKLIST = 1,
-    OFFER_SUBSCRIPTION = 3,
-    PARTNER_REGISTRATION = 4,
-    SERVICE_ACCOUNT_SYNC = 5
+    public static IServiceCollection AddServiceAccountSyncProcessExecutor(this IServiceCollection services, IConfiguration config) =>
+        services
+            .AddTransient<IProcessTypeExecutor, ServiceAccountSyncProcessTypeExecutor>()
+            .AddProvisioningManager(config);
 }

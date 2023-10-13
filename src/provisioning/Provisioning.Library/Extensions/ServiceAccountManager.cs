@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -51,6 +52,17 @@ public partial class ProvisioningManager
             internalClientId,
             serviceAccountUser.Id,
             await GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false));
+    }
+
+    public async Task<string?> GetServiceAccountUserId(string clientId)
+    {
+        var internalClientId = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId).ConfigureAwait(false)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
+        if (internalClientId == null)
+        {
+            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found on central idp");
+        }
+        var user = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        return user.Id;
     }
 
     private async Task<(string ClientId, string Secret)> CreateSharedIdpServiceAccountAsync(string realm)
