@@ -27,7 +27,8 @@
     "id": "ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba",
     "last_editor_id": null,
     "display_name": null,
-    "description": null
+    "description": null,
+    "date_created": "2022-03-24 18:01:33.394000 +00:00"
   },
   {
     "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
@@ -48,7 +49,8 @@
     "last_editor_id": null,
     "display_name": null,
     "description": null,
-    "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe06"
+    "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe06",
+    "date_created": "2022-03-28 18:01:33.394000 +00:00"
   },
   {
     "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",

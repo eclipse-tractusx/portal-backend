@@ -29,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
-[AuditEntityV1(typeof(AuditOfferSubscription20230317))]
+[AuditEntityV1(typeof(AuditOfferSubscription20231013))]
 public class OfferSubscription : IAuditableV1, IBaseEntity
 {
     /// <summary>
@@ -51,7 +51,8 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// <param name="offerSubscriptionStatusId">app subscription status.</param>
     /// <param name="requesterId">Id of the requester</param>
     /// <param name="lastEditorId">Id of the editor</param>
-    public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId)
+    /// <param name="dateCreated">DateCreated of an Subscription</param>
+    public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, DateTimeOffset dateCreated)
         : this()
     {
         Id = id;
@@ -59,6 +60,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
         CompanyId = companyId;
         OfferSubscriptionStatusId = offerSubscriptionStatusId;
         RequesterId = requesterId;
+        DateCreated = dateCreated;
     }
 
     /// <inheritdoc />
@@ -100,6 +102,11 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     public Guid? LastEditorId { get; private set; }
 
     public Guid? ProcessId { get; set; }
+
+    /// <summary>
+    /// DateCreated of an Subscription 
+    /// </summary>
+    public DateTimeOffset DateCreated { get; private set; }
 
     // Navigation properties
     /// <summary>
