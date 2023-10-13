@@ -171,6 +171,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         documentTypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documentTypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
         offerDetail.TechnicalUserProfile.Should().BeEmpty();
+        offerDetail.IsSubscribed.Should().Be(OfferSubscriptionStatusId.PENDING);
     }
 
     #endregion

@@ -122,7 +122,7 @@ public class OfferSetupServiceTests
     public async Task AutoSetup_WithValidData_ReturnsExpectedNotificationAndSecret(OfferTypeId offerTypeId, bool technicalUserRequired, bool isSingleInstance)
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, default);
         var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
         var createNotificationsEnumerator = SetupAutoSetup(offerTypeId, offerSubscription, isSingleInstance, companyServiceAccount);
         var clientId = Guid.NewGuid();
@@ -247,7 +247,7 @@ public class OfferSetupServiceTests
     public async Task AutoSetup_WithMultipleTechnicalUsers_ThrowsException()
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, default);
         var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
         SetupAutoSetup(OfferTypeId.APP, offerSubscription, false, companyServiceAccount);
         var clientId = Guid.NewGuid();
@@ -1134,7 +1134,7 @@ public class OfferSetupServiceTests
     public async Task ActivateSubscription_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
         var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, Guid.NewGuid(), DateTimeOffset.Now);
 
         A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscription.Id, _identity.CompanyId))
@@ -1178,7 +1178,7 @@ public class OfferSetupServiceTests
     public async Task ActivateSingleInstanceSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
         var subscriptionProcessData = new List<OfferSubscriptionProcessData>
         {
             new(offerSubscription.Id, "https://www.test.de")
@@ -1243,7 +1243,7 @@ public class OfferSetupServiceTests
     public async Task ActivateMultipleInstancesSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
         var subscriptionProcessData = new List<OfferSubscriptionProcessData>
         {
             new(offerSubscription.Id, "https://www.test.de")

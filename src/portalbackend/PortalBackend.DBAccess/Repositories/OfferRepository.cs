@@ -123,6 +123,7 @@ public class OfferRepository : IOfferRepository
                 offer.Tags.Select(t => t.Name),
                 offer.Companies.Where(c => c.Id == userCompanyId)
                     .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == offerId))
+                    .OrderByDescending(x => x.DateCreated)
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
                 offer.SupportedLanguages.Select(l => l.ShortName),
