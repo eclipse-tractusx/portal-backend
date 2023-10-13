@@ -116,9 +116,9 @@ public class UserRolesRepository : IUserRolesRepository
             .AsNoTracking()
             .Where(role =>
                 role.OfferId == offerId &&
-                role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.CompanyAssignedRoles.Any(assigned => assigned.Company!.Identities.Any(user => user.Id == companyUserId))) &&
-                (userRoles.Contains(role.UserRoleText) ||
-                role.IdentityAssignedRoles.Select(u => u.Identity!).Any(user => user.Id == companyUserId)))
+                (role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.CompanyAssignedRoles.Any(assigned => assigned.Company!.Identities.Any(user => user.Id == companyUserId))) ||
+                 role.IdentityAssignedRoles.Select(u => u.Identity!).Any(user => user.Id == companyUserId)) &&
+                userRoles.Contains(role.UserRoleText))
             .Select(userRole => new UserRoleModificationData(
                 userRole.UserRoleText,
                 userRole.Id,
