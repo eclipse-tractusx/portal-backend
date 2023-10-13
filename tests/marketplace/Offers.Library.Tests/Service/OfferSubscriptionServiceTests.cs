@@ -175,6 +175,8 @@ public class OfferSubscriptionServiceTests
                     ? NotificationTypeId.APP_SUBSCRIPTION_REQUEST
                     : NotificationTypeId.SERVICE_REQUEST, false, A<Action<Notification>>._))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        companyAssignedApps.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.DateCreated == now && x.OfferId == _existingOfferId && x.Id == _newOfferSubscriptionId);
     }
 
     [Theory]
