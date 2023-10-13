@@ -38,6 +38,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("ALTER TABLE portal.company_ssi_details DROP CONSTRAINT IF EXISTS CK_VC_ExternalType_DetailId_UseCase;");
             migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.is_external_type_use_case;");
 
+            migrationBuilder.Sql(@"DROP TRIGGER IF EXISTS ct_is_connector_managed ON portal.connector_assigned_offer_subscriptions;");
+            migrationBuilder.Sql(@"DROP FUNCTION IF EXISTS portal.tr_is_connector_managed;");
+
+            migrationBuilder.Sql(@"DROP TRIGGER IF EXISTS ct_is_credential_type_use_case ON portal.verified_credential_type_assigned_use_cases;");
+            migrationBuilder.Sql(@"DROP FUNCTION IF EXISTS portal.tr_is_credential_type_use_case;");
+
+            migrationBuilder.Sql(@"DROP TRIGGER IF EXISTS ct_is_external_type_use_case ON portal.company_ssi_details;");
+            migrationBuilder.Sql(@"DROP FUNCTION IF EXISTS portal.tr_is_external_type_use_case;");
+
             migrationBuilder.Sql(@"CREATE FUNCTION portal.tr_is_connector_managed()
                 RETURNS trigger
                 VOLATILE
@@ -127,7 +136,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 INITIALLY DEFERRED
                 FOR EACH ROW
                 EXECUTE PROCEDURE portal.tr_is_external_type_use_case();");
-
         }
 
         /// <inheritdoc />
@@ -141,6 +149,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.Sql(@"DROP TRIGGER IF EXISTS ct_is_external_type_use_case ON portal.company_ssi_details;");
             migrationBuilder.Sql(@"DROP FUNCTION IF EXISTS portal.tr_is_external_type_use_case;");
+
+            migrationBuilder.Sql("ALTER TABLE portal.connector_assigned_offer_subscriptions DROP CONSTRAINT IF EXISTS CK_Connector_ConnectorType_IsManaged;");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.is_connector_managed;");
+
+            migrationBuilder.Sql("ALTER TABLE portal.verified_credential_type_assigned_use_cases DROP CONSTRAINT IF EXISTS CK_VCTypeAssignedUseCase_VerifiedCredentialType_UseCase;");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.is_credential_type_use_case;");
+
+            migrationBuilder.Sql("ALTER TABLE portal.company_ssi_details DROP CONSTRAINT IF EXISTS CK_VC_ExternalType_DetailId_UseCase;");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.is_external_type_use_case;");
 
             migrationBuilder.Sql(@"CREATE FUNCTION portal.is_connector_managed(connectorId uuid)
                 RETURNS BOOLEAN
