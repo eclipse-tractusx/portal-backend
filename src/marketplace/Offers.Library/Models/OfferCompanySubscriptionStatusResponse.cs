@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
@@ -34,5 +35,6 @@ public record OfferCompanySubscriptionStatusResponse(
     Guid OfferId,
     string? OfferName,
     IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses,
-    Guid? Image
+    Guid? Image,
+    ProcessStepTypeId? ProcessStepTypeId
 );

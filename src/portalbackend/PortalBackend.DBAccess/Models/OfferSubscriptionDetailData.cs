@@ -70,7 +70,8 @@ public record AppProviderSubscriptionDetailData(
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
     string? TenantUrl,
-    string AppInstanceId
+    string AppInstanceId,
+    ProcessStepTypeId? ProcessStepTypeId
 );
 
 /// <summary>

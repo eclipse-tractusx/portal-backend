@@ -86,7 +86,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     Image = g.Documents
                         .Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId == DocumentStatusId.LOCKED)
                         .Select(document => document.Id)
-                        .FirstOrDefault()
+                        .FirstOrDefault(),
+                    ProcessStepTypeId = g.OfferSubscriptions
+                        .Where(os => os.ProcessId != null)
+                        .Select(os => os.Process!.ProcessSteps
+                        .OrderByDescending(ps => ps.DateCreated)
+                        .Select(ps => ps.ProcessStepTypeId).FirstOrDefault()).FirstOrDefault()
                 })
             .SingleOrDefaultAsync();
 
@@ -244,7 +249,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(id => id.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
                         x.Subscription.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
                         x.Subscription.AppSubscriptionDetail!.AppSubscriptionUrl,
-                        x.Subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId)
+                        x.Subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
+                        x.Subscription.Process!.ProcessSteps.Any() ?
+                            x.Subscription.Process!.ProcessSteps.OrderByDescending(ps => ps.DateCreated).Select(ps => ps.ProcessStepTypeId).FirstOrDefault() : null)
                     : null))
             .SingleOrDefaultAsync();
 

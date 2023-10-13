@@ -170,7 +170,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                             item.OfferId,
                             item.ServiceName,
                             item.CompanySubscriptionStatuses,
-                            item.Image == Guid.Empty ? null : item.Image)));
+                            item.Image == Guid.Empty ? null : item.Image,
+                            item.ProcessStepTypeId == default ? null : item.ProcessStepTypeId)));
         }
         return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(false);
     }
