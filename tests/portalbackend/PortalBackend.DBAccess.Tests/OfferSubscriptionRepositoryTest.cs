@@ -1108,6 +1108,30 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+    #region Create OfferSubscription
+
+    [Fact]
+    public async Task CreateOfferSubscription_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateOfferSubscription(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferSubscriptionStatusId.PENDING, default);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().State.Should().Be(EntityState.Added);
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+    }
+
+    #endregion
 
     #region Setup
 

@@ -135,10 +135,11 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns(false);
         var companyAssignedApps = new List<OfferSubscription>();
+        var now = DateTimeOffset.UtcNow;
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
             .Invokes((Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId) =>
             {
-                var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId);
+                var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId, now);
                 companyAssignedApps.Add(companyAssignedApp);
             });
 
@@ -174,6 +175,8 @@ public class OfferSubscriptionServiceTests
                     ? NotificationTypeId.APP_SUBSCRIPTION_REQUEST
                     : NotificationTypeId.SERVICE_REQUEST, false, A<Action<Notification>>._))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        companyAssignedApps.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.DateCreated == now && x.OfferId == _existingOfferId && x.Id == _newOfferSubscriptionId);
     }
 
     [Theory]
@@ -195,10 +198,11 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns(false);
         var companyAssignedApps = new List<OfferSubscription>();
+        var now = DateTimeOffset.UtcNow;
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
             .Invokes((Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId) =>
             {
-                var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId);
+                var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId, now);
                 companyAssignedApps.Add(companyAssignedApp);
             });
         var mailParameters = new[]
@@ -223,6 +227,8 @@ public class OfferSubscriptionServiceTests
             userParameter,
             A<IEnumerable<string>>.That.IsSameSequenceAs(template),
             _companyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        companyAssignedApps.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.DateCreated == now && x.OfferId == _existingOfferId && x.Id == _newOfferSubscriptionId);
     }
 
     [Theory]
@@ -238,10 +244,11 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns(false);
         var companyAssignedApps = new List<OfferSubscription>();
+        var now = DateTimeOffset.UtcNow;
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
             .Invokes((Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId) =>
             {
-                var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId);
+                var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId, now);
                 companyAssignedApps.Add(companyAssignedApp);
             });
 
