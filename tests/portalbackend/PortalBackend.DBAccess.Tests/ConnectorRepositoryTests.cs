@@ -499,6 +499,21 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Single().Entity.Should().BeOfType<ConnectorAssignedOfferSubscription>().Which.OfferSubscriptionId.Should().Be("0b2ca541-206d-48ad-bc02-fb61fbcb5552");
     }
 
+    [Fact]
+    public async Task CreateConnectorAssignedSubscriptions_WithManaged_ThrowsException()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.CreateConnectorAssignedSubscriptions(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839"), new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"));
+        async Task Act() => await context.SaveChangesAsync().ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<DbUpdateException>(Act);
+        ex.Message.Should().Be("An error occurred while saving the entity changes. See the inner exception for details.");
+    }
+
     #endregion
 
     #region DeleteConnector
