@@ -56,7 +56,7 @@ public static class RegistrationEndpointHelper
                 "authorization",
                 $"Bearer {_portalUserToken}")
             .When()
-                .Get($"{bpdmBaseUrl}{endpoint}")
+                .Post($"{bpdmBaseUrl}{endpoint}")
             .Then()
             .And()
                 .StatusCode(200)
@@ -95,6 +95,7 @@ public static class RegistrationEndpointHelper
         {
             throw new Exception($"Could not get bpdm detail data from {endpoint} should not be null.");
         }
+
         return bpdmDetailData;
     }
 

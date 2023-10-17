@@ -22,10 +22,10 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 
 public record BpdmPaginationContent(
-    [property: JsonPropertyName("total")] int Total,
+    [property: JsonPropertyName("totalElements")] int Total,
     [property: JsonPropertyName("content")] IEnumerable<BpdmContent> Content
 );
 
 public record BpdmContent(
-    [property: JsonPropertyName("bpn")] string Bpn
+    [property: JsonPropertyName("bpnl")] string Bpn
 );
