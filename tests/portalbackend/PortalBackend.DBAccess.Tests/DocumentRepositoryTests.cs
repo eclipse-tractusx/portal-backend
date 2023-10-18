@@ -446,6 +446,34 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.MediaTypeId.Should().Be(MediaTypeId.PDF);
     }
 
+    [Fact]
+    public async Task GetDocumentDetailsForApplicationUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var applicationStatusIds = new[]{
+            CompanyApplicationStatusId.SUBMITTED,
+            CompanyApplicationStatusId.CONFIRMED,
+            CompanyApplicationStatusId.DECLINED
+        };
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetDocumentDetailsForApplicationUntrackedAsync(
+            new Guid("9685f744-9d90-4102-a949-fcd0bb86f954"),
+            new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542"),
+            applicationStatusIds).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.DocumentId.Should().Be(new Guid("9685f744-9d90-4102-a949-fcd0bb86f954"));
+        result.documentTypeId.Should().Be(DocumentTypeId.CX_FRAME_CONTRACT);
+        result.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+        result.applicationId.Should().Be(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e"));
+        result.IsQueriedApplicationStatus.Should().BeTrue();
+        result.IsSameApplicationUser.Should().BeTrue();
+
+    }
+
     #region Setup    
 
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()

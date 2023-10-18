@@ -69,7 +69,7 @@ public class RegistrationSettings
     /// SubmitDocument Type Id
     /// </summary>
     /// <value></value>
-    [Required]
+    //[Required]
     [DistinctValues]
     public IEnumerable<DocumentTypeId> SubmitDocumentTypeIds { get; set; } = null!;
 }

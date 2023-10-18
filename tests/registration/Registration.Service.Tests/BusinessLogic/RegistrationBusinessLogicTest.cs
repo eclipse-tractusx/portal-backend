@@ -762,6 +762,9 @@ public class RegistrationBusinessLogicTest
                 (uniqueIdentifiers.ElementAt(3), _fixture.Create<string>()) })  // shall be deleted
             .With(x => x.IsUserOfCompany, true)
             .Create();
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, applicationId)
+            .Create();
 
         IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)>? initialIdentifiers = null;
         IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)>? modifiedIdentifiers = null;
@@ -786,6 +789,11 @@ public class RegistrationBusinessLogicTest
                 initialIdentifiers = initial;
                 modifiedIdentifiers = modified;
             });
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
 
         // Act
         await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
@@ -793,6 +801,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(companyId, A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(A<Guid>.That.Not.IsEqualTo(companyId), A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._)).MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
         initialIdentifiers.Should().NotBeNull();
@@ -956,6 +965,14 @@ public class RegistrationBusinessLogicTest
     {
         //Arrange
         var applicationId = _fixture.Create<Guid>();
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, applicationId)
+            .Create();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -976,6 +993,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -1056,6 +1074,9 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var documents = new List<Document>();
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, _existingApplicationId)
+            .Create();
         var settings = new RegistrationSettings
         {
             DocumentTypeIds = new[]{
@@ -1070,7 +1091,11 @@ public class RegistrationBusinessLogicTest
                 action?.Invoke(document);
                 documents.Add(document);
             });
-
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(_existingApplicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
         var sut = new RegistrationBusinessLogic(
             Options.Create(settings),
             null!,
@@ -1087,6 +1112,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(_existingApplicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         documents.Should().HaveCount(1);
     }
 
@@ -1229,6 +1255,14 @@ public class RegistrationBusinessLogicTest
         SetupFakesForInvitation();
 
         var userCreationInfo = _fixture.Create<UserCreationInfoWithMessage>();
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, _existingApplicationId)
+            .Create();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(_existingApplicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
 
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -1245,6 +1279,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(_existingApplicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName), A<List<string>>._)).MustHaveHappened();
     }
@@ -1634,6 +1669,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _companyRolesRepository.CreateCompanyAssignedRole(A<Guid>._, A<CompanyRoleId>.That.Not.IsEqualTo(CompanyRoleId.ACTIVE_PARTICIPANT))).MustNotHaveHappened();
         A.CallTo(() => _companyRolesRepository.RemoveCompanyAssignedRoles(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _companyRolesRepository.RemoveCompanyAssignedRoles(A<Guid>.That.Not.IsEqualTo(_identity.CompanyId), A<IEnumerable<CompanyRoleId>>._)).MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         removedCompanyRoleIds.Should().NotBeNull();
         removedCompanyRoleIds.Should().ContainSingle(x => x == CompanyRoleId.SERVICE_PROVIDER);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -2163,8 +2199,16 @@ public class RegistrationBusinessLogicTest
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
             }
         };
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, applicationId)
+            .Create();
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, "test@mail.de", documents, companyData, agreementConsents));
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
         var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, null!, _portalRepositories, _checklistService, _identityService);
 
         // Act
@@ -2174,6 +2218,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.UserId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened();
         result.Should().BeTrue();
@@ -2201,8 +2246,16 @@ public class RegistrationBusinessLogicTest
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
             }
         };
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, applicationId)
+            .Create();
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, null, documents, companyData, agreementConsents));
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
         var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, A.Fake<ILogger<RegistrationBusinessLogic>>(), _portalRepositories, _checklistService, _identityService);
 
         // Act
@@ -2212,6 +2265,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.UserId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
         result.Should().BeTrue();
@@ -2500,6 +2554,257 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be($"The user is not permitted to access document {documentId}.");
+    }
+
+    #endregion
+
+    #region SetInvitationStatus
+
+    [Fact]
+    public async Task SetInvitationStatusAsync_ReturnsExpected()
+    {
+        // Arrange
+        var invitation = _fixture.Build<Invitation>()
+            .With(x => x.InvitationStatusId, InvitationStatusId.PENDING)
+            .Create();
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, _existingApplicationId)
+            .Create();
+
+        A.CallTo(() => _invitationRepository.GetInvitationStatusAsync(_identity.UserId))
+            .Returns(invitation);
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        // Act
+        var result = await sut.SetInvitationStatusAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _invitationRepository.GetInvitationStatusAsync(_identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
+        invitation.InvitationStatusId.Should().Be(InvitationStatusId.ACCEPTED);
+    }
+
+    [Fact]
+    public async Task SetInvitationStatusAsync_Throws_ForbiddenException()
+    {
+        // Arrange
+        A.CallTo(() => _invitationRepository.GetInvitationStatusAsync(A<Guid>._))
+            .Returns((Invitation)null!);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        //Act
+        var Act = async () => await sut.SetInvitationStatusAsync().ConfigureAwait(false);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("user is not associated with invitation");
+    }
+
+    #endregion
+
+    #region DeleteRegistrationDocument
+
+    [Fact]
+    public async Task DeleteRegistrationDocumentAsync_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = _fixture.Create<Guid>();
+        var applicationId = _fixture.Create<Guid>();
+        var settings = new RegistrationSettings
+        {
+            ApplicationStatusIds = new[]{
+                CompanyApplicationStatusId.CONFIRMED,
+                CompanyApplicationStatusId.SUBMITTED,
+                CompanyApplicationStatusId.DECLINED
+            },
+            DocumentTypeIds = new[]{
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, applicationId)
+            .Create();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
+        A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identity.CompanyId, settings.ApplicationStatusIds))
+            .Returns((documentId, DocumentStatusId.PENDING, true, DocumentTypeId.CX_FRAME_CONTRACT, false, applicationId));
+
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        // Act
+        var result = await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identity.CompanyId, settings.ApplicationStatusIds)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.RemoveDocument(documentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        result.Should().BeTrue();
+
+    }
+
+    [Fact]
+    public async Task DeleteRegistrationDocumentAsync_DocumentTypeId_ConflictException()
+    {
+        // Arrange
+        var documentId = _fixture.Create<Guid>();
+        var applicationId = _fixture.Create<Guid>();
+        var settings = new RegistrationSettings
+        {
+            ApplicationStatusIds = new[]{
+                CompanyApplicationStatusId.CONFIRMED,
+                CompanyApplicationStatusId.SUBMITTED,
+                CompanyApplicationStatusId.DECLINED
+            },
+            DocumentTypeIds = new[]{
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identity.CompanyId, settings.ApplicationStatusIds))
+            .Returns((documentId, DocumentStatusId.PENDING, true, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, false, applicationId));
+
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        // Act
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", settings.DocumentTypeIds)}");
+    }
+
+    [Fact]
+    public async Task DeleteRegistrationDocumentAsync_Throws_NotFoundException()
+    {
+        // Arrange;
+        A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns(new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool, Guid>());
+
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        // Act
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(_fixture.Create<Guid>()).ConfigureAwait(false);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("Document does not exist.");
+    }
+
+    [Fact]
+    public async Task DeleteRegistrationDocumentAsync_Throws_ConflictException()
+    {
+        // Arrange;
+        var documentId = _fixture.Create<Guid>();
+        var applicationId = _fixture.Create<Guid>();
+        var settings = new RegistrationSettings
+        {
+            ApplicationStatusIds = new[]{
+                CompanyApplicationStatusId.CONFIRMED,
+                CompanyApplicationStatusId.SUBMITTED,
+                CompanyApplicationStatusId.DECLINED
+            },
+            DocumentTypeIds = new[]{
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns((documentId, DocumentStatusId.PENDING, true, DocumentTypeId.CX_FRAME_CONTRACT, true, applicationId));
+
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        // Act
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("Document deletion is not allowed. Application is already closed.");
+    }
+
+    [Fact]
+    public async Task DeleteRegistrationDocumentAsync_Throws_ForbiddenException()
+    {
+        // Arrange;
+        var documentId = _fixture.Create<Guid>();
+        var applicationId = _fixture.Create<Guid>();
+        var settings = new RegistrationSettings
+        {
+            ApplicationStatusIds = new[]{
+                CompanyApplicationStatusId.CONFIRMED,
+                CompanyApplicationStatusId.SUBMITTED,
+                CompanyApplicationStatusId.DECLINED
+            },
+            DocumentTypeIds = new[]{
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns((documentId, DocumentStatusId.PENDING, false, DocumentTypeId.CX_FRAME_CONTRACT, false, applicationId));
+
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        // Act
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("User is not allowed to delete this document");
+    }
+
+    [Fact]
+    public async Task DeleteRegistrationDocumentAsync_DocumentStatusId_Throws_ConflictException()
+    {
+        // Arrange;
+        var documentId = _fixture.Create<Guid>();
+        var applicationId = _fixture.Create<Guid>();
+        var settings = new RegistrationSettings
+        {
+            ApplicationStatusIds = new[]{
+                CompanyApplicationStatusId.CONFIRMED,
+                CompanyApplicationStatusId.SUBMITTED,
+                CompanyApplicationStatusId.DECLINED
+            },
+            DocumentTypeIds = new[]{
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns((documentId, DocumentStatusId.LOCKED, true, DocumentTypeId.CX_FRAME_CONTRACT, false, applicationId));
+
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        // Act
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("Document deletion is not allowed. The document is locked.");
+    }
+
+    [Fact]
+    public async Task DeleteRegistrationDocumentAsync_Throws_ControllerArgumentException()
+    {
+        // Arrange;
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!, _identityService);
+
+        // Act
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(default).ConfigureAwait(false);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("documentId must not be empty");
     }
 
     #endregion
