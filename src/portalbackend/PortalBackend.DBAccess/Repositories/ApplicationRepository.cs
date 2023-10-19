@@ -54,6 +54,19 @@ public class ApplicationRepository : IApplicationRepository
         setOptionalParameters.Invoke(companyApplication);
     }
 
+    public void AttachAndModifyCompanyApplications(IEnumerable<(Guid companyApplicationId, Action<CompanyApplication>? Initialize, Action<CompanyApplication> Modify)> applicationData)
+    {
+        var initial = applicationData.Select(x =>
+            {
+                var companyApplication = new CompanyApplication(x.companyApplicationId, Guid.Empty, default, default, default);
+                x.Initialize?.Invoke(companyApplication);
+                return (CompanyApplication: companyApplication, x.Modify);
+            }
+        ).ToList();
+        _dbContext.AttachRange(initial.Select(x => x.CompanyApplication));
+        initial.ForEach(x => x.Modify(x.CompanyApplication));
+    }
+
     public Invitation CreateInvitation(Guid applicationId, Guid companyUserId) =>
         _dbContext.Invitations.Add(
             new Invitation(

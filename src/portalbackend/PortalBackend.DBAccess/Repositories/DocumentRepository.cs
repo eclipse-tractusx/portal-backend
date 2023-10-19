@@ -130,7 +130,7 @@ public class DocumentRepository : IDocumentRepository
         this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 
     /// <inheritdoc />
-    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, Guid applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, IEnumerable<Guid> applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
         _dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
@@ -139,13 +139,13 @@ public class DocumentRepository : IDocumentRepository
                 Document = document,
                 Applications = document.CompanyUser!.Identity!.Company!.CompanyApplications
             })
-            .Select(x => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool, Guid>(
+            .Select(x => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool, IEnumerable<Guid>>(
                 x.Document.Id,
                 x.Document.DocumentStatusId,
                 x.Applications.Any(companyApplication => companyApplication.CompanyId == userCompanyId),
                 x.Document.DocumentTypeId,
                 x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId)),
-                x.Applications.Select(x => x.Id).FirstOrDefault()))
+                x.Applications.Select(x => x.Id)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
