@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -52,6 +53,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly ILogger<RegistrationBusinessLogic> _logger;
     private readonly IApplicationChecklistCreationService _checklistService;
     private readonly IIdentityService _identityService;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -64,7 +66,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         ILogger<RegistrationBusinessLogic> logger,
         IPortalRepositories portalRepositories,
         IApplicationChecklistCreationService checklistService,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        IDateTimeProvider dateTimeProvider)
     {
         _settings = settings.Value;
         _mailingService = mailingService;
@@ -75,6 +78,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _portalRepositories = portalRepositories;
         _checklistService = checklistService;
         _identityService = identityService;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -166,7 +170,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ForbiddenException($"The users company is not assigned with application {applicationId}");
         }
-
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
+        {
+            application.DateLastChanged = _dateTimeProvider.OffsetNow;
+        });
         var mediaTypeId = document.ContentType.ParseMediaTypeId();
         var (content, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
 
@@ -276,7 +283,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         companyRepository.CreateUpdateDeleteIdentifiers(companyDetails.CompanyId, companyApplicationData.UniqueIds, companyDetails.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
 
-        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
+        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository, _dateTimeProvider);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -434,6 +441,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         _portalRepositories.GetInstance<IApplicationRepository>().CreateInvitation(applicationId, newCompanyUserId);
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
+        {
+            application.DateLastChanged = _dateTimeProvider.OffsetNow;
+        });
 
         var modified = await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -474,7 +485,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
         }
 
-        ValidateCompanyApplicationStatus(applicationId, status, applicationUserData, applicationRepository);
+        ValidateCompanyApplicationStatus(applicationId, status, applicationUserData, applicationRepository, _dateTimeProvider);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -545,7 +556,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         HandleConsent(consents, agreementConsentsToSet, consentRepository, companyId, userId);
 
-        UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>());
+        UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>(), _dateTimeProvider);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -598,6 +609,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                     application.ChecklistProcessId = process.Id;
+                    application.DateLastChanged = _dateTimeProvider.OffsetNow;
                 });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -717,7 +729,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             invitationData.InvitationStatusId = InvitationStatusId.ACCEPTED;
         }
-
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(invitationData.CompanyApplicationId, application =>
+        {
+            application.DateLastChanged = _dateTimeProvider.OffsetNow;
+        });
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -796,7 +811,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private static void ValidateCompanyApplicationStatus(Guid applicationId,
         CompanyApplicationStatusId status,
         (bool Exists, CompanyApplicationStatusId StatusId) applicationData,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository, IDateTimeProvider dateTimeProvider)
     {
         var allowedCombination = new (CompanyApplicationStatusId applicationStatus, CompanyApplicationStatusId status)[]
         {
@@ -819,10 +834,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         applicationRepository.AttachAndModifyCompanyApplication(applicationId, a =>
         {
             a.ApplicationStatusId = status;
+            a.DateLastChanged = dateTimeProvider.OffsetNow;
         });
     }
 
-    private static void UpdateApplicationStatus(Guid applicationId, CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type, IApplicationRepository applicationRepository)
+    private static void UpdateApplicationStatus(Guid applicationId, CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type, IApplicationRepository applicationRepository, IDateTimeProvider dateTimeProvider)
     {
         var updateStatus = GetAndValidateUpdateApplicationStatus(applicationStatusId, type);
         if (updateStatus != default)
@@ -830,6 +846,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
             {
                 ca.ApplicationStatusId = updateStatus;
+                ca.DateLastChanged = dateTimeProvider.OffsetNow;
             });
         }
     }
@@ -896,6 +913,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         documentRepository.RemoveDocument(details.DocumentId);
+
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplications(
+            details.applicationId.Select(applicationId => new ValueTuple<Guid, Action<CompanyApplication>?, Action<CompanyApplication>>(
+                applicationId,
+                null,
+                application => application.DateLastChanged = _dateTimeProvider.OffsetNow)));
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;

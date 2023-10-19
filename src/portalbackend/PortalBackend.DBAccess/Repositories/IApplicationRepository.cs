@@ -28,6 +28,7 @@ public interface IApplicationRepository
 {
     CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields = null);
     void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters);
+    void AttachAndModifyCompanyApplications(IEnumerable<(Guid companyApplicationId, Action<CompanyApplication>? Initialize, Action<CompanyApplication> Modify)> applicationData);
     Invitation CreateInvitation(Guid applicationId, Guid companyUserId);
     void DeleteInvitations(IEnumerable<Guid> invitationIds);
     Task<(bool Exists, CompanyApplicationStatusId StatusId)> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, Guid userCompanyId);
