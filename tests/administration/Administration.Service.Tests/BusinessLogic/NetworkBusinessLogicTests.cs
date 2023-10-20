@@ -163,6 +163,8 @@ public class NetworkBusinessLogicTests
 
     [Theory]
     [InlineData("")]
+    [InlineData("abc.example.com")]
+    [InlineData("a@b@c@example.com")]
     public async Task HandlePartnerRegistration_WithInvalidEmail_ThrowsControllerArgumentException(string email)
     {
         // Arrange
@@ -176,7 +178,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("User must have a valid email address");
+        ex.Message.Should().Be($"Mail {email} must not be empty and have valid format");
     }
 
     [Theory]
@@ -425,7 +427,24 @@ public class NetworkBusinessLogicTests
             "5",
             "00001",
             new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
-            new[] { new UserDetailData(null, "123", "ironman", "tony", "stark", "tony@stark.com") },
+            new[]
+            {
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "postmaster@[IPv6:2001:0db8:85a3:0000:0000:8a2e:0370:7334]").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "postmaster@[123.123.123.123]").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "user-@example.org").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "user%example.com@example.org").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "mailhost!username@example.org").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "\"john..doe\"@example.org").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "\" \"@example.org").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "example@s.example").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "admin@example").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "name/surname@example.com").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "user.name+tag+sorting@example.com").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "long.email-address-with-hyphens@and.subdomains.example.com").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "x@example.com").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "very.common@example.com").Create(),
+                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "simple@example.com").Create()
+            },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
@@ -489,8 +508,6 @@ public class NetworkBusinessLogicTests
             {
                 networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
             });
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .Returns(new[] { (Guid.NewGuid(), "ironman", (string?)"testpw", (Exception?)null) }.ToAsyncEnumerable());
 
         // Act
         await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
@@ -525,7 +542,7 @@ public class NetworkBusinessLogicTests
                 x.ApplicationId == newApplicationId);
 
         A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, Bpnl))
-            .MustHaveHappenedOnceExactly();
+            .MustHaveHappened(15, Times.Exactly);
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

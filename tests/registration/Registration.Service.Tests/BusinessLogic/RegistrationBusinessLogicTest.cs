@@ -1332,8 +1332,8 @@ public class RegistrationBusinessLogicTest
         SetupFakesForInvitation();
 
         var userCreationInfo = _fixture.Build<UserCreationInfoWithMessage>()
-            .With(x => x.firstName, _fixture.CreateName())
-            .With(x => x.lastName, _fixture.CreateName())
+            .WithNamePattern(x => x.firstName)
+            .WithNamePattern(x => x.lastName)
             .With(x => x.eMail, "")
             .Create();
 

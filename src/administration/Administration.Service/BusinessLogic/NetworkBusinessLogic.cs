@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -38,7 +39,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class NetworkBusinessLogic : INetworkBusinessLogic
 {
     private static readonly Regex Name = new(ValidationExpressions.Name, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex Email = new(ValidationExpressions.Email, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IPortalRepositories _portalRepositories;
@@ -285,9 +285,9 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     private static void ValidateUsers(UserDetailData user)
     {
-        if (string.IsNullOrWhiteSpace(user.Email) || !Email.IsMatch(user.Email))
+        if (string.IsNullOrWhiteSpace(user.Email) || !new EmailAddressAttribute().IsValid(user.Email))
         {
-            throw new ControllerArgumentException("User must have a valid email address");
+            throw new ControllerArgumentException($"Mail {user.Email} must not be empty and have valid format");
         }
 
         if (string.IsNullOrWhiteSpace(user.FirstName) || !Name.IsMatch(user.FirstName))
