@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,33 +17,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+public record ErrorDetails(
+    string ErrorCode,
+    string Type,
+    string Message,
+    IEnumerable<ErrorParameter> Parameters
+);
 
-public class ErrorResponse
-{
-    public ErrorResponse(string type, string title, int status, IDictionary<string, IEnumerable<string>> errors, string errorId)
-    {
-        Type = type;
-        Title = title;
-        Status = status;
-        Errors = errors;
-        ErrorId = errorId;
-    }
-
-    [JsonPropertyName("type")]
-    public string Type { get; set; }
-
-    [JsonPropertyName("title")]
-    public string Title { get; set; }
-
-    [JsonPropertyName("status")]
-    public int Status { get; set; }
-
-    [JsonPropertyName("errors")]
-    public IDictionary<string, IEnumerable<string>> Errors { get; set; }
-
-    [JsonPropertyName("errorId")]
-    public string ErrorId { get; set; }
-}
+public record ErrorParameter(
+    string Name,
+    string Value
+);

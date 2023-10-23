@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,12 +20,19 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 [Serializable]
-public class NotFoundException : Exception
+public class NotFoundException : DetailException
 {
-    public NotFoundException() { }
+    public NotFoundException() : base() { }
     public NotFoundException(string message) : base(message) { }
-    public NotFoundException(string message, System.Exception inner) : base(message, inner) { }
+    public NotFoundException(string message, Exception inner) : base(message, inner) { }
     protected NotFoundException(
         System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+
+    protected NotFoundException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
+
+    public static NotFoundException Create<T>(T error, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) where T : Enum =>
+        new(typeof(T), ValueOf(error), parameters, inner);
+    public static NotFoundException Create<T>(T error, Exception inner) where T : Enum =>
+        new(typeof(T), ValueOf(error), null, inner);
 }
