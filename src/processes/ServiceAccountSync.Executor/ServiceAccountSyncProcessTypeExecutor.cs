@@ -32,7 +32,7 @@ public class ServiceAccountSyncProcessTypeExecutor : IProcessTypeExecutor
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
 
-    private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS);
+    private static readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS);
 
     public ServiceAccountSyncProcessTypeExecutor(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager)
     {
@@ -61,8 +61,8 @@ public class ServiceAccountSyncProcessTypeExecutor : IProcessTypeExecutor
         {
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
-                ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS => await SyncServiceAccounts().ConfigureAwait(false),
-                _ => (null, ProcessStepStatusId.TODO, false, null)
+                ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS => await SynchonizeNextServiceAccount().ConfigureAwait(false),
+                _ => throw new UnexpectedConditionException($"unexpected processStepTypeId {processStepTypeId} for process {ProcessTypeId.SERVICE_ACCOUNT_SYNC}")
             };
         }
         catch (Exception ex) when (ex is not SystemException)
@@ -74,14 +74,16 @@ public class ServiceAccountSyncProcessTypeExecutor : IProcessTypeExecutor
         return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
-    private async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> SyncServiceAccounts()
+    private async Task<(IEnumerable<ProcessStepTypeId>? NextStepTypeIds, ProcessStepStatusId StepStatusId, bool Modified, string? ProcessMessage)> SynchonizeNextServiceAccount()
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var serviceAccountIds = userRepository.GetServiceAccountsWithoutUserEntityId();
-        await foreach (var sa in serviceAccountIds)
+        var serviceAccountIds = userRepository.GetNextServiceAccountsWithoutUserEntityId();
+        await using var enumerator = serviceAccountIds.GetAsyncEnumerator();
+        if (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
-            var userEntityId = await _provisioningManager.GetServiceAccountUserId(sa.ClientClientId).ConfigureAwait(false);
-            userRepository.AttachAndModifyIdentity(sa.ServiceAccountId,
+            var (serviceAccountId, clientClientId) = enumerator.Current;
+            var userEntityId = await _provisioningManager.GetServiceAccountUserId(clientClientId).ConfigureAwait(false);
+            userRepository.AttachAndModifyIdentity(serviceAccountId,
                 i =>
                 {
                     i.UserEntityId = null;
@@ -90,9 +92,11 @@ public class ServiceAccountSyncProcessTypeExecutor : IProcessTypeExecutor
                 {
                     i.UserEntityId = userEntityId;
                 });
+            return await enumerator.MoveNextAsync().ConfigureAwait(false)
+                ? (null, ProcessStepStatusId.TODO, true, null)  // in case there are further serviceAccounts eligible for sync request save without step status change to repeat the unmodified step
+                : (null, ProcessStepStatusId.DONE, true, null); // otherwise request save and done
         }
-
-        return new(null, ProcessStepStatusId.DONE, true, null);
+        return (null, ProcessStepStatusId.DONE, false, null);
     }
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex) =>

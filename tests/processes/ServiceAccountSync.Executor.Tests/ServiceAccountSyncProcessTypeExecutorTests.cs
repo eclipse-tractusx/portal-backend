@@ -76,7 +76,7 @@ public class ServiceAccountSyncProcessTypeExecutorTests
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         A.CallTo(() => _provisioningManager.GetServiceAccountUserId(A<string>._))
             .ThrowsAsync(new ServiceException("test"));
-        A.CallTo(() => _userRepository.GetServiceAccountsWithoutUserEntityId())
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
             .Returns(Enumerable.Repeat(new ValueTuple<Guid, string>(Guid.NewGuid(), "sa1"), 1).ToAsyncEnumerable());
 
         // Act
@@ -96,7 +96,7 @@ public class ServiceAccountSyncProcessTypeExecutorTests
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         A.CallTo(() => _provisioningManager.GetServiceAccountUserId(A<string>._))
             .ThrowsAsync(new ConflictException("test"));
-        A.CallTo(() => _userRepository.GetServiceAccountsWithoutUserEntityId())
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
             .Returns(Enumerable.Repeat(new ValueTuple<Guid, string>(Guid.NewGuid(), "sa1"), 1).ToAsyncEnumerable());
 
         // Act
@@ -116,7 +116,7 @@ public class ServiceAccountSyncProcessTypeExecutorTests
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         A.CallTo(() => _provisioningManager.GetServiceAccountUserId(A<string>._))
             .ThrowsAsync(new ServiceException("test", true));
-        A.CallTo(() => _userRepository.GetServiceAccountsWithoutUserEntityId())
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
             .Returns(Enumerable.Repeat(new ValueTuple<Guid, string>(Guid.NewGuid(), "sa1"), 1).ToAsyncEnumerable());
 
         // Act
@@ -135,12 +135,23 @@ public class ServiceAccountSyncProcessTypeExecutorTests
         var userEntityId1 = Guid.NewGuid().ToString();
         var identity2 = new Identity(Guid.NewGuid(), DateTimeOffset.Now, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
         var userEntityId2 = Guid.NewGuid().ToString();
-        A.CallTo(() => _userRepository.GetServiceAccountsWithoutUserEntityId())
-            .Returns(new ValueTuple<Guid, string>[]
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
+            .Returns(new (Guid, string)[]
             {
                 new (identity.Id, "sa1"),
                 new (identity2.Id, "sa2")
-            }.ToAsyncEnumerable());
+            }.ToAsyncEnumerable())
+            .Once()
+            .Then
+            .Returns(new (Guid, string)[]
+            {
+                new (identity2.Id, "sa2")
+            }.ToAsyncEnumerable())
+            .Once()
+            .Then
+            .Returns(
+                Enumerable.Empty<(Guid, string)>().ToAsyncEnumerable());
+
         A.CallTo(() => _provisioningManager.GetServiceAccountUserId("sa1"))
             .Returns(userEntityId1);
         A.CallTo(() => _provisioningManager.GetServiceAccountUserId("sa2"))
@@ -161,13 +172,46 @@ public class ServiceAccountSyncProcessTypeExecutorTests
             });
 
         // Act
-        var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, Enumerable.Repeat(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, 1), CancellationToken.None).ConfigureAwait(false);
+        var result1 = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Modified.Should().BeTrue();
-        result.ScheduleStepTypeIds.Should().BeNull();
+        result1.Modified.Should().BeTrue();
+        result1.ScheduleStepTypeIds.Should().BeNull();
+        identity.UserEntityId.Should().Be(userEntityId1);
+        identity2.UserEntityId.Should().Be(null);
+
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity2.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+           .MustNotHaveHappened();
+
+        // Act
+        var result2 = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result2.Modified.Should().BeTrue();
+        result2.ScheduleStepTypeIds.Should().BeNull();
         identity.UserEntityId.Should().Be(userEntityId1);
         identity2.UserEntityId.Should().Be(userEntityId2);
+
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity2.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustHaveHappenedOnceExactly();
+
+        // Act
+        var result3 = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result3.Modified.Should().BeFalse();
+        result3.ScheduleStepTypeIds.Should().BeNull();
+        identity.UserEntityId.Should().Be(userEntityId1);
+        identity2.UserEntityId.Should().Be(userEntityId2);
+
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity2.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

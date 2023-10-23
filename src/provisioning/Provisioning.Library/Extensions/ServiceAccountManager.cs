@@ -61,8 +61,7 @@ public partial class ProvisioningManager
         {
             throw new KeycloakEntityNotFoundException($"clientId {clientId} not found on central idp");
         }
-        var user = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
-        return user.Id;
+        return (await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false)).Id;
     }
 
     private async Task<(string ClientId, string Secret)> CreateSharedIdpServiceAccountAsync(string realm)

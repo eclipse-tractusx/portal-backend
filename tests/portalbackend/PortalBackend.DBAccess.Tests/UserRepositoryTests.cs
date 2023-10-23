@@ -432,16 +432,16 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetServiceAccountsWithoutUserEntityId
+    #region GetNextServiceAccountsWithoutUserEntityId
 
     [Fact]
-    public async Task GetServiceAccountsWithoutUserEntityId_ReturnsExpectedResult()
+    public async Task GetNextServiceAccountsWithoutUserEntityId_ReturnsExpectedResult()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetServiceAccountsWithoutUserEntityId().ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetNextServiceAccountsWithoutUserEntityId().ToListAsync().ConfigureAwait(false);
 
         // Assert
         results.Should().HaveCount(2)

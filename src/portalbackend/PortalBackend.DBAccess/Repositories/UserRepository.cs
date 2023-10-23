@@ -467,12 +467,13 @@ public class UserRepository : IUserRepository
                 ))
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetServiceAccountsWithoutUserEntityId() =>
+    public IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextServiceAccountsWithoutUserEntityId() =>
         _dbContext.Identities
             .Where(x =>
                 x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT &&
                 x.UserEntityId == null &&
                 x.CompanyServiceAccount!.ClientClientId != null)
             .Select(x => new ValueTuple<Guid, string>(x.Id, x.CompanyServiceAccount!.ClientClientId!))
+            .Take(2)
             .ToAsyncEnumerable();
 }
