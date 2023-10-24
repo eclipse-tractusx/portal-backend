@@ -128,93 +128,111 @@ public class ServiceAccountSyncProcessTypeExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteProcessStep_WithValid_ExecutesExpected()
+    public async Task ExecuteProcessStep_WithNoIdentity_ExecutesExpected()
     {
         // Arrange
         var identity = new Identity(Guid.NewGuid(), DateTimeOffset.Now, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
-        var userEntityId1 = Guid.NewGuid().ToString();
-        var identity2 = new Identity(Guid.NewGuid(), DateTimeOffset.Now, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
-        var userEntityId2 = Guid.NewGuid().ToString();
+        var userEntityId = Guid.NewGuid().ToString();
         A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
-            .Returns(new (Guid, string)[]
-            {
-                new (identity.Id, "sa1"),
-                new (identity2.Id, "sa2")
-            }.ToAsyncEnumerable())
-            .Once()
-            .Then
-            .Returns(new (Guid, string)[]
-            {
-                new (identity2.Id, "sa2")
-            }.ToAsyncEnumerable())
-            .Once()
-            .Then
-            .Returns(
-                Enumerable.Empty<(Guid, string)>().ToAsyncEnumerable());
+            .Returns(Enumerable.Empty<(Guid, string)>().ToAsyncEnumerable());
 
-        A.CallTo(() => _provisioningManager.GetServiceAccountUserId("sa1"))
-            .Returns(userEntityId1);
-        A.CallTo(() => _provisioningManager.GetServiceAccountUserId("sa2"))
-            .Returns(userEntityId2);
+        // Act
+        var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Modified.Should().BeFalse();
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ProcessMessage.Should().Be("no serviceAccounts to synchronize found");
+
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.GetServiceAccountUserId(A<string>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task ExecuteProcessStep_WithSingleIdentity_ExecutesExpected()
+    {
+        // Arrange
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.Now, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+        var userEntityId = Guid.NewGuid().ToString();
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
+            .Returns(new[]
+            {
+                (identity.Id, "sa1"),
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetServiceAccountUserId(A<string>._))
+            .Returns(userEntityId);
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
             .Invokes((Guid id, Action<Identity>? initialize, Action<Identity> setOptionalFields) =>
             {
-                if (id == identity.Id)
-                {
-                    initialize?.Invoke(identity);
-                    setOptionalFields.Invoke(identity);
-                }
-                else if (id == identity2.Id)
-                {
-                    initialize?.Invoke(identity2);
-                    setOptionalFields.Invoke(identity2);
-                }
+                initialize?.Invoke(identity);
+                setOptionalFields.Invoke(identity);
             });
 
         // Act
-        var result1 = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
+        var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result1.Modified.Should().BeTrue();
-        result1.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS);
-        result1.ProcessMessage.Should().Be($"synchronized serviceAccountId {identity.Id}, clientClientId sa1 with userEntityId {userEntityId1}");
-        identity.UserEntityId.Should().Be(userEntityId1);
-        identity2.UserEntityId.Should().Be(null);
+        result.Modified.Should().BeTrue();
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ProcessMessage.Should().Be($"synchronized serviceAccountId {identity.Id}, clientClientId sa1 with userEntityId {userEntityId}");
+        identity.UserEntityId.Should().Be(userEntityId);
 
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.GetServiceAccountUserId("sa1"))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity2.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+    }
+
+    [Fact]
+    public async Task ExecuteProcessStep_WithMultipleIdentities_ExecutesExpected()
+    {
+        // Arrange
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.Now, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+        var userEntityId = Guid.NewGuid().ToString();
+        var identity2Id = Guid.NewGuid();
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
+            .Returns(new[]
+            {
+                (identity.Id, "sa1"),
+                (identity2Id, "sa2")
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetServiceAccountUserId(A<string>._))
+            .Returns(userEntityId);
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+            .Invokes((Guid id, Action<Identity>? initialize, Action<Identity> setOptionalFields) =>
+            {
+                initialize?.Invoke(identity);
+                setOptionalFields.Invoke(identity);
+            });
+
+        // Act
+        var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Modified.Should().BeTrue();
+        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS);
+        result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ProcessMessage.Should().Be($"synchronized serviceAccountId {identity.Id}, clientClientId sa1 with userEntityId {userEntityId}");
+        identity.UserEntityId.Should().Be(userEntityId);
+
+        A.CallTo(() => _userRepository.GetNextServiceAccountsWithoutUserEntityId())
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.GetServiceAccountUserId("sa1"))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.GetServiceAccountUserId("sa2"))
+            .MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity2Id, A<Action<Identity>>._, A<Action<Identity>>._))
            .MustNotHaveHappened();
-
-        // Act
-        var result2 = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        result2.Modified.Should().BeTrue();
-        result2.ScheduleStepTypeIds.Should().BeNull();
-        result2.ProcessMessage.Should().Be($"synchronized serviceAccountId {identity2.Id}, clientClientId sa2 with userEntityId {userEntityId2}");
-        identity.UserEntityId.Should().Be(userEntityId1);
-        identity2.UserEntityId.Should().Be(userEntityId2);
-
-        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity2.Id, A<Action<Identity>>._, A<Action<Identity>>._))
-            .MustHaveHappenedOnceExactly();
-
-        // Act
-        var result3 = await _executor.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, new[] { ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS }, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        result3.Modified.Should().BeFalse();
-        result3.ScheduleStepTypeIds.Should().BeNull();
-        result3.ProcessMessage.Should().Be("no serviceAccounts to synchronize found");
-        identity.UserEntityId.Should().Be(userEntityId1);
-        identity2.UserEntityId.Should().Be(userEntityId2);
-
-        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identity2.Id, A<Action<Identity>>._, A<Action<Identity>>._))
-            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
