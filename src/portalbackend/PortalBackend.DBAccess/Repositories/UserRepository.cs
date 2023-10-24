@@ -472,7 +472,8 @@ public class UserRepository : IUserRepository
             .Where(x =>
                 x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT &&
                 x.UserEntityId == null &&
-                x.CompanyServiceAccount!.ClientClientId != null)
+                x.CompanyServiceAccount!.ClientClientId != null &&
+                x.UserStatusId == UserStatusId.ACTIVE)
             .Select(x => new ValueTuple<Guid, string>(x.Id, x.CompanyServiceAccount!.ClientClientId!))
             .Take(2)
             .ToAsyncEnumerable();
