@@ -63,14 +63,17 @@ public class UserRepository : IUserRepository
         }).Entity;
 
     /// <inheritdoc />
-    public Identity CreateIdentity(Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId) =>
-        _dbContext.Identities.Add(
-            new Identity(
-                Guid.NewGuid(),
-                DateTimeOffset.UtcNow,
-                companyId,
-                userStatusId,
-                identityTypeId)).Entity;
+    public Identity CreateIdentity(Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId, Action<Identity>? setOptionalFields)
+    {
+        var identity = new Identity(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            companyId,
+            userStatusId,
+            identityTypeId);
+        setOptionalFields?.Invoke(identity);
+        return _dbContext.Identities.Add(identity).Entity;
+    }
 
     public void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? initialize, Action<CompanyUser> setOptionalParameters)
     {
@@ -462,5 +465,15 @@ public class UserRepository : IUserRepository
                     cu.Identity.Company.BusinessPartnerNumber,
                     cu.CompanyUserAssignedIdentityProviders.Select(assigned => new ProviderLinkData(assigned.UserName, assigned.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, assigned.ProviderId))
                 ))
+            .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextServiceAccountsWithoutUserEntityId() =>
+        _dbContext.Identities
+            .Where(x =>
+                x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT &&
+                x.UserEntityId == null &&
+                x.CompanyServiceAccount!.ClientClientId != null)
+            .Select(x => new ValueTuple<Guid, string>(x.Id, x.CompanyServiceAccount!.ClientClientId!))
+            .Take(2)
             .ToAsyncEnumerable();
 }
