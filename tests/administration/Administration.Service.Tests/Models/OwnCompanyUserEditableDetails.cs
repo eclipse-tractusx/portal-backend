@@ -21,6 +21,8 @@ public class OwnCompanyUserEditableDetailsTests
     [InlineData("x@example.com")]
     [InlineData("very.common@example.com")]
     [InlineData("simple@example.com")]
+    [InlineData("\"foo bar\" <foo@bar.org>")]
+    [InlineData("foo bar <foo@bar.org>")]
     public void ValidateEmail_WithValidEmail_ReturnsExpected(string email)
     {
         // Arrange
@@ -37,6 +39,7 @@ public class OwnCompanyUserEditableDetailsTests
     [InlineData("")]
     [InlineData("abc.example.com")]
     [InlineData("a@b@c@example.com")]
+    [InlineData("\"foo bar\" <foo@bar@baz.org>")]
     public void ValidateEmail_WithInvalidEmail_ReturnsExpected(string email)
     {
         // Arrange
