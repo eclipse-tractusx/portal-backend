@@ -340,6 +340,57 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetOwnIdentityProviderWithConnectedCompanies
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithNotOwned_ReturnsExpected()
+    {
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc198"), new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).ConfigureAwait(false);
+
+        // Assert
+        result.Alias.Should().Be("Idp-123");
+        result.IsOwnerCompany.Should().BeFalse();
+        result.TypeId.Should().Be(IdentityProviderTypeId.MANAGED);
+        result.ConnectedCompanies.Should().HaveCount(2).And.Satisfy(
+            x => x.CompanyId == new Guid("0dcd8209-85e2-4073-b130-ac094fb47106") && x.CompanyName == "SAP AG",
+            x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd") && x.CompanyName == "Service Provider");
+    }
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithValid_ReturnsExpected()
+    {
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc199"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88")).ConfigureAwait(false);
+
+        // Assert
+        result.Alias.Should().Be("Test-Alias");
+        result.IsOwnerCompany.Should().BeTrue();
+        result.TypeId.Should().Be(IdentityProviderTypeId.OWN);
+        result.ConnectedCompanies.Should().ContainSingle().And.Satisfy(x =>
+            x.CompanyId == new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88") && x.CompanyName == "CX-Test-Access");
+    }
+
+    [Fact]
+    public async Task GetOwnIdentityProviderWithConnectedCompanies_WithMultipleValid_ReturnsExpected()
+    {
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc198"), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
+
+        // Assert
+        result.Alias.Should().Be("Idp-123");
+        result.IsOwnerCompany.Should().BeTrue();
+        result.TypeId.Should().Be(IdentityProviderTypeId.MANAGED);
+        result.ConnectedCompanies.Should().HaveCount(2).And.Satisfy(
+            x => x.CompanyId == new Guid("0dcd8209-85e2-4073-b130-ac094fb47106") && x.CompanyName == "SAP AG",
+            x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd") && x.CompanyName == "Service Provider");
+    }
+
+    #endregion
+
     #region Setup    
 
     private async Task<(IdentityProviderRepository, PortalDbContext)> CreateSutWithContext()

@@ -123,7 +123,7 @@ public class ServiceAccountCreationTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         serviceAccounts.Should().ContainSingle().Which.Name.Should().Be("testName");
         serviceAccounts.Should().ContainSingle().Which.ClientId.Should().Be("internal-sa1");
-        identities.Should().ContainSingle().Which.CompanyId.Should().Be(_companyId);
+        identities.Should().ContainSingle().And.Satisfy(x => x.CompanyId == _companyId && x.UserEntityId == _iamUserId);
     }
 
     [Fact]
@@ -153,7 +153,7 @@ public class ServiceAccountCreationTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         serviceAccounts.Should().ContainSingle().Which.Name.Should().Be("sa1-testName");
         serviceAccounts.Should().ContainSingle().Which.ClientId.Should().Be("internal-sa1");
-        identities.Should().ContainSingle().Which.CompanyId.Should().Be(_companyId);
+        identities.Should().ContainSingle().And.Satisfy(x => x.CompanyId == _companyId && x.UserEntityId == _iamUserId);
     }
 
     #region Setup
@@ -166,10 +166,11 @@ public class ServiceAccountCreationTests
         A.CallTo(() => _provisioningManager.SetupCentralServiceAccountClientAsync(A<string>._, A<ClientConfigRolesData>._, A<bool>._))
             .Returns(new ServiceAccountData("internal-sa1", _iamUserId, new ClientAuthData(IamClientAuthMethod.SECRET)));
 
-        A.CallTo(() => _userRepository.CreateIdentity(_companyId, A<UserStatusId>._, IdentityTypeId.COMPANY_SERVICE_ACCOUNT))
-            .Invokes((Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId) =>
+        A.CallTo(() => _userRepository.CreateIdentity(_companyId, A<UserStatusId>._, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, A<Action<Identity>>._))
+            .Invokes((Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId, Action<Identity>? setOptionalFields) =>
             {
                 var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, companyId, userStatusId, identityTypeId);
+                setOptionalFields?.Invoke(identity);
                 identities?.Add(identity);
             })
             .Returns(new Identity(_identityId, default, default, default, default));

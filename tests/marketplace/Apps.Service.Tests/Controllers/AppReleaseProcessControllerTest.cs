@@ -63,7 +63,7 @@ public class AppReleaseProcessControllerTest
         await this._controller.UpdateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert 
-        A.CallTo(() => _logic.CreateAppDocumentAsync(appId, documentTypeId, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), CancellationToken.None))
+        A.CallTo(() => _logic.CreateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -74,7 +74,7 @@ public class AppReleaseProcessControllerTest
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
         var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
         var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, _identity.CompanyId))
+        A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles))
             .Returns(appRoleData);
 
         //Act
@@ -82,7 +82,7 @@ public class AppReleaseProcessControllerTest
         foreach (var item in result)
         {
             //Assert
-            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles)).MustHaveHappenedOnceExactly();
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }
@@ -170,7 +170,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.DeleteAppRoleAsync(appId, roleId, _identity.CompanyId))
+        A.CallTo(() => _logic.DeleteAppRoleAsync(appId, roleId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -179,7 +179,7 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var data = _fixture.CreateMany<CompanyUserNameData>(5).ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetAppProviderSalesManagersAsync())
             .Returns(data);
 
         //Act
@@ -187,7 +187,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         result.Should().HaveCount(5);
-        A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(_identity.CompanyId))
+        A.CallTo(() => _logic.GetAppProviderSalesManagersAsync())
             .MustHaveHappenedOnceExactly();
     }
 
@@ -197,14 +197,14 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = _fixture.Create<Guid>();
         var data = _fixture.Create<AppRequestModel>();
-        A.CallTo(() => _logic.AddAppAsync(A<AppRequestModel>._, _identity.CompanyId))
+        A.CallTo(() => _logic.AddAppAsync(A<AppRequestModel>._))
             .Returns(appId);
 
         //Act
         var result = await this._controller.ExecuteAppCreation(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddAppAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddAppAsync(data)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(appId);
     }
@@ -245,7 +245,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.UpdateAppReleaseAsync(appId, data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateAppReleaseAsync(appId, data)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -352,7 +352,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.DeleteAppAsync(appId, _identity.CompanyId))
+        A.CallTo(() => _logic.DeleteAppAsync(appId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -365,7 +365,7 @@ public class AppReleaseProcessControllerTest
         var result = await _controller.SetInstanceType(appId, data).ConfigureAwait(false);
 
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.SetInstanceType(appId, data, _identity.CompanyId))
+        A.CallTo(() => _logic.SetInstanceType(appId, data))
             .MustHaveHappenedOnceExactly();
     }
 

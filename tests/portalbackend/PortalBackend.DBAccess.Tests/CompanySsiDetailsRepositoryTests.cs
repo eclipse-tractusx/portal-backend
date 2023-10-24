@@ -188,6 +188,25 @@ public class CompanySsiDetailsRepositoryTests
             .Which.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.PENDING);
     }
 
+    [Fact]
+    public async Task CreateSsiDetails_WithConstraintCheckFailing_ThrowsException()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext();
+        sut.CreateSsiDetails(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, new Guid("00000000-0000-0000-0000-000000000001"), CompanySsiDetailStatusId.PENDING, _userId,
+            ssi =>
+            {
+                ssi.VerifiedCredentialExternalTypeUseCaseDetailId = new("1268a76a-ca19-4dd8-b932-01f24071d561");
+            });
+        async Task Act() => await context.SaveChangesAsync().ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<DbUpdateException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("An error occurred while saving the entity changes. See the inner exception for details.");
+    }
+
     #endregion
 
     #region CheckSsiDetailsExistsForCompany

@@ -79,7 +79,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithUserIdAndCompanyId(identity => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, identity, cancellationToken));
+        await _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, cancellationToken);
         return NoContent();
     }
 
@@ -101,8 +101,8 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
-         await this.WithCompanyId(companyId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, userRoles, companyId)).ConfigureAwait(false);
+    public Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
+         _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, userRoles);
 
     /// <summary>
     /// Return Agreement Data for offer_type_id App
@@ -193,7 +193,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> DeleteAppRoleAsync([FromRoute] Guid appId, [FromRoute] Guid roleId)
     {
-        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, companyId));
+        await _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId);
         return NoContent();
     }
 
@@ -208,7 +208,7 @@ public class AppReleaseProcessController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserNameData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagerAsync() =>
-        this.WithCompanyId(companyId => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(companyId));
+        _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync();
 
     /// <summary>
     /// Creates an app according to request model
@@ -228,7 +228,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<CreatedAtRouteResult> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
-        var appId = await this.WithCompanyId(companyId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, companyId).ConfigureAwait(false));
+        var appId = await _appReleaseBusinessLogic.AddAppAsync(appRequestModel).ConfigureAwait(false);
         return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new { controller = "Apps", appId = appId }, appId);
     }
 
@@ -255,7 +255,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateAppRelease([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
     {
-        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, companyId).ConfigureAwait(false));
+        await _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -426,7 +426,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> DeleteAppAsync([FromRoute] Guid appId)
     {
-        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.DeleteAppAsync(appId, companyId)).ConfigureAwait(false);
+        await _appReleaseBusinessLogic.DeleteAppAsync(appId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -450,7 +450,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> SetInstanceType([FromRoute] Guid appId, [FromBody] AppInstanceSetupData data)
     {
-        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.SetInstanceType(appId, data, companyId)).ConfigureAwait(false);
+        await _appReleaseBusinessLogic.SetInstanceType(appId, data).ConfigureAwait(false);
         return NoContent();
     }
 

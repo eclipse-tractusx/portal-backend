@@ -684,11 +684,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyInformationAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result!.OrganizationName.Should().Be("Catena-X");
+        result.CompanyUserEmail.Should().Be("inactive-user@mail.com");
     }
 
     [Fact]
@@ -698,7 +699,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyInformationAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationAsync(Guid.NewGuid(), Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -898,6 +899,48 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region GetAllMemberCompaniesBPN
+
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN()
+    {
+        // Arrange
+        var bpnIds = new[] {
+            "BPNL07800HZ01643",
+            "BPNL00000003AYRE",
+            "BPNL00000003LLHA",
+            "BPNL0000000001ON",
+            "BPNL07800HZ01645" };
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(2).And.Satisfy(
+            x => x == "BPNL07800HZ01643", x => x == "BPNL00000003AYRE");
+    }
+
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN_withNull_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllMemberCompaniesBPNAsync(null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(5).And.Satisfy(
+            x => x == "BPNL07800HZ01643",
+            x => x == "BPNL00000003AYRE",
+            x => x == "BPNL00000003CRHK",
+            x => x == "BPNL00000003CRHL",
+            x => x == "BPNL00000001TEST");
     }
 
     #endregion

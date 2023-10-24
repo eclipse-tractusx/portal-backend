@@ -48,6 +48,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
+    private readonly ILogger<RegistrationBusinessLogic> _logger;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories,
@@ -55,7 +56,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IMailingService mailingService,
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
-        ISdFactoryBusinessLogic sdFactoryBusinessLogic)
+        ISdFactoryBusinessLogic sdFactoryBusinessLogic,
+        ILogger<RegistrationBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
@@ -63,6 +65,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
+        _logger = logger;
     }
 
     public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
@@ -277,6 +280,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     /// <inheritdoc />
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
@@ -359,6 +363,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     /// <inheritdoc />
     public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
+
         var result = await _portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyIdSubmissionStatusForApplication(data.ExternalId)
             .ConfigureAwait(false);

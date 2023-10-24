@@ -237,7 +237,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateService([FromRoute] Guid serviceId, [FromBody] ServiceUpdateRequestData data)
     {
-        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, companyId));
+        await _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data);
         return NoContent();
     }
 
@@ -342,7 +342,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, identity, cancellationToken));
+        await _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, cancellationToken);
         return NoContent();
     }
 

@@ -170,14 +170,15 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                             item.OfferId,
                             item.ServiceName,
                             item.CompanySubscriptionStatuses,
-                            item.Image == Guid.Empty ? null : item.Image)));
+                            item.Image == Guid.Empty ? null : item.Image,
+                            item.ProcessStepTypeId == default ? null : item.ProcessStepTypeId)));
         }
         return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, OfferTypeId.APP, _settings.BasePortalAddress, _settings.SubscriptionManagerRoles);
+        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, OfferTypeId.APP, _settings.BasePortalAddress, _settings.SubscriptionManagerRoles, _settings.ServiceManagerRoles);
 
     /// <inheritdoc/>
     public Task TriggerActivateOfferSubscription(Guid subscriptionId) =>

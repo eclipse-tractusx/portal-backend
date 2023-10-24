@@ -212,14 +212,14 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = _fixture.Create<Guid>();
         var data = _fixture.Create<ServiceUpdateRequestData>();
-        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._, _identity.CompanyId))
+        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._))
             .Returns(Task.CompletedTask);
 
         //Act
         var result = await this._controller.UpdateService(serviceId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -273,8 +273,7 @@ public class ServiceReleaseControllerTest
         await this._controller.UpdateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,
-            DocumentTypeId.ADDITIONAL_DETAILS, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

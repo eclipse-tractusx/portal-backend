@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
@@ -44,6 +43,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IIdentityService _identityService;
+    private readonly ILogger<ConnectorsBusinessLogic> _logger;
     private readonly ConnectorsSettings _settings;
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -54,12 +54,14 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// <param name="options">The options</param>
     /// <param name="sdFactoryBusinessLogic">Access to the connectorsSdFactory</param>
     /// <param name="identityService">Access to the current logged in user</param>
-    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, ISdFactoryBusinessLogic sdFactoryBusinessLogic, IIdentityService identityService)
+    /// <param name="logger">Access to the logger</param>
+    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, ISdFactoryBusinessLogic sdFactoryBusinessLogic, IIdentityService identityService, ILogger<ConnectorsBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
         _settings = options.Value;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
         _identityService = identityService;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -351,6 +353,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// <inheritdoc />
     public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
+
         var result = await _portalRepositories.GetInstance<IConnectorsRepository>()
             .GetConnectorDataById(data.ExternalId)
             .ConfigureAwait(false);

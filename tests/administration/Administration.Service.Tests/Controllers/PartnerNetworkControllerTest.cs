@@ -37,20 +37,22 @@ public class PartnerNetworkControllerTest
         this._controller = new PartnerNetworkController(_logic);
     }
 
-    [Fact]
-    public async Task GetAllMemberCompaniesBPN_Test()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("BPNL00000003LLHB", "CAXLBOSCHZZ")]
+    public async Task GetAllMemberCompaniesBPN_Test(params string[]? bpnIds)
     {
         //Arrange
-
-        A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync());
+        var bpn = bpnIds == null ? null : bpnIds.ToList();
+        A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>._));
 
         //Act
-        var result = this._controller.GetAllMemberCompaniesBPNAsync();
+        var result = this._controller.GetAllMemberCompaniesBPNAsync(bpn);
 
         //Assert
         await foreach (var item in result)
         {
-            A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync()).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>.That.IsSameAs(bpn!))).MustHaveHappenedOnceExactly();
             Assert.IsType<string>(result);
         }
     }

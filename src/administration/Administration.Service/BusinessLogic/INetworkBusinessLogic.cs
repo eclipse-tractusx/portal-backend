@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,7 +25,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public interface INetworkBusinessLogic
 {
     Task HandlePartnerRegistration(PartnerRegistrationData data);
-
     Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId);
-    Task Submit(PartnerSubmitData submitData, CancellationToken cancellationToken);
 }

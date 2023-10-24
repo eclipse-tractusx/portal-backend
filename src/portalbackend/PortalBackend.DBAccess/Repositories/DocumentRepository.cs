@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -129,7 +130,7 @@ public class DocumentRepository : IDocumentRepository
         this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 
     /// <inheritdoc />
-    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, IEnumerable<Guid> applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
         _dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
@@ -138,12 +139,13 @@ public class DocumentRepository : IDocumentRepository
                 Document = document,
                 Applications = document.CompanyUser!.Identity!.Company!.CompanyApplications
             })
-            .Select(x => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool>(
+            .Select(x => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool, IEnumerable<Guid>>(
                 x.Document.Id,
                 x.Document.DocumentStatusId,
                 x.Applications.Any(companyApplication => companyApplication.CompanyId == userCompanyId),
                 x.Document.DocumentTypeId,
-                x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
+                x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId)),
+                x.Applications.Select(x => x.Id)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

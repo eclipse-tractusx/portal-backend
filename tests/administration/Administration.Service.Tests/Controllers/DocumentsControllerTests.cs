@@ -52,14 +52,14 @@ public class DocumentsControllerTests
         const string contentType = "application/pdf";
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
-        A.CallTo(() => _logic.GetDocumentAsync(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _logic.GetDocumentAsync(A<Guid>._))
             .Returns((fileName, content, contentType));
 
         //Act
         await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetDocumentAsync(id, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetDocumentAsync(id)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

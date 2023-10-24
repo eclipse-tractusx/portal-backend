@@ -31,20 +31,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Con
 
 public static class ApplicationChecklistExtensions
 {
-    public static IServiceCollection AddApplicationChecklist(this IServiceCollection services, IConfigurationSection section)
-    {
-        return services
+    public static IServiceCollection AddApplicationChecklist(this IServiceCollection services, IConfigurationSection section) =>
+        services
             .AddTransient<ITokenService, TokenService>()
             .AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
             .AddBpdmService(section.GetSection("Bpdm"))
             .AddCustodianService(section.GetSection("Custodian"))
             .AddClearinghouseService(section.GetSection("Clearinghouse"))
             .AddSdFactoryService(section.GetSection("SdFactory"));
-    }
 
-    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services)
-    {
-        return services
+    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services) =>
+        services
             .AddTransient<IApplicationChecklistCreationService, ApplicationChecklistCreationService>();
-    }
 }

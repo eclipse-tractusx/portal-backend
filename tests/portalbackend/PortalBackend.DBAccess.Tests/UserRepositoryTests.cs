@@ -432,6 +432,26 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetNextServiceAccountsWithoutUserEntityId
+
+    [Fact]
+    public async Task GetNextServiceAccountsWithoutUserEntityId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetNextServiceAccountsWithoutUserEntityId().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        results.Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.ClientClientId == "sa-x-2" && x.ServiceAccountId == new Guid("93eecd4e-ca47-4dd2-85bf-775ea72eb009"),
+                x => x.ClientClientId == "sa-x-1" && x.ServiceAccountId == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f4"));
+    }
+
+    #endregion
+
     private async Task<(UserRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

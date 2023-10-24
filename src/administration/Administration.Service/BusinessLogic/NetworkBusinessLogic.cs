@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -33,7 +31,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -48,16 +45,14 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _processHelper;
-    private readonly IMailingService _mailingService;
     private readonly PartnerRegistrationSettings _settings;
 
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IMailingService mailingService, IOptions<PartnerRegistrationSettings> options)
+    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _identityService = identityService;
         _userProvisioningService = userProvisioningService;
         _processHelper = processHelper;
-        _mailingService = mailingService;
         _settings = options.Value;
     }
 
@@ -70,8 +65,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
         var (roleData, identityProviderIdAliase, singleIdentityProviderIdAlias, allIdentityProviderIds) = await ValidatePartnerRegistrationData(data, networkRepository, identityProviderRepository, ownerCompanyId).ConfigureAwait(false);
-
-        var (_, companyName) = await companyRepository.GetCompanyNameUntrackedAsync(ownerCompanyId).ConfigureAwait(false);
 
         var companyId = CreatePartnerCompany(companyRepository, data);
 
@@ -98,13 +91,27 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 ? singleIdentityProviderIdAlias?.Alias ?? throw new UnexpectedConditionException("singleIdentityProviderIdAlias should never be null here")
                 : identityProviderIdAliase?[identityProviderId.Value] ?? throw new UnexpectedConditionException("identityProviderIdAliase should never be null here and should always contain an entry for identityProviderId");
 
-        async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateUsers()
+        async IAsyncEnumerable<(Guid CompanyUserId, Exception? Error)> CreateUsers()
         {
-            foreach (var user in GetUserCreationData(companyId, GetIdpId, GetIdpAlias, data, roleData))
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            await foreach (var (aliasData, creationInfos) in GetUserCreationData(companyId, GetIdpId, GetIdpAlias, data, roleData).ToAsyncEnumerable())
             {
-                await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(user.AliasData, user.CreationInfos.ToAsyncEnumerable()))
+                foreach (var creationInfo in creationInfos)
                 {
-                    yield return result;
+                    var identityId = Guid.Empty;
+                    Exception? error = null;
+                    try
+                    {
+                        var (_, companyUserId) = await _userProvisioningService.GetOrCreateCompanyUser(userRepository, aliasData.IdpAlias,
+                            creationInfo, companyId, aliasData.IdpId, data.Bpn).ConfigureAwait(false);
+                        identityId = companyUserId;
+                    }
+                    catch (Exception ex)
+                    {
+                        error = ex;
+                    }
+
+                    yield return (identityId, error);
                 }
             }
         }
@@ -113,7 +120,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         userCreationErrors.IfAny(errors => throw new ServiceException($"Errors occured while saving the users: ${string.Join("", errors.Select(x => x.Message))}", errors.First()));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await SendMails(data.UserDetails.Select(x => new ValueTuple<string, string?, string?>(x.Email, x.FirstName, x.LastName)), companyName).ConfigureAwait(false);
     }
 
     private Guid CreatePartnerCompany(ICompanyRepository companyRepository, PartnerRegistrationData data)
@@ -169,35 +175,22 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 return (AliasData: companyNameIdpAliasData, CreationInfos: userCreationInfos);
             });
 
-    private async Task SendMails(IEnumerable<(string Email, string? FirstName, string? LastName)> companyUserWithRoleIdForCompany, string ospName)
-    {
-        foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
-        {
-            var userName = string.Join(" ", firstName, lastName);
-            var mailParameters = new Dictionary<string, string>
-            {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : receiver },
-                { "hostname", _settings.BasePortalAddress },
-                { "osp", ospName },
-                { "url", _settings.BasePortalAddress }
-            };
-            await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("OspWelcomeMail", 1)).ConfigureAwait(false);
-        }
-    }
-
     public Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId) =>
         _processHelper.TriggerProcessStep(externalId, processStepTypeId);
 
     private async Task<(IEnumerable<UserRoleData> RoleData, IDictionary<Guid, string>? IdentityProviderIdAliase, (Guid IdentityProviderId, string Alias)? SingleIdentityProviderIdAlias, IEnumerable<Guid> AllIdentityProviderIds)> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)
     {
-        if (string.IsNullOrWhiteSpace(data.Bpn) || !BpnRegex.IsMatch(data.Bpn))
+        if (data.Bpn != null)
         {
-            throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
-        }
+            if (!BpnRegex.IsMatch(data.Bpn))
+            {
+                throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
+            }
 
-        if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(data.Bpn).ConfigureAwait(false))
-        {
-            throw new ControllerArgumentException($"The Bpn {data.Bpn} already exists", nameof(data.Bpn));
+            if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(data.Bpn).ConfigureAwait(false))
+            {
+                throw new ControllerArgumentException($"The Bpn {data.Bpn} already exists", nameof(data.Bpn));
+            }
         }
 
         if (!data.CompanyRoles.Any())
@@ -306,73 +299,5 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         {
             throw new ControllerArgumentException("Lastname does not match expected format");
         }
-    }
-
-    public async Task Submit(PartnerSubmitData submitData, CancellationToken cancellationToken)
-    {
-        var companyId = _identityService.IdentityData.CompanyId;
-        var userId = _identityService.IdentityData.UserId;
-        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleIdsUntrackedAsync(_settings.InitialRoles)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-        var data = await _portalRepositories.GetInstance<INetworkRepository>()
-            .GetSubmitData(companyId, userId, userRoleIds)
-            .ConfigureAwait(false);
-        if (!data.Exists)
-        {
-            throw new NotFoundException($"Company {companyId} not found");
-        }
-
-        if (!data.IsUserInRole)
-        {
-            throw new ForbiddenException($"User must be in role {string.Join(",", _settings.InitialRoles.SelectMany(x => x.UserRoleNames))}");
-        }
-
-        if (data.CompanyApplications.Count() != 1)
-        {
-            throw new ConflictException($"Company {companyId} has no or more than one application");
-        }
-
-        if (data.ProcessId == null)
-        {
-            throw new ConflictException("There must be an process");
-        }
-
-        var companyApplication = data.CompanyApplications.Single();
-        if (companyApplication.CompanyApplicationStatusId != CompanyApplicationStatusId.CREATED)
-        {
-            throw new ConflictException($"Application {companyApplication.CompanyApplicationId} is not in state CREATED");
-        }
-
-        submitData.Agreements.Where(x => x.ConsentStatusId != ConsentStatusId.ACTIVE).IfAny(inactive =>
-            throw new ControllerArgumentException($"All agreements must be agreed to. Agreements that are not active: {string.Join(",", inactive.Select(x => x.AgreementId))}", nameof(submitData.Agreements)));
-
-        data.CompanyRoleAgreementIds
-            .ExceptBy(submitData.CompanyRoles, x => x.CompanyRoleId)
-            .IfAny(missing =>
-                throw new ControllerArgumentException($"CompanyRoles {string.Join(",", missing.Select(x => x.CompanyRoleId))} are missing", nameof(submitData.CompanyRoles)));
-
-        var requiredAgreementIds = data.CompanyRoleAgreementIds
-            .SelectMany(x => x.AgreementIds)
-            .Distinct().ToImmutableList();
-
-        requiredAgreementIds.Except(submitData.Agreements.Where(x => x.ConsentStatusId == ConsentStatusId.ACTIVE).Select(x => x.AgreementId))
-            .IfAny(missing =>
-                throw new ControllerArgumentException($"All Agreements for the company roles must be agreed to, missing agreementIds: {string.Join(",", missing)}", nameof(submitData.Agreements)));
-
-        _portalRepositories.GetInstance<IConsentRepository>()
-            .CreateConsents(requiredAgreementIds.Select(agreementId => (agreementId, companyId, userId, ConsentStatusId.ACTIVE)));
-
-        var processId = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
-        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.CompanyApplicationId,
-            ca =>
-            {
-                ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
-                ca.ChecklistProcessId = processId;
-            });
-        _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepStatusId.TODO, data.ProcessId.Value), 1));
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

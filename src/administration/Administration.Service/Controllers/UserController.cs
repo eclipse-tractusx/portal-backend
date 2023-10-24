@@ -69,7 +69,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<string>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<string> CreateOwnCompanyUsers([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
-        this.WithUserIdAndCompanyId(identity => _logic.CreateOwnCompanyUsersAsync(usersToCreate, identity));
+        _logic.CreateOwnCompanyUsersAsync(usersToCreate);
 
     /// <summary>
     /// Create new users for the companies shared identityprovider by upload of csv-file
@@ -96,7 +96,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-        this.WithUserIdAndCompanyId(identity => _uploadLogic.UploadOwnCompanySharedIdpUsersAsync(document, identity, cancellationToken));
+        _uploadLogic.UploadOwnCompanySharedIdpUsersAsync(document, cancellationToken);
 
     /// <summary>
     /// Create a new user for a specific identityprovider
@@ -124,7 +124,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<CreatedAtRouteResult> CreateOwnIdpOwnCompanyUser([FromBody] UserCreationInfoIdp userToCreate, [FromRoute] Guid identityProviderId)
     {
-        var result = await this.WithUserIdAndCompanyId(identity => _logic.CreateOwnCompanyIdpUserAsync(identityProviderId, userToCreate, identity)).ConfigureAwait(false);
+        var result = await _logic.CreateOwnCompanyIdpUserAsync(identityProviderId, userToCreate).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetOwnCompanyUserDetails), new { companyUserId = result }, result);
     }
 
@@ -154,7 +154,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<UserCreationStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromRoute] Guid identityProviderId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-            this.WithUserIdAndCompanyId(identity => _uploadLogic.UploadOwnCompanyIdpUsersAsync(identityProviderId, document, identity, cancellationToken));
+            _uploadLogic.UploadOwnCompanyIdpUsersAsync(identityProviderId, document, cancellationToken);
 
     /// <summary>
     /// Get Company User Data
@@ -183,11 +183,10 @@ public class UserController : ControllerBase
         [FromQuery] string? firstName = null,
         [FromQuery] string? lastName = null,
         [FromQuery] string? email = null) =>
-        this.WithCompanyId(companyId => _logic.GetOwnCompanyUserDatasAsync(
-            companyId,
+        _logic.GetOwnCompanyUserDatasAsync(
             page,
             size,
-            new(companyUserId, userEntityId, firstName, lastName, email)));
+            new(companyUserId, userEntityId, firstName, lastName, email));
 
     /// <summary>
     /// Gets the user details for the given user Id
@@ -204,7 +203,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyUserDetails> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
-        this.WithCompanyId(companyId => _logic.GetOwnCompanyUserDetailsAsync(companyUserId, companyId));
+        _logic.GetOwnCompanyUserDetailsAsync(companyUserId);
 
     /// <summary>
     /// Updates the portal-roles for the user
@@ -225,7 +224,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IEnumerable<UserRoleWithId>> ModifyCoreUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid offerId, [FromBody] IEnumerable<string> roles) =>
-        this.WithCompanyId(companyId => _rolesLogic.ModifyCoreOfferUserRolesAsync(offerId, companyUserId, roles, companyId));
+        _rolesLogic.ModifyCoreOfferUserRolesAsync(offerId, companyUserId, roles);
 
     /// <summary>
     /// Updates the app-roles for the user
@@ -246,7 +245,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid appId, [FromBody] IEnumerable<string> roles) =>
-        this.WithCompanyId(companyId => _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles, companyId));
+        _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles);
 
     /// <summary>
     /// Adds the given business partner numbers to the user for the given id.
@@ -266,7 +265,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<int> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers) =>
-        this.WithCompanyId(companyId => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumbers, companyId));
+        _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumbers);
 
     /// <summary>
     /// Adds the given business partner number to the user for the given id.
@@ -290,7 +289,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<int> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber) =>
-        this.WithCompanyId(companyId => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber, companyId));
+        _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber);
 
     /// <summary>
     /// Deletes the users with the given ids.
@@ -308,7 +307,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public IAsyncEnumerable<Guid> DeleteOwnCompanyUsers([FromBody] IEnumerable<Guid> usersToDelete) =>
-        this.WithCompanyId(companyId => _logic.DeleteOwnCompanyUsersAsync(usersToDelete, companyId));
+        _logic.DeleteOwnCompanyUsersAsync(usersToDelete);
 
     /// <summary>
     /// Resets the password for the given user
@@ -330,7 +329,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<bool> ResetOwnCompanyUserPassword([FromRoute] Guid companyUserId) =>
-        this.WithUserIdAndCompanyId(identity => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, identity));
+        _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId);
 
     /// <summary>
     /// Gets the core offer roles
@@ -348,7 +347,7 @@ public class UserController : ControllerBase
     [Route("owncompany/roles/coreoffers")]
     [ProducesResponseType(typeof(IEnumerable<OfferRoleInfos>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles([FromQuery] string? languageShortName = null) =>
-        this.WithCompanyId(companyId => _rolesLogic.GetCoreOfferRoles(companyId, languageShortName));
+        _rolesLogic.GetCoreOfferRoles(languageShortName);
 
     /// <summary>
     /// Gets the client roles for the given app.
@@ -366,7 +365,7 @@ public class UserController : ControllerBase
     [Route("owncompany/roles/apps/{appId}")]
     [ProducesResponseType(typeof(OfferRoleInfos), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync([FromRoute] Guid appId, [FromQuery] string? languageShortName = null) =>
-        this.WithCompanyId(companyId => _rolesLogic.GetAppRolesAsync(appId, companyId, languageShortName));
+        _rolesLogic.GetAppRolesAsync(appId, languageShortName);
 
     /// <summary>
     /// Gets the client roles for the given app.
@@ -402,7 +401,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(CompanyOwnUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyOwnUserDetails> GetOwnUserDetails() =>
-        this.WithUserId(userId => _logic.GetOwnUserDetails(userId));
+        _logic.GetOwnUserDetails();
 
     /// <summary>
     /// Updates the user details for the given companyUserId.
@@ -421,7 +420,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyUserDetails> UpdateOwnUserDetails([FromRoute] Guid companyUserId, [FromBody] OwnCompanyUserEditableDetails ownCompanyUserEditableDetails) =>
-        this.WithUserId(userId => _logic.UpdateOwnUserDetails(companyUserId, ownCompanyUserEditableDetails, userId));
+        _logic.UpdateOwnUserDetails(companyUserId, ownCompanyUserEditableDetails);
 
     /// <summary>
     /// Deletes the own user
@@ -440,7 +439,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
-        this.WithUserId(userId => _logic.DeleteOwnUserAsync(companyUserId, userId));
+        _logic.DeleteOwnUserAsync(companyUserId);
 
     /// <summary>
     /// Get for given app id all the company assigned users
@@ -470,9 +469,8 @@ public class UserController : ControllerBase
         [FromQuery] string? email = null,
         [FromQuery] string? roleName = null,
         [FromQuery] bool? hasRole = null) =>
-        this.WithUserId(userId => _logic.GetOwnCompanyAppUsersAsync(
+        _logic.GetOwnCompanyAppUsersAsync(
             appId,
-            userId,
             page,
             size,
             new CompanyUserFilter(
@@ -480,7 +478,7 @@ public class UserController : ControllerBase
                 lastName,
                 email,
                 roleName,
-                hasRole)));
+                hasRole));
 
     /// <summary>
     /// Updates the roles for the user
@@ -501,7 +499,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IEnumerable<UserRoleWithId>> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
-        this.WithCompanyId(companyId => _rolesLogic.ModifyUserRoleAsync(appId, userRoleInfo, companyId));
+        _rolesLogic.ModifyUserRoleAsync(appId, userRoleInfo);
 
     /// <summary>
     /// Delete BPN assigned to user from DB and Keycloack.
@@ -523,5 +521,5 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
-        this.WithUserIdAndCompanyId(identity => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, identity));
+        _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber);
 }

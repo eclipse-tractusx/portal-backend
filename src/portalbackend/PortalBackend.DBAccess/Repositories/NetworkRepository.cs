@@ -66,11 +66,11 @@ public class NetworkRepository : INetworkRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, IEnumerable<(Guid CompanyApplicationId, CompanyApplicationStatusId CompanyApplicationStatusId, string? CallbackUrl)> CompanyApplications, bool IsUserInRole, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleAgreementIds, Guid? ProcessId)> GetSubmitData(Guid companyId, Guid userId, IEnumerable<Guid> roleIds) =>
+    public Task<(bool Exists, IEnumerable<(Guid CompanyApplicationId, CompanyApplicationStatusId CompanyApplicationStatusId, string? CallbackUrl)> CompanyApplications, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleAgreementIds, Guid? ProcessId)> GetSubmitData(Guid companyId) =>
         _context.Companies
             .AsSplitQuery()
             .Where(x => x.Id == companyId)
-            .Select(x => new ValueTuple<bool, IEnumerable<(Guid, CompanyApplicationStatusId, string?)>, bool, IEnumerable<(CompanyRoleId, IEnumerable<Guid>)>, Guid?>(
+            .Select(x => new ValueTuple<bool, IEnumerable<(Guid, CompanyApplicationStatusId, string?)>, IEnumerable<(CompanyRoleId, IEnumerable<Guid>)>, Guid?>(
                 true,
                 x.CompanyApplications
                     .Where(ca => ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL)
@@ -78,8 +78,6 @@ public class NetworkRepository : INetworkRepository
                         ca.Id,
                         ca.ApplicationStatusId,
                         ca.OnboardingServiceProvider!.OnboardingServiceProviderDetail!.CallbackUrl)),
-                x.Identities
-                    .Any(i => i.Id == userId && i.IdentityAssignedRoles.Any(roles => roleIds.Any(r => r == roles.UserRoleId))),
                 x.CompanyAssignedRoles.Select(assigned => new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(
                         assigned.CompanyRoleId,
                         assigned.CompanyRole!.AgreementAssignedCompanyRoles.Select(a => a.AgreementId))),
@@ -109,5 +107,10 @@ public class NetworkRepository : INetworkRepository
                             p.Message != null)
                         .Select(step => step.Message!)
                     : new List<string>()))
+            .SingleOrDefaultAsync();
+
+    public Task<string?> GetOspCompanyName(Guid networkRegistrationId) =>
+        _context.NetworkRegistrations.Where(x => x.Id == networkRegistrationId)
+            .Select(x => x.OnboardingServiceProvider!.Name)
             .SingleOrDefaultAsync();
 }

@@ -22,6 +22,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 {
     public interface IPartnerNetworkBusinessLogic
     {
-        IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
+        /// <summary>
+        /// Get all member activecompanies bpn
+        /// </summary>
+        /// <param name="bpnIds">Ids of BPN</param>
+        IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds);
     }
 }

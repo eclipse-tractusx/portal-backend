@@ -32,23 +32,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 /// </summary>
 public static class ControllerExtensions
 {
-    public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> consumingFunction) =>
-        consumingFunction(controller.User.GetIdentityData());
-
-    public static T WithUserId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
-        consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId));
-
-    public static T WithCompanyId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
-        consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId));
-
-    public static T WithUserIdAndCompanyId<T>(this ControllerBase controller, Func<(Guid UserId, Guid CompanyId), T> consumingFunction) =>
-        consumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId)));
-
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
         tokenConsumingFunction(controller.GetBearerToken());
-
-    public static T WithIdentityIdAndBearerToken<T>(this ControllerBase controller, Func<(Guid UserId, string BearerToken), T> tokenConsumingFunction) =>
-        tokenConsumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.GetBearerToken()));
 
     public static IdentityData GetIdentityData(this ClaimsPrincipal user)
     {
@@ -82,7 +67,7 @@ public static class ControllerExtensions
         var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
         if (string.IsNullOrWhiteSpace(claimValue))
         {
-            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty.", nameof(claims));
+            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty", nameof(claims));
         }
 
         return claimValue;
@@ -93,12 +78,12 @@ public static class ControllerExtensions
         var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
         if (string.IsNullOrWhiteSpace(claimValue))
         {
-            throw new ControllerArgumentException($"Claim '{claimType} must not be null or empty.");
+            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty", nameof(claims));
         }
 
         if (!Guid.TryParse(claimValue, out var result) || Guid.Empty == result)
         {
-            throw new ControllerArgumentException($"Claim {claimType} must contain a Guid");
+            throw new ControllerArgumentException($"Claim {claimType} must contain a Guid", nameof(claims));
         }
 
         return result;
@@ -109,12 +94,12 @@ public static class ControllerExtensions
         var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
         if (string.IsNullOrWhiteSpace(claimValue))
         {
-            throw new ControllerArgumentException($"Claim '{claimType} must not be null or empty.");
+            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty", nameof(claims));
         }
 
         if (!Enum.TryParse(claimValue, true, out T result))
         {
-            throw new ControllerArgumentException($"Claim {claimType} must contain a {typeof(T)}");
+            throw new ControllerArgumentException($"Claim {claimType} must contain a {typeof(T)}", nameof(claims));
         }
 
         return result;

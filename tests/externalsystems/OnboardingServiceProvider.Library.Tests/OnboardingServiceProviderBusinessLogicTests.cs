@@ -97,24 +97,6 @@ public class OnboardingServiceProviderBusinessLogicTests
     }
 
     [Fact]
-    public async Task TriggerProviderCallback_WithoutBpn_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var networkRegistrationId = Guid.NewGuid();
-        var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
-        var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
-        A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns((details, Guid.NewGuid(), null, Guid.NewGuid(), Enumerable.Empty<string>()));
-
-        // Act
-        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("Bpn must be set");
-    }
-
-    [Fact]
     public async Task TriggerProviderCallback_WithMultipleDeclineMessages_ThrowsUnexpectedConditionException()
     {
         // Arrange

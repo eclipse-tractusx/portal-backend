@@ -44,7 +44,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId) =>
-        _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId)).Entity;
+        _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
     public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId) =>
@@ -86,7 +86,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     Image = g.Documents
                         .Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId == DocumentStatusId.LOCKED)
                         .Select(document => document.Id)
-                        .FirstOrDefault()
+                        .FirstOrDefault(),
+                    ProcessStepTypeId = g.OfferSubscriptions
+                        .Where(os => os.ProcessId != null)
+                        .Select(os => os.Process!.ProcessSteps
+                        .OrderByDescending(ps => ps.DateCreated)
+                        .Select(ps => ps.ProcessStepTypeId).FirstOrDefault()).FirstOrDefault()
                 })
             .SingleOrDefaultAsync();
 
@@ -173,7 +178,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     /// <inheritdoc />
     public OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters)
     {
-        var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty)).Entity;
+        var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, default)).Entity;
         setOptionalParameters.Invoke(offerSubscription);
         return offerSubscription;
     }
@@ -244,7 +249,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(id => id.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
                         x.Subscription.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
                         x.Subscription.AppSubscriptionDetail!.AppSubscriptionUrl,
-                        x.Subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId)
+                        x.Subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
+                        x.Subscription.Process!.ProcessSteps.Any() ?
+                            x.Subscription.Process!.ProcessSteps.OrderByDescending(ps => ps.DateCreated).Select(ps => ps.ProcessStepTypeId).FirstOrDefault() : null)
                     : null))
             .SingleOrDefaultAsync();
 
@@ -362,9 +369,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.RequesterCompany!.Id,
                     x.RequesterCompany.Name,
                     x.RequesterCompany.Address!.CountryAlpha2Code,
-                    x.RequesterCompany.BusinessPartnerNumber
+                    x.RequesterCompany.BusinessPartnerNumber,
+                    x.Email
                 ),
-                x.Email,
                 x.OfferTypeId,
                 x.SalesManagerId,
                 x.CompanyUserId,

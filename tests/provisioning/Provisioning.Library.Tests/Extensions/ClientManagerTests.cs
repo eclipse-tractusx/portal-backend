@@ -54,7 +54,7 @@ public class ClientManagerTests
             .Returns(new KeycloakClient(CentralUrl, "test", "test", "test", false));
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared"))
             .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
-        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._, A<bool>._))
+        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._))
             .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
         var settings = new ProvisioningSettings
         {

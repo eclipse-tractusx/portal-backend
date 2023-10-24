@@ -196,6 +196,14 @@ public class AppsSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string ActivationPortalAddress { get; init; } = null!;
+
+    /// <summary>
+    /// Active Document Types
+    /// </summary>
+    [Required]
+    [EnumEnumeration]
+    [DistinctValues]
+    public IEnumerable<DocumentTypeId> ActiveAppDocumentTypeIds { get; set; } = null!;
 }
 
 /// <summary>

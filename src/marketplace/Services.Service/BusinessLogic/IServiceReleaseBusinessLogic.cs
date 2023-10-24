@@ -94,8 +94,7 @@ public interface IServiceReleaseBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service to update</param>
     /// <param name="data">Data of the updated entry</param>
-    /// <param name="companyId">CompanyId of User</param>
-    Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, Guid companyId);
+    Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data);
 
     /// <summary>
     /// Update app status and create notification
@@ -123,10 +122,9 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="serviceId"></param>
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
-    /// <param name="identity"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken);
+    Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken);
 
     /// <summary>
     /// Delete the Service Document

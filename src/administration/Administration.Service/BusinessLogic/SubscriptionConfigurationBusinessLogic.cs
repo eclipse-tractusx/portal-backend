@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
 
@@ -33,16 +34,19 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
 {
     private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IIdentityService _identityService;
 
-    public SubscriptionConfigurationBusinessLogic(IOfferSubscriptionProcessService offerSubscriptionProcessService, IPortalRepositories portalRepositories)
+    public SubscriptionConfigurationBusinessLogic(IOfferSubscriptionProcessService offerSubscriptionProcessService, IPortalRepositories portalRepositories, IIdentityService identityService)
     {
         _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _portalRepositories = portalRepositories;
+        _identityService = identityService;
     }
 
     /// <inheritdoc />
-    public async Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(Guid companyId)
+    public async Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync()
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
             .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, companyId)
             .ConfigureAwait(false);
@@ -59,7 +63,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     }
 
     /// <inheritdoc />
-    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, Guid companyId)
+    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data)
     {
         data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
         data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
@@ -70,7 +74,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                 "the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
-        return SetOfferProviderCompanyDetailsInternalAsync(data, companyId);
+        return SetOfferProviderCompanyDetailsInternalAsync(data, _identityService.IdentityData.CompanyId);
     }
 
     private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, Guid companyId)

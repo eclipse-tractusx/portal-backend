@@ -16,10 +16,6 @@
     "user_role_collection_id": "1a24eca5-901f-4191-84a7-4ef09a894575"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51155",
-    "user_role_collection_id": "1a24eca5-901f-4191-84a7-4ef09a894575"
-  },
-  {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
     "user_role_collection_id": "1a24eca5-901f-4191-84a7-4ef09a894575"
   },
@@ -56,10 +52,6 @@
     "user_role_collection_id": "8cb12ea2-aed4-4d75-b041-ba297df3d2f2"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51155",
-    "user_role_collection_id": "8cb12ea2-aed4-4d75-b041-ba297df3d2f2"
-  },
-  {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
     "user_role_collection_id": "8cb12ea2-aed4-4d75-b041-ba297df3d2f2"
   },
@@ -81,10 +73,6 @@
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
-    "user_role_collection_id": "a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51155",
     "user_role_collection_id": "a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"
   },
   {
@@ -116,15 +104,7 @@
     "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
-    "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73"
-  },
-  {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
-    "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73"
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51155",
     "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73"
   },
   {
@@ -133,6 +113,10 @@
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
+    "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73"
   },
   {
@@ -150,5 +134,37 @@
   {
     "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
     "user_role_collection_id": "916b09e7-7841-4e57-bdca-e0d3bd329c27"
+  },
+  {
+    "user_role_collection_id": "1a24eca5-901f-4191-84a7-4ef09a894575",
+    "user_role_id": "3940f9b0-4393-4463-b659-15463098557b"
+  },
+  {
+    "user_role_collection_id": "8cb12ea2-aed4-4d75-b041-ba297df3d2f2",
+    "user_role_id": "3940f9b0-4393-4463-b659-15463098557b"
+  },
+  {
+    "user_role_collection_id": "a5b8b1de-7759-4620-9c87-6b6d74fb4fbc",
+    "user_role_id": "3940f9b0-4393-4463-b659-15463098557b"
+  },
+  {
+    "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73",
+    "user_role_id": "3940f9b0-4393-4463-b659-15463098557b"
+  },
+  {
+    "user_role_collection_id": "1a24eca5-901f-4191-84a7-4ef09a894575",
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7"
+  },
+  {
+    "user_role_collection_id": "8cb12ea2-aed4-4d75-b041-ba297df3d2f2",
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7"
+  },
+  {
+    "user_role_collection_id": "a5b8b1de-7759-4620-9c87-6b6d74fb4fbc",
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7"
+  },
+  {
+    "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73",
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7"
   }
 ]

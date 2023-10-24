@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -40,6 +41,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
     private readonly IOfferDocumentService _offerDocumentService;
+    private readonly IIdentityService _identityService;
     private readonly ServiceSettings _settings;
 
     /// <summary>
@@ -48,16 +50,19 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerService">Access to the offer service</param>
     /// <param name="offerDocumentService">Access to the offer document service</param>
+    /// <param name="identityService">Access to identity</param>
     /// <param name="settings">Access to the settings</param>
     public ServiceReleaseBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferService offerService,
         IOfferDocumentService offerDocumentService,
+        IIdentityService identityService,
         IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
         _offerDocumentService = offerDocumentService;
+        _identityService = identityService;
         _settings = settings.Value;
     }
 
@@ -160,8 +165,9 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _offerService.CreateServiceOfferingAsync(data, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, Guid companyId)
+    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var serviceData = await _portalRepositories
             .GetInstance<IOfferRepository>()
             .GetServiceUpdateData(serviceId, data.ServiceTypeIds, companyId)
@@ -242,8 +248,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _offerService.DeclineOfferAsync(serviceId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
-    public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken) =>
-        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, identity, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
+    public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken) =>
+        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
 
     /// <inheritdoc/>
     public Task DeleteServiceDocumentsAsync(Guid documentId) =>

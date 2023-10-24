@@ -2,6 +2,54 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.7.0-RC1
+
+### Change
+* Apps Service
+  * instead of creating the notification for an app subscription after triggering the provider, the notification will directly be created when subscribing to an offer
+  * enhanced POST /{appId}/subscribe endpoint business logic enhanced to set offer_subscriptions.date_created value when running the endpoint
+  * enhanced GET /api/apps/{appId} logic to fetch the "isSubscribe" value by the latest subscription record
+  * enhanced GET /api/Apps/provided/subscription-status & GET /api/Apps/{appId}/subscription/{subscriptionId}/provider by adding processStepTypeId responding with the latest subscription processStepTypeId
+* Services Service
+  * instead of creating the notification for an app subscription after triggering the provider, the notification will directly be created when subscribing to an offer
+  * POST {appId}/subscribe endpoint business logic enhanced to set offer_subscriptions.date_created value when running the endpoint
+* Administration
+  * endpoint GET api/administration/partnernetwork/memberCompanies enhanced to allow to send specific set of BPNs inside the request payload to request membership status for those BPNLs only
+* implemented business/backend logic to set/update company_applications.date_last_changed when running an update on the companyApplication
+
+### Feature
+* App Service
+  * added endpoint to AppChange controller to allow app document change process - fetch app documents api: GET /apps/appchange/{appId}/documents
+* Onboarding Service Provider *new function since 1.7.0 alpha* - released onboarding service provider functionality, incl.:
+  * moved creation of the users for network registrations in keycloak to the process step; if the call to keycloak fails operator can retrigger the process without impact to OSP/3rd party
+  * added /api/administration/identityprovider/network/identityproviders/managed/{identityProviderId} endpoint to retrieve idp information regarding IdP connected companies
+
+### Technical Support
+* Removed auth trail from the provisioning settings and added the use of the keycloak settings to set the correct useAuthTrail value
+* adjusted process worker workflow to build the process worker when changes within the networkRegistration directory appear
+* Controller slimlined
+  * removse all identity related code from controllers
+  * added identityservice to buisnessLogic to access idenitity
+* Mask sensitive information in portal logs
+* Extended logs for external service/component calls
+* Portal DB
+  * added inside portal.offer_subscription new attribute "date_created", incl. a migration to set all existing offer subscriptiond dates to "1970-01-01"
+* check constraints is_external_type_use_case, is_credential_type_use_case & is_connector_managed changed from function constraint to trigger function constraint
+* Add new process to synchronize keycloak user with company service account to set the correct user entity id
+
+### Bugfix
+* Application approval/verification process: adjusted bpdm businessPartnerNumber pull process to handle an unset SharingProcessStarted and retry the process
+* Onboarding Service Provider *new function since 1.7.0 alpha*
+  * OSP 3rd party customer registration submit endpoint run fixed by adding NetworkBusinessLogic Registration
+  * updated POST /partnerregistration endpoint - bpn propoerty value NULL allowed
+* Seeding data typo fixes (agreements.json)
+* Updated userRole for service endpoint PUT api/services/{subscriptionId}/unsubscribe to "unsubscribe_services"
+* Add user entity id when creating a company service account
+
+### Known Knowns
+* POST /api/registration/application/{applicationId}/inviteNewUser runs on error if user email is already known/existing in the portal db (no matter to which company the user is connected)
+
+
 ## 1.7.0 alpha
 
 ### Change
@@ -40,16 +88,16 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Notification Service
   * GET /api/notifications search string enabled to support search by notification content
 * Onboarding Service Provider *new function* - released onboarding service provider functionality, incl.:
-  * add new database structure for network to network
-  * add seeding for n2n
+  * added new database structure for network to network
+  * added seeding for n2n
   * enhanced POST /api/administration/identityprovider/owncompany/identityproviders endpoint by identityProviderType (managed; own; shared)
   * network process worker registered to use process worker for onboarding service provider registration flow
-  * add seeding (test data only) for the osp realm and company including users
+  * added seeding (test data only) for the osp realm and company including users
   * added POST /api/administration/registration/network/partnerRegistration/submit endpoint
   * added POST registration/network/partnerRegistration to register partners to the network
-  * add new process to synchronize users with central keycloak instance for the partnerRegistration
-  * add endpoint to get the callback url of an osp
-  * add endpoint to set the callback url of an osp
+  * added new process to synchronize users with central keycloak instance for the partnerRegistration
+  * added endpoint to get the callback url of an osp
+  * added endpoint to set the callback url of an osp
 * Email templates
   * released new email template 'offer release approval'
   * released new email tempülate 'welcome onboarding service provider registration company' (connected to feature release Onboarding Service Provider)

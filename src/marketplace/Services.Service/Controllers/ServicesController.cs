@@ -313,7 +313,7 @@ public class ServicesController : ControllerBase
     /// <response code="404">Service does not exist.</response>
     [HttpPut]
     [Route("{subscriptionId}/unsubscribe")]
-    [Authorize(Roles = "unsubscribe_apps")]
+    [Authorize(Roles = "unsubscribe_services")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

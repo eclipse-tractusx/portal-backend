@@ -39,6 +39,7 @@ public class DocumentsBusinessLogicTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOptions<DocumentSettings> _options;
     private readonly DocumentsBusinessLogic _sut;
+    private readonly IIdentityService _identityService;
 
     public DocumentsBusinessLogicTests()
     {
@@ -53,9 +54,11 @@ public class DocumentsBusinessLogicTests
         {
             EnableSeedEndpoint = true
         });
+        _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-        _sut = new DocumentsBusinessLogic(_portalRepositories, _options);
+        _sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
     }
 
     #region GetSeedData
@@ -65,7 +68,7 @@ public class DocumentsBusinessLogicTests
     {
         // Arrange
         SetupFakesForGetSeedData();
-        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
         var result = await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
@@ -80,7 +83,7 @@ public class DocumentsBusinessLogicTests
         // Arrange
         var invalidId = Guid.NewGuid();
         SetupFakesForGetSeedData();
-        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
         async Task Act() => await sut.GetSeedData(invalidId).ConfigureAwait(false);
@@ -96,7 +99,7 @@ public class DocumentsBusinessLogicTests
         // Arrange
         SetupFakesForGetSeedData();
         _options.Value.EnableSeedEndpoint = false;
-        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
         async Task Act() => await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
@@ -117,7 +120,7 @@ public class DocumentsBusinessLogicTests
         SetupFakesForGetDocument();
 
         // Act
-        var result = await _sut.GetDocumentAsync(ValidDocumentId, _identity.CompanyId).ConfigureAwait(false);
+        var result = await _sut.GetDocumentAsync(ValidDocumentId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -133,7 +136,7 @@ public class DocumentsBusinessLogicTests
         SetupFakesForGetDocument();
 
         // Act
-        async Task Act() => await _sut.GetDocumentAsync(documentId, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -145,10 +148,11 @@ public class DocumentsBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
         SetupFakesForGetDocument();
 
         // Act
-        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);

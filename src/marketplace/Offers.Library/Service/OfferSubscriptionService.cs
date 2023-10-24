@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -43,7 +44,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="identityService">Access to the identity of the user</param>
-    /// <param name="mailingService">Mail service.</param>
+    /// <param name="roleBaseMailService">Mail service.</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories,
         IIdentityService identityService,
@@ -55,10 +56,10 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients, IEnumerable<UserRoleConfig> serviceManagerRoles)
     {
         var identity = _identityService.IdentityData;
-        var companyInformation = await ValidateCompanyInformationAsync(identity.CompanyId).ConfigureAwait(false);
+        var companyInformation = await ValidateCompanyInformationAsync(identity.CompanyId, identity.UserId).ConfigureAwait(false);
         var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
 
         if (offerProviderDetails.ProviderCompanyId == null)
@@ -75,6 +76,16 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         CreateProcessSteps(offerSubscription);
         CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
+
+        var content = JsonSerializer.Serialize(new
+        {
+            AppName = offerProviderDetails.OfferName,
+            OfferId = offerId,
+            RequesterCompanyName = companyInformation.OrganizationName,
+            UserEmail = companyInformation.CompanyUserEmail,
+            AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl) && !offerProviderDetails.IsSingleInstance
+        });
+        await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, identity.UserId, content, serviceManagerRoles).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         await _roleBaseMailService.RoleBaseSendMail(
@@ -100,6 +111,56 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         var process = processStepRepository.CreateProcess(ProcessTypeId.OFFER_SUBSCRIPTION);
         offerSubscription.ProcessId = process.Id;
         processStepRepository.CreateProcessStepRange(new (ProcessStepTypeId, ProcessStepStatusId, Guid)[] { (ProcessStepTypeId.TRIGGER_PROVIDER, ProcessStepStatusId.TODO, process.Id) });
+    }
+
+    private async Task SendNotifications(
+        Guid offerId,
+        OfferTypeId offerTypeId,
+        Guid? salesManagerId,
+        Guid companyUserId,
+        string notificationContent,
+        IEnumerable<UserRoleConfig> serviceManagerRoles)
+    {
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+
+        var notificationTypeId = offerTypeId == OfferTypeId.SERVICE ? NotificationTypeId.SERVICE_REQUEST : NotificationTypeId.APP_SUBSCRIPTION_REQUEST;
+        if (salesManagerId.HasValue)
+        {
+            notificationRepository.CreateNotification(salesManagerId.Value, notificationTypeId, false,
+                notification =>
+                {
+                    notification.CreatorUserId = companyUserId;
+                    notification.Content = notificationContent;
+                });
+        }
+
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var roleData = await userRolesRepository
+            .GetUserRoleIdsUntrackedAsync(serviceManagerRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
+        {
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
+        }
+
+        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))
+        {
+            if (salesManagerId.HasValue && receiver == salesManagerId.Value)
+            {
+                continue;
+            }
+
+            notificationRepository.CreateNotification(
+                receiver,
+                notificationTypeId,
+                false,
+                notification =>
+                {
+                    notification.CreatorUserId = companyUserId;
+                    notification.Content = notificationContent;
+                });
+        }
     }
 
     private async Task<OfferProviderDetailsData> ValidateOfferProviderDetailDataAsync(Guid offerId, OfferTypeId offerTypeId)
@@ -133,10 +194,10 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         }
     }
 
-    private async Task<CompanyInformationData> ValidateCompanyInformationAsync(Guid companyId)
+    private async Task<CompanyInformationData> ValidateCompanyInformationAsync(Guid companyId, Guid companyUserId)
     {
         var companyInformation = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetOwnCompanyInformationAsync(companyId).ConfigureAwait(false);
+            .GetOwnCompanyInformationAsync(companyId, companyUserId).ConfigureAwait(false);
         if (companyInformation == null)
         {
             throw new ControllerArgumentException($"Company {companyId} does not exist", nameof(companyId));

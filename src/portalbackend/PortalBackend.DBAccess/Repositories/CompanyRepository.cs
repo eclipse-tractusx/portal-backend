@@ -108,10 +108,12 @@ public class CompanyRepository : ICompanyRepository
                 company!.CompanyAssignedRoles.SelectMany(car => car.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == technicalUserClientId)).Select(ur => ur.Id)).Distinct()))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds) =>
         _context.Companies
             .AsNoTracking()
-            .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE)
+            .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE &&
+                (bpnIds == null || bpnIds.Contains(company.BusinessPartnerNumber) &&
+                company.BusinessPartnerNumber != null))
             .Select(company => company.BusinessPartnerNumber)
             .AsAsyncEnumerable();
 
@@ -281,15 +283,16 @@ public class CompanyRepository : ICompanyRepository
             true
         )).SingleOrDefaultAsync();
 
-    public Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId) =>
+    public Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId, Guid companyUserId) =>
         _context.Companies
             .AsNoTracking()
             .Where(c => c.Id == companyId)
-            .Select(user => new CompanyInformationData(
-                user.Id,
-                user.Name,
-                user.Address!.CountryAlpha2Code,
-                user.BusinessPartnerNumber
+            .Select(company => new CompanyInformationData(
+                company.Id,
+                company.Name,
+                company.Address!.CountryAlpha2Code,
+                company.BusinessPartnerNumber,
+                company.Identities.Where(x => x.Id == companyUserId && x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!.Email).SingleOrDefault()
             ))
             .SingleOrDefaultAsync();
 

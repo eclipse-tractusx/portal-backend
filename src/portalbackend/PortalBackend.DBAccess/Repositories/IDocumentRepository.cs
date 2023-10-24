@@ -95,7 +95,8 @@ public interface IDocumentRepository
     /// <param name="documentId"></param>
     /// <param name="userCompanyId"></param>
     /// <param name="applicationStatusIds"></param>
-    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
+    /// <param name="applicationId"></param>
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, IEnumerable<Guid> applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
 
     /// <summary>
     /// Attaches the document and sets the optional parameters

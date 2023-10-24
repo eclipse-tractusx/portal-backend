@@ -38,6 +38,7 @@ public class BpdmBusinessLogicTests
     private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid IdWithSharingPending = new("920AF606-9581-4EAD-A7FD-78480F42D3A1");
     private static readonly Guid IdWithSharingError = new("9460ED6B-2DD3-4446-9B9D-9AE3640717F4");
+    private static readonly Guid IdWithoutSharingProcessStarted = new("f167835a-9859-4ae4-8f1d-b5d682e2562c");
     private static readonly Guid IdWithStateCreated = new("bda6d1b5-042e-493a-894c-11f3a89c12b1");
     private static readonly Guid IdWithoutZipCode = new("beaa6de5-d411-4da8-850e-06047d3170be");
     private static readonly Guid ValidCompanyId = new("abf990f8-0c27-43dc-bbd0-b1bce964d8f4");
@@ -336,6 +337,38 @@ public class BpdmBusinessLogicTests
     }
 
     [Fact]
+    public async Task HandlePullLegalEntity_WithSharingProcessStartedNotSet_ReturnsExpected()
+    {
+        // Arrange
+        var company = new Company(Guid.NewGuid(), "Test Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
+        {
+            BusinessPartnerNumber = "1"
+        };
+        var checklistEntry = _fixture.Build<ApplicationChecklistEntry>()
+            .With(x => x.ApplicationChecklistEntryStatusId, ApplicationChecklistEntryStatusId.TO_DO)
+            .Create();
+        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO},
+            }
+            .ToImmutableDictionary();
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutSharingProcessStarted, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        SetupForHandlePullLegalEntity(company);
+
+        // Act
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.ModifyChecklistEntry?.Invoke(checklistEntry);
+        checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeFalse();
+        result.ProcessMessage.Should().Be("SharingProcessStarted was not set");
+    }
+
+    [Fact]
     public async Task HandlePullLegalEntity_WithSharingTypePending_ReturnsExpected()
     {
         // Arrange
@@ -469,13 +502,13 @@ public class BpdmBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, (string?)null)
             .Create();
 
-        A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithBpn || x == IdWithSharingError || x == IdWithSharingPending)))
+        A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithBpn || x == IdWithSharingError || x == IdWithSharingPending || x == IdWithoutSharingProcessStarted)))
             .Returns((ValidCompanyId, validData));
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithStateCreated)))
             .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
             .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, null!, null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
-        A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Not.Matches(x => x == IdWithStateCreated || x == IdWithBpn || x == IdWithoutZipCode || x == IdWithSharingError || x == IdWithSharingPending)))
+        A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Not.Matches(x => x == IdWithStateCreated || x == IdWithBpn || x == IdWithoutZipCode || x == IdWithSharingError || x == IdWithSharingPending || x == IdWithoutSharingProcessStarted)))
             .Returns(new ValueTuple<Guid, BpdmData>());
 
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithStateCreated.ToString()), A<CancellationToken>._))
@@ -484,15 +517,26 @@ public class BpdmBusinessLogicTests
             .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.Bpn, (string?)null).Create());
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithBpn.ToString()), A<CancellationToken>._))
             .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.Bpn, "CAXSDUMMYCATENAZZ").Create());
-        A.CallTo(() => _bpdmService.GetSharingState(A<Guid>.That.Matches(x => x == IdWithBpn || x == IdWithStateCreated || x == IdWithoutZipCode), A<CancellationToken>._))
-            .Returns(_fixture.Build<BpdmSharingState>().With(x => x.SharingStateType, BpdmSharingStateType.Success).Create());
+        A.CallTo(() => _bpdmService.GetSharingState(A<Guid>.That.Matches(x => x == IdWithBpn || x == IdWithStateCreated || x == IdWithoutZipCode || x == IdWithoutSharingProcessStarted), A<CancellationToken>._))
+            .Returns(_fixture.Build<BpdmSharingState>()
+                .With(x => x.SharingStateType, BpdmSharingStateType.Success)
+                .With(x => x.SharingProcessStarted, DateTimeOffset.UtcNow)
+                .Create());
         A.CallTo(() => _bpdmService.GetSharingState(IdWithSharingPending, A<CancellationToken>._))
-            .Returns(_fixture.Build<BpdmSharingState>().With(x => x.SharingStateType, BpdmSharingStateType.Pending).Create());
+            .Returns(_fixture.Build<BpdmSharingState>()
+                .With(x => x.SharingStateType, BpdmSharingStateType.Pending)
+                .With(x => x.SharingProcessStarted, DateTimeOffset.UtcNow)
+                .Create());
         A.CallTo(() => _bpdmService.GetSharingState(IdWithSharingError, A<CancellationToken>._))
             .Returns(_fixture.Build<BpdmSharingState>()
                 .With(x => x.SharingStateType, BpdmSharingStateType.Error)
                 .With(x => x.SharingErrorMessage, "This is a test sharing state error")
                 .With(x => x.SharingErrorCode, "Code 43")
+                .With(x => x.SharingProcessStarted, DateTimeOffset.UtcNow)
+                .Create());
+        A.CallTo(() => _bpdmService.GetSharingState(IdWithoutSharingProcessStarted, A<CancellationToken>._))
+            .Returns(_fixture.Build<BpdmSharingState>()
+                .With(x => x.SharingProcessStarted, (DateTimeOffset?)null)
                 .Create());
 
         if (company != null)
