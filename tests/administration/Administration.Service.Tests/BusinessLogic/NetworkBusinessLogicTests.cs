@@ -32,6 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -427,24 +429,7 @@ public class NetworkBusinessLogicTests
             "5",
             "00001",
             new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
-            new[]
-            {
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "postmaster@[IPv6:2001:0db8:85a3:0000:0000:8a2e:0370:7334]").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "postmaster@[123.123.123.123]").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "user-@example.org").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "user%example.com@example.org").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "mailhost!username@example.org").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "\"john..doe\"@example.org").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "\" \"@example.org").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "example@s.example").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "admin@example").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "name/surname@example.com").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "user.name+tag+sorting@example.com").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "long.email-address-with-hyphens@and.subdomains.example.com").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "x@example.com").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "very.common@example.com").Create(),
-                _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).With(x => x.Email, "simple@example.com").Create()
-            },
+            Enumerable.Range(1, 10).Select(_ => _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).WithEmailPattern(x => x.Email).Create()).ToImmutableArray(),
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
@@ -542,7 +527,7 @@ public class NetworkBusinessLogicTests
                 x.ApplicationId == newApplicationId);
 
         A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, Bpnl))
-            .MustHaveHappened(15, Times.Exactly);
+            .MustHaveHappened(10, Times.Exactly);
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

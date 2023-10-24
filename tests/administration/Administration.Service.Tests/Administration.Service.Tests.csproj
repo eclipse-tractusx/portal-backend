@@ -54,9 +54,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Helper\" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Remove="Helper\EmailSpecimenBuilder.cs" />
   </ItemGroup>
 </Project>
