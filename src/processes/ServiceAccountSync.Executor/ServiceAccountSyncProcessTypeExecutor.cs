@@ -92,11 +92,12 @@ public class ServiceAccountSyncProcessTypeExecutor : IProcessTypeExecutor
                 {
                     i.UserEntityId = userEntityId;
                 });
-            return await enumerator.MoveNextAsync().ConfigureAwait(false)
-                ? (null, ProcessStepStatusId.TODO, true, null)  // in case there are further serviceAccounts eligible for sync request save without step status change to repeat the unmodified step
-                : (null, ProcessStepStatusId.DONE, true, null); // otherwise request save and done
+            var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
+                ? Enumerable.Repeat(ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS, 1) // in case there are further serviceAccounts eligible for sync reschedule the same stepTypeId
+                : null;
+            return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"synchronized serviceAccountId {serviceAccountId}, clientClientId {clientClientId} with userEntityId {userEntityId}");
         }
-        return (null, ProcessStepStatusId.DONE, false, null);
+        return (null, ProcessStepStatusId.DONE, false, "no serviceAccounts to synchronize found");
     }
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex) =>

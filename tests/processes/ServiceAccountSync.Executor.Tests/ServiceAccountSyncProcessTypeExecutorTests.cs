@@ -176,7 +176,8 @@ public class ServiceAccountSyncProcessTypeExecutorTests
 
         // Assert
         result1.Modified.Should().BeTrue();
-        result1.ScheduleStepTypeIds.Should().BeNull();
+        result1.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.SYNCHRONIZE_SERVICE_ACCOUNTS);
+        result1.ProcessMessage.Should().Be($"synchronized serviceAccountId {identity.Id}, clientClientId sa1 with userEntityId {userEntityId1}");
         identity.UserEntityId.Should().Be(userEntityId1);
         identity2.UserEntityId.Should().Be(null);
 
@@ -191,6 +192,7 @@ public class ServiceAccountSyncProcessTypeExecutorTests
         // Assert
         result2.Modified.Should().BeTrue();
         result2.ScheduleStepTypeIds.Should().BeNull();
+        result2.ProcessMessage.Should().Be($"synchronized serviceAccountId {identity2.Id}, clientClientId sa2 with userEntityId {userEntityId2}");
         identity.UserEntityId.Should().Be(userEntityId1);
         identity2.UserEntityId.Should().Be(userEntityId2);
 
@@ -205,6 +207,7 @@ public class ServiceAccountSyncProcessTypeExecutorTests
         // Assert
         result3.Modified.Should().BeFalse();
         result3.ScheduleStepTypeIds.Should().BeNull();
+        result3.ProcessMessage.Should().Be("no serviceAccounts to synchronize found");
         identity.UserEntityId.Should().Be(userEntityId1);
         identity2.UserEntityId.Should().Be(userEntityId2);
 
