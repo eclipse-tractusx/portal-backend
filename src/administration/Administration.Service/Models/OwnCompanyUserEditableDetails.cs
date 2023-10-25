@@ -38,7 +38,7 @@ public class OwnCompanyUserEditableDetails
     public string? LastName { get; set; }
 
     [DefaultValue("string")]
-    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
+    [EmailAddress]
     [JsonPropertyName("email")]
     public string? Email { get; set; }
 }

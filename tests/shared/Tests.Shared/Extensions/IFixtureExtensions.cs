@@ -18,13 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
+using AutoFixture.Dsl;
 using AutoFixture.Kernel;
+using System.Linq.Expressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
-public static class IFixtureExtensions
+public static class AutoFixtureExtensions
 {
-    public static string CreateEmail(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}@[a-z]{10}\.[a-z]{2}$"));
-    public static string CreateName(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}$"));
+    public static string EmailRegex = @"[a-z]{20}@[a-z]{10}\.[a-z]{2}";
+    public static string NameRegex = @"^[a-z]{20}$";
+
+    public static IPostprocessComposer<T> WithEmailPattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
+    {
+        return composer.With(propertyPicker, new SpecimenContext(composer).Resolve(new RegularExpressionRequest(EmailRegex)));
+    }
+
+    public static IPostprocessComposer<T> WithNamePattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
+    {
+        return composer.With(propertyPicker, new SpecimenContext(composer).Resolve(new RegularExpressionRequest(NameRegex)));
+    }
 }

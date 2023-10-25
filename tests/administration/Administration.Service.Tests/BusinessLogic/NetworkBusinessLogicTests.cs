@@ -32,6 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -163,6 +165,8 @@ public class NetworkBusinessLogicTests
 
     [Theory]
     [InlineData("")]
+    [InlineData("abc.example.com")]
+    [InlineData("a@b@c@example.com")]
     public async Task HandlePartnerRegistration_WithInvalidEmail_ThrowsControllerArgumentException(string email)
     {
         // Arrange
@@ -176,7 +180,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("User must have a valid email address");
+        ex.Message.Should().Be($"Mail {email} must not be empty and have valid format");
     }
 
     [Theory]
@@ -425,7 +429,7 @@ public class NetworkBusinessLogicTests
             "5",
             "00001",
             new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
-            new[] { new UserDetailData(null, "123", "ironman", "tony", "stark", "tony@stark.com") },
+            Enumerable.Range(1, 10).Select(_ => _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).WithEmailPattern(x => x.Email).Create()).ToImmutableArray(),
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
@@ -489,8 +493,6 @@ public class NetworkBusinessLogicTests
             {
                 networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
             });
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .Returns(new[] { (Guid.NewGuid(), "ironman", (string?)"testpw", (Exception?)null) }.ToAsyncEnumerable());
 
         // Act
         await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
@@ -525,7 +527,7 @@ public class NetworkBusinessLogicTests
                 x.ApplicationId == newApplicationId);
 
         A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, Bpnl))
-            .MustHaveHappenedOnceExactly();
+            .MustHaveHappened(10, Times.Exactly);
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
