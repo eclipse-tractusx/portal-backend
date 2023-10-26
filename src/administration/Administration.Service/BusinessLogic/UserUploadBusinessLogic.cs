@@ -256,7 +256,6 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             _ => new UserCreationError(line, error.Message, Enumerable.Empty<ErrorDetails>())
         };
 
-
     private async ValueTask<IEnumerable<UserRoleData>> GetUserRoleDatas(IEnumerable<string> roles, List<UserRoleData> validRoleData, Guid companyId)
     {
         var unknownRoles = roles.Except(validRoleData.Select(r => r.UserRoleText));
