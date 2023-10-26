@@ -153,6 +153,7 @@ public class UserUploadBusinessLogicTests
     public async Task TestUserCreationCreationError()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
+        var detailError = ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new("userName", "foo"), new("realm", "bar") });
 
         SetupFakes(new[] {
             HeaderLine(),
@@ -168,7 +169,7 @@ public class UserUploadBusinessLogicTests
                 (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                     .With(x => x.CompanyUserId, Guid.Empty)
                     .With(x => x.UserName, creationInfo.UserName)
-                    .With(x => x.Error, _error)
+                    .With(x => x.Error, detailError)
                     .Create());
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _identityService, _errorMessageService, _options);
@@ -181,7 +182,18 @@ public class UserUploadBusinessLogicTests
         result.Created.Should().Be(4);
         result.Error.Should().Be(1);
         result.Total.Should().Be(5);
-        result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == _error.Message);
+        result.Errors.Should().ContainSingle()
+            .Which.Should().Match<UserCreationError>(x =>
+                x.Line == 3 &&
+                x.Message == $"type: ProvisioningServiceErrors code: USER_CREATION_CONFLICT userName: foo realm: bar");
+        result.Errors.Single().Details.Should().ContainSingle()
+            .Which.Should().Match<ErrorDetails>(x =>
+                x.Type == "ProvisioningServiceErrors" &&
+                x.ErrorCode == "USER_CREATION_CONFLICT" &&
+                x.Message == "type: ProvisioningServiceErrors code: USER_CREATION_CONFLICT userName: {userName} realm: {realm}" &&
+                x.Parameters.Count() == 2 &&
+                x.Parameters.First(p => p.Name == "userName").Value == "foo" &&
+                x.Parameters.First(p => p.Name == "realm").Value == "bar");
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(4, Times.Exactly);
     }
 
@@ -404,6 +416,7 @@ public class UserUploadBusinessLogicTests
     public async Task TestUserCreationSharedIdpCreationError()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
+        var detailError = ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new("userName", "foo"), new("realm", "bar") });
 
         SetupFakes(new[] {
             HeaderLineSharedIdp(),
@@ -419,7 +432,7 @@ public class UserUploadBusinessLogicTests
                 (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                     .With(x => x.CompanyUserId, Guid.Empty)
                     .With(x => x.UserName, creationInfo.UserName)
-                    .With(x => x.Error, _error)
+                    .With(x => x.Error, detailError)
                     .Create());
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _identityService, _errorMessageService, _options);
@@ -432,7 +445,18 @@ public class UserUploadBusinessLogicTests
         result.Created.Should().Be(4);
         result.Error.Should().Be(1);
         result.Total.Should().Be(5);
-        result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == _error.Message);
+        result.Errors.Should().ContainSingle()
+            .Which.Should().Match<UserCreationError>(x =>
+                x.Line == 3 &&
+                x.Message == $"type: ProvisioningServiceErrors code: USER_CREATION_FAILURE userName: foo realm: bar");
+        result.Errors.Single().Details.Should().ContainSingle()
+            .Which.Should().Match<ErrorDetails>(x =>
+                x.Type == "ProvisioningServiceErrors" &&
+                x.ErrorCode == "USER_CREATION_FAILURE" &&
+                x.Message == "type: ProvisioningServiceErrors code: USER_CREATION_FAILURE userName: {userName} realm: {realm}" &&
+                x.Parameters.Count() == 2 &&
+                x.Parameters.First(p => p.Name == "userName").Value == "foo" &&
+                x.Parameters.First(p => p.Name == "realm").Value == "bar");
     }
 
     [Fact]
