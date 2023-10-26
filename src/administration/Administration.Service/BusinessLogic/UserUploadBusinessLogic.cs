@@ -21,8 +21,8 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -39,6 +39,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     private readonly IMailingService _mailingService;
     private readonly UserSettings _settings;
     private readonly IIdentityService _identityService;
+    private readonly IErrorMessageService _errorMessageService;
 
     /// <summary>
     /// Constructor.
@@ -46,16 +47,19 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="mailingService">Mailing Service</param>
     /// <param name="identityService">Access to the identity Service</param>
+    /// <param name="errorMessageService">ErrorMessage Service</param>
     /// <param name="settings">Settings</param>
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
         IMailingService mailingService,
         IIdentityService identityService,
+        IErrorMessageService errorMessageService,
         IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;
         _mailingService = mailingService;
         _identityService = identityService;
+        _errorMessageService = errorMessageService;
         _settings = settings.Value;
     }
 
@@ -109,7 +113,11 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
-        return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
+        return new UserCreationStats(
+            numCreated,
+            errors.Count(),
+            numLines,
+            errors.Select(error => CreateUserCreationError(error.Line, error.Error)));
     }
 
     private async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -234,8 +242,20 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
-        return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
+        return new UserCreationStats(
+            numCreated,
+            errors.Count(),
+            numLines,
+            errors.Select(error => CreateUserCreationError(error.Line, error.Error)));
     }
+
+    private UserCreationError CreateUserCreationError(int line, Exception error) =>
+        error switch
+        {
+            DetailException detailException when detailException.HasDetails => new UserCreationError(line, detailException.GetErrorMessage(_errorMessageService), detailException.GetErrorDetails(_errorMessageService)),
+            _ => new UserCreationError(line, error.Message, Enumerable.Empty<ErrorDetails>())
+        };
+
 
     private async ValueTask<IEnumerable<UserRoleData>> GetUserRoleDatas(IEnumerable<string> roles, List<UserRoleData> validRoleData, Guid companyId)
     {

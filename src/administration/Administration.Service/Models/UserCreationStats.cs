@@ -18,6 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record UserCreationStats(int Created, int Error, int Total, IEnumerable<string> Errors);
+public record UserCreationStats(int Created, int Error, int Total, IEnumerable<UserCreationError> Errors);
+public record UserCreationError(int Line, string Message, IEnumerable<ErrorDetails> Details);

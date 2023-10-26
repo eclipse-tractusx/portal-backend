@@ -19,9 +19,11 @@
  ********************************************************************************/
 
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -120,15 +122,10 @@ public partial class ProvisioningManager
         newUser.LastName = profile.LastName;
         newUser.Email = profile.Email;
         newUser.Credentials ??= profile.Password == null ? null : Enumerable.Repeat(new Credentials { Type = "Password", Value = profile.Password }, 1);
-        var newUserId = await sharedKeycloak.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(false);
-        if (newUserId == null)
-        {
-            throw new KeycloakNoSuccessException($"failed to created shared user {profile.UserName} in realm {realm}");
-        }
-        return newUserId;
+        return await CreateAndRetrieveUserIdMappingError(sharedKeycloak, realm, newUser).ConfigureAwait(false);
     }
 
-    public async Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
+    public Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
     {
         var newUser = CloneUser(_Settings.CentralUser);
         newUser.UserName = profile.UserName;
@@ -140,10 +137,33 @@ public partial class ProvisioningManager
         {
             newUser.Attributes = attributes.Where(a => a.Values.Any()).ToDictionary(a => a.Name, a => a.Values);
         }
-        var newUserId = await _CentralIdp.CreateAndRetrieveUserIdAsync(_Settings.CentralRealm, newUser).ConfigureAwait(false);
+        return CreateAndRetrieveUserIdMappingError(_CentralIdp, _Settings.CentralRealm, newUser);
+    }
+
+    private async Task<string> CreateAndRetrieveUserIdMappingError(Keycloak.Library.KeycloakClient keycloak, string realm, User newUser)
+    {
+        if (newUser.UserName == null)
+            throw ControllerArgumentException.Create(ProvisioningServiceErrors.USER_CREATION_USERNAME_NULL, new ErrorParameter[] { new("userName", "null"), new("realm", realm) });
+
+        string? newUserId;
+        try
+        {
+            newUserId = await keycloak.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(false);
+        }
+        catch (Exception error)
+        {
+            throw error switch
+            {
+                KeycloakEntityConflictException => ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
+                KeycloakEntityNotFoundException => NotFoundException.Create(ProvisioningServiceErrors.USER_CREATION_NOTFOUND, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
+                ArgumentException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_ARGUMENT, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
+                ServiceException serviceException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, serviceException.StatusCode, serviceException.IsRecoverable, error),
+                _ => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error)
+            };
+        }
         if (newUserId == null)
         {
-            throw new KeycloakNoSuccessException($"failed to created central user {profile.UserName} for {profile.Email}");
+            throw ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) });
         }
         return newUserId;
     }
