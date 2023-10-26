@@ -81,6 +81,7 @@ public class GeneralHttpErrorHandler
             statusCode = HttpStatusCode.BadRequest;
             messageFunc = _ => (argumentException.ParamName, Enumerable.Repeat(argumentException.Message, 1));
         }
+        
         else if (error is ControllerArgumentException caException)
         {
             statusCode = HttpStatusCode.BadRequest;

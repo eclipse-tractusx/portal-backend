@@ -33,14 +33,12 @@
     <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Library\Keycloak.Library.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Linq\Framework.Linq.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework" Version="1.0.0-RC1" />
     <PackageReference Include="PasswordGenerator" Version="2.1.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>

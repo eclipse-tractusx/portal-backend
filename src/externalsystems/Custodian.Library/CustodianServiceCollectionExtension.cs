@@ -23,7 +23,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
@@ -38,7 +37,7 @@ public static class CustodianServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<CustodianSettings>>();
-        services.AddCustomHttpClientWithAuthentication<CustodianService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress);
+        services.AddCustomHttpClientWithAuthentication<CustodianService>(settings.Value.BaseAddress);
         services
             .AddTransient<ICustodianService, CustodianService>()
             .AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>();

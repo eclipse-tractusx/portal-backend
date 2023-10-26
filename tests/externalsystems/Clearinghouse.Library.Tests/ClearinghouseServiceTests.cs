@@ -52,7 +52,7 @@ public class ClearinghouseServiceTests
             ClientId = "CatenaX",
             ClientSecret = "pass@Secret",
             GrantType = "cred",
-            KeycloakTokenAddress = "https://key.cloak.com"
+            TokenAddress = "https://key.cloak.com"
         });
         _tokenService = A.Fake<ITokenService>();
         _sut = new ClearinghouseService(_tokenService, _options);

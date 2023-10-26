@@ -29,10 +29,8 @@
 
   <ItemGroup>
     <PackageReference Include="Flurl.Http.Signed" Version="3.2.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework" Version="1.0.0-RC1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
   </ItemGroup>
 
 </Project>

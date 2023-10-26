@@ -18,15 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Web.Identity.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
+using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
 var VERSION = "v2";
 
-WebApplicationBuildRunner
+WebAppHelper
     .BuildAndRunWebApplication<Program>(args, "notification", VERSION, builder =>
     {
+        builder.Services
+            .AddIdentityService()
+            .AddPublicInfos();
+
         builder.Services
             .AddPortalRepositories(builder.Configuration);
 

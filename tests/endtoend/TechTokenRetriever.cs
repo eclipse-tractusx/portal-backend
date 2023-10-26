@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using RestAssured.Response.Logging;
-using System.IdentityModel.Tokens.Jwt;
 using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;

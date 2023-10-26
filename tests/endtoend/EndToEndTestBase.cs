@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using Xunit.Abstractions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;

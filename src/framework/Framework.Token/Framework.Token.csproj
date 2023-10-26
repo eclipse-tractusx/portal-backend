@@ -1,5 +1,4 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
 - Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
@@ -28,9 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
-    <ProjectReference Include="..\Framework.Models\Framework.Models.csproj" />
-    <ProjectReference Include="..\Framework.HttpClient\Framework.HttpClient.csproj" />
+    <ProjectReference Include="..\Framework.HttpClientExtensions\Framework.HttpClientExtensions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -17,8 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Generic;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.Models;
 
 public record UserMailInformation(string Email, string? FirstName, string? LastName, IEnumerable<string> IdpAliasse);

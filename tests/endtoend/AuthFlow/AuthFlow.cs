@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using HtmlAgilityPack;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using System.Text.RegularExpressions;
 using System.Web;
 using static RestAssured.Dsl;

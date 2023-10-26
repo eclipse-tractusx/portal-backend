@@ -21,7 +21,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\Mailing.SendMail\Mailing.SendMail.csproj" />
   </ItemGroup>
   <PropertyGroup>

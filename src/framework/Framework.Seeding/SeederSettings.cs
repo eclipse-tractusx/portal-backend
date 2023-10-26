@@ -20,7 +20,6 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
@@ -48,8 +47,6 @@ public static class SeederSettingsExtensions
         services.AddOptions<SeederSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
-            .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }

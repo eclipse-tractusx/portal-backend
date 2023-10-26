@@ -22,21 +22,24 @@
 
     <PropertyGroup>
       <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Offers.Library</AssemblyName>
+      <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Offers.Library</RootNamespace>
       <TargetFramework>net7.0</TargetFramework>
       <ImplicitUsings>enable</ImplicitUsings>
       <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\framework\Framework.HttpClient\Framework.HttpClient.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
       <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
       <ProjectReference Include="..\..\processes\OfferSubscription.Library\OfferSubscription.Library.csproj" />
       <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
       <ProjectReference Include="..\..\mailing\Mailing.Service\Mailing.Service.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+      <PackageReference Include="System.Net.Http" Version="4.3.4" />
     </ItemGroup>
 
 </Project>

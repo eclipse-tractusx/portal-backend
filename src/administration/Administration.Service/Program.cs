@@ -20,7 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -30,12 +29,19 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.De
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Web.Identity.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
+using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
 var VERSION = "v2";
 
-WebApplicationBuildRunner
+WebAppHelper
     .BuildAndRunWebApplication<Program>(args, "administration", VERSION, builder =>
     {
+        builder.Services
+            .AddIdentityService()
+            .AddPublicInfos();
+
         builder.Services
             .AddMailingAndTemplateManager(builder.Configuration)
             .AddPortalRepositories(builder.Configuration)
