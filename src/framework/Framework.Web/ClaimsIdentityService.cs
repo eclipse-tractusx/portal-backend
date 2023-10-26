@@ -19,7 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+namespace Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
 public class ClaimsIdentityService : IIdentityService
 {
@@ -29,5 +29,12 @@ public class ClaimsIdentityService : IIdentityService
         _identityData = claimsIdentityDataBuilder;
     }
 
+<<<<<<<< HEAD:src/framework/Framework.Web/ClaimsIdentityService.cs
     public IIdentityData IdentityData => _identityData;
+========
+    /// <inheritdoc />
+    public IdentityData IdentityData =>
+        _identityData ??= _httpContextAccessor.HttpContext?.User.GetIdentityData()
+                          ?? throw new ConflictException("The identity should be set here");
+>>>>>>>> c2ab69a7f (feat(nuget): create framework and framework.web nuget packages):src/web/Web.Identity/IdentityService.cs
 }

@@ -51,12 +51,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\framework\Framework.Models\Framework.Models.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\Framework.PublicInfos\Framework.PublicInfos.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\Framework.Web\Framework.Web.csproj" />
-    <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
-    <ProjectReference Include="..\..\..\src\provisioning\Provisioning.ProvisioningEntities\Provisioning.ProvisioningEntities.csproj" />
+    <ProjectReference Include="..\..\..\src\web\Web.Identity\Web.Identity.csproj" />
+    <ProjectReference Include="..\..\..\src\web\Web.PublicInfos\Web.PublicInfos.csproj" />
   </ItemGroup>
 </Project>

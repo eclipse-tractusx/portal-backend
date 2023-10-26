@@ -1,6 +1,5 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
-- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+- Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -17,28 +16,64 @@
 -
 - SPDX-License-Identifier: Apache-2.0
 -->
+
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</RootNamespace>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</AssemblyName>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- nuget specific config-->
+    <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</PackageId>
+    <PackageVersion>1.0.0-RC1</PackageVersion>
+    <Authors>TractusX</Authors>
+    <Copyright>
+      All content is the property of the respective authors or their employers.
+      For more information regarding authorship of content, please consult the listed source code repository logs.
+    </Copyright>
+    <Description>
+      The Catena-X Portal Backend Framework Web library is a versatile .NET library that provides a set of powerful tools and utilities for web development tasks.
+      This package provides an General Error Handling, Swagger Extensions and a easy setup for ASP.Net Core applications.
+    </Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/eclipse-tractusx/portal-backend</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
-    <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
-    <ProjectReference Include="..\Framework.Cors\Framework.Cors.csproj" />
-    <ProjectReference Include="..\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
-    <ProjectReference Include="..\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
-    <ProjectReference Include="..\Framework.ProcessIdentity\Framework.ProcessIdentity.csproj" />
-    <ProjectReference Include="..\Framework.PublicInfos\Framework.PublicInfos.csproj" />
-    <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
-    <ProjectReference Include="..\Framework.Linq\Framework.Linq.csproj" />
-    <ProjectReference Include="..\Framework.Logging\Framework.Logging.csproj" />
+    <None Include="./README.md" Pack="true" PackagePath="" />
+    <None Include="../../../LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
-    <PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
+    <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Framework.Cors\Framework.Cors.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Framework.WebExtensions\Framework.WebExtensions.csproj" PrivateAssets="All" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework" Version="1.0.0-RC1" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput> $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+    <ItemGroup>
+      <_ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(_ReferenceCopyLocalPaths)" TargetPath="%(_ReferenceCopyLocalPaths.DestinationSubDirectory)"/>
+    </ItemGroup>
+  </Target>
 </Project>

@@ -28,10 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework" Version="1.0.0-RC1" />
     <PackageReference Include="SwashBuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 

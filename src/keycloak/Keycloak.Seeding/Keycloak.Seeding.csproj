@@ -39,7 +39,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework" Version="1.0.0-RC1" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 
@@ -47,10 +49,6 @@
     <ProjectReference Include="..\Keycloak.Library\Keycloak.Library.csproj" />
     <ProjectReference Include="..\Keycloak.Factory\Keycloak.Factory.csproj" />
     <ProjectReference Include="..\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Linq\Framework.Linq.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

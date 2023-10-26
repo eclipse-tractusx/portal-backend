@@ -20,7 +20,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -94,9 +94,9 @@ public class OfferDocumentService : IOfferDocumentService
             throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of {offerTypeId} {id}");
         }
 
-        var (content, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
+        var documentData = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
 
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, content, hash, mediaTypeId, documentTypeId, x =>
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentData.Content, documentData.Hash, mediaTypeId, documentTypeId, x =>
         {
             x.CompanyUserId = _identityData.IdentityId;
         });
