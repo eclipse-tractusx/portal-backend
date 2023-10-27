@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 public record PageOutputResponseBpdmLegalEntityData(
@@ -25,29 +27,29 @@ public record PageOutputResponseBpdmLegalEntityData(
 );
 
 public record BpdmLegalEntityOutputData(
-    string? ExternalId,
-    string? Bpn,
-    string? LegalShortName,
-    string? LegalForm,
-    IEnumerable<BpdmIdentifier> Identifiers,
-    IEnumerable<BpdmStatus> States,
-    IEnumerable<BpdmProfileClassification> Classifications,
-    IEnumerable<string> LegalNameParts,
-    IEnumerable<string> Roles,
-    BpdmLegalAddressResponse LegalAddress
+    [property: JsonPropertyName("externalId")] string? ExternalId,
+    [property: JsonPropertyName("bpnl")] string? Bpn,
+    [property: JsonPropertyName("legalShortName")] string? LegalShortName,
+    [property: JsonPropertyName("legalForm")] string? LegalForm,
+    [property: JsonPropertyName("identifiers")] IEnumerable<BpdmIdentifier> Identifiers,
+    [property: JsonPropertyName("states")] IEnumerable<BpdmStatus> States,
+    [property: JsonPropertyName("classifications")] IEnumerable<BpdmProfileClassification> Classifications,
+    [property: JsonPropertyName("legalNameParts")] IEnumerable<string> LegalNameParts,
+    [property: JsonPropertyName("roles")] IEnumerable<string> Roles,
+    [property: JsonPropertyName("legalAddress")] BpdmLegalAddressResponse LegalAddress
 );
 
 public record BpdmLegalAddressResponse(
-    string ExternalId,
-    string LegalEntityExternalId,
-    string SiteExternalId,
-    string Bpn,
-    IEnumerable<string> NameParts,
-    IEnumerable<BpdmAddressState> States,
-    IEnumerable<BpdmAddressIdentifier> Identifiers,
-    BpdmAddressPhysicalPostalAddress PhysicalPostalAddress,
-    BpdmAddressAlternativePostalAddress AlternativePostalAddress,
-    IEnumerable<string> Roles
+    [property: JsonPropertyName("externalId")] string ExternalId,
+    [property: JsonPropertyName("legalEntityExternalId")] string LegalEntityExternalId,
+    [property: JsonPropertyName("siteExternalId")] string SiteExternalId,
+    [property: JsonPropertyName("bpna")] string Bpn,
+    [property: JsonPropertyName("nameParts")] IEnumerable<string> NameParts,
+    [property: JsonPropertyName("states")] IEnumerable<BpdmAddressState> States,
+    [property: JsonPropertyName("identifiers")] IEnumerable<BpdmAddressIdentifier> Identifiers,
+    [property: JsonPropertyName("physicalPostalAddress")] BpdmAddressPhysicalPostalAddress? PhysicalPostalAddress,
+    [property: JsonPropertyName("alternativePostalAddress")] BpdmAddressAlternativePostalAddress? AlternativePostalAddress,
+    [property: JsonPropertyName("roles")] IEnumerable<string> Roles
 );
 
 public record BpdmCountry
