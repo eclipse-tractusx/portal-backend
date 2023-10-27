@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,6 +17,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record IdentityProviderUpdateStats(int Updated, int Unchanged, int Error, int Total, IEnumerable<string> Errors);
+public record IdentityProviderUpdateStats(int Updated, int Unchanged, int Error, int Total, IEnumerable<UserUpdateError> Errors);
+public record UserUpdateError(int Line, string Message, IEnumerable<ErrorDetails> Details);
