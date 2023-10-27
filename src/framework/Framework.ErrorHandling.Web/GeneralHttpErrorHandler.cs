@@ -47,7 +47,7 @@ public class GeneralHttpErrorHandler
         { HttpStatusCode.InternalServerError, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1", "The server encountered an unexpected condition.") }
     }.ToImmutableDictionary();
 
-    public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger, IErrorMessageService? errorMessageService = null)
+    public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger, IErrorMessageService? errorMessageService = null) //TODO make errorMessageService mandatory as soon all dependant services are adjusted accordingly
     {
         _next = next;
         _logger = logger;

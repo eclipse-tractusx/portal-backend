@@ -24,9 +24,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
 
 public class AdministrationRegistrationErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<int, string> {
-                { (int) AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, "application {applicationId} does not exist" }
-            }.ToImmutableDictionary();
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<AdministrationRegistrationErrors, string> {
+                { AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, "application {applicationId} does not exist" }
+            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(AdministrationRegistrationErrors); }
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
