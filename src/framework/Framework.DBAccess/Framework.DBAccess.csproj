@@ -24,7 +24,48 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <!-- nuget specific config-->
+  <PropertyGroup>
+    <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess</PackageId>
+    <PackageVersion>1.0.0-RC1</PackageVersion>
+    <Authors>TractusX</Authors>
+    <Copyright>
+      All content is the property of the respective authors or their employers. For
+      more information regarding authorship of content, please consult the listed
+      source code repository logs.
+    </Copyright>
+    <Description>
+      The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks.
+      This package simplifies various aspects of your application, including database interactions, asynchronous programming, file I/O, LINQ operations, logging, and database seeding.
+    </Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/eclipse-tractusx/portal-backend</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="./README.md" Pack="true" PackagePath="" />
+    <None Include="../../../LICENSE" Pack="true" PackagePath="" />
+    <None Include="../../../NOTICE.md" Pack="true" PackagePath="" />
+    <None Include="../../../DEPENDENCIES" Pack="true" PackagePath="" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
 </Project>

@@ -16,64 +16,72 @@
 -
 - SPDX-License-Identifier: Apache-2.0
 -->
-
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</RootNamespace>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-
-    <!-- nuget specific config-->
+  <!-- nuget specific config-->
+  <PropertyGroup>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</PackageId>
     <PackageVersion>1.0.0-RC1</PackageVersion>
     <Authors>TractusX</Authors>
     <Copyright>
-      All content is the property of the respective authors or their employers.
-      For more information regarding authorship of content, please consult the listed source code repository logs.
+      All content is the property of the respective authors or their employers. For
+      more information regarding authorship of content, please consult the listed
+      source code repository logs.
     </Copyright>
     <Description>
-      The Catena-X Portal Backend Framework Web library is a versatile .NET library that provides a set of powerful tools and utilities for web development tasks.
-      This package provides an General Error Handling, Swagger Extensions and a easy setup for ASP.Net Core applications.
+      The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks.
+      This package simplifies various aspects of your application, including database interactions, asynchronous programming, file I/O, LINQ operations, logging, and database seeding.
     </Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/eclipse-tractusx/portal-backend</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="./README.md" Pack="true" PackagePath="" />
     <None Include="../../../LICENSE" Pack="true" PackagePath="" />
+    <None Include="../../../NOTICE.md" Pack="true" PackagePath="" />
+    <None Include="../../../DEPENDENCIES" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Framework.Cors\Framework.Cors.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Framework.WebExtensions\Framework.WebExtensions.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Framework.Cors\Framework.Cors.csproj" />
+    <ProjectReference Include="..\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
+    <ProjectReference Include="..\Framework.DependencyInjection\Framework.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
+    <ProjectReference Include="..\Framework.Linq\Framework.Linq.csproj" />
+    <ProjectReference Include="..\Framework.Logging\Framework.Logging.csproj" />
+    <ProjectReference Include="..\Framework.Models\Framework.Models.csproj" />
+    <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
+    <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework" Version="1.0.0-RC1" />
+    <PackageReference Include="Flurl.Signed" Version="3.0.6" />
+    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+    <PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetsForTfmSpecificBuildOutput> $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
-  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
-    <ItemGroup>
-      <_ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <BuildOutputInPackage Include="@(_ReferenceCopyLocalPaths)" TargetPath="%(_ReferenceCopyLocalPaths.DestinationSubDirectory)"/>
-    </ItemGroup>
-  </Target>
 </Project>

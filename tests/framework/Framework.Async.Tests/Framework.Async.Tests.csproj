@@ -29,6 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\framework\Framework.Async\Framework.Async.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\tests\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
   </ItemGroup>
 </Project>

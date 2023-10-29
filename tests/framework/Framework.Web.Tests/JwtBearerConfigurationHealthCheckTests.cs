@@ -21,11 +21,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions.Tests.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests.Extensions;
 using System.Net;
 using System.Text.Json;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
 
 public class JwtBearerConfigurationHealthCheckTests
 {

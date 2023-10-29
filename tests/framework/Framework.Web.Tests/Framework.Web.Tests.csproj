@@ -19,8 +19,8 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssmblyNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions.Tests</AssmblyNamespace>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions.Tests</RootNamespace>
+    <AssmblyNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</AssmblyNamespace>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -43,6 +43,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\framework\Framework.WebExtensions\Framework.WebExtensions.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Web\Framework.Web.csproj" />
   </ItemGroup>
 </Project>

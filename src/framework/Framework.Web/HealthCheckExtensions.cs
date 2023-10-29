@@ -27,7 +27,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class HealthCheckExtensions
 {

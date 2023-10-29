@@ -27,7 +27,7 @@ using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Serilog;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class WebApplicationBuildRunner
 {

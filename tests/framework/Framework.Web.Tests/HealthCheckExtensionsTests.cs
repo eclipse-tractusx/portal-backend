@@ -24,7 +24,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Text.Json;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
 
 public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<HealthCheckExtensionsTests>>
 {

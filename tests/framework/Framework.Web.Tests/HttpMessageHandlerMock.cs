@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,7 +19,7 @@
 
 using System.Net;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
 
 public class HttpMessageHandlerMock : HttpMessageHandler
 {

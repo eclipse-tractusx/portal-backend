@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public class HealthCheckSettings
 {

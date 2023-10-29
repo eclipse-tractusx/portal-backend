@@ -24,7 +24,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public class JwtBearerConfigurationHealthCheck : IHealthCheck
 {

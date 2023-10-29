@@ -1,4 +1,5 @@
 /********************************************************************************
+ * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +20,7 @@
 
 using System.Net;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 
 public class HttpMessageHandlerMock : HttpMessageHandler
 {
@@ -28,12 +29,12 @@ public class HttpMessageHandlerMock : HttpMessageHandler
     private readonly HttpContent? _httpContent;
     private readonly bool _isRequestUri;
 
-    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null, bool IsRequestUri = false)
+    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null, bool isRequestUri = false)
     {
         _statusCode = statusCode;
         _httpContent = httpContent;
         _ex = ex;
-        _isRequestUri = IsRequestUri;
+        _isRequestUri = isRequestUri;
     }
 
     protected override Task<HttpResponseMessage> SendAsync(

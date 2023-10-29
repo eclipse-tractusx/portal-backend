@@ -1,6 +1,6 @@
-# Catena-X Portal Backend Framework Web
+# Catena-X Portal Backend Framework
 
-The Catena-X Portal Backend Framework Web library is a versatile .NET library that provides a set of powerful tools and utilities for web development tasks. This package provides an General Error Handling, Swagger Extensions and a easy setup for ASP.Net Core applications.
+The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks. This package simplifies various aspects of your application, including database interactions, asynchronous programming, file I/O, LINQ operations, logging, and database seeding.
 
 This content is produced and maintained by the Eclipse Tractus-X project.
 
@@ -8,7 +8,7 @@ This content is produced and maintained by the Eclipse Tractus-X project.
 
 ## Installation
 
-dotnet add package Org.Eclipse.TractusX.Portal.Backend.Framework.Web
+dotnet add package Org.Eclipse.TractusX.Portal.Backend.Framework
 
 ## Copyright
 

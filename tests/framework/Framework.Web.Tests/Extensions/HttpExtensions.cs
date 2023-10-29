@@ -21,7 +21,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions.Tests.Extensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests.Extensions;
 
 public static class HttpExtensions
 {

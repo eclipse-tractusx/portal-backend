@@ -25,7 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Serilog;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.WebExtensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceWebApplicationExtensions
 {

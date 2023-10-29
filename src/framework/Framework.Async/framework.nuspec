@@ -1,21 +1,19 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
-        <id>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</id>
+        <id>Org.Eclipse.TractusX.Portal.Backend.Framework</id>
         <version>1.0.0-RC1</version>
         <authors>TractusX</authors>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <copyright>
-          All content is the property of the respective authors or their employers.
-          For more information regarding authorship of content, please consult the listed source code repository logs.
+          All content is the property of the respective authors or their employers. For
+          more information regarding authorship of content, please consult the listed
+          source code repository logs.
         </copyright>
         <description>
-          The Catena-X Portal Backend Framework Web library is a versatile .NET library that provides a set of powerful tools and utilities for web development tasks.
-          This package provides an General Error Handling, Swagger Extensions and a easy setup for ASP.Net Core applications.
+          The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks.
+          This package simplifies various aspects of your application, including database interactions, asynchronous programming, file I/O, LINQ operations, logging, and database seeding.
         </description>
-        <dependencies>
-          <dependency id="Org.Eclipse.TractusX.Portal.Backend.Framework" version="1.0.0-RC1" />
-        </dependencies>
         <readme>README.md</readme>
         <license type="file">LICENSE</license>
         <repository type="git" url="https://github.com/eclipse-tractusx/portal-backend" branch="dev" />
