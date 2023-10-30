@@ -1,74 +1,106 @@
-param (
+param(
     [string]$name,
     [string]$version
 )
 
 # Initialize an array to store updated directories
-$updatedDirectories = @()
+$updated_directories = @()
 
-# Define the version update functions (same as in Bash)
+# Initialize an array to store projects that need to be updated
+$projects_to_update = @()
 
-# Function to search and update .csproj files
-Function Update-CsProjFiles {
-    param (
-        [string]$updatedName
-    )
-
-    $projectRef = "Framework.$updatedName.csproj"
-
-    # Iterate over directories in the Framework directory
-    Get-ChildItem -Path "./src/Framework/*" -Directory | ForEach-Object {
-        $dir = $_
-        # Check if the directory is already in updatedDirectories
-        if (-not $updatedDirectories.Contains($dir.FullName)) {
-            # Search for .csproj files in the current directory
-            $csProjFiles = Get-ChildItem -Path "$dir/*.csproj"
-            foreach ($projectFile in $csProjFiles) {
-                $content = Get-Content $projectFile.FullName
-                if ($content -match [regex]::Escape($projectRef)) {
-                    $directoryName = [System.IO.Path]::GetFileName($dir.FullName)
-                    Update-Version $dir.FullName $directoryName
-                }
-            }
-        }
-    }
-}
+# Initialize a hash table to store projects that have been already updated
+$already_updated_projects = @{}
 
 # Function to update the version
-Function Update-Version {
-    param (
+function Update-Version {
+    param(
+        [string]$currentVersion,
+        [string]$newVersionType
+    )
+    
+    $major = 0
+    $minor = 0
+    $patch = 0
+
+    $currentVersionComponents = $currentVersion.Split('.')
+    
+    if ($currentVersionComponents.Length -ge 1) {
+        $major = [int]$currentVersionComponents[0]
+    }
+    if ($currentVersionComponents.Length -ge 2) {
+        $minor = [int]$currentVersionComponents[1]
+    }
+    if ($currentVersionComponents.Length -ge 3) {
+        $patch = [int]$currentVersionComponents[2]
+    }
+    
+    switch ($newVersionType) {
+        "major" {
+            $major++
+            $minor = 0
+            $patch = 0
+        }
+        "minor" {
+            $minor++
+            $patch = 0
+        }
+        "patch" {
+            $patch++
+        }
+    }
+
+    $updatedVersion = "$major.$minor.$patch"
+    
+    return $updatedVersion
+}
+
+# Function to update a project
+function Update-Project {
+    param(
         [string]$directory,
-        [string]$updatedName
+        [string]$updatedName,
+        [string]$newVersion
     )
 
     $propsFile = Join-Path $directory "Directory.Build.props"
-    # Check if the Directory.Build.props file exists
-    if (Test-Path $propsFile) {
-        # Extract the current version from the XML file
-        $xml = [xml](Get-Content $propsFile)
-        $currentVersion = $xml.SelectNodes("/PropertyGroup/VersionPrefix").InnerText
-        $currentSuffix = $xml.SelectNodes("/PropertyGroup/VersionSuffix").InnerText
+
+    if (Test-Path $propsFile -PathType Leaf) {
+        [xml]$xml = Get-Content $propsFile
+
+        $currentVersionPrefix = $xml.SelectSingleNode("//VersionPrefix").InnerText
+        $currentVersionSuffix = $xml.SelectSingleNode("//VersionSuffix").InnerText
 
         switch ($version) {
             "major" {
-                $updatedVersion = Update-Major $currentVersion
-                $updatedSuffix = $currentSuffix
+                $updatedVersionPrefix = Update-Version $currentVersionPrefix "major"
+                $updatedVersionSuffix = $currentVersionSuffix
             }
             "minor" {
-                $updatedVersion = Update-Minor $currentVersion
-                $updatedSuffix = $currentSuffix
+                $updatedVersionPrefix = Update-Version $currentVersionPrefix "minor"
+                $updatedVersionSuffix = $currentVersionSuffix
             }
             "patch" {
-                $updatedVersion = Update-Patch $currentVersion
-                $updatedSuffix = $currentSuffix
+                $updatedVersionPrefix = Update-Version $currentVersionPrefix "patch"
+                $updatedVersionSuffix = $currentVersionSuffix
             }
-            "alpha" {
-                $updatedVersion = $currentVersion
-                $updatedSuffix = Update-AlphaBeta $version $currentSuffix
-            }
-            "beta" {
-                $updatedVersion = $currentVersion
-                $updatedSuffix = Update-AlphaBeta $version $currentSuffix
+            "alpha", "beta" {
+                $updatedVersionPrefix = $currentVersionPrefix
+                $currentSuffixVersion = $currentVersionSuffix.Split('.')[0]
+
+                if ($currentSuffixVersion -ne $version) {
+                    $updatedVersionSuffix = $version
+                }
+                else {
+                    if ($currentVersionSuffix -eq "alpha" -or $currentVersionSuffix -eq "beta") {
+                        $updatedVersionSuffix = "$currentVersionSuffix.1"
+                    }
+                    else {
+                        $numericPart = [int]($currentVersionSuffix -replace "[^0-9]")
+                        $newNumericPart = $numericPart + 1
+                        $updatedVersionSuffix = "${version}.${newNumericPart}"
+                    }
+                }
             }
             default {
                 Write-Host "Invalid version argument. Valid options: major, minor, patch, alpha, beta"
@@ -76,36 +108,84 @@ Function Update-Version {
             }
         }
 
-        # Update the VersionPrefix and VersionSuffix in the XML file
-        $xml.SelectSingleNode("/PropertyGroup/VersionPrefix").InnerText = $updatedVersion
-        $xml.SelectSingleNode("/PropertyGroup/VersionSuffix").InnerText = $updatedSuffix
+        $xml.SelectSingleNode("//VersionPrefix").InnerText = $updatedVersionPrefix
+        $xml.SelectSingleNode("//VersionSuffix").InnerText = $updatedVersionSuffix
+
         $xml.Save($propsFile)
 
-        Write-Host "Updated version in $propsFile to $updatedVersion $updatedSuffix"
-        $updatedDirectories += $directory
-        # Update the depending solutions
-        Update-CsProjFiles $updatedName
+        Write-Host "Updated version in $propsFile to $updatedVersionPrefix $updatedVersionSuffix"
     }
     else {
-        Write-Host "Directory.Builds.props file not found in $($directory)$updatedName"
+        Write-Host "Directory.Builds.props file not found in $directory\$updatedName"
+    }
+}
+
+# Function to update .csproj files recursively
+function Update-Csproj-Recursive {
+    param(
+        [string]$updatedName,
+        [string]$updatedVersion
+    )
+
+    if ($already_updated_projects.ContainsKey($updatedName)) {
+        return
+    }
+
+    $already_updated_projects[$updatedName] = $true
+
+    # Iterate over directories in the Framework directory
+    $frameworkDirs = Get-ChildItem -Path "./src/Framework/" -Directory
+    foreach ($dir in $frameworkDirs) {
+        # Search for .csproj files in the current directory
+        $csprojFiles = Get-ChildItem -Path $dir.FullName -File -Filter "*.csproj"
+        foreach ($projectFile in $csprojFiles) {
+            $directoryName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
+
+            if (Select-String -Pattern $updatedName -Path $projectFile.FullName) {
+                # Only update the project if it has not been updated before
+                if (-not $already_updated_projects.ContainsKey($directoryName)) {
+                    Update-Project -directory $dir.FullName -updatedName $directoryName -newVersion $updatedVersion
+                    $projects_to_update += $directoryName
+                    $already_updated_projects[$directoryName] = $true
+                }
+            }
+        }
+    }
+
+    # Recursively update projects that depend on the updated projects
+    foreach ($projectName in $projects_to_update) {
+        # Only update projects if they haven't been updated before
+        if (-not $already_updated_projects.ContainsKey($projectName)) {
+            Update-Csproj-Recursive -updatedName $projectName -updatedVersion $updatedVersion
+        }
     }
 }
 
 # Function to iterate over directories in the Framework directory
-Function Iterate-Directories {
-    param (
+function Iterate-Directories {
+    param(
         [string]$updatedName
     )
 
     # Iterate over directories in the Framework directory
-    Get-ChildItem -Path "./src/Framework/*" -Directory | ForEach-Object {
-        $dir = $_
-        # Check if a directory with the specified name exists
+    $frameworkDirs = Get-ChildItem -Path "./src/Framework/" -Directory
+    foreach ($dir in $frameworkDirs) {
         if ($dir.Name -eq "Framework.$updatedName") {
-            Update-Version $dir.FullName $updatedName
+            $directoryName = [System.IO.Path]::GetFileNameWithoutExtension($dir.Name)
+            Update-Project -directory $dir.FullName -updatedName $directoryName -newVersion $version
+            $projects_to_update += $directoryName
+            $already_updated_projects[$directoryName] = $true
+        }
+    }
+
+    # Update all projects that depend on the updated projects recursively
+    foreach ($projectName in $projects_to_update) {
+        # Only update projects if they haven't been updated before
+        if (-not $already_updated_projects.ContainsKey($projectName)) {
+            Update-Csproj-Recursive -updatedName $projectName -updatedVersion $version
         }
     }
 }
 
 # Call the Iterate-Directories function to start the script
-Iterate-Directories $name
+Iterate-Directories -updatedName $name

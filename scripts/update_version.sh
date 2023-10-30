@@ -13,6 +13,12 @@ version="$2"
 # Initialize a global array to store updated directories
 updated_directories=()
 
+# Initialize a global array to store projects that need to be updated
+projects_to_update=()
+
+# Initialize a global array to store projects that have been already updated
+already_updated_projects=()
+
 # Define the version update functions
 update_major() {
   local version="$1"
@@ -32,7 +38,7 @@ update_patch() {
   echo "$updated_version"
 }
 
-update_alpha_beta() {
+update_pre() {
   local version="$1"
   local current_suffix=$(grep '<VersionSuffix>' "$props_file" | sed -n 's/.*<VersionSuffix>\(.*\)<\/VersionSuffix>.*/\1/p' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '\n')
   local current_suffix_version="${current_suffix%%"."*}"
@@ -50,10 +56,10 @@ update_alpha_beta() {
   echo "$updated_suffix"
 }
 
-# Function to search and update .csproj files
-update_csproj_files() {
+# Function to search and update .csproj files recursively
+update_csproj_files_recursive() {
   local updated_name="$1"
-  project_ref="Framework.$updated_name.csproj"
+  local updated_version="$2"
 
   # Iterate over directories in the Framework directory
   for dir in ./src/Framework/*/; do
@@ -64,12 +70,25 @@ update_csproj_files() {
         # Search for .csproj files in the current directory
         csproj_files=("$dir"*.csproj)
         for project_file in "${csproj_files[@]}"; do
-          if grep -q "$project_ref" "$project_file"; then
+          if grep -q "$updated_name" "$project_file"; then
             directory_name=$(basename "$dir")
-            update_version "$dir" "$directory_name"
+            # Only update the project if it has not been updated before
+            if [[ ! " ${already_updated_projects[*]} " == *"$directory_name"* ]]; then
+              update_version "$dir" "$directory_name" "$updated_version"
+              projects_to_update+=("$directory_name")
+              already_updated_projects+=("$directory_name")
+            fi
           fi
         done
       fi
+    fi
+  done
+
+  # Recursively update projects that depend on the updated projects
+  for project_name in "${projects_to_update[@]}"; do
+    # Only update projects if they haven't been updated before
+    if [[ ! " ${already_updated_projects[*]} " == *"$project_name"* ]]; then
+      update_csproj_files_recursive "$project_name" "$updated_version"
     fi
   done
 }
@@ -100,7 +119,7 @@ update_version(){
         ;;
       alpha|beta)
         updated_version="$current_version"
-        updated_suffix=$(update_alpha_beta "$version")
+        updated_suffix=$(update_pre "$version")
         ;;
       *)
         echo "Invalid version argument. Valid options: major, minor, patch, alpha, beta"
@@ -114,7 +133,7 @@ update_version(){
 
     updated_directories+=($directory)
     # Update the depending solutions
-    update_csproj_files "$updated_name"
+    update_csproj_files_recursive "$updated_name"
   else
     echo "Directory.Builds.props file not found in $directory$updated_name"
   fi
@@ -131,7 +150,17 @@ iterate_directories() {
       # Check if a directory with the specified name exists
       if [[ $dir == "./src/Framework/Framework.$updated_name/" ]]; then
         update_version "$dir" "$updated_name"
+        projects_to_update+=("$updated_name")
+        already_updated_projects+=("$updated_name") # Mark as updated
       fi
+    fi
+  done
+
+  # Update all projects that depend on the updated projects recursively
+  for project_name in "${projects_to_update[@]}"; do
+    # Only update projects if they haven't been updated before
+    if [[ ! " ${already_updated_projects[*]} " == *"$project_name"* ]]; then
+      update_csproj_files_recursive "$project_name" "$updated_version"
     fi
   done
 }
