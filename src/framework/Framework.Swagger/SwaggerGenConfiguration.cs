@@ -21,7 +21,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;

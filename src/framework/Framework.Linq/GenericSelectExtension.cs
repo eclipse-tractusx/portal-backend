@@ -20,7 +20,7 @@
 
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;

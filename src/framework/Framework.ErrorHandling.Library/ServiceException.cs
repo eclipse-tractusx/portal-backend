@@ -19,7 +19,7 @@
 
 using System.Net;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 
 [Serializable]
 public class ServiceException : DetailException

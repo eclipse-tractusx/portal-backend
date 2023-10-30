@@ -29,6 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\framework\Framework.DBAccess\Framework.DBAccess.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
+    <ProjectReference Include="..\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
   </ItemGroup>
 </Project>
