@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,12 +18,12 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -35,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Text;
 
@@ -51,6 +51,7 @@ public class IdentityProviderBusinessLogicTests
     private readonly IOptions<IdentityProviderSettings> _options;
     private readonly IdentityProviderCsvSettings _csvSettings;
     private readonly IIdentityService _identityService;
+    private readonly IErrorMessageService _errorMessageService;
     private readonly ILogger<IdentityProviderBusinessLogic> _logger;
     private readonly IFormFile _document;
     private readonly Encoding _encoding;
@@ -92,6 +93,10 @@ public class IdentityProviderBusinessLogicTests
 
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
+        _errorMessageService = A.Fake<IErrorMessageService>();
+        A.CallTo(() => _errorMessageService.GetMessage(typeof(ProvisioningServiceErrors), A<int>._))
+            .ReturnsLazily((Type type, int code) => $"type: {type.Name} code: {Enum.GetName(type, code)} userName: {{userName}} realm: {{realm}}");
+
         _csvSettings = new IdentityProviderCsvSettings
         {
             Charset = "",
@@ -129,6 +134,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -165,6 +171,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -214,6 +221,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -260,6 +268,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -270,7 +279,9 @@ public class IdentityProviderBusinessLogicTests
         result.Error.Should().Be(1);
         result.Total.Should().Be(numUsers);
         result.Errors.Should().HaveCount(1);
-        result.Errors.Single().Should().Be($"line: 3, message: unexpected update of shared identityProviderLink, alias '{_sharedIdpAlias}', companyUser '{changed.CompanyUserId}', providerUserId: '{changed.SharedIdpUserId}', providerUserName: '{changed.SharedIdpUserName}'");
+        result.Errors.Single().Should().Match<UserUpdateError>(x =>
+            x.Line == 3 &&
+            x.Message == $"unexpected update of shared identityProviderLink, alias '{_sharedIdpAlias}', companyUser '{changed.CompanyUserId}', providerUserId: '{changed.SharedIdpUserId}', providerUserName: '{changed.SharedIdpUserName}'");
 
         A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
@@ -304,6 +315,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -347,6 +359,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -357,7 +370,9 @@ public class IdentityProviderBusinessLogicTests
         result.Error.Should().Be(1);
         result.Total.Should().Be(numUsers);
         result.Errors.Should().HaveCount(1);
-        result.Errors.Single().Should().Be($"line: 3, message: unexpected value of UserId: '{unknown.CompanyUserId}'");
+        result.Errors.Single().Should().Match<UserUpdateError>(x =>
+            x.Line == 3 &&
+            x.Message == $"unexpected value of UserId: '{unknown.CompanyUserId}'");
 
         A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
@@ -379,6 +394,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -400,6 +416,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -419,6 +436,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -442,6 +460,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -462,6 +481,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -485,6 +505,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -509,6 +530,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
 
@@ -590,6 +612,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -613,6 +636,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -636,6 +660,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -659,6 +684,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -685,6 +711,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -718,6 +745,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -754,6 +782,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         var oidcGuid = Guid.NewGuid();
@@ -795,6 +824,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -817,6 +847,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -839,6 +870,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -864,6 +896,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -891,6 +924,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -916,6 +950,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -947,6 +982,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -970,6 +1006,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -993,6 +1030,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1018,6 +1056,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1047,6 +1086,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1078,6 +1118,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1107,6 +1148,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1147,6 +1189,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1172,6 +1215,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1197,6 +1241,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1223,6 +1268,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1250,6 +1296,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1277,6 +1324,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1310,6 +1358,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1337,6 +1386,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1364,6 +1414,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1397,6 +1448,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1424,6 +1476,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1451,6 +1504,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
@@ -1488,6 +1542,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1514,6 +1569,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1541,6 +1597,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1568,6 +1625,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1595,6 +1653,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1625,6 +1684,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1656,6 +1716,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1682,6 +1743,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1709,6 +1771,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1736,6 +1799,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1763,6 +1827,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1793,6 +1858,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1816,6 +1882,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1840,6 +1907,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1864,6 +1932,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1888,6 +1957,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1914,6 +1984,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1943,6 +2014,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1969,6 +2041,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1997,6 +2070,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -2019,6 +2093,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasDataUntracked(_identity.CompanyId, A<IEnumerable<Guid>>._))
@@ -2045,6 +2120,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2067,6 +2143,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2089,6 +2166,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2115,6 +2193,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2144,6 +2223,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2171,6 +2251,7 @@ public class IdentityProviderBusinessLogicTests
             _portalRepositories,
             _provisioningManager,
             _identityService,
+            _errorMessageService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))

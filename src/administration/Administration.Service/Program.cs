@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 var VERSION = "v2";
@@ -82,7 +83,8 @@ WebApplicationBuildRunner
 
         builder.Services
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
-            .AddSingleton<IErrorMessageContainer, AdministrationRegistrationErrorMessageContainer>();
+            .AddSingleton<IErrorMessageContainer, AdministrationRegistrationErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, ProvisioningServiceErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
     });
