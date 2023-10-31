@@ -26,7 +26,6 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
-      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework" Version="1.0.0-RC1" />
       <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
     </ItemGroup>
 

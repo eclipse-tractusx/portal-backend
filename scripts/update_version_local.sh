@@ -60,18 +60,13 @@ update_csproj_files_recursive() {
   local updated_name="$1"
   local updated_version="$2"
 
-  # Iterate over directories in the Framework directory
   for dir in ./src/Framework/*/; do
-    # Check if the directory exists
     if [ -d "$dir" ]; then
-      # Check if the directory is already in updated_directories
       if [[ " ${updated_directories[*]} " != *"$dir"* ]]; then
-        # Search for .csproj files in the current directory
         csproj_files=("$dir"*.csproj)
         for project_file in "${csproj_files[@]}"; do
           if grep -q "$updated_name" "$project_file"; then
             directory_name=$(basename "$dir")
-            # Only update the project if it has not been updated before
             if [[ ! " ${already_updated_projects[*]} " == *"$directory_name"* ]]; then
               update_version "$dir" "$directory_name" "$updated_version"
               if [[ ! " ${projects_to_update[*]} " == *"$directory_name"* ]]; then
@@ -130,7 +125,7 @@ update_version(){
         ;;
     esac
 
-    # Update the VersionPrefix and VersionSuffix in the file using awk
+    # Update the VersionPrefix and VersionSuffix in the file
     awk -v new_version="$updated_version" -v new_suffix="$updated_suffix" '/<VersionPrefix>/{gsub(/<VersionPrefix>[^<]+<\/VersionPrefix>/, "<VersionPrefix>" new_version "</VersionPrefix>")}/<VersionSuffix>/{gsub(/<VersionSuffix>[^<]+<\/VersionSuffix>/, "<VersionSuffix>" new_suffix "</VersionSuffix>")}1' "$props_file" > temp && mv temp "$props_file"
     echo "Updated version in $props_file to $updated_version $updated_suffix"
 
@@ -142,15 +137,12 @@ update_version(){
   fi
 }
 
-# Function to iterate over directories in the Framework directory
+# Function to iterate over directories in the Framework directory and update the project version
 iterate_directories() {
   local updated_name="$1"
   
-  # Iterate over directories in the Framework directory
   for dir in ./src/framework/*/; do
-    # Check if the directory exists
     if [ -d "$dir" ]; then
-      # Check if a directory with the specified name exists
       if [[ $dir == "./src/framework/$updated_name/" ]]; then
         update_version "$dir" "$updated_name"
         if [[ ! " ${projects_to_update[*]} " == *"$updated_name"* ]]; then

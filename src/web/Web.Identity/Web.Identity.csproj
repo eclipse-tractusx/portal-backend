@@ -28,7 +28,6 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework" Version="1.0.0-RC1" />
     </ItemGroup>
 
     <ItemGroup>

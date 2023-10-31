@@ -60,8 +60,4 @@
         </SonarQubeSetting>
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Web" Version="1.0.0-RC1" />
-    </ItemGroup>
-
 </Project>

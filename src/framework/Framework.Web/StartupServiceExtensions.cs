@@ -78,6 +78,7 @@ public static class StartupServiceExtensions
             options.AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidCompany)));
             options.AddPolicy(PolicyTypes.CompanyUser, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.CompanyUser)));
             options.AddPolicy(PolicyTypes.ServiceAccount, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ServiceAccount)));
+            addAdditionalAuth?.Invoke(options);
         });
 
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
