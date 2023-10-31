@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -25,12 +24,15 @@ using Serilog.Context;
 using System.Collections.Immutable;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
 public class GeneralHttpErrorHandler
 {
+    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
     private readonly RequestDelegate _next;
+    private readonly IErrorMessageService? _errorMessageService;
     private readonly ILogger _logger;
 
     private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = new Dictionary<HttpStatusCode, MetaData>
@@ -45,10 +47,11 @@ public class GeneralHttpErrorHandler
         { HttpStatusCode.InternalServerError, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1", "The server encountered an unexpected condition.") }
     }.ToImmutableDictionary();
 
-    public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger)
+    public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger, IErrorMessageService? errorMessageService = null) //TODO make errorMessageService mandatory as soon all dependant services are adjusted accordingly
     {
         _next = next;
         _logger = logger;
+        _errorMessageService = errorMessageService;
     }
 
     public async Task Invoke(HttpContext context)
@@ -60,13 +63,14 @@ public class GeneralHttpErrorHandler
         catch (Exception error)
         {
             var errorId = Guid.NewGuid().ToString();
+            var details = GetErrorDetails(error);
+            var message = GetErrorMessage(error);
             LogErrorInformation(errorId, error);
             var (statusCode, messageFunc, logLevel) = GetErrorInformation(error);
-
-            _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, error.Message);
+            _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, message);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, messageFunc))).ConfigureAwait(false);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options)).ConfigureAwait(false);
         }
     }
 
@@ -128,20 +132,20 @@ public class GeneralHttpErrorHandler
         return (statusCode, messageFunc, logLevel);
     }
 
-    private static ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, string errorId, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages = null)
+    private ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, string errorId, string message, IEnumerable<ErrorDetails>? details, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages = null)
     {
         var meta = Metadata.GetValueOrDefault(statusCode, Metadata[HttpStatusCode.InternalServerError]);
-        var (source, messages) = getSourceAndMessages?.Invoke(error) ?? (error.Source, Enumerable.Repeat(error.Message, 1));
+        var (source, messages) = getSourceAndMessages?.Invoke(error) ?? (error.Source, Enumerable.Repeat(message, 1));
 
         var messageMap = new Dictionary<string, IEnumerable<string>> { { source ?? "unknown", messages } };
         while (error.InnerException != null)
         {
-            error = error.InnerException;
-            source = error.Source ?? "inner";
+            var inner = error.InnerException;
+            source = inner.Source ?? "inner";
 
             messageMap[source] = messageMap.TryGetValue(source, out messages)
-                ? messages.Append(error.Message)
-                : Enumerable.Repeat(error.Message, 1);
+                ? messages.Append(GetErrorMessage(inner))
+                : Enumerable.Repeat(GetErrorMessage(inner), 1);
         }
 
         return new ErrorResponse(
@@ -149,9 +153,20 @@ public class GeneralHttpErrorHandler
             meta.Description,
             (int)statusCode,
             messageMap,
-            errorId
+            errorId,
+            details
         );
     }
+
+    private string GetErrorMessage(Exception exception) =>
+        _errorMessageService is not null && exception is DetailException detail && detail.HasDetails
+            ? detail.GetErrorMessage(_errorMessageService)
+            : exception.Message;
+
+    private IEnumerable<ErrorDetails> GetErrorDetails(Exception exception) =>
+        _errorMessageService is not null && exception is DetailException detail && detail.HasDetails
+            ? detail.GetErrorDetails(_errorMessageService)
+            : Enumerable.Empty<ErrorDetails>();
 
     private static void LogErrorInformation(string errorId, Exception exception)
     {
