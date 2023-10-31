@@ -10,13 +10,12 @@ fi
 name="$1"
 version="$2"
 
-# Initialize a global array to store updated directories
+folderPath="./packages"
+extensions="*.nupkg"
+
+# Initialize a global arrays to store data
 updated_directories=()
-
-# Initialize a global array to store projects that need to be updated
 projects_to_update=()
-
-# Initialize a global array to store projects that have been already updated
 already_updated_projects=()
 
 # Define the version update functions
@@ -75,8 +74,12 @@ update_csproj_files_recursive() {
             # Only update the project if it has not been updated before
             if [[ ! " ${already_updated_projects[*]} " == *"$directory_name"* ]]; then
               update_version "$dir" "$directory_name" "$updated_version"
-              projects_to_update+=("$directory_name")
-              already_updated_projects+=("$directory_name")
+              if [[ ! " ${projects_to_update[*]} " == *"$directory_name"* ]]; then
+                projects_to_update+=("$directory_name")
+              fi
+              if [[ ! " ${already_updated_projects[*]} " == *"$directory_name"* ]]; then
+                already_updated_projects+=("$directory_name")
+              fi
             fi
           fi
         done
@@ -117,12 +120,12 @@ update_version(){
         updated_version=$(update_patch "$current_version")
         updated_suffix="$current_suffix"
         ;;
-      alpha|beta)
+      alpha|beta|pre|rc)
         updated_version="$current_version"
         updated_suffix=$(update_pre "$version")
         ;;
       *)
-        echo "Invalid version argument. Valid options: major, minor, patch, alpha, beta"
+        echo "Invalid version argument. Valid options: major, minor, patch, alpha, beta, pre, rc"
         exit 1
         ;;
     esac
@@ -144,14 +147,18 @@ iterate_directories() {
   local updated_name="$1"
   
   # Iterate over directories in the Framework directory
-  for dir in ./src/Framework/*/; do
+  for dir in ./src/framework/*/; do
     # Check if the directory exists
     if [ -d "$dir" ]; then
       # Check if a directory with the specified name exists
-      if [[ $dir == "./src/Framework/Framework.$updated_name/" ]]; then
+      if [[ $dir == "./src/framework/$updated_name/" ]]; then
         update_version "$dir" "$updated_name"
-        projects_to_update+=("$updated_name")
-        already_updated_projects+=("$updated_name") # Mark as updated
+        if [[ ! " ${projects_to_update[*]} " == *"$updated_name"* ]]; then
+          projects_to_update+=("$updated_name")
+        fi
+        if [[ ! " ${already_updated_projects[*]} " == *"$updated_name"* ]]; then
+          already_updated_projects+=("$updated_name")
+        fi
       fi
     fi
   done
@@ -167,3 +174,12 @@ iterate_directories() {
 
 # Call the iterate_directories function to start the script
 iterate_directories "$name"
+
+for proj in "${already_updated_projects[@]}"; do
+  echo "pack $proj"
+  dotnet pack src/framework/$proj/$proj.csproj -c Release -o "$folderPath"
+done
+
+dotnet nuget push "$folderPath/$extensions" --source "local"
+
+rm -r "$folderPath"
