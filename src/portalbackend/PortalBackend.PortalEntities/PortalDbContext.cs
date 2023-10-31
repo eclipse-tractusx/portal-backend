@@ -72,6 +72,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditOffer20230406> AuditOffer20230406 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscription20231013> AuditOfferSubscription20231013 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230824> AuditCompanyApplication20230824 { get; set; } = default!;
@@ -108,6 +109,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; set; } = default!;
+    public virtual DbSet<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; set; } = default!;
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
     public virtual DbSet<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
@@ -135,6 +137,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<LanguageLongName> LanguageLongNames { get; set; } = default!;
     public virtual DbSet<LicenseType> LicenseTypes { get; set; } = default!;
     public virtual DbSet<MediaType> MediaTypes { get; set; } = default!;
+    public virtual DbSet<NetworkRegistration> NetworkRegistrations { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; set; } = default!;
     public virtual DbSet<Offer> Offers { get; set; } = default!;
@@ -309,7 +312,7 @@ public class PortalDbContext : DbContext
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
 
-                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20230317>();
+                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20231013>();
                     }
                 );
 
@@ -1391,6 +1394,46 @@ public class PortalDbContext : DbContext
             entity.HasOne(x => x.Company)
                 .WithOne(x => x.OnboardingServiceProviderDetail)
                 .HasForeignKey<OnboardingServiceProviderDetail>(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<NetworkRegistration>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasIndex(x => new { x.ExternalId, x.OnboardingServiceProviderId })
+                .IsUnique();
+
+            entity.HasOne(x => x.Company)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.Process)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.ProcessId);
+
+            entity.HasOne(x => x.OnboardingServiceProvider)
+                .WithMany(x => x.OnboardedNetworkRegistrations)
+                .HasForeignKey(x => x.OnboardingServiceProviderId);
+
+            entity.HasOne(x => x.CompanyApplication)
+                .WithOne(x => x.NetworkRegistration)
+                .HasForeignKey<NetworkRegistration>(x => x.ApplicationId);
+        });
+
+        modelBuilder.Entity<CompanyUserAssignedIdentityProvider>(entity =>
+        {
+            entity.HasKey(e => new { e.CompanyUserId, e.IdentityProviderId });
+
+            entity.HasOne(e => e.CompanyUser)
+                .WithMany(e => e.CompanyUserAssignedIdentityProviders)
+                .HasForeignKey(e => e.CompanyUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(e => e.IdentityProvider)
+                .WithMany(e => e.CompanyUserAssignedIdentityProviders)
+                .HasForeignKey(e => e.IdentityProviderId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }

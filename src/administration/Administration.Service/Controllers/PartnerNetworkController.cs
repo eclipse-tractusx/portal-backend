@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// Creates a new instance of <see cref="PartnerNetworkController"/>
 /// </summary>
 [ApiController]
-[Route("api/administration/partnernetwork")]
+[Route("api/administration/[controller]")]
 [Produces("application/json")]
 [Consumes("application/json")]
 public class PartnerNetworkController : ControllerBase
@@ -47,6 +47,7 @@ public class PartnerNetworkController : ControllerBase
     }
 
     /// <summary> Get all member companies</summary>
+    /// <param name="bpnIds">BPN Id's</param>
     /// <returns>Returns all the active member companies bpn.</returns>
     /// <remarks>Example: GET: api/administration/partnernetwork/memberCompanies</remarks>
     /// <response code="200">Returns all the active member companies bpn.</response>
@@ -56,6 +57,6 @@ public class PartnerNetworkController : ControllerBase
     [Route("memberCompanies")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [PublicUrl(CompanyRoleId.ACTIVE_PARTICIPANT, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]
-    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
-        _logic.GetAllMemberCompaniesBPNAsync();
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync([FromQuery] IEnumerable<string>? bpnIds = null) =>
+        _logic.GetAllMemberCompaniesBPNAsync(bpnIds);
 }

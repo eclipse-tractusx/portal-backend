@@ -18,8 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -454,12 +457,89 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetCompanyIdSubmissionStatusForApplication(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        data.Should().Be(((bool, Guid, bool))default);
+        data.Should().Be(default);
     }
 
     #endregion
 
-    private async Task<ApplicationRepository> CreateSut()
+    #region CreateCompanyApplication
+
+    [Fact]
+    public async Task CreateCompanyApplication_WithValidData_Creates()
+    {
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        var application = sut.CreateCompanyApplication(CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL,
+            a =>
+            {
+                a.OnboardingServiceProviderId = CompanyId;
+            });
+
+        // Assert
+        application.Id.Should().NotBeEmpty();
+        var changeTracker = context.ChangeTracker;
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyApplication>()
+            .Which.OnboardingServiceProviderId.Should().Be(CompanyId);
+    }
+
+    #endregion
+
+    #region GetCompanyIdNameForSubmittedApplication
+
+    [Fact]
+    public async Task GetCompanyIdNameForSubmittedApplication_WithValidData_Creates()
+    {
+        var (sut, _) = await CreateSutWithContext().ConfigureAwait(false);
+
+        var result = await sut.GetCompanyIdNameForSubmittedApplication(SubmittedApplicationWithBpn).ConfigureAwait(false);
+
+        // Assert
+        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
+        result.CompanyName.Should().Be("CX-Test-Access");
+    }
+
+    #endregion
+
+    #region AttachAndModifyCompanyApplications
+
+    [Fact]
+    public async Task AttachAndModifyCompanyApplications()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var companyApplicationData = new (Guid applicationId, Action<CompanyApplication>?, Action<CompanyApplication>)[] {
+            (Guid.NewGuid(), null, application => application.ApplicationStatusId = CompanyApplicationStatusId.CREATED),
+            (Guid.NewGuid(), application => application.ApplicationStatusId = CompanyApplicationStatusId.CREATED, application => application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED),
+            (Guid.NewGuid(), application => application.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED, application => application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED),
+            (Guid.NewGuid(), application => application.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED, application => application.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED)
+        };
+
+        // Act
+        sut.AttachAndModifyCompanyApplications(companyApplicationData);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().HaveCount(4).And.AllSatisfy(x => x.Entity.Should().BeOfType<CompanyApplication>()).And.Satisfy(
+            x => x.State == EntityState.Modified && ((CompanyApplication)x.Entity).Id == companyApplicationData[0].applicationId && ((CompanyApplication)x.Entity).ApplicationStatusId == CompanyApplicationStatusId.CREATED,
+            x => x.State == EntityState.Modified && ((CompanyApplication)x.Entity).Id == companyApplicationData[1].applicationId && ((CompanyApplication)x.Entity).ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED,
+            x => x.State == EntityState.Modified && ((CompanyApplication)x.Entity).Id == companyApplicationData[2].applicationId && ((CompanyApplication)x.Entity).ApplicationStatusId == CompanyApplicationStatusId.DECLINED,
+            x => x.State == EntityState.Unchanged && ((CompanyApplication)x.Entity).Id == companyApplicationData[3].applicationId && ((CompanyApplication)x.Entity).ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
+        );
+    }
+
+    #endregion
+
+    private async Task<(IApplicationRepository sut, PortalDbContext context)> CreateSutWithContext()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new ApplicationRepository(context);
+        return (sut, context);
+    }
+    private async Task<IApplicationRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new ApplicationRepository(context);

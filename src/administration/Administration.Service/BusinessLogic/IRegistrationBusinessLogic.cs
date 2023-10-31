@@ -45,7 +45,8 @@ public interface IRegistrationBusinessLogic
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <param name="comment">Reason of decline</param>
-    Task DeclineRegistrationVerification(Guid applicationId, string comment);
+    /// <param name="cancellationToken">cancellation token</param>
+    Task DeclineRegistrationVerification(Guid applicationId, string comment, CancellationToken cancellationToken);
 
     /// <summary>
     /// Processes the clearinghouse response

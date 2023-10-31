@@ -42,13 +42,16 @@ public class CompanyRepository : ICompanyRepository
     }
 
     /// <inheritdoc/>
-    public Company CreateCompany(string companyName) =>
-        _context.Companies.Add(
-            new Company(
-                Guid.NewGuid(),
-                companyName,
-                CompanyStatusId.PENDING,
-                DateTimeOffset.UtcNow)).Entity;
+    Company ICompanyRepository.CreateCompany(string companyName, Action<Company>? setOptionalParameters)
+    {
+        var company = new Company(
+            Guid.NewGuid(),
+            companyName,
+            CompanyStatusId.PENDING,
+            DateTimeOffset.UtcNow);
+        setOptionalParameters?.Invoke(company);
+        return _context.Companies.Add(company).Entity;
+    }
 
     public void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify)
     {
@@ -60,16 +63,15 @@ public class CompanyRepository : ICompanyRepository
 
     public Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null)
     {
-        var address = _context.Addresses.Add(
-            new Address(
-                Guid.NewGuid(),
-                city,
-                streetname,
-                countryAlpha2Code,
-                DateTimeOffset.UtcNow
-            )).Entity;
+        var address = new Address(
+            Guid.NewGuid(),
+            city,
+            streetname,
+            countryAlpha2Code,
+            DateTimeOffset.UtcNow
+        );
         setOptionalParameters?.Invoke(address);
-        return address;
+        return _context.Addresses.Add(address).Entity;
     }
 
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
@@ -106,10 +108,12 @@ public class CompanyRepository : ICompanyRepository
                 company!.CompanyAssignedRoles.SelectMany(car => car.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == technicalUserClientId)).Select(ur => ur.Id)).Distinct()))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds) =>
         _context.Companies
             .AsNoTracking()
-            .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE)
+            .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE &&
+                (bpnIds == null || bpnIds.Contains(company.BusinessPartnerNumber) &&
+                company.BusinessPartnerNumber != null))
             .Select(company => company.BusinessPartnerNumber)
             .AsAsyncEnumerable();
 
@@ -279,15 +283,16 @@ public class CompanyRepository : ICompanyRepository
             true
         )).SingleOrDefaultAsync();
 
-    public Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId) =>
+    public Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId, Guid companyUserId) =>
         _context.Companies
             .AsNoTracking()
             .Where(c => c.Id == companyId)
-            .Select(user => new CompanyInformationData(
-                user.Id,
-                user.Name,
-                user.Address!.CountryAlpha2Code,
-                user.BusinessPartnerNumber
+            .Select(company => new CompanyInformationData(
+                company.Id,
+                company.Name,
+                company.Address!.CountryAlpha2Code,
+                company.BusinessPartnerNumber,
+                company.Identities.Where(x => x.Id == companyUserId && x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!.Email).SingleOrDefault()
             ))
             .SingleOrDefaultAsync();
 
@@ -321,27 +326,40 @@ public class CompanyRepository : ICompanyRepository
 
     public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId) =>
         _context.Companies.Where(c => c.Id == companyId)
-            .Select(c => new OnboardingServiceProviderCallbackResponseData(c.OnboardingServiceProviderDetail!.CallbackUrl))
+            .Select(c => new OnboardingServiceProviderCallbackResponseData(
+                    c.OnboardingServiceProviderDetail!.CallbackUrl,
+                    c.OnboardingServiceProviderDetail.AuthUrl,
+                    c.OnboardingServiceProviderDetail.ClientId
+                ))
             .SingleAsync();
 
-    public Task<(bool hasCompanyRole, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
+    public Task<(bool hasCompanyRole, OspDetails? ospDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
         _context.Companies.Where(c => c.Id == companyId)
-            .Select(c => new ValueTuple<bool, bool, string?>(
+            .Select(c => new ValueTuple<bool, OspDetails?>(
                 c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == companyRoleId),
-                c.OnboardingServiceProviderDetail != null,
-                c.OnboardingServiceProviderDetail!.CallbackUrl))
+                c.OnboardingServiceProviderDetail == null ?
+                    null :
+                    new OspDetails(
+                        c.OnboardingServiceProviderDetail!.CallbackUrl,
+                        c.OnboardingServiceProviderDetail.AuthUrl,
+                        c.OnboardingServiceProviderDetail.ClientId,
+                        c.OnboardingServiceProviderDetail.ClientSecret)
+                ))
             .SingleOrDefaultAsync();
 
     public void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields)
     {
-        var ospDetails = new OnboardingServiceProviderDetail(companyId, null!);
+        var ospDetails = new OnboardingServiceProviderDetail(companyId, null!, null!, null!, null!);
         initialize?.Invoke(ospDetails);
         _context.OnboardingServiceProviderDetails.Attach(ospDetails);
         setOptionalFields.Invoke(ospDetails);
     }
 
-    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl)
-    {
-        return _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl)).Entity;
-    }
+    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret) =>
+        _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl, authUrl, clientId, clientSecret)).Entity;
+
+    /// <inheritdoc />
+    public Task<bool> CheckBpnExists(string bpn) =>
+        _context.Companies
+            .AnyAsync(x => x.BusinessPartnerNumber == bpn);
 }

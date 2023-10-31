@@ -21,6 +21,8 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -368,8 +370,9 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetApplicationsWithStatusUntrackedAsync(new("41fd2ab8-71cd-4546-9bef-a388d91b2542")).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull().And.Satisfy(x => x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e")
-            && x.ApplicationStatus == CompanyApplicationStatusId.SUBMITTED);
+        result.Should().NotBeNull().And.Satisfy(x =>
+            x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e") &&
+            x.ApplicationStatus == CompanyApplicationStatusId.SUBMITTED);
         result.Single().ApplicationChecklist.Should().Satisfy(
             y => y.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
             y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE,
@@ -380,6 +383,81 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+
+    #region AddCompanyUserAssignedIdentityProvider
+
+    [Fact]
+    public async Task AddCompanyUserAssignedIdentityProvider_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        var results = sut.AddCompanyUserAssignedIdentityProvider(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"), new Guid("ac1cf001-7fbc-1f2f-817f-bce057770015"), "123", "testuser");
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.UserName.Should().Be("testuser");
+        results.ProviderId.Should().Be("123");
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyUserAssignedIdentityProvider>()
+            .Which.Should().Match<CompanyUserAssignedIdentityProvider>(x =>
+                x.UserName == "testuser" &&
+                x.ProviderId == "123"
+            );
+    }
+
+    #endregion
+
+    #region GetUserAssignedIdentityProviderForNetworkRegistration
+
+    [Fact]
+    public async Task GetUserAssignedIdentityProviderForNetworkRegistration_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetUserAssignedIdentityProviderForNetworkRegistration(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        results.Should().ContainSingle()
+            .Which.Should().Match<CompanyUserIdentityProviderProcessData>(x =>
+                x.ProviderLinkData.Single().UserName == "drstrange" &&
+                x.Email == "test@email.com" &&
+                x.Bpn == "BPNL00000003AYRE");
+    }
+
+    #endregion
+
+    #region GetNextServiceAccountsWithoutUserEntityId
+
+    [Fact]
+    public async Task GetNextServiceAccountsWithoutUserEntityId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetNextServiceAccountsWithoutUserEntityId().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        results.Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.ClientClientId == "sa-x-2" && x.ServiceAccountId == new Guid("93eecd4e-ca47-4dd2-85bf-775ea72eb009"),
+                x => x.ClientClientId == "sa-x-1" && x.ServiceAccountId == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f4"));
+    }
+
+    #endregion
+
+    private async Task<(UserRepository sut, PortalDbContext context)> CreateSutWithContext()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new UserRepository(context);
+        return (sut, context);
+    }
 
     private async Task<UserRepository> CreateSut()
     {

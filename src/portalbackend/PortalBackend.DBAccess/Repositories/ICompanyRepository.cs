@@ -33,8 +33,9 @@ public interface ICompanyRepository
     /// Creates new company entity from persistence layer.
     /// </summary>
     /// <param name="companyName">Name of the company to create the new entity for.</param>
+    /// <param name="setOptionalParameters">Sets the optional Parameters</param>
     /// <returns>Created company entity.</returns>
-    Company CreateCompany(string companyName);
+    Company CreateCompany(string companyName, Action<Company>? setOptionalParameters = null);
 
     void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
 
@@ -51,8 +52,9 @@ public interface ICompanyRepository
     /// <summary>
     /// Get all member companies bpn
     /// </summary>
+    /// <param name="bpnIds">Id of the users company</param>
     /// <returns> Business partner numbers of all active companies</returns>
-    IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
+    IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds);
     Task<CompanyAddressDetailData?> GetCompanyDetailsAsync(Guid companyId);
 
     /// <summary>
@@ -156,7 +158,7 @@ public interface ICompanyRepository
     /// <returns>Returns the CompanyStatus Data</returns>
     Task<(bool IsActive, bool IsValid)> GetCompanyStatusDataAsync(Guid companyId);
 
-    Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId);
+    Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId, Guid companyUserId);
     IAsyncEnumerable<CompanyRoleId> GetOwnCompanyRolesAsync(Guid companyId);
 
     /// <summary>
@@ -167,7 +169,8 @@ public interface ICompanyRepository
 
     Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndCompanyRolesAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoles);
     Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId);
-    Task<(bool hasCompanyRole, bool ospDetailsExist, string? callbackUrl)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId);
+    Task<(bool hasCompanyRole, OspDetails? ospDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId);
     void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields);
-    OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl);
+    OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret);
+    Task<bool> CheckBpnExists(string bpn);
 }

@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
@@ -53,4 +55,10 @@ public class OfferCompanySubscriptionStatusData
     /// </summary>
     /// <value></value>
     public Guid Image { get; set; }
+
+    /// <summary>
+    /// Id of the ProcessStep Type
+    /// </summary>
+    /// <value></value>
+    public ProcessStepTypeId ProcessStepTypeId { get; set; }
 }

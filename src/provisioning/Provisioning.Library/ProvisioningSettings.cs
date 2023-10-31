@@ -31,6 +31,7 @@ public partial class ProvisioningSettings
     public string ClientPrefix { get; set; }
     public string MappedCompanyAttribute { get; set; }
     public string MappedBpnAttribute { get; set; }
+
     public string UserNameMapperTemplate { get; set; }
 }
 

@@ -67,17 +67,77 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         results.CompanyId.Should().Be(_validCompanyId);
         results.AutoSetupUrl.Should().Be(url);
         results.AutoSetupCallbackUrl.Should().Be("https://test.de");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>();
-        var providerCompanyDetail = changedEntries.Single().Entity as ProviderCompanyDetail;
-        providerCompanyDetail!.AutoSetupUrl.Should().Be(url);
-        providerCompanyDetail.AutoSetupCallbackUrl.Should().Be("https://test.de");
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<ProviderCompanyDetail>()
+            .Which.Should().Match<ProviderCompanyDetail>(x =>
+                x.AutoSetupUrl == url &&
+                x.AutoSetupCallbackUrl == "https://test.de"
+            );
+    }
+
+    #endregion
+
+    #region Create Company
+
+    [Fact]
+    public async Task CreateCompany_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateCompany("Test Company", entity =>
+        {
+            entity.CompanyStatusId = CompanyStatusId.ACTIVE;
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        results.Name.Should().Be("Test Company");
+        results.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Company>()
+            .Which.Should().Match<Company>(x =>
+                x.Name == "Test Company" &&
+                x.CompanyStatusId == CompanyStatusId.ACTIVE
+            );
+    }
+
+    #endregion
+
+    #region Create Address
+
+    [Fact]
+    public async Task CreateAddress_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateAddress("Munich", "Street", "DE", a =>
+        {
+            a.Streetnumber = "5";
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        results.Streetnumber.Should().Be("5");
+        results.City.Should().Be("Munich");
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().ToList()
+            .Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Address>()
+            .Which.Should().Match<Address>(x =>
+                x.City == "Munich" &&
+                x.Streetnumber == "5"
+            );
     }
 
     #endregion
@@ -624,11 +684,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyInformationAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result!.OrganizationName.Should().Be("Catena-X");
+        result.CompanyUserEmail.Should().Be("inactive-user@mail.com");
     }
 
     [Fact]
@@ -638,7 +699,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyInformationAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationAsync(Guid.NewGuid(), Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -710,8 +771,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCallbackEditData(_validCompanyId, companyRoleId).ConfigureAwait(false);
 
         // Assert
-        result.callbackUrl.Should().BeNull();
-        result.ospDetailsExist.Should().BeFalse();
+        result.ospDetails.Should().BeNull();
         result.hasCompanyRole.Should().Be(hasRole);
     }
 
@@ -726,8 +786,8 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCallbackEditData(_validOspCompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER).ConfigureAwait(false);
 
         // Assert
-        result.callbackUrl.Should().Be(url);
-        result.ospDetailsExist.Should().BeTrue();
+        result.ospDetails.Should().NotBeNull();
+        result.ospDetails!.CallbackUrl.Should().Be(url);
         result.hasCompanyRole.Should().BeTrue();
     }
 
@@ -792,9 +852,10 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         const string url = "https://service-url.com/new";
         var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var secret = "test123"u8.ToArray();
 
         // Act
-        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url);
+        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url, "https//auth.url", "test", secret);
 
         // Assert
         result.CompanyId.Should().Be(_validCompanyId);
@@ -808,6 +869,78 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
         entry.State.Should().Be(EntityState.Added);
+    }
+
+    #endregion
+
+    #region CheckBpnExists
+
+    [Fact]
+    public async Task CheckBpnExists_WithNotExisting_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckBpnExists("TESTNOTEXISTING").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckBpnExists_WithValid_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckBpnExists("BPNL00000003LLHA").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region GetAllMemberCompaniesBPN
+
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN()
+    {
+        // Arrange
+        var bpnIds = new[] {
+            "BPNL07800HZ01643",
+            "BPNL00000003AYRE",
+            "BPNL00000003LLHA",
+            "BPNL0000000001ON",
+            "BPNL07800HZ01645" };
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(2).And.Satisfy(
+            x => x == "BPNL07800HZ01643", x => x == "BPNL00000003AYRE");
+    }
+
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN_withNull_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllMemberCompaniesBPNAsync(null).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(5).And.Satisfy(
+            x => x == "BPNL07800HZ01643",
+            x => x == "BPNL00000003AYRE",
+            x => x == "BPNL00000003CRHK",
+            x => x == "BPNL00000003CRHL",
+            x => x == "BPNL00000001TEST");
     }
 
     #endregion

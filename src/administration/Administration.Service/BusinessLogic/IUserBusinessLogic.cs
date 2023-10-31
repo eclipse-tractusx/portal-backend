@@ -29,16 +29,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public interface IUserBusinessLogic
 {
-    IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, (Guid UserId, Guid CompanyId) identity);
-    Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, (Guid UserId, Guid CompanyId) identity);
-    Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(Guid companyId, int page, int size, GetOwnCompanyUsersFilter filter);
+    IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList);
+    Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo);
+    Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(int page, int size, GetOwnCompanyUsersFilter filter);
     [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
-    Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid userId, Guid companyId);
-    Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers, Guid companyId);
-    Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string businessPartnerNumber, Guid companyId);
-    Task<CompanyOwnUserDetails> GetOwnUserDetails(Guid userId);
-    Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, Guid userId);
+    Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid userId);
+    Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers);
+    Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string businessPartnerNumber);
+    Task<CompanyOwnUserDetails> GetOwnUserDetails();
+    Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails);
 
     /// <summary>
     /// Delete User Own Account using userId
@@ -46,9 +46,9 @@ public interface IUserBusinessLogic
     /// <param name="companyUserId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<int> DeleteOwnUserAsync(Guid companyUserId, Guid userId);
-    IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds, Guid companyId);
-    Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, (Guid UserId, Guid CompanyId) identity);
-    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, Guid userId, int page, int size, CompanyUserFilter filter);
-    Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber, (Guid UserId, Guid CompanyId) identity);
+    Task<int> DeleteOwnUserAsync(Guid companyUserId);
+    IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds);
+    Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId);
+    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, int page, int size, CompanyUserFilter filter);
+    Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber);
 }

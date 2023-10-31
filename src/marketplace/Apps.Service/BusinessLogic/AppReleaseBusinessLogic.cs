@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -44,6 +45,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private readonly IOfferService _offerService;
     private readonly IOfferDocumentService _offerDocumentService;
     private readonly IOfferSetupService _offerSetupService;
+    private readonly IIdentityService _identityService;
 
     /// <summary>
     /// Constructor.
@@ -53,31 +55,34 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <param name="offerService"></param>
     /// <param name="offerDocumentService"></param>
     /// <param name="offerSetupService"></param>
-    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService, IOfferDocumentService offerDocumentService, IOfferSetupService offerSetupService)
+    /// <param name="identityService">Access to the identityService</param>
+    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService, IOfferDocumentService offerDocumentService, IOfferSetupService offerSetupService, IIdentityService identityService)
     {
         _portalRepositories = portalRepositories;
         _settings = settings.Value;
         _offerService = offerService;
         _offerDocumentService = offerDocumentService;
         _offerSetupService = offerSetupService;
+        _identityService = identityService;
     }
 
     /// <inheritdoc/>
-    public Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken) =>
-        UploadAppDoc(appId, documentTypeId, document, identity, OfferTypeId.APP, cancellationToken);
+    public Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken) =>
+        UploadAppDoc(appId, documentTypeId, document, OfferTypeId.APP, cancellationToken);
 
-    private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
-        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, identity, offerTypeId, _settings.UploadAppDocumentTypeIds, cancellationToken).ConfigureAwait(false);
+    private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
+        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, offerTypeId, _settings.UploadAppDocumentTypeIds, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, Guid companyId)
+    public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles)
     {
         AppExtensions.ValidateAppUserRole(appId, userRoles);
-        return InsertAppUserRoleAsync(appId, userRoles, companyId);
+        return InsertAppUserRoleAsync(appId, userRoles);
     }
 
-    private async Task<IEnumerable<AppRoleData>> InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, Guid companyId)
+    private async Task<IEnumerable<AppRoleData>> InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await _portalRepositories.GetInstance<IOfferRepository>().IsProviderCompanyUserAsync(appId, companyId, OfferTypeId.APP).ConfigureAwait(false);
         if (result == default)
         {
@@ -144,8 +149,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task DeleteAppRoleAsync(Guid appId, Guid roleId, Guid companyId)
+    public async Task DeleteAppRoleAsync(Guid appId, Guid roleId)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var appUserRole = await _portalRepositories.GetInstance<IOfferRepository>().GetAppUserRoleUntrackedAsync(appId, companyId, OfferStatusId.CREATED, roleId).ConfigureAwait(false);
         if (!appUserRole.IsProviderCompanyUser)
         {
@@ -164,11 +170,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(Guid companyId) =>
-       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(companyId, _settings.SalesManagerRoles);
+    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync() =>
+       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(_identityService.IdentityData.CompanyId, _settings.SalesManagerRoles);
 
     /// <inheritdoc/>
-    public Task<Guid> AddAppAsync(AppRequestModel appRequestModel, Guid companyId)
+    public Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
     {
         var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(string.IsNullOrWhiteSpace);
         if (emptyLanguageCodes.Any())
@@ -182,11 +188,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
         }
 
-        return this.CreateAppAsync(appRequestModel, companyId);
+        return this.CreateAppAsync(appRequestModel);
     }
 
-    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel, Guid companyId)
+    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         if (appRequestModel.SalesManagerId.HasValue)
         {
             await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, _settings.SalesManagerRoles).ConfigureAwait(false);
@@ -232,8 +239,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, Guid companyId)
+    public async Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var appData = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetAppUpdateData(
                 appId,
@@ -321,7 +329,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc/>
     public Task ApproveAppRequestAsync(Guid appId) =>
-        _offerService.ApproveOfferRequestAsync(appId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.BasePortalAddress, _settings.ActivationUserRoles);
+        _offerService.ApproveOfferRequestAsync(appId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.ActivationPortalAddress, _settings.ActivationUserRoles);
 
     private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
     {
@@ -386,8 +394,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _offerService.DeleteDocumentsAsync(documentId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public async Task DeleteAppAsync(Guid appId, Guid companyId)
+    public async Task DeleteAppAsync(Guid appId)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var (isValidApp, isOfferType, isOfferStatus, isProviderCompanyUser, appData) = await _portalRepositories.GetInstance<IOfferRepository>().GetAppDeleteDataAsync(appId, OfferTypeId.APP, companyId, OfferStatusId.CREATED).ConfigureAwait(false);
         if (!isValidApp)
         {
@@ -422,7 +431,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task SetInstanceType(Guid appId, AppInstanceSetupData data, Guid companyId)
+    public Task SetInstanceType(Guid appId, AppInstanceSetupData data)
     {
         if (data.IsSingleInstance)
         {
@@ -434,11 +443,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 nameof(data.InstanceUrl));
         }
 
-        return SetInstanceTypeInternal(appId, data, companyId);
+        return SetInstanceTypeInternal(appId, data);
     }
 
-    private async Task SetInstanceTypeInternal(Guid appId, AppInstanceSetupData data, Guid companyId)
+    private async Task SetInstanceTypeInternal(Guid appId, AppInstanceSetupData data)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetOfferWithSetupDataById(appId, companyId, OfferTypeId.APP)
             .ConfigureAwait(false);

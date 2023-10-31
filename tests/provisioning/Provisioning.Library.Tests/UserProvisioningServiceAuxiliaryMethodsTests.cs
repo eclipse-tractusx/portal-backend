@@ -33,7 +33,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     private readonly Guid _identityProviderId;
     private readonly Guid _companyUserId;
     private readonly ICustomizationComposer<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, (string? IdpAlias, bool IsSharedIdp) IdentityProvider)> _resultComposer;
-    private readonly ICustomizationComposer<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<string> IdpAliase)> _sharedIdpComposer;
+    private readonly ICustomizationComposer<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<(Guid Id, string Alias)> IdpAliase)> _sharedIdpComposer;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityProviderRepository _identityProviderRepository;
 
@@ -47,7 +47,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         _identityProviderId = _fixture.Create<Guid>();
         _companyUserId = Guid.NewGuid();
         _resultComposer = _fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>();
-        _sharedIdpComposer = _fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<string> IdpAliase)>();
+        _sharedIdpComposer = _fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<(Guid Id, string Alias)> IdpAliase)>();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
@@ -58,7 +58,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
             _resultComposer.Create());
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._)).Returns(
-            _sharedIdpComposer.With(x => x.IdpAliase, new[] { _fixture.Create<string>() }).Create());
+            _sharedIdpComposer.With(x => x.IdpAliase, new[] { _fixture.Create<ValueTuple<Guid, string>>() }).Create());
     }
 
     #region GetCompanyNameIdpAliasData
@@ -168,10 +168,10 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     public async void TestGetCompanyNameSharedIdpwithNullCompanyNameAndEmailAliasDataFixtureSetup()
     {
         // Arrange
-        var data = new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>>(
+        var data = new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>>(
             new ValueTuple<Guid, string?, string?>(Guid.NewGuid(), _fixture.Create<string>(), _fixture.Create<string>()),
             new ValueTuple<Guid, string?, string?, string?>(Guid.NewGuid(), null, null, null),
-            _fixture.CreateMany<string>(1)
+            _fixture.CreateMany<ValueTuple<Guid, string>>(1)
 
         );
 
@@ -190,7 +190,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataNotFound()
     {
-        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
+        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>) notfound = default;
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(notfound);
@@ -206,7 +206,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataForApplicationIdNotFound()
     {
-        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
+        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>) notfound = default;
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(notfound);
@@ -225,7 +225,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     public async void TestGetCompanyNameSharedIdpAliasDataNoIdpAliasThrows()
     {
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
-            .Returns(_sharedIdpComposer.With(x => x.IdpAliase, Enumerable.Empty<string>()).Create());
+            .Returns(_sharedIdpComposer.With(x => x.IdpAliase, Enumerable.Empty<(Guid Id, string Alias)>()).Create());
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
@@ -239,7 +239,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     public async void TestGetCompanyNameSharedIdpAliasDataMultipleIdpAliaseThrows()
     {
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
-            .Returns(_sharedIdpComposer.With(x => x.IdpAliase, _fixture.CreateMany<string>(2)).Create());
+            .Returns(_sharedIdpComposer.With(x => x.IdpAliase, _fixture.CreateMany<(Guid Id, string Alias)>(2)).Create());
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 

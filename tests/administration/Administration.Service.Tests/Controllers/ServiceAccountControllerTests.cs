@@ -59,14 +59,14 @@ public class ServiceAccountControllerTests
             .With(x => x.ServiceAccountId, serviceAccountId)
             .Create();
         var data = _fixture.Create<ServiceAccountCreationInfo>();
-        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._))
+        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(A<ServiceAccountCreationInfo>._))
             .Returns(responseData);
 
         // Act
         var result = await _controller.ExecuteCompanyUserCreation(data).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data)).MustHaveHappenedOnceExactly();
 
         result.Should().NotBeNull();
         result.Should().BeOfType<CreatedAtRouteResult>();
@@ -80,14 +80,14 @@ public class ServiceAccountControllerTests
     {
         // Arrange
         var data = _fixture.CreateMany<UserRoleWithDescription>(5);
-        A.CallTo(() => _logic.GetServiceAccountRolesAsync(A<Guid>._, A<string?>._))
+        A.CallTo(() => _logic.GetServiceAccountRolesAsync(A<string?>._))
             .Returns(data.ToAsyncEnumerable());
 
         // Act
         var result = await _controller.GetServiceAccountRolesAsync().ToListAsync().ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetServiceAccountRolesAsync(_identity.CompanyId, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetServiceAccountRolesAsync(null)).MustHaveHappenedOnceExactly();
 
         result.Should().NotBeNull();
         result.Should().HaveCount(5);

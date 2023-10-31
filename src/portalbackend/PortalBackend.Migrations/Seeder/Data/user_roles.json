@@ -78,12 +78,6 @@
     "last_editor_id": null
   },
   {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51169",
-    "user_role": "App Tech User",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
     "id": "9956fa8d-e454-49ca-a3b1-83e2c106fe59",
     "user_role": "BPDM Management",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
@@ -95,15 +89,9 @@
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
-  {
+  { 
     "id": "607818be-4978-41f4-bf63-fa8d2de51162",
     "user_role": "BPDM Pool",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51155",
-    "user_role": "Connector User",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
@@ -127,7 +115,19 @@
   },
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51168",
-    "user_role": "Service Management",
+    "user_role": "Offer Management",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "3940f9b0-4393-4463-b659-15463098557b",
+    "user_role": "Semantic Model Management",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
+    "user_role": "CX Membership Info",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   }

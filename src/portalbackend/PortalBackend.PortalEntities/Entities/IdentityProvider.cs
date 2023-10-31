@@ -29,6 +29,7 @@ public class IdentityProvider : IBaseEntity
     {
         Companies = new HashSet<Company>();
         CompanyIdentityProviders = new HashSet<CompanyIdentityProvider>();
+        CompanyUserAssignedIdentityProviders = new HashSet<CompanyUserAssignedIdentityProvider>();
     }
 
     public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId identityProviderTypeId, Guid ownerId, DateTimeOffset dateCreated) : this()
@@ -57,4 +58,5 @@ public class IdentityProvider : IBaseEntity
     public virtual Company? Owner { get; set; }
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyIdentityProvider> CompanyIdentityProviders { get; private set; }
+    public virtual ICollection<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; private set; }
 }

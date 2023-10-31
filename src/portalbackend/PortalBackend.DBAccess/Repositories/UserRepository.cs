@@ -63,14 +63,17 @@ public class UserRepository : IUserRepository
         }).Entity;
 
     /// <inheritdoc />
-    public Identity CreateIdentity(Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId) =>
-        _dbContext.Identities.Add(
-            new Identity(
-                Guid.NewGuid(),
-                DateTimeOffset.UtcNow,
-                companyId,
-                userStatusId,
-                identityTypeId)).Entity;
+    public Identity CreateIdentity(Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId, Action<Identity>? setOptionalFields)
+    {
+        var identity = new Identity(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            companyId,
+            userStatusId,
+            identityTypeId);
+        setOptionalFields?.Invoke(identity);
+        return _dbContext.Identities.Add(identity).Entity;
+    }
 
     public void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? initialize, Action<CompanyUser> setOptionalParameters)
     {
@@ -442,4 +445,36 @@ public class UserRepository : IUserRepository
         modify.Invoke(updatedEntity);
         return updatedEntity;
     }
+
+    public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName) =>
+        _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, providerId, userName)).Entity;
+
+    public IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
+        _dbContext.CompanyUsers
+            .Where(cu =>
+                cu.Identity!.UserStatusId == UserStatusId.PENDING &&
+                cu.Identity.Company!.NetworkRegistration!.Id == networkRegistrationId)
+            .Select(cu =>
+                new CompanyUserIdentityProviderProcessData(
+                    cu.Id,
+                    cu.Firstname,
+                    cu.Lastname,
+                    cu.Email,
+                    cu.Identity!.UserEntityId,
+                    cu.Identity.Company!.Name,
+                    cu.Identity.Company.BusinessPartnerNumber,
+                    cu.CompanyUserAssignedIdentityProviders.Select(assigned => new ProviderLinkData(assigned.UserName, assigned.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, assigned.ProviderId))
+                ))
+            .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextServiceAccountsWithoutUserEntityId() =>
+        _dbContext.Identities
+            .Where(x =>
+                x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT &&
+                x.UserEntityId == null &&
+                x.CompanyServiceAccount!.ClientClientId != null &&
+                x.UserStatusId == UserStatusId.ACTIVE)
+            .Select(x => new ValueTuple<Guid, string>(x.Id, x.CompanyServiceAccount!.ClientClientId!))
+            .Take(2)
+            .ToAsyncEnumerable();
 }

@@ -62,5 +62,13 @@
   {
     "company_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cde",
     "company_role_id": 2
+  },
+  {
+    "company_id": "2647e4f9-0d11-479f-b927-643cd9321c00",
+    "company_role_id": 1
+  },
+  {
+    "company_id": "2647e4f9-0d11-479f-b927-643cd9321c00",
+    "company_role_id": 5
   }
 ]

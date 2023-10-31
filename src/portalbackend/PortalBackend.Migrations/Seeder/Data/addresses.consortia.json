@@ -154,5 +154,17 @@
     "streetnumber": "9",
     "zipcode": "00001",
     "country_alpha2code": "DE"
+  },
+  {
+    "id": "f267f020-2caf-4d64-9aa1-20a6c123fe15",
+    "date_created": "2022-03-24 18:01:33.428000 +00:00",
+    "date_last_changed": "2022-03-24 18:01:33.428000 +00:00",
+    "city": "Munich",
+    "region": null,
+    "streetadditional": null,
+    "streetname": "Street",
+    "streetnumber": "9",
+    "zipcode": "00001",
+    "country_alpha2code": "DE"
   }
 ]

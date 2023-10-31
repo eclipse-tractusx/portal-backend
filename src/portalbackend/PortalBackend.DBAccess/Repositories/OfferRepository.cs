@@ -123,6 +123,7 @@ public class OfferRepository : IOfferRepository
                 offer.Tags.Select(t => t.Name),
                 offer.Companies.Where(c => c.Id == userCompanyId)
                     .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == offerId))
+                    .OrderByDescending(x => x.DateCreated)
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
                 offer.SupportedLanguages.Select(l => l.ShortName),
@@ -822,4 +823,20 @@ public class OfferRepository : IOfferRepository
                 o.Offer.Name
             ))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<DocumentTypeData> GetActiveOfferDocumentTypeDataOrderedAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds) =>
+        _context.OfferAssignedDocuments
+        .Where(oad => oad.OfferId == offerId &&
+            oad.Offer!.OfferStatusId == OfferStatusId.ACTIVE &&
+            oad.Offer.OfferTypeId == offerTypeId &&
+            oad.Offer.ProviderCompanyId == userCompanyId &&
+            oad.Document!.DocumentStatusId != DocumentStatusId.INACTIVE &&
+            documentTypeIds.Contains(oad.Document!.DocumentTypeId))
+        .OrderBy(oad => oad.Document!.DocumentTypeId)
+        .Select(oad => new DocumentTypeData(
+            oad.Document!.DocumentTypeId,
+            oad.Document.Id,
+            oad.Document.DocumentName))
+        .ToAsyncEnumerable();
 }

@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -35,22 +36,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IIdentityService _identityService;
     private readonly DocumentSettings _settings;
 
     /// <summary>
     /// Creates a new instance <see cref="DocumentsBusinessLogic"/>
     /// </summary>
-    public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IOptions<DocumentSettings> options)
+    public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IOptions<DocumentSettings> options)
     {
         _portalRepositories = portalRepositories;
+        _identityService = identityService;
         _settings = options.Value;
     }
 
     /// <inheritdoc />
-    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, Guid companyId)
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId)
     {
         var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
-            .GetDocumentDataAndIsCompanyUserAsync(documentId, companyId)
+            .GetDocumentDataAndIsCompanyUserAsync(documentId, _identityService.IdentityData.CompanyId)
             .ConfigureAwait(false);
         if (documentDetails == default)
         {
@@ -84,10 +87,10 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<bool> DeleteDocumentAsync(Guid documentId, Guid companyUserId)
+    public async Task<bool> DeleteDocumentAsync(Guid documentId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, companyUserId).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, _identityService.IdentityData.UserId).ConfigureAwait(false);
 
         if (details.DocumentId == Guid.Empty)
         {

@@ -17,13 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Flurl.Http;
 using Flurl.Http.Testing;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
-using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.IdentityProvider;
+using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.FlurlSetup;
 
@@ -31,7 +32,7 @@ public static class FlurlSetupExtensions
 {
     public static HttpTest WithAuthorization(this HttpTest testClient)
     {
-        testClient.ForCallsTo("*/auth/realms/*/protocol/openid-connect/token")
+        testClient.ForCallsTo("*/realms/*/protocol/openid-connect/token")
             .RespondWithJson(new { access_token = "123" });
         return testClient;
     }
@@ -71,7 +72,7 @@ public static class FlurlSetupExtensions
 
     public static HttpTest WithGetOpenIdConfigurationAsync(this HttpTest testClient, OpenIDConfiguration config)
     {
-        testClient.ForCallsTo($"*/realms/*/.well-known/openid-configuration")
+        testClient.ForCallsTo("*/realms/*/.well-known/openid-configuration")
             .WithVerb(HttpMethod.Get)
             .RespondWithJson(config);
         return testClient;
@@ -101,11 +102,41 @@ public static class FlurlSetupExtensions
         return testClient;
     }
 
+    public static HttpTest With(this HttpTest testClient, string alias, string clientId, Client client)
+    {
+        testClient.ForCallsTo($"*/admin/realms/{alias}/clients/{clientId}")
+            .WithVerb(HttpMethod.Get)
+            .RespondWithJson(client);
+        return testClient;
+    }
+
     public static HttpTest WithGetRealmAsync(this HttpTest testClient, string alias, Realm realm)
     {
         testClient.ForCallsTo($"*/admin/realms/{alias}")
             .WithVerb(HttpMethod.Get)
             .RespondWithJson(realm);
+        return testClient;
+    }
+
+    public static HttpTest WithGetUsersAsync(this HttpTest testClient, IEnumerable<User> users)
+    {
+        testClient.ForCallsTo("*/admin/realms/*/users")
+            .WithVerb(HttpMethod.Get)
+            .RespondWithJson(users);
+        return testClient;
+    }
+
+    public static HttpTest WithGetUsersFailing(this HttpTest testClient, HttpStatusCode statusCode)
+    {
+        testClient.ForCallsTo("*/admin/realms/*/users")
+            .WithVerb(HttpMethod.Get)
+            .SimulateException(new FlurlHttpException(new FlurlCall
+            {
+                HttpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "/test"),
+                Request = new FlurlRequest(new Uri("https://test.de")),
+                HttpResponseMessage = new HttpResponseMessage(statusCode) { ReasonPhrase = "test" },
+                Response = new FlurlResponse(new HttpResponseMessage(statusCode))
+            }));
         return testClient;
     }
 }

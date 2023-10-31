@@ -56,7 +56,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
 
     public CompanyApplicationTypeId CompanyApplicationTypeId { get; private set; }
 
-    public Guid? OnboardingServiceProviderId { get; private set; }
+    public Guid? OnboardingServiceProviderId { get; set; }
 
     [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
@@ -67,6 +67,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     public virtual Process? ChecklistProcess { get; set; }
     public virtual CompanyApplicationType? CompanyApplicationType { get; set; }
     public virtual Company? OnboardingServiceProvider { get; set; }
+    public virtual NetworkRegistration? NetworkRegistration { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
     public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
     public virtual Identity? LastEditor { get; private set; }

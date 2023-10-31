@@ -84,7 +84,7 @@ public class NotificationController : ControllerBase
         [FromQuery] bool? doneState = null,
         [FromQuery] string? searchQuery = null
         ) =>
-        this.WithUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState, searchTypeIds, searchQuery)));
+        _logic.GetNotificationsAsync(page, size, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState, searchTypeIds, searchQuery));
 
     /// <summary>
     ///     Gets a notification for the logged in user
@@ -102,7 +102,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<NotificationDetailData> GetNotification([FromRoute] Guid notificationId) =>
-        this.WithUserId(userId => _logic.GetNotificationDetailDataAsync(userId, notificationId));
+        _logic.GetNotificationDetailDataAsync(notificationId);
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -122,7 +122,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> NotificationCount([FromQuery] bool? isRead) =>
-        this.WithUserId(userId => _logic.GetNotificationCountAsync(userId, isRead));
+        _logic.GetNotificationCountAsync(isRead);
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -136,7 +136,7 @@ public class NotificationController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(NotificationCountDetails), StatusCodes.Status200OK)]
     public Task<NotificationCountDetails> NotificationCountDetails() =>
-        this.WithUserId(userId => _logic.GetNotificationCountDetailsAsync(userId));
+        _logic.GetNotificationCountDetailsAsync();
 
     /// <summary>
     /// Changes the read status of a notification
@@ -158,7 +158,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] bool isRead = true)
     {
-        await this.WithUserId(userId => _logic.SetNotificationStatusAsync(userId, notificationId, isRead)).ConfigureAwait(false);
+        await _logic.SetNotificationStatusAsync(notificationId, isRead).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -180,7 +180,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteNotification([FromRoute] Guid notificationId)
     {
-        await this.WithUserId(userId => _logic.DeleteNotificationAsync(userId, notificationId)).ConfigureAwait(false);
+        await _logic.DeleteNotificationAsync(notificationId).ConfigureAwait(false);
         return NoContent();
     }
 }

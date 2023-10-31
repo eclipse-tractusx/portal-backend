@@ -48,21 +48,23 @@ public partial class KeycloakClient
     private readonly Func<CancellationToken, Task<string>>? _getTokenAsync;
     private readonly string? _authRealm;
     private readonly string? _clientId;
+    private readonly bool _useAuthTrail;
 
     private KeycloakClient(string url)
     {
         _url = url;
     }
 
-    public KeycloakClient(string url, string userName, string password, string authRealm)
+    public KeycloakClient(string url, string? userName, string? password, string? authRealm, bool useAuthTrail)
         : this(url)
     {
         _userName = userName;
         _password = password;
         _authRealm = authRealm;
+        _useAuthTrail = useAuthTrail;
     }
 
-    private KeycloakClient(string url, string? userName, string? password, string? authRealm, string? clientId, string? clientSecret)
+    private KeycloakClient(string url, string? userName, string? password, string? authRealm, string? clientId, string? clientSecret, bool useAuthTrail)
         : this(url)
     {
         _userName = userName;
@@ -70,6 +72,7 @@ public partial class KeycloakClient
         _clientSecret = clientSecret;
         _clientId = clientId;
         _authRealm = authRealm;
+        _useAuthTrail = useAuthTrail;
     }
 
     public KeycloakClient(string url, Func<string> getToken, string? authRealm = null)
@@ -86,9 +89,9 @@ public partial class KeycloakClient
         _authRealm = authRealm;
     }
 
-    public static KeycloakClient CreateWithClientId(string url, string clientId, string clientSecret, string? authRealm = null)
+    public static KeycloakClient CreateWithClientId(string url, string? clientId, string? clientSecret, bool useAuthTrail, string? authRealm = null)
     {
-        return new KeycloakClient(url, userName: null, password: null, authRealm, clientId, clientSecret);
+        return new KeycloakClient(url, userName: null, password: null, authRealm, clientId, clientSecret, useAuthTrail);
     }
 
     public void SetSerializer(ISerializer serializer)
@@ -96,8 +99,17 @@ public partial class KeycloakClient
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
     }
 
-    private Task<IFlurlRequest> GetBaseUrlAsync(string targetRealm, CancellationToken cancellationToken = default) => new Url(_url)
-        .AppendPathSegment("/auth")
-        .ConfigureRequest(settings => settings.JsonSerializer = _serializer)
-        .WithAuthenticationAsync(_getTokenAsync, _url, _authRealm ?? targetRealm, _userName, _password, _clientSecret, _clientId, cancellationToken);
+    private Task<IFlurlRequest> GetBaseUrlAsync(string targetRealm, CancellationToken cancellationToken = default)
+    {
+        var url = new Url(_url);
+        if (_useAuthTrail)
+        {
+            url = url
+            .AppendPathSegment("/auth");
+        }
+
+        return url
+            .ConfigureRequest(settings => settings.JsonSerializer = _serializer)
+            .WithAuthenticationAsync(_getTokenAsync, _url, _authRealm ?? targetRealm, _userName, _password, _clientSecret, _clientId, _useAuthTrail, cancellationToken);
+    }
 }

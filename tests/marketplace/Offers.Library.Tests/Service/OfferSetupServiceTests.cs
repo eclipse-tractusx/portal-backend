@@ -122,7 +122,7 @@ public class OfferSetupServiceTests
     public async Task AutoSetup_WithValidData_ReturnsExpectedNotificationAndSecret(OfferTypeId offerTypeId, bool technicalUserRequired, bool isSingleInstance)
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, default);
         var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
         var createNotificationsEnumerator = SetupAutoSetup(offerTypeId, offerSubscription, isSingleInstance, companyServiceAccount);
         var clientId = Guid.NewGuid();
@@ -247,7 +247,7 @@ public class OfferSetupServiceTests
     public async Task AutoSetup_WithMultipleTechnicalUsers_ThrowsException()
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, default);
         var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
         SetupAutoSetup(OfferTypeId.APP, offerSubscription, false, companyServiceAccount);
         var clientId = Guid.NewGuid();
@@ -581,7 +581,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(clientClientId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _clientRepository.RemoveClient(clientId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _appInstanceRepository.RemoveAppInstance(appInstanceId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _appInstanceRepository.RemoveAppInstanceAssignedServiceAccounts(appInstanceId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 1 && x.Single() == serviceAccountId)))
+        A.CallTo(() => _appInstanceRepository.RemoveAppInstanceAssignedServiceAccounts(appInstanceId, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { serviceAccountId })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -825,7 +825,7 @@ public class OfferSetupServiceTests
             : ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION;
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == nextStepId)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { nextStepId })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -950,7 +950,7 @@ public class OfferSetupServiceTests
 
         // Assert
         detail.AppSubscriptionUrl.Should().Be("https://www.test.de");
-        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)))
+        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -1101,7 +1101,7 @@ public class OfferSetupServiceTests
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds) });
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, CompanyUserCompanyId, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == Bpn), CompanyServiceAccountTypeId.MANAGED, false, false, A<Action<CompanyServiceAccount>>._))
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, CompanyUserCompanyId, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), CompanyServiceAccountTypeId.MANAGED, false, false, A<Action<CompanyServiceAccount>>._))
             .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
             {
                 setOptionalParameter?.Invoke(companyServiceAccount);
@@ -1134,7 +1134,7 @@ public class OfferSetupServiceTests
     public async Task ActivateSubscription_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
         var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, Guid.NewGuid(), DateTimeOffset.Now);
 
         A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscription.Id, _identity.CompanyId))
@@ -1146,7 +1146,7 @@ public class OfferSetupServiceTests
         await _sut.TriggerActivateSubscription(offerSubscription.Id).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)))
+        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
@@ -1178,7 +1178,7 @@ public class OfferSetupServiceTests
     public async Task ActivateSingleInstanceSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
         var subscriptionProcessData = new List<OfferSubscriptionProcessData>
         {
             new(offerSubscription.Id, "https://www.test.de")
@@ -1243,7 +1243,7 @@ public class OfferSetupServiceTests
     public async Task ActivateMultipleInstancesSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
         var subscriptionProcessData = new List<OfferSubscriptionProcessData>
         {
             new(offerSubscription.Id, "https://www.test.de")
@@ -1349,7 +1349,7 @@ public class OfferSetupServiceTests
         await _sut.TriggerActivateSubscription(offerSubscriptionId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)))
+        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION })))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }

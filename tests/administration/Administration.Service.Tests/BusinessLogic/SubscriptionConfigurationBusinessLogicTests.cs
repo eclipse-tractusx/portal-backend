@@ -47,6 +47,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IFixture _fixture;
     private readonly ISubscriptionConfigurationBusinessLogic _sut;
+    private readonly IIdentityService _identityService;
 
     public SubscriptionConfigurationBusinessLogicTests()
     {
@@ -62,11 +63,14 @@ public class SubscriptionConfigurationBusinessLogicTests
 
         _serviceProviderDetails = new HashSet<ProviderCompanyDetail>();
 
+        _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
             .Returns(_offerSubscriptionsRepository);
 
-        _sut = new SubscriptionConfigurationBusinessLogic(_offerSubscriptionProcessService, _portalRepositories);
+        _sut = new SubscriptionConfigurationBusinessLogic(_offerSubscriptionProcessService, _portalRepositories, _identityService);
     }
 
     #region GetProcessStepsForSubscription
@@ -108,7 +112,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_PROVIDER)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.TRIGGER_PROVIDER })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -129,7 +133,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -150,7 +154,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -171,7 +175,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<ManualProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK })))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -189,7 +193,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns((Guid.Empty, null!));
 
         // Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
@@ -224,7 +228,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             });
 
         //Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData, _identity.CompanyId).ConfigureAwait(false);
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, null)).MustNotHaveHappened();
@@ -240,11 +244,12 @@ public class SubscriptionConfigurationBusinessLogicTests
     public async Task SetServiceProviderCompanyDetailsAsync_WithUnknownUser_ThrowsException()
     {
         //Arrange
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, Guid.NewGuid()).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
 
         //Assert
         await Assert.ThrowsAsync<ConflictException>(Action);
@@ -256,11 +261,12 @@ public class SubscriptionConfigurationBusinessLogicTests
     public async Task SetServiceProviderCompanyDetailsAsync_WithNotServiceProvider_ThrowsException()
     {
         //Arrange
+        A.CallTo(() => _identityService.IdentityData).Returns(_noServiceProviderIdentity);
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, _noServiceProviderIdentity.CompanyId).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -282,7 +288,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData(url!, null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, _identity.CompanyId).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -302,7 +308,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         SetupProviderCompanyDetails();
 
         //Act
-        var result = await _sut.GetProviderCompanyDetailsAsync(_identity.CompanyId).ConfigureAwait(false);
+        var result = await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
 
         //Assert
         result.Should().NotBeNull();
@@ -312,10 +318,11 @@ public class SubscriptionConfigurationBusinessLogicTests
     public async Task GetProviderCompanyDetailsAsync_WithInvalidUser_ThrowsException()
     {
         //Arrange
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
         SetupProviderCompanyDetails();
 
         //Act
-        async Task Action() => await _sut.GetProviderCompanyDetailsAsync(Guid.NewGuid()).ConfigureAwait(false);
+        async Task Action() => await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
 
         //Assert
         await Assert.ThrowsAsync<ConflictException>(Action);
@@ -330,7 +337,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), false));
 
         //Act
-        async Task Action() => await _sut.GetProviderCompanyDetailsAsync(_identity.CompanyId).ConfigureAwait(false);
+        async Task Action() => await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
 
         //Assert
         await Assert.ThrowsAsync<ForbiddenException>(Action);

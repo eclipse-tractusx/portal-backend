@@ -26,5 +26,12 @@
     "identity_provider_type_id": 3,
     "owner_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
     "date_created": "2022-05-05 00:00:00.000000 +00:00"
+  },
+  {
+    "id": "38f56465-ce26-4f25-9745-1791620dc202",
+    "identity_provider_category_id": 2,
+    "identity_provider_type_id": 2,
+    "owner_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "date_created": "2022-05-05 00:00:00.000000 +00:00"
   }
 ]

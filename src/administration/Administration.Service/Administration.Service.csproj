@@ -43,12 +43,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\externalsystems\OnboardingServiceProvider.Library\OnboardingServiceProvider.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
+    <ProjectReference Include="..\..\processes\NetworkRegistration.Library\NetworkRegistration.Library.csproj" />
     <ProjectReference Include="..\..\processes\OfferSubscription.Library\OfferSubscription.Library.csproj" />
     <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />

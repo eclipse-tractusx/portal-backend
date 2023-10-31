@@ -28,5 +28,15 @@
     "checklist_process_id": "34215ee3-f99f-45e7-8c4e-747a089cf0b1",
     "company_application_type_id": 1,
     "last_editor_id": null
+  },
+  {
+    "id": "7f31e08c-4420-4eac-beab-9540fbd55595",
+    "date_created": "2022-05-05 18:01:33.439000 +00:00",
+    "date_last_changed": "2022-05-05 18:01:33.439000 +00:00",
+    "application_status_id": 1,
+    "company_id": "729e0af2-6723-4a7f-85a1-833d84b39bdf",
+    "checklist_process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe08",
+    "company_application_type_id": 2,
+    "last_editor_id": null
   }
 ]

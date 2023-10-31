@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -1087,6 +1086,71 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasName("pk_audit_offer_subscription20230317");
 
                     b.ToTable("audit_offer_subscription20230317", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditOfferSubscription20231013", b =>
+                {
+                    b.Property<Guid>("AuditV1Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_v1id");
+
+                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_v1date_last_changed");
+
+                    b.Property<Guid?>("AuditV1LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_v1last_editor_id");
+
+                    b.Property<int>("AuditV1OperationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("audit_v1operation_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_created");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("text")
+                        .HasColumnName("display_name");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.Property<Guid>("OfferId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_id");
+
+                    b.Property<int>("OfferSubscriptionStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("offer_subscription_status_id");
+
+                    b.Property<Guid?>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requester_id");
+
+                    b.HasKey("AuditV1Id")
+                        .HasName("pk_audit_offer_subscription20231013");
+
+                    b.ToTable("audit_offer_subscription20231013", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditProviderCompanyDetail20230614", b =>
@@ -2741,6 +2805,35 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_user_assigned_business_partners", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedIdentityProvider", b =>
+                {
+                    b.Property<Guid>("CompanyUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_user_id");
+
+                    b.Property<Guid>("IdentityProviderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("identity_provider_id");
+
+                    b.Property<string>("ProviderId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("provider_id");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_name");
+
+                    b.HasKey("CompanyUserId", "IdentityProviderId")
+                        .HasName("pk_company_user_assigned_identity_providers");
+
+                    b.HasIndex("IdentityProviderId")
+                        .HasDatabaseName("ix_company_user_assigned_identity_providers_identity_provider_");
+
+                    b.ToTable("company_user_assigned_identity_providers", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3633,6 +3726,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 3,
                             Label = "DELETED"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "PENDING"
                         });
                 });
 
@@ -3859,6 +3957,62 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                             Id = 11,
                             Label = "OCTET"
                         });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_created");
+
+                    b.Property<Guid>("ExternalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("external_id");
+
+                    b.Property<Guid>("OnboardingServiceProviderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("onboarding_service_provider_id");
+
+                    b.Property<Guid>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_network_registrations");
+
+                    b.HasIndex("ApplicationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_network_registrations_application_id");
+
+                    b.HasIndex("CompanyId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_network_registrations_company_id");
+
+                    b.HasIndex("OnboardingServiceProviderId")
+                        .HasDatabaseName("ix_network_registrations_onboarding_service_provider_id");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_network_registrations_process_id");
+
+                    b.HasIndex("ExternalId", "OnboardingServiceProviderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_network_registrations_external_id_onboarding_service_provid");
+
+                    b.ToTable("network_registrations", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Notification", b =>
@@ -4379,6 +4533,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
 
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_created");
+
                     b.Property<string>("Description")
                         .HasMaxLength(4096)
                         .HasColumnType("character varying(4096)")
@@ -4441,8 +4599,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
 
                     b
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_offer_subscription20230317\" (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"process_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"offer_id\", \r\n  NEW.\"offer_subscription_status_id\", \r\n  NEW.\"display_name\", \r\n  NEW.\"description\", \r\n  NEW.\"requester_id\", \r\n  NEW.\"last_editor_id\", \r\n  NEW.\"process_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION AFTER INSERT\r\nON \"portal\".\"offer_subscriptions\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION\"();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_offer_subscription20230317\" (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"process_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"offer_id\", \r\n  NEW.\"offer_subscription_status_id\", \r\n  NEW.\"display_name\", \r\n  NEW.\"description\", \r\n  NEW.\"requester_id\", \r\n  NEW.\"last_editor_id\", \r\n  NEW.\"process_id\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION AFTER UPDATE\r\nON \"portal\".\"offer_subscriptions\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION\"();");
+                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_offer_subscription20231013\" (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"process_id\", \"date_created\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"offer_id\", \r\n  NEW.\"offer_subscription_status_id\", \r\n  NEW.\"display_name\", \r\n  NEW.\"description\", \r\n  NEW.\"requester_id\", \r\n  NEW.\"last_editor_id\", \r\n  NEW.\"process_id\", \r\n  NEW.\"date_created\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION AFTER INSERT\r\nON \"portal\".\"offer_subscriptions\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION\"();")
+                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_offer_subscription20231013\" (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"process_id\", \"date_created\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"offer_id\", \r\n  NEW.\"offer_subscription_status_id\", \r\n  NEW.\"display_name\", \r\n  NEW.\"description\", \r\n  NEW.\"requester_id\", \r\n  NEW.\"last_editor_id\", \r\n  NEW.\"process_id\", \r\n  NEW.\"date_created\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION AFTER UPDATE\r\nON \"portal\".\"offer_subscriptions\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION\"();");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscriptionProcessData", b =>
@@ -4556,10 +4714,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
 
+                    b.Property<string>("AuthUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("auth_url");
+
                     b.Property<string>("CallbackUrl")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("callback_url");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("client_id");
+
+                    b.Property<byte[]>("ClientSecret")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("client_secret");
 
                     b.HasKey("CompanyId")
                         .HasName("pk_onboarding_service_provider_details");
@@ -4904,6 +5077,51 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 111,
                             Label = "TRIGGER_ACTIVATE_SUBSCRIPTION"
+                        },
+                        new
+                        {
+                            Id = 200,
+                            Label = "SYNCHRONIZE_USER"
+                        },
+                        new
+                        {
+                            Id = 201,
+                            Label = "RETRIGGER_SYNCHRONIZE_USER"
+                        },
+                        new
+                        {
+                            Id = 202,
+                            Label = "TRIGGER_CALLBACK_OSP_SUBMITTED"
+                        },
+                        new
+                        {
+                            Id = 203,
+                            Label = "TRIGGER_CALLBACK_OSP_APPROVED"
+                        },
+                        new
+                        {
+                            Id = 204,
+                            Label = "TRIGGER_CALLBACK_OSP_DECLINED"
+                        },
+                        new
+                        {
+                            Id = 205,
+                            Label = "RETRIGGER_CALLBACK_OSP_SUBMITTED"
+                        },
+                        new
+                        {
+                            Id = 206,
+                            Label = "RETRIGGER_CALLBACK_OSP_APPROVED"
+                        },
+                        new
+                        {
+                            Id = 207,
+                            Label = "RETRIGGER_CALLBACK_OSP_DECLINED"
+                        },
+                        new
+                        {
+                            Id = 300,
+                            Label = "SYNCHRONIZE_SERVICE_ACCOUNTS"
                         });
                 });
 
@@ -4934,6 +5152,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 3,
                             Label = "OFFER_SUBSCRIPTION"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "PARTNER_REGISTRATION"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "SERVICE_ACCOUNT_SYNC"
                         });
                 });
 
@@ -6174,6 +6402,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyUser");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedIdentityProvider", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
+                        .WithMany("CompanyUserAssignedIdentityProviders")
+                        .HasForeignKey("CompanyUserId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_user_assigned_identity_providers_company_users_comp");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
+                        .WithMany("CompanyUserAssignedIdentityProviders")
+                        .HasForeignKey("IdentityProviderId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_user_assigned_identity_providers_identity_providers");
+
+                    b.Navigation("CompanyUser");
+
+                    b.Navigation("IdentityProvider");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
@@ -6551,6 +6798,44 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
 
                     b.Navigation("LongNameLanguage");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", "CompanyApplication")
+                        .WithOne("NetworkRegistration")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", "ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_network_registrations_company_applications_application_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
+                        .WithOne("NetworkRegistration")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", "CompanyId")
+                        .IsRequired()
+                        .HasConstraintName("fk_network_registrations_companies_company_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "OnboardingServiceProvider")
+                        .WithMany("OnboardedNetworkRegistrations")
+                        .HasForeignKey("OnboardingServiceProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_network_registrations_companies_onboarding_service_provider");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", "Process")
+                        .WithOne("NetworkRegistration")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", "ProcessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_network_registrations_processes_process_id");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("CompanyApplication");
+
+                    b.Navigation("OnboardingServiceProvider");
+
+                    b.Navigation("Process");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Notification", b =>
@@ -7159,7 +7444,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("Identities");
 
+                    b.Navigation("NetworkRegistration");
+
                     b.Navigation("OfferSubscriptions");
+
+                    b.Navigation("OnboardedNetworkRegistrations");
 
                     b.Navigation("OnboardingServiceProviderDetail");
 
@@ -7179,6 +7468,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ApplicationChecklistEntries");
 
                     b.Navigation("Invitations");
+
+                    b.Navigation("NetworkRegistration");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>
@@ -7233,6 +7524,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanySsiDetails");
 
                     b.Navigation("CompanyUserAssignedBusinessPartners");
+
+                    b.Navigation("CompanyUserAssignedIdentityProviders");
 
                     b.Navigation("Consents");
 
@@ -7325,6 +7618,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
                 {
                     b.Navigation("CompanyIdentityProviders");
+
+                    b.Navigation("CompanyUserAssignedIdentityProviders");
 
                     b.Navigation("IamIdentityProvider");
                 });
@@ -7454,6 +7749,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", b =>
                 {
                     b.Navigation("CompanyApplication");
+
+                    b.Navigation("NetworkRegistration");
 
                     b.Navigation("OfferSubscription");
 

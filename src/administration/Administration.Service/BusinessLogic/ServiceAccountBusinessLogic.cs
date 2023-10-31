@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -38,21 +39,24 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IServiceAccountCreation _serviceAccountCreation;
+    private readonly IIdentityService _identityService;
     private readonly ServiceAccountSettings _settings;
 
     public ServiceAccountBusinessLogic(
         IProvisioningManager provisioningManager,
         IPortalRepositories portalRepositories,
         IOptions<ServiceAccountSettings> options,
-        IServiceAccountCreation serviceAccountCreation)
+        IServiceAccountCreation serviceAccountCreation,
+        IIdentityService identityService)
     {
         _provisioningManager = provisioningManager;
         _portalRepositories = portalRepositories;
         _serviceAccountCreation = serviceAccountCreation;
+        _identityService = identityService;
         _settings = options.Value;
     }
 
-    public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, Guid companyId)
+    public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos)
     {
         if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
@@ -63,6 +67,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ControllerArgumentException("name must not be empty", "name");
         }
 
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnAndTechnicalUserRoleIds(companyId, _settings.ClientId).ConfigureAwait(false);
         if (result == default)
         {
@@ -94,9 +99,10 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountData.AuthData.Secret);
     }
 
-    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, Guid companyId)
+    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId)
     {
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(false);
         if (result == default)
         {
@@ -139,8 +145,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, Guid companyId)
+    public async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
         if (result == null)
         {
@@ -165,8 +172,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.SubscriptionId);
     }
 
-    public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
+    public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId)
     {
+        var companyId = _identityService.IdentityData.CompanyId;
         var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
         if (result == null)
         {
@@ -189,7 +197,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.SubscriptionId);
     }
 
-    public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, Guid companyId)
+    public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails)
     {
         if (serviceAccountDetails.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
@@ -199,6 +207,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetails.ServiceAccountId}", nameof(serviceAccountId));
         }
+
+        var companyId = _identityService.IdentityData.CompanyId;
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, companyId).ConfigureAwait(false);
         if (result == null)
@@ -254,13 +264,13 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.OfferSubscriptionId);
     }
 
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, Guid companyId, string? clientId, bool? isOwner) =>
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner) =>
         Pagination.CreateResponseAsync(
             page,
             size,
             15,
-            _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(companyId, clientId, isOwner));
+            _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(_identityService.IdentityData.CompanyId, clientId, isOwner));
 
-    IAsyncEnumerable<UserRoleWithDescription> IServiceAccountBusinessLogic.GetServiceAccountRolesAsync(Guid companyId, string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(companyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
+    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName) =>
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_identityService.IdentityData.CompanyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
 }

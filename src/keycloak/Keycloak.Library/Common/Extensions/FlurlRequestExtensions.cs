@@ -31,10 +31,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions
 
 public static class FlurlRequestExtensions
 {
-    private static async Task<string> GetAccessTokenAsync(string url, string realm, string userName, string password, CancellationToken cancellationToken)
+    private static async Task<string> GetAccessTokenAsync(string url, string realm, string userName, string password, bool useAuthTrail, CancellationToken cancellationToken)
     {
+        var authTrail = useAuthTrail ? "/auth" : string.Empty;
         var result = await url
-            .AppendPathSegment($"/auth/realms/{realm}/protocol/openid-connect/token")
+            .AppendPathSegment($"{authTrail}/realms/{realm}/protocol/openid-connect/token")
             .WithHeader("Accept", "application/json")
             .PostUrlEncodedAsync(new List<KeyValuePair<string, string>>
             {
@@ -52,16 +53,17 @@ public static class FlurlRequestExtensions
         return accessToken;
     }
 
-    private static async Task<string> GetAccessTokenWithClientIdAsync(string url, string realm, string clientSecret, string? clientId, CancellationToken cancellationToken)
+    private static async Task<string> GetAccessTokenWithClientIdAsync(string url, string realm, string clientSecret, string? clientId, bool useAuthTrail, CancellationToken cancellationToken)
     {
+        var authTrail = useAuthTrail ? "/auth" : string.Empty;
         var result = await url
-            .AppendPathSegment($"/auth/realms/{realm}/protocol/openid-connect/token")
+            .AppendPathSegment($"{authTrail}/realms/{realm}/protocol/openid-connect/token")
             .WithHeader("Content-Type", "application/x-www-form-urlencoded")
             .PostUrlEncodedAsync(new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("grant_type", "client_credentials"),
-                new KeyValuePair<string, string>("client_secret", clientSecret),
-                new KeyValuePair<string, string>("client_id", clientId ?? "admin-cli")
+                new("grant_type", "client_credentials"),
+                new("client_secret", clientSecret),
+                new("client_id", clientId ?? "admin-cli")
             },
             cancellationToken)
             .ReceiveJson().ConfigureAwait(false);
@@ -72,7 +74,7 @@ public static class FlurlRequestExtensions
         return accessToken;
     }
 
-    public static async Task<IFlurlRequest> WithAuthenticationAsync(this IFlurlRequest request, Func<CancellationToken, Task<string>>? getTokenAsync, string url, string realm, string? userName, string? password, string? clientSecret, string? clientId, CancellationToken cancellationToken)
+    public static async Task<IFlurlRequest> WithAuthenticationAsync(this IFlurlRequest request, Func<CancellationToken, Task<string>>? getTokenAsync, string url, string realm, string? userName, string? password, string? clientSecret, string? clientId, bool useAuthTrail, CancellationToken cancellationToken)
     {
         string? token;
         if (getTokenAsync != null)
@@ -81,11 +83,11 @@ public static class FlurlRequestExtensions
         }
         else if (clientSecret != null)
         {
-            token = await GetAccessTokenWithClientIdAsync(url, realm, clientSecret, clientId, cancellationToken).ConfigureAwait(false);
+            token = await GetAccessTokenWithClientIdAsync(url, realm, clientSecret, clientId, useAuthTrail, cancellationToken).ConfigureAwait(false);
         }
         else if (userName != null)
         {
-            token = await GetAccessTokenAsync(url, realm, userName, password ?? "", cancellationToken).ConfigureAwait(false);
+            token = await GetAccessTokenAsync(url, realm, userName, password ?? "", useAuthTrail, cancellationToken).ConfigureAwait(false);
         }
         else
         {

@@ -69,7 +69,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [PublicUrl(CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]
     public Task<ProviderDetailReturnData> GetServiceProviderCompanyDetail() =>
-        this.WithCompanyId(companyId => _businessLogic.GetProviderCompanyDetailsAsync(companyId));
+        _businessLogic.GetProviderCompanyDetailsAsync();
 
     /// <summary>
     /// Sets detail data to the calling users service provider
@@ -91,7 +91,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> SetProviderCompanyDetail([FromBody] ProviderDetailData data)
     {
-        await this.WithCompanyId(companyId => _businessLogic.SetProviderCompanyDetailsAsync(data, companyId)).ConfigureAwait(false);
+        await _businessLogic.SetProviderCompanyDetailsAsync(data).ConfigureAwait(false);
         return NoContent();
     }
 

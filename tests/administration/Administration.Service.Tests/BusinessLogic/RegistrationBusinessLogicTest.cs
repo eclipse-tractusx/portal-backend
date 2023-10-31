@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -41,17 +42,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class RegistrationBusinessLogicTest
 {
+    private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
+    private const string AlreadyTakenBpn = "BPNL123698762666";
+    private const string ValidBpn = "BPNL123698762345";
+    private const string CompanyName = "TestCompany";
     private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid NotExistingApplicationId = new("9f0cfd0d-c512-438e-a07e-3198bce873bf");
     private static readonly Guid ActiveApplicationCompanyId = new("045abf01-7762-468b-98fb-84a30c39b7c7");
     private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
-    private static readonly string CompanyName = "TestCompany";
-
+    private static readonly Guid ExistingExternalId = Guid.NewGuid();
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
     private static readonly Guid ApplicationId = new("6084d6e0-0e01-413c-850d-9f944a6c494c");
-    private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
-    private const string AlreadyTakenBpn = "BPNL123698762666";
-    private const string ValidBpn = "BPNL123698762345";
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
@@ -98,7 +99,9 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(settings);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic);
+        var logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
+
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, logger);
     }
 
     #region GetCompanyApplicationDetailsAsync
@@ -449,13 +452,19 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         const string comment = "application rejected because of reasons.";
+        var processSteps = new List<ProcessStep>();
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, checklistStatusId, DateTimeOffset.UtcNow);
         var company = new Company(CompanyId, null!, CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
         var application = new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.SUBMITTED, CompanyApplicationTypeId.INTERNAL, DateTimeOffset.UtcNow);
         SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId);
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepData) =>
+            {
+                processSteps.AddRange(processStepData.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+            });
 
         // Act
-        await _logic.DeclineRegistrationVerification(IdWithBpn, comment).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(IdWithBpn, comment, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -467,6 +476,9 @@ public class RegistrationBusinessLogicTest
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.VERIFY_REGISTRATION)))
             .MustHaveHappenedOnceExactly();
+        processSteps.Should().ContainSingle().Which.Should().Match<ProcessStep>(x =>
+            x.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+            x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED);
     }
 
     #endregion
@@ -590,7 +602,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context,
                 A<Action<ApplicationChecklistEntry>>._,
                 A<Action<ApplicationChecklistEntry>>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == nextStepId)))
+                A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { nextStepId })))
             .MustHaveHappenedOnceExactly();
         checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(statusId);
         checklistEntry.Comment.Should().BeNull();
@@ -798,7 +810,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName));
+            .Returns((CompanyId, CompanyName, ExistingExternalId));
     }
 
     private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId)
@@ -821,7 +833,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName));
+            .Returns((CompanyId, CompanyName, ExistingExternalId));
 
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> initial, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>

@@ -41,6 +41,7 @@ public class OfferDocumentServiceTests
     private readonly IOfferRepository _offerRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly OfferDocumentService _sut;
+    private readonly IIdentityService _identityService;
 
     public OfferDocumentServiceTests()
     {
@@ -49,12 +50,15 @@ public class OfferDocumentServiceTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerRepository = A.Fake<IOfferRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         SetupCreateDocument();
 
-        _sut = new OfferDocumentService(_portalRepositories);
+        _sut = new OfferDocumentService(_portalRepositories, _identityService);
     }
 
     #region UploadDocument
@@ -94,7 +98,7 @@ public class OfferDocumentServiceTests
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>>._, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>?>._)).MustHaveHappenedOnceExactly();
@@ -118,7 +122,7 @@ public class OfferDocumentServiceTests
             .Returns(((bool, bool, bool))default);
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -137,7 +141,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -157,7 +161,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -177,7 +181,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "image/svg+xml");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
@@ -197,7 +201,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "foo/bar");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
@@ -217,7 +221,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -232,6 +236,7 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var identity = _fixture.Create<IdentityData>();
+        A.CallTo(() => _identityService.IdentityData).Returns(identity);
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
             ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
             : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
@@ -240,7 +245,7 @@ public class OfferDocumentServiceTests
             .Returns((true, false, true));
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (identity.UserId, identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);

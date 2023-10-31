@@ -63,6 +63,7 @@ public class ServiceReleaseBusinessLogicTest
     private readonly ServiceReleaseBusinessLogic _sut;
     private readonly IOptions<ServiceSettings> _options;
     private readonly IOfferDocumentService _offerDocumentService;
+    private readonly IIdentityService _identityService;
 
     public ServiceReleaseBusinessLogicTest()
     {
@@ -77,6 +78,9 @@ public class ServiceReleaseBusinessLogicTest
         _offerDocumentService = A.Fake<IOfferDocumentService>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
         _technicalUserProfileRepository = A.Fake<ITechnicalUserProfileRepository>();
+
+        _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         SetupRepositories();
         var serviceSettings = new ServiceSettings
@@ -94,11 +98,12 @@ public class ServiceReleaseBusinessLogicTest
             {
                 OfferStatusId.ACTIVE ,
                 OfferStatusId.IN_REVIEW
-            }
+            },
+            ActivationPortalAddress = "https://acitvationServiceTest.com"
         };
         _options = Options.Create(serviceSettings);
         _fixture.Inject(_options);
-        _sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _options);
+        _sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _identityService, _options);
     }
 
     [Fact]
@@ -383,10 +388,9 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         SetupUpdateService();
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
 
         // Act
-        async Task Act() => await sut.UpdateServiceAsync(_notExistingServiceId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_notExistingServiceId, data).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -399,10 +403,9 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         SetupUpdateService();
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
 
         // Act
-        async Task Act() => await sut.UpdateServiceAsync(_activeServiceId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_activeServiceId, data).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -415,10 +418,9 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         SetupUpdateService();
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
 
         // Act
-        async Task Act() => await sut.UpdateServiceAsync(_differentCompanyServiceId, data, _identity.CompanyId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_differentCompanyServiceId, data).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -458,10 +460,10 @@ public class ServiceReleaseBusinessLogicTest
                 initializeParameters?.Invoke(existingOffer);
                 setOptionalParameters(existingOffer);
             });
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(settings));
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _identityService, Options.Create(settings));
 
         // Act
-        await sut.UpdateServiceAsync(_existingServiceId, data, _identity.CompanyId).ConfigureAwait(false);
+        await sut.UpdateServiceAsync(_existingServiceId, data).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
@@ -486,10 +488,9 @@ public class ServiceReleaseBusinessLogicTest
     public async Task SubmitServiceAsync_CallsOfferService()
     {
         // Arrange
-        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _options);
 
         // Act
-        await sut.SubmitServiceAsync(_existingServiceId).ConfigureAwait(false);
+        await _sut.SubmitServiceAsync(_existingServiceId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() =>
@@ -515,7 +516,7 @@ public class ServiceReleaseBusinessLogicTest
             ServiceManagerRoles = _fixture.CreateMany<UserRoleConfig>(),
             BasePortalAddress = "test"
         };
-        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, Options.Create(settings));
+        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _identityService, Options.Create(settings));
 
         // Act
         await sut.DeclineServiceRequestAsync(_existingServiceId, data).ConfigureAwait(false);
@@ -543,13 +544,13 @@ public class ServiceReleaseBusinessLogicTest
                 new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new []{ MediaTypeId.PDF })
             }
         };
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(settings));
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _identityService, Options.Create(settings));
 
         // Act
-        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, A<(Guid, Guid)>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -561,7 +562,7 @@ public class ServiceReleaseBusinessLogicTest
     {
         // Arrange
         var appId = Guid.NewGuid();
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _identityService, _options);
 
         // Act
         await sut.ApproveServiceRequestAsync(appId).ConfigureAwait(false);
@@ -570,7 +571,8 @@ public class ServiceReleaseBusinessLogicTest
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, OfferTypeId.SERVICE,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
-            A<string>._, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
+            A<string>.That.Matches(x => x.Length == _options.Value.ActivationPortalAddress.Length && x == _options.Value.ActivationPortalAddress),
+            A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -583,7 +585,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(_existingServiceId, OfferTypeId.SERVICE))
             .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
-        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _identityService, Options.Create(new ServiceSettings()));
 
         // Act
         var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId)
@@ -602,7 +604,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         const string clientProfile = "cl";
         var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
-        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, Options.Create(new ServiceSettings { TechnicalUserProfileClient = clientProfile }));
+        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _identityService, Options.Create(new ServiceSettings { TechnicalUserProfileClient = clientProfile }));
 
         // Act
         await sut

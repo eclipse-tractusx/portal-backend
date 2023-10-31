@@ -141,6 +141,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
         /// Email template for service release activation approval
         /// </summary>
         [Path("serviceactivation_offer_release_approval.html")]
-        ServiceReleaseActivationApproval
+        ServiceReleaseActivationApproval,
+
+        /// <summary>
+        /// Email template for the welcome email of an osp registered company
+        /// </summary>
+        [Path("osp_welcome_email.html")]
+        OspWelcomeMail
     }
 }

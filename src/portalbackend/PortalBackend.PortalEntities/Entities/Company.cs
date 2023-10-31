@@ -45,6 +45,7 @@ public class Company : IBaseEntity
         CompanySsiDetails = new HashSet<CompanySsiDetail>();
         OwnedIdentityProviders = new HashSet<IdentityProvider>();
         ProvidedApplications = new HashSet<CompanyApplication>();
+        OnboardedNetworkRegistrations = new HashSet<NetworkRegistration>();
     }
 
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
@@ -76,6 +77,7 @@ public class Company : IBaseEntity
 
     // Navigation properties
     public virtual Address? Address { get; set; }
+    public virtual NetworkRegistration? NetworkRegistration { get; set; }
     public virtual OnboardingServiceProviderDetail? OnboardingServiceProviderDetail { get; set; }
     public virtual ProviderCompanyDetail? ProviderCompanyDetail { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
@@ -96,4 +98,5 @@ public class Company : IBaseEntity
     public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
     public virtual ICollection<IdentityProvider> OwnedIdentityProviders { get; private set; }
     public virtual ICollection<CompanyApplication> ProvidedApplications { get; private set; }
+    public virtual ICollection<NetworkRegistration> OnboardedNetworkRegistrations { get; private set; }
 }

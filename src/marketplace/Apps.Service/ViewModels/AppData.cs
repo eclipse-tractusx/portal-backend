@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
@@ -43,3 +44,9 @@ public record AppData(
     string Price,
     Guid LeadPictureId,
     IEnumerable<string> UseCases);
+
+/// <summary>
+/// View model of an Active App Documents
+/// </summary>
+/// <param name="Documents">Id of the App.</param>
+public record ActiveAppDocumentData(IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents);

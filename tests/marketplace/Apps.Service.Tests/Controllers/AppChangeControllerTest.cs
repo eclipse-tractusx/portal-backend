@@ -46,7 +46,7 @@ public class AppChangeControllerTest
     {
         _fixture = new Fixture();
         _logic = A.Fake<IAppChangeBusinessLogic>();
-        this._controller = new AppChangeController(_logic);
+        _controller = new AppChangeController(_logic);
         _controller.AddControllerContextWithClaim(IamUserId, _identity);
     }
 
@@ -56,15 +56,15 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
         var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
         var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId)))
+        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles))
             .Returns(appRoleData);
 
         //Act
-        var result = await this._controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
+        var result = await _controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
         foreach (var item in result)
         {
             //Assert
-            A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles)).MustHaveHappenedOnceExactly();
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }
@@ -77,14 +77,14 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
         var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
-        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._))
             .Returns(offerDescriptionData);
 
         //Act
-        var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
+        var result = await _controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._)).MustHaveHappened();
     }
 
     [Fact]
@@ -95,10 +95,10 @@ public class AppChangeControllerTest
         var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
         //Act
-        var result = await this._controller.CreateOrUpdateAppDescriptionsByIdAsync(appId, offerDescriptionData).ConfigureAwait(false);
+        var result = await _controller.CreateOrUpdateAppDescriptionsByIdAsync(appId, offerDescriptionData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<Guid>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
+        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -108,14 +108,14 @@ public class AppChangeControllerTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), A<IFormFile>._, CancellationToken.None))
+        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<IFormFile>._, CancellationToken.None))
             .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
-        var result = await this._controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
+        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), file, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -126,7 +126,7 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
+        var result = await _controller.DeactivateApp(appId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId)).MustHaveHappenedOnceExactly();
@@ -141,10 +141,23 @@ public class AppChangeControllerTest
         var data = new UpdateTenantData("http://test.com");
 
         //Act
-        var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
+        var result = await _controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity.CompanyId)).MustHaveHappened();
+        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task GetActiveAppDocuments_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+
+        //Act
+        await _controller.GetActiveAppDocuments(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetActiveAppDocumentTypeDataAsync(appId)).MustHaveHappened();
     }
 }

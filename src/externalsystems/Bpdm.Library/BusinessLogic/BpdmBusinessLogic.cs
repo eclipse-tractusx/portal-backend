@@ -108,6 +108,11 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         }
 
         var sharingState = await _bpdmService.GetSharingState(context.ApplicationId, cancellationToken).ConfigureAwait(false);
+        if (sharingState.SharingProcessStarted == null)
+        {
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, "SharingProcessStarted was not set");
+        }
+
         return sharingState.SharingStateType switch
         {
             BpdmSharingStateType.Success =>

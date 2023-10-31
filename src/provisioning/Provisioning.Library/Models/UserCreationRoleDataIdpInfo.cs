@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -28,5 +29,7 @@ public record UserCreationRoleDataIdpInfo(
     string Email,
     IEnumerable<UserRoleData> RoleDatas,
     string UserName,
-    string UserId
+    string UserId,
+    UserStatusId UserStatusId,
+    bool Enabled
 );

@@ -51,11 +51,11 @@ public class ClientManagerTests
         var keycloakFactory = A.Fake<IKeycloakFactory>();
         _provisioningDbAccess = A.Fake<IProvisioningDBAccess>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
-            .Returns(new KeycloakClient(CentralUrl, "test", "test", "test"));
+            .Returns(new KeycloakClient(CentralUrl, "test", "test", "test", false));
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared"))
-            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test"));
+            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._))
-            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test"));
+            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
         var settings = new ProvisioningSettings
         {
             ClientPrefix = "cl",
@@ -115,7 +115,7 @@ public class ClientManagerTests
         await _sut.UpdateClient(clientId, $"{url}/*", url).ConfigureAwait(false);
 
         // Assert
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{clientClientId}")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{clientClientId}")
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }
@@ -157,7 +157,7 @@ public class ClientManagerTests
         await _sut.EnableClient(clientId).ConfigureAwait(false);
 
         // Assert
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{clientClientId}")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{clientClientId}")
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }

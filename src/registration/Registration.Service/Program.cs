@@ -41,7 +41,8 @@ WebApplicationBuildRunner
         builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
         builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
-            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
+            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"))
+            .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
 
         builder.Services.AddApplicationChecklistCreation();
         builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address") ?? throw new ConfigurationException("BPN_Address is not configured"));
