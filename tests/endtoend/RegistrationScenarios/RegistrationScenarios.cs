@@ -57,9 +57,7 @@ public class RegistrationScenarios : EndToEndTestBase
         int.Parse(roleSubmissionResult).Should().BeGreaterThan(0);
         Thread.Sleep(3000);
 
-        var docUploadResult = RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId,
-            testEntry.DocumentName);
-        docUploadResult.Should().Be(1);
+        RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName);
 
         Thread.Sleep(3000);
         var status = RegistrationEndpointHelper.SubmitRegistration();
@@ -129,9 +127,7 @@ public class RegistrationScenarios : EndToEndTestBase
         int.Parse(roleSubmissionResult).Should().BeGreaterThan(0);
         Thread.Sleep(3000);
 
-        var docUploadResult =
-            RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName);
-        docUploadResult.Should().Be(1);
+        RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName);
 
         Thread.Sleep(3000);
         var status = RegistrationEndpointHelper.SubmitRegistration();

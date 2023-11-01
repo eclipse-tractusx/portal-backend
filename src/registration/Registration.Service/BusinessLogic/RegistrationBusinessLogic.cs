@@ -144,7 +144,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, CancellationToken cancellationToken)
+    public async Task UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(document.FileName))
         {
@@ -167,6 +167,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ForbiddenException($"The users company is not assigned with application {applicationId}");
         }
+
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
         {
             application.DateLastChanged = _dateTimeProvider.OffsetNow;
@@ -178,7 +179,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             doc.CompanyUserId = _identityData.IdentityId;
         });
-        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId)

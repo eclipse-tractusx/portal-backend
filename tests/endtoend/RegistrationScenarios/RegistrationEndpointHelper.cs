@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using PasswordGenerator;
 using RestAssured.Response.Logging;
+using System.Net;
 using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
@@ -359,8 +360,7 @@ public static class RegistrationEndpointHelper
 
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
-    public static int UploadDocument_WithEmptyTitle(string? documentTypeId,
-        string? documentName)
+    public static void UploadDocument_WithEmptyTitle(string? documentTypeId, string? documentName)
     {
         if (documentTypeId is null || documentName is null)
             throw new Exception("No document type id or name provided but expected");
@@ -377,16 +377,14 @@ public static class RegistrationEndpointHelper
             .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
             .Then()
             .Log(ResponseLogLevel.OnError)
-            .StatusCode(200)
+            .StatusCode(204)
             .Extract()
             .Response();
 
-        var result = DataHandleHelper.DeserializeData<int>(response.Content.ReadAsStringAsync().Result);
-
-        if (result == 1)
+        if (response.StatusCode == HttpStatusCode.NoContent)
+        {
             SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
-
-        return result;
+        }
     }
 
     // POST /api/registration/application/{applicationId}/submitRegistration
