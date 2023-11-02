@@ -91,9 +91,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
-            .With(x => x.firstName, _fixture.CreateName())
-            .With(x => x.lastName, _fixture.CreateName())
-            .With(x => x.email, _fixture.CreateEmail())
+            .WithNamePattern(x => x.firstName)
+            .WithNamePattern(x => x.lastName)
+            .WithEmailPattern(x => x.email)
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -133,8 +133,8 @@ public class InvitationBusinessLogicTests
         SetupFakes();
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.firstName, _fixture.CreateName())
-            .With(x => x.lastName, _fixture.CreateName())
+            .WithNamePattern(x => x.firstName)
+            .WithNamePattern(x => x.lastName)
             .With(x => x.email, "")
             .Create();
 
@@ -162,9 +162,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, "")
-            .With(x => x.firstName, _fixture.CreateName())
-            .With(x => x.lastName, _fixture.CreateName())
-            .With(x => x.email, _fixture.CreateEmail())
+            .WithNamePattern(x => x.firstName)
+            .WithNamePattern(x => x.lastName)
+            .WithEmailPattern(x => x.email)
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -197,9 +197,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
-            .With(x => x.firstName, _fixture.CreateName())
-            .With(x => x.lastName, _fixture.CreateName())
-            .With(x => x.email, _fixture.CreateEmail())
+            .WithNamePattern(x => x.firstName)
+            .WithNamePattern(x => x.lastName)
+            .WithEmailPattern(x => x.email)
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -228,9 +228,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
-            .With(x => x.firstName, _fixture.CreateName())
-            .With(x => x.lastName, _fixture.CreateName())
-            .With(x => x.email, _fixture.CreateEmail())
+            .WithNamePattern(x => x.firstName)
+            .WithNamePattern(x => x.lastName)
+            .WithEmailPattern(x => x.email)
             .Create();
 
         var sut = new InvitationBusinessLogic(

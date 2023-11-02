@@ -2,6 +2,25 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.7.0-RC2
+
+### Change
+* Seeding Data
+  * updated technical user role description & user role names
+* Others
+  * added email value validation for invitation, network registration and user invitation to enable the user input data validation for valid email
+
+### Feature
+n/a
+
+### Technical Support
+* Released extended error response message method (incl. error-type, error-code, a message-template and multiple parameters) and enabled the same for administration POST endpoints /userfile and registration GET endpoint /companyDetailsWithAddress
+
+### Bugfix
+* Adjusted the json property name for bpn within the BpdmLegalEntityOutputData
+* Updated osp_welcome_email.html dynamic data field from idpAlias to companyName
+
+
 ## 1.7.0-RC1
 
 ### Change

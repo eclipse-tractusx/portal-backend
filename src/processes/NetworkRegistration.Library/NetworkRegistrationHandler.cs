@@ -112,7 +112,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             }
         }
 
-        await SendMails(companyAssignedIdentityProviders.Select(x => new UserMailInformation(x.Email!, x.FirstName, x.LastName, x.ProviderLinkData.Select(pld => pld.Alias!))), ospName).ConfigureAwait(false);
+        await SendMails(companyAssignedIdentityProviders.Select(x => new UserMailInformation(x.Email!, x.FirstName, x.LastName, x.CompanyName)), ospName).ConfigureAwait(false);
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             null,
             ProcessStepStatusId.DONE,
@@ -123,7 +123,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
     private async Task SendMails(IEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
     {
         var templates = Enumerable.Repeat("OspWelcomeMail", 1);
-        foreach (var (receiver, firstName, lastName, idpAliasse) in companyUserWithRoleIdForCompany)
+        foreach (var (receiver, firstName, lastName, companyName) in companyUserWithRoleIdForCompany)
         {
             var userName = string.Join(" ", firstName, lastName);
             var mailParameters = new Dictionary<string, string>
@@ -132,7 +132,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 { "hostname", _settings.BasePortalAddress },
                 { "osp", ospName },
                 { "url", _settings.BasePortalAddress },
-                { "idpalias", string.Join(",", idpAliasse) }
+                { "companyName", companyName }
             };
             await _mailingService.SendMails(receiver, mailParameters, templates).ConfigureAwait(false);
         }

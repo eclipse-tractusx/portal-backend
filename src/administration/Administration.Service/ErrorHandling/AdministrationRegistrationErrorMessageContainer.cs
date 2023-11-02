@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,33 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
 
-public class ErrorResponse
+public class AdministrationRegistrationErrorMessageContainer : IErrorMessageContainer
 {
-    public ErrorResponse(string type, string title, int status, IDictionary<string, IEnumerable<string>> errors, string errorId)
-    {
-        Type = type;
-        Title = title;
-        Status = status;
-        Errors = errors;
-        ErrorId = errorId;
-    }
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<AdministrationRegistrationErrors, string> {
+                { AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, "application {applicationId} does not exist" }
+            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
-    [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public Type Type { get => typeof(AdministrationRegistrationErrors); }
+    public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
+}
 
-    [JsonPropertyName("title")]
-    public string Title { get; set; }
-
-    [JsonPropertyName("status")]
-    public int Status { get; set; }
-
-    [JsonPropertyName("errors")]
-    public IDictionary<string, IEnumerable<string>> Errors { get; set; }
-
-    [JsonPropertyName("errorId")]
-    public string ErrorId { get; set; }
+public enum AdministrationRegistrationErrors
+{
+    APPLICATION_NOT_FOUND
 }
