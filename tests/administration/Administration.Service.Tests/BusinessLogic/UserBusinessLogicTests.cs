@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -37,7 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class UserBusinessLogicTests
 {
@@ -97,7 +98,7 @@ public class UserBusinessLogicTests
         _mailingService = A.Fake<IMailingService>();
         _mockLogger = A.Fake<IMockLogger<UserBusinessLogic>>();
         _logger = new MockLogger<UserBusinessLogic>(_mockLogger);
-        _options = _fixture.Create<IOptions<UserSettings>>();
+        _options = Options.Create(_fixture.Create<UserSettings>());
 
         _identityProviderId = _fixture.Create<Guid>();
         _iamUserId = _fixture.Create<string>();
@@ -406,9 +407,9 @@ public class UserBusinessLogicTests
         SetupFakesForUserCreation(false);
 
         var userCreationInfoIdp = _fixture.Build<UserCreationInfoIdp>()
-            .With(x => x.FirstName, _fixture.CreateName())
-            .With(x => x.LastName, _fixture.CreateName())
-            .With(x => x.Email, _fixture.CreateEmail())
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .With(x => x.Roles, Enumerable.Empty<string>())
             .Create();
 
@@ -1513,16 +1514,16 @@ public class UserBusinessLogicTests
 
     private UserCreationInfo CreateUserCreationInfo() =>
         _fixture.Build<UserCreationInfo>()
-            .With(x => x.firstName, _fixture.CreateName())
-            .With(x => x.lastName, _fixture.CreateName())
-            .With(x => x.eMail, _fixture.CreateEmail())
+            .WithNamePattern(x => x.firstName)
+            .WithNamePattern(x => x.lastName)
+            .WithEmailPattern(x => x.eMail)
             .Create();
 
     private UserCreationInfoIdp CreateUserCreationInfoIdp() =>
         _fixture.Build<UserCreationInfoIdp>()
-            .With(x => x.FirstName, _fixture.CreateName())
-            .With(x => x.LastName, _fixture.CreateName())
-            .With(x => x.Email, _fixture.CreateEmail())
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .Create();
 
     #endregion

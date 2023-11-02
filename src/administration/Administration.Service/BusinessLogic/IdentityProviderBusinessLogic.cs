@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,7 +20,9 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -42,16 +43,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IIdentityService _identityService;
+    private readonly IErrorMessageService _errorMessageService;
     private readonly ILogger<IdentityProviderBusinessLogic> _logger;
     private readonly IdentityProviderSettings _settings;
 
     private static readonly Regex DisplayNameValidationExpression = new(@"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
 
-    public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IIdentityService identityService, IOptions<IdentityProviderSettings> options, ILogger<IdentityProviderBusinessLogic> logger)
+    public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IIdentityService identityService, IErrorMessageService errorMessageService, IOptions<IdentityProviderSettings> options, ILogger<IdentityProviderBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
         _identityService = identityService;
+        _errorMessageService = errorMessageService;
         _settings = options.Value;
         _logger = logger;
     }
@@ -653,8 +656,20 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var numErrors = errors.Count();
         var numUnchanged = numLines - numProcessed - numErrors;
 
-        return new IdentityProviderUpdateStats(numProcessed, numUnchanged, numErrors, numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
+        return new IdentityProviderUpdateStats(
+            numProcessed,
+            numUnchanged,
+            numErrors,
+            numLines,
+            errors.Select(x => CreateUserUpdateError(x.Line, x.Error)));
     }
+
+    private UserUpdateError CreateUserUpdateError(int line, Exception error) =>
+        error switch
+        {
+            DetailException detailException when detailException.HasDetails => new UserUpdateError(line, detailException.GetErrorMessage(_errorMessageService), detailException.GetErrorDetails(_errorMessageService)),
+            _ => new UserUpdateError(line, error.Message, Enumerable.Empty<ErrorDetails>())
+        };
 
     private async IAsyncEnumerable<(bool, Exception?)> ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(
         IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks)> userProfileLinkDatas,
@@ -927,11 +942,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasDataUntracked(companyId, identityProviderIds).ToListAsync().ConfigureAwait(false);
 
-        var invalidIds = identityProviderIds.Except(identityProviderData.Select(data => data.IdentityProviderId));
-        if (invalidIds.Any())
+        identityProviderIds.Except(identityProviderData.Select(data => data.IdentityProviderId)).IfAny(invalidIds =>
         {
-            throw new ControllerArgumentException($"invalid identityProviders: [{String.Join(", ", invalidIds)}] for company {companyId}", nameof(identityProviderIds));
-        }
+            throw new ControllerArgumentException($"invalid identityProviders: [{string.Join(", ", invalidIds)}] for company {companyId}", nameof(identityProviderIds));
+        });
 
         return identityProviderData;
     }
