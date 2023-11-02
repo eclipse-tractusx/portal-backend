@@ -17,9 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-
-public record IdentityProviderUpdateStats(int Updated, int Unchanged, int Error, int Total, IEnumerable<UserUpdateError> Errors);
-public record UserUpdateError(int Line, string Message, IEnumerable<ErrorDetails> Details);
+public interface IErrorMessageContainer
+{
+    public Type Type { get; }
+    public IReadOnlyDictionary<int, string> MessageContainer { get; }
+}

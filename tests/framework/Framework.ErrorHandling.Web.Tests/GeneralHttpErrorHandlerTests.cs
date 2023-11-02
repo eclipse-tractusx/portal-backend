@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,14 +23,19 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Tests;
 
 public class GeneralHttpErrorHandlerTests
 {
+    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
     private readonly IFixture _fixture;
 
     public GeneralHttpErrorHandlerTests()
@@ -202,5 +206,54 @@ public class GeneralHttpErrorHandlerTests
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
+    public async Task Invoke_WithDetailedException()
+    {
+        // Arrange
+        var expectedException = ConflictException.Create(TestErrors.FIRST_ERROR, new ErrorParameter[] { new("first", "foo"), new("second", "bar") });
+        Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
+        using var body = new MemoryStream();
+        var httpContext = new DefaultHttpContext();
+        httpContext.Response.Body = body;
+
+        var mockLogger = A.Fake<IMockLogger<GeneralHttpErrorHandler>>();
+        var logger = new MockLogger<GeneralHttpErrorHandler>(mockLogger);
+
+        var errorMessageService = A.Fake<IErrorMessageService>();
+        A.CallTo(() => errorMessageService.GetMessage(A<Type>._, A<int>._))
+            .ReturnsLazily((Type type, int code) => $"type: {type.Name} code: {code} first: {{first}} second: {{second}}");
+
+        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger, errorMessageService);
+
+        // Act
+        await generalHttpErrorHandler.Invoke(httpContext);
+
+        // Assert
+        ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.Conflict);
+        A.CallTo(() => mockLogger.Log(
+                A<LogLevel>.That.IsEqualTo(LogLevel.Information),
+                expectedException,
+                A<string>.That.Matches(x =>
+                    x.StartsWith("GeneralErrorHandler caught ConflictException with errorId:") &&
+                    x.EndsWith("resulting in response status code 409, message 'type: TestErrors code: 1 first: foo second: bar'"))))
+            .MustHaveHappenedOnceExactly();
+
+        body.Position = 0;
+        var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(body, Options);
+        errorResponse.Should().NotBeNull().And.BeOfType<ErrorResponse>().Which.Details.Should().ContainSingle().Which.Should().Match<ErrorDetails>(x =>
+            x.Type == "TestErrors" &&
+            x.ErrorCode == "FIRST_ERROR" &&
+            x.Message == "type: TestErrors code: 1 first: {first} second: {second}" &&
+            x.Parameters.Count() == 2 &&
+            x.Parameters.First(p => p.Name == "first").Value == "foo" &&
+            x.Parameters.First(p => p.Name == "second").Value == "bar");
+    }
+
+    private enum TestErrors
+    {
+        FIRST_ERROR = 1,
+        SECOND_ERROR = 2
     }
 }

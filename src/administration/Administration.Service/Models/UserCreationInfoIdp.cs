@@ -34,7 +34,7 @@ public record UserCreationInfoIdp(
     [property: JsonPropertyName("lastName")]
     string LastName,
 
-    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
+    [EmailAddress]
     [property: JsonPropertyName("email")]
     string Email,
 

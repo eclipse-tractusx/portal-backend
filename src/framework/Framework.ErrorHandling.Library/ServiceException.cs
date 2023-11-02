@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,10 +22,12 @@ using System.Net;
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 [Serializable]
-public class ServiceException : Exception
+public class ServiceException : DetailException
 {
     public HttpStatusCode? StatusCode { get; }
     public bool IsRecoverable { get; }
+
+    public ServiceException() : base() { }
 
     public ServiceException(string message, bool isRecoverable = false) : base(message)
     {
@@ -40,13 +41,13 @@ public class ServiceException : Exception
         IsRecoverable = isRecoverable;
     }
 
-    public ServiceException(string message, System.Exception inner, bool isRecoverable = false) : base(message, inner)
+    public ServiceException(string message, Exception inner, bool isRecoverable = false) : base(message, inner)
     {
         StatusCode = null;
         IsRecoverable = isRecoverable;
     }
 
-    public ServiceException(string message, System.Exception inner, HttpStatusCode httpStatusCode, bool isRecoverable = false) : base(message, inner)
+    public ServiceException(string message, Exception inner, HttpStatusCode httpStatusCode, bool isRecoverable = false) : base(message, inner)
     {
         StatusCode = httpStatusCode;
         IsRecoverable = isRecoverable;
@@ -55,4 +56,25 @@ public class ServiceException : Exception
     protected ServiceException(
         System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+
+    protected ServiceException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, HttpStatusCode? httpStatusCode = null, bool isRecoverable = false, Exception? inner = null) : base(errorType, errorCode, parameters, inner)
+    {
+        StatusCode = httpStatusCode;
+        IsRecoverable = isRecoverable;
+    }
+
+    public static ServiceException Create<T>(T error, IEnumerable<ErrorParameter>? parameters = null, HttpStatusCode? httpStatusCode = null, bool isRecoverable = false, Exception? inner = null) where T : Enum =>
+        new(typeof(T), ValueOf(error), parameters, httpStatusCode, isRecoverable, inner);
+    public static ServiceException Create<T>(T error, HttpStatusCode httpStatusCode, bool isRecoverable = false, Exception? inner = null) where T : Enum =>
+        new(typeof(T), ValueOf(error), null, httpStatusCode, isRecoverable, inner);
+    public static ServiceException Create<T>(T error, bool isRecoverable = false, Exception? inner = null) where T : Enum =>
+        new(typeof(T), ValueOf(error), null, null, isRecoverable, inner);
+    public static ServiceException Create<T>(T error, IEnumerable<ErrorParameter> parameters, bool isRecoverable, Exception? inner = null) where T : Enum =>
+        new(typeof(T), ValueOf(error), parameters, null, isRecoverable, inner);
+    public static ServiceException Create<T>(T error, Exception inner) where T : Enum =>
+        new(typeof(T), ValueOf(error), null, null, false, inner);
+    public static ServiceException Create<T>(T error, IEnumerable<ErrorParameter> parameters, Exception inner) where T : Enum =>
+        new(typeof(T), ValueOf(error), parameters, null, false, inner);
+    public static ServiceException Create<T>(T error, IEnumerable<ErrorParameter> parameters, HttpStatusCode httpStatusCode, Exception inner) where T : Enum =>
+        new(typeof(T), ValueOf(error), parameters, httpStatusCode, false, inner);
 }

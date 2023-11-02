@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
@@ -211,7 +212,7 @@ public class UserProvisioningServiceCreateUsersTests
     }
 
     [Fact]
-    public async Task TestCreateUsersDuplicateKeycloakUserError()
+    public async Task TestCreateUsersCentralUserDuplicateKeycloakUserError()
     {
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
@@ -241,6 +242,37 @@ public class UserProvisioningServiceCreateUsersTests
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ConflictException));
         error!.Message.Should().Be($"existing user {iamUserId} in keycloak for provider userid {userInfo.UserId}, {userInfo.UserName}");
+    }
+
+    [Fact]
+    public async Task TestCreateUsersKeycloakConflictError()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+
+        var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
+
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(x => x.FirstName == userInfo.FirstName), A<IEnumerable<(string Name, IEnumerable<string> Values)>>._))
+            .Throws(ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new("userName", "foo"), new("realm", "bar") }));
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        result.Should().HaveCount(_numUsers);
+        result.Where((r, index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+
+        result.ElementAt(_indexSpecialUser).Error.Should().NotBeNull()
+            .And.BeOfType<ConflictException>()
+            .Which.Should().Match<ConflictException>(x =>
+                x.HasDetails &&
+                x.ErrorType == typeof(ProvisioningServiceErrors) &&
+                x.Parameters.Count() == 2 &&
+                x.Parameters.First(p => p.Name == "userName").Value == "foo" &&
+                x.Parameters.First(p => p.Name == "realm").Value == "bar");
     }
 
     [Fact]

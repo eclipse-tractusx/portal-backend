@@ -50,7 +50,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
         public string lastName { get; set; }
 
         [DefaultValue("string")]
-        [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
+        [EmailAddress]
         [JsonPropertyName("email")]
         public string email { get; set; }
 

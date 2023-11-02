@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,18 +21,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 /// <inheritdoc />
 [Serializable]
-public class ControllerArgumentException : Exception
+public class ControllerArgumentException : DetailException
 {
+    public ControllerArgumentException() : base() { }
+
     public ControllerArgumentException(string message) : base(message) { }
 
-    public ControllerArgumentException(ArgumentException argumentException)
-        : this(argumentException.Message)
-    {
-        ParamName = argumentException.ParamName;
-    }
-
     public ControllerArgumentException(string message, string paramName)
-        : base(String.Format("{0} (Parameter '{1}')", message, paramName))
+        : base(string.Format("{0} (Parameter '{1}')", message, paramName))
     {
         ParamName = paramName;
     }
@@ -43,4 +38,18 @@ public class ControllerArgumentException : Exception
     protected ControllerArgumentException(
         System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+
+    protected ControllerArgumentException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, string? paramName = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner)
+    {
+        ParamName = paramName;
+    }
+
+    public static ControllerArgumentException Create<T>(T error, IEnumerable<ErrorParameter>? parameters = null, string? paramName = null, Exception? inner = null) where T : Enum =>
+        new(typeof(T), ValueOf(error), parameters, paramName, inner);
+    public static ControllerArgumentException Create<T>(T error, Exception inner) where T : Enum =>
+        new(typeof(T), ValueOf(error), null, null, inner);
+    public static ControllerArgumentException Create<T>(T error, IEnumerable<ErrorParameter> parameters, Exception inner) where T : Enum =>
+        new(typeof(T), ValueOf(error), parameters, null, inner);
+    public static ControllerArgumentException Create<T>(T error, string paramName, Exception? inner = null) where T : Enum =>
+        new(typeof(T), ValueOf(error), null, paramName, inner);
 }

@@ -113,25 +113,74 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithValidResult_ReturnsExpected()
     {
         // Arrange
-        var externalId = _fixture.Create<string>();
-        var data = _fixture.Build<BpdmLegalEntityOutputData>()
-            .With(x => x.ExternalId, externalId)
-            .With(x => x.Bpn, "TESTBPN")
-            .CreateMany(1);
-        var pagination = new PageOutputResponseBpdmLegalEntityData(data);
-
-        var options = new System.Text.Json.JsonSerializerOptions
-        {
-            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter(allowIntegerValues: false) }
-        };
+        const string externalId = "0bf60442-09a8-4f09-811b-8854626ed5a6";
+        const string json = @"{
+            ""totalElements"": 1,
+            ""totalPages"": 1,
+            ""page"": 0,
+            ""contentSize"": 1,
+            ""content"": [
+                {
+                    ""legalNameParts"": [
+                        ""Volkswagen AG""
+                    ],
+                    ""identifiers"": [
+                        {
+                            ""value"": ""DE234567890"",
+                            ""type"": ""EU_VAT_ID_DE"",
+                            ""issuingBody"": null
+                        }
+                    ],
+                    ""legalShortName"": ""Volkswagen AG"",
+                    ""legalForm"": null,
+                    ""states"": [],
+                    ""classifications"": [],
+                    ""roles"": [],
+                    ""legalAddress"": {
+                        ""nameParts"": [],
+                        ""states"": [],
+                        ""identifiers"": [],
+                        ""physicalPostalAddress"": {
+                            ""geographicCoordinates"": null,
+                            ""country"": ""DE"",
+                            ""administrativeAreaLevel1"": null,
+                            ""administrativeAreaLevel2"": null,
+                            ""administrativeAreaLevel3"": null,
+                            ""postalCode"": ""38440"",
+                            ""city"": ""Wolfsburg"",
+                            ""district"": null,
+                            ""street"": {
+                                ""namePrefix"": null,
+                                ""additionalNamePrefix"": null,
+                                ""name"": ""Berliner Ring 2"",
+                                ""nameSuffix"": null,
+                                ""additionalNameSuffix"": null,
+                                ""houseNumber"": null,
+                                ""milestone"": null,
+                                ""direction"": null
+                            },
+                            ""companyPostalCode"": null,
+                            ""industrialZone"": null,
+                            ""building"": null,
+                            ""floor"": null,
+                            ""door"": null
+                        },
+                        ""alternativePostalAddress"": null,
+                        ""roles"": [],
+                        ""externalId"": ""0bf60442-09a8-4f09-811b-8854626ed5a6_legalAddress"",
+                        ""legalEntityExternalId"": ""0bf60442-09a8-4f09-811b-8854626ed5a6"",
+                        ""siteExternalId"": null,
+                        ""bpna"": ""BPNA000000006GFG""
+                    },
+                    ""externalId"": ""0bf60442-09a8-4f09-811b-8854626ed5a6"",
+                    ""bpnl"": ""BPNL00000007QGTF""
+                }
+            ]
+        }";
 
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            pagination.ToJsonContent(
-                options,
-                "application/json")
-            );
+            new StringContent(json));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -145,7 +194,7 @@ public class BpdmServiceTests
         // Assert
         result.Should().NotBeNull();
         result.ExternalId.Should().Be(externalId);
-        result.Bpn.Should().Be("TESTBPN");
+        result.Bpn.Should().Be("BPNL00000007QGTF");
     }
 
     [Fact]
