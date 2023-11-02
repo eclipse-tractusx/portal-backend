@@ -29,6 +29,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Token" Version="1.0.0-beta" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
         <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     </ItemGroup>

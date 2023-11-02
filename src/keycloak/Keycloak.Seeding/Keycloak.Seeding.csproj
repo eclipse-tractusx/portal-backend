@@ -39,8 +39,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Logging" Version="1.2.0-beta" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.2.0-beta" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Logging" Version="1.0.0-beta" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta" />
   </ItemGroup>
 
   <ItemGroup>

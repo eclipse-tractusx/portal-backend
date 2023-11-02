@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Web" Version="1.11.0-beta" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Web" Version="1.0.0-beta" />
   </ItemGroup>
 
 </Project>
