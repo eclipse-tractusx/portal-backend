@@ -10,9 +10,6 @@ fi
 name="$1"
 version="$2"
 
-folderPath="./packages"
-extensions="*.nupkg"
-
 # Initialize a global arrays to store data
 updated_directories=()
 projects_to_update=()
@@ -44,7 +41,7 @@ update_pre() {
   if [ "$current_suffix_version" != "$version" ]; then
     updated_suffix="$version"
   else
-    if [[ "$current_suffix" == "alpha" || "$current_suffix" == "beta" ]]; then
+    if [[ "$current_suffix" == "alpha" || "$current_suffix" == "beta" || "$current_suffix" == "rc" || "$current_suffix" == "RC" || "$current_suffix" == "pre" ]]; then
       updated_suffix="${current_suffix}.1"
     else
       numeric_part=$(echo "$current_suffix" | sed 's/[^0-9]//g')
@@ -58,7 +55,6 @@ update_pre() {
 # Function to search and update .csproj files recursively
 update_csproj_files_recursive() {
   local updated_name="$1"
-  local updated_version="$2"
 
   for dir in ./src/Framework/*/; do
     if [ -d "$dir" ]; then
@@ -68,7 +64,7 @@ update_csproj_files_recursive() {
           if grep -q "$updated_name" "$project_file"; then
             directory_name=$(basename "$dir")
             if [[ ! " ${already_updated_projects[*]} " == *"$directory_name"* ]]; then
-              update_version "$dir" "$directory_name" "$updated_version"
+              update_version "$dir" "$directory_name"
               if [[ ! " ${projects_to_update[*]} " == *"$directory_name"* ]]; then
                 projects_to_update+=("$directory_name")
               fi
@@ -86,7 +82,7 @@ update_csproj_files_recursive() {
   for project_name in "${projects_to_update[@]}"; do
     # Only update projects if they haven't been updated before
     if [[ ! " ${already_updated_projects[*]} " == *"$project_name"* ]]; then
-      update_csproj_files_recursive "$project_name" "$updated_version"
+      update_csproj_files_recursive "$project_name"
     fi
   done
 }
@@ -105,22 +101,22 @@ update_version(){
     case "$version" in
       major)
         updated_version=$(update_major "$current_version")
-        updated_suffix="$current_suffix"
+        updated_suffix=""
         ;;
       minor)
         updated_version=$(update_minor "$current_version")
-        updated_suffix="$current_suffix"
+        updated_suffix=""
         ;;
       patch)
         updated_version=$(update_patch "$current_version")
-        updated_suffix="$current_suffix"
+        updated_suffix=""
         ;;
-      alpha|beta|pre|rc)
+      alpha|beta|pre|rc|RC)
         updated_version="$current_version"
         updated_suffix=$(update_pre "$version")
         ;;
       *)
-        echo "Invalid version argument. Valid options: major, minor, patch, alpha, beta, pre, rc"
+        echo "Invalid version argument. Valid options: major, minor, patch, alpha, beta, pre, rc, RC"
         exit 1
         ;;
     esac
@@ -159,19 +155,10 @@ iterate_directories() {
   for project_name in "${projects_to_update[@]}"; do
     # Only update projects if they haven't been updated before
     if [[ ! " ${already_updated_projects[*]} " == *"$project_name"* ]]; then
-      update_csproj_files_recursive "$project_name" "$updated_version"
+      update_csproj_files_recursive "$project_name"
     fi
   done
 }
 
 # Call the iterate_directories function to start the script
 iterate_directories "$name"
-
-for proj in "${already_updated_projects[@]}"; do
-  echo "pack $proj"
-  dotnet pack src/framework/$proj/$proj.csproj -c Release -o "$folderPath"
-done
-
-dotnet nuget push "$folderPath/$extensions" --source "local"
-
-rm -r "$folderPath"
