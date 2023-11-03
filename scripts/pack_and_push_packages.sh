@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Check if the correct number of arguments are provided
-if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 <nugetSource>"
+if [ "$#" -ne 1 ] && [ "$#" -ne 2 ]; then
+  echo "Usage: $0 <nugetSource> <OPTIONAL: nugetApiKey>"
   exit 1
 fi
 
