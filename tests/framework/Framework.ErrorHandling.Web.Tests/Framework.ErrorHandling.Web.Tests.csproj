@@ -48,6 +48,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
+      <ProjectReference Include="..\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
     </ItemGroup>
 
 
