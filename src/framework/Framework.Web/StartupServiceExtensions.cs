@@ -35,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-    public static IServiceCollection AddDefaultServices<TProgram, TClaimsTransformation>(this IServiceCollection services, IConfigurationRoot configuration, string version, Action<AuthorizationOptions>? addAdditionalAuth)
+    public static IServiceCollection AddDefaultServices<TProgram, TClaimsTransformation>(this IServiceCollection services, IConfigurationRoot configuration, string version, Action<AuthorizationOptions>? addAdditionalAuth, string cookieName)
         where TClaimsTransformation : class, IClaimsTransformation
     {
         services.AddCors(options => options.SetupCors(configuration));
@@ -43,7 +43,7 @@ public static class StartupServiceExtensions
         services.AddDistributedMemoryCache();
         services.AddSession(options =>
         {
-            options.Cookie.Name = ".Portal";
+            options.Cookie.Name = cookieName;
             options.IdleTimeout = TimeSpan.FromMinutes(10);
         });
 

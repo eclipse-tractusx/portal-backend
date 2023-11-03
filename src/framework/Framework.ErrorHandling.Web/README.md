@@ -1,6 +1,6 @@
-# Catena-X Portal Backend Framework
+# Catena-X Portal Backend Framework ErrorHandling Web
 
-The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks. This package simplifies various aspects of your application, including database interactions, asynchronous programming, file I/O, LINQ operations, logging, and database seeding.
+The Catena-X Portal Backend Framework ErrorHandling Web library provides a general error handler for your asp net core application.
 
 This content is produced and maintained by the Eclipse Tractus-X project.
 
@@ -8,7 +8,7 @@ This content is produced and maintained by the Eclipse Tractus-X project.
 
 ## Installation
 
-dotnet add package Org.Eclipse.TractusX.Portal.Backend.Framework
+dotnet add package Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web
 
 ## Copyright
 
@@ -18,7 +18,7 @@ source code repository logs.
 
 ## Contributing
 
-We welcome contributions! Please read our [contributing guidelines](./CONTRIBUTING) for more details.
+We welcome contributions! Please read our [contributing guidelines](./CONTRIBUTING.md) for more details.
 
 ## License
 

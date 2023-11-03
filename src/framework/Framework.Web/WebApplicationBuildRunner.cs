@@ -35,6 +35,7 @@ public static class WebApplicationBuildRunner
         string[] args,
         string path,
         string version,
+        string cookieName,
         Action<WebApplicationBuilder>? configureBuilder,
         Action<WebApplication, IHostEnvironment>? configureApp, 
         Action<AuthorizationOptions>? addAdditionalAuth) where TClaimsTransformation : class, IClaimsTransformation
@@ -59,7 +60,7 @@ public static class WebApplicationBuildRunner
                 }
             });
             builder.Services
-                .AddDefaultServices<TProgram, TClaimsTransformation>(builder.Configuration, version, addAdditionalAuth);
+                .AddDefaultServices<TProgram, TClaimsTransformation>(builder.Configuration, version, addAdditionalAuth, cookieName);
 
             configureBuilder?.Invoke(builder);
 

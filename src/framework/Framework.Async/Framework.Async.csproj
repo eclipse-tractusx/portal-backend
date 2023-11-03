@@ -56,6 +56,7 @@
     <None Include="../../../LICENSE" Pack="true" PackagePath="" />
     <None Include="../../../NOTICE.md" Pack="true" PackagePath="" />
     <None Include="../../../DEPENDENCIES" Pack="true" PackagePath="" />
+    <None Include="../../../CONTRIBUTING.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">

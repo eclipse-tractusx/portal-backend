@@ -254,6 +254,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.Identity.Tests", "..\te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.Initialization", "web\Web.Initialization\Web.Initialization.csproj", "{48F11819-C031-4AD1-9805-886A40913061}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Tests.Shared", "..\tests\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj", "{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1368,6 +1370,18 @@ Global
 		{48F11819-C031-4AD1-9805-886A40913061}.Release|x64.Build.0 = Release|Any CPU
 		{48F11819-C031-4AD1-9805-886A40913061}.Release|x86.ActiveCfg = Release|Any CPU
 		{48F11819-C031-4AD1-9805-886A40913061}.Release|x86.Build.0 = Release|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Debug|x64.Build.0 = Debug|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Debug|x86.Build.0 = Debug|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Release|x64.ActiveCfg = Release|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Release|x64.Build.0 = Release|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Release|x86.ActiveCfg = Release|Any CPU
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1464,5 +1478,6 @@ Global
 		{5B9BC27A-B2D4-4745-8906-0AC4EAC62469} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{BAB5053F-A224-4C30-8B49-0F3F7C777852} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{48F11819-C031-4AD1-9805-886A40913061} = {69AF541C-7D45-42CE-BDF4-398EA00ED8A5}
+		{264D03E8-5DA2-49B5-8D2E-A3BF9CCA126B} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 	EndGlobalSection
 EndGlobal
