@@ -40,7 +40,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
-        <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Logging" Version="1.0.0-beta.1" />
+        <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Logging" Version="1.0.0-beta.3" />
     </ItemGroup>
 
     <ItemGroup>

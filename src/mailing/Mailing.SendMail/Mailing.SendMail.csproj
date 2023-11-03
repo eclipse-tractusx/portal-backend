@@ -30,7 +30,7 @@
   <ItemGroup>
     <PackageReference Include="MailKit" Version="4.1.0" />
     <PackageReference Include="MimeKit" Version="4.1.0" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library" Version="1.0.0-beta.1" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library" Version="1.0.0-beta.3" />
   </ItemGroup>
 
   <ItemGroup>

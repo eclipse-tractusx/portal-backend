@@ -32,7 +32,7 @@
     <PackageReference Include="Flurl.Http.Signed" Version="3.2.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library" Version="1.0.0-beta.1" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library" Version="1.0.0-beta.3" />
   </ItemGroup>
 
 </Project>

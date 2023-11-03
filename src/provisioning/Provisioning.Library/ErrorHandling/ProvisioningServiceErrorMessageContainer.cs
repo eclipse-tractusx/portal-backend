@@ -34,8 +34,8 @@ public class ProvisioningServiceErrorMessageContainer : IErrorMessageContainer
                 { ProvisioningServiceErrors.USER_NOT_VALID_USERROLEID, "{missingRoleIds} are not a valid UserRoleIds"}
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
-    public static Type Type { get => typeof(ProvisioningServiceErrors); }
-    public static IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
+    public Type Type { get => typeof(ProvisioningServiceErrors); }
+    public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
 }
 
 public enum ProvisioningServiceErrors

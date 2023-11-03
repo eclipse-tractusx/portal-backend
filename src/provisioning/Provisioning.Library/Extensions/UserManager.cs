@@ -19,6 +19,7 @@
 
 using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
