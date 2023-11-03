@@ -37,7 +37,7 @@ public static class WebAppHelper
 {
     public static void BuildAndRunWebApplication<TProgram>(string[] args, string path, string version, Action<WebApplicationBuilder> configureBuilder) =>
         WebApplicationBuildRunner
-            .BuildAndRunWebApplication<TProgram, KeycloakClaimsTransformation>(args, path, version, configureBuilder,
+            .BuildAndRunWebApplication<TProgram, KeycloakClaimsTransformation>(args, path, version, ".Portal", configureBuilder,
                 (app, environment) =>
                 {
                     if (environment.IsDevelopment())

@@ -29,7 +29,7 @@
   
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
-      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta" />
+      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.1" />
     </ItemGroup>
 
     <ItemGroup>
