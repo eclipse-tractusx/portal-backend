@@ -26,9 +26,10 @@ public class NetworkRegistration : IBaseEntity
 {
     private NetworkRegistration()
     {
+        ExternalId = null!;
     }
 
-    public NetworkRegistration(Guid id, Guid externalId, Guid companyId, Guid processId, Guid onboardingServiceProviderId, Guid applicationId, DateTimeOffset dateCreated)
+    public NetworkRegistration(Guid id, string externalId, Guid companyId, Guid processId, Guid onboardingServiceProviderId, Guid applicationId, DateTimeOffset dateCreated)
         : this()
     {
         Id = id;
@@ -44,7 +45,7 @@ public class NetworkRegistration : IBaseEntity
 
     public DateTimeOffset DateCreated { get; set; }
 
-    public Guid ExternalId { get; set; }
+    public string ExternalId { get; set; }
 
     public Guid CompanyId { get; set; }
 

@@ -37,6 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Text.RegularExpressions;
 
@@ -238,39 +239,21 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails)
     {
-        if (string.IsNullOrWhiteSpace(companyDetails.Name))
-        {
-            throw new ControllerArgumentException("Name must not be empty", nameof(companyDetails.Name));
-        }
-        if (string.IsNullOrWhiteSpace(companyDetails.City))
-        {
-            throw new ControllerArgumentException("City must not be empty", nameof(companyDetails.City));
-        }
-        if (string.IsNullOrWhiteSpace(companyDetails.StreetName))
-        {
-            throw new ControllerArgumentException("Streetname must not be empty", nameof(companyDetails.StreetName));
-        }
-        if (companyDetails.CountryAlpha2Code.Length != 2)
-        {
-            throw new ControllerArgumentException("CountryAlpha2Code must be 2 chars", nameof(companyDetails.CountryAlpha2Code));
-        }
-        var emptyIds = companyDetails.UniqueIds.Where(uniqueId => string.IsNullOrWhiteSpace(uniqueId.Value));
-        if (emptyIds.Any())
-        {
-            throw new ControllerArgumentException($"uniqueIds must not contain empty values: '{string.Join(", ", emptyIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
-        }
-        var distinctIds = companyDetails.UniqueIds.DistinctBy(uniqueId => uniqueId.UniqueIdentifierId);
-        if (distinctIds.Count() < companyDetails.UniqueIds.Count())
-        {
-            var duplicateIds = companyDetails.UniqueIds.Except(distinctIds);
-            throw new ControllerArgumentException($"uniqueIds must not contain duplicate types: '{string.Join(", ", duplicateIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
-        }
+        companyDetails.ValidateData();
         return SetCompanyDetailDataInternal(applicationId, companyDetails);
     }
 
     private async Task SetCompanyDetailDataInternal(Guid applicationId, CompanyDetailData companyDetails)
     {
-        await ValidateCountryAssignedIdentifiers(companyDetails).ConfigureAwait(false);
+        await companyDetails.ValidateDatabaseData(
+            bpn => _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(bpn),
+            alpha2Code => _portalRepositories.GetInstance<ICountryRepository>()
+                .CheckCountryExistsByAlpha2CodeAsync(alpha2Code),
+            (countryAlpha2Code, uniqueIdentifierIds) =>
+                _portalRepositories.GetInstance<ICountryRepository>()
+                    .GetCountryAssignedIdentifiers(
+                        countryAlpha2Code,
+                        uniqueIdentifierIds)).ConfigureAwait(false);
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
@@ -286,28 +269,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository, _dateTimeProvider);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    private async Task ValidateCountryAssignedIdentifiers(CompanyDetailData companyDetails)
-    {
-        if (companyDetails.UniqueIds.Any())
-        {
-            var assignedIdentifiers = await _portalRepositories.GetInstance<ICountryRepository>()
-                .GetCountryAssignedIdentifiers(
-                    companyDetails.CountryAlpha2Code,
-                    companyDetails.UniqueIds.Select(uniqueId => uniqueId.UniqueIdentifierId))
-                .ConfigureAwait(false);
-
-            if (!assignedIdentifiers.IsValidCountry)
-            {
-                throw new ControllerArgumentException($"{companyDetails.CountryAlpha2Code} is not a valid country-code", nameof(companyDetails.UniqueIds));
-            }
-            if (assignedIdentifiers.UniqueIdentifierIds.Count() < companyDetails.UniqueIds.Count())
-            {
-                var invalidIds = companyDetails.UniqueIds.ExceptBy(assignedIdentifiers.UniqueIdentifierIds, uniqueId => uniqueId.UniqueIdentifierId);
-                throw new ControllerArgumentException($"invalid uniqueIds for country {companyDetails.CountryAlpha2Code}: '{string.Join(", ", invalidIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
-            }
-        }
     }
 
     private async Task<CompanyApplicationDetailData> GetAndValidateApplicationData(Guid applicationId, CompanyDetailData companyDetails, IApplicationRepository applicationRepository)

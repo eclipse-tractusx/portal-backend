@@ -1,6 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -35,10 +33,10 @@ public class NetworkRepository : INetworkRepository
         _context = context;
     }
 
-    public NetworkRegistration CreateNetworkRegistration(Guid externalId, Guid companyId, Guid processId, Guid ospId, Guid applicationId) =>
+    public NetworkRegistration CreateNetworkRegistration(string externalId, Guid companyId, Guid processId, Guid ospId, Guid applicationId) =>
         _context.NetworkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, processId, ospId, applicationId, DateTimeOffset.UtcNow)).Entity;
 
-    public Task<bool> CheckExternalIdExists(Guid externalId, Guid onboardingServiceProviderId) =>
+    public Task<bool> CheckExternalIdExists(string externalId, Guid onboardingServiceProviderId) =>
         _context.NetworkRegistrations
             .AnyAsync(x =>
                 x.OnboardingServiceProviderId == onboardingServiceProviderId &&
@@ -52,7 +50,7 @@ public class NetworkRepository : INetworkRepository
             .Select(process => process.NetworkRegistration!.Id)
             .SingleOrDefaultAsync();
 
-    public Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(Guid externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(string externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.NetworkRegistrations
             .Where(x => x.ExternalId == externalId)
             .Select(x => new ValueTuple<bool, VerifyProcessData>(
@@ -85,10 +83,10 @@ public class NetworkRepository : INetworkRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(OspDetails? OspDetails, Guid? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
+    public Task<(OspDetails? OspDetails, string? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
         _context.NetworkRegistrations
             .Where(x => x.Id == networkRegistrationId)
-            .Select(x => new ValueTuple<OspDetails?, Guid?, string?, Guid, IEnumerable<string>>(
+            .Select(x => new ValueTuple<OspDetails?, string?, string?, Guid, IEnumerable<string>>(
                 x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null
                     ? null
                     : new OspDetails(

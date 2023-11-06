@@ -110,7 +110,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     x.FirstName ?? "",
                     x.LastName ?? "",
                     x.Email ?? "")),
-            companyWithAddress.CompanyIdentifiers.Select(identifier => new IdentifierData(identifier.UniqueIdentifierId, identifier.Value))
+            companyWithAddress.CompanyIdentifiers.Select(identifier => new UniqueIdentifierData((int)identifier.UniqueIdentifierId, identifier.UniqueIdentifierId))
         );
     }
 

@@ -94,7 +94,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
             var secret = srDecrypt.ReadToEnd();
             await _onboardingServiceProviderService.TriggerProviderCallback(
                     new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
-                    new OnboardingServiceProviderCallbackData(data.ExternalId.Value, data.ApplicationId, data.Bpn, applicationStatusId, comment),
+                    new OnboardingServiceProviderCallbackData(data.ExternalId!, data.ApplicationId, data.Bpn, applicationStatusId, comment),
                     cancellationToken)
                 .ConfigureAwait(false);
         }

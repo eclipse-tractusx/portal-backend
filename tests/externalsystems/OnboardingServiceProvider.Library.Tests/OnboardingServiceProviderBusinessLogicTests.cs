@@ -66,7 +66,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns(((OspDetails?, Guid?, string?, Guid, IEnumerable<string>))default);
+            .Returns(((OspDetails?, string?, string?, Guid, IEnumerable<string>))default);
 
         // Act
         var result = await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None).ConfigureAwait(false);
@@ -105,7 +105,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         const string Bpn = "BPNL00000001TEST";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED))
-            .Returns((details, Guid.NewGuid(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2)));
+            .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2)));
 
         // Act
         async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, CancellationToken.None).ConfigureAwait(false);
@@ -124,7 +124,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         const string Bpn = "BPNL00000001TEST";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP))
-            .Returns((details, Guid.NewGuid(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
+            .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
 
         // Act
         async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP, CancellationToken.None).ConfigureAwait(false);
@@ -143,7 +143,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         // Act
         const string CallbackUrl = "https://callback.url";
         const string Bpn = "BPNL00000001TEST";
-        var externalId = Guid.NewGuid();
+        var externalId = Guid.NewGuid().ToString();
         var applicationId = new Guid("2b965267-555c-4834-a323-09b7858c29ae");
         var networkRegistrationId = Guid.NewGuid();
         var details = new OspDetails(CallbackUrl, "https://auth.url", "test1", Convert.FromBase64String("9qCKYG0aXOWKl9PXcRhrSw=="));

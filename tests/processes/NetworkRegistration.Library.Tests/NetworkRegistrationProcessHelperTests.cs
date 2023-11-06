@@ -59,7 +59,7 @@ public class NetworkRegistrationProcessHelperTests
     public async Task TriggerProcessStep_WithUntriggerableProcessStep_ThrowsConflictException()
     {
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(Guid.NewGuid(), ProcessStepTypeId.SYNCHRONIZE_USER).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProcessStep(Guid.NewGuid().ToString(), ProcessStepTypeId.SYNCHRONIZE_USER).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -71,11 +71,11 @@ public class NetworkRegistrationProcessHelperTests
     {
         // Arrange
         var externalId = Guid.NewGuid();
-        A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { StepToRetrigger })))
+        A.CallTo(() => _networkRepository.IsValidRegistration(externalId.ToString(), A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { StepToRetrigger })))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
 
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProcessStep(externalId.ToString(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -98,7 +98,7 @@ public class NetworkRegistrationProcessHelperTests
         var data = new VerifyProcessData(
             new Process(processId, ProcessTypeId.PARTNER_REGISTRATION, Guid.NewGuid()),
             new[] { processStep });
-        A.CallTo(() => _networkRepository.IsValidRegistration(externalId, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { processStepTypeId })))
+        A.CallTo(() => _networkRepository.IsValidRegistration(externalId.ToString(), A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { processStepTypeId })))
             .Returns((true, data));
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
@@ -117,7 +117,7 @@ public class NetworkRegistrationProcessHelperTests
                 });
 
         // Act
-        await _sut.TriggerProcessStep(externalId, processStepTypeId).ConfigureAwait(false);
+        await _sut.TriggerProcessStep(externalId.ToString(), processStepTypeId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

@@ -40,7 +40,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.Busines
 public class NetworkBusinessLogicTests
 {
     private const string Bpnl = "BPNL00000001TEST";
-    private static readonly Guid ExistingExternalId = Guid.NewGuid();
+    private static readonly string ExistingExternalId = Guid.NewGuid().ToString();
     private static readonly Guid UserRoleId = Guid.NewGuid();
     private static readonly Guid MultiIdpCompanyId = Guid.NewGuid();
     private static readonly Guid NoIdpCompanyId = Guid.NewGuid();
@@ -341,7 +341,7 @@ public class NetworkBusinessLogicTests
     {
         A.CallTo(() => _networkRepository.CheckExternalIdExists(ExistingExternalId, A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns(true);
-        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == ExistingExternalId), A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
+        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<string>.That.Not.Matches(x => x == ExistingExternalId), A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns(false);
 
         A.CallTo(() => _companyRepository.CheckBpnExists(Bpnl)).Returns(false);

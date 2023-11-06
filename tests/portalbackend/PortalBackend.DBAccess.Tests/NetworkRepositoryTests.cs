@@ -48,7 +48,7 @@ public class NetworkRepositoryTests
     {
         // Arrange
         var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
-        var externalId = Guid.NewGuid();
+        var externalId = Guid.NewGuid().ToString();
         var processId = new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe07");
         var ospId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
@@ -81,7 +81,7 @@ public class NetworkRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2"), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
+        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
@@ -94,7 +94,7 @@ public class NetworkRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2"), _validCompanyId).ConfigureAwait(false);
+        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();
@@ -107,7 +107,7 @@ public class NetworkRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckExternalIdExists(Guid.NewGuid(), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
+        var result = await sut.CheckExternalIdExists(Guid.NewGuid().ToString(), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();
@@ -141,7 +141,7 @@ public class NetworkRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.IsValidRegistration(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2"), Enumerable.Repeat(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, 1)).ConfigureAwait(false);
+        var result = await sut.IsValidRegistration(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), Enumerable.Repeat(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, 1)).ConfigureAwait(false);
 
         // Assert
         result.RegistrationIdExists.Should().BeTrue();
@@ -206,7 +206,7 @@ public class NetworkRepositoryTests
         // Assert
         result.Should().NotBe(default);
         result.OspDetails.Should().BeNull();
-        result.ExternalId.Should().Be(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2"));
+        result.ExternalId.Should().Be(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString());
         result.ApplicationId.Should().Be(new Guid("7f31e08c-4420-4eac-beab-9540fbd55595"));
         result.Comments.Should().BeEmpty();
         result.Bpn.Should().Be("BPNL00000003AYRE");

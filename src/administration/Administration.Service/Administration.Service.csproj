@@ -45,6 +45,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\externalsystems\OnboardingServiceProvider.Library\OnboardingServiceProvider.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
+    <ProjectReference Include="..\..\framework\Registration.Common\Registration.Common.csproj" />
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />

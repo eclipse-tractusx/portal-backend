@@ -18,13 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 
-public record CompanyDetailData(
-    Guid CompanyId,
+public record RegistrationData(
     string Name,
     string City,
     string StreetName,
@@ -36,4 +35,9 @@ public record CompanyDetailData(
     string? StreetNumber,
     string? ZipCode,
     IEnumerable<CompanyUniqueIdData> UniqueIds
-) : RegistrationData(Name, City, StreetName, CountryAlpha2Code, BusinessPartnerNumber, ShortName, Region, StreetAdditional, StreetNumber, ZipCode, UniqueIds);
+);
+
+public record CompanyUniqueIdData(
+    [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
+    string Value
+);
