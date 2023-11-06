@@ -28,8 +28,10 @@ get_packages() {
 get_packages
 
 for proj in "${packages[@]}"; do
-  echo "PACK PROJECT: $proj"
-  dotnet pack src/framework/$proj/$proj.csproj -c Release -o "$folderPath"
+  echo "Build project: $proj"
+  dotnet build src/framework/$proj/$proj.csproj -c Release
+  echo "Pack project: $proj"
+  dotnet pack --no-build --no-restore src/framework/$proj/$proj.csproj -c Release -o "$folderPath"
 done
 
 case "$nugetSource" in
