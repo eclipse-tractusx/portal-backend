@@ -143,7 +143,7 @@ public class NetworkRegistrationHandlerTests
     }
 
     [Fact]
-    public async Task SynchronizeUser_WithValidData_ReturnsExpected()
+    public async Task SynchronizeUser_WithDisplayNameNull_ThrowsConflictException()
     {
         // Arrange
         var user1Id = Guid.NewGuid().ToString();
@@ -168,6 +168,41 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _provisioningManger.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
 
         // Act
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"DisplayName for idpAlias idp1 couldn't be determined");
+    }
+
+    [Fact]
+    public async Task SynchronizeUser_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var user1Id = Guid.NewGuid().ToString();
+        var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
+            "123456789", "Test Company", "BPNL00000001TEST",
+            Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
+        var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
+            "steven@strange.com", "987654321", "Test Company", "BPNL00000001TEST",
+            Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "id9876"), 1));
+
+        A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
+            .Returns("Onboarding Service Provider");
+        A.CallTo(() => _userRepository.GetUserAssignedIdentityProviderForNetworkRegistration(NetworkRegistrationId))
+            .Returns(new[]
+            {
+                user1,
+                user2
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManger.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
+        A.CallTo(() => _provisioningManger.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
+        A.CallTo(() => _provisioningManger.GetIdentityProviderDisplayName("idp1"))
+            .Returns("DisplayName for Idp1");
+
+        // Act
         var result = await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
 
         // Assert
@@ -179,9 +214,9 @@ public class NetworkRegistrationHandlerTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(user2.CompanyUserId, A<Action<Identity>>._, A<Action<Identity>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails("tony@stark.com", A<IDictionary<string, string>>._, A<IEnumerable<string>>._))
+        A.CallTo(() => _mailingService.SendMails("tony@stark.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<IEnumerable<string>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("steven@strange.com", A<IDictionary<string, string>>._, A<IEnumerable<string>>._))
+        A.CallTo(() => _mailingService.SendMails("steven@strange.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<IEnumerable<string>>._))
             .MustHaveHappenedOnceExactly();
 
         result.modified.Should().BeFalse();

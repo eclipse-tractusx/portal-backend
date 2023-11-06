@@ -148,6 +148,12 @@ public partial class ProvisioningManager
         }
     }
 
+    public async Task<string?> GetIdentityProviderDisplayName(string alias)
+    {
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        return identityProvider.DisplayName;
+    }
+
     private async ValueTask EnableCentralIdentityProviderAsync(string alias)
     {
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);

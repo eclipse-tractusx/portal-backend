@@ -112,7 +112,10 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             }
         }
 
-        await SendMails(companyAssignedIdentityProviders.Select(x => new UserMailInformation(x.Email!, x.FirstName, x.LastName, x.CompanyName)), ospName).ConfigureAwait(false);
+        var idpAliasse = companyAssignedIdentityProviders.SelectMany(x => x.ProviderLinkData.Select(pld => pld.Alias!)).Distinct();
+        var aliasDisplayNameMapping = await GetDisplayNamesForIdpAlias(idpAliasse).ConfigureAwait(false);
+
+        await SendMails(companyAssignedIdentityProviders.Select(x => new UserMailInformation(x.Email!, x.FirstName, x.LastName, x.ProviderLinkData.Select(pld => pld.Alias!))), ospName, aliasDisplayNameMapping).ConfigureAwait(false);
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             null,
             ProcessStepStatusId.DONE,
@@ -120,11 +123,29 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             null);
     }
 
-    private async Task SendMails(IEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
+    private async Task<IDictionary<string, string>> GetDisplayNamesForIdpAlias(IEnumerable<string> idpAliasse)
+    {
+        var mapping = new Dictionary<string, string>();
+        foreach (var idpAlias in idpAliasse)
+        {
+            var displayName = await _provisioningManager.GetIdentityProviderDisplayName(idpAlias).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(displayName))
+            {
+                throw new ConflictException($"DisplayName for idpAlias {idpAlias} couldn't be determined");
+            }
+            
+            mapping.Add(idpAlias, displayName);
+        }
+
+        return mapping;
+    }
+
+    private async Task SendMails(IEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName, IDictionary<string, string> aliasDisplayNameMapping)
     {
         var templates = Enumerable.Repeat("OspWelcomeMail", 1);
-        foreach (var (receiver, firstName, lastName, companyName) in companyUserWithRoleIdForCompany)
+        foreach (var (receiver, firstName, lastName, idpAliasse) in companyUserWithRoleIdForCompany)
         {
+            var displayNames = idpAliasse.Select(x => aliasDisplayNameMapping[x]);
             var userName = string.Join(" ", firstName, lastName);
             var mailParameters = new Dictionary<string, string>
             {
@@ -132,7 +153,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 { "hostname", _settings.BasePortalAddress },
                 { "osp", ospName },
                 { "url", _settings.BasePortalAddress },
-                { "companyName", companyName }
+                { "companyName", string.Join(",", displayNames) }
             };
             await _mailingService.SendMails(receiver, mailParameters, templates).ConfigureAwait(false);
         }
