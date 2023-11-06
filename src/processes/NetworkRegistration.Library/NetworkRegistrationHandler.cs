@@ -153,7 +153,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 { "hostname", _settings.BasePortalAddress },
                 { "osp", ospName },
                 { "url", _settings.BasePortalAddress },
-                { "companyName", string.Join(",", displayNames) }
+                { "idpAlias", string.Join(",", displayNames) }
             };
             await _mailingService.SendMails(receiver, mailParameters, templates).ConfigureAwait(false);
         }
