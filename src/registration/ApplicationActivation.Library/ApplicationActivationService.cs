@@ -261,10 +261,14 @@ public class ApplicationActivationService : IApplicationActivationService
 
             var mailParameters = new Dictionary<string, string>
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
                 { "companyName", companyName },
+                { "bpn", businessPartnerNumber },
                 { "url", _settings.BasePortalAddress },
-                { "bpn", businessPartnerNumber }
+                { "homeUrl", _settings.PortalHomeAddress },
+                { "helpUrl", _settings.HelpAddress },
+                { "companyrolesparticipantUrl", _settings.CompanyRolesParticipantAddress },
+                { "dataspaceUrl", _settings.DataspaceAddress }
             };
 
             await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);

@@ -161,8 +161,10 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : receiver },
-                { "hostname", _settings.BasePortalAddress },
                 { "osp", ospName },
+                { "loginDocumentUrl", _settings.LoginDocumentAddress },
+                { "externalRegistrationUrl", _settings.ExternalRegistrationAddress },
+                { "closeApplicationUrl", _settings.CloseApplicationAddress },
                 { "url", _settings.BasePortalAddress },
                 { "idpAlias", string.Join(",", displayNames) }
             };

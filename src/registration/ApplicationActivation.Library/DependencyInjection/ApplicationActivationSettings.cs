@@ -65,6 +65,18 @@ public class ApplicationActivationSettings
     [Required(AllowEmptyStrings = false)]
     public string LoginTheme { get; set; } = null!;
 
+    [Required(AllowEmptyStrings = false)]
+    public string PortalHomeAddress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string HelpAddress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string CompanyRolesParticipantAddress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string DataspaceAddress { get; set; } = null!;
+
     public static bool Validate(ApplicationActivationSettings settings)
     {
         var startSet = settings.StartTime.HasValue;

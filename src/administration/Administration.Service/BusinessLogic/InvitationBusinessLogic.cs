@@ -138,6 +138,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             { "password", password ?? "" },
             { "companyName", invitationData.organisationName },
             { "url", $"{_settings.RegistrationAppAddress}"},
+            { "helpUrl", $"{_settings.HelpAddress}"},
         };
 
         await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate" }).ConfigureAwait(false);

@@ -72,6 +72,11 @@ public class RegistrationSettings
     [Required]
     [DistinctValues]
     public IEnumerable<DocumentTypeId> SubmitDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Url to the help page of the portal
+    /// </summary>
+    public string HelpAddress { get; set; }
 }
 
 public static class RegistrationSettingsExtension

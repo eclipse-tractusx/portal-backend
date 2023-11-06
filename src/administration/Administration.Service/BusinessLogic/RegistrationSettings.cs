@@ -29,6 +29,7 @@ public class RegistrationSettings
     public RegistrationSettings()
     {
         DocumentTypeIds = null!;
+        HelpAddress = null!;
     }
 
     public int ApplicationsMaxPageSize { get; set; }
@@ -41,6 +42,9 @@ public class RegistrationSettings
     [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; }
+
+    [Required(AllowEmptyStrings = false)]
+    public string HelpAddress { get; set; }
 }
 
 public static class RegistrationSettingsExtension
