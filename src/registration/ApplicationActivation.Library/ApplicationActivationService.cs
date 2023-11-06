@@ -264,7 +264,6 @@ public class ApplicationActivationService : IApplicationActivationService
                 { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
                 { "companyName", companyName },
                 { "bpn", businessPartnerNumber },
-                { "url", _settings.BasePortalAddress },
                 { "homeUrl", _settings.PortalHomeAddress },
                 { "helpUrl", _settings.HelpAddress },
                 { "companyrolesparticipantUrl", _settings.CompanyRolesParticipantAddress },
