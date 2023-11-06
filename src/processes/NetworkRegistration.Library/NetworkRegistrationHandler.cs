@@ -133,7 +133,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             {
                 throw new ConflictException($"DisplayName for idpAlias {idpAlias} couldn't be determined");
             }
-            
+
             mapping.Add(idpAlias, displayName);
         }
 
