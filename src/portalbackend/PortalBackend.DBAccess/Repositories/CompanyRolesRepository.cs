@@ -68,16 +68,15 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
             )).AsAsyncEnumerable();
 
-    public Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, Guid companyUserId) =>
-        _dbContext.CompanyUsers
+    public Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, Guid companyId) =>
+        _dbContext.Companies
             .AsNoTracking()
-            .Where(user =>
-                user.Id == companyUserId
-                && user.Identity!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(user => user.Identity!.Company)
+            .Where(company =>
+                company.Id == companyId &&
+                company.CompanyApplications.Any(application => application.Id == applicationId))
             .Select(company => new CompanyRoleAgreementConsents(
-                company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE).Select(consent => new AgreementConsentStatus(
+                company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE).Select(consent => new AgreementConsentStatus(
                     consent.AgreementId,
                     consent.ConsentStatusId
                 )))).SingleOrDefaultAsync();
