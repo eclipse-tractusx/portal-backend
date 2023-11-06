@@ -31,12 +31,9 @@ public static class RegistrationValidation
 
     public static void ValidateData(this RegistrationData data)
     {
-        if (data.BusinessPartnerNumber != null)
+        if (data.BusinessPartnerNumber != null && !BpnRegex.IsMatch(data.BusinessPartnerNumber))
         {
-            if (!BpnRegex.IsMatch(data.BusinessPartnerNumber))
-            {
-                throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.BusinessPartnerNumber));
-            }
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.BusinessPartnerNumber));
         }
 
         if (string.IsNullOrWhiteSpace(data.Name))
@@ -80,12 +77,9 @@ public static class RegistrationValidation
 
     public static async Task ValidateDatabaseData(this RegistrationData data, Func<string, Task<bool>> checkBpn, Func<string, Task<bool>> checkCountryExistByAlpha2Code, Func<string, IEnumerable<UniqueIdentifierId>, Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)>> getCountryAssignedIdentifiers)
     {
-        if (data.BusinessPartnerNumber != null)
+        if (data.BusinessPartnerNumber != null && await checkBpn(data.BusinessPartnerNumber.ToUpper()).ConfigureAwait(false))
         {
-            if (await checkBpn(data.BusinessPartnerNumber.ToUpper()).ConfigureAwait(false))
-            {
-                throw new ControllerArgumentException($"The Bpn {data.BusinessPartnerNumber} already exists", nameof(data.BusinessPartnerNumber));
-            }
+            throw new ControllerArgumentException($"The Bpn {data.BusinessPartnerNumber} already exists", nameof(data.BusinessPartnerNumber));
         }
 
         if (!await checkCountryExistByAlpha2Code(data.CountryAlpha2Code).ConfigureAwait(false))
