@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 
@@ -203,45 +204,55 @@ public class AppChangeController : ControllerBase
         await _businessLogic.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
 
     /// <summary>
-    /// Delete multiple Documets for an active apps for given appId for same company as user
+    /// Delete Documet for an active app for given appId for same company as user
     /// </summary>
     /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the app.</param>
-    /// <param name="documentIds">Ids of the Documents.</param>
-    /// <remarks>Example: DELETE: /api/apps/AppChange/{appId}/documents</remarks>
-    /// <response code="200">returns no of documents deleted and failed</response>
+    /// <param name="documentId">Id of the Document.</param>
+    /// <remarks>Example: DELETE: /api/apps/AppChange/{appId}/document/{documentId}</remarks>
+    /// <response code="204">succesFully deleted document for an active app</response>
     [HttpDelete]
-    [Route("{appId}/documents")]
+    [Route("{appId}/document/{documentId}")]
     [Authorize(Roles = "edit_apps")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<AppDeleteDocumentStats> DeleteMulitipleActiveAppDocumentsAsync([FromRoute] Guid appId, [FromBody] IEnumerable<Guid> documentIds) =>
-        await _businessLogic.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds).ConfigureAwait(false);
+    public async Task<NoContentResult> DeleteMulitipleActiveAppDocumentsAsync([FromRoute] Guid appId, [FromRoute] Guid documentId)
+    {
+        await _businessLogic.DeleteActiveAppDocumentAsync(appId, documentId).ConfigureAwait(false);
+        return NoContent();
+    }
 
     /// <summary>
-    /// Upload Multiple document for an active apps for given appId for same company as user
+    /// Upload document for an active apps for given appId for same company as user
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="documents"></param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
     /// <param name="cancellationToken"></param>
-    /// <remarks>Example: POST: /api/apps/AppChange/{appId}/documents</remarks>
-    /// <response code="200">returns</response>
+    /// <remarks>Example: POST: /api/apps/AppChange/{appId}/documentType/{documentTypeId}/documents</remarks>
+    /// <response code="204">Successfully uploaded the document</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">App does not exist.</response>
     /// <response code="403">The user is not assigned with the app.</response>
-    /// <response code="415">Only PNG, PDF and JPEG files are supported.</response>
+    /// <response code="409">Offer is in incorrect state.</response>
+    /// <response code="415">Only PDF files are supported.</response>
     [HttpPost]
-    [Route("{appId}/documents")]
+    [Route("{appId}/documentType/{documentTypeId}/documents")]
     [Authorize(Roles = "edit_apps")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Consumes("multipart/form-data")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-    [ProducesResponseType(typeof(AppUploadDocumentStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public async Task<AppUploadDocumentStats> CreateMultipleActiveAppDocumentsAsync([FromRoute] Guid appId, [FromForm(Name = "documents")] IList<UploadMulipleDocuments> documents, CancellationToken cancellationToken) =>
-        await _businessLogic.CreateMultipleActiveAppDocumentsAsync(appId, documents, cancellationToken);
+    public async Task<NoContentResult> CreateActiveAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    {
+        await _businessLogic.CreateActiveAppDocumentAsync(appId, documentTypeId, document, cancellationToken);
+        return NoContent();
+    }
 }

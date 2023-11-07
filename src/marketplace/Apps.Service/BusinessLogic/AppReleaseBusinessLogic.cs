@@ -71,7 +71,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         UploadAppDoc(appId, documentTypeId, document, OfferTypeId.APP, cancellationToken);
 
     private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
-        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, offerTypeId, _settings.UploadAppDocumentTypeIds, cancellationToken).ConfigureAwait(false);
+        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, offerTypeId, _settings.UploadAppDocumentTypeIds, OfferStatusId.CREATED, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles)

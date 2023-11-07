@@ -503,6 +503,7 @@ public interface IOfferRepository
     /// <param name="offerId"></param>
     /// <param name="userCompanyId"></param>
     /// <param name="offerTypeId"></param>
+    /// <param name="documentId"></param>
     /// <returns></returns>
-    Task<(bool IsStatusActive, bool IsUserOfProvider, IEnumerable<DocumentStatusData> documentStatusDatas)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds);
+    Task<(bool IsStatusActive, bool IsUserOfProvider, DocumentStatusData? documentStatusDatas)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds, Guid documentId);
 }

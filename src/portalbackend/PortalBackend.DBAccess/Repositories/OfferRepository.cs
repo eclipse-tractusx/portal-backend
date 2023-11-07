@@ -841,14 +841,14 @@ public class OfferRepository : IOfferRepository
         .ToAsyncEnumerable();
 
     ///<inheritdoc/>
-    public Task<(bool IsStatusActive, bool IsUserOfProvider, IEnumerable<DocumentStatusData> documentStatusDatas)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds) =>
+    public Task<(bool IsStatusActive, bool IsUserOfProvider, DocumentStatusData? documentStatusDatas)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds, Guid documentId) =>
         _context.Offers
             .AsNoTracking()
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
-            .Select(offer => new ValueTuple<bool, bool, IEnumerable<DocumentStatusData>>(
+            .Select(offer => new ValueTuple<bool, bool, DocumentStatusData?>(
                 offer.OfferStatusId == OfferStatusId.ACTIVE,
                 offer.ProviderCompanyId == userCompanyId,
-                offer.Documents.Where(doc => documentTypeIds.Contains(doc.DocumentTypeId))
-                    .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))))
+                offer.Documents.Where(doc => doc.Id == documentId && documentTypeIds.Contains(doc.DocumentTypeId))
+                    .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)).FirstOrDefault()))
             .SingleOrDefaultAsync();
 }

@@ -249,7 +249,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
     /// <inheritdoc />
     public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken) =>
-        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
+        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, OfferStatusId.CREATED, cancellationToken);
 
     /// <inheritdoc/>
     public Task DeleteServiceDocumentsAsync(Guid documentId) =>

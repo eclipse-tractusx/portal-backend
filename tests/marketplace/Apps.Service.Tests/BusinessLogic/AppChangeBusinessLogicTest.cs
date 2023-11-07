@@ -22,16 +22,14 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
-using Flurl.Util;
 using Microsoft.Extensions.Options;
-using MimeKit.Encodings;
-using Org.BouncyCastle.Utilities.Collections;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -65,6 +63,7 @@ public class AppChangeBusinessLogicTest
     private readonly INotificationService _notificationService;
     private readonly IOfferService _offerService;
     private readonly IIdentityService _identityService;
+    private readonly IOfferDocumentService _offerDocumentService;
     private readonly AppChangeBusinessLogic _sut;
 
     public AppChangeBusinessLogicTest()
@@ -84,6 +83,7 @@ public class AppChangeBusinessLogicTest
         _notificationService = A.Fake<INotificationService>();
         _offerService = A.Fake<IOfferService>();
         _identityService = A.Fake<IIdentityService>();
+        _offerDocumentService = A.Fake<IOfferDocumentService>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         var settings = new AppsSettings
@@ -126,7 +126,7 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
-        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, _identityService, Options.Create(settings));
+        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, _identityService, Options.Create(settings), _offerDocumentService);
     }
 
     #region  AddActiveAppUserRole
@@ -1014,23 +1014,14 @@ public class AppChangeBusinessLogicTest
     #region DeleteMulitipleActiveAppDocuments
 
     [Fact]
-    public async Task DeleteMulitipleActiveAppDocumentsAsync_ReturnsExpected()
+    public async Task DeleteActiveAppDocumentAsync_ReturnsExpected()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var documentIds1 = _fixture.Create<Guid>();
-        var documentIds2 = _fixture.Create<Guid>();
-        var documentIds3 = _fixture.Create<Guid>();
-        var documentIds4 = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var documentStatusData = new DocumentStatusData(documentId, DocumentStatusId.PENDING);
 
-        var documentIds = new[] { documentIds1, documentIds2, documentIds3, documentIds4 };
-        var documentStatusData = new[] {
-            new DocumentStatusData(documentIds1, DocumentStatusId.PENDING),
-            new DocumentStatusData(documentIds2, DocumentStatusId.LOCKED),
-            new DocumentStatusData(documentIds3, DocumentStatusId.INACTIVE)
-        };
-
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._))
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._, A<Guid>._))
             .Returns((true, true, documentStatusData));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
@@ -1051,31 +1042,26 @@ public class AppChangeBusinessLogicTest
             });
 
         // Act
-        var result = await _sut.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds).ConfigureAwait(false);
+        await _sut.DeleteActiveAppDocumentAsync(appId, documentId).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Error.Should().Be(1);
-        result.Success.Should().Be(3);
-        result.Errors.Should().NotBeNull().And.Satisfy(x => x.DocumentId == documentIds4
-            && x.Reasons == $"Document {documentIds4} does not exist");
-        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(A<Guid>._, A<Guid>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._)).MustHaveHappened(1, Times.Exactly);
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(4, Times.Exactly);
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(A<Guid>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
-    public async Task DeleteMulitipleActiveAppDocumentsAsync_Throws_NotFoundException()
+    public async Task DeleteActiveAppDocumentAsync_Throws_NotFoundException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var documentIds = _fixture.CreateMany<Guid>(4);
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new ValueTuple<bool, bool, IEnumerable<DocumentStatusData>>());
+        var documentId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._, A<Guid>._))
+            .Returns(new ValueTuple<bool, bool, DocumentStatusData>());
 
         // Act
-        async Task Act() => await _sut.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds);
+        async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1083,17 +1069,17 @@ public class AppChangeBusinessLogicTest
     }
 
     [Fact]
-    public async Task DeleteMulitipleActiveAppDocumentsAsync_Throws_ConflictException()
+    public async Task DeleteActiveAppDocumentAsync_Throws_ConflictException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var documentIds = _fixture.CreateMany<Guid>(4);
-        var documentStatusData = _fixture.CreateMany<DocumentStatusData>(3);
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._))
+        var documentId = _fixture.Create<Guid>();
+        var documentStatusData = _fixture.Create<DocumentStatusData>();
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._, A<Guid>._))
             .Returns((false, true, documentStatusData));
 
         // Act
-        async Task Act() => await _sut.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds);
+        async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1101,133 +1087,17 @@ public class AppChangeBusinessLogicTest
     }
 
     [Fact]
-    public async Task DeleteMulitipleActiveAppDocumentsAsync_Throws_ForbiddenException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documentIds = _fixture.CreateMany<Guid>(4);
-        var documentStatusData = _fixture.CreateMany<DocumentStatusData>(3);
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._))
-            .Returns((true, false, documentStatusData));
-
-        // Act
-        async Task Act() => await _sut.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of App {appId}");
-    }
-
-    #endregion
-
-    #region CreateMultipleActiveAppDocuments
-
-    [Fact]
-    public async Task CreateMultipleActiveAppDocumentsAsync_ReturnsExpected()
+    public async Task DeleteActiveAppDocumentAsync_Throws_ForbiddenException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var uploadDocuments = new[] {
-            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_IMAGE, Document = FormFileHelper.GetFormFile("Test Image1", "TestImage1.jpeg", "image/jpeg")},
-            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_LEADIMAGE, Document = FormFileHelper.GetFormFile("Test Image2", "TestImage2.jpeg", "image/jpeg")},
-            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_IMAGE, Document = FormFileHelper.GetFormFile("Test Document1", "TestDocumet1.PDF", "application/pdf")},
-            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.ADDITIONAL_DETAILS, Document = FormFileHelper.GetFormFile("Test Document2", "TestDocumet2.PDF", "application/pdf")},
-            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_TECHNICAL_INFORMATION, Document = FormFileHelper.GetFormFile("Test Document3", "TestDocumet3.PDF", "application/pdf")},
-            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_TECHNICAL_INFORMATION, Document = FormFileHelper.GetFormFile("Test Document4", "", "application/pdf")}
-        }.ToImmutableList();
-        var documents = new List<Document>();
-        var offerAssignedDocuments = new List<OfferAssignedDocument>();
-
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(A<Guid>._, A<Guid>._, OfferStatusId.ACTIVE, OfferTypeId.APP))
-            .Returns((true, true, true));
-
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._))
-            .ReturnsLazily((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentType, Action<Document>? setupOptionalFields) =>
-            {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentType);
-                setupOptionalFields?.Invoke(document);
-                documents.Add(document);
-                return document;
-            });
-
-        A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._))
-            .Invokes((Guid offerId, Guid docId) =>
-            {
-                var offerAssignedDocument = new OfferAssignedDocument(offerId, docId);
-                offerAssignedDocuments.Add(offerAssignedDocument);
-            });
-        var existingOffer = _fixture.Create<Offer>();
-        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._))
-            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
-            {
-                initializeParemeters?.Invoke(existingOffer);
-                setOptionalParameters(existingOffer);
-            });
+        var documentStatusData = _fixture.Create<DocumentStatusData>();
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._, A<Guid>._))
+            .Returns((true, false, documentStatusData));
 
         // Act
-        var result = await _sut.CreateMultipleActiveAppDocumentsAsync(appId, uploadDocuments, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        result.Success.Should().Be(3);
-        result.Error.Should().Be(3);
-        result.Errors.Should().NotBeNull().And.Satisfy(
-            x => x.DocumentName == "TestImage2.jpeg" && x.Reasons == "documentType must be either: APP_IMAGE,APP_TECHNICAL_INFORMATION,APP_CONTRACT,ADDITIONAL_DETAILS",
-            x => x.DocumentName == "TestDocumet1.PDF" && x.Reasons == "Document type APP_IMAGE, mediaType 'application/pdf' is not supported. File with contentType :JPEG,PNG are allowed.",
-            x => x.DocumentName == string.Empty && x.Reasons == "File name should not be null");
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(A<Guid>._, A<Guid>._, OfferStatusId.ACTIVE, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(4, Times.Exactly);
-    }
-
-    [Fact]
-    public async Task CreateMultipleActiveAppDocumentsAsync_Throws_NotFoundException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documents = _fixture.CreateMany<UploadMulipleDocuments>(4).ToImmutableList();
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(A<Guid>._, A<Guid>._, OfferStatusId.ACTIVE, OfferTypeId.APP))
-            .Returns(new ValueTuple<bool, bool, bool>());
-
-        // Act
-        async Task Act() => await _sut.CreateMultipleActiveAppDocumentsAsync(appId, documents, CancellationToken.None);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be($"App {appId} does not exist");
-    }
-
-    [Fact]
-    public async Task CreateMultipleActiveAppDocumentsAsync_Throws_ConflictException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documents = _fixture.CreateMany<UploadMulipleDocuments>(4).ToImmutableList();
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(A<Guid>._, A<Guid>._, OfferStatusId.ACTIVE, OfferTypeId.APP))
-            .Returns((true, false, true));
-
-        // Act
-        async Task Act() => await _sut.CreateMultipleActiveAppDocumentsAsync(appId, documents, CancellationToken.None);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be("offerStatus is in Incorrect State");
-    }
-
-    [Fact]
-    public async Task CreateMultipleActiveAppDocumentsAsync_Throws_ForbiddenException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documents = _fixture.CreateMany<UploadMulipleDocuments>(4).ToImmutableList();
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(A<Guid>._, A<Guid>._, OfferStatusId.ACTIVE, OfferTypeId.APP))
-            .Returns((true, true, false));
-
-        // Act
-        async Task Act() => await _sut.CreateMultipleActiveAppDocumentsAsync(appId, documents, CancellationToken.None);
+        async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -1235,4 +1105,24 @@ public class AppChangeBusinessLogicTest
     }
 
     #endregion
+
+    #region CreateActiveAppDocument
+
+    [Fact]
+    public async Task CreateActiveAppDocumentAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("Test Image1", "TestImage1.jpeg", "image/jpeg");
+        var documentTypeId = DocumentTypeId.APP_IMAGE;
+
+        // Act
+        await _sut.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, file, OfferTypeId.APP, A<IEnumerable<UploadDocumentConfig>>._, OfferStatusId.ACTIVE, CancellationToken.None)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
 }

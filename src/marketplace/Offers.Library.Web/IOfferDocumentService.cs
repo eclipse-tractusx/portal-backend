@@ -38,5 +38,5 @@ public interface IOfferDocumentService
     /// <param name="offerTypeId"></param>
     /// <param name="uploadDocumentTypeIdSettings"></param>
     /// <param name="cancellationToken"></param>
-    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, CancellationToken cancellationToken);
+    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, OfferStatusId offerStatusId, CancellationToken cancellationToken);
 }

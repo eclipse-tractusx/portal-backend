@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -78,17 +79,18 @@ public interface IAppChangeBusinessLogic
     Task<ActiveAppDocumentData> GetActiveAppDocumentTypeDataAsync(Guid appId);
 
     /// <summary>
-    /// Delete multiple documents for an app id
+    /// Delete document for an active app id
     /// </summary>
     /// <param name="appId">Id of the offer</param>
-    /// <param name="documentIds">If of the documents</param>
-    ValueTask<AppDeleteDocumentStats> DeleteMulitipleActiveAppDocumentsAsync(Guid appId, IEnumerable<Guid> documentIds);
+    /// <param name="documentId">If of the document</param>
+    Task DeleteActiveAppDocumentAsync(Guid appId, Guid documentId);
 
     /// <summary>
-    /// Upload multiple documents for an app id
+    /// Upload document for an active app id
     /// </summary>
     /// <param name="appId">Id of the offer</param>
+    /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
     /// <param name="cancellationToken"></param>
-    ValueTask<AppUploadDocumentStats> CreateMultipleActiveAppDocumentsAsync(Guid appId, IList<UploadMulipleDocuments> document, CancellationToken cancellationToken);
+    Task CreateActiveAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken);
 }

@@ -166,28 +166,27 @@ public class AppChangeControllerTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var documentIds = _fixture.CreateMany<Guid>(5);
+        var documentId = _fixture.Create<Guid>();
 
         // Act
-        await _controller.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds).ConfigureAwait(false);
+        await _controller.DeleteMulitipleActiveAppDocumentsAsync(appId, documentId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.DeleteMulitipleActiveAppDocumentsAsync(appId, documentIds)).MustHaveHappened();
+        A.CallTo(() => _logic.DeleteActiveAppDocumentAsync(appId, documentId)).MustHaveHappened();
     }
 
     [Fact]
-    public async Task CreateMultipleActiveAppDocumentsAsync_ReturnsExpected()
+    public async Task CreateActiveAppDocumentAsync_ReturnsExpected()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var uploadDocuments = new[] {
-            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_IMAGE, Document = FormFileHelper.GetFormFile("Test Image1", "TestImage1.jpeg", "image/jpeg")},
-            new UploadMulipleDocuments{ DocumentTypeId = DocumentTypeId.APP_LEADIMAGE, Document = FormFileHelper.GetFormFile("Test Image2", "TestImage2.jpeg", "image/jpeg")}};
+        var file = FormFileHelper.GetFormFile("Test Image1", "TestImage1.jpeg", "image/jpeg");
+        var documentTypeId = DocumentTypeId.APP_IMAGE;
 
         // Act
-        await _controller.CreateMultipleActiveAppDocumentsAsync(appId, uploadDocuments, CancellationToken.None).ConfigureAwait(false);
+        await _controller.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateMultipleActiveAppDocumentsAsync(appId, uploadDocuments, CancellationToken.None)).MustHaveHappened();
+        A.CallTo(() => _logic.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None)).MustHaveHappened();
     }
 }

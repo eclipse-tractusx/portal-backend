@@ -64,9 +64,9 @@ public class OfferDocumentServiceTests
     #region UploadDocument
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, OfferStatusId.CREATED)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, OfferStatusId.CREATED)]
+    public async Task UploadDocumentAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferStatusId offerStatusId)
     {
         // Arrange
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
@@ -98,7 +98,7 @@ public class OfferDocumentServiceTests
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>>._, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>?>._)).MustHaveHappenedOnceExactly();
@@ -108,9 +108,9 @@ public class OfferDocumentServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_InValidData_ThrowsNotFoundException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, OfferStatusId.CREATED)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, OfferStatusId.CREATED)]
+    public async Task UploadDocumentAsync_InValidData_ThrowsNotFoundException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferStatusId offerStatusId)
     {
         // Arrange
         var id = _fixture.Create<Guid>();
@@ -122,7 +122,7 @@ public class OfferDocumentServiceTests
             .Returns(((bool, bool, bool))default);
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -130,9 +130,9 @@ public class OfferDocumentServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_EmptyId_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, OfferStatusId.CREATED)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, OfferStatusId.CREATED)]
+    public async Task UploadDocumentAsync_EmptyId_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferStatusId offerStatusId)
     {
         // Arrange
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
@@ -141,7 +141,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -149,9 +149,9 @@ public class OfferDocumentServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_EmptyFileName_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, OfferStatusId.CREATED)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, OfferStatusId.CREATED)]
+    public async Task UploadDocumentAsync_EmptyFileName_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferStatusId offerStatusId)
     {
         // Arrange
         var id = _fixture.Create<Guid>();
@@ -161,7 +161,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -169,9 +169,9 @@ public class OfferDocumentServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_contentType_ThrowsUnsupportedMediaTypeException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, OfferStatusId.CREATED)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, OfferStatusId.CREATED)]
+    public async Task UploadDocumentAsync_contentType_ThrowsUnsupportedMediaTypeException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferStatusId offerStatusId)
     {
         // Arrange
         var id = _fixture.Create<Guid>();
@@ -181,7 +181,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "image/svg+xml");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
@@ -189,9 +189,9 @@ public class OfferDocumentServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_contentType_ThrowsUnsupportedMediaTypeException1(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, OfferStatusId.CREATED)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, OfferStatusId.CREATED)]
+    public async Task UploadDocumentAsync_contentType_ThrowsUnsupportedMediaTypeException1(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferStatusId offerStatusId)
     {
         // Arrange
         var id = _fixture.Create<Guid>();
@@ -201,7 +201,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "foo/bar");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
@@ -209,9 +209,9 @@ public class OfferDocumentServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.SELF_DESCRIPTION)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.APP_TECHNICAL_INFORMATION)]
-    public async Task UploadDocumentAsync_documentType_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.SELF_DESCRIPTION, OfferStatusId.CREATED)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.APP_TECHNICAL_INFORMATION, OfferStatusId.CREATED)]
+    public async Task UploadDocumentAsync_documentType_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferStatusId offerStatusId)
     {
         // Arrange
         var id = _fixture.Create<Guid>();
@@ -221,7 +221,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -229,9 +229,9 @@ public class OfferDocumentServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_isStatusCreated_ThrowsConflictException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, OfferStatusId.CREATED)]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, OfferStatusId.CREATED)]
+    public async Task UploadDocumentAsync_isStatusCreated_ThrowsConflictException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferStatusId offerStatusId)
     {
         // Arrange
         var id = _fixture.Create<Guid>();
@@ -241,11 +241,11 @@ public class OfferDocumentServiceTests
             ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
             : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
+        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, offerStatusId, offerTypeId))
             .Returns((true, false, true));
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
