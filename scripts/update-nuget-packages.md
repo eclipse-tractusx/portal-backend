@@ -30,13 +30,14 @@ To update the version for all packages:
 ./scripts/update_all_framework_versions.sh <version>
 ```
 
-To update the version of a specific package:
+To only update the packages that were changed, including the dependent packages you can run:
 
 ```bash
-./scripts/update_framework_version.sh <packageName> <version>
+./scripts/update_framework_version.sh <location> <version>
 ```
 
-For package name you must use the name of the .csproj file e.g. Framework.ErrorHandling.Library
+When passing 'local' as the location the script will update all packages where local changes are available and not yet have been committed.
+When passing 'build' as the location the script will update all packages where changes were made in the last commit.
 For version there are the following options:
  - major
  - minor
