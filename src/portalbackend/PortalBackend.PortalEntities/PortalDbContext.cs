@@ -182,6 +182,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<VerifiedCredentialTypeAssignedUseCase> VerifiedCredentialTypeAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompaniesLinkedServiceAccount> CompanyLinkedServiceAccounts { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionView> OfferSubscriptionView { get; set; } = default!;
+    public virtual DbSet<CompanyUsersView> CompanyUsersView { get; set; } = default!;
+    public virtual DbSet<CompanyIdpView> CompanyIdpView { get; set; } = default!;
+    public virtual DbSet<CompanyConnectorView> CompanyConnectorView { get; set; } = default!;
+    public virtual DbSet<CompanyRoleCollectionRolesView> CompanyRoleCollectionRolesView { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -1380,6 +1384,18 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<OfferSubscriptionView>()
             .ToView("offer_subscription_view", "portal")
+            .HasNoKey();
+        modelBuilder.Entity<CompanyUsersView>()
+            .ToView("company_users_view", "portal")
+            .HasNoKey();
+        modelBuilder.Entity<CompanyIdpView>()
+            .ToView("company_idp_view", "portal")
+            .HasNoKey();
+        modelBuilder.Entity<CompanyConnectorView>()
+            .ToView("company_connector_view", "portal")
+            .HasNoKey();
+        modelBuilder.Entity<CompanyRoleCollectionRolesView>()
+            .ToView("companyRole_collectionRoles_view", "portal")
             .HasNoKey();
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {
