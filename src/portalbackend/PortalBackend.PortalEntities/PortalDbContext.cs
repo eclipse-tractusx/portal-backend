@@ -1395,7 +1395,7 @@ public class PortalDbContext : DbContext
             .ToView("company_connector_view", "portal")
             .HasNoKey();
         modelBuilder.Entity<CompanyRoleCollectionRolesView>()
-            .ToView("companyRole_collectionRoles_view", "portal")
+            .ToView("companyrole_collectionroles_view", "portal")
             .HasNoKey();
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {

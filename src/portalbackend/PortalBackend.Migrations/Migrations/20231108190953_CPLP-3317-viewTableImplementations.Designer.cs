@@ -28,7 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20231030161356_CPLP-3317-viewTableImplementations")]
+    [Migration("20231108190953_CPLP-3317-viewTableImplementations")]
     partial class CPLP3317viewTableImplementations
     {
         /// <inheritdoc />
@@ -5839,10 +5839,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("client_name");
 
-                    b.Property<string>("CompanyName")
+                    b.Property<string>("CollectionName")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("company_name");
+                        .HasColumnName("collection_name");
 
                     b.Property<string>("UserRole")
                         .IsRequired()
@@ -5851,7 +5851,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.ToTable((string)null);
 
-                    b.ToView("companyRole_collectionRoles_view", "portal");
+                    b.ToView("companyrole_collectionroles_view", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompanyUsersView", b =>
@@ -5866,17 +5866,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnName("company_name");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("first_name");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("last_name");
 
                     b.Property<string>("UserEmail")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("user_email");
 

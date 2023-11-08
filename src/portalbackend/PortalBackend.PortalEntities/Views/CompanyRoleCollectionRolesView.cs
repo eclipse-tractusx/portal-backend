@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views
 
 public class CompanyRoleCollectionRolesView
 {
-    public string CompanyName { get; set; } = null!;
+    public string CollectionName { get; set; } = null!;
     public string UserRole { get; set; } = null!;
     public string ClientName { get; set; } = null!;
 }

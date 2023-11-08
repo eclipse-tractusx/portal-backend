@@ -5893,7 +5893,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("connector_url");
 
-                    b.ToTable(null, "portal");
+                    b.ToTable((string)null);
 
                     b.ToView("company_connector_view", "portal");
                 });
@@ -5926,10 +5926,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("client_name");
 
-                    b.Property<string>("CompanyName")
+                    b.Property<string>("CollectionName")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("company_name");
+                        .HasColumnName("collection_name");
 
                     b.Property<string>("UserRole")
                         .IsRequired()
@@ -5938,7 +5938,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.ToTable((string)null);
 
-                    b.ToView("companyRole_collectionRoles_view", "portal");
+                    b.ToView("companyrole_collectionroles_view", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompanyUsersView", b =>
@@ -5953,17 +5953,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnName("company_name");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("first_name");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("last_name");
 
                     b.Property<string>("UserEmail")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("user_email");
 

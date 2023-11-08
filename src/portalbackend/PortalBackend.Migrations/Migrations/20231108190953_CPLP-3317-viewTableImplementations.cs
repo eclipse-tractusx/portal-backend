@@ -33,8 +33,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 SELECT
                     c.id as company_id,
                     c.name as company_name,
-                    cu.firstname as firstname,
-                    cu.lastname as lastname,
+                    cu.firstname as first_name,
+                    cu.lastname as last_name,
                     cu.email as user_email,
                 	ius.label as user_status
                 FROM portal.identities as i
@@ -42,7 +42,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                      INNER JOIN portal.company_users as cu on (i.id = cu.id)
                 	 INNER JOIN portal.identity_user_statuses as ius on (i.user_status_id = ius.id)
                 WHERE identity_type_id = 1");
-            migrationBuilder.Sql(@"CREATE VIEW company_idp_view AS
+            migrationBuilder.Sql(@"CREATE VIEW portal.company_idp_view AS
                 SELECT
                     c.id as company_id,
                     c.name as company_name,
@@ -59,7 +59,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 FROM portal.connectors as con
                     INNER JOIN portal.companies as c on (c.Id = con.provider_id)
                 	INNER JOIN portal.connector_statuses as cs on (con.status_id = cs.id)");
-            migrationBuilder.Sql(@"CREATE VIEW portal.companyRole_collectionRoles_view AS
+            migrationBuilder.Sql(@"CREATE VIEW portal.companyrole_collectionroles_view AS
                 SELECT
                     urc.name as collection_name,
                     ur.user_role as user_role,
@@ -76,10 +76,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.Company_Users_view");
-            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.Company_Idp_View");
-            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.Company_Connector_View");
-            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.CompanyRole_CollectionRoles_View");
+            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.company_users_view");
+            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.company_idp_view");
+            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.company_connector_view");
+            migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.companyrole_collectionroles_view");
         }
     }
 }

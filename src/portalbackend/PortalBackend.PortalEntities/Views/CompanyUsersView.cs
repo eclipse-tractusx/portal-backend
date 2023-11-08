@@ -24,8 +24,8 @@ public class CompanyUsersView
 {
     public Guid CompanyId { get; set; }
     public string CompanyName { get; set; } = null!;
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-    public string UserEmail { get; set; } = null!;
+    public string? FirstName { get; set; } = null!;
+    public string? LastName { get; set; } = null!;
+    public string? UserEmail { get; set; } = null!;
     public string UserStatus { get; set; } = null!;
 }
