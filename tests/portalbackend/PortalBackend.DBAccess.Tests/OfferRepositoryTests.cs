@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -1480,6 +1479,47 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x.DocumentName == "AdditionalTechnicalInfo.pdf" &&
                 x.DocumentTypeId == DocumentTypeId.APP_TECHNICAL_INFORMATION
         );
+    }
+
+    #endregion
+
+    #region GetOfferAssignedAppDocumentsById
+
+    [Fact]
+    public async Task GetOfferAssignedAppDocumentsByIdAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var documentId = new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2");
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferAssignedAppDocumentsByIdAsync(
+            new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            OfferTypeId.APP, documentId).ConfigureAwait(false);
+
+        // Assert
+        result.IsStatusActive.Should().BeTrue();
+        result.IsUserOfProvider.Should().BeTrue();
+        result.DocumentTypeId.Should().Be(DocumentTypeId.APP_IMAGE);
+        result.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+    }
+
+    [Fact]
+    public async Task GetOfferAssignedAppDocumentsByIdAsync_NotExistingDocumentId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var documentId = new Guid("0d68c68c-d689-474c-a3be-8493f99feab5");
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferAssignedAppDocumentsByIdAsync(
+            new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            OfferTypeId.APP, documentId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
     }
 
     #endregion

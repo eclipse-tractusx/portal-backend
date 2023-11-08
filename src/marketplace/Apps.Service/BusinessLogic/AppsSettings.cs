@@ -204,6 +204,21 @@ public class AppsSettings
     [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<DocumentTypeId> ActiveAppDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Active App Document Type Id to be deleted
+    /// </summary>
+    [Required]
+    [EnumEnumeration]
+    [DistinctValues]
+    public IEnumerable<DocumentTypeId> DeleteActiveAppDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Active App Document Type Id and ContentType to be uploaded
+    /// </summary>
+    [Required]
+    [DistinctValues("x => x.DocumentTypeId")]
+    public IEnumerable<UploadDocumentConfig> UploadActiveAppDocumentTypeIds { get; set; } = null!;
 }
 
 /// <summary>
