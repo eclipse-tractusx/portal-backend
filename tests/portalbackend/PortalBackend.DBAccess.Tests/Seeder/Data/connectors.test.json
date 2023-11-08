@@ -99,5 +99,16 @@
     "host_id": "41fd2ab8-7123-4546-9bef-a388d91b2999",
     "location_id": "DE",
     "self_description_document_id": null
+  },
+  {
+    "id": "12481a39-ca13-4760-bbbb-f6ff98508007",
+    "name": "Test Connector 42",
+    "connector_url": "www.google.de",
+    "type_id": 1,
+    "status_id": 1,
+    "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "host_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "location_id": "DE",
+    "self_description_document_id": null
   }
 ]

@@ -20,6 +20,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -56,15 +57,21 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllCompanyConnectorsForCompanyId(_userCompanyId).Invoke(0, 10).ConfigureAwait(false);
+        var result = await Pagination.CreateResponseAsync(
+            0,
+            10,
+            15,
+            sut.GetAllCompanyConnectorsForCompanyId(_userCompanyId)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Data.Should().HaveCount(2).And.Satisfy(
+        result.Content.Should().HaveCount(3).And.Satisfy(
             x => x.Name == "Test Connector 6"
                 && x.TechnicalUser!.Id == new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca")
                 && x.TechnicalUser.Name == "test-user-service-accounts",
             x => x.Name == "Test Connector 1"
+                && x.TechnicalUser == null,
+            x => x.Name == "Test Connector 42"
                 && x.TechnicalUser == null);
     }
 
