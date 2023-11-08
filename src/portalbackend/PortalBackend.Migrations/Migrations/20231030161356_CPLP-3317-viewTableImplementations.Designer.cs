@@ -5806,7 +5806,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("connector_url");
 
-                    b.ToTable(null, "portal");
+                    b.ToTable((string)null);
 
                     b.ToView("company_connector_view", "portal");
                 });
