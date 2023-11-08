@@ -26,7 +26,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditDocument20231010))]
+[AuditEntityV1(typeof(AuditDocument20231108))]
 public class Document : IAuditableV1, IBaseEntity
 {
     private Document()

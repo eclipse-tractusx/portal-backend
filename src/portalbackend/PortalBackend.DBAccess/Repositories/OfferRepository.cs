@@ -841,14 +841,16 @@ public class OfferRepository : IOfferRepository
         .ToAsyncEnumerable();
 
     ///<inheritdoc/>
-    public Task<(bool IsStatusActive, bool IsUserOfProvider, DocumentStatusData? documentStatusDatas)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds, Guid documentId) =>
-        _context.Offers
+    public Task<(bool IsStatusActive, bool IsUserOfProvider, DocumentTypeId DocumentTypeId, DocumentStatusId DocumentStatusId)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, Guid documentId) =>
+        _context.OfferAssignedDocuments
             .AsNoTracking()
-            .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
-            .Select(offer => new ValueTuple<bool, bool, DocumentStatusData?>(
-                offer.OfferStatusId == OfferStatusId.ACTIVE,
-                offer.ProviderCompanyId == userCompanyId,
-                offer.Documents.Where(doc => doc.Id == documentId && documentTypeIds.Contains(doc.DocumentTypeId))
-                    .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)).FirstOrDefault()))
+            .Where(oad => oad.OfferId == offerId &&
+                oad.DocumentId == documentId &&
+                oad.Offer!.OfferTypeId == offerTypeId)
+            .Select(oad => new ValueTuple<bool, bool, DocumentTypeId, DocumentStatusId>(
+                oad.Offer!.OfferStatusId == OfferStatusId.ACTIVE,
+                oad.Offer.ProviderCompanyId == userCompanyId,
+                oad.Document!.DocumentTypeId,
+                oad.Document.DocumentStatusId))
             .SingleOrDefaultAsync();
 }

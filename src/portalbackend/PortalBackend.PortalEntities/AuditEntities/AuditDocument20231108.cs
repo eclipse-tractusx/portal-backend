@@ -23,9 +23,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditDocument20231010 : IAuditEntityV1
+public class AuditDocument20231108 : IAuditEntityV1
 {
-    public AuditDocument20231010()
+    public AuditDocument20231108()
     {
         DocumentHash = null!;
         DocumentName = null!;

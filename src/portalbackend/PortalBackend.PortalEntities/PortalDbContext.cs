@@ -89,7 +89,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditConsent20230412> AuditConsent20230412 { get; set; } = default!;
     public virtual DbSet<AuditIdentityAssignedRole20230522> AuditIdentityAssignedRole20230522 { get; set; } = default!;
     public virtual DbSet<AuditProviderCompanyDetail20230614> AuditProviderCompanyDetail20230614 { get; set; } = default!;
-    public virtual DbSet<AuditDocument20231010> AuditDocument20231010 { get; set; } = default!;
+    public virtual DbSet<AuditDocument20231108> AuditDocument20231108 { get; set; } = default!;
     public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
@@ -1440,7 +1440,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Document>(entity =>
         {
-            entity.HasAuditV1Triggers<Document, AuditDocument20231010>();
+            entity.HasAuditV1Triggers<Document, AuditDocument20231108>();
         });
     }
 

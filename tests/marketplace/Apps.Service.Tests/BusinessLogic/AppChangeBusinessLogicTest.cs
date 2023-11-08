@@ -24,6 +24,7 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -64,6 +65,8 @@ public class AppChangeBusinessLogicTest
     private readonly IOfferService _offerService;
     private readonly IIdentityService _identityService;
     private readonly IOfferDocumentService _offerDocumentService;
+    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly DateTimeOffset _now;
     private readonly AppChangeBusinessLogic _sut;
 
     public AppChangeBusinessLogicTest()
@@ -84,7 +87,10 @@ public class AppChangeBusinessLogicTest
         _offerService = A.Fake<IOfferService>();
         _identityService = A.Fake<IIdentityService>();
         _offerDocumentService = A.Fake<IOfferDocumentService>();
+        _dateTimeProvider = A.Fake<IDateTimeProvider>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        _now = _fixture.Create<DateTimeOffset>();
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(_now);
 
         var settings = new AppsSettings
         {
@@ -126,7 +132,7 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
-        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, _identityService, Options.Create(settings), _offerDocumentService);
+        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, _identityService, Options.Create(settings), _offerDocumentService, _dateTimeProvider);
     }
 
     #region  AddActiveAppUserRole
@@ -1021,19 +1027,19 @@ public class AppChangeBusinessLogicTest
         var documentId = _fixture.Create<Guid>();
         var documentStatusData = new DocumentStatusData(documentId, DocumentStatusId.PENDING);
 
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._, A<Guid>._))
-            .Returns((true, true, documentStatusData));
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
+            .Returns((true, true, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
 
+        var initialDocument = new Document(Guid.Empty, null!, null!, null!, default, default, default, default);
+        var modifiedDocument = new Document(Guid.Empty, null!, null!, null!, default, default, default, default);
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
                 =>
             {
-                var document = new Document(docId, null!, null!, null!, default, default, default, default);
-                initialize?.Invoke(document);
-                modify(document);
+                initialize?.Invoke(initialDocument);
+                modify(modifiedDocument);
             });
-        var existingOffer = _fixture.Create<Offer>();
-        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
+        var existingOffer = new Offer(Guid.Empty, null!, default, default);
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid appId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
             {
@@ -1045,38 +1051,45 @@ public class AppChangeBusinessLogicTest
         await _sut.DeleteActiveAppDocumentAsync(appId, documentId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(A<Guid>._, A<Guid>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(appId, documentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.AttachAndModifyDocument(documentId, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
+        initialDocument.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+        modifiedDocument.DocumentStatusId.Should().Be(DocumentStatusId.INACTIVE);
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, null)).MustHaveHappenedOnceExactly();
+        existingOffer.DateLastChanged.Should().Be(_now);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
-    public async Task DeleteActiveAppDocumentAsync_Throws_NotFoundException()
+    public async Task DeleteActiveAppDocumentAsync_DefaultQueryResult_Throws_NotFoundException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._, A<Guid>._))
-            .Returns(new ValueTuple<bool, bool, DocumentStatusData>());
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
+            .Returns(((bool, bool, DocumentTypeId, DocumentStatusId))default);
 
         // Act
         async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be($"App {appId} does not exist.");
+        result.Message.Should().Be($"Document {documentId} for App {appId} does not exist.");
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
-    public async Task DeleteActiveAppDocumentAsync_Throws_ConflictException()
+    public async Task DeleteActiveAppDocumentAsync_IncorrectOfferState_Throws_ConflictException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var documentStatusData = _fixture.Create<DocumentStatusData>();
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._, A<Guid>._))
-            .Returns((false, true, documentStatusData));
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
+            .Returns((false, true, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
 
         // Act
         async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
@@ -1084,17 +1097,41 @@ public class AppChangeBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         result.Message.Should().Be("offerStatus is in incorrect State");
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
-    public async Task DeleteActiveAppDocumentAsync_Throws_ForbiddenException()
+    public async Task DeleteActiveAppDocumentAsync_InvalidDocumentType_Throws_ConflictException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var documentStatusData = _fixture.Create<DocumentStatusData>();
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._, A<Guid>._))
-            .Returns((true, false, documentStatusData));
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
+            .Returns((true, true, DocumentTypeId.CX_FRAME_CONTRACT, DocumentStatusId.LOCKED));
+
+        // Act
+        async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"document {documentId} does not have a valid documentType");
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task DeleteActiveAppDocumentAsync_NotProviderCompany_Throws_ForbiddenException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var documentStatusData = _fixture.Create<DocumentStatusData>();
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
+            .Returns((true, false, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
 
         // Act
         async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
@@ -1102,6 +1139,9 @@ public class AppChangeBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of App {appId}");
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     #endregion
