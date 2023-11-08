@@ -265,7 +265,7 @@ public class ApplicationActivationService : IApplicationActivationService
                 { "companyName", companyName },
                 { "bpn", businessPartnerNumber },
                 { "homeUrl", _settings.PortalHomeAddress },
-                { "helpUrl", _settings.HelpAddress },
+                { "passwordResendUrl", _settings.PasswordResendAddress },
                 { "companyrolesparticipantUrl", _settings.CompanyRolesParticipantAddress },
                 { "dataspaceUrl", _settings.DataspaceAddress }
             };

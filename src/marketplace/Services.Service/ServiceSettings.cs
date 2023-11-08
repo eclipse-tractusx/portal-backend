@@ -62,10 +62,10 @@ public class ServiceSettings
     public string BasePortalAddress { get; init; } = null!;
 
     /// <summary>
-    /// ServiceMarketplaceAddress url required for the rejection email 
+    /// Url for the service overview required for the rejection email 
     /// </summary>
     [Required(AllowEmptyStrings = false)]
-    public string ServiceMarketplaceAddress { get; init; } = null!;
+    public string ServiceOverviewAddress { get; init; } = null!;
 
     /// <summary>
     /// Approve Service Notification Type Id

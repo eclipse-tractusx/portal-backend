@@ -463,7 +463,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             { "message", userCreationInfo.Message ?? "" },
             { "nameCreatedBy", createdByName },
             { "url", _settings.BasePortalAddress },
-            { "helpUrl", _settings.HelpAddress },
+            { "passwordResendUrl", _settings.PasswordResendAddress },
             { "username", userCreationInfo.eMail },
         };
 

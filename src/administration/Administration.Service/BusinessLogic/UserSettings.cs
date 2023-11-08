@@ -61,7 +61,7 @@ public class UserSetting
     {
         KeycloakClientID = null!;
         BasePortalAddress = null!;
-        HelpAddress = null!;
+        PasswordResendAddress = null!;
     }
 
     [Required(AllowEmptyStrings = false)]
@@ -71,7 +71,7 @@ public class UserSetting
     public string BasePortalAddress { get; set; }
 
     [Required(AllowEmptyStrings = false)]
-    public string HelpAddress { get; set; }
+    public string PasswordResendAddress { get; set; }
 }
 
 public class PasswordReset

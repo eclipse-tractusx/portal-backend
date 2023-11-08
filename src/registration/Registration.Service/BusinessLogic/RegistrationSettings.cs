@@ -74,9 +74,9 @@ public class RegistrationSettings
     public IEnumerable<DocumentTypeId> SubmitDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
-    /// Url to the help page of the portal
+    /// Url to the password resend of the portal
     /// </summary>
-    public string HelpAddress { get; set; }
+    public string PasswordResendAddress { get; set; }
 }
 
 public static class RegistrationSettingsExtension

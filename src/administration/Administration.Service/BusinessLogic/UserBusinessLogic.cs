@@ -138,7 +138,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 { "companyName", companyDisplayName },
                 { "nameCreatedBy", nameCreatedBy },
                 { "url", _settings.Portal.BasePortalAddress },
-                { "helpUrl", _settings.Portal.HelpAddress },
+                { "passwordResendUrl", _settings.Portal.PasswordResendAddress },
             };
 
             try

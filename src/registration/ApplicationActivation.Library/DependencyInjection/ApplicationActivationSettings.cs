@@ -69,7 +69,7 @@ public class ApplicationActivationSettings
     public string PortalHomeAddress { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
-    public string HelpAddress { get; set; } = null!;
+    public string PasswordResendAddress { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
     public string CompanyRolesParticipantAddress { get; set; } = null!;
