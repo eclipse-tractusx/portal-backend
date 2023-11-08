@@ -210,9 +210,9 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
     {
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var clientRoleNames = iamClientIds.ToDictionary(clientId => clientId, _ => rolesToAdd.Select(x => x.CompanyUserRoleText));
-        var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, clientRoleNames).SingleAsync().ConfigureAwait(false);
+        var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, clientRoleNames).ToListAsync().ConfigureAwait(false);
 
-        var rolesAdded = rolesToAdd.IntersectBy(assignedRoles.Roles, role => role.CompanyUserRoleText).ToList();
+        var rolesAdded = rolesToAdd.IntersectBy(assignedRoles.SelectMany(x => x.Roles).Distinct(), role => role.CompanyUserRoleText).ToList();
         foreach (var roleWithId in rolesAdded)
         {
             userRoleRepository.CreateIdentityAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
