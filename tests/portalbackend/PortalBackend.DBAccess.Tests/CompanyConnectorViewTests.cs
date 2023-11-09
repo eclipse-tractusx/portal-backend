@@ -47,7 +47,7 @@ public class CompanyConnectorViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.CompanyConnectorView.ToListAsync().ConfigureAwait(false);
-        result.Should().HaveCount(9);
+        result.Should().HaveCount(10);
     }
 
     [Fact]
