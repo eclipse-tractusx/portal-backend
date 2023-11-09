@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Mvc.Filters;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;

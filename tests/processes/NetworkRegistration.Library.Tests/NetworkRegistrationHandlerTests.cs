@@ -186,6 +186,9 @@ public class NetworkRegistrationHandlerTests
         var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
             "steven@strange.com", "987654321", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "id9876"), 1));
+        var user3 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "foo", "bar",
+            "foo@bar.com", "deadbeef", "Acme Corp", "BPNL00000001TEST",
+            Enumerable.Repeat(new ProviderLinkData("foobar", "idp2", "id4711"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
             .Returns("Onboarding Service Provider");
@@ -193,14 +196,18 @@ public class NetworkRegistrationHandlerTests
             .Returns(new[]
             {
                 user1,
-                user2
+                user2,
+                user3
             }.ToAsyncEnumerable());
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManger.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
         A.CallTo(() => _provisioningManger.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
+        A.CallTo(() => _provisioningManger.GetUserByUserName(user3.CompanyUserId.ToString())).Returns((string?)null);
         A.CallTo(() => _provisioningManger.GetIdentityProviderDisplayName("idp1"))
             .Returns("DisplayName for Idp1");
+        A.CallTo(() => _provisioningManger.GetIdentityProviderDisplayName("idp2"))
+            .Returns("DisplayName for Idp2");
 
         // Act
         var result = await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
@@ -217,6 +224,8 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _mailingService.SendMails("tony@stark.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<IEnumerable<string>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails("steven@strange.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<IEnumerable<string>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails("foo@bar.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2"), A<IEnumerable<string>>._))
             .MustHaveHappenedOnceExactly();
 
         result.modified.Should().BeFalse();
