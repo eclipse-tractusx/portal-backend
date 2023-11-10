@@ -572,7 +572,7 @@ public class ServiceReleaseBusinessLogicTest
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(offerId, OfferTypeId.SERVICE,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
-            A<ValueTuple<string, string>>.That.Matches(x => x.Item1.Length == _options.Value.OfferSubscriptionAddress.Length && x.Item1 == _options.Value.OfferSubscriptionAddress && x.Item2.Length == _options.Value.OfferDetailAddress.Length && x.Item2 == "https://detailService.com"),
+            A<ValueTuple<string, string>>.That.Matches(x => x.Item1 == _options.Value.OfferSubscriptionAddress && x.Item2 == _options.Value.OfferDetailAddress),
             A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 

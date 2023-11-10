@@ -816,7 +816,7 @@ public class AppReleaseBusinessLogicTest
                 A<IEnumerable<UserRoleConfig>>._,
                 A<IEnumerable<NotificationTypeId>>._,
                 A<IEnumerable<UserRoleConfig>>._,
-                A<ValueTuple<string, string>>.That.Matches(x => x.Item1.Length == _settings.OfferSubscriptionAddress.Length && x.Item1 == "https://acitvationAppTest.com" && x.Item2.Length == _settings.OfferDetailAddress.Length && x.Item2 == $"https://detailAppTest.com"),
+                A<ValueTuple<string, string>>.That.Matches(x => x.Item1 == _settings.OfferSubscriptionAddress && x.Item2 == _settings.OfferDetailAddress),
                 A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }
