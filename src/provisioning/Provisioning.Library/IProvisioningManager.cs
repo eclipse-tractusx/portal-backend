@@ -70,4 +70,5 @@ public interface IProvisioningManager
     Task DeleteClientRolesFromCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
     ValueTask UpdateSharedRealmTheme(string alias, string loginTheme);
     Task<string?> GetUserByUserName(string userName);
+    Task<string?> GetIdentityProviderDisplayName(string alias);
 }
