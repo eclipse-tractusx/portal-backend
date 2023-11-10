@@ -463,7 +463,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task ApproveOfferRequestAsync(Guid offerId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IEnumerable<UserRoleConfig> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients)
+    public async Task ApproveOfferRequestAsync(Guid offerId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IEnumerable<UserRoleConfig> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles, (string SubscriptionUrl, string DetailUrl) mailParams, IEnumerable<UserRoleConfig> notificationRecipients)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var offerDetails = await offerRepository.GetOfferStatusDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
@@ -525,7 +525,8 @@ public class OfferService : IOfferService
             new[]
             {
                 ("offerName", offerDetails.OfferName),
-                ("portalBaseUrl", basePortalAddress),
+                ("offerSubscriptionUrl", mailParams.SubscriptionUrl),
+                ("offerDetailUrl", $"{mailParams.DetailUrl}/{offerId}"),
                 (offerTypeId == OfferTypeId.APP ? "appId" : "serviceId", offerId.ToString())
             },
             ("offerProviderName", "User"),

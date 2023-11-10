@@ -120,7 +120,8 @@ public class AppReleaseBusinessLogicTest
             {
                 new UserRoleConfig(ClientId, new [] { "Company Admin" })
             },
-            ActivationPortalAddress = "https://acitvationAppTest.com"
+            OfferSubscriptionAddress = "https://acitvationAppTest.com",
+            OfferDetailAddress = "https://detailAppTest.com"
         };
 
         A.CallTo(() => _options.Value).Returns(_settings);
@@ -815,7 +816,7 @@ public class AppReleaseBusinessLogicTest
                 A<IEnumerable<UserRoleConfig>>._,
                 A<IEnumerable<NotificationTypeId>>._,
                 A<IEnumerable<UserRoleConfig>>._,
-                A<string>.That.Matches(x => x.Length == _settings.ActivationPortalAddress.Length && x == "https://acitvationAppTest.com"),
+                A<ValueTuple<string, string>>.That.Matches(x => x.Item1 == _settings.OfferSubscriptionAddress && x.Item2 == _settings.OfferDetailAddress),
                 A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }

@@ -482,7 +482,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
                 { "companyName", companyName },
-                { "declineComment", comment}
+                { "declineComment", comment},
+                { "helpUrl", _settings.HelpAddress }
             };
 
             await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);

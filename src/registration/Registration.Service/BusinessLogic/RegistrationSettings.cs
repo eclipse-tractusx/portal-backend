@@ -72,6 +72,11 @@ public class RegistrationSettings
     [Required]
     [DistinctValues]
     public IEnumerable<DocumentTypeId> SubmitDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Url to the password resend of the portal
+    /// </summary>
+    public string PasswordResendAddress { get; set; }
 }
 
 public static class RegistrationSettingsExtension

@@ -99,7 +99,8 @@ public class ServiceReleaseBusinessLogicTest
                 OfferStatusId.ACTIVE ,
                 OfferStatusId.IN_REVIEW
             },
-            ActivationPortalAddress = "https://acitvationServiceTest.com"
+            OfferSubscriptionAddress = "https://acitvationServiceTest.com",
+            OfferDetailAddress = "https://detailService.com"
         };
         _options = Options.Create(serviceSettings);
         _fixture.Inject(_options);
@@ -561,17 +562,17 @@ public class ServiceReleaseBusinessLogicTest
     public async Task ApproveServiceRequestAsync_WithValid_CallsExpected()
     {
         // Arrange
-        var appId = Guid.NewGuid();
+        var offerId = Guid.NewGuid();
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _identityService, _options);
 
         // Act
-        await sut.ApproveServiceRequestAsync(appId).ConfigureAwait(false);
+        await sut.ApproveServiceRequestAsync(offerId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, OfferTypeId.SERVICE,
+        A.CallTo(() => _offerService.ApproveOfferRequestAsync(offerId, OfferTypeId.SERVICE,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
-            A<string>.That.Matches(x => x.Length == _options.Value.ActivationPortalAddress.Length && x == _options.Value.ActivationPortalAddress),
+            A<ValueTuple<string, string>>.That.Matches(x => x.Item1 == _options.Value.OfferSubscriptionAddress && x.Item2 == _options.Value.OfferDetailAddress),
             A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
