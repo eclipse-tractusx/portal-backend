@@ -2,6 +2,29 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.7.0-RC3
+
+### Change
+* Email Template
+ * OSP_Welcome_Email style updated (highlights added) and updated email message/text content
+ * OSP_Welcome_Email changed from companyName to the idp display name as dynamic value
+
+### Feature
+* App Service (AppChange)
+  * released new endpoints to delete and add app related documents for an active app
+
+### Technical Support
+* Database view added
+  * Company-Connector-View
+  * Company-IdP-View
+  * Company-Role-Collection-Role-View
+  * Company-User-View
+
+### Bugfix
+* Query GetCompanyRoleAgreementConsentStatusUntrackedAsync has been adjusted to refer to companyId instead of userId in the where-condition
+* Modified (via migration) entries in table identity_providers setting the owner_id of shared-idps to the company_id that is linked in table company_identity_providers (if not ambiguous)
+* Connector pagination of GET /api/administration/connectors fixed - pagination failed as soon as there were connectors with same provider but different hosts existing
+
 ## 1.7.0-RC2
 
 ### Change
