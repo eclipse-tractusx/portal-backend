@@ -211,13 +211,22 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var clientRoleNames = iamClientIds.ToDictionary(clientId => clientId, _ => rolesToAdd.Select(x => x.CompanyUserRoleText));
         var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, clientRoleNames).ToListAsync().ConfigureAwait(false);
+        var rolesAddedToAllClients = assignedRoles
+                .Aggregate(rolesToAdd,
+                    (IEnumerable<UserRoleModificationData> toAdd,
+                            (string ClientId, IEnumerable<string> Roles) assigned) =>
+                        toAdd.IntersectBy(assigned.Roles, role => role.CompanyUserRoleText))
+            .ToList();
+        if (rolesAddedToAllClients.Count != assignedRoles.First().Roles.Count())
+        {
+            throw new ServiceException($"Not all roles could be assigned to the clients {string.Join(",", assignedRoles.Where(x => !x.Roles.Any()).Select(x => x.Client))}");
+        }
 
-        var rolesAdded = rolesToAdd.IntersectBy(assignedRoles.SelectMany(x => x.Roles).Distinct(), role => role.CompanyUserRoleText).ToList();
-        foreach (var roleWithId in rolesAdded)
+        foreach (var roleWithId in rolesAddedToAllClients)
         {
             userRoleRepository.CreateIdentityAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
         }
-        return rolesAdded;
+        return rolesAddedToAllClients;
     }
 
     private async Task DeleteRoles(Guid companyUserId, IEnumerable<string> iamClientIds, IEnumerable<UserRoleModificationData> rolesToDelete, string iamUserId)
