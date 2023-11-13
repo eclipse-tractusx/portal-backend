@@ -131,6 +131,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     INNER JOIN portal.user_roles as ur on (urac.user_role_id = ur.id)
                     INNER JOIN portal.app_instances as ai on (ai.app_id = ur.offer_id)
                     INNER JOIN portal.iam_clients as iamC on (ai.iam_client_id = iamC.Id)");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "external_id",
+                schema: "portal",
+                table: "network_registrations",
+                type: "text",
+                nullable: false,
+                oldClrType: typeof(Guid),
+                oldType: "uuid");
         }
 
         /// <inheritdoc />
@@ -158,6 +167,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "last_editor_id",
                 schema: "portal",
                 table: "documents");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "external_id",
+                schema: "portal",
+                table: "network_registrations",
+                type: "uuid",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "text");
         }
     }
 }
