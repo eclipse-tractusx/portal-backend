@@ -25,6 +25,11 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Modified (via migration) entries in table identity_providers setting the owner_id of shared-idps to the company_id that is linked in table company_identity_providers (if not ambiguous)
 * Connector pagination of GET /api/administration/connectors fixed - pagination failed as soon as there were connectors with same provider but different hosts existing
 
+### Known Knowns
+* declineFlow OSP currently not supported
+* password reset in welcome user email currently not supported
+* DELETE /api/apps/AppReleaseProcess/{appId}/role/{roleId} running on system error
+
 ## 1.7.0-RC2
 
 ### Change
