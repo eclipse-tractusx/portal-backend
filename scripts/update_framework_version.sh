@@ -127,7 +127,7 @@ update_version(){
   fi
 }
 
-# Function to iterate over directories in the Framework directory and update the project version
+# iterate over directories in the Framework directory and update the project version
 iterate_directories() {
   local updated_name="$1"
   
