@@ -61,12 +61,30 @@ public class OnboardingServiceProviderBusinessLogicTests
     #region TriggerProviderCallback
 
     [Fact]
+    public async Task TriggerProviderCallback_WithoutNetworkRegistration_DoesntCall()
+    {
+        // Arrange
+        var networkRegistrationId = Guid.NewGuid();
+        A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
+            .Returns(((OspDetails?, string, string?, Guid, IEnumerable<string>))default);
+
+        // Act
+        var Act = () => _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback(A<OspTriggerDetails>._, A<OnboardingServiceProviderCallbackData>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+        result.Message.Should().Be($"data should never be default here (networkRegistrationId: {networkRegistrationId})");
+    }
+
+    [Fact]
     public async Task TriggerProviderCallback_WithoutCallbackUrl_DoesntCall()
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns(((OspDetails?, string?, string?, Guid, IEnumerable<string>))default);
+            .Returns((null, _fixture.Create<string>(), null, Guid.NewGuid(), _fixture.CreateMany<string>()));
 
         // Act
         var result = await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None).ConfigureAwait(false);
@@ -76,24 +94,6 @@ public class OnboardingServiceProviderBusinessLogicTests
             .MustNotHaveHappened();
         result.stepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
         result.processMessage.Should().Be("No callback url set");
-    }
-
-    [Fact]
-    public async Task TriggerProviderCallback_WithoutExternalId_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var networkRegistrationId = Guid.NewGuid();
-        var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
-        var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
-        A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns((details, null, null, Guid.NewGuid(), Enumerable.Empty<string>()));
-
-        // Act
-        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("No external registration found");
     }
 
     [Fact]

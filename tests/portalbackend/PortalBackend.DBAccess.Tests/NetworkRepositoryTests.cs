@@ -212,6 +212,24 @@ public class NetworkRepositoryTests
         result.Bpn.Should().Be("BPNL00000003AYRE");
     }
 
+    [Fact]
+    public async Task GetCallbackData_WithInValid_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCallbackData(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+        result.OspDetails.Should().BeNull();
+        result.ExternalId.Should().BeNull();
+        result.ApplicationId.Should().Be(Guid.Empty);
+        result.Comments.Should().BeNull();
+        result.Bpn.Should().BeNull();
+    }
+
     #endregion
 
     #region Setup

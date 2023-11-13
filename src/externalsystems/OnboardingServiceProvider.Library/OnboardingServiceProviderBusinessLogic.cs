@@ -47,14 +47,14 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
     {
         var data = await _portalRepositories.GetInstance<INetworkRepository>().GetCallbackData(networkRegistrationId, processStepTypeId).ConfigureAwait(false);
 
+        if (data == default)
+        {
+            throw new UnexpectedConditionException($"data should never be default here (networkRegistrationId: {networkRegistrationId})");
+        }
+
         if (data.OspDetails == null || string.IsNullOrWhiteSpace(data.OspDetails.CallbackUrl))
         {
             return (Enumerable.Empty<ProcessStepTypeId>(), ProcessStepStatusId.SKIPPED, false, "No callback url set");
-        }
-
-        if (data.ExternalId == null)
-        {
-            throw new UnexpectedConditionException("No external registration found");
         }
 
         if (processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED && data.Comments.Count() != 1)
@@ -94,7 +94,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
             var secret = srDecrypt.ReadToEnd();
             await _onboardingServiceProviderService.TriggerProviderCallback(
                     new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
-                    new OnboardingServiceProviderCallbackData(data.ExternalId!, data.ApplicationId, data.Bpn, applicationStatusId, comment),
+                    new OnboardingServiceProviderCallbackData(data.ExternalId, data.ApplicationId, data.Bpn, applicationStatusId, comment),
                     cancellationToken)
                 .ConfigureAwait(false);
         }

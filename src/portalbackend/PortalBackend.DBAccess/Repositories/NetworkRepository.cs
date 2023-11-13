@@ -83,10 +83,10 @@ public class NetworkRepository : INetworkRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(OspDetails? OspDetails, string? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
+    public Task<(OspDetails? OspDetails, string ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
         _context.NetworkRegistrations
             .Where(x => x.Id == networkRegistrationId)
-            .Select(x => new ValueTuple<OspDetails?, string?, string?, Guid, IEnumerable<string>>(
+            .Select(x => new ValueTuple<OspDetails?, string, string?, Guid, IEnumerable<string>>(
                 x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null
                     ? null
                     : new OspDetails(
