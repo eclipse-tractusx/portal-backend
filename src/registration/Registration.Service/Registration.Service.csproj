@@ -44,13 +44,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\Registration.Common\Registration.Common.csproj" />
-    <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
-    <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
-    <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
-    <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
+    <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
+    <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+    <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
+    <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
+    <ProjectReference Include="..\..\registration\Registration.Common\Registration.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
