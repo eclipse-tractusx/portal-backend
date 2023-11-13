@@ -892,6 +892,53 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
+    public async Task ModifyAppUserRoleAsync_WithFailingAssignement_ThrowsServiceException()
+    {
+        // Arrange
+        var iamClientId = "Cl1-CX-Registration";
+        var iamClientId1 = "Cl2-CX-Registration";
+        var adminRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
+        var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
+        var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
+        A.CallTo(() => _identityService.IdentityData).Returns(_createdCentralIdentity);
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, A<Guid>._))
+            .Returns(new OfferIamUserData(true, new[] { iamClientId, iamClientId1 }, _iamUserId, true, "The offer", "Tony", "Stark"));
+
+        A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
+            .Returns(new UserRoleModificationData[]
+            {
+                new("Existing Role", Guid.NewGuid(), false),
+                new("Buyer", buyerRoleId, true),
+                new("Company Admin", adminRoleId, true),
+                new("Supplier", supplierRoleId, false),
+            }.ToAsyncEnumerable());
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()), (Client: iamClientId1, Roles: new[] { "Existing Role" }.AsEnumerable()) }.ToAsyncEnumerable());
+
+        var sut = new UserRolesBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            Options.Create(_settings)
+        );
+
+        // Act
+        var userRoles = new[]
+        {
+            "Existing Role",
+            "Company Admin",
+            "Buyer",
+            "Supplier"
+        };
+        async Task Act() => await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("The following roles could not be added to the clients: \n Client: Cl2-CX-Registration, Roles: Supplier");
+    }
+
+    [Fact]
     public async Task ModifyAppUserRolesAsync_WithOneRoleToDelete_DeletesTheRole()
     {
         // Arrange

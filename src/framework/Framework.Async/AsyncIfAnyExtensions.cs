@@ -71,13 +71,13 @@ public static class AsyncIfAnyExtension
         public ValueTask DisposeAsync() => _enumerator.DisposeAsync();
     }
 
-    public static async ValueTask<bool> IfAny<T>(this IAsyncEnumerable<T> source, Action<IAsyncEnumerable<T>> action, CancellationToken cancellationToken = default)
+    public static async ValueTask<bool> IfAny<T>(this IAsyncEnumerable<T> source, Func<IAsyncEnumerable<T>, ValueTask> action, CancellationToken cancellationToken = default)
     {
         var enumerator = source.GetAsyncEnumerator(cancellationToken);
 
         if (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
-            action(new AsyncIfAnyEnumerable<T>(source, enumerator));
+            await action(new AsyncIfAnyEnumerable<T>(source, enumerator)).ConfigureAwait(false);
             return true;
         }
 

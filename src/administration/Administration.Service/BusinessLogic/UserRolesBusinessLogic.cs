@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -210,23 +211,25 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
     {
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var clientRoleNames = iamClientIds.ToDictionary(clientId => clientId, _ => rolesToAdd.Select(x => x.CompanyUserRoleText));
-        var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, clientRoleNames).ToListAsync().ConfigureAwait(false);
-        var rolesAddedToAllClients = assignedRoles
-                .Aggregate(rolesToAdd,
-                    (IEnumerable<UserRoleModificationData> toAdd,
-                            (string ClientId, IEnumerable<string> Roles) assigned) =>
-                        toAdd.IntersectBy(assigned.Roles, role => role.CompanyUserRoleText))
-            .ToList();
-        if (rolesAddedToAllClients.Count != assignedRoles.First().Roles.Count())
-        {
-            throw new ServiceException($"Not all roles could be assigned to the clients {string.Join(",", assignedRoles.Where(x => !x.Roles.Any()).Select(x => x.Client))}");
-        }
-
-        foreach (var roleWithId in rolesAddedToAllClients)
+        await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, clientRoleNames)
+            // Assign the roles in keycloak, check if all roles were added foreach client, if not throw an exception with the client and the roles that were not assigned. 
+            .Select(assigned => (
+                Client: assigned.Client,
+                UnassingedRoles: rolesToAdd.ExceptBy(assigned.Roles, toAdd => toAdd.CompanyUserRoleText)))
+            .Where(x => x.UnassingedRoles.Any())
+            .IfAny(async unassigned =>
+                throw new ServiceException($"The following roles could not be added to the clients: \n {string.Join(
+                        "\n",
+                        await unassigned
+                            .Select(item => $"Client: {item.Client}, Roles: {string.Join(", ", item.UnassingedRoles.Select(r => r.CompanyUserRoleText))}")
+                            .ToListAsync()
+                            .ConfigureAwait(false))}"))
+            .ConfigureAwait(false);
+        foreach (var roleWithId in rolesToAdd)
         {
             userRoleRepository.CreateIdentityAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
         }
-        return rolesAddedToAllClients;
+        return rolesToAdd;
     }
 
     private async Task DeleteRoles(Guid companyUserId, IEnumerable<string> iamClientIds, IEnumerable<UserRoleModificationData> rolesToDelete, string iamUserId)
