@@ -75,7 +75,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> RetriggerSynchronizeUser([FromRoute] Guid externalId)
+    public async Task<NoContentResult> RetriggerSynchronizeUser([FromRoute] string externalId)
     {
         await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
         return NoContent();
@@ -96,7 +96,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> RetriggerCallbackOspApprove([FromRoute] Guid externalId)
+    public async Task<NoContentResult> RetriggerCallbackOspApprove([FromRoute] string externalId)
     {
         await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED).ConfigureAwait(false);
         return NoContent();
@@ -117,7 +117,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> RetriggerCallbackOspDecline([FromRoute] Guid externalId)
+    public async Task<NoContentResult> RetriggerCallbackOspDecline([FromRoute] string externalId)
     {
         await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED).ConfigureAwait(false);
         return NoContent();
@@ -138,7 +138,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> RetriggerCallbackOspSubmitted([FromRoute] Guid externalId)
+    public async Task<NoContentResult> RetriggerCallbackOspSubmitted([FromRoute] string externalId)
     {
         await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(false);
         return NoContent();

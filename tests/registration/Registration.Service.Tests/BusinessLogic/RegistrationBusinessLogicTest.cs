@@ -41,6 +41,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -48,6 +49,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 using Xunit;
 using Address = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address;
+using RegistrationData = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models.RegistrationData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.BusinessLogic;
 
@@ -521,6 +523,73 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
+    public async Task SetCompanyWithAddressAsync__WithInvalidBpn_ThrowsControllerArgumentException()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, "invalid")
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .Create();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!,
+            _identityService,
+            _dateTimeProvider);
+
+        // Act
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'BusinessPartnerNumber')");
+    }
+
+    [Fact]
+    public async Task SetCompanyWithAddressAsync__WithExistingBpn_ThrowsControllerArgumentException()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .Create();
+        A.CallTo(() => _companyRepository.CheckBpnExists("BPNL00000001TEST")).Returns(true);
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!,
+            _identityService,
+            _dateTimeProvider);
+
+        // Act
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"The Bpn {companyData.BusinessPartnerNumber} already exists (Parameter 'BusinessPartnerNumber')");
+    }
+
+    [Fact]
     public async Task SetCompanyWithAddressAsync_ModifyCompany()
     {
         //Arrange
@@ -528,6 +597,7 @@ public class RegistrationBusinessLogicTest
         var companyId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
         var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, (string?)null)
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
@@ -587,6 +657,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
         var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, (string?)null)
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
@@ -680,6 +751,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
 
         var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, (string?)null)
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
@@ -768,6 +840,7 @@ public class RegistrationBusinessLogicTest
         var thirdIdData = _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(2)).Create();  // shall create new
 
         var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, (string?)null)
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.UniqueIds, new[] { firstIdData, secondIdData, thirdIdData })
@@ -836,6 +909,7 @@ public class RegistrationBusinessLogicTest
     {
         //Arrange
         var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, (string?)null)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
@@ -871,6 +945,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
 
         var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, (string?)null)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.UniqueIds, identifiers.Select(id => _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, id).Create()))
             .Create();
@@ -2929,6 +3004,11 @@ public class RegistrationBusinessLogicTest
                 setParameters?.Invoke(address);
                 return address;
             });
+
+        A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(_alpha2code))
+            .Returns(true);
+        A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(A<string>.That.Not.Matches(c => c == _alpha2code)))
+            .Returns(true);
 
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>())
             .Returns(_documentRepository);

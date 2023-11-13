@@ -28,8 +28,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20231109084249_CPLP-3317-viewTableImplementations")]
-    partial class CPLP3317viewTableImplementations
+    [Migration("20231113093902_CPLP-3465-ChangeExternalId")]
+    partial class CPLP3465ChangeExternalId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -4071,8 +4071,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
 
-                    b.Property<Guid>("ExternalId")
-                        .HasColumnType("uuid")
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("external_id");
 
                     b.Property<Guid>("OnboardingServiceProviderId")

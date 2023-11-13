@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,9 +20,23 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 
-public record IdentifierData(
+public record RegistrationData(
+    string Name,
+    string City,
+    string StreetName,
+    string CountryAlpha2Code,
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
+    string? ShortName,
+    string? Region,
+    string? StreetAdditional,
+    string? StreetNumber,
+    string? ZipCode,
+    IEnumerable<CompanyUniqueIdData> UniqueIds
+);
+
+public record CompanyUniqueIdData(
     [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
     string Value
 );

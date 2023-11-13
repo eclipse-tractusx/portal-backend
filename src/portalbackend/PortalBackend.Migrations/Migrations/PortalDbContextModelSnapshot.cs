@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -4068,8 +4068,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
 
-                    b.Property<Guid>("ExternalId")
-                        .HasColumnType("uuid")
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("external_id");
 
                     b.Property<Guid>("OnboardingServiceProviderId")
