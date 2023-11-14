@@ -65,11 +65,11 @@ public class BatchDeleteService : BackgroundService
             try
             {
                 _logger.LogInformation("Getting documents and assignments older {Days} days", _days);
-                List<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> documentData = await dbContext.Documents.Where(x =>
+                List<(Document Document, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> documentData = await dbContext.Documents.Where(x =>
                     x.DateCreated < DateTimeOffset.UtcNow.AddDays(-_days) &&
                     x.DocumentStatusId == DocumentStatusId.INACTIVE)
-                    .Select(doc => new ValueTuple<Guid, IEnumerable<Guid>, IEnumerable<Guid>>(
-                        doc.Id,
+                    .Select(doc => new ValueTuple<Document, IEnumerable<Guid>, IEnumerable<Guid>>(
+                        doc,
                         doc.Agreements.Select(x => x.Id),
                         doc.Offers.Select(x => x.Id)
                         ))
@@ -77,11 +77,11 @@ public class BatchDeleteService : BackgroundService
                     .ConfigureAwait(false);
                 _logger.LogInformation("Cleaning up {DocumentCount} Documents and {OfferIdCount} OfferAssignedDocuments", documentData.Count, documentData.SelectMany(x => x.OfferIds).Count());
 
-                var agreementsToDeleteDocumentId = documentData.SelectMany(data => data.AgreementIds.Select(agreementId => new Agreement(agreementId, default, null!, default) { DocumentId = data.DocumentId })).ToList();
+                var agreementsToDeleteDocumentId = documentData.SelectMany(data => data.AgreementIds.Select(agreementId => new Agreement(agreementId, default, null!, default) { DocumentId = data.Document.Id })).ToList();
                 dbContext.Agreements.AttachRange(agreementsToDeleteDocumentId);
                 agreementsToDeleteDocumentId.ForEach(agreement => agreement.DocumentId = null);
-                dbContext.OfferAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.OfferIds.Select(offerId => new OfferAssignedDocument(offerId, data.DocumentId))));
-                dbContext.Documents.RemoveRange(documentData.Select(x => new Document(x.DocumentId, null!, null!, null!, default, default, default, default)));
+                dbContext.OfferAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.OfferIds.Select(offerId => new OfferAssignedDocument(offerId, data.Document.Id))));
+                dbContext.Documents.RemoveRange(documentData.Select(x => x.Document));
                 await dbContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
                 _logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up", _days);
             }
