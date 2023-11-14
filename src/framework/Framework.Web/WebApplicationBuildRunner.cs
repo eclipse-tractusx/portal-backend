@@ -37,7 +37,7 @@ public static class WebApplicationBuildRunner
         string version,
         string cookieName,
         Action<WebApplicationBuilder>? configureBuilder,
-        Action<WebApplication, IHostEnvironment>? configureApp, 
+        Action<WebApplication, IHostEnvironment>? configureApp,
         Action<AuthorizationOptions>? addAdditionalAuth) where TClaimsTransformation : class, IClaimsTransformation
     {
         LoggingExtensions.EnsureInitialized();
@@ -64,7 +64,7 @@ public static class WebApplicationBuildRunner
 
             configureBuilder?.Invoke(builder);
 
-            var app = builder.Build().CreateApp<TProgram>(path, version, builder.Environment);
+            var app = builder.Build().CreateApp<TProgram>(path, version);
             configureApp?.Invoke(app, builder.Environment);
             app.Run();
         }
