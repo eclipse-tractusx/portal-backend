@@ -839,4 +839,18 @@ public class OfferRepository : IOfferRepository
             oad.Document.Id,
             oad.Document.DocumentName))
         .ToAsyncEnumerable();
+
+    ///<inheritdoc/>
+    public Task<(bool IsStatusActive, bool IsUserOfProvider, DocumentTypeId DocumentTypeId, DocumentStatusId DocumentStatusId)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, Guid documentId) =>
+        _context.OfferAssignedDocuments
+            .AsNoTracking()
+            .Where(oad => oad.OfferId == offerId &&
+                oad.DocumentId == documentId &&
+                oad.Offer!.OfferTypeId == offerTypeId)
+            .Select(oad => new ValueTuple<bool, bool, DocumentTypeId, DocumentStatusId>(
+                oad.Offer!.OfferStatusId == OfferStatusId.ACTIVE,
+                oad.Offer.ProviderCompanyId == userCompanyId,
+                oad.Document!.DocumentTypeId,
+                oad.Document.DocumentStatusId))
+            .SingleOrDefaultAsync();
 }

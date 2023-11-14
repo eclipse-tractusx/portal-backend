@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
@@ -39,7 +40,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class NetworkBusinessLogic : INetworkBusinessLogic
 {
     private static readonly Regex Name = new(ValidationExpressions.Name, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex ExternalID = new("^[A-Za-z0-9\\-+_/,.]{6,36}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityService _identityService;
@@ -82,9 +83,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         identityProviderRepository.CreateCompanyIdentityProviders(allIdentityProviderIds.Select(identityProviderId => (companyId, identityProviderId)));
 
         Guid GetIdpId(Guid? identityProviderId) =>
-            identityProviderId == null
-                ? singleIdentityProviderIdAlias?.IdentityProviderId ?? throw new UnexpectedConditionException("singleIdentityProviderIdAlias should never be null here")
-                : identityProviderId.Value;
+            identityProviderId ?? (singleIdentityProviderIdAlias?.IdentityProviderId ?? throw new UnexpectedConditionException("singleIdentityProviderIdAlias should never be null here"));
 
         string GetIdpAlias(Guid? identityProviderId) =>
             identityProviderId == null
@@ -103,7 +102,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                     try
                     {
                         var (_, companyUserId) = await _userProvisioningService.GetOrCreateCompanyUser(userRepository, aliasData.IdpAlias,
-                            creationInfo, companyId, aliasData.IdpId, data.Bpn).ConfigureAwait(false);
+                            creationInfo, companyId, aliasData.IdpId, data.BusinessPartnerNumber?.ToUpper()).ConfigureAwait(false);
                         identityId = companyUserId;
                     }
                     catch (Exception ex)
@@ -136,7 +135,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var company = companyRepository.CreateCompany(data.Name, c =>
         {
             c.AddressId = address.Id;
-            c.BusinessPartnerNumber = data.Bpn;
+            c.BusinessPartnerNumber = data.BusinessPartnerNumber?.ToUpper();
         });
 
         companyRepository.CreateUpdateDeleteIdentifiers(company.Id, Enumerable.Empty<(UniqueIdentifierId, string)>(), data.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
@@ -153,7 +152,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 var companyNameIdpAliasData = new CompanyNameIdpAliasData(
                     companyId,
                     data.Name,
-                    data.Bpn,
+                    data.BusinessPartnerNumber,
                     getIdentityProviderAlias(group.Key),
                     getIdentityProviderId(group.Key),
                     false
@@ -175,23 +174,17 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 return (AliasData: companyNameIdpAliasData, CreationInfos: userCreationInfos);
             });
 
-    public Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId) =>
+    public Task RetriggerProcessStep(string externalId, ProcessStepTypeId processStepTypeId) =>
         _processHelper.TriggerProcessStep(externalId, processStepTypeId);
 
     private async Task<(IEnumerable<UserRoleData> RoleData, IDictionary<Guid, string>? IdentityProviderIdAliase, (Guid IdentityProviderId, string Alias)? SingleIdentityProviderIdAlias, IEnumerable<Guid> AllIdentityProviderIds)> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)
     {
-        if (data.Bpn != null)
-        {
-            if (!BpnRegex.IsMatch(data.Bpn))
-            {
-                throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Bpn));
-            }
-
-            if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(data.Bpn).ConfigureAwait(false))
-            {
-                throw new ControllerArgumentException($"The Bpn {data.Bpn} already exists", nameof(data.Bpn));
-            }
-        }
+        var countryRepository = _portalRepositories.GetInstance<ICountryRepository>();
+        data.ValidateData();
+        await data.ValidateDatabaseData(
+            bpn => _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(bpn),
+            alpha2Code => countryRepository.CheckCountryExistsByAlpha2CodeAsync(alpha2Code),
+            (countryAlpha2Code, uniqueIdentifierIds) => countryRepository.GetCountryAssignedIdentifiers(countryAlpha2Code, uniqueIdentifierIds)).ConfigureAwait(false);
 
         if (!data.CompanyRoles.Any())
         {
@@ -203,16 +196,15 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             ValidateUsers(user);
         }
 
+        if (!ExternalID.IsMatch(data.ExternalId))
+        {
+            throw new ControllerArgumentException("ExternalId must be between 6 and 36 characters");
+        }
+
         if (await networkRepository.CheckExternalIdExists(data.ExternalId, ownerCompanyId)
                 .ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"ExternalId {data.ExternalId} already exists", nameof(data.ExternalId));
-        }
-
-        if (!await _portalRepositories.GetInstance<ICountryRepository>()
-                .CheckCountryExistsByAlpha2CodeAsync(data.CountryAlpha2Code).ConfigureAwait(false))
-        {
-            throw new ControllerArgumentException($"Location {data.CountryAlpha2Code} does not exist", nameof(data.CountryAlpha2Code));
         }
 
         var idpResult = await ValidateIdps(data, identityProviderRepository, ownerCompanyId).ConfigureAwait(false);

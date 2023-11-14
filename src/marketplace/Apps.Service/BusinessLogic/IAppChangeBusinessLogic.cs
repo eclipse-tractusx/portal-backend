@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -76,4 +77,20 @@ public interface IAppChangeBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the offer</param>
     Task<ActiveAppDocumentData> GetActiveAppDocumentTypeDataAsync(Guid appId);
+
+    /// <summary>
+    /// Delete document for an active app id
+    /// </summary>
+    /// <param name="appId">Id of the offer</param>
+    /// <param name="documentId">If of the document</param>
+    Task DeleteActiveAppDocumentAsync(Guid appId, Guid documentId);
+
+    /// <summary>
+    /// Upload document for an active app id
+    /// </summary>
+    /// <param name="appId">Id of the offer</param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
+    /// <param name="cancellationToken"></param>
+    Task CreateActiveAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken);
 }

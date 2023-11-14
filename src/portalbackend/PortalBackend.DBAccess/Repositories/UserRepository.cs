@@ -284,7 +284,7 @@ public class UserRepository : IUserRepository
             .Select(companyUser => new
             {
                 User = companyUser,
-                Subscriptions = companyUser.Identity!.Company!.OfferSubscriptions.Where(subscription => subscription.OfferId == offerId)
+                Subscriptions = companyUser.Identity!.Company!.OfferSubscriptions.Where(subscription => subscription.OfferId == offerId && subscription.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE)
             })
             .Select(x => new OfferIamUserData(
                 x.Subscriptions.Any(),

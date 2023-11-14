@@ -55,7 +55,7 @@ public class NetworkControllerTests
     public async Task RetriggerSynchronizeUser_ReturnsExpected()
     {
         // Arrange
-        var externalId = Guid.NewGuid();
+        var externalId = Guid.NewGuid().ToString();
 
         // Act
         var result = await this._controller.RetriggerSynchronizeUser(externalId).ConfigureAwait(false);
@@ -70,7 +70,7 @@ public class NetworkControllerTests
     public async Task RetriggerCallbackOspApprove_ReturnsExpected()
     {
         // Arrange
-        var externalId = Guid.NewGuid();
+        var externalId = Guid.NewGuid().ToString();
 
         // Act
         var result = await this._controller.RetriggerCallbackOspApprove(externalId).ConfigureAwait(false);
@@ -85,7 +85,7 @@ public class NetworkControllerTests
     public async Task RetriggerCallbackOspDecline_ReturnsExpected()
     {
         // Arrange
-        var externalId = Guid.NewGuid();
+        var externalId = Guid.NewGuid().ToString();
 
         // Act
         var result = await this._controller.RetriggerCallbackOspDecline(externalId).ConfigureAwait(false);
@@ -100,7 +100,7 @@ public class NetworkControllerTests
     public async Task RetriggerCallbackOspSubmitted_ReturnsExpected()
     {
         // Arrange
-        var externalId = Guid.NewGuid();
+        var externalId = Guid.NewGuid().ToString();
 
         // Act
         var result = await this._controller.RetriggerCallbackOspSubmitted(externalId).ConfigureAwait(false);

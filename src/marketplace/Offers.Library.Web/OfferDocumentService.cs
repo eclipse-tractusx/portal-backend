@@ -46,7 +46,7 @@ public class OfferDocumentService : IOfferDocumentService
         _identityService = identityService;
     }
 
-    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, CancellationToken cancellationToken)
+    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, OfferStatusId offerStatusId, CancellationToken cancellationToken)
     {
         if (id == Guid.Empty)
         {
@@ -80,7 +80,7 @@ public class OfferDocumentService : IOfferDocumentService
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, offerStatusId, offerTypeId).ConfigureAwait(false);
 
         if (result == default)
         {
