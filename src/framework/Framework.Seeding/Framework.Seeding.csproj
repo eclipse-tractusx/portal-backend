@@ -33,7 +33,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding</Title>
     <Authors>TractusX</Authors>

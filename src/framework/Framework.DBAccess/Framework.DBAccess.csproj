@@ -28,7 +28,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess</Title>
     <Authors>TractusX</Authors>

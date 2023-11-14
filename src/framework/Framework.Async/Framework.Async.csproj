@@ -29,7 +29,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Async</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Async</Title>
     <Authors>TractusX</Authors>

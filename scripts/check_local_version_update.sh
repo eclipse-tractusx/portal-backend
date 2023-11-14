@@ -25,7 +25,7 @@ already_checked_projects=()
 version_update_needed=()
 
 # get the directory.build files to check the updated versions
-IFS=$'\n' read -d '' -ra updatedVersions < <(git diff HEAD~1 --name-only | grep 'Directory.Build.props')
+IFS=$'\n' read -d '' -ra updatedVersions < <(git diff HEAD --name-only | grep 'Directory.Build.props')
 
 check_version_update(){
   local directory="$1"
@@ -101,7 +101,7 @@ iterate_directories() {
 }
 
 # find out which directories were changed with the last push
-IFS=$'\n' read -d '' -ra changedPackages < <(git diff HEAD~1 --name-only | xargs dirname | sort | uniq | grep '^src/framework/.*')
+IFS=$'\n' read -d '' -ra changedPackages < <(git diff HEAD --name-only | xargs dirname | sort | uniq | grep '^src/framework/.*')
 
 if [ ! -z "${changedPackages[*]}" ]; then
   for dir in "${changedPackages[@]}"; do

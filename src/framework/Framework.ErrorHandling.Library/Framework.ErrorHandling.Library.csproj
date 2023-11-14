@@ -30,7 +30,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library</Title>
     <Authors>TractusX</Authors>

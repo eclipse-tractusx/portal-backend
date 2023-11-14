@@ -30,7 +30,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Logging</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Logging</Title>
     <Authors>TractusX</Authors>

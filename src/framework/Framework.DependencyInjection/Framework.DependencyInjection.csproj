@@ -30,7 +30,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.DependencyInjection</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.DependencyInjection</Title>
     <Authors>TractusX</Authors>

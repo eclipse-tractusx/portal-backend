@@ -28,7 +28,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</Title>
     <Authors>TractusX</Authors>

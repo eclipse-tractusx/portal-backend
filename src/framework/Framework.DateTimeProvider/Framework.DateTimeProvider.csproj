@@ -29,7 +29,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider</Title>
     <Authors>TractusX</Authors>

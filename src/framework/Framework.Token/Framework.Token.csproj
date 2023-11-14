@@ -29,7 +29,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Token</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Token</Title>
     <Authors>TractusX</Authors>

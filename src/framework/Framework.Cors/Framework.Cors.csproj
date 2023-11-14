@@ -30,7 +30,6 @@
 
   <!-- nuget specific config-->
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Cors</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Cors</Title>
     <Authors>TractusX</Authors>
