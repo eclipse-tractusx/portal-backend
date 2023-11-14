@@ -31,6 +31,7 @@ public class InvitationSettings
         RegistrationAppAddress = null!;
         InvitedUserInitialRoles = null!;
         InitialLoginTheme = null!;
+        PasswordResendAddress = null!;
     }
 
     [Required(AllowEmptyStrings = false)]
@@ -42,6 +43,9 @@ public class InvitationSettings
 
     [Required(AllowEmptyStrings = false)]
     public string InitialLoginTheme { get; set; }
+
+    [Required(AllowEmptyStrings = false)]
+    public string PasswordResendAddress { get; set; }
 }
 
 public static class InvitationSettingsExtension

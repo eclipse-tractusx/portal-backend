@@ -22,11 +22,13 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -50,6 +52,8 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IOfferService _offerService;
     private readonly IIdentityService _identityService;
+    private readonly IOfferDocumentService _offerDocumentService;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     /// <summary>
     /// Constructor.
@@ -60,13 +64,17 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <param name="identityService">Access to the identityService</param>
     /// <param name="offerService">Offer Servicel</param>
     /// <param name="settings">Settings for the app change bl</param>
+    /// <param name="offerDocumentService">document service</param>
+    /// <param name="dateTimeProvider">Provider for current DateTime</param>
     public AppChangeBusinessLogic(
         IPortalRepositories portalRepositories,
         INotificationService notificationService,
         IProvisioningManager provisioningManager,
         IOfferService offerService,
         IIdentityService identityService,
-        IOptions<AppsSettings> settings)
+        IOptions<AppsSettings> settings,
+        IOfferDocumentService offerDocumentService,
+        IDateTimeProvider dateTimeProvider)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
@@ -74,6 +82,8 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         _settings = settings.Value;
         _offerService = offerService;
         _identityService = identityService;
+        _offerDocumentService = offerDocumentService;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     /// <inheritdoc/>
@@ -318,4 +328,40 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
                     ? data
                     : Enumerable.Empty<DocumentData>()));
     }
+
+    /// <inheritdoc />
+    public async Task DeleteActiveAppDocumentAsync(Guid appId, Guid documentId)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identityService.IdentityData.CompanyId, OfferTypeId.APP, documentId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"Document {documentId} for App {appId} does not exist.");
+        }
+        if (!result.IsStatusActive)
+        {
+            throw new ConflictException("offerStatus is in incorrect State");
+        }
+        if (!result.IsUserOfProvider)
+        {
+            throw new ForbiddenException($"Company {_identityService.IdentityData.CompanyId} is not the provider company of App {appId}");
+        }
+        if (!_settings.DeleteActiveAppDocumentTypeIds.Contains(result.DocumentTypeId))
+        {
+            throw new ConflictException($"document {documentId} does not have a valid documentType");
+        }
+        offerRepository.RemoveOfferAssignedDocument(appId, documentId);
+        documentRepository.AttachAndModifyDocument(
+            documentId,
+            a => { a.DocumentStatusId = result.DocumentStatusId; },
+            a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
+            offer.DateLastChanged = _dateTimeProvider.OffsetNow);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task CreateActiveAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken) =>
+        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, OfferTypeId.APP, _settings.UploadActiveAppDocumentTypeIds, OfferStatusId.ACTIVE, cancellationToken).ConfigureAwait(false);
 }

@@ -496,4 +496,14 @@ public interface IOfferRepository
     /// <param name="documentTypeIds"></param>
     /// <returns></returns>
     IAsyncEnumerable<DocumentTypeData> GetActiveOfferDocumentTypeDataOrderedAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIds);
+
+    /// <summary>
+    /// Gets the offer assigned document data
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userCompanyId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <param name="documentId"></param>
+    /// <returns></returns>
+    public Task<(bool IsStatusActive, bool IsUserOfProvider, DocumentTypeId DocumentTypeId, DocumentStatusId DocumentStatusId)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, Guid documentId);
 }

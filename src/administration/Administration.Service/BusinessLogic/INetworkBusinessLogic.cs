@@ -25,5 +25,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public interface INetworkBusinessLogic
 {
     Task HandlePartnerRegistration(PartnerRegistrationData data);
-    Task RetriggerProcessStep(Guid externalId, ProcessStepTypeId processStepTypeId);
+    Task RetriggerProcessStep(string externalId, ProcessStepTypeId processStepTypeId);
 }

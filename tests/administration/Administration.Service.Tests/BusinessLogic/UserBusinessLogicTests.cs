@@ -836,6 +836,109 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
+    public async Task ModifyAppUserRoleAsync_WithMultipleClients_AddsTwoRolesToTheDatabase()
+    {
+        // Arrange
+        var iamClientId = "Cl1-CX-Registration";
+        var iamClientId1 = "Cl2-CX-Registration";
+        var adminRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
+        var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
+        var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
+        A.CallTo(() => _identityService.IdentityData).Returns(_createdCentralIdentity);
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, A<Guid>._))
+            .Returns(new OfferIamUserData(true, new[] { iamClientId, iamClientId1 }, _iamUserId, true, "The offer", "Tony", "Stark"));
+
+        A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
+            .Returns(new UserRoleModificationData[]
+            {
+                new("Existing Role", Guid.NewGuid(), false),
+                new("Buyer", buyerRoleId, true),
+                new("Company Admin", adminRoleId, true),
+                new("Supplier", supplierRoleId, false),
+            }.ToAsyncEnumerable());
+
+        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
+            .Invokes(x =>
+            {
+                var companyUserId = x.Arguments.Get<Guid>("companyUserId");
+                var companyUserRoleId = x.Arguments.Get<Guid>("companyUserRoleId");
+
+                var companyUserAssignedRole = new IdentityAssignedRole(companyUserId, companyUserRoleId);
+                _companyUserAssignedRole.Add(companyUserAssignedRole);
+            });
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()), (Client: iamClientId1, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()) }.ToAsyncEnumerable());
+
+        var sut = new UserRolesBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            Options.Create(_settings)
+        );
+
+        // Act
+        var userRoles = new[]
+        {
+            "Existing Role",
+            "Company Admin",
+            "Buyer",
+            "Supplier"
+        };
+        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles).ConfigureAwait(false);
+
+        // Assert
+        _companyUserAssignedRole.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task ModifyAppUserRoleAsync_WithFailingAssignement_ThrowsServiceException()
+    {
+        // Arrange
+        var iamClientId = "Cl1-CX-Registration";
+        var iamClientId1 = "Cl2-CX-Registration";
+        var adminRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
+        var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
+        var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
+        A.CallTo(() => _identityService.IdentityData).Returns(_createdCentralIdentity);
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, A<Guid>._))
+            .Returns(new OfferIamUserData(true, new[] { iamClientId, iamClientId1 }, _iamUserId, true, "The offer", "Tony", "Stark"));
+
+        A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
+            .Returns(new UserRoleModificationData[]
+            {
+                new("Existing Role", Guid.NewGuid(), false),
+                new("Buyer", buyerRoleId, true),
+                new("Company Admin", adminRoleId, true),
+                new("Supplier", supplierRoleId, false),
+            }.ToAsyncEnumerable());
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()), (Client: iamClientId1, Roles: new[] { "Existing Role" }.AsEnumerable()) }.ToAsyncEnumerable());
+
+        var sut = new UserRolesBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            Options.Create(_settings)
+        );
+
+        // Act
+        var userRoles = new[]
+        {
+            "Existing Role",
+            "Company Admin",
+            "Buyer",
+            "Supplier"
+        };
+        async Task Act() => await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("The following roles could not be added to the clients: \n Client: Cl2-CX-Registration, Roles: Supplier");
+    }
+
+    [Fact]
     public async Task ModifyAppUserRolesAsync_WithOneRoleToDelete_DeletesTheRole()
     {
         // Arrange
@@ -1184,7 +1287,6 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
@@ -1210,7 +1312,6 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
@@ -1388,7 +1489,6 @@ public class UserBusinessLogicTests
         }
         else
         {
-            A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(A<Guid>._)).Returns(_fixture.Create<(string? SharedIdpAlias, CompanyUserAccountData AccountData)>());
 
             A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>._, A<Guid>._)).Returns((_fixture.Create<CompanyNameIdpAliasData>(), _fixture.Create<string>()));
@@ -1409,8 +1509,6 @@ public class UserBusinessLogicTests
 
     private void SetupFakesForUserDeletion()
     {
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);

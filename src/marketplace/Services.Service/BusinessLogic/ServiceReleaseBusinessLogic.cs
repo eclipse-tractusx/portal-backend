@@ -241,15 +241,15 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
     /// <inheritdoc/>
     public Task ApproveServiceRequestAsync(Guid appId) =>
-        _offerService.ApproveOfferRequestAsync(appId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles, _settings.ActivationPortalAddress, _settings.ActivationUserRoles);
+        _offerService.ApproveOfferRequestAsync(appId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles, (_settings.OfferSubscriptionAddress, _settings.OfferDetailAddress), _settings.ActivationUserRoles);
 
     /// <inheritdoc />
     public Task DeclineServiceRequestAsync(Guid serviceId, OfferDeclineRequest data) =>
-        _offerService.DeclineOfferAsync(serviceId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
+        _offerService.DeclineOfferAsync(serviceId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceOverviewAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
     public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken) =>
-        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
+        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, OfferStatusId.CREATED, cancellationToken);
 
     /// <inheritdoc/>
     public Task DeleteServiceDocumentsAsync(Guid documentId) =>

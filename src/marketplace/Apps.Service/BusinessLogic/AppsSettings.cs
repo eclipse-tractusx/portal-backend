@@ -192,10 +192,16 @@ public class AppsSettings
     public IEnumerable<UserRoleConfig> ActivationUserRoles { get; init; } = null!;
 
     /// <summary>
-    /// ActivationPortalAddress url required for subscription email 
+    /// Url for the subscription page 
     /// </summary>
     [Required(AllowEmptyStrings = false)]
-    public string ActivationPortalAddress { get; init; } = null!;
+    public string OfferSubscriptionAddress { get; init; } = null!;
+
+    /// <summary>
+    /// Url for the app details
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string OfferDetailAddress { get; init; } = null!;
 
     /// <summary>
     /// Active Document Types
@@ -204,6 +210,21 @@ public class AppsSettings
     [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<DocumentTypeId> ActiveAppDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Active App Document Type Id to be deleted
+    /// </summary>
+    [Required]
+    [EnumEnumeration]
+    [DistinctValues]
+    public IEnumerable<DocumentTypeId> DeleteActiveAppDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Active App Document Type Id and ContentType to be uploaded
+    /// </summary>
+    [Required]
+    [DistinctValues("x => x.DocumentTypeId")]
+    public IEnumerable<UploadDocumentConfig> UploadActiveAppDocumentTypeIds { get; set; } = null!;
 }
 
 /// <summary>

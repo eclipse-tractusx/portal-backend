@@ -110,7 +110,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     x.FirstName ?? "",
                     x.LastName ?? "",
                     x.Email ?? "")),
-            companyWithAddress.CompanyIdentifiers.Select(identifier => new IdentifierData(identifier.UniqueIdentifierId, identifier.Value))
+            companyWithAddress.CompanyIdentifiers.Select(identifier => new UniqueIdentifierData((int)identifier.UniqueIdentifierId, identifier.UniqueIdentifierId))
         );
     }
 
@@ -482,7 +482,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
                 { "companyName", companyName },
-                { "declineComment", comment}
+                { "declineComment", comment},
+                { "helpUrl", _settings.HelpAddress }
             };
 
             await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);

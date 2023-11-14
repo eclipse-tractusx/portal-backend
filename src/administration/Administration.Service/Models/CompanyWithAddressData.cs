@@ -57,7 +57,7 @@ public record CompanyWithAddressData(
     string ZipCode,
     [property: JsonPropertyName("companyRoles")] IEnumerable<AgreementsRoleData> AgreementsRoleData,
     [property: JsonPropertyName("companyUser")] IEnumerable<InvitedUserData> InvitedUserData,
-    IEnumerable<IdentifierData> UniqueIds
+    IEnumerable<UniqueIdentifierData> UniqueIds
 );
 
 /// <summary>

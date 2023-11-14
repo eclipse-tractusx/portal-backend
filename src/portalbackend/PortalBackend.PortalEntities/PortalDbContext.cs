@@ -89,6 +89,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditConsent20230412> AuditConsent20230412 { get; set; } = default!;
     public virtual DbSet<AuditIdentityAssignedRole20230522> AuditIdentityAssignedRole20230522 { get; set; } = default!;
     public virtual DbSet<AuditProviderCompanyDetail20230614> AuditProviderCompanyDetail20230614 { get; set; } = default!;
+    public virtual DbSet<AuditDocument20231108> AuditDocument20231108 { get; set; } = default!;
     public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
@@ -181,6 +182,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<VerifiedCredentialTypeAssignedUseCase> VerifiedCredentialTypeAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompaniesLinkedServiceAccount> CompanyLinkedServiceAccounts { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionView> OfferSubscriptionView { get; set; } = default!;
+    public virtual DbSet<CompanyUsersView> CompanyUsersView { get; set; } = default!;
+    public virtual DbSet<CompanyIdpView> CompanyIdpView { get; set; } = default!;
+    public virtual DbSet<CompanyConnectorView> CompanyConnectorView { get; set; } = default!;
+    public virtual DbSet<CompanyRoleCollectionRolesView> CompanyRoleCollectionRolesView { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -1380,6 +1385,18 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<OfferSubscriptionView>()
             .ToView("offer_subscription_view", "portal")
             .HasNoKey();
+        modelBuilder.Entity<CompanyUsersView>()
+            .ToView("company_users_view", "portal")
+            .HasNoKey();
+        modelBuilder.Entity<CompanyIdpView>()
+            .ToView("company_idp_view", "portal")
+            .HasNoKey();
+        modelBuilder.Entity<CompanyConnectorView>()
+            .ToView("company_connector_view", "portal")
+            .HasNoKey();
+        modelBuilder.Entity<CompanyRoleCollectionRolesView>()
+            .ToView("companyrole_collectionroles_view", "portal")
+            .HasNoKey();
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {
             entity.HasOne(x => x.CompaniesLinkedServiceAccount)
@@ -1435,6 +1452,11 @@ public class PortalDbContext : DbContext
                 .WithMany(e => e.CompanyUserAssignedIdentityProviders)
                 .HasForeignKey(e => e.IdentityProviderId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<Document>(entity =>
+        {
+            entity.HasAuditV1Triggers<Document, AuditDocument20231108>();
         });
     }
 

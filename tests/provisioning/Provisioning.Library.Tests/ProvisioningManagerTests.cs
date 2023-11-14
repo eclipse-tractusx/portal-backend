@@ -215,4 +215,21 @@ public class ProvisioningManagerTests
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }
+
+    [Fact]
+    public async Task GetIdentityProviderDisplayName_CallsExpected()
+    {
+        // Arrange
+        const string alias = "idp123";
+        using var httpTest = new HttpTest();
+        httpTest.WithAuthorization()
+            .WithGetIdentityProviderAsync(alias, new IdentityProvider.IdentityProvider { DisplayName = "test", Config = new IdentityProvider.Config() });
+
+        // Act
+        var displayName = await _sut.GetIdentityProviderDisplayName(alias).ConfigureAwait(false);
+
+        // Arrange
+        displayName.Should().NotBeNullOrWhiteSpace();
+        displayName.Should().Be("test");
+    }
 }
