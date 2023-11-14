@@ -17,10 +17,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using System.Text.RegularExpressions;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 
 [Serializable]
 public abstract class DetailException : Exception

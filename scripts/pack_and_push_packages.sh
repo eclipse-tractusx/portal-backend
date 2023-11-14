@@ -61,10 +61,7 @@ case "$nugetSource" in
     ;;
   nuget)
     for packageFile in "$folderPath"/*.nupkg; do
-      dotnet nuget push "$packageFile" --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
-    done
-    for packageFile in "$folderPath"/*.snupkg; do
-      dotnet nuget push "$packageFile" --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+      dotnet nuget push "$packageFile" --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
     done
     ;;
   *)

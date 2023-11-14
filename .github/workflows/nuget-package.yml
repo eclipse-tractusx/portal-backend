@@ -62,3 +62,5 @@ jobs:
       if: success()
       run: |
         bash ./scripts/pack_and_push_packages.sh nuget secrets.NUGET_API_KEY
+
+    # Create tag for nuget version update

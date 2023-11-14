@@ -1,3 +1,24 @@
+###############################################################
+# Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+###############################################################
+
+#!/bin/bash
+
 # Check if the correct number of arguments are provided
 if [ "$#" -ne 2 ]; then
   echo "Usage: $0 <location> <version>"
@@ -61,9 +82,6 @@ update_csproj_files_recursive() {
           project=$(basename "$dir")
           if [[ ! " ${already_updated_projects[*]} " == *"$project"* ]]; then
             update_version "$dir" "$project"
-            if [[ ! " ${already_updated_projects[*]} " == *"$project"* ]]; then
-              already_updated_projects+=("$project")
-            fi
           fi
         fi
       done
@@ -113,15 +131,13 @@ update_version(){
         ;;
     esac
 
-    # if [[ ! " ${already_updated_projects[*]} " == *"$project_name"* ]]; then
-      # Update the VersionPrefix and VersionSuffix in the file
-      awk -v new_version="$updated_version" -v new_suffix="$updated_suffix" '/<VersionPrefix>/{gsub(/<VersionPrefix>[^<]+<\/VersionPrefix>/, "<VersionPrefix>" new_version "</VersionPrefix>")}/<VersionSuffix>/{gsub(/<VersionSuffix>[^<]+<\/VersionSuffix>/, "<VersionSuffix>" new_suffix "</VersionSuffix>")}1' "$props_file" > temp && mv temp "$props_file"
-      echo "Updated version in $props_file to $updated_version $updated_suffix"
+    # Update the VersionPrefix and VersionSuffix in the file
+    awk -v new_version="$updated_version" -v new_suffix="$updated_suffix" '/<VersionPrefix>/{gsub(/<VersionPrefix>[^<]+<\/VersionPrefix>/, "<VersionPrefix>" new_version "</VersionPrefix>")}/<VersionSuffix>/{gsub(/<VersionSuffix>[^<]+<\/VersionSuffix>/, "<VersionSuffix>" new_suffix "</VersionSuffix>")}1' "$props_file" > temp && mv temp "$props_file"
+    echo "Updated version in $props_file to $updated_version $updated_suffix"
 
-      already_updated_projects+=($directory)
-      # Update the depending solutions
-      update_csproj_files_recursive "$updated_name"
-    # fi
+    already_updated_projects+=($directory)
+    # Update the depending solutions
+    update_csproj_files_recursive "$updated_name"
   else
     echo "Directory.Builds.props file not found in $directory$updated_name"
   fi
@@ -134,12 +150,9 @@ iterate_directories() {
   for dir in ./src/framework/*/; do
     if [ -d "$dir" ]; then
       if [[ $dir == "./src/framework/$updated_name/" ]]; then
-        update_version "$dir" "$updated_name"
-        if [[ ! " ${projects_to_update[*]} " == *"$updated_name"* ]]; then
-          projects_to_update+=("$updated_name")
-        fi
         if [[ ! " ${already_updated_projects[*]} " == *"$updated_name"* ]]; then
-          already_updated_projects+=("$updated_name")
+          update_version "$dir" "$updated_name"
+          projects_to_update+=("$updated_name")
         fi
       fi
     fi
