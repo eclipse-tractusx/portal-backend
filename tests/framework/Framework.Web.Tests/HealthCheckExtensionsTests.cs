@@ -52,7 +52,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
 
         var app = WebApplication.Create();
 
-        var result = Assert.Throws<ConfigurationException>(() => app.MapDefaultHealthChecks(settings));
+        var result = Assert.Throws<Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library.ConfigurationException>(() => app.MapDefaultHealthChecks(settings));
         result.Message.Should().Be("HealthChecks mapping /foo, /foo contains ambiguous pathes");
     }
 
