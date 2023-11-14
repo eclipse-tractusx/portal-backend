@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,12 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+/// <summary>
+/// Document Delete error details
+/// </summary>
+public record DeleteDocumentErrorDetails(Guid DocumentId, string Reasons);
 
-public record IdentifierData(
-    [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
-    string Value
-);
+/// <summary>
+/// Document Delete error details
+/// </summary>
+public record UploadDocumentErrorDetails(string DocumentName, string Reasons);

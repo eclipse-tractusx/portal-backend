@@ -23,5 +23,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Libr
 
 public interface INetworkRegistrationProcessHelper
 {
-    Task TriggerProcessStep(Guid externalId, ProcessStepTypeId stepToTrigger);
+    Task TriggerProcessStep(string externalId, ProcessStepTypeId stepToTrigger);
 }

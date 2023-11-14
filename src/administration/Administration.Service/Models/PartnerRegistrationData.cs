@@ -18,26 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
+using System.Text.Json.Serialization;
+using RegistrationData = Org.Eclipse.TractusX.Portal.Backend.Registration.Common.RegistrationData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record PartnerRegistrationData
 (
-    Guid ExternalId,
+    string ExternalId,
     string Name,
-    string? Bpn,
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
     string City,
     string StreetName,
     string CountryAlpha2Code,
     string? Region,
     string? StreetNumber,
     string? ZipCode,
-    IEnumerable<IdentifierData> UniqueIds,
+    IEnumerable<CompanyUniqueIdData> UniqueIds,
     IEnumerable<UserDetailData> UserDetails,
     IEnumerable<CompanyRoleId> CompanyRoles
-);
+) : Registration.Common.RegistrationData(Name, City, StreetName, CountryAlpha2Code, BusinessPartnerNumber, null, Region, null, StreetNumber, ZipCode, UniqueIds);
 
 public record UserDetailData(
     Guid? IdentityProviderId,

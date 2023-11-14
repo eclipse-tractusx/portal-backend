@@ -35,7 +35,7 @@ public class NetworkRegistrationProcessHelper : INetworkRegistrationProcessHelpe
     }
 
     /// <inheritdoc />
-    public async Task TriggerProcessStep(Guid externalId, ProcessStepTypeId stepToTrigger)
+    public async Task TriggerProcessStep(string externalId, ProcessStepTypeId stepToTrigger)
     {
         var nextStep = stepToTrigger switch
         {

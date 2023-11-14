@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
@@ -39,8 +40,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class NetworkBusinessLogicTests
 {
-    private const string Bpnl = "BPNL00000001TEST";
-    private static readonly Guid ExistingExternalId = Guid.NewGuid();
+    private const string Bpn = "BPNL00000001TEST";
+    private static readonly string ExistingExternalId = Guid.NewGuid().ToString();
     private static readonly Guid UserRoleId = Guid.NewGuid();
     private static readonly Guid MultiIdpCompanyId = Guid.NewGuid();
     private static readonly Guid NoIdpCompanyId = Guid.NewGuid();
@@ -112,11 +113,11 @@ public class NetworkBusinessLogicTests
     [InlineData("")]
     [InlineData("TEST00000012")]
     [InlineData("BPNL1234567899")]
-    public async Task HandlePartnerRegistration_WithInvalidBpn_ThrowsControllerArgumentException(string? bpn)
+    public async Task HandlePartnerRegistration_WithInvalidBusinessPartnerNumber_ThrowsControllerArgumentException(string? bpn)
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, bpn)
+            .With(x => x.BusinessPartnerNumber, bpn)
             .Create();
 
         // Act
@@ -124,16 +125,17 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'Bpn')");
-        ex.ParamName.Should().Be("Bpn");
+        ex.Message.Should().Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'BusinessPartnerNumber')");
+        ex.ParamName.Should().Be("BusinessPartnerNumber");
     }
 
     [Fact]
-    public async Task HandlePartnerRegistration_WithoutExistingBpn_ThrowsControllerArgumentException()
+    public async Task HandlePartnerRegistration_WithoutExistingBusinessPartnerNumber_ThrowsControllerArgumentException()
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, "BPNL00000001FAIL")
+            .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.BusinessPartnerNumber, "BPNL00000001FAIL")
             .Create();
 
         // Act
@@ -141,8 +143,8 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"The Bpn {data.Bpn} already exists (Parameter 'Bpn')");
-        ex.ParamName.Should().Be("Bpn");
+        ex.Message.Should().Be($"The Bpn {data.BusinessPartnerNumber} already exists (Parameter 'BusinessPartnerNumber')");
+        ex.ParamName.Should().Be("BusinessPartnerNumber");
     }
 
     [Fact]
@@ -150,7 +152,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.BusinessPartnerNumber, Bpn)
+            .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.CompanyRoles, Enumerable.Empty<CompanyRoleId>())
             .Create();
 
@@ -171,7 +174,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.BusinessPartnerNumber, Bpn)
+            .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "Test", "test", email) })
             .Create();
 
@@ -189,7 +193,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.BusinessPartnerNumber, Bpn)
+            .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", firstName, "test", "test@email.com") })
             .Create();
 
@@ -207,7 +212,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.BusinessPartnerNumber, Bpn)
+            .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", lastname, "test@email.com") })
             .Create();
 
@@ -224,7 +230,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.BusinessPartnerNumber, Bpn)
+            .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.ExternalId, ExistingExternalId)
             .Create();
@@ -243,7 +250,7 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.CountryAlpha2Code, "XX")
             .Create();
@@ -262,7 +269,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.ExternalId, Guid.NewGuid().ToString())
+            .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .Create();
@@ -281,7 +289,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.ExternalId, Guid.NewGuid().ToString())
+            .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .Create();
@@ -302,7 +311,8 @@ public class NetworkBusinessLogicTests
         // Arrange
         var notExistingIdpId = Guid.NewGuid();
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.ExternalId, Guid.NewGuid().ToString())
+            .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(notExistingIdpId, "123", "test", "test", "test", "test@email.com") })
             .Create();
@@ -320,7 +330,8 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
-            .With(x => x.Bpn, Bpnl)
+            .With(x => x.ExternalId, Guid.NewGuid().ToString())
+            .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(IdpId, "123", "test", "test", "test", "test@email.com") })
             .Create();
@@ -343,16 +354,16 @@ public class NetworkBusinessLogicTests
         var processId = Guid.NewGuid();
 
         var data = new PartnerRegistrationData(
-            Guid.NewGuid(),
+            Guid.NewGuid().ToString(),
             "Test N2N",
-            Bpnl,
+            Bpn,
             "Munich",
             "Street",
             "DE",
             "BY",
             "5",
             "00001",
-            new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
+            new[] { new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789") },
             new[] { new UserDetailData(IdpId, "123", "ironman", "tony", "stark", "tony@stark.com") },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
@@ -378,16 +389,16 @@ public class NetworkBusinessLogicTests
     {
         // Arrange
         var data = new PartnerRegistrationData(
-            Guid.NewGuid(),
+            Guid.NewGuid().ToString(),
             "Test N2N",
-            Bpnl,
+            Bpn,
             "Munich",
             "Street",
             "DE",
             "BY",
             "5",
             "00001",
-            new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
+            new[] { new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789") },
             new[] { new UserDetailData(null, "123", "ironman", "tony", "stark", "tony@stark.com") },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
@@ -419,16 +430,16 @@ public class NetworkBusinessLogicTests
         var networkRegistrations = new List<NetworkRegistration>();
 
         var data = new PartnerRegistrationData(
-            Guid.NewGuid(),
+            Guid.NewGuid().ToString(),
             "Test N2N",
-            Bpnl,
+            Bpn,
             "Munich",
             "Street",
             "DE",
             "BY",
             "5",
             "00001",
-            new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
+            new[] { new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789") },
             Enumerable.Range(1, 10).Select(_ => _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).WithEmailPattern(x => x.Email).Create()).ToImmutableArray(),
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
@@ -488,8 +499,8 @@ public class NetworkBusinessLogicTests
                 companyApplications.Add(companyApplication);
                 return companyApplication;
             });
-        A.CallTo(() => _networkRepository.CreateNetworkRegistration(A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._))
-            .Invokes((Guid externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
+        A.CallTo(() => _networkRepository.CreateNetworkRegistration(A<string>._, A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._))
+            .Invokes((string externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
             {
                 networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
             });
@@ -526,7 +537,7 @@ public class NetworkBusinessLogicTests
                 x.ProcessId == newProcessId &&
                 x.ApplicationId == newApplicationId);
 
-        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, Bpnl))
+        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, Bpn))
             .MustHaveHappened(10, Times.Exactly);
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
@@ -534,9 +545,9 @@ public class NetworkBusinessLogicTests
     }
 
     [Theory]
-    [InlineData(Bpnl)]
+    [InlineData(Bpn)]
     [InlineData((string?)null)]
-    public async Task HandlePartnerRegistration_WithValidData_CallsExpected(string? bpnl)
+    public async Task HandlePartnerRegistration_WithValidData_CallsExpected(string? BusinessPartnerNumberl)
     {
         // Arrange
         var newCompanyId = Guid.NewGuid();
@@ -552,16 +563,16 @@ public class NetworkBusinessLogicTests
         var networkRegistrations = new List<NetworkRegistration>();
 
         var data = new PartnerRegistrationData(
-            Guid.NewGuid(),
+            Guid.NewGuid().ToString(),
             "Test N2N",
-            bpnl,
+            BusinessPartnerNumberl,
             "Munich",
             "Street",
             "DE",
             "BY",
             "5",
             "00001",
-            new[] { new IdentifierData(UniqueIdentifierId.VAT_ID, "DE123456789") },
+            new[] { new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789") },
             new[] { new UserDetailData(IdpId, "123", "ironman", "tony", "stark", "tony@stark.com") },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
@@ -621,8 +632,8 @@ public class NetworkBusinessLogicTests
                 companyApplications.Add(companyApplication);
                 return companyApplication;
             });
-        A.CallTo(() => _networkRepository.CreateNetworkRegistration(A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._))
-            .Invokes((Guid externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
+        A.CallTo(() => _networkRepository.CreateNetworkRegistration(A<string>._, A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._))
+            .Invokes((string externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
             {
                 networkRegistrations.Add(new NetworkRegistration(Guid.NewGuid(), externalId, companyId, pId, ospId, companyApplicationId, DateTimeOffset.UtcNow));
             });
@@ -659,7 +670,7 @@ public class NetworkBusinessLogicTests
                 x.ProcessId == newProcessId &&
                 x.ApplicationId == newApplicationId);
 
-        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, bpnl))
+        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, BusinessPartnerNumberl))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
             .MustHaveHappenedOnceExactly();
@@ -674,7 +685,7 @@ public class NetworkBusinessLogicTests
     public async Task RetriggerSynchronizeUser_CallsExpected()
     {
         // Arrange
-        var externalId = Guid.NewGuid();
+        var externalId = Guid.NewGuid().ToString();
         const ProcessStepTypeId ProcessStepId = ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER;
 
         // Act
@@ -692,16 +703,20 @@ public class NetworkBusinessLogicTests
     {
         A.CallTo(() => _networkRepository.CheckExternalIdExists(ExistingExternalId, A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns(true);
-        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<Guid>.That.Not.Matches(x => x == ExistingExternalId), A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
+        A.CallTo(() => _networkRepository.CheckExternalIdExists(A<string>.That.Not.Matches(x => x == ExistingExternalId), A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns(false);
 
-        A.CallTo(() => _companyRepository.CheckBpnExists(Bpnl)).Returns(false);
-        A.CallTo(() => _companyRepository.CheckBpnExists(A<string>.That.Not.Matches(x => x == Bpnl))).Returns(true);
+        A.CallTo(() => _companyRepository.CheckBpnExists(Bpn)).Returns(false);
+        A.CallTo(() => _companyRepository.CheckBpnExists(A<string>.That.Not.Matches(x => x == Bpn))).Returns(true);
 
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync("XX"))
             .Returns(false);
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(A<string>.That.Not.Matches(x => x == "XX")))
             .Returns(true);
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("DE", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns(new ValueTuple<bool, IEnumerable<UniqueIdentifierId>>(true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.EORI }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>.That.Not.Matches(x => x == "DE"), A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns(new ValueTuple<bool, IEnumerable<UniqueIdentifierId>>(false, Enumerable.Empty<UniqueIdentifierId>()));
 
         A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns((true, "testCompany"));

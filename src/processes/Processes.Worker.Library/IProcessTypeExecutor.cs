@@ -29,6 +29,16 @@ public interface IProcessTypeExecutor
 
     ValueTask<InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId);
+
+    /// <summary>
+    /// tbd
+    /// </summary>
+    /// <param name="processStepTypeId"></param>
+    /// <param name="processStepTypeIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <exception cref="NotFoundException">Is thrown if entity is not found</exception>
+    /// <exception cref="UnexpectedConditionException">Is thrown if ...</exception>
+    /// <returns></returns>
     ValueTask<StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken);
     bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId);
     ProcessTypeId GetProcessTypeId();

@@ -34,6 +34,15 @@ public class NetworkRegistrationProcessSettings
 
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string LoginDocumentAddress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string ExternalRegistrationAddress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string CloseApplicationAddress { get; set; } = null!;
 }
 
 public static class NetworkRegistrationHandlerExtensions

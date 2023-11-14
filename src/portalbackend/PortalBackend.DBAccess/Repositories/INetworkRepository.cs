@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,11 +25,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface INetworkRepository
 {
-    NetworkRegistration CreateNetworkRegistration(Guid externalId, Guid companyId, Guid processId, Guid ospId, Guid applicationId);
-    Task<bool> CheckExternalIdExists(Guid externalId, Guid onboardingServiceProviderId);
+    NetworkRegistration CreateNetworkRegistration(string externalId, Guid companyId, Guid processId, Guid ospId, Guid applicationId);
+    Task<bool> CheckExternalIdExists(string externalId, Guid onboardingServiceProviderId);
     Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId);
-    Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(Guid externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(string externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     Task<(bool Exists, IEnumerable<(Guid CompanyApplicationId, CompanyApplicationStatusId CompanyApplicationStatusId, string? CallbackUrl)> CompanyApplications, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleAgreementIds, Guid? ProcessId)> GetSubmitData(Guid companyId);
-    Task<(OspDetails? OspDetails, Guid? ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId);
+    Task<(OspDetails? OspDetails, string ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId);
     Task<string?> GetOspCompanyName(Guid networkRegistrationId);
 }

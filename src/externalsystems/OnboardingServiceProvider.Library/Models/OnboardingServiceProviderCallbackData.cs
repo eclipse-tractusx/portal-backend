@@ -32,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.
 /// <param name="Status">Status of the application</param>
 /// <param name="Message">OPTIONAL: Additional Message</param>
 public record OnboardingServiceProviderCallbackData(
-    [property: JsonPropertyName("externalId")] Guid ExternalId,
+    [property: JsonPropertyName("externalId")] string ExternalId,
     [property: JsonPropertyName("applicationId")] Guid ApplicationId,
     [property: JsonPropertyName("bpn")] string? Bpn,
     [property: JsonPropertyName("status")] CompanyApplicationStatusId? Status,
