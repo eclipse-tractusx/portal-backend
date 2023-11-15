@@ -104,6 +104,7 @@ jobs:
       - name: Test nuget packages
         run: dotnet test src/framework --no-restore --verbosity normal
       - name: Check Package Versions
+        shell: bash
         run: |
           script_output=$(./scripts/check_package_versions.sh)
 

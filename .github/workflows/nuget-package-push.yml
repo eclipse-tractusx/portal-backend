@@ -49,11 +49,13 @@ jobs:
       run: dotnet build src/framework --configuration Release --no-restore
 
     - name: Push nuget packages
+      shell: bash
       run: |
         bash ./scripts/pack_and_push_packages.sh ${{ secrets.NUGET_API_KEY }}
 
     - name: Get new version
       id: nugetPackageVersion
+      shell: bash
       run: |
         current_version=$(./scripts/get_current_version.sh)
         echo "version=$current_version" >> "$GITHUB_OUTPUT"
