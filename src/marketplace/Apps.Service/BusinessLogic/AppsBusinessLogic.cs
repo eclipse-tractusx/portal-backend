@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Flurl.Util;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -170,8 +171,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                             item.OfferId,
                             item.ServiceName,
                             item.CompanySubscriptionStatuses,
-                            item.Image == Guid.Empty ? null : item.Image,
-                            item.ProcessStepTypeId == default ? null : item.ProcessStepTypeId)));
+                            item.Image == Guid.Empty ? null : item.Image)));
         }
         return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(false);
     }

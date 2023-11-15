@@ -35,6 +35,5 @@ public record OfferCompanySubscriptionStatusResponse(
     Guid OfferId,
     string? OfferName,
     IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses,
-    Guid? Image,
-    ProcessStepTypeId? ProcessStepTypeId
+    Guid? Image
 );

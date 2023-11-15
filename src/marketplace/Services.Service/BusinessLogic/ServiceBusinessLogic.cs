@@ -147,8 +147,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                             item.OfferId,
                             item.ServiceName,
                             item.CompanySubscriptionStatuses,
-                            item.Image == Guid.Empty ? null : item.Image,
-                            item.ProcessStepTypeId == default ? null : item.ProcessStepTypeId)));
+                            item.Image == Guid.Empty ? null : item.Image)));
         }
         return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(false);
     }

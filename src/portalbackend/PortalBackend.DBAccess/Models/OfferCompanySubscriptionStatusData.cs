@@ -55,10 +55,4 @@ public class OfferCompanySubscriptionStatusData
     /// </summary>
     /// <value></value>
     public Guid Image { get; set; }
-
-    /// <summary>
-    /// Id of the ProcessStep Type
-    /// </summary>
-    /// <value></value>
-    public ProcessStepTypeId ProcessStepTypeId { get; set; }
 }

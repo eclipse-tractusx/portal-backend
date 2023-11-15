@@ -82,16 +82,25 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                                 s.Company.Address!.CountryAlpha2Code,
                                 s.Company.BusinessPartnerNumber,
                                 s.Requester!.Email,
-                                s.Offer!.TechnicalUserProfiles.Any(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()))),
+                                s.Offer!.TechnicalUserProfiles.Any(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()),
+                                s.Process!.ProcessSteps.Any() ?
+                                    (s.Process!.ProcessSteps.Any(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO) ?
+                                        s.Process!.ProcessSteps
+                                            .OrderBy(ps => ps.ProcessStepStatusId)
+                                            .ThenBy(ps => ps.ProcessStepTypeId)
+                                            .Where(ps => ps.ProcessStepStatusId != ProcessStepStatusId.SKIPPED
+                                                || ps.ProcessStepStatusId != ProcessStepStatusId.DUPLICATE)
+                                            .Select(ps => ps.ProcessStepTypeId).FirstOrDefault() :
+                                        s.Process!.ProcessSteps
+                                            .OrderByDescending(ps => ps.ProcessStepTypeId)
+                                            .ThenByDescending(ps => ps.ProcessStepStatusId)
+                                            .Where(ps => ps.ProcessStepStatusId != ProcessStepStatusId.SKIPPED
+                                                || ps.ProcessStepStatusId != ProcessStepStatusId.DUPLICATE)
+                                            .Select(ps => ps.ProcessStepTypeId).FirstOrDefault()) : null)),
                     Image = g.Documents
                         .Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId == DocumentStatusId.LOCKED)
                         .Select(document => document.Id)
-                        .FirstOrDefault(),
-                    ProcessStepTypeId = g.OfferSubscriptions
-                        .Where(os => os.ProcessId != null)
-                        .Select(os => os.Process!.ProcessSteps
-                        .OrderByDescending(ps => ps.DateCreated)
-                        .Select(ps => ps.ProcessStepTypeId).FirstOrDefault()).FirstOrDefault()
+                        .FirstOrDefault()
                 })
             .SingleOrDefaultAsync();
 
@@ -251,7 +260,19 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         x.Subscription.AppSubscriptionDetail!.AppSubscriptionUrl,
                         x.Subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                         x.Subscription.Process!.ProcessSteps.Any() ?
-                            x.Subscription.Process!.ProcessSteps.OrderByDescending(ps => ps.DateCreated).Select(ps => ps.ProcessStepTypeId).FirstOrDefault() : null)
+                            (x.Subscription.Process!.ProcessSteps.Any(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO) ?
+                                x.Subscription.Process!.ProcessSteps
+                                    .OrderBy(ps => ps.ProcessStepStatusId)
+                                    .ThenBy(ps => ps.ProcessStepTypeId)
+                                    .Where(ps => ps.ProcessStepStatusId != ProcessStepStatusId.SKIPPED
+                                        || ps.ProcessStepStatusId != ProcessStepStatusId.DUPLICATE)
+                                    .Select(ps => ps.ProcessStepTypeId).FirstOrDefault() :
+                                x.Subscription.Process!.ProcessSteps
+                                    .OrderByDescending(ps => ps.ProcessStepTypeId)
+                                    .ThenByDescending(ps => ps.ProcessStepStatusId)
+                                    .Where(ps => ps.ProcessStepStatusId != ProcessStepStatusId.SKIPPED
+                                        || ps.ProcessStepStatusId != ProcessStepStatusId.DUPLICATE)
+                                    .Select(ps => ps.ProcessStepTypeId).FirstOrDefault()) : null)
                     : null))
             .SingleOrDefaultAsync();
 

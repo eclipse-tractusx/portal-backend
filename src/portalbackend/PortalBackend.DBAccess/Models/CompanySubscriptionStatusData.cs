@@ -33,5 +33,6 @@ public record CompanySubscriptionStatusData(
     string? Country,
     string? BpnNumber,
     string? Email,
-    bool TechnicalUser
+    bool TechnicalUser,
+    ProcessStepTypeId? ProcessStepTypeId
 );
