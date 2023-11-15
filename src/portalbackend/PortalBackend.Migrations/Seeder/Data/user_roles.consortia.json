@@ -328,5 +328,11 @@
     "user_role": "App Configurator",
     "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfed",
     "last_editor_id": null
+  },
+  {
+    "id": "3802f8ba-0399-4d24-abfc-41acb3d86cc9",
+    "user_role": "IRS Management",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
   }
 ]
