@@ -17,48 +17,48 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-name: PR Nuget Version check
+name: Push Nuget Packages and Tag
 
 on:
-    push:
-        paths:
-            - 'src/framework/**'
-    pull_request:
-        types: [opened, synchronize, reopened]
-    workflow_dispatch:
-
+  push:
+      paths:
+        - 'src/framework/**'
+      branches:
+        - 'dev'
+  workflow_dispatch:
+    
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         dotnet-version: ['7.0']
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    
+
     - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
-    
-    - name: Check Package Versions
-      id: check-version-update
-      run: |
-        script_output=$(./scripts/check_pr_version_update.sh github.event.pull_request.base.ref github.event.pull_request.head.ref)
 
-        if [ -z "$script_output" ]; then
-          echo "Expected version updates were made"
-        else
-          echo "$script_output" > failed_log.txt
-          exit 1
-        fi
+    - name: Install dependencies
+      run: dotnet restore src/framework
+
+    - name: Build
+      run: dotnet build src/framework --configuration Release --no-restore
 
     - name: Push nuget packages
-      if: success()
       run: |
-        bash ./scripts/pack_and_push_packages.sh nuget secrets.NUGET_API_KEY
+        bash ./scripts/pack_and_push_packages.sh ${{ secrets.NUGET_API_KEY }}
+
+    - name: Get new version
+      id: nugetPackageVersion
+      run: |
+        current_version=$(./scripts/get_current_version.sh)
+        echo "version=$current_version" >> "$GITHUB_OUTPUT"
+
+    - name: Create git tag
+      uses: rickstaa/action-create-tag@v1
+      with:
+        tag: v${{ steps.nugetPackageVersion.outputs.version }}

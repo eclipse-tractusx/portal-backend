@@ -19,31 +19,18 @@
 
 #!/bin/bash
 
-# Check if the correct number of arguments are provided
-if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 <nugetApiKey>"
-  exit 1
+file="src/framework/Framework.Async/Directory.Build.props"
+# Get the version prefix
+version_prefix=$(grep -oP '<VersionPrefix>\K[^<]+' $file)
+
+# Get the version suffix
+version_suffix=$(grep -oP '<VersionSuffix>\K[^<]+' $file)
+
+# Combine the prefix and suffix if the suffix is not empty
+if [ -n "$version_suffix" ]; then
+  version="$version_prefix-$version_suffix-framework"
+else
+  version="$version_prefix-framework"
 fi
 
-# Assign the arguments to variables
-NUGET_API_KEY="$1"
-folderPath="./packages"
-
-# Function to iterate over directories in the Framework directory and create a nuget package
-iterate_directories() {
-  for dir in ./src/framework/*/; do
-    if [ -d "$dir" ]; then
-      proj="$(basename "$dir")"
-      echo "Pack project: $proj"
-      dotnet pack --no-build --no-restore src/framework/$proj/$proj.csproj -c Release -o "$folderPath"
-    fi
-  done
-}
-
-iterate_directories
-
-for packageFile in "$folderPath"/*.nupkg; do
-  dotnet nuget push "$packageFile" --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
-done
-
-rm -r "$folderPath"
+echo "Version: $version"

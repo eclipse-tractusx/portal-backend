@@ -1,0 +1,116 @@
+###############################################################
+# Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+###############################################################
+
+# This workflow builds all services and related projects, checks the formatting and if all tests are passing.
+# If framework related code changed, all steps mentioned above will happen for framework related code as well as a check for a version update of the nuget packages will be made
+name: Pre Checks
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+env:
+  # variables needed for scripts/check_package_versions.sh
+  BASE_NAME: "${{ github.event.pull_request.base.ref }}"
+  HEAD_NAME: "${{ github.event.pull_request.head.ref }}"
+        
+jobs:
+  
+  changes:
+    name: Get changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      framework: ${{ steps.changes.outputs.framework }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            framework:
+              - 'src/framework/**'
+
+  checkServices:
+    name: Build, check and test services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['7.0']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dotnet-format
+        run: dotnet tool install -g dotnet-format
+      - name: Install dependencies
+        run: dotnet restore src
+      - name: Build
+        run: dotnet build src --configuration Release --no-restore
+      - name: Check Format
+        run: dotnet format src --verify-no-changes --no-restore
+      - name: Test
+        run: dotnet test src --filter FullyQualifiedName\!~Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests --no-restore --verbosity normal
+
+  checkFramework:
+    name: Build, check and test nuget packages
+    needs: changes
+    if: ${{ needs.changes.outputs.framework == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['7.0']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dotnet-format
+        run: dotnet tool install -g dotnet-format
+      - name: Install dependencies nuget packages
+        run: dotnet restore src/framework
+      - name: Build nuget packages
+        run: dotnet build src/framework --configuration Release --no-restore
+      - name: Check Format nuget packages
+        run: dotnet format src/framework --verify-no-changes --no-restore
+      - name: Test nuget packages
+        run: dotnet test src/framework --no-restore --verbosity normal
+      - name: Check Package Versions
+        run: |
+          script_output=$(./scripts/check_package_versions.sh)
+
+          if [ -z "$script_output" ]; then
+            echo "Expected version updates were made"
+          else
+            echo "the following packages need a version update: $script_output"
+            exit 1
+          fi
+  
