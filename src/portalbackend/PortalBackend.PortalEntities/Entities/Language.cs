@@ -34,6 +34,7 @@ public class Language
         LanguageLongNames = new HashSet<LanguageLongName>();
         LanguageLongNameLanguages = new HashSet<LanguageLongName>();
         UseCases = new HashSet<UseCaseDescription>();
+        CountriesLongNames = new HashSet<CountriesLongNames>();
     }
 
     public Language(string shortName) : this()
@@ -53,4 +54,6 @@ public class Language
     public virtual ICollection<LanguageLongName> LanguageLongNames { get; private set; }
     public virtual ICollection<LanguageLongName> LanguageLongNameLanguages { get; private set; }
     public virtual ICollection<UseCaseDescription> UseCases { get; private set; }
+
+    public virtual ICollection<CountriesLongNames> CountriesLongNames { get; private set; }
 }
