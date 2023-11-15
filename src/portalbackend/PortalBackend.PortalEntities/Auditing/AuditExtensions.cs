@@ -61,12 +61,24 @@ public static partial class AuditExtensions
                     .Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)))
             .ToImmutableList();
         var auditProperties = typeof(IAuditEntityV1).GetProperties();
+        var targetProperties = auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name);
+
+        foreach (var prop in auditEntityType.GetProperties())
+        {
+            Console.WriteLine($"a: {prop.GetType()}, b: {prop.Name}");
+        }
+
+        var notNullableProperties = targetProperties.ExceptBy(Enumerable.Repeat(nameof(IBaseEntity.Id), 1), p => p.Name).Where(x => x.PropertyType == typeof(Nullable<>));
+        if (notNullableProperties.Any())
+        {
+            throw new ConfigurationException($"Properties {string.Join(",", notNullableProperties.Select(x => x.Name))} of type {auditEntityType.Name} are not nullable");
+        }
 
         return new AuditPropertyInformation(
             auditEntityType,
             sourceProperties,
             auditProperties,
-            auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name));
+            targetProperties);
     }
 }
 

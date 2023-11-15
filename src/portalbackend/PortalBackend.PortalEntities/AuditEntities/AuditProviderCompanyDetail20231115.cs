@@ -19,35 +19,43 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditCompanySsiDetail20230621 : IAuditEntityV1
+/// <summary>
+/// Audit entity for <see cref="ProviderCompanyDetail"/> relationship between companies and apps.
+/// </summary>
+
+public class AuditProviderCompanyDetail20231115 : IAuditEntityV1
 {
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
 
-    public Guid Id { get; set; }
-    public Guid CompanyId { get; set; }
-    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
-    public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
-    public Guid DocumentId { get; set; }
-    public DateTimeOffset DateCreated { get; private set; }
-    public Guid CreatorUserId { get; set; }
-    public DateTimeOffset? ExpiryDate { get; set; }
-    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
+    public Guid Id { get; private set; }
+
+    public DateTimeOffset? DateCreated { get; private set; }
+
+    public string? AutoSetupUrl { get; set; }
+
+    public string? AutoSetupCallbackUrl { get; set; }
+
+    public Guid? CompanyId { get; set; }
+
     public DateTimeOffset? DateLastChanged { get; set; }
+
+    [LastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }
 
     /// <inheritdoc />
-    public AuditOperationId AuditV1OperationId { get; set; }
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 
     /// <inheritdoc />
-    public DateTimeOffset AuditV1DateLastChanged { get; set; }
+    public AuditOperationId AuditV1OperationId { get; set; }
 }

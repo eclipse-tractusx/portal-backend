@@ -19,35 +19,65 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditCompanySsiDetail20230621 : IAuditEntityV1
+/// <summary>
+/// Audit entity for <see cref="OfferSubscription"/> relationship between companies and apps.
+/// </summary>
+public class AuditOfferSubscription20231115 : IAuditEntityV1
 {
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
 
     public Guid Id { get; set; }
-    public Guid CompanyId { get; set; }
-    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
-    public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
-    public Guid DocumentId { get; set; }
-    public DateTimeOffset DateCreated { get; private set; }
-    public Guid CreatorUserId { get; set; }
-    public DateTimeOffset? ExpiryDate { get; set; }
-    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
-    public DateTimeOffset? DateLastChanged { get; set; }
+
+    /// <summary>
+    /// ID of the company subscribing an app.
+    /// </summary>
+    public Guid? CompanyId { get; set; }
+
+    /// <summary>
+    /// ID of the apps subscribed by a company.
+    /// </summary>
+    public Guid? OfferId { get; set; }
+
+    /// <summary>
+    /// ID of the app subscription status.
+    /// </summary>
+    public OfferSubscriptionStatusId? OfferSubscriptionStatusId { get; set; }
+
+    /// <summary>
+    /// Display Name for the company app combination
+    /// </summary>
+    public string? DisplayName { get; set; }
+
+    /// <summary>
+    /// Additional description for clarification
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Id of the app requester 
+    /// </summary>
+    public Guid? RequesterId { get; set; }
+
     public Guid? LastEditorId { get; set; }
+
+    public Guid? ProcessId { get; set; }
+
+    public DateTimeOffset? DateCreated { get; private set; }
 
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }
 
     /// <inheritdoc />
-    public AuditOperationId AuditV1OperationId { get; set; }
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 
     /// <inheritdoc />
-    public DateTimeOffset AuditV1DateLastChanged { get; set; }
+    public AuditOperationId AuditV1OperationId { get; set; }
 }

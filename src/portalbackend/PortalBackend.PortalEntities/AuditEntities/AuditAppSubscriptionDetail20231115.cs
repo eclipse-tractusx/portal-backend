@@ -24,22 +24,18 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditCompanySsiDetail20230621 : IAuditEntityV1
+public class AuditAppSubscriptionDetail20231115 : IAuditEntityV1
 {
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
-
     public Guid Id { get; set; }
-    public Guid CompanyId { get; set; }
-    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
-    public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
-    public Guid DocumentId { get; set; }
-    public DateTimeOffset DateCreated { get; private set; }
-    public Guid CreatorUserId { get; set; }
-    public DateTimeOffset? ExpiryDate { get; set; }
-    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
-    public DateTimeOffset? DateLastChanged { get; set; }
+    public Guid? OfferSubscriptionId { get; set; }
+    public Guid? AppInstanceId { get; set; }
+
+    [MaxLength(255)]
+    public string? AppSubscriptionUrl { get; set; }
+
     public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />

@@ -25,7 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyApplication20230824))]
+[AuditEntityV1(typeof(AuditCompanyApplication20231115))]
 public class CompanyApplication : IAuditableV1, IBaseEntity
 {
     protected CompanyApplication()

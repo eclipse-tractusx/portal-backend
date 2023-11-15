@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,30 +23,45 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditCompanySsiDetail20230621 : IAuditEntityV1
+public class AuditConnector20231115 : IAuditEntityV1
 {
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
 
-    public Guid Id { get; set; }
-    public Guid CompanyId { get; set; }
-    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
-    public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
-    public Guid DocumentId { get; set; }
-    public DateTimeOffset DateCreated { get; private set; }
-    public Guid CreatorUserId { get; set; }
-    public DateTimeOffset? ExpiryDate { get; set; }
-    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
-    public DateTimeOffset? DateLastChanged { get; set; }
+    public Guid Id { get; private set; }
+
+    public string? Name { get; set; }
+
+    public string? ConnectorUrl { get; set; }
+
+    public ConnectorTypeId? TypeId { get; set; }
+
+    public ConnectorStatusId? StatusId { get; set; }
+
+    public Guid? ProviderId { get; set; }
+
+    public Guid? HostId { get; set; }
+
+    public Guid? SelfDescriptionDocumentId { get; set; }
+
+    public string? LocationId { get; set; }
+
+    public string? SelfDescriptionMessage { get; set; }
+
+    public DateTimeOffset? DateLastChanged { get; private set; }
+
+    public Guid? CompanyServiceAccountId { get; set; }
+
+    [LastEditorV1]
     public Guid? LastEditorId { get; set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }
 
     /// <inheritdoc />
     public AuditOperationId AuditV1OperationId { get; set; }
-
-    /// <inheritdoc />
-    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }
