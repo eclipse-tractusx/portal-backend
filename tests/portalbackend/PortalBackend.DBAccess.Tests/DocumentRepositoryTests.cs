@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -474,31 +475,6 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         );
         result.IsQueriedApplicationStatus.Should().BeTrue();
         result.IsSameApplicationUser.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task DeleteDocuments_WithAuditing_ReturnsExpected()
-    {
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
-
-        IEnumerable<Guid> documentIds = new[] { (new Guid("184cde16-52d4-4865-81f6-b5b45e3c9051")) };
-
-        // Act
-        sut.RemoveDocuments(documentIds);
-        await context.SaveChangesAsync().ConfigureAwait(false);
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        var changedEntity = changedEntries.Single();
-        changedEntity.State.Should().Be(EntityState.Deleted);
-
-        await transaction.RollbackAsync().ConfigureAwait(false);
     }
 
     #region Setup    

@@ -63,11 +63,6 @@ public static partial class AuditExtensions
         var auditProperties = typeof(IAuditEntityV1).GetProperties();
         var targetProperties = auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name);
 
-        foreach (var prop in auditEntityType.GetProperties())
-        {
-            Console.WriteLine($"a: {prop.GetType()}, b: {prop.Name}");
-        }
-
         var notNullableProperties = targetProperties.ExceptBy(Enumerable.Repeat(nameof(IBaseEntity.Id), 1), p => p.Name).Where(x => x.PropertyType == typeof(Nullable<>));
         if (notNullableProperties.Any())
         {
