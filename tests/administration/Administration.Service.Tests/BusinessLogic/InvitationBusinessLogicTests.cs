@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -45,7 +44,7 @@ public class InvitationBusinessLogicTests
     private readonly IUserRepository _userRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IApplicationRepository _applicationRepository;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingInformationRepository _mailingInformationRepository;
     private readonly IOptions<InvitationSettings> _options;
     private readonly string _companyName;
     private readonly string _idpName;
@@ -69,7 +68,7 @@ public class InvitationBusinessLogicTests
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
-        _mailingService = A.Fake<IMailingService>();
+        _mailingInformationRepository = A.Fake<IMailingInformationRepository>();
         _options = A.Fake<IOptions<InvitationSettings>>();
 
         _companyName = "testCompany";
@@ -101,7 +100,6 @@ public class InvitationBusinessLogicTests
             _provisioningManager,
             _userProvisioningService,
             _portalRepositories,
-            _mailingService,
             _options);
 
         await sut.ExecuteInvitation(invitationData).ConfigureAwait(false);
@@ -125,7 +123,8 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_applicationId), A<Guid>._)).MustHaveHappened();
 
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedTwiceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(invitationData.email), A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -143,7 +142,6 @@ public class InvitationBusinessLogicTests
             _provisioningManager,
             _userProvisioningService,
             _portalRepositories,
-            _mailingService,
             _options);
 
         Task Act() => sut.ExecuteInvitation(invitationData);
@@ -153,7 +151,8 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -172,7 +171,6 @@ public class InvitationBusinessLogicTests
             _provisioningManager,
             _userProvisioningService,
             _portalRepositories,
-            _mailingService,
             _options);
 
         Task Act() => sut.ExecuteInvitation(invitationData);
@@ -182,7 +180,8 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -201,7 +200,6 @@ public class InvitationBusinessLogicTests
             _provisioningManager,
             _userProvisioningService,
             _portalRepositories,
-            _mailingService,
             _options);
 
         Task Act() => sut.ExecuteInvitation(invitationData);
@@ -211,7 +209,8 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -236,7 +235,6 @@ public class InvitationBusinessLogicTests
             _provisioningManager,
             _userProvisioningService,
             _portalRepositories,
-            _mailingService,
             _options);
 
         Task Act() => sut.ExecuteInvitation(invitationData);
@@ -246,7 +244,8 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -267,7 +266,6 @@ public class InvitationBusinessLogicTests
             _provisioningManager,
             _userProvisioningService,
             _portalRepositories,
-            _mailingService,
             _options);
 
         Task Act() => sut.ExecuteInvitation(invitationData);
@@ -277,7 +275,8 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     #endregion
@@ -293,6 +292,7 @@ public class InvitationBusinessLogicTests
             })
             .Create());
 
+        A.CallTo(() => _portalRepositories.GetInstance<IMailingInformationRepository>()).Returns(_mailingInformationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
@@ -333,6 +333,7 @@ public class InvitationBusinessLogicTests
         public TestException() { }
         public TestException(string message) : base(message) { }
         public TestException(string message, Exception inner) : base(message, inner) { }
+
         protected TestException(
             System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }

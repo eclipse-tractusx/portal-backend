@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -45,7 +44,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
     private readonly RegistrationSettings _settings;
-    private readonly IMailingService _mailingService;
     private readonly IBpnAccess _bpnAccess;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
@@ -58,7 +56,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
-        IMailingService mailingService,
         IBpnAccess bpnAccess,
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
@@ -68,7 +65,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IDateTimeProvider dateTimeProvider)
     {
         _settings = settings.Value;
-        _mailingService = mailingService;
         _bpnAccess = bpnAccess;
         _userProvisioningService = userProvisioningService;
         _logger = logger;
@@ -435,8 +431,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             { "username", userCreationInfo.eMail },
         };
 
-        await _mailingService.SendMails(userCreationInfo.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+        processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
 
+        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, userCreationInfo.eMail, inviteTemplateName, mailParameters);
+        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, userCreationInfo.eMail, "password", mailParameters);
         return modified;
     }
 
@@ -599,7 +599,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (applicationUserData.Email != null)
         {
-            await _mailingService.SendMails(applicationUserData.Email, mailParameters, new[] { "SubmitRegistrationTemplate" });
+            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
+
+            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, applicationUserData.Email, "SubmitRegistrationTemplate", mailParameters);
         }
         else
         {

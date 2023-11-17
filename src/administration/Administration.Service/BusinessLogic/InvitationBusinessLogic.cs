@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,7 +21,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -40,7 +38,6 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService _mailingService;
     private readonly InvitationSettings _settings;
 
     /// <summary>
@@ -49,19 +46,16 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
     /// <param name="provisioningManager">Provisioning Manager</param>
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="portalRepositories">Portal Repositories</param>
-    /// <param name="mailingService">Mailing Service</param>
     /// <param name="settings">Settings</param>
     public InvitationBusinessLogic(
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         IPortalRepositories portalRepositories,
-        IMailingService mailingService,
         IOptions<InvitationSettings> settings)
     {
         _provisioningManager = provisioningManager;
         _userProvisioningService = userProvisioningService;
         _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
         _settings = settings.Value;
     }
 
@@ -71,14 +65,17 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         {
             throw new ControllerArgumentException("email must not be empty", "email");
         }
+
         if (string.IsNullOrWhiteSpace(invitationData.organisationName))
         {
             throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
         }
+
         if (!string.IsNullOrEmpty(invitationData.organisationName) && !Company.IsMatch(invitationData.organisationName))
         {
             throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
         }
+
         return ExecuteInvitationInternalAsync(invitationData);
     }
 
@@ -96,8 +93,6 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL);
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var companyNameIdpAliasData = new CompanyNameIdpAliasData(
             company.Id,
@@ -139,7 +134,9 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         applicationRepository.CreateInvitation(application.Id, companyUserId);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+        processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password ?? "" },
@@ -149,6 +146,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             { "closeApplicationUrl", _settings.CloseApplicationAddress },
         };
 
-        await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate" }).ConfigureAwait(false);
+        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.email, "RegistrationTemplate", mailParameters);
+        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.email, "PasswordForRegistrationTemplate", mailParameters);
     }
 }

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "dd28cd9d-fd8a-4225-9254-2aabecc82470",
+    "process_id": "44927361-3766-4f07-9f18-860158880d86",
+    "email": "test@email.de",
+    "template": "CredentialRejected",
+    "mailing_status_id": 1,
+    "mail_parameter": {"userName": "tony stark", "requestName": "Traceability Framework"}
+  }
+]

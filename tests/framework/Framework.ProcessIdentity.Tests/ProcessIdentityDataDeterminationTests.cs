@@ -18,12 +18,12 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Framework.ProcessIdentity.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.Tests;
 
 public class ProcessIdentityDataDeterminationTests
 {

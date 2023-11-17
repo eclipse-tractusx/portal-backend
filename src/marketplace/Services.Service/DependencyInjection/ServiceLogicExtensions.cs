@@ -30,6 +30,9 @@ public static class ServiceLogicExtensions
             .Bind(config.GetSection("Services"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        return services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>();
+        return services
+            .AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
+            .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
+            .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>();
     }
 }

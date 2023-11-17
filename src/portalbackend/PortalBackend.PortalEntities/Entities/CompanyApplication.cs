@@ -68,7 +68,8 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     public virtual CompanyApplicationType? CompanyApplicationType { get; set; }
     public virtual Company? OnboardingServiceProvider { get; set; }
     public virtual NetworkRegistration? NetworkRegistration { get; private set; }
+    public virtual Identity? LastEditor { get; private set; }
+    public virtual CompanyInvitation? CompanyInvitation { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
     public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
-    public virtual Identity? LastEditor { get; private set; }
 }

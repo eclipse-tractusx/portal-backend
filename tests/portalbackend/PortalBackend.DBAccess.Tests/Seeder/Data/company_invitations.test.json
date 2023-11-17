@@ -1,0 +1,14 @@
+[
+  {
+    "id": "32705785-b056-4f36-9a71-71b795344bb2",
+    "user_name": "ironman",
+    "first_name": "tony",
+    "last_name": "stark",
+    "email": "tony@stark.com",
+    "organisation_name": "stark industry",
+    "process_id": "70f0f368-5058-4aca-808b-cece869bcef2",
+    "application_id": null,
+    "idp_name": "test idp",
+    "password": null
+  }
+]

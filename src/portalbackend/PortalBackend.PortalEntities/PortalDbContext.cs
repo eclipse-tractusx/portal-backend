@@ -22,8 +22,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEnti
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -114,6 +116,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompanyIdentifier> CompanyIdentifiers { get; set; } = default!;
     public virtual DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
+    public virtual DbSet<CompanyInvitation> CompanyInvitations { get; set; } = default!;
     public virtual DbSet<CompanyRoleAssignedRoleCollection> CompanyRoleAssignedRoleCollections { get; set; } = default!;
     public virtual DbSet<CompanyRoleDescription> CompanyRoleDescriptions { get; set; } = default!;
     public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
@@ -154,6 +157,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<LanguageLongName> LanguageLongNames { get; set; } = default!;
     public virtual DbSet<LicenseType> LicenseTypes { get; set; } = default!;
     public virtual DbSet<MediaType> MediaTypes { get; set; } = default!;
+    public virtual DbSet<MailingInformation> MailingInformations { get; set; } = default!;
+    public virtual DbSet<MailingStatus> MailingStatuses { get; set; } = default!;
     public virtual DbSet<NetworkRegistration> NetworkRegistrations { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; set; } = default!;
@@ -1539,6 +1544,21 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<Document>()
             .HasAuditV1Triggers<Document, AuditDocument20231115>();
 
+        modelBuilder.Entity<CompanyInvitation>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasOne(x => x.Application)
+                .WithOne(x => x.CompanyInvitation)
+                .HasForeignKey<CompanyInvitation>(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.Process)
+                .WithOne(x => x.CompanyInvitation)
+                .HasForeignKey<CompanyInvitation>(x => x.ProcessId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<AgreementStatus>()
             .HasData(
                 Enum.GetValues(typeof(AgreementStatusId))
@@ -1549,6 +1569,31 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<AgreementView>()
             .ToView("agreement_view", "portal")
             .HasNoKey();
+
+        modelBuilder.Entity<MailingStatus>()
+            .HasData(
+                Enum.GetValues(typeof(MailingStatusId))
+                    .Cast<MailingStatusId>()
+                    .Select(e => new MailingStatus(e))
+            );
+
+        modelBuilder.Entity<MailingInformation>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(p => p.MailParameter)
+                .HasJsonConversion();
+
+            entity.HasOne(x => x.Process)
+                .WithOne(x => x.MailingInformation)
+                .HasForeignKey<MailingInformation>(x => x.ProcessId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.MailingStatus)
+                .WithMany(x => x.MailingInformations)
+                .HasForeignKey(x => x.MailingStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
     }
 
     /// <inheritdoc />

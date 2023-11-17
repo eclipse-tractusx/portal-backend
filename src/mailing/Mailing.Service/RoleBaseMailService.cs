@@ -20,23 +20,19 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using System.Collections.Immutable;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 
 public class RoleBaseMailService : IRoleBaseMailService
 {
-
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService _mailingService;
 
-    public RoleBaseMailService(IPortalRepositories portalRepositories, IMailingService mailingService)
+    public RoleBaseMailService(IPortalRepositories portalRepositories)
     {
         _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
     }
 
     public async Task RoleBaseSendMailForCompany(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> template, Guid companyId)
@@ -73,7 +69,7 @@ public class RoleBaseMailService : IRoleBaseMailService
     private async Task SendMailsToUsers(
         IEnumerable<(string ParameterName, string ParameterValue)> parameters,
         (string ParameterName, string ParameterValue)? userNameParameter,
-        IEnumerable<string> template,
+        IEnumerable<string> templates,
         IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> companyUserWithRoleId)
     {
         await foreach (var (receiver, firstName, lastName) in companyUserWithRoleId)
@@ -92,7 +88,13 @@ public class RoleBaseMailService : IRoleBaseMailService
                         : new(userNameParameter.Value.ParameterName, userName));
             }
 
-            await _mailingService.SendMails(receiver, ParametersWithUserName().ToImmutableDictionary(x => x.ParameterName, x => x.ParameterValue), template).ConfigureAwait(false);
+            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
+            foreach (var template in templates)
+            {
+                _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, receiver, template, ParametersWithUserName().ToDictionary(x => x.ParameterName, x => x.ParameterValue));
+            }
         }
     }
 }

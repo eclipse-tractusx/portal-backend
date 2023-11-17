@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -52,7 +51,7 @@ public class UserBusinessLogicTests
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IUserBusinessPartnerRepository _userBusinessPartnerRepository;
     private readonly IApplicationRepository _applicationRepository;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingInformationRepository _mailingInformationRepository;
     private readonly IMockLogger<UserBusinessLogic> _mockLogger;
     private readonly ILogger<UserBusinessLogic> _logger;
     private readonly IOptions<UserSettings> _options;
@@ -98,8 +97,8 @@ public class UserBusinessLogicTests
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _userBusinessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
+        _mailingInformationRepository = A.Fake<IMailingInformationRepository>();
 
-        _mailingService = A.Fake<IMailingService>();
         _mockLogger = A.Fake<IMockLogger<UserBusinessLogic>>();
         _logger = new MockLogger<UserBusinessLogic>(_mockLogger);
         _options = Options.Create(_fixture.Create<UserSettings>());
@@ -139,6 +138,7 @@ public class UserBusinessLogicTests
         };
         _error = _fixture.Create<TestException>();
 
+        A.CallTo(() => _portalRepositories.GetInstance<IMailingInformationRepository>()).Returns(_mailingInformationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
@@ -165,14 +165,16 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
         var result = await sut.CreateOwnCompanyUsersAsync(userList).ToListAsync().ConfigureAwait(false);
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == userList.Count());
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "NewUserTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappenedANumberOfTimesMatching(times => times == userList.Length);
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "NewUserPasswordTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappenedANumberOfTimesMatching(times => times == userList.Length);
 
         result.Should().NotBeNull()
             .And.HaveSameCount(userList)
@@ -204,7 +206,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
@@ -237,7 +238,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
@@ -281,7 +281,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
@@ -294,7 +293,11 @@ public class UserBusinessLogicTests
         ))).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 4);
+
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "NewUserTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappenedANumberOfTimesMatching(times => times == 4);
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "NewUserPasswordTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappenedANumberOfTimesMatching(times => times == 4);
 
         result.Should().HaveCount(4);
     }
@@ -327,7 +330,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
@@ -342,46 +344,12 @@ public class UserBusinessLogicTests
         ))).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 2);
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "NewUserTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappenedANumberOfTimesMatching(times => times == 2);
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "NewUserPasswordTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappenedANumberOfTimesMatching(times => times == 2);
 
         error.Should().BeSameAs(expected);
-    }
-
-    [Fact]
-    public async Task TestUserCreationSendMailError()
-    {
-        SetupFakesForUserCreation(true);
-
-        var userCreationInfo = CreateUserCreationInfo();
-        var error = _fixture.Create<TestException>();
-
-        var userList = new[] {
-            CreateUserCreationInfo(),
-            CreateUserCreationInfo(),
-            userCreationInfo,
-            CreateUserCreationInfo(),
-            CreateUserCreationInfo()
-        };
-
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string, string>>._, A<List<string>>._))
-            .Throws(error);
-
-        var sut = new UserBusinessLogic(
-            null!,
-            _userProvisioningService,
-            null!,
-            _portalRepositories,
-            _identityService,
-            _mailingService,
-            _logger,
-            _options);
-
-        var result = await sut.CreateOwnCompanyUsersAsync(userList).ToListAsync().ConfigureAwait(false);
-
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 5);
-
-        result.Should().HaveCount(5);
     }
 
     #endregion
@@ -399,15 +367,15 @@ public class UserBusinessLogicTests
             null!,
             _userProvisioningService,
             null!,
-            null!,
+            _portalRepositories,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
         var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp).ConfigureAwait(false);
         result.Should().NotBe(Guid.Empty);
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfoIdp.Email), A<IDictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName), A<IEnumerable<string>>._)).MustHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>.That.IsEqualTo(userCreationInfoIdp.Email), A<string>._, A<Dictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName)))
+            .MustHaveHappened();
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
     }
 
@@ -429,7 +397,6 @@ public class UserBusinessLogicTests
             null!,
             null!,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
@@ -459,7 +426,6 @@ public class UserBusinessLogicTests
             null!,
             null!,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
@@ -467,7 +433,8 @@ public class UserBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -485,7 +452,6 @@ public class UserBusinessLogicTests
             null!,
             null!,
             _identityService,
-            _mailingService,
             _logger,
             _options);
 
@@ -493,32 +459,8 @@ public class UserBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task TestCreateOwnCompanyIdpUserAsyncMailingErrorLogs()
-    {
-        SetupFakesForUserCreation(false);
-
-        var userCreationInfoIdp = CreateUserCreationInfoIdp();
-
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).Throws(_error);
-
-        var sut = new UserBusinessLogic(
-            null!,
-            _userProvisioningService,
-            null!,
-            null!,
-            _identityService,
-            _mailingService,
-            _logger,
-            _options);
-
-        var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp).ConfigureAwait(false);
-        result.Should().NotBe(Guid.Empty);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened();
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     #endregion
@@ -536,7 +478,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            null!,
             _logger,
             _options
         );
@@ -588,7 +529,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            null!,
             _logger,
             _options
         );
@@ -619,7 +559,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            null!,
             _logger,
             _options
         );
@@ -995,7 +934,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            null!,
             _logger,
             _options
         );
@@ -1028,7 +966,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            null!,
             _logger,
             _options
         );
@@ -1089,7 +1026,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            null!,
             _logger,
             _options
         );
@@ -1146,7 +1082,6 @@ public class UserBusinessLogicTests
             null!,
             _portalRepositories,
             _identityService,
-            null!,
             _logger,
             _options
         );
@@ -1182,7 +1117,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyAppUserDetails>?>(new(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
@@ -1207,7 +1142,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyAppUserDetails>?>(new(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
@@ -1237,7 +1172,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminCompanyId, businessPartnerNumber))
             .Returns<(bool, bool, bool)>(default);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1258,7 +1193,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminCompanyId, businessPartnerNumber.ToUpper()))
             .Returns((true, false, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1281,7 +1216,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminCompanyId, businessPartnerNumber.ToUpper()))
             .Returns((true, true, true));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1302,7 +1237,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminCompanyId, businessPartnerNumber.ToUpper()))
             .Returns((true, true, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
@@ -1325,7 +1260,7 @@ public class UserBusinessLogicTests
             .Returns((true, true, true));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString())).Returns(iamUserId);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber.ToUpper()).ConfigureAwait(false);
@@ -1354,7 +1289,7 @@ public class UserBusinessLogicTests
             .Returns(userRoleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(A<Guid>._, A<IEnumerable<Guid>>._))
             .Returns(companyOwnUserDetails);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, _logger, _options);
 
         // Act
         var result = await sut.GetOwnUserDetails().ConfigureAwait(false);
@@ -1383,7 +1318,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(userId, A<IEnumerable<Guid>>._))
             .Returns(default(CompanyOwnUserTransferDetails));
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, _logger, _options);
 
         // Act
         async Task Act() => await sut.GetOwnUserDetails().ConfigureAwait(false);
@@ -1408,7 +1343,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(A<Guid>._, A<Guid>._))
             .Returns(companyOwnUserDetails);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, _logger, _options);
 
         // Act
         var result = await sut.GetOwnCompanyUserDetailsAsync(userId).ConfigureAwait(false);
@@ -1434,7 +1369,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(A<Guid>._, A<Guid>._))
             .Returns(default(CompanyUserDetailTransferData));
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, _logger, _options);
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUserDetailsAsync(userId).ConfigureAwait(false);
@@ -1608,6 +1543,7 @@ public class UserBusinessLogicTests
         public TestException() { }
         public TestException(string message) : base(message) { }
         public TestException(string message, Exception inner) : base(message, inner) { }
+
         protected TestException(
             System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }

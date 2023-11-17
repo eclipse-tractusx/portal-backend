@@ -27,7 +27,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -50,7 +49,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
-    private readonly IMailingService _mailingService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
@@ -61,7 +59,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories,
         IOptions<RegistrationSettings> configuration,
-        IMailingService mailingService,
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
@@ -71,7 +68,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
-        _mailingService = mailingService;
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
@@ -548,6 +544,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 throw new ConflictException($"user {userName} has no assigned email");
             }
 
+            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
+
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
@@ -555,8 +555,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 { "declineComment", comment },
                 { "helpUrl", _settings.HelpAddress }
             };
-
-            await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
+            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
         }
     }
 

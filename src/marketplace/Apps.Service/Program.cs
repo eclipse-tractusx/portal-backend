@@ -39,7 +39,6 @@ WebAppHelper
             .AddPublicInfos();
 
         builder.Services
-            .AddMailingAndTemplateManager(builder.Configuration)
             .AddPortalRepositories(builder.Configuration)
             .AddProvisioningManager(builder.Configuration);
 

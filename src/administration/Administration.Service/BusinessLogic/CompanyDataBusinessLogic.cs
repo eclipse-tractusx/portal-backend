@@ -44,7 +44,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService _mailingService;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IIdentityData _identityData;
@@ -54,15 +53,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     /// Constructor
     /// </summary>
     /// <param name="portalRepositories"></param>
-    /// <param name="mailingService"></param>
     /// <param name="custodianService"></param>
     /// <param name="dateTimeProvider"></param>
     /// <param name="identityService"></param>
     /// <param name="options"></param>
-    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IIdentityService identityService, IOptions<CompanyDataSettings> options)
+    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IIdentityService identityService, IOptions<CompanyDataSettings> options)
     {
         _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
         _custodianService = custodianService;
         _dateTimeProvider = dateTimeProvider;
         _identityData = identityService.IdentityData;
@@ -504,10 +501,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 throw new ArgumentOutOfRangeException($"{data.Kind} is currently not supported");
         }
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
         if (!string.IsNullOrWhiteSpace(data.RequesterData.RequesterEmail))
         {
+            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
             var userName = string.Join(" ", new[] { data.RequesterData.Firstname, data.RequesterData.Lastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
             var mailParameters = new Dictionary<string, string>
             {
@@ -520,8 +518,9 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 }
             };
 
-            await _mailingService.SendMails(data.RequesterData.RequesterEmail, mailParameters, Enumerable.Repeat("CredentialApproval", 1)).ConfigureAwait(false);
+            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, data.RequesterData.RequesterEmail, "CredentialApproval", mailParameters);
         }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -558,10 +557,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 c.DateLastChanged = _dateTimeProvider.OffsetNow;
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
         if (!string.IsNullOrWhiteSpace(requesterEmail))
         {
+            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
             var userName = string.Join(" ", new[] { requesterFirstname, requesterLastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
             var mailParameters = new Dictionary<string, string>
             {
@@ -569,9 +569,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 { "requestName", typeValue }
             };
 
-            await _mailingService.SendMails(requesterEmail, mailParameters, Enumerable.Repeat("CredentialRejected", 1))
-                .ConfigureAwait(false);
+            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, requesterEmail, "CredentialRejected", mailParameters);
         }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
     }
 
     /// <inheritdoc />

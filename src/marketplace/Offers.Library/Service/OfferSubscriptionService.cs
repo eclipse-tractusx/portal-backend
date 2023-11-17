@@ -98,7 +98,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             ("offerProviderName", "User"),
             new[]
             {
-                "subscription-request"
+                $"{offerTypeId.ToString().ToLower()}-subscription-request"
             },
             offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(false);
 

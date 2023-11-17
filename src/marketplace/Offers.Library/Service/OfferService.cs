@@ -543,7 +543,7 @@ public class OfferService : IOfferService
             ("offerProviderName", "User"),
             new[]
             {
-                "offer-release-activation"
+                $"{offerTypeId.ToString().ToLower()}-release-activation"
             },
             offerDetails.ProviderCompanyId.Value).ConfigureAwait(false);
     }
@@ -617,7 +617,7 @@ public class OfferService : IOfferService
             ("offerProviderName", "Service Manager"),
             new[]
             {
-                "offer-request-decline"
+                $"{offerType.ToString().ToLower()}-request-decline"
             },
             declineData.CompanyId.Value).ConfigureAwait(false);
     }

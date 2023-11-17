@@ -18,17 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
-{
-    public class UploadDocuments
-    {
-        public UploadDocuments(Guid documentId, string documentName)
-        {
-            DocumentId = documentId;
-            DocumentName = documentName;
-        }
-        public Guid DocumentId { get; }
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-        public string DocumentName { get; }
+public class UploadDocuments
+{
+    public UploadDocuments(Guid documentId, string documentName)
+    {
+        DocumentId = documentId;
+        DocumentName = documentName;
     }
+    public Guid DocumentId { get; }
+
+    public string DocumentName { get; }
 }

@@ -29,7 +29,8 @@ on:
       - 'src/processes/ApplicationChecklist.Library/**'
       - 'src/processes/ApplicationChecklist.Executor/**'
       - 'src/processes/NetworkRegistration.Library/**'
-      - 'src/processes/NetworkRegistration.Executor/**'
+      - 'src/processes/Mailing.Executor/**'
+      - 'src/processes/Invitation.Executor/**'
       - 'src/externalsystems/**'
       - 'src/portalbackend/PortalBackend.PortalEntities/**'
       # workflow file
