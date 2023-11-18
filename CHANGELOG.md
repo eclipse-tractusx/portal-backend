@@ -116,6 +116,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * check constraints is_external_type_use_case, is_credential_type_use_case & is_connector_managed changed from function constraint to trigger function constraint
 * Added new process to synchronize keycloak user with company service account to set the correct user entity id
 * Released extended error response message method (incl. error-type, error-code, a message-template and multiple parameters) and enabled the same for administration POST endpoints /userfile and registration GET endpoint /companyDetailsWithAddress
+* Updated email template dynamic keys to more generic technical keys and moved base url definition into the product config file of the specific environment ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 
 ### Bugfix
 * Seeding data
