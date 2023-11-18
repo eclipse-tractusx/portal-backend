@@ -2,6 +2,26 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.7.0-RC4
+
+### Change
+* add processStepTypeId field to provider/subscription endpoints
+
+### Feature
+n/a
+
+### Technical Support
+* enhanced consortia seeding file by adding "IRS Management" role and the assignments to the respective company roles/collections
+
+### Bugfix
+* fixed document auditing maintenance job - document hash null cases
+* fixed user role mapping to company role (OSP, App Provider and Service Provider)
+* Delete /api/apps/appreleaseprocess/{appId}/role/{roleId} 504 error fixed
+
+### Known Knowns
+* GET /api/services/{serviceId}/subscription/{subscriptionID}/provider - wrong property value for technicalUserData "name" responded
+
+
 ## 1.7.0-RC3
 
 ### Change
