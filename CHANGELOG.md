@@ -27,6 +27,38 @@ n/a
 ### Known Knowns
 * GET /api/services/{serviceId}/subscription/{subscriptionID}/provider - wrong property value for technicalUserData "name" responded
 
+## 1.7.0-RC4
+
+### Change
+* add processStepTypeId field to provider/subscription endpoints
+
+### Feature
+n/a
+
+### Technical Support
+* enhanced consortia seeding file by adding "IRS Management" role and the assignments to the respective company roles/collections
+<<<<<<< HEAD
+* adjusted keycloak seeding to exclude the following properties if already existing
+  * firstname, lastname, email and configurable attributes for users
+  * idp config urls
+  * client urls
+  * smtp server settings
+* extend keycloak seeding to seed ClientScopeMappers
+=======
+>>>>>>> 208fd8b5e (release/changeLog 1.7.0 RC4)
+
+### Bugfix
+* fixed document auditing maintenance job - document hash null cases
+* fixed user role mapping to company role (OSP, App Provider and Service Provider)
+* Delete /api/apps/appreleaseprocess/{appId}/role/{roleId} 504 error fixed
+
+### Known Knowns
+* GET /api/services/{serviceId}/subscription/{subscriptionID}/provider - wrong property value for technicalUserData "name" responded
+
+<<<<<<< HEAD
+=======
+
+>>>>>>> 208fd8b5e (release/changeLog 1.7.0 RC4)
 ## 1.7.0-RC3
 
 ### Change
