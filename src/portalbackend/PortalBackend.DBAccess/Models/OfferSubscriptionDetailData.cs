@@ -103,3 +103,28 @@ public record SubscriptionAssignedConnectorData(
     [property: JsonPropertyName("id")] Guid ConnectorId,
     [property: JsonPropertyName("name")] string ConnectorName,
     [property: JsonPropertyName("endpoint")] string ConnectorUrl);
+
+/// <summary>
+/// Detail data for a offer subscription
+/// </summary>
+/// <param name="Id">Id of the Offer</param>
+/// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
+/// <param name="Name">Name of the Offer</param>
+/// <param name="Customer">Name of the company subscribing the offer</param>
+/// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
+/// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
+/// <param name="TechnicalUserData">Information about the technical user</param>
+/// <param name="TenantUrl">Url of Tenant</param>
+/// <param name="AppInstanceId">Id of the app instance</param>
+public record AppProviderSubscriptionDetail(
+    Guid Id,
+    OfferSubscriptionStatusId OfferSubscriptionStatus,
+    string? Name,
+    string Customer,
+    string? Bpn,
+    IEnumerable<string> Contact,
+    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
+    string? TenantUrl,
+    string AppInstanceId,
+    IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps
+);

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -44,6 +45,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly IOfferService _offerService;
     private readonly IOfferSetupService _offerSetupService;
     private readonly IIdentityService _identityService;
+    private readonly ILogger<AppsBusinessLogic> _logger;
 
     /// <summary>
     /// Constructor.
@@ -54,19 +56,22 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="settings">Settings</param>
     /// <param name="identityService">Identity </param>
+    /// <param name="logger">The logger</param>
     public AppsBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferSubscriptionService offerSubscriptionService,
         IOfferService offerService,
         IOfferSetupService offerSetupService,
         IOptions<AppsSettings> settings,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        ILogger<AppsBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
         _offerSubscriptionService = offerSubscriptionService;
         _offerService = offerService;
         _offerSetupService = offerSetupService;
         _identityService = identityService;
+        _logger = logger;
         _settings = settings.Value;
     }
 
@@ -169,7 +174,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                         new OfferCompanySubscriptionStatusResponse(
                             item.OfferId,
                             item.ServiceName,
-                            item.CompanySubscriptionStatuses,
+                            item.CompanySubscriptionStatuses.Select(x => x.GetCompanySubscriptionStatus(item.OfferId, _logger)),
                             item.Image == Guid.Empty ? null : item.Image)));
         }
         return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(false);

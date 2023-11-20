@@ -34,5 +34,5 @@ public record CompanySubscriptionStatusData(
     string? BpnNumber,
     string? Email,
     bool TechnicalUser,
-    ProcessStepTypeId? ProcessStepTypeId
+    IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps
 );
