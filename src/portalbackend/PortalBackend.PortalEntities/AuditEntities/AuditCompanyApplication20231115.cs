@@ -18,27 +18,37 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditCompanySsiDetail20230621 : IAuditEntityV1
+/// <summary>
+/// Audit entity for <see cref="CompanyApplication"/> only needed for configuration purposes
+/// </summary>
+public class AuditCompanyApplication20231115 : IAuditEntityV1
 {
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
 
     public Guid Id { get; set; }
-    public Guid CompanyId { get; set; }
-    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
-    public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
-    public Guid DocumentId { get; set; }
-    public DateTimeOffset DateCreated { get; private set; }
-    public Guid CreatorUserId { get; set; }
-    public DateTimeOffset? ExpiryDate { get; set; }
-    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
+
+    public DateTimeOffset? DateCreated { get; set; }
+
+    public CompanyApplicationStatusId? ApplicationStatusId { get; set; }
+
+    public Guid? CompanyId { get; set; }
+
+    public Guid? ChecklistProcessId { get; set; }
+
     public DateTimeOffset? DateLastChanged { get; set; }
+
+    public CompanyApplicationTypeId? CompanyApplicationTypeId { get; set; }
+
+    public Guid? OnboardingServiceProviderId { get; set; }
+
     public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />

@@ -27,7 +27,7 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditUserRole20221017))]
+[AuditEntityV1(typeof(AuditUserRole20231115))]
 public class UserRole : IAuditableV1, IBaseEntity
 {
     private UserRole()

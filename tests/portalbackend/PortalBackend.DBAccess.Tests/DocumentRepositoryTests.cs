@@ -473,7 +473,6 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         );
         result.IsQueriedApplicationStatus.Should().BeTrue();
         result.IsSameApplicationUser.Should().BeTrue();
-
     }
 
     #region Setup    

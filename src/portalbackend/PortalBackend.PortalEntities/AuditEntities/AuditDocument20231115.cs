@@ -23,30 +23,38 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditCompanySsiDetail20230621 : IAuditEntityV1
+public class AuditDocument20231115 : IAuditEntityV1
 {
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
 
-    public Guid Id { get; set; }
-    public Guid CompanyId { get; set; }
-    public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
-    public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
-    public Guid DocumentId { get; set; }
-    public DateTimeOffset DateCreated { get; private set; }
-    public Guid CreatorUserId { get; set; }
-    public DateTimeOffset? ExpiryDate { get; set; }
-    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
+    public Guid Id { get; private set; }
+
+    public DateTimeOffset? DateCreated { get; private set; }
+
+    public byte[]? DocumentHash { get; set; }
+
+    public byte[]? DocumentContent { get; set; }
+
+    public string? DocumentName { get; set; }
+
+    public MediaTypeId? MediaTypeId { get; set; }
+
+    public DocumentTypeId? DocumentTypeId { get; set; }
+
+    public DocumentStatusId? DocumentStatusId { get; set; }
+
+    public Guid? CompanyUserId { get; set; }
     public DateTimeOffset? DateLastChanged { get; set; }
-    public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; private set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }
 
     /// <inheritdoc />
     public AuditOperationId AuditV1OperationId { get; set; }
-
-    /// <inheritdoc />
-    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

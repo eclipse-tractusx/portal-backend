@@ -26,7 +26,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditConsent20230412))]
+[AuditEntityV1(typeof(AuditConsent20231115))]
 public class Consent : IAuditableV1, IBaseEntity
 {
     private Consent()
