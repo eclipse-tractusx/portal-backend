@@ -47,10 +47,9 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <param name="sorting"></param>
     /// <param name="statusIds"></param>
+    /// <param name="offerId"></param>
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
     Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId);
-
-    Task<(OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, Guid AppId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
 
     Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId, IEnumerable<Guid> ConnectorIds, IEnumerable<Guid> ServiceAccounts)> GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId);
 
@@ -105,7 +104,7 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="userRoleIds">Ids of the user roles the contacts should be in</param>
     /// <returns>Returns details for the offer subscription</returns>
-    Task<(bool Exists, bool IsUserOfCompany, AppProviderSubscriptionDetailData? Details)> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds);
+    Task<(bool Exists, bool IsUserOfCompany, AppProviderSubscriptionDetail? Details)> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds);
 
     /// <summary>
     /// Gets the offer details for the offer subscription for a subscribing company user

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,22 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+namespace Offers.Library.Extensions;
 
-/// <summary>
-/// View model of an Offer Company Subscription.
-/// </summary>
-/// <param name="OfferId"></param>
-/// <param name="OfferName"></param>
-/// <param name="CompanySubscriptionStatuses"></param>
-/// <param name="Image"></param>
-/// <returns></returns>
-public record OfferCompanySubscriptionStatusResponse(
-    Guid OfferId,
-    string? OfferName,
-    IEnumerable<CompanySubscriptionStatus> CompanySubscriptionStatuses,
-    Guid? Image
-);
+public static class ProcessStepExtensions
+{
+    public static ProcessStepTypeId? GetProcessStepTypeId(this IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> processSteps, Guid offerId, ILogger logger)
+    {
+        if (processSteps.Count(p => p.ProcessStepStatusId == ProcessStepStatusId.TODO) > 1)
+        {
+            logger.Log(LogLevel.Error, "Offers: {OfferIds} contain more than one process step in todo", string.Join(",", offerId));
+        }
+
+        return processSteps.Any(p => p.ProcessStepStatusId == ProcessStepStatusId.TODO)
+            ? processSteps.Single(p => p.ProcessStepStatusId == ProcessStepStatusId.TODO).ProcessStepTypeId
+            : null;
+    }
+}
