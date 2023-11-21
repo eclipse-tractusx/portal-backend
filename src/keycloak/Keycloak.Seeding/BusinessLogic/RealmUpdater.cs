@@ -108,7 +108,7 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.OtpPolicyPeriod = seedRealm.OtpPolicyPeriod;
             keycloakRealm.OtpSupportedApplications = seedRealm.OtpSupportedApplications;
             keycloakRealm.BrowserSecurityHeaders = UpdateBrowserSecurityHeaders(seedRealm.BrowserSecurityHeaders);
-            keycloakRealm.SmtpServer = UpdateSmtpServer(seedRealm.SmtpServer);
+            keycloakRealm.SmtpServer ??= UpdateSmtpServer(seedRealm.SmtpServer);
             keycloakRealm.LoginTheme = seedRealm.LoginTheme;
             keycloakRealm.AccountTheme = seedRealm.AccountTheme;
             keycloakRealm.AdminTheme = seedRealm.AdminTheme;

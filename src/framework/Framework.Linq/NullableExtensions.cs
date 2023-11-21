@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,9 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 
-public interface IUsersUpdater
+public static class NullableExtensions
 {
-    Task UpdateUsers(string keycloakInstanceName, IEnumerable<string>? excludedUserAttributes, CancellationToken cancellationToken);
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T>? collection) =>
+        collection == null || !collection.Any();
 }

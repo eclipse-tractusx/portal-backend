@@ -1,5 +1,4 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
 - Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
@@ -19,16 +18,18 @@
 -->
 
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Linq</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Linq</RootNamespace>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.6.0" />
   </ItemGroup>
-  <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Linq</AssemblyName>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
 </Project>
