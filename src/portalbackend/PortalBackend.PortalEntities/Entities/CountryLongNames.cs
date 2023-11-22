@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,16 +22,16 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CountriesLongNames
+public class CountryLongNames
 {
-    private CountriesLongNames()
+    private CountryLongNames()
     {
         Alpha2Code = null!;
         ShortName = null!;
         CountryLongName = null!;
     }
 
-    public CountriesLongNames(string alpha2Code, string shortName, string countryLongName)
+    public CountryLongNames(string alpha2Code, string shortName, string countryLongName)
     {
         Alpha2Code = alpha2Code;
         ShortName = shortName;

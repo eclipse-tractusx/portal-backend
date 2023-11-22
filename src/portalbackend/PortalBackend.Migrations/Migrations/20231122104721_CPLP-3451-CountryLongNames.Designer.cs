@@ -28,8 +28,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20231115043305_CPLP-3451-CountriesLongNames")]
-    partial class CPLP3451CountriesLongNames
+    [Migration("20231122104721_CPLP-3451-CountryLongNames")]
+    partial class CPLP3451CountryLongNames
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3242,33 +3242,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountriesLongNames", b =>
-                {
-                    b.Property<string>("Alpha2Code")
-                        .HasMaxLength(2)
-                        .HasColumnType("character(2)")
-                        .HasColumnName("alpha2code")
-                        .HasAnnotation("Relational:JsonPropertyName", "alpha2code");
-
-                    b.Property<string>("ShortName")
-                        .HasMaxLength(2)
-                        .HasColumnType("character(2)")
-                        .HasColumnName("short_name");
-
-                    b.Property<string>("CountryLongName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("country_long_name");
-
-                    b.HasKey("Alpha2Code", "ShortName")
-                        .HasName("pk_countries_long_names");
-
-                    b.HasIndex("ShortName")
-                        .HasDatabaseName("ix_countries_long_names_short_name");
-
-                    b.ToTable("countries_long_names", "portal");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", b =>
                 {
                     b.Property<string>("Alpha2Code")
@@ -3329,6 +3302,33 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_country_assigned_identifiers_unique_identifier_id");
 
                     b.ToTable("country_assigned_identifiers", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountryLongNames", b =>
+                {
+                    b.Property<string>("Alpha2Code")
+                        .HasMaxLength(2)
+                        .HasColumnType("character(2)")
+                        .HasColumnName("alpha2code")
+                        .HasAnnotation("Relational:JsonPropertyName", "alpha2code");
+
+                    b.Property<string>("ShortName")
+                        .HasMaxLength(2)
+                        .HasColumnType("character(2)")
+                        .HasColumnName("short_name");
+
+                    b.Property<string>("CountryLongName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("country_long_name");
+
+                    b.HasKey("Alpha2Code", "ShortName")
+                        .HasName("pk_country_long_names");
+
+                    b.HasIndex("ShortName")
+                        .HasDatabaseName("ix_country_long_names_short_name");
+
+                    b.ToTable("country_long_names", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
@@ -6815,25 +6815,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("OfferSubscription");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountriesLongNames", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Country")
-                        .WithMany("CountriesLongNames")
-                        .HasForeignKey("Alpha2Code")
-                        .IsRequired()
-                        .HasConstraintName("fk_countries_long_names_countries_country_alpha2code");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
-                        .WithMany("CountriesLongNames")
-                        .HasForeignKey("ShortName")
-                        .IsRequired()
-                        .HasConstraintName("fk_countries_long_names_languages_language_temp_id2");
-
-                    b.Navigation("Country");
-
-                    b.Navigation("Language");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountryAssignedIdentifier", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.BpdmIdentifier", "BpdmIdentifier")
@@ -6858,6 +6839,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Country");
 
                     b.Navigation("UniqueIdentifier");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountryLongNames", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Country")
+                        .WithMany("CountryLongNames")
+                        .HasForeignKey("Alpha2Code")
+                        .IsRequired()
+                        .HasConstraintName("fk_country_long_names_countries_country_alpha2code");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
+                        .WithMany("CountryLongNames")
+                        .HasForeignKey("ShortName")
+                        .IsRequired()
+                        .HasConstraintName("fk_country_long_names_languages_language_temp_id2");
+
+                    b.Navigation("Country");
+
+                    b.Navigation("Language");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
@@ -7815,9 +7815,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("Connectors");
 
-                    b.Navigation("CountriesLongNames");
-
                     b.Navigation("CountryAssignedIdentifiers");
+
+                    b.Navigation("CountryLongNames");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
@@ -7899,7 +7899,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("CompanyRoleDescriptions");
 
-                    b.Navigation("CountriesLongNames");
+                    b.Navigation("CountryLongNames");
 
                     b.Navigation("LanguageLongNameLanguages");
 

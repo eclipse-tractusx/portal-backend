@@ -130,7 +130,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ConsentAssignedOffer> ConsentAssignedOffers { get; set; } = default!;
     public virtual DbSet<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
-    public virtual DbSet<CountriesLongNames> CountriesLongNames { get; set; } = default!;
+    public virtual DbSet<CountryLongNames> CountryLongNames { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
     public virtual DbSet<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
@@ -879,19 +879,19 @@ public class PortalDbContext : DbContext
                     .Select(e => new ConsentStatus(e))
             );
 
-        modelBuilder.Entity<CountriesLongNames>(entity =>
-               {
-                   entity.HasKey(e => new { e.Alpha2Code, e.ShortName });
+        modelBuilder.Entity<CountryLongNames>(entity =>
+        {
+            entity.HasKey(e => new { e.Alpha2Code, e.ShortName });
 
-                   entity.HasOne(k => k.Language)
-               .WithMany(o => o.CountriesLongNames)
-               .HasForeignKey(k => k.ShortName)
-               .OnDelete(DeleteBehavior.ClientSetNull);
-                   entity.HasOne(d => d.Country)
-                       .WithMany(k => k.CountriesLongNames)
-                       .HasForeignKey(d => d.Alpha2Code)
-                       .OnDelete(DeleteBehavior.ClientSetNull);
-               });
+            entity.HasOne(k => k.Language)
+                .WithMany(o => o.CountryLongNames)
+                .HasForeignKey(k => k.ShortName)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(d => d.Country)
+                .WithMany(k => k.CountryLongNames)
+                .HasForeignKey(d => d.Alpha2Code)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
 
         modelBuilder.Entity<Country>(entity =>
         {

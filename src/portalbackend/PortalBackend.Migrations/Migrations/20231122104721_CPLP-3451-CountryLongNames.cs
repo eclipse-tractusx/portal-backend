@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,19 +18,20 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 #nullable disable
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class CPLP3451CountriesLongNames : Migration
+    public partial class CPLP3451CountryLongNames : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "countries_long_names",
+                name: "country_long_names",
                 schema: "portal",
                 columns: table => new
                 {
@@ -40,15 +41,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_countries_long_names", x => new { x.alpha2code, x.short_name });
+                    table.PrimaryKey("pk_country_long_names", x => new { x.alpha2code, x.short_name });
                     table.ForeignKey(
-                        name: "fk_countries_long_names_countries_country_alpha2code",
+                        name: "fk_country_long_names_countries_country_alpha2code",
                         column: x => x.alpha2code,
                         principalSchema: "portal",
                         principalTable: "countries",
                         principalColumn: "alpha2code");
                     table.ForeignKey(
-                        name: "fk_countries_long_names_languages_language_temp_id2",
+                        name: "fk_country_long_names_languages_language_temp_id2",
                         column: x => x.short_name,
                         principalSchema: "portal",
                         principalTable: "languages",
@@ -56,9 +57,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_countries_long_names_short_name",
+                name: "ix_country_long_names_short_name",
                 schema: "portal",
-                table: "countries_long_names",
+                table: "country_long_names",
                 column: "short_name");
         }
 
@@ -66,7 +67,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "countries_long_names",
+                name: "country_long_names",
                 schema: "portal");
         }
     }

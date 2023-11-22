@@ -33,7 +33,7 @@ public class Country
         Addresses = new HashSet<Address>();
         Connectors = new HashSet<Connector>();
         CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
-        CountriesLongNames = new HashSet<CountriesLongNames>();
+        CountryLongNames = new HashSet<CountryLongNames>();
     }
 
     public Country(string alpha2Code, string countryNameDe, string countryNameEn) : this()
@@ -63,5 +63,5 @@ public class Country
     public virtual ICollection<Connector> Connectors { get; private set; }
     public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
 
-    public virtual ICollection<CountriesLongNames> CountriesLongNames { get; private set; }
+    public virtual ICollection<CountryLongNames> CountryLongNames { get; private set; }
 }
