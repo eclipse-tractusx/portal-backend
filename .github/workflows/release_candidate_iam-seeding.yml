@@ -26,7 +26,7 @@ on:
       - 'src/framework/**'
       - 'src/keycloak/**'
       # workflow file
-      - '.github/workflows/iam-seeding.yml'
+      - '.github/workflows/release_candidate_iam-seeding.yml'
       # dockerfile
       - 'docker/Dockerfile-iam-seeding'
 
