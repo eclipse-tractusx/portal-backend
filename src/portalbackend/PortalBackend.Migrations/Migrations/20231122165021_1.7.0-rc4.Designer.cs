@@ -28,8 +28,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20231115145343_CPLP-3511-AuditAdjustment")]
-    partial class CPLP3511AuditAdjustment
+    [Migration("20231122165021_1.7.0-rc4")]
+    partial class _170rc4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
