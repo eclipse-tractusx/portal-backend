@@ -58,6 +58,17 @@ public class StaticDataRepository : IStaticDataRepository
             .AsAsyncEnumerable();
 
     ///<inheritdoc />
+    public IAsyncEnumerable<CountriesLongNamesData> GetAllCountries() =>
+        _dbContext.Countries
+            .AsNoTracking()
+            .Select(s => new CountriesLongNamesData
+                (
+                    s.Alpha2Code,
+                    s.CountriesLongNames.Select(x => new CountryName(x.ShortName, x.CountryLongName))
+                ))
+            .AsAsyncEnumerable();
+
+    ///<inheritdoc />
     public Task<(IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountryCode)> GetCompanyIdentifiers(string alpha2Code) =>
         _dbContext.Countries
             .AsNoTracking()

@@ -41,6 +41,12 @@ public interface IStaticDataRepository
     IAsyncEnumerable<LanguageData> GetAllLanguage();
 
     /// <summary>
+    /// Get all Countries.
+    /// </summary>
+    /// <returns>AsyncEnumerable of the result Counties with long names</returns>
+    IAsyncEnumerable<CountriesLongNamesData> GetAllCountries();
+
+    /// <summary>
     /// Retrieve Unique Identifier Data for Country Alpha2Code
     /// </summary>
     /// <param name="alpha2Code"></param>
