@@ -144,7 +144,7 @@ public class ClientsUpdater : IClientsUpdater
         RootUrl = client?.RootUrl ?? update.RootUrl, // only set the root url if no url is already set
         Name = update.Name,
         Description = update.Description,
-        BaseUrl = client?.RootUrl ?? update.BaseUrl, // only set the base url if no url is already set
+        BaseUrl = client?.BaseUrl ?? update.BaseUrl, // only set the base url if no url is already set
         SurrogateAuthRequired = update.SurrogateAuthRequired,
         Enabled = update.Enabled,
         AlwaysDisplayInConsole = update.AlwaysDisplayInConsole,
