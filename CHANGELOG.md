@@ -12,7 +12,12 @@ n/a
 
 ### Technical Support
 * enhanced consortia seeding file by adding "IRS Management" role and the assignments to the respective company roles/collections
-* adjusted keycloak seeding to exclude firstname, lastname, email and configurable attributes if already existing
+* adjusted keycloak seeding to exclude the following properties if already existing
+  * firstname, lastname, email and configurable attributes for users
+  * idp config urls
+  * client urls
+  * smtp server settings
+* extend keycloak seeding to seed ClientScopeMappers
 
 ### Bugfix
 * fixed document auditing maintenance job - document hash null cases
