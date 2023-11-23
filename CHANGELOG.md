@@ -12,6 +12,7 @@ n/a
 
 ### Technical Support
 * enhanced consortia seeding file by adding "IRS Management" role and the assignments to the respective company roles/collections
+* adjusted keycloak seeding to exclude firstname, lastname, email and configurable attributes if already existing
 
 ### Bugfix
 * fixed document auditing maintenance job - document hash null cases
@@ -20,7 +21,6 @@ n/a
 
 ### Known Knowns
 * GET /api/services/{serviceId}/subscription/{subscriptionID}/provider - wrong property value for technicalUserData "name" responded
-
 
 ## 1.7.0-RC3
 
