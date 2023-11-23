@@ -34,7 +34,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 public record OfferCompanySubscriptionStatusResponse(
     Guid OfferId,
     string? OfferName,
-    IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses,
-    Guid? Image,
-    ProcessStepTypeId? ProcessStepTypeId
+    IEnumerable<CompanySubscriptionStatus> CompanySubscriptionStatuses,
+    Guid? Image
 );
