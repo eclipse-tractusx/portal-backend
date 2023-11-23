@@ -33,7 +33,9 @@ public class KeycloakSeeder : IKeycloakSeeder
     private readonly IUsersUpdater _usersUpdater;
     private readonly IClientScopesUpdater _clientScopesUpdater;
     private readonly IAuthenticationFlowsUpdater _authenticationFlowsUpdater;
-    public KeycloakSeeder(ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IClientScopesUpdater clientScopesUpdater, IAuthenticationFlowsUpdater authenticationFlowsUpdater, IOptions<KeycloakSeederSettings> options)
+    private readonly IClientScopeMapperUpdater _clientScopeMapperUpdater;
+
+    public KeycloakSeeder(ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IClientScopesUpdater clientScopesUpdater, IAuthenticationFlowsUpdater authenticationFlowsUpdater, IClientScopeMapperUpdater clientScopeMapperUpdater, IOptions<KeycloakSeederSettings> options)
     {
         _seedData = seedDataHandler;
         _realmUpdater = realmUpdater;
@@ -43,6 +45,7 @@ public class KeycloakSeeder : IKeycloakSeeder
         _usersUpdater = usersUpdater;
         _clientScopesUpdater = clientScopesUpdater;
         _authenticationFlowsUpdater = authenticationFlowsUpdater;
+        _clientScopeMapperUpdater = clientScopeMapperUpdater;
         _settings = options.Value;
     }
 
@@ -57,8 +60,9 @@ public class KeycloakSeeder : IKeycloakSeeder
             await _rolesUpdater.UpdateClientRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
             await _rolesUpdater.UpdateCompositeRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
             await _identityProvidersUpdater.UpdateIdentityProviders(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _usersUpdater.UpdateUsers(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _usersUpdater.UpdateUsers(_settings.InstanceName, _settings.ExcludedUserAttributes, cancellationToken).ConfigureAwait(false);
             await _clientScopesUpdater.UpdateClientScopes(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _clientScopeMapperUpdater.UpdateClientScopeMapper(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
             await _authenticationFlowsUpdater.UpdateAuthenticationFlows(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
         }
     }

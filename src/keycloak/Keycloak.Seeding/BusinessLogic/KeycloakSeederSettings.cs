@@ -33,6 +33,8 @@ public class KeycloakSeederSettings
 
     [Required]
     public string InstanceName { get; set; } = null!;
+
+    public IEnumerable<string>? ExcludedUserAttributes { get; set; }
 }
 
 public static class KeycloakSeederSettingsExtensions

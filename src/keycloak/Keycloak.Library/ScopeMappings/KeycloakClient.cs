@@ -159,7 +159,7 @@ public partial class KeycloakClient
             .GetJsonAsync<Mapping>()
             .ConfigureAwait(false);
 
-    public async Task AddClientRolesScopeMappingToClientAsync(string realm, string clientId, string scopeClientId, IEnumerable<Role> roles) =>
+    public async Task AddClientRolesScopeMappingToClientAsync(string realm, string clientId, string scopeClientId, IEnumerable<Role> roles, CancellationToken cancellationToken = default) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
@@ -167,10 +167,10 @@ public partial class KeycloakClient
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/scope-mappings/clients/")
             .AppendPathSegment(scopeClientId, true)
-            .PostJsonAsync(roles)
+            .PostJsonAsync(roles, cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task<IEnumerable<Role>> GetClientRolesScopeMappingsForClientAsync(string realm, string clientId, string scopeClientId) =>
+    public async Task<IEnumerable<Role>> GetClientRolesScopeMappingsForClientAsync(string realm, string clientId, string scopeClientId, CancellationToken cancellationToken = default) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
@@ -178,10 +178,10 @@ public partial class KeycloakClient
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/scope-mappings/clients/")
             .AppendPathSegment(scopeClientId, true)
-            .GetJsonAsync<IEnumerable<Role>>()
+            .GetJsonAsync<IEnumerable<Role>>(cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task RemoveClientRolesFromClientScopeForClientAsync(string realm, string clientId, string scopeClientId, IEnumerable<Role> roles) =>
+    public async Task RemoveClientRolesFromClientScopeForClientAsync(string realm, string clientId, string scopeClientId, IEnumerable<Role> roles, CancellationToken cancellationToken = default) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
@@ -189,7 +189,7 @@ public partial class KeycloakClient
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/scope-mappings/clients/")
             .AppendPathSegment(scopeClientId, true)
-            .SendJsonAsync(HttpMethod.Delete, roles)
+            .SendJsonAsync(HttpMethod.Delete, roles, cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<IEnumerable<Role>> GetAvailableClientRolesForClientScopeForClientAsync(string realm, string clientId, string scopeClientId) =>

@@ -69,7 +69,7 @@ public class ClientsUpdater : IClientsUpdater
 
             if (!CompareClient(client, update))
             {
-                var updateClient = CreateUpdateClient(client.Id, update);
+                var updateClient = CreateUpdateClient(client, update);
                 await keycloak.UpdateClientAsync(
                     realm,
                     client.Id,
@@ -137,19 +137,19 @@ public class ClientsUpdater : IClientsUpdater
         }
     }
 
-    private static Client CreateUpdateClient(string? id, ClientModel update) => new Client // secret is not updated as it cannot be read via the keycloak api
+    private static Client CreateUpdateClient(Client? client, ClientModel update) => new() // secret is not updated as it cannot be read via the keycloak api
     {
-        Id = id,
+        Id = client?.Id,
         ClientId = update.ClientId,
-        RootUrl = update.RootUrl,
+        RootUrl = client?.RootUrl ?? update.RootUrl, // only set the root url if no url is already set
         Name = update.Name,
         Description = update.Description,
-        BaseUrl = update.BaseUrl,
+        BaseUrl = client?.BaseUrl ?? update.BaseUrl, // only set the base url if no url is already set
         SurrogateAuthRequired = update.SurrogateAuthRequired,
         Enabled = update.Enabled,
         AlwaysDisplayInConsole = update.AlwaysDisplayInConsole,
         ClientAuthenticatorType = update.ClientAuthenticatorType,
-        RedirectUris = update.RedirectUris,
+        RedirectUris = client == null || client.RedirectUris.IsNullOrEmpty() ? update.RedirectUris : client.RedirectUris, // only set the redirect uris if there aren't any set
         WebOrigins = update.WebOrigins,
         NotBefore = update.NotBefore,
         BearerOnly = update.BearerOnly,

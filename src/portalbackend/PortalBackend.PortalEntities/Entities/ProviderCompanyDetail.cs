@@ -24,7 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditProviderCompanyDetail20230614))]
+[AuditEntityV1(typeof(AuditProviderCompanyDetail20231115))]
 public class ProviderCompanyDetail : IAuditableV1, IBaseEntity
 {
     private ProviderCompanyDetail()

@@ -248,5 +248,15 @@
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de50003",
     "language_short_name": "en",
     "description": "The user has access"
+  },
+  {
+    "user_role_id": "3802f8ba-0399-4d24-abfc-41acb3d86cc9",
+    "language_short_name": "en",
+    "description": "User is able to view irs details and administrate the irs setting"
+  },
+  {
+    "user_role_id": "3802f8ba-0399-4d24-abfc-41acb3d86cc9",
+    "language_short_name": "de",
+    "description": "Der Benutzer kann die Irs-Details einsehen und die Irs-Einstellungen verwalten."
   }
 ]

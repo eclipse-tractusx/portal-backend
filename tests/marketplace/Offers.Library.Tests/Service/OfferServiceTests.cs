@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
@@ -69,6 +70,7 @@ public class OfferServiceTests
     private readonly ITechnicalUserProfileRepository _technicalUserProfileRepository;
     private readonly IConnectorsRepository _connectorsRepository;
     private readonly IIdentityService _identityService;
+    private readonly ILogger<OfferService> _logger;
 
     public OfferServiceTests()
     {
@@ -102,9 +104,10 @@ public class OfferServiceTests
         _offerSetupService = A.Fake<IOfferSetupService>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
         _identityService = A.Fake<IIdentityService>();
+        _logger = A.Fake<ILogger<OfferService>>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        _sut = new OfferService(_portalRepositories, _notificationService, _roleBaseMailService, _identityService, _offerSetupService);
+        _sut = new OfferService(_portalRepositories, _notificationService, _roleBaseMailService, _identityService, _offerSetupService, _logger);
 
         SetupRepositories();
         _createNotificationsEnumerator = SetupServices();
@@ -768,7 +771,7 @@ public class OfferServiceTests
             .Create();
 
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
-        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService);
+        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService, _logger);
 
         // Act
         async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
@@ -792,7 +795,7 @@ public class OfferServiceTests
             .Create();
 
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
-        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService);
+        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService, _logger);
 
         // Act
         async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
@@ -2268,7 +2271,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
-            .Returns(((bool, bool, AppProviderSubscriptionDetailData))default);
+            .Returns(((bool, bool, AppProviderSubscriptionDetail))default);
 
         // Act
         async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
@@ -2295,7 +2298,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
-            .Returns((true, false, _fixture.Create<AppProviderSubscriptionDetailData>()));
+            .Returns((true, false, _fixture.Create<AppProviderSubscriptionDetail>()));
 
         // Act
         async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
@@ -2321,7 +2324,7 @@ public class OfferServiceTests
         };
         SetupGetSubscriptionDetailForProvider();
 
-        var data = _fixture.Create<AppProviderSubscriptionDetailData>();
+        var data = _fixture.Create<AppProviderSubscriptionDetail>();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
             .Returns((true, true, data));
@@ -2330,7 +2333,13 @@ public class OfferServiceTests
         var result = await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
 
         // Assert
-        result.Should().Be(data);
+        result.Id.Should().Be(data.Id);
+        result.Bpn.Should().Be(data.Bpn);
+        result.Customer.Should().Be(data.Customer);
+        result.Name.Should().Be(data.Name);
+        result.TenantUrl.Should().Be(data.TenantUrl);
+        result.AppInstanceId.Should().Be(data.AppInstanceId);
+        result.OfferSubscriptionStatus.Should().Be(data.OfferSubscriptionStatus);
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))

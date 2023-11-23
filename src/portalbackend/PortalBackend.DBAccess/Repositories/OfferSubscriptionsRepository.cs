@@ -82,31 +82,18 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                                 s.Company.Address!.CountryAlpha2Code,
                                 s.Company.BusinessPartnerNumber,
                                 s.Requester!.Email,
-                                s.Offer!.TechnicalUserProfiles.Any(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()))),
+                                s.Offer!.TechnicalUserProfiles.Any(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()),
+                                s.Process!.ProcessSteps
+                                    .Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)
+                                    .Select(ps => new ValueTuple<ProcessStepTypeId, ProcessStepStatusId>(
+                                        ps.ProcessStepTypeId,
+                                        ps.ProcessStepStatusId))
+                                    .Distinct())),
                     Image = g.Documents
                         .Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId == DocumentStatusId.LOCKED)
                         .Select(document => document.Id)
-                        .FirstOrDefault(),
-                    ProcessStepTypeId = g.OfferSubscriptions
-                        .Where(os => os.ProcessId != null)
-                        .Select(os => os.Process!.ProcessSteps
-                        .OrderByDescending(ps => ps.DateCreated)
-                        .Select(ps => ps.ProcessStepTypeId).FirstOrDefault()).FirstOrDefault()
+                        .FirstOrDefault()
                 })
-            .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    public Task<(OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, Guid AppId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid subscriptionId, Guid userCompanyId) =>
-        _context.OfferSubscriptions
-            .Where(os => os.Id == subscriptionId)
-            .Select(x => new ValueTuple<OfferSubscriptionStatusId, Guid, Guid, string?, bool, RequesterData>(
-                x.OfferSubscriptionStatusId,
-                x.RequesterId,
-                x.Offer!.Id,
-                x.Offer.Name,
-                x.Offer.ProviderCompanyId == userCompanyId,
-                new RequesterData(x.Requester!.Email, x.Requester.Firstname, x.Requester.Lastname)
-            ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -226,7 +213,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     : null))
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, bool IsUserOfCompany, AppProviderSubscriptionDetailData? Details)> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
+    public Task<(bool Exists, bool IsUserOfCompany, AppProviderSubscriptionDetail? Details)> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
         _context.OfferSubscriptions
             .AsSplitQuery()
             .Where(os => os.Id == subscriptionId && os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId)
@@ -236,11 +223,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 Subscription = os,
                 Company = os.Company
             })
-            .Select(x => new ValueTuple<bool, bool, AppProviderSubscriptionDetailData?>(
+            .Select(x => new ValueTuple<bool, bool, AppProviderSubscriptionDetail?>(
                 true,
                 x.IsProviderCompany,
                 x.IsProviderCompany
-                    ? new AppProviderSubscriptionDetailData(
+                    ? new AppProviderSubscriptionDetail(
                         x.Subscription.OfferId,
                         x.Subscription.OfferSubscriptionStatusId,
                         x.Subscription.Offer!.Name,
@@ -250,8 +237,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         x.Subscription.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
                         x.Subscription.AppSubscriptionDetail!.AppSubscriptionUrl,
                         x.Subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
-                        x.Subscription.Process!.ProcessSteps.Any() ?
-                            x.Subscription.Process!.ProcessSteps.OrderByDescending(ps => ps.DateCreated).Select(ps => ps.ProcessStepTypeId).FirstOrDefault() : null)
+                        x.Subscription.Process!.ProcessSteps
+                            .Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)
+                            .Select(ps => new ValueTuple<ProcessStepTypeId, ProcessStepStatusId>(
+                                ps.ProcessStepTypeId,
+                                ps.ProcessStepStatusId))
+                            .Distinct())
                     : null))
             .SingleOrDefaultAsync();
 

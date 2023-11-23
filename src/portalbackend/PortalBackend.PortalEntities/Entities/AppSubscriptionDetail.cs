@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// Detail data for the app subscription
 /// </summary>
 
-[AuditEntityV1(typeof(AuditAppSubscriptionDetail20221118))]
+[AuditEntityV1(typeof(AuditAppSubscriptionDetail20231115))]
 public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
 {
     /// <summary>

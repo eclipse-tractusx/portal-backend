@@ -55,10 +55,19 @@ public class OfferCompanySubscriptionStatusData
     /// </summary>
     /// <value></value>
     public Guid Image { get; set; }
-
-    /// <summary>
-    /// Id of the ProcessStep Type
-    /// </summary>
-    /// <value></value>
-    public ProcessStepTypeId ProcessStepTypeId { get; set; }
 }
+
+/// <summary>
+/// View model containing the ID of a company and its app subscription status in a specific context.
+/// </summary>
+public record CompanySubscriptionStatus(
+    Guid CompanyId,
+    string CompanyName,
+    Guid SubscriptionId,
+    OfferSubscriptionStatusId OfferSubscriptionStatus,
+    string? Country,
+    string? BpnNumber,
+    string? Email,
+    bool TechnicalUser,
+    ProcessStepTypeId? ProcessStepTypeId
+);

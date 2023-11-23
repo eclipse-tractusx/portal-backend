@@ -22,6 +22,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -64,8 +65,8 @@ public class ServiceBusinessLogicTests
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly IOfferService _offerService;
-    private readonly IOptions<ServiceSettings> _options;
     private readonly IIdentityService _identityService;
+    private readonly ILogger<ServiceBusinessLogic> _logger;
 
     public ServiceBusinessLogicTests()
     {
@@ -94,6 +95,7 @@ public class ServiceBusinessLogicTests
         _offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         _offerService = A.Fake<IOfferService>();
         _identityService = A.Fake<IIdentityService>();
+        _logger = A.Fake<ILogger<ServiceBusinessLogic>>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
         _fixture.Inject(_identityService);
 
@@ -111,8 +113,9 @@ public class ServiceBusinessLogicTests
                 NotificationTypeId.SERVICE_RELEASE_REQUEST
             }
         };
-        _options = Options.Create(serviceSettings);
-        _fixture.Inject(_options);
+        var options = Options.Create(serviceSettings);
+        _fixture.Inject(options);
+        _fixture.Inject(_logger);
     }
 
     #region Get Active Services
@@ -166,7 +169,7 @@ public class ServiceBusinessLogicTests
             },
             BasePortalAddress = "https://base-portal-address-test.de"
         };
-        var sut = new ServiceBusinessLogic(null!, null!, _offerSubscriptionService, null!, _identityService, Options.Create(serviceSettings));
+        var sut = new ServiceBusinessLogic(null!, null!, _offerSubscriptionService, null!, _identityService, Options.Create(serviceSettings), _logger);
 
         // Act
         var result = await sut.AddServiceSubscription(_existingServiceId, consentData);
@@ -202,7 +205,7 @@ public class ServiceBusinessLogicTests
         {
             ApplicationsMaxPageSize = 15
         };
-        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings));
+        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings), _logger);
 
         // Act
         var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, null, null, offerId).ConfigureAwait(false);
@@ -210,11 +213,11 @@ public class ServiceBusinessLogicTests
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
         result.Content.Should().HaveCount(5).And.Satisfy(
-            x => x.OfferId == data[0].OfferId && x.OfferName == data[0].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[0].CompanySubscriptionStatuses) && x.Image == data[0].Image && x.ProcessStepTypeId == data[0].ProcessStepTypeId,
-            x => x.OfferId == data[1].OfferId && x.OfferName == data[1].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[1].CompanySubscriptionStatuses) && x.Image == data[1].Image && x.ProcessStepTypeId == data[1].ProcessStepTypeId,
-            x => x.OfferId == data[2].OfferId && x.OfferName == data[2].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[2].CompanySubscriptionStatuses) && x.Image == data[2].Image && x.ProcessStepTypeId == data[2].ProcessStepTypeId,
-            x => x.OfferId == data[3].OfferId && x.OfferName == data[3].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[3].CompanySubscriptionStatuses) && x.Image == data[3].Image && x.ProcessStepTypeId == data[3].ProcessStepTypeId,
-            x => x.OfferId == data[4].OfferId && x.OfferName == data[4].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[4].CompanySubscriptionStatuses) && x.Image == data[4].Image && x.ProcessStepTypeId == data[4].ProcessStepTypeId
+            x => x.OfferId == data[0].OfferId && x.OfferName == data[0].ServiceName && x.CompanySubscriptionStatuses.Count() == data[0].CompanySubscriptionStatuses.Count() && x.Image == data[0].Image,
+            x => x.OfferId == data[1].OfferId && x.OfferName == data[1].ServiceName && x.CompanySubscriptionStatuses.Count() == data[1].CompanySubscriptionStatuses.Count() && x.Image == data[1].Image,
+            x => x.OfferId == data[2].OfferId && x.OfferName == data[2].ServiceName && x.CompanySubscriptionStatuses.Count() == data[2].CompanySubscriptionStatuses.Count() && x.Image == data[2].Image,
+            x => x.OfferId == data[3].OfferId && x.OfferName == data[3].ServiceName && x.CompanySubscriptionStatuses.Count() == data[3].CompanySubscriptionStatuses.Count() && x.Image == data[3].Image,
+            x => x.OfferId == data[4].OfferId && x.OfferName == data[4].ServiceName && x.CompanySubscriptionStatuses.Count() == data[4].CompanySubscriptionStatuses.Count() && x.Image == data[4].Image
         );
         A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identity.CompanyId, OfferTypeId.SERVICE, null, A<IEnumerable<OfferSubscriptionStatusId>>.That.IsSameSequenceAs(new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE, OfferSubscriptionStatusId.INACTIVE }), offerId))
             .MustHaveHappenedOnceExactly();
@@ -236,7 +239,7 @@ public class ServiceBusinessLogicTests
         {
             ApplicationsMaxPageSize = 15
         };
-        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings));
+        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings), _logger);
 
         // Act
         var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, null, null, offerId).ConfigureAwait(false);
@@ -244,8 +247,8 @@ public class ServiceBusinessLogicTests
         // Assert
         result.Meta.NumberOfElements.Should().Be(2);
         result.Content.Should().HaveCount(2).And.Satisfy(
-            x => x.OfferId == data[0].OfferId && x.OfferName == data[0].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[0].CompanySubscriptionStatuses) && x.Image == null,
-            x => x.OfferId == data[1].OfferId && x.OfferName == data[1].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[1].CompanySubscriptionStatuses) && x.Image == data[1].Image
+            x => x.OfferId == data[0].OfferId && x.OfferName == data[0].ServiceName && x.CompanySubscriptionStatuses.Count() == data[0].CompanySubscriptionStatuses.Count() && x.Image == null,
+            x => x.OfferId == data[1].OfferId && x.OfferName == data[1].ServiceName && x.CompanySubscriptionStatuses.Count() == data[1].CompanySubscriptionStatuses.Count() && x.Image == data[1].Image
         );
         A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identity.CompanyId, OfferTypeId.SERVICE, null, A<IEnumerable<OfferSubscriptionStatusId>>.That.IsSameSequenceAs(new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE, OfferSubscriptionStatusId.INACTIVE }), offerId))
             .MustHaveHappenedOnceExactly();
@@ -267,7 +270,7 @@ public class ServiceBusinessLogicTests
         {
             ApplicationsMaxPageSize = 15
         };
-        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings));
+        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings), _logger);
 
         // Act
         var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, null, null, offerId).ConfigureAwait(false);
@@ -328,7 +331,7 @@ public class ServiceBusinessLogicTests
         var data = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => offerService.GetOfferAgreementsAsync(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .Returns(data.ToAsyncEnumerable());
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
 
         // Act
         var result = await sut.GetServiceAgreement(_existingServiceId).ToListAsync().ConfigureAwait(false);
@@ -381,7 +384,7 @@ public class ServiceBusinessLogicTests
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .Returns(data);
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
 
         // Act
         var result = await sut.GetServiceConsentDetailDataAsync(_validConsentId).ConfigureAwait(false);
@@ -399,7 +402,7 @@ public class ServiceBusinessLogicTests
         var invalidConsentId = Guid.NewGuid();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .Throws(() => new NotFoundException("Test"));
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
 
         // Act
         async Task Action() => await sut.GetServiceConsentDetailDataAsync(invalidConsentId).ConfigureAwait(false);
@@ -427,7 +430,7 @@ public class ServiceBusinessLogicTests
             .Returns(responseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var settings = _fixture.Create<ServiceSettings>();
-        var sut = new ServiceBusinessLogic(null!, null!, null!, offerSetupService, _identityService, Options.Create(settings));
+        var sut = new ServiceBusinessLogic(null!, null!, null!, offerSetupService, _identityService, Options.Create(settings), _logger);
 
         // Act
         var result = await sut.AutoSetupServiceAsync(data).ConfigureAwait(false);
@@ -476,7 +479,7 @@ public class ServiceBusinessLogicTests
                 DocumentTypeId.SERVICE_LEADIMAGE
                 }
         };
-        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, null!, null!, _identityService, Options.Create(settings));
+        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, null!, null!, _identityService, Options.Create(settings), _logger);
 
         // Act
         await sut.GetServiceDocumentContentAsync(serviceId, documentId, CancellationToken.None).ConfigureAwait(false);
@@ -539,7 +542,7 @@ public class ServiceBusinessLogicTests
         };
         A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings));
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings), _logger);
 
         // Act
         var result = await sut.GetSubscriptionDetailForProvider(offerId, subscriptionId).ConfigureAwait(false);
@@ -569,7 +572,7 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
 
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings));
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings), _logger);
 
         // Act
         var result = await sut.GetSubscriptionDetailForSubscriber(offerId, subscriptionId).ConfigureAwait(false);
@@ -593,7 +596,7 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<OfferTypeId>._, A<DocumentTypeId>._))
             .Returns(paginationResponse);
 
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
 
         // Act
         var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10).ConfigureAwait(false);
@@ -613,7 +616,7 @@ public class ServiceBusinessLogicTests
     public async Task UnsubscribeOwnCompanyAppSubscriptionAsync_ExpectedCall()
     {
         // Arrange
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
 
         //  Act
         await sut.UnsubscribeOwnCompanyServiceSubscriptionAsync(_fixture.Create<Guid>()).ConfigureAwait(false);
