@@ -27,7 +27,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 public class SeedDataHandler : ISeedDataHandler
 {
-    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, IncludeFields = true, PropertyNameCaseInsensitive = false };
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        IncludeFields = true,
+        PropertyNameCaseInsensitive = false
+    };
+
     private KeycloakRealm? jsonRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
 
@@ -35,8 +41,11 @@ public class SeedDataHandler : ISeedDataHandler
     {
         using (var stream = File.OpenRead(path))
         {
-            jsonRealm = await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options, cancellationToken).ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
+            jsonRealm =
+                await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options, cancellationToken)
+                    .ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
         }
+
         _idOfClients = null;
     }
 
@@ -57,7 +66,8 @@ public class SeedDataHandler : ISeedDataHandler
 
     public IReadOnlyDictionary<string, IEnumerable<RoleModel>> ClientRoles
     {
-        get => jsonRealm?.Roles?.Client ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>().ToImmutableDictionary(x => x.Item1, x => x.Item2);
+        get => jsonRealm?.Roles?.Client ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>()
+            .ToImmutableDictionary(x => x.Item1, x => x.Item2);
     }
 
     public IEnumerable<RoleModel> RealmRoles
@@ -82,7 +92,8 @@ public class SeedDataHandler : ISeedDataHandler
 
     public IEnumerable<AuthenticationFlowModel> TopLevelCustomAuthenticationFlows
     {
-        get => jsonRealm?.AuthenticationFlows?.Where(x => (x.TopLevel ?? false) && !(x.BuiltIn ?? false)) ?? Enumerable.Empty<AuthenticationFlowModel>();
+        get => jsonRealm?.AuthenticationFlows?.Where(x => (x.TopLevel ?? false) && !(x.BuiltIn ?? false)) ??
+               Enumerable.Empty<AuthenticationFlowModel>();
     }
 
     public IEnumerable<ClientScopeModel> ClientScopes
@@ -93,6 +104,12 @@ public class SeedDataHandler : ISeedDataHandler
     public IReadOnlyDictionary<string, string> ClientsDictionary
     {
         get => _idOfClients ?? throw new InvalidOperationException("ClientInternalIds have not been set");
+    }
+
+    public IReadOnlyDictionary<string, IEnumerable<ClientScopeMappingModel>> ClientScopeMappings
+    {
+        get => jsonRealm?.ClientScopeMappings ?? Enumerable.Empty<(string, IEnumerable<ClientScopeMappingModel>)>()
+            .ToImmutableDictionary(x => x.Item1, x => x.Item2);
     }
 
     public async Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds)

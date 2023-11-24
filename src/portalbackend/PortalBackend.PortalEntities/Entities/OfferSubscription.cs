@@ -29,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
-[AuditEntityV1(typeof(AuditOfferSubscription20231013))]
+[AuditEntityV1(typeof(AuditOfferSubscription20231115))]
 public class OfferSubscription : IAuditableV1, IBaseEntity
 {
     /// <summary>

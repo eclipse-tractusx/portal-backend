@@ -68,28 +68,39 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ApplicationChecklistEntryType> ApplicationChecklistTypes { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
     public virtual DbSet<AuditAppSubscriptionDetail20221118> AuditAppSubscriptionDetail20221118 { get; set; } = default!;
+    public virtual DbSet<AuditAppSubscriptionDetail20231115> AuditAppSubscriptionDetail20231115 { get; set; } = default!;
     public virtual DbSet<AuditOffer20230119> AuditOffer20230119 { get; set; } = default!;
     public virtual DbSet<AuditOffer20230406> AuditOffer20230406 { get; set; } = default!;
+    public virtual DbSet<AuditOffer20231115> AuditOffer20231115 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20231013> AuditOfferSubscription20231013 { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscription20231115> AuditOfferSubscription20231115 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230824> AuditCompanyApplication20230824 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication20231115> AuditCompanyApplication20231115 { get; set; } = default!;
     public virtual DbSet<AuditCompanySsiDetail20230621> AuditCompanySsiDetail20230621 { get; set; } = default!;
+    public virtual DbSet<AuditCompanySsiDetail20231115> AuditCompanySsiDetail20231115 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20230522> AuditCompanyUser20230523 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230405> AuditConnector20230405 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230503> AuditConnector20230503 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230803> AuditConnector20230803 { get; set; } = default!;
+    public virtual DbSet<AuditConnector20231115> AuditConnector20231115 { get; set; } = default!;
     public virtual DbSet<AuditIdentity20230526> AuditIdentity20230526 { get; set; } = default!;
+    public virtual DbSet<AuditIdentity20231115> AuditIdentity20231115 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
+    public virtual DbSet<AuditUserRole20231115> AuditUserRole20231115 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
     public virtual DbSet<AuditCompanyAssignedRole2023316> AuditCompanyAssignedRole2023316 { get; set; } = default!;
     public virtual DbSet<AuditConsent20230412> AuditConsent20230412 { get; set; } = default!;
+    public virtual DbSet<AuditConsent20231115> AuditConsent20231115 { get; set; } = default!;
     public virtual DbSet<AuditIdentityAssignedRole20230522> AuditIdentityAssignedRole20230522 { get; set; } = default!;
     public virtual DbSet<AuditProviderCompanyDetail20230614> AuditProviderCompanyDetail20230614 { get; set; } = default!;
+    public virtual DbSet<AuditProviderCompanyDetail20231115> AuditProviderCompanyDetail20231115 { get; set; } = default!;
     public virtual DbSet<AuditDocument20231108> AuditDocument20231108 { get; set; } = default!;
+    public virtual DbSet<AuditDocument20231115> AuditDocument20231115 { get; set; } = default!;
     public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
@@ -317,7 +328,7 @@ public class PortalDbContext : DbContext
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
 
-                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20231013>();
+                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20231115>();
                     }
                 );
 
@@ -399,7 +410,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Offer, AuditOffer20230406>();
+            entity.HasAuditV1Triggers<Offer, AuditOffer20231115>();
         });
 
         modelBuilder.Entity<OfferSubscriptionProcessData>(entity =>
@@ -421,7 +432,7 @@ public class PortalDbContext : DbContext
                 .WithOne(e => e.AppSubscriptionDetail)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<AppSubscriptionDetail, AuditAppSubscriptionDetail20221118>();
+            entity.HasAuditV1Triggers<AppSubscriptionDetail, AuditAppSubscriptionDetail20231115>();
         });
 
         modelBuilder.Entity<OfferType>()
@@ -564,7 +575,7 @@ public class PortalDbContext : DbContext
                 .WithOne(e => e.ProviderCompanyDetail)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<ProviderCompanyDetail, AuditProviderCompanyDetail20230614>();
+            entity.HasAuditV1Triggers<ProviderCompanyDetail, AuditProviderCompanyDetail20231115>();
         });
 
         modelBuilder.Entity<CompanyApplication>(entity =>
@@ -584,7 +595,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(x => x.OnboardingServiceProviderId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<CompanyApplication, AuditCompanyApplication20230824>();
+            entity.HasAuditV1Triggers<CompanyApplication, AuditCompanyApplication20231115>();
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -665,7 +676,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<UserRole>(entity =>
         {
-            entity.HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+            entity.HasAuditV1Triggers<UserRole, AuditUserRole20231115>();
         });
 
         modelBuilder.Entity<UserRoleCollection>(entity =>
@@ -737,7 +748,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(e => e.IdentityTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Identity, AuditIdentity20230526>();
+            entity.HasAuditV1Triggers<Identity, AuditIdentity20231115>();
         });
 
         modelBuilder.Entity<CompanyUser>(entity =>
@@ -842,7 +853,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.ConsentStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Consent, AuditConsent20230412>();
+            entity.HasAuditV1Triggers<Consent, AuditConsent20231115>();
         });
 
         modelBuilder.Entity<ConsentAssignedOfferSubscription>(entity =>
@@ -1000,7 +1011,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<Connector>(d => d.CompanyServiceAccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Connector, AuditConnector20230803>();
+            entity.HasAuditV1Triggers<Connector, AuditConnector20231115>();
         });
 
         modelBuilder.Entity<ConnectorStatus>()
@@ -1303,7 +1314,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<CompanySsiDetail>(t => t.DocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<CompanySsiDetail, AuditCompanySsiDetail20230621>();
+            entity.HasAuditV1Triggers<CompanySsiDetail, AuditCompanySsiDetail20231115>();
         });
 
         modelBuilder.Entity<VerifiedCredentialTypeAssignedUseCase>(entity =>
@@ -1456,7 +1467,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Document>(entity =>
         {
-            entity.HasAuditV1Triggers<Document, AuditDocument20231108>();
+            entity.HasAuditV1Triggers<Document, AuditDocument20231115>();
         });
     }
 
