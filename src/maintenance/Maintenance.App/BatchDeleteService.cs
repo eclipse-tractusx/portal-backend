@@ -67,6 +67,10 @@ public class BatchDeleteService : BackgroundService
                 _logger.LogInformation("Getting documents and assignments older {Days} days", _days);
                 List<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> documentData = await dbContext.Documents.Where(x =>
                     x.DateCreated < DateTimeOffset.UtcNow.AddDays(-_days) &&
+                    !x.Companies.Any() &&
+                    x.Connector == null &&
+                    !x.Consents.Any() &&
+                    x.CompanySsiDetail == null &&
                     x.DocumentStatusId == DocumentStatusId.INACTIVE)
                     .Select(doc => new ValueTuple<Guid, IEnumerable<Guid>, IEnumerable<Guid>>(
                         doc.Id,
