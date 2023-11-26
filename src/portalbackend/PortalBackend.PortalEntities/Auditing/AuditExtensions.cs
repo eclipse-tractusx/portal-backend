@@ -20,6 +20,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
@@ -61,12 +62,18 @@ public static partial class AuditExtensions
                     .Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)))
             .ToImmutableList();
         var auditProperties = typeof(IAuditEntityV1).GetProperties();
+        var targetProperties = auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name).ToImmutableList();
+
+        targetProperties
+            .ExceptBy(Enumerable.Repeat(nameof(IBaseEntity.Id), 1), p => p.Name)
+            .Where(x => x.PropertyType == typeof(Nullable<>))
+            .IfAny(notNullableProperties =>
+                throw new ConfigurationException($"Properties {string.Join(",", notNullableProperties.Select(x => x.Name))} of type {auditEntityType.Name} are not nullable"));
 
         return new AuditPropertyInformation(
             auditEntityType,
             sourceProperties,
             auditProperties,
-            auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name));
+            targetProperties);
     }
 }
-

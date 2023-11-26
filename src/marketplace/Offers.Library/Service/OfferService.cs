@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Logging;
+using Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -43,26 +45,30 @@ public class OfferService : IOfferService
     private readonly IRoleBaseMailService _roleBaseMailService;
     private readonly IIdentityService _identityService;
     private readonly IOfferSetupService _offerSetupService;
+    private readonly ILogger<OfferService> _logger;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="notificationService">Creates notifications for the user</param>
-    /// <param name="mailingService">Mailing service to send mails to the user</param>
+    /// <param name="roleBaseMailService">Mailing service to send mails to the user</param>
     /// <param name="identityService">Access to the identity</param>
     /// <param name="offerSetupService">The offer Setup Service</param>
+    /// <param name="logger">Access to the logger</param>
     public OfferService(IPortalRepositories portalRepositories,
         INotificationService notificationService,
         IRoleBaseMailService roleBaseMailService,
         IIdentityService identityService,
-        IOfferSetupService offerSetupService)
+        IOfferSetupService offerSetupService,
+        ILogger<OfferService> logger)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
         _roleBaseMailService = roleBaseMailService;
         _identityService = identityService;
         _offerSetupService = offerSetupService;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -818,8 +824,12 @@ public class OfferService : IOfferService
         GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetSubscriptionDetailsForProviderAsync);
 
     /// <inheritdoc />
-    public Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles) =>
-        GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAppSubscriptionDetailsForProviderAsync);
+    public async Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
+    {
+        var data = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAppSubscriptionDetailsForProviderAsync)
+            .ConfigureAwait(false);
+        return new AppProviderSubscriptionDetailData(data.Id, data.OfferSubscriptionStatus, data.Name, data.Customer, data.Bpn, data.Contact, data.TechnicalUserData, data.TenantUrl, data.AppInstanceId, data.ProcessSteps.GetProcessStepTypeId(data.Id, _logger));
+    }
 
     /// <inheritdoc />
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles) =>

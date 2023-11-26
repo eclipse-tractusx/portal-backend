@@ -22,5 +22,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 public interface IUsersUpdater
 {
-    Task UpdateUsers(string keycloakInstanceName, CancellationToken cancellationToken);
+    Task UpdateUsers(string keycloakInstanceName, IEnumerable<string>? excludedUserAttributes, CancellationToken cancellationToken);
 }

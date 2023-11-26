@@ -26,7 +26,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditConnector20230803))]
+[AuditEntityV1(typeof(AuditConnector20231115))]
 public class Connector : IAuditableV1, IBaseEntity
 {
     public Connector(Guid id, string name, string locationId, string connectorUrl)

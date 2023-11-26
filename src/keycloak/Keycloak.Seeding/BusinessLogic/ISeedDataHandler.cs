@@ -48,6 +48,8 @@ public interface ISeedDataHandler
 
     IReadOnlyDictionary<string, string> ClientsDictionary { get; }
 
+    IReadOnlyDictionary<string, IEnumerable<ClientScopeMappingModel>> ClientScopeMappings { get; }
+
     Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds);
 
     string GetIdOfClient(string clientId);
