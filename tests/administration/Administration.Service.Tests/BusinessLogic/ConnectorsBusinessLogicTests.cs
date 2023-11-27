@@ -104,6 +104,7 @@ public class ConnectorsBusinessLogicTests
 
         A.CallTo(() => options.Value).Returns(_settings);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(_identity.UserId);
         var logger = A.Fake<ILogger<ConnectorsBusinessLogic>>();
 
         _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, logger);

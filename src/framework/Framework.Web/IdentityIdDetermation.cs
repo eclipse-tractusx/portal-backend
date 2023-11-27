@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,12 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
-public class ProcessIdentitySettings
+public class IdentityIdDetermination : IIdentityIdDetermination
 {
-    [Required]
-    public Guid ProcessUserId { get; set; } = Guid.Empty;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private Guid? _identityId;
+
+    public IdentityIdDetermination(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    /// <inheritdoc />
+    public Guid IdentityId => (_identityId ??= _httpContextAccessor.HttpContext?.User.GetIdentityData().UserId)!.Value;
 }

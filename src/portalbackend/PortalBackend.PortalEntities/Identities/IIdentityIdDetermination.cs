@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,12 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
-
-public class ProcessIdentitySettings
+public interface IIdentityIdDetermination
 {
-    [Required]
-    public Guid ProcessUserId { get; set; } = Guid.Empty;
+    /// <summary>
+    /// Access to the identity Id
+    /// </summary>
+    Guid IdentityId { get; }
 }

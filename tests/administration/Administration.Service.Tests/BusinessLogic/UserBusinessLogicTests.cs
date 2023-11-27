@@ -117,6 +117,7 @@ public class UserBusinessLogicTests
 
         _identityService = A.Fake<IIdentityService>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(_identity.UserId);
 
         _settings = new UserSettings
         {
@@ -566,6 +567,7 @@ public class UserBusinessLogicTests
 
         var identity = _fixture.Create<IdentityData>();
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
 
         A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(identity.UserId))
             .Returns(((string?, CompanyUserAccountData))default!);
@@ -599,6 +601,7 @@ public class UserBusinessLogicTests
 
         var identity = _fixture.Create<IdentityData>();
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
 
         var sut = new UserBusinessLogic(
             _provisioningManager,
@@ -1442,6 +1445,7 @@ public class UserBusinessLogicTests
         var identity = _fixture.Create<IdentityData>();
         var userRoleIds = new[] { _fixture.Create<Guid>(), _fixture.Create<Guid>() };
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
 
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(userRoleIds.ToAsyncEnumerable());
@@ -1465,6 +1469,7 @@ public class UserBusinessLogicTests
         // Arrange
         var identity = _fixture.Create<IdentityData>();
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(identity.UserId, A<IEnumerable<Guid>>._))
             .Returns((CompanyOwnUserDetails)default!);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);

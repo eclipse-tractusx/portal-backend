@@ -71,6 +71,7 @@ public class AppBusinessLogicTests
         _offerSetupService = A.Fake<IOfferSetupService>();
         _logger = A.Fake<ILogger<AppsBusinessLogic>>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(_identity.UserId);
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);

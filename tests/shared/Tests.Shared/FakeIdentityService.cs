@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -25,7 +24,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 public class FakeIdentityService : IIdentityService
 {
+    private readonly Guid _identityId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001");
+
     /// <inheritdoc />
     public IdentityData IdentityData =>
-        new("3d8142f1-860b-48aa-8c2b-1ccb18699f65", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), IdentityTypeId.COMPANY_USER, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        new("3d8142f1-860b-48aa-8c2b-1ccb18699f65", _identityId, IdentityTypeId.COMPANY_USER, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+
+    public Guid IdentityId { get => _identityId; }
 }

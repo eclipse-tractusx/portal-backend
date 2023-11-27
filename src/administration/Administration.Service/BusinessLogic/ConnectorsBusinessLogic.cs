@@ -369,7 +369,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException($"Connector {data.ExternalId} already has a document assigned");
         }
 
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityService.IdentityData.UserId, cancellationToken).ConfigureAwait(false);
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityService.IdentityId, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

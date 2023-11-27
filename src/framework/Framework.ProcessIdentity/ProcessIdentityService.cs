@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,20 +17,32 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 
 public class ProcessIdentityService : IIdentityService
 {
-    private readonly ProcessIdentitySettings _settings;
+    private readonly PortalDbContext _context;
+    private readonly IIdentityIdDetermination _identityIdDetermination;
+    private IdentityData? _identityData;
 
-    public ProcessIdentityService(IOptions<ProcessIdentitySettings> options) =>
-        _settings = options.Value;
+    public ProcessIdentityService(PortalDbContext context, IIdentityIdDetermination identityIdDetermination)
+    {
+        _context = context;
+        _identityIdDetermination = identityIdDetermination;
+    }
 
     /// <inheritdoc />
     public IdentityData IdentityData =>
-        new(_settings.UserEntityId, _settings.ProcessUserId, _settings.IdentityTypeId, _settings.ProcessUserCompanyId);
+        _identityData ??= GetIdentityData();
+
+    private IdentityData GetIdentityData() =>
+        _context.Identities.Where(x => x.Id == _identityIdDetermination.IdentityId && x.UserEntityId != null)
+            .Select(x => new IdentityData(x.UserEntityId!, x.Id, x.IdentityTypeId, x.CompanyId))
+            .SingleOrDefault() ?? throw new ConflictException($"Identity {_identityIdDetermination.IdentityId} could not be found");
+
+    public Guid IdentityId => _identityIdDetermination.IdentityId;
 }

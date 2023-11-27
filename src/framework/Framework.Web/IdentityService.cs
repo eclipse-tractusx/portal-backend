@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -39,4 +38,6 @@ public class IdentityService : IIdentityService
     public IdentityData IdentityData =>
         _identityData ??= _httpContextAccessor.HttpContext?.User.GetIdentityData()
             ?? throw new ConflictException("The identity should be set here");
+
+    public Guid IdentityId => IdentityData.UserId;
 }

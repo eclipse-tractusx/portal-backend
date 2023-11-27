@@ -98,7 +98,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     private async IAsyncEnumerable<string> CreateOwnCompanyUsersInternalAsync(IEnumerable<UserCreationInfo> userList)
     {
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityService.IdentityData.UserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityService.IdentityId).ConfigureAwait(false);
 
         var distinctRoles = userList.SelectMany(user => user.Roles).Distinct().ToList();
 
@@ -166,7 +166,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo)
     {
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityService.IdentityData.UserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityService.IdentityId).ConfigureAwait(false);
         var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
         if (!userCreationInfo.Roles.Any())
@@ -316,7 +316,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyOwnUserDetails> GetOwnUserDetails()
     {
-        var userId = _identityService.IdentityData.UserId;
+        var userId = _identityService.IdentityId;
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(_settings.UserAdminRoles).ToListAsync().ConfigureAwait(false);
         var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(userId, userRoleIds).ConfigureAwait(false);
@@ -329,7 +329,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails)
     {
-        var userId = _identityService.IdentityData.UserId;
+        var userId = _identityService.IdentityId;
         if (companyUserId != userId)
         {
             throw new ForbiddenException($"invalid userId {companyUserId} for user {userId}");
@@ -388,7 +388,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<int> DeleteOwnUserAsync(Guid companyUserId)
     {
-        var userId = _identityService.IdentityData.UserId;
+        var userId = _identityService.IdentityId;
         if (companyUserId != userId)
         {
             throw new ForbiddenException($"companyUser {companyUserId} is not the id of user {userId}");
@@ -528,7 +528,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             15,
             _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersPaginationSourceAsync(
                 appId,
-                _identityService.IdentityData.UserId,
+                _identityService.IdentityId,
                 new[] { OfferSubscriptionStatusId.ACTIVE },
                 new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
                 filter));

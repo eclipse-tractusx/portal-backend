@@ -188,7 +188,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var documentDetails = await documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identityService.IdentityData.UserId).ConfigureAwait(false);
+        var documentDetails = await documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identityService.IdentityId).ConfigureAwait(false);
         if (documentDetails.DocumentId == Guid.Empty)
         {
             throw new NotFoundException($"document {documentId} does not exist.");
@@ -482,7 +482,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         var companyId = _identityService.IdentityData.CompanyId;
-        var userId = _identityService.IdentityData.UserId;
+        var userId = _identityService.IdentityId;
         var (applicationCompanyId, applicationStatusId, companyAssignedRoleIds, consents) = companyRoleAgreementConsentData;
         if (applicationCompanyId != companyId)
         {
@@ -587,7 +587,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         else
         {
-            _logger.LogInformation("user {userId} has no email-address", _identityService.IdentityData.UserId);
+            _logger.LogInformation("user {userId} has no email-address", _identityService.IdentityId);
         }
 
         return true;
@@ -595,7 +595,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async ValueTask<CompanyApplicationUserEmailData> GetAndValidateCompanyDataDetails(Guid applicationId, IEnumerable<DocumentTypeId> docTypeIds)
     {
-        var userId = _identityService.IdentityData.UserId;
+        var userId = _identityService.IdentityId;
         var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>()
             .GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, docTypeIds).ConfigureAwait(false);
 
@@ -666,7 +666,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId)
     {
-        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, _identityService.IdentityData.UserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, _identityService.IdentityId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"application {applicationId} not found");
@@ -680,7 +680,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<int> SetInvitationStatusAsync()
     {
-        var invitationData = await _portalRepositories.GetInstance<IInvitationRepository>().GetInvitationStatusAsync(_identityService.IdentityData.UserId).ConfigureAwait(false);
+        var invitationData = await _portalRepositories.GetInstance<IInvitationRepository>().GetInvitationStatusAsync(_identityService.IdentityId).ConfigureAwait(false);
 
         if (invitationData == null)
         {

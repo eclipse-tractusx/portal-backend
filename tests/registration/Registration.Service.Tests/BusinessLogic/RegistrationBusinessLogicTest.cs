@@ -109,6 +109,7 @@ public class RegistrationBusinessLogicTest
 
         _identityService = A.Fake<IIdentityService>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(_identity.UserId);
 
         var options = Options.Create(new RegistrationSettings
         {
@@ -1511,6 +1512,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var identity = _fixture.Create<IdentityData>();
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
         var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
 
         A.CallTo(() => _documentRepository.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, identity.UserId))
@@ -1543,6 +1545,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var identity = _fixture.Create<IdentityData>();
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
 
         A.CallTo(() => _documentRepository.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, identity.UserId))
             .Returns(((bool, IEnumerable<UploadDocuments>))default);
@@ -1980,6 +1983,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
@@ -2022,6 +2026,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
@@ -2061,6 +2066,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
@@ -2096,6 +2102,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
@@ -2129,6 +2136,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
@@ -2156,6 +2164,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
@@ -2183,6 +2192,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
         var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
@@ -2210,6 +2220,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
@@ -2237,6 +2248,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
@@ -2261,6 +2273,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
@@ -2288,6 +2301,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();

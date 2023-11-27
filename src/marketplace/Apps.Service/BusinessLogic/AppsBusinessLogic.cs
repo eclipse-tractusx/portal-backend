@@ -91,7 +91,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync() =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetAllBusinessAppDataForUserIdAsync(_identityService.IdentityData.UserId)
+            .GetAllBusinessAppDataForUserIdAsync(_identityService.IdentityId)
             .Select(x =>
                 new BusinessAppData(
                     x.OfferId,
@@ -138,19 +138,19 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync() =>
         _portalRepositories
             .GetInstance<IUserRepository>()
-            .GetAllFavouriteAppsForUserUntrackedAsync(_identityService.IdentityData.UserId);
+            .GetAllFavouriteAppsForUserUntrackedAsync(_identityService.IdentityId);
 
     /// <inheritdoc/>
     public async Task RemoveFavouriteAppForUserAsync(Guid appId)
     {
-        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, _identityService.IdentityData.UserId));
+        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, _identityService.IdentityId));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task AddFavouriteAppForUserAsync(Guid appId)
     {
-        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, _identityService.IdentityData.UserId);
+        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, _identityService.IdentityId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
