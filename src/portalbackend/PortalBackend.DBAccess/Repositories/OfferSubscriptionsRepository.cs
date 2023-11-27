@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using System.Linq.Expressions;
 using System.Runtime.Intrinsics.X86;
 
@@ -59,7 +60,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         offer.OfferTypeId == offerTypeId &&
                         (!offerId.HasValue || offer.Id == offerId.Value) &&
                         offer.ProviderCompanyId == userCompanyId &&
-                        offer.OfferSubscriptions.Any(os => statusIds.Contains(os.OfferSubscriptionStatusId)))
+                        offer.OfferSubscriptions.Any(os => statusIds.Contains(os.OfferSubscriptionStatusId))
+                        && (companyName == null || EF.Functions.ILike(offer.ProviderCompany!.Name, $"%{companyName.EscapeForILike()}%")))
                     .GroupBy(s => s.ProviderCompanyId),
                 sorting switch
                 {
