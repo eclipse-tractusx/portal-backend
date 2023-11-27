@@ -165,7 +165,6 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             results.Data.Should().HaveCount(count);
             results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(companySubscriptionCount);
             results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == companySubscriptionCount && x.First().TechnicalUser == technicalUser);
-
         }
         else
         {
