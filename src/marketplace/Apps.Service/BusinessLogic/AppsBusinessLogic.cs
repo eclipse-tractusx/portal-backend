@@ -163,11 +163,18 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName)
     {
+<<<<<<< HEAD
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
             throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
         }
 
+=======
+        if (!companyName.IsNullOrEmpty() || !Company.IsMatch(companyName))
+        {
+            throw new ControllerArgumentException("CompanyName length must be 2-30 characters and *+=#%\\s not used as one of the first three characters in the company name");
+        }
+>>>>>>> WIP: Searching part not working properly along with some test cases showing some new errors.
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
