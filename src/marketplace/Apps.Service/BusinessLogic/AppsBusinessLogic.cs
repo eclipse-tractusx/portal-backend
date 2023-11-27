@@ -20,6 +20,8 @@
 
 using Microsoft.Extensions.Options;
 using Offers.Library.Extensions;
+using Microsoft.IdentityModel.Tokens;
+using Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -163,14 +165,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName)
     {
-<<<<<<< HEAD
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
-        {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
-        }
 
-=======
-        if (!companyName.IsNullOrEmpty() || !Company.IsMatch(companyName))
+        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
             throw new ControllerArgumentException("CompanyName length must be 2-30 characters and *+=#%\\s not used as one of the first three characters in the company name");
         }
