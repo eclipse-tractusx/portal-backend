@@ -155,7 +155,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, offerTypeId, sorting, offerSubscriptionStatusIds, offerId)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, offerTypeId, sorting, offerSubscriptionStatusIds, offerId, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         if (count > 0)
@@ -163,14 +163,30 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             results.Should().NotBeNull();
             results!.Count.Should().Be(count);
             results.Data.Should().HaveCount(count);
-            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
-            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == 1 && x.First().TechnicalUser == technicalUser);
-            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == 1);
+            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(companySubscriptionCount);
+            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == companySubscriptionCount && x.First().TechnicalUser == technicalUser);
+            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().ProcessStepTypeId.Should().Match(x => x == processStepTypeId);
         }
         else
         {
             results.Should().BeNull();
         }
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_WithCompanyFilter_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, OfferTypeId.SERVICE, SubscriptionStatusSorting.CompanyNameAsc, new[] { OfferSubscriptionStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING }, null, "catena")(0, 15).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(2);
+        results.Data.Should().HaveCount(2);
+        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
     }
 
     #endregion
