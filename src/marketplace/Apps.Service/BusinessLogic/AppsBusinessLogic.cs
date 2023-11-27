@@ -174,7 +174,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ControllerArgumentException("CompanyName length must be 2-30 characters and *+=#%\\s not used as one of the first three characters in the company name");
         }
->>>>>>> WIP: Searching part not working properly along with some test cases showing some new errors.
+
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
