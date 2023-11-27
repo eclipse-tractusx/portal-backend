@@ -165,10 +165,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName)
     {
-
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (!companyName.IsNullOrEmpty() || !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+            throw new ControllerArgumentException("CompanyName length must be 2-30 characters and *+=#%\\s not used as one of the first three characters in the company name");
         }
 
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
