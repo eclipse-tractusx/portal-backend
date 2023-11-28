@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -25,13 +26,15 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers.V2;
 
 /// <summary>
 /// Controller providing actions execute invitation
 /// </summary>
 [ApiController]
-[Route("api/administration/invitation")]
+[ApiVersion("2.0")]
+[Route("api/latest/administration/invitation")]
+[Route("api/v{version:apiVersion}/administration/invitation")]
 [Produces("application/json")]
 [Consumes("application/json")]
 public class InvitationController : ControllerBase

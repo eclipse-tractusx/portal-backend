@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using UnsupportedMediaTypeException = Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.UnsupportedMediaTypeException;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 

@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Asp.Versioning;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -31,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 var VERSION = "v2";
 
 WebApplicationBuildRunner
-    .BuildAndRunWebApplication<Program>(args, "registration", VERSION, builder =>
+    .BuildAndRunWebApplication<Program>(args, "registration", builder =>
     {
         builder.Services
             .AddMailingAndTemplateManager(builder.Configuration)
@@ -46,4 +47,4 @@ WebApplicationBuildRunner
 
         builder.Services.AddApplicationChecklistCreation();
         builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address") ?? throw new ConfigurationException("BPN_Address is not configured"));
-    });
+    }, new ApiVersion(1, 0));

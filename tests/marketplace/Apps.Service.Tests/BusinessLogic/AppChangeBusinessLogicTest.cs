@@ -43,6 +43,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 using Xunit;
+using UnsupportedMediaTypeException = Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.UnsupportedMediaTypeException;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
 

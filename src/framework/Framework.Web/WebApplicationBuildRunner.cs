@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Asp.Versioning;
 using Flurl.Util;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -31,8 +32,8 @@ public static class WebApplicationBuildRunner
     public static void BuildAndRunWebApplication<TProgram>(
         string[] args,
         string path,
-        string version,
-        Action<WebApplicationBuilder> configureBuilder)
+        Action<WebApplicationBuilder> configureBuilder,
+        ApiVersion defaultApiVersion)
     {
         LoggingExtensions.EnsureInitialized();
         Log.Information("Starting the application");
@@ -54,11 +55,11 @@ public static class WebApplicationBuildRunner
                 }
             });
             builder.Services
-                .AddDefaultServices<TProgram>(builder.Configuration, version);
+                .AddDefaultServices<TProgram>(builder.Configuration, defaultApiVersion);
 
             configureBuilder(builder);
 
-            builder.Build().CreateApp<TProgram>(path, version, builder.Environment).Run();
+            builder.Build().CreateApp<TProgram>(path, builder.Environment).Run();
         }
         catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
         {

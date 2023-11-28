@@ -40,6 +40,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Text.RegularExpressions;
+using UnsupportedMediaTypeException = Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.UnsupportedMediaTypeException;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
