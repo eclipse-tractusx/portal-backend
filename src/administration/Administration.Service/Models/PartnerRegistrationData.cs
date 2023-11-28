@@ -21,7 +21,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using System.Text.Json.Serialization;
-using RegistrationData = Org.Eclipse.TractusX.Portal.Backend.Registration.Common.RegistrationData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 

@@ -19,10 +19,8 @@
 
 using HtmlAgilityPack;
 using MimeKit;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using System.Text;
 using System.Web;
-using Xunit;
 using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;

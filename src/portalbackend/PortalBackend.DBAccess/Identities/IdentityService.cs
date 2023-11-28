@@ -18,20 +18,20 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Identities;
 
-public class ProcessIdentityService : IIdentityService
+public class IdentityService : IIdentityService
 {
-    private readonly PortalDbContext _context;
+    private readonly IIdentityRepository _identityRepository;
     private readonly IIdentityIdDetermination _identityIdDetermination;
     private IdentityData? _identityData;
 
-    public ProcessIdentityService(PortalDbContext context, IIdentityIdDetermination identityIdDetermination)
+    public IdentityService(IPortalRepositories portalRepositories, IIdentityIdDetermination identityIdDetermination)
     {
-        _context = context;
+        _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
         _identityIdDetermination = identityIdDetermination;
     }
 
@@ -40,9 +40,8 @@ public class ProcessIdentityService : IIdentityService
         _identityData ??= GetIdentityData();
 
     private IdentityData GetIdentityData() =>
-        _context.Identities.Where(x => x.Id == _identityIdDetermination.IdentityId && x.UserEntityId != null)
-            .Select(x => new IdentityData(x.UserEntityId!, x.Id, x.IdentityTypeId, x.CompanyId))
-            .SingleOrDefault() ?? throw new ConflictException($"Identity {_identityIdDetermination.IdentityId} could not be found");
+        _identityRepository.GetIdentityDataByIdentityId(IdentityId) ??
+        throw new ConflictException($"Identity {_identityIdDetermination.IdentityId} could not be found");
 
     public Guid IdentityId => _identityIdDetermination.IdentityId;
 }

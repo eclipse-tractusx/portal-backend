@@ -17,9 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 

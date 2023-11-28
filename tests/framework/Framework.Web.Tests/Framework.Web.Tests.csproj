@@ -20,6 +20,8 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

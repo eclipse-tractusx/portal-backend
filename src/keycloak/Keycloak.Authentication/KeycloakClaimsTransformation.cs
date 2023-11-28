@@ -20,8 +20,8 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -33,11 +33,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
     public class KeycloakClaimsTransformation : IClaimsTransformation
     {
         private readonly IPortalRepositories _portalDbRepositories;
+        private readonly ILogger<KeycloakClaimsTransformation> _logger;
         private readonly JwtBearerOptions _options;
 
-        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options, IPortalRepositories portalDbRepositories)
+        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options, IPortalRepositories portalDbRepositories, ILogger<KeycloakClaimsTransformation> logger)
         {
             _portalDbRepositories = portalDbRepositories;
+            _logger = logger;
             _options = options.Value;
         }
 
@@ -85,19 +87,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
 
         private async ValueTask<bool> AddIdentity(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity)
         {
-            var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
-            var identityData = string.IsNullOrWhiteSpace(sub)
-                ? null
-                : await _portalDbRepositories.GetInstance<IUserRepository>().GetActiveUserDataByUserEntityId(sub).ConfigureAwait(false);
-
-            if (identityData != null)
+            var preferredUserName = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.PreferredUserName)?.Value;
+            switch (string.IsNullOrWhiteSpace(preferredUserName))
             {
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityData.UserId.ToString()));
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identityData.IdentityType) ?? throw new ConflictException($"IdentityType {(int)identityData.IdentityType} is out of range")));
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, identityData.CompanyId.ToString()));
-                return true;
+                case false when !Guid.TryParse(preferredUserName, out var identityId):
+                    claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityId.ToString()));
+                    return true;
+                default:
+                    {
+                        var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
+                        _logger.LogInformation("Preferred user name {PreferredUserName} couldn't be parsed to uuid for userEntityId {Sub}", preferredUserName, sub);
+                        var identityData = string.IsNullOrWhiteSpace(sub)
+                            ? null
+                            : await _portalDbRepositories.GetInstance<IUserRepository>().GetActiveUserDataByUserEntityId(sub).ConfigureAwait(false);
+                        if (identityData == null)
+                        {
+                            _logger.LogWarning("No identity found for userEntityId {Sub}", sub);
+                            return false;
+                        }
+                        claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityData.UserId.ToString()));
+                        return true;
+                    }
             }
-            return false;
         }
     }
 }

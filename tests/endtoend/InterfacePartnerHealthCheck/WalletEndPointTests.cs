@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Castle.Core.Internal;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using RestAssured.Response.Logging;
 using Xunit;
 using Xunit.Abstractions;

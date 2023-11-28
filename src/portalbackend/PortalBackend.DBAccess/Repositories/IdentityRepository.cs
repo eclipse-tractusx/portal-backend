@@ -17,27 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class IdentityService : IIdentityService
+public class IdentityRepository : IIdentityRepository
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private IdentityData? _identityData;
+    private readonly PortalDbContext _context;
 
-    public IdentityService(IHttpContextAccessor httpContextAccessor)
+    public IdentityRepository(PortalDbContext context)
     {
-        _httpContextAccessor = httpContextAccessor;
+        _context = context;
     }
 
-    /// <inheritdoc />
-    public IdentityData IdentityData =>
-        _identityData ??= _httpContextAccessor.HttpContext?.User.GetIdentityData()
-            ?? throw new ConflictException("The identity should be set here");
-
-    public Guid IdentityId => IdentityData.UserId;
+    public IdentityData? GetIdentityDataByIdentityId(Guid identityId) =>
+        _context.Identities.Where(x => x.Id == identityId && x.UserEntityId != null)
+            .Select(x => new IdentityData(x.UserEntityId!, x.Id, x.IdentityTypeId, x.CompanyId))
+            .SingleOrDefault();
 }

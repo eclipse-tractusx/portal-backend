@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 public class FakeIdentityService : IIdentityService
 {
-    private readonly Guid _identityId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001");
+    private readonly Guid _identityId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
 
     /// <inheritdoc />
     public IdentityData IdentityData =>

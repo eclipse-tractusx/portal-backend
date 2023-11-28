@@ -20,16 +20,13 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 
 public static class ProcessIdentityServiceCollectionExtensions
 {
-    public static IServiceCollection AddProcessIdentity(this IServiceCollection services, IConfigurationSection section) =>
-        AddConfigurationIdentityIdDetermination(services, section)
-            .AddTransient<IIdentityService, ProcessIdentityService>();
-
     public static IServiceCollection AddConfigurationIdentityIdDetermination(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<ProcessIdentitySettings>()
@@ -37,6 +34,7 @@ public static class ProcessIdentityServiceCollectionExtensions
             .ValidateOnStart();
 
         return services
-            .AddTransient<IIdentityIdDetermination, ConfigurationIdentityIdDetermination>();
+            .AddTransient<IIdentityIdDetermination, ConfigurationIdentityIdDetermination>()
+            .AddTransient<IIdentityService, IdentityService>();
     }
 }
