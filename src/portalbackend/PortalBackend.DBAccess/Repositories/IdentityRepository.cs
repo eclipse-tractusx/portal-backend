@@ -20,7 +20,6 @@
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -32,14 +31,23 @@ public class IdentityRepository : IIdentityRepository
     {
         _context = context;
     }
-
-    public Task<IdentityData?> GetActiveIdentityDataByIdentityId(Guid identityId) =>
+    public Task<Guid> GetActiveCompanyIdByIdentityId(Guid identityId) =>
         _context.Identities.Where(x => x.Id == identityId && x.UserEntityId != null && x.UserStatusId == UserStatusId.ACTIVE)
-            .Select(x => new IdentityData(x.UserEntityId!, x.Id, x.IdentityTypeId, x.CompanyId))
+            .Select(x => x.CompanyId)
             .SingleOrDefaultAsync();
 
-    public Task<Guid> GetIdentityIdByUserEntityId(string userEntityId) =>
-        _context.Identities.Where(x => x.UserEntityId == userEntityId)
-            .Select(x => x.Id)
+    public Task<(IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByIdentityId(Guid identityId) =>
+        _context.Identities.Where(x => x.Id == identityId && x.UserEntityId != null && x.UserStatusId == UserStatusId.ACTIVE)
+            .Select(x => new ValueTuple<IdentityTypeId, Guid>(
+                x.IdentityTypeId,
+                x.CompanyId))
+            .SingleOrDefaultAsync();
+
+    public Task<(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByUserEntityId(string userEntityId) =>
+        _context.Identities.Where(x => x.UserEntityId == userEntityId && x.UserStatusId == UserStatusId.ACTIVE)
+            .Select(x => new ValueTuple<Guid, IdentityTypeId, Guid>(
+                x.Id,
+                x.IdentityTypeId,
+                x.CompanyId))
             .SingleOrDefaultAsync();
 }

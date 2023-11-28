@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -32,13 +31,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 public class DocumentsBusinessLogicTests
 {
     private static readonly Guid ValidDocumentId = Guid.NewGuid();
-    private static readonly string IamUserId = Guid.NewGuid().ToString();
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly IDocumentRepository _documentRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOptions<DocumentSettings> _options;
-    private readonly DocumentsBusinessLogic _sut;
     private readonly IIdentityService _identityService;
 
     public DocumentsBusinessLogicTests()
@@ -54,11 +51,14 @@ public class DocumentsBusinessLogicTests
         {
             EnableSeedEndpoint = true
         });
+        _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-        _sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
     }
 
     #region GetSeedData
@@ -118,9 +118,10 @@ public class DocumentsBusinessLogicTests
     {
         // Arrange
         SetupFakesForGetDocument();
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        var result = await _sut.GetDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        var result = await sut.GetDocumentAsync(ValidDocumentId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -134,9 +135,10 @@ public class DocumentsBusinessLogicTests
         // Arrange
         var documentId = Guid.NewGuid();
         SetupFakesForGetDocument();
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        async Task Act() => await _sut.GetDocumentAsync(documentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -147,12 +149,13 @@ public class DocumentsBusinessLogicTests
     public async Task GetDocumentAsync_WithWrongUser_ThrowsForbiddenException()
     {
         // Arrange
-        var identity = _fixture.Create<IdentityData>();
+        var identity = _fixture.Create<IIdentityData>();
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
         SetupFakesForGetDocument();
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetDocumentAsync(ValidDocumentId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -170,9 +173,10 @@ public class DocumentsBusinessLogicTests
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(ValidDocumentId, DocumentTypeId.SELF_DESCRIPTION))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>(content, "test.json", MediaTypeId.JSON));
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        var result = await _sut.GetSelfDescriptionDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        var result = await sut.GetSelfDescriptionDocumentAsync(ValidDocumentId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -188,9 +192,10 @@ public class DocumentsBusinessLogicTests
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>());
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        async Task Act() => await _sut.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -207,9 +212,10 @@ public class DocumentsBusinessLogicTests
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
             .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", true, MediaTypeId.JSON));
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         //Act
-        var result = await _sut.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await sut.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappenedOnceExactly();
@@ -225,9 +231,10 @@ public class DocumentsBusinessLogicTests
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
             .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", false, MediaTypeId.JSON));
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         //Act
-        var Act = () => _sut.GetFrameDocumentAsync(documentId);
+        var Act = () => sut.GetFrameDocumentAsync(documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -241,9 +248,10 @@ public class DocumentsBusinessLogicTests
         var documentId = Guid.NewGuid();
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
             .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>());
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         //Act
-        var Act = () => _sut.GetFrameDocumentAsync(documentId);
+        var Act = () => sut.GetFrameDocumentAsync(documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);

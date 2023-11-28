@@ -95,7 +95,7 @@ public class NetworkRegistrationHandlerTests
         // Arrange
         var user1Id = Guid.NewGuid();
         var user1 = new CompanyUserIdentityProviderProcessData(user1Id, firstName, lastName, email,
-            "123456789", "Test Company", "BPNL00000001TEST",
+            "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
@@ -121,7 +121,7 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid();
-        var user1 = new CompanyUserIdentityProviderProcessData(user1Id, "tony", "stark", "tony@stark.com", "123456789", "Test Company", "BPNL00000001TEST",
+        var user1 = new CompanyUserIdentityProviderProcessData(user1Id, "tony", "stark", "tony@stark.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("ironman", null, "id1234"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
@@ -148,10 +148,10 @@ public class NetworkRegistrationHandlerTests
         // Arrange
         var user1Id = Guid.NewGuid().ToString();
         var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
-            "123456789", "Test Company", "BPNL00000001TEST",
+            "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
         var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
-            "steven@strange.com", "987654321", "Test Company", "BPNL00000001TEST",
+            "steven@strange.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "id9876"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
@@ -181,13 +181,13 @@ public class NetworkRegistrationHandlerTests
         // Arrange
         var user1Id = Guid.NewGuid().ToString();
         var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
-            "123456789", "Test Company", "BPNL00000001TEST",
+            "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
         var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
-            "steven@strange.com", "987654321", "Test Company", "BPNL00000001TEST",
+            "steven@strange.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "id9876"), 1));
         var user3 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "foo", "bar",
-            "foo@bar.com", "deadbeef", "Acme Corp", "BPNL00000001TEST",
+            "foo@bar.com", "Acme Corp", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkData("foobar", "idp2", "id4711"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))

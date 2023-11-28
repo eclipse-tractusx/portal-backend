@@ -51,7 +51,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     private readonly INotificationService _notificationService;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IOfferService _offerService;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly IOfferDocumentService _offerDocumentService;
     private readonly IDateTimeProvider _dateTimeProvider;
 
@@ -81,7 +81,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         _provisioningManager = provisioningManager;
         _settings = settings.Value;
         _offerService = offerService;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _offerDocumentService = offerDocumentService;
         _dateTimeProvider = dateTimeProvider;
     }
@@ -95,7 +95,6 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
     private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles)
     {
-        var identity = _identityService.IdentityData;
         var result = await _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
         if (result == default)
         {
@@ -107,9 +106,9 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             throw new ConflictException($"App {appId} providing company is not yet set.");
         }
 
-        if (result.ProviderCompanyId.Value != identity.CompanyId)
+        if (result.ProviderCompanyId.Value != _identityData.CompanyId)
         {
-            throw new ForbiddenException($"Company {identity.CompanyId} is not the provider company of app {appId}");
+            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of app {appId}");
         }
 
         var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
@@ -128,7 +127,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         };
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, identity.UserId, content, result.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, _identityData.IdentityId, content, result.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return roleData;
     }
@@ -156,7 +155,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
     private async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, IOfferRepository offerRepository)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, companyId).ConfigureAwait(false);
         if (result == default)
         {
@@ -189,8 +188,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         documentContentType.CheckDocumentContentType(appLeadImageContentTypes);
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var identity = _identityService.IdentityData;
-        var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, identity.CompanyId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP).ConfigureAwait(false);
 
         if (result == default)
         {
@@ -202,14 +200,14 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
         if (!result.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {identity.CompanyId} is not the provider company of App {appId}");
+            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of App {appId}");
         }
 
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
         var doc = documentRepository.CreateDocument(document.FileName, documentContent, hash, documentContentType, DocumentTypeId.APP_LEADIMAGE, x =>
         {
-            x.CompanyUserId = identity.UserId;
+            x.CompanyUserId = _identityData.IdentityId;
             x.DocumentStatusId = DocumentStatusId.LOCKED;
         });
         offerRepository.CreateOfferAssignedDocument(appId, doc.Id);
@@ -235,7 +233,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
     private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(false);
         if (result == null)
@@ -312,7 +310,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     public async Task<ActiveAppDocumentData> GetActiveAppDocumentTypeDataAsync(Guid appId)
     {
         var appDocTypeData = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetActiveOfferDocumentTypeDataOrderedAsync(appId, _identityService.IdentityData.CompanyId, OfferTypeId.APP, _settings.ActiveAppDocumentTypeIds)
+            .GetActiveOfferDocumentTypeDataOrderedAsync(appId, _identityData.CompanyId, OfferTypeId.APP, _settings.ActiveAppDocumentTypeIds)
             .PreSortedGroupBy(result => result.DocumentTypeId)
             .ToDictionaryAsync(
                 group => group.Key,
@@ -334,7 +332,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identityService.IdentityData.CompanyId, OfferTypeId.APP, documentId).ConfigureAwait(false);
+        var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP, documentId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"Document {documentId} for App {appId} does not exist.");
@@ -345,7 +343,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
         if (!result.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {_identityService.IdentityData.CompanyId} is not the provider company of App {appId}");
+            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of App {appId}");
         }
         if (!_settings.DeleteActiveAppDocumentTypeIds.Contains(result.DocumentTypeId))
         {

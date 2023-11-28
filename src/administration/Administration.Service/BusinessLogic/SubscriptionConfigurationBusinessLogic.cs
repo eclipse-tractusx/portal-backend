@@ -34,19 +34,19 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
 {
     private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
 
     public SubscriptionConfigurationBusinessLogic(IOfferSubscriptionProcessService offerSubscriptionProcessService, IPortalRepositories portalRepositories, IIdentityService identityService)
     {
         _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
     }
 
     /// <inheritdoc />
     public async Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync()
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
             .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, companyId)
             .ConfigureAwait(false);
@@ -74,7 +74,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                 "the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
-        return SetOfferProviderCompanyDetailsInternalAsync(data, _identityService.IdentityData.CompanyId);
+        return SetOfferProviderCompanyDetailsInternalAsync(data, _identityData.CompanyId);
     }
 
     private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, Guid companyId)

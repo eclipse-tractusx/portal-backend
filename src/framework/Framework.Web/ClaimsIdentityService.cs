@@ -17,18 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.ServiceACcountSync.Executor;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ServiceAccountSync.Executor.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
-public static class ServiceAccountSyncProcessCollectionExtensions
+public class ClaimsIdentityService : IIdentityService
 {
-    public static IServiceCollection AddServiceAccountSyncProcessExecutor(this IServiceCollection services, IConfiguration config) =>
-        services
-            .AddTransient<IProcessTypeExecutor, ServiceAccountSyncProcessTypeExecutor>()
-            .AddProvisioningManager(config);
+    private readonly IIdentityData _identityData;
+    public ClaimsIdentityService(IClaimsIdentityDataBuilder claimsIdentityDataBuilder)
+    {
+        _identityData = claimsIdentityDataBuilder;
+    }
+
+    public IIdentityData IdentityData => _identityData;
 }

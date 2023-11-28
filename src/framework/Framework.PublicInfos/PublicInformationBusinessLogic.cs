@@ -33,7 +33,7 @@ public class PublicInformationBusinessLogic : IPublicInformationBusinessLogic
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
 
     /// <summary>
     /// Creates a new instance of <see cref="PublicInformationBusinessLogic"/>
@@ -45,12 +45,12 @@ public class PublicInformationBusinessLogic : IPublicInformationBusinessLogic
     {
         _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
     }
 
     public async Task<IEnumerable<UrlInformation>> GetPublicUrls()
     {
-        var companyRoleIds = await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyRolesAsync(_identityService.IdentityData.CompanyId).ToArrayAsync().ConfigureAwait(false);
+        var companyRoleIds = await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyRolesAsync(_identityData.CompanyId).ToArrayAsync().ConfigureAwait(false);
         return _actionDescriptorCollectionProvider.ActionDescriptors.Items
             .Where(item => item.ActionConstraints != null && item.ActionConstraints.OfType<HttpMethodActionConstraint>().Any())
             .OfType<ControllerActionDescriptor>()

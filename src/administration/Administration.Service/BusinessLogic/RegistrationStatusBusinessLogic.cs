@@ -34,22 +34,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly OnboardingServiceProviderSettings _settings;
 
     public RegistrationStatusBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IOptions<OnboardingServiceProviderSettings> options)
     {
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _settings = options.Value;
     }
 
     public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackAddress() =>
-        _portalRepositories.GetInstance<ICompanyRepository>().GetCallbackData(_identityService.IdentityData.CompanyId);
+        _portalRepositories.GetInstance<ICompanyRepository>().GetCallbackData(_identityData.CompanyId);
 
     public async Task SetCallbackAddress(OnboardingServiceProviderCallbackRequestData requestData)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var (hasCompanyRole, ospDetails) = await companyRepository
             .GetCallbackEditData(companyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER)

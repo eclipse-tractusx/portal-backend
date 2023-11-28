@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -86,7 +85,6 @@ public class UserRepository : IUserRepository
     public IQueryable<CompanyUser> GetOwnCompanyUserQuery(
         Guid companyId,
         Guid? companyUserId = null,
-        string? userEntityId = null,
         string? firstName = null,
         string? lastName = null,
         string? email = null,
@@ -95,7 +93,6 @@ public class UserRepository : IUserRepository
         return _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Identity!.CompanyId == companyId &&
-                (userEntityId == null || companyUser.Identity!.UserEntityId == userEntityId) &&
                 (!companyUserId.HasValue || companyUser.Id == companyUserId.Value) &&
                 (firstName == null || companyUser.Firstname == firstName) &&
                 (lastName == null || companyUser.Lastname == lastName) &&
@@ -103,20 +100,18 @@ public class UserRepository : IUserRepository
                 (statusIds == null || statusIds.Contains(companyUser.Identity!.UserStatusId)));
     }
 
-    public Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
+    public Task<(string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId &&
-                                  companyUser.Identity!.CompanyId == companyId &&
-                                  companyUser.Identity!.UserEntityId != null)
-            .Select(companyUser => new ValueTuple<string, string?, string?, string?>(
-                companyUser.Identity!.UserEntityId!,
+                                  companyUser.Identity!.CompanyId == companyId)
+            .Select(companyUser => new ValueTuple<string?, string?, string?>(
                 companyUser.Firstname,
                 companyUser.Lastname,
                 companyUser.Email))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(string? UserEntityId, Guid CompanyUserId)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId, IEnumerable<UserStatusId> companyUserStatusIds) =>
+    public IAsyncEnumerable<(Guid CompanyUserId, bool IsFullMatch)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId, IEnumerable<UserStatusId> companyUserStatusIds) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser =>
@@ -126,11 +121,9 @@ public class UserRepository : IUserRepository
                 (companyUser.Email == email ||
                  companyUser.Firstname == firstName ||
                  companyUser.Lastname == lastName))
-            .Select(companyUser => new ValueTuple<string?, Guid>(
-                companyUser.Identity!.UserEntityId,
-                companyUser.Firstname == firstName && companyUser.Lastname == lastName && companyUser.Email == email
-                    ? companyUser.Id
-                    : Guid.Empty))
+            .Select(companyUser => new ValueTuple<Guid, bool>(
+                    companyUser.Id,
+                    companyUser.Firstname == firstName && companyUser.Lastname == lastName && companyUser.Email == email))
             .AsAsyncEnumerable();
 
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, Guid companyId) =>
@@ -164,17 +157,17 @@ public class UserRepository : IUserRepository
             })
             .SingleOrDefaultAsync();
 
-    public Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId) =>
+    public Task<(IEnumerable<string> AssignedBusinessPartnerNumbers, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser =>
                 companyUser.Id == companyUserId &&
                 companyUser.Identity!.CompanyId == companyId)
-            .Select(companyUser => new CompanyUserBusinessPartners(
-                companyUser.Identity!.UserEntityId,
+            .Select(companyUser => new ValueTuple<IEnumerable<string>, bool>(
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
-                    assignedPartner.BusinessPartnerNumber)
-            ))
+                    assignedPartner.BusinessPartnerNumber),
+                true)
+            )
             .SingleOrDefaultAsync();
 
     public Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(Guid companyUserId, IEnumerable<Guid> userRoleIds) =>
@@ -222,8 +215,7 @@ public class UserRepository : IUserRepository
                     companyUser.Lastname,
                     companyUser.Identity!.Company!.Name,
                     companyUser.Identity.DateCreated,
-                    companyUser.Identity.UserStatusId,
-                    companyUser.Identity.UserEntityId),
+                    companyUser.Identity.UserStatusId),
                 companyUser.Identity!.Company!.IdentityProviders.Where(identityProvider =>
                         identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
@@ -289,7 +281,6 @@ public class UserRepository : IUserRepository
             .Select(x => new OfferIamUserData(
                 x.Subscriptions.Any(),
                 x.Subscriptions.Select(subscription => subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId).Distinct(),
-                x.User.Identity!.UserEntityId,
                 x.User.Identity!.CompanyId == companyId,
                 x.Subscriptions.Select(s => s.Offer!.Name).FirstOrDefault(),
                 x.User.Firstname,
@@ -311,7 +302,6 @@ public class UserRepository : IUserRepository
             .Select(x => new CoreOfferIamUserData(
                 x.Offer != null,
                 x.Offer!.AppInstances.Select(instance => instance.IamClient!.ClientClientId),
-                x.User.Identity!.UserEntityId,
                 x.User.Identity!.CompanyId == companyId,
                 x.User.Firstname,
                 x.User.Lastname))
@@ -374,7 +364,6 @@ public class UserRepository : IUserRepository
                 companyUser.Identity!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)!.IamIdentityProvider!.IamIdpAlias,
                 new CompanyUserAccountData(
                     companyUser.Id,
-                    companyUser.Identity!.UserEntityId,
                     companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
                         assignedPartner.BusinessPartnerNumber),
                     companyUser.Identity!.IdentityAssignedRoles.Select(assignedRole =>
@@ -390,7 +379,6 @@ public class UserRepository : IUserRepository
                companyUser.Identity!.Company!.Id == companyId)
            .Select(companyUser => new CompanyUserAccountData(
                companyUser.Id,
-               companyUser.Identity!.UserEntityId,
                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
                    assignedPartner.BusinessPartnerNumber),
                companyUser.Identity!.IdentityAssignedRoles.Select(assignedRole =>
@@ -453,21 +441,9 @@ public class UserRepository : IUserRepository
                     cu.Firstname,
                     cu.Lastname,
                     cu.Email,
-                    cu.Identity!.UserEntityId,
-                    cu.Identity.Company!.Name,
+                    cu.Identity!.Company!.Name,
                     cu.Identity.Company.BusinessPartnerNumber,
                     cu.CompanyUserAssignedIdentityProviders.Select(assigned => new ProviderLinkData(assigned.UserName, assigned.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, assigned.ProviderId))
                 ))
-            .ToAsyncEnumerable();
-
-    public IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextServiceAccountsWithoutUserEntityId() =>
-        _dbContext.Identities
-            .Where(x =>
-                x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT &&
-                x.UserEntityId == null &&
-                x.CompanyServiceAccount!.ClientClientId != null &&
-                x.UserStatusId == UserStatusId.ACTIVE)
-            .Select(x => new ValueTuple<Guid, string>(x.Id, x.CompanyServiceAccount!.ClientClientId!))
-            .Take(2)
             .ToAsyncEnumerable();
 }

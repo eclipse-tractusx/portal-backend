@@ -22,7 +22,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record GetOwnCompanyUsersFilter(
     Guid? CompanyUserId,
-    string? UserEntityId,
     string? FirstName,
     string? LastName,
     string? Email

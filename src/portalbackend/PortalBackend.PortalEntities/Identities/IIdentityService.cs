@@ -19,12 +19,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-public interface IIdentityService : IIdentityIdDetermination
+public interface IIdentityService
 {
-    /// <summary>
-    /// Information of the currently logged in user
-    /// </summary>
-    public ValueTask<IdentityData> GetIdentityData();
-
-    public IdentityData IdentityData { get; }
+    IIdentityData IdentityData { get; }
 }

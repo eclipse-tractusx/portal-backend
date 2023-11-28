@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -37,8 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
 
 public class AppReleaseProcessControllerTest
 {
-    private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly AppReleaseProcessController _controller;
     private readonly IAppReleaseBusinessLogic _logic;
@@ -47,8 +45,12 @@ public class AppReleaseProcessControllerTest
     {
         _fixture = new Fixture();
         _logic = A.Fake<IAppReleaseBusinessLogic>();
-        this._controller = new AppReleaseProcessController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId, _identity);
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
+        _controller = new AppReleaseProcessController(_logic);
+        _controller.AddControllerContextWithClaim(_identity);
     }
 
     [Fact]
@@ -60,7 +62,7 @@ public class AppReleaseProcessControllerTest
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         //Act
-        await this._controller.UpdateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
+        await _controller.UpdateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert 
         A.CallTo(() => _logic.CreateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None))
@@ -78,7 +80,7 @@ public class AppReleaseProcessControllerTest
             .Returns(appRoleData);
 
         //Act
-        var result = await this._controller.AddAppUserRole(appId, appUserRoles).ConfigureAwait(false);
+        var result = await _controller.AddAppUserRole(appId, appUserRoles).ConfigureAwait(false);
         foreach (var item in result)
         {
             //Assert
@@ -97,7 +99,7 @@ public class AppReleaseProcessControllerTest
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetOfferAgreementDataAsync().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetOfferAgreementDataAsync().ToListAsync().ConfigureAwait(false);
 
         // Assert 
         result.Should().HaveCount(5);
@@ -113,7 +115,7 @@ public class AppReleaseProcessControllerTest
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetOfferAgreementConsentById(appId).ConfigureAwait(false);
+        var result = await _controller.GetOfferAgreementConsentById(appId).ConfigureAwait(false);
 
         // Assert 
         result.Should().Be(data);
@@ -132,7 +134,7 @@ public class AppReleaseProcessControllerTest
             .Returns(Enumerable.Repeat(consentStatusData, 1));
 
         //Act
-        var result = await this._controller.SubmitOfferConsentToAgreementsAsync(appId, data).ConfigureAwait(false);
+        var result = await _controller.SubmitOfferConsentToAgreementsAsync(appId, data).ConfigureAwait(false);
 
         // Assert 
         result.Should().HaveCount(1);
@@ -150,7 +152,7 @@ public class AppReleaseProcessControllerTest
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetAppDetailsForStatusAsync(appId).ConfigureAwait(false);
+        var result = await _controller.GetAppDetailsForStatusAsync(appId).ConfigureAwait(false);
 
         // Assert 
         result.Should().Be(data);
@@ -166,7 +168,7 @@ public class AppReleaseProcessControllerTest
         var roleId = Guid.NewGuid();
 
         //Act
-        var result = await this._controller.DeleteAppRoleAsync(appId, roleId).ConfigureAwait(false);
+        var result = await _controller.DeleteAppRoleAsync(appId, roleId).ConfigureAwait(false);
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
@@ -183,7 +185,7 @@ public class AppReleaseProcessControllerTest
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetAppProviderSalesManagerAsync().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetAppProviderSalesManagerAsync().ToListAsync().ConfigureAwait(false);
 
         // Assert 
         result.Should().HaveCount(5);
@@ -201,7 +203,7 @@ public class AppReleaseProcessControllerTest
             .Returns(appId);
 
         //Act
-        var result = await this._controller.ExecuteAppCreation(data).ConfigureAwait(false);
+        var result = await _controller.ExecuteAppCreation(data).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.AddAppAsync(data)).MustHaveHappenedOnceExactly();
@@ -241,7 +243,7 @@ public class AppReleaseProcessControllerTest
             );
 
         // Act
-        var result = await this._controller.UpdateAppRelease(appId, data).ConfigureAwait(false);
+        var result = await _controller.UpdateAppRelease(appId, data).ConfigureAwait(false);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
@@ -257,7 +259,7 @@ public class AppReleaseProcessControllerTest
             .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
+        var result = await _controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
@@ -271,7 +273,7 @@ public class AppReleaseProcessControllerTest
         var appId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.SubmitAppReleaseRequest(appId).ConfigureAwait(false);
+        var result = await _controller.SubmitAppReleaseRequest(appId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId)).MustHaveHappenedOnceExactly();
@@ -285,7 +287,7 @@ public class AppReleaseProcessControllerTest
         var appId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.ApproveAppRequest(appId).ConfigureAwait(false);
+        var result = await _controller.ApproveAppRequest(appId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.ApproveAppRequestAsync(appId)).MustHaveHappenedOnceExactly();
@@ -300,7 +302,7 @@ public class AppReleaseProcessControllerTest
         var data = new OfferDeclineRequest("Just a test");
 
         //Act
-        var result = await this._controller.DeclineAppRequest(appId, data).ConfigureAwait(false);
+        var result = await _controller.DeclineAppRequest(appId, data).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.DeclineAppRequestAsync(appId, data)).MustHaveHappenedOnceExactly();
@@ -318,7 +320,7 @@ public class AppReleaseProcessControllerTest
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetInReviewAppDetailsByIdAsync(appId);
+        var result = await _controller.GetInReviewAppDetailsByIdAsync(appId);
 
         //Assert
         result.Should().NotBeNull();
@@ -333,7 +335,7 @@ public class AppReleaseProcessControllerTest
         var documentId = Guid.NewGuid();
 
         //Act
-        var result = await this._controller.DeleteAppDocumentsAsync(documentId).ConfigureAwait(false);
+        var result = await _controller.DeleteAppDocumentsAsync(documentId).ConfigureAwait(false);
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
@@ -348,7 +350,7 @@ public class AppReleaseProcessControllerTest
         var appId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.DeleteAppAsync(appId).ConfigureAwait(false);
+        var result = await _controller.DeleteAppAsync(appId).ConfigureAwait(false);
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
@@ -380,7 +382,7 @@ public class AppReleaseProcessControllerTest
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetTechnicalUserProfiles(offerId).ConfigureAwait(false);
+        var result = await _controller.GetTechnicalUserProfiles(offerId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId)).MustHaveHappenedOnceExactly();
@@ -395,7 +397,7 @@ public class AppReleaseProcessControllerTest
         var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
 
         //Act
-        var result = await this._controller.CreateAndUpdateTechnicalUserProfiles(offerId, data).ConfigureAwait(false);
+        var result = await _controller.CreateAndUpdateTechnicalUserProfiles(offerId, data).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5))).MustHaveHappenedOnceExactly();

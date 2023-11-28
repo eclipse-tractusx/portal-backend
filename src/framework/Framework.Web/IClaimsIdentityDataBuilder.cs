@@ -17,12 +17,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-public interface IIdentityIdDetermination
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+
+public interface IClaimsIdentityDataBuilder : IIdentityData
 {
-    /// <summary>
-    /// Access to the identity Id
-    /// </summary>
-    Guid IdentityId { get; }
+    void AddIdentityId(Guid identityId);
+    void AddIdentityTypeId(IdentityTypeId identityTypeId);
+    void AddCompanyId(Guid companyId);
+
+    IClaimsIdentityDataBuilderStatus Status { get; set; }
+}
+
+public enum IClaimsIdentityDataBuilderStatus
+{
+    Initial,
+    Initialized,
+    Complete,
+    Empty
 }

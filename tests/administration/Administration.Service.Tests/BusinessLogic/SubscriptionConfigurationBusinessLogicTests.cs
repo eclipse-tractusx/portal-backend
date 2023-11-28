@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -33,10 +32,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class SubscriptionConfigurationBusinessLogicTests
 {
-    private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
     private static readonly Guid ExistingCompanyId = new("857b93b1-8fcb-4141-81b0-ae81950d489e");
-    private readonly IdentityData _noServiceProviderIdentity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8B", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, ExistingCompanyId);
+    private static readonly Guid NoServiceProviderCompanyId = Guid.NewGuid();
+    private readonly IIdentityData _identity;
 
     private readonly ICompanyRepository _companyRepository;
     private readonly ICollection<ProviderCompanyDetail> _serviceProviderDetails;
@@ -63,7 +61,11 @@ public class SubscriptionConfigurationBusinessLogicTests
 
         _serviceProviderDetails = new HashSet<ProviderCompanyDetail>();
 
+        _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(ExistingCompanyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
@@ -189,7 +191,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Arrange
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://www.test.com");
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(_identity.CompanyId))
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((Guid.Empty, null!));
 
         // Act
@@ -215,7 +217,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         ProviderCompanyDetail? initialDetail = null;
         ProviderCompanyDetail? modifyDetail = null;
 
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(_identity.CompanyId))
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((detailsId, existingUrl));
 
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._))
@@ -244,7 +246,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     public async Task SetServiceProviderCompanyDetailsAsync_WithUnknownUser_ThrowsException()
     {
         //Arrange
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
@@ -261,7 +263,8 @@ public class SubscriptionConfigurationBusinessLogicTests
     public async Task SetServiceProviderCompanyDetailsAsync_WithNotServiceProvider_ThrowsException()
     {
         //Arrange
-        A.CallTo(() => _identityService.IdentityData).Returns(_noServiceProviderIdentity);
+        A.CallTo(() => _identity.CompanyId).Returns(NoServiceProviderCompanyId);
+
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
@@ -270,7 +273,7 @@ public class SubscriptionConfigurationBusinessLogicTests
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be($"Company {_noServiceProviderIdentity.CompanyId} is not an app- or service-provider");
+        ex.Message.Should().Be($"Company {NoServiceProviderCompanyId} is not an app- or service-provider");
         _serviceProviderDetails.Should().BeEmpty();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -318,7 +321,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     public async Task GetProviderCompanyDetailsAsync_WithInvalidUser_ThrowsException()
     {
         //Arrange
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         SetupProviderCompanyDetails();
 
         //Act
@@ -333,7 +336,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     {
         //Arrange
         SetupProviderCompanyDetails();
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, _identity.CompanyId))
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, ExistingCompanyId))
             .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), false));
 
         //Act
@@ -349,11 +352,11 @@ public class SubscriptionConfigurationBusinessLogicTests
 
     private void SetupProviderCompanyDetails()
     {
-        A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Matches(x => x == _identity.CompanyId), A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Matches(x => x == ExistingCompanyId), A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, true));
-        A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Matches(x => x == _noServiceProviderIdentity.CompanyId), A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Matches(x => x == NoServiceProviderCompanyId), A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, false));
-        A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Not.Matches(x => x == _identity.CompanyId || x == _noServiceProviderIdentity.CompanyId), A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Not.Matches(x => x == ExistingCompanyId || x == NoServiceProviderCompanyId), A<IEnumerable<CompanyRoleId>>._))
             .Returns(((bool, bool))default);
 
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>?>._))
@@ -364,14 +367,14 @@ public class SubscriptionConfigurationBusinessLogicTests
                 _serviceProviderDetails.Add(providerCompanyDetail);
             });
 
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<Guid>.That.Matches(x => x == _identity.CompanyId)))
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<Guid>.That.Matches(x => x == ExistingCompanyId)))
             .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), true));
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<Guid>.That.Not.Matches(x => x == ExistingCompanyId)))
             .ReturnsLazily(() => ((ProviderDetailReturnData, bool))default);
 
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Matches(x => x == _identity.CompanyId)))
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Matches(x => x == ExistingCompanyId)))
             .ReturnsLazily(() => (Guid.NewGuid(), _fixture.Create<string>()));
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Not.Matches(x => x == ExistingCompanyId)))
             .Returns((Guid.Empty, null!));
     }
 

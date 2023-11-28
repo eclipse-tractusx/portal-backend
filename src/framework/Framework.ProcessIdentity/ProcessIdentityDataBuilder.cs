@@ -18,19 +18,33 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 
-public class ConfigurationIdentityIdDetermination : IIdentityIdDetermination
+public class ProcessIdentityDataBuilder : IProcessIdentityDataBuilder
 {
     private readonly ProcessIdentitySettings _settings;
+    private IdentityTypeId? _identityTypeId;
+    private Guid? _companyId;
 
-    public ConfigurationIdentityIdDetermination(IOptions<ProcessIdentitySettings> options)
+    public ProcessIdentityDataBuilder(IOptions<ProcessIdentitySettings> options)
     {
         _settings = options.Value;
     }
 
+    public void AddIdentityData(IdentityTypeId identityType, Guid companyId)
+    {
+        _identityTypeId = identityType;
+        _companyId = companyId;
+    }
+
     public Guid IdentityId => _settings.ProcessUserId;
+
+    public IdentityTypeId IdentityTypeId => _identityTypeId ?? throw new UnexpectedConditionException("identityType should never be null here (GetIdentityData must be called before)");
+
+    public Guid CompanyId => _companyId ?? throw new UnexpectedConditionException("companyId should never be null here (GetIdentityData must be called before)");
+
 }

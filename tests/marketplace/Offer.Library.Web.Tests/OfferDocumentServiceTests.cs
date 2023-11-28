@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -32,9 +31,10 @@ namespace Offer.Library.Web.Tests;
 
 public class OfferDocumentServiceTests
 {
+    private static readonly Guid CompanyUserId = Guid.NewGuid();
     private static readonly Guid CompanyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
     private readonly Guid _validAppId = Guid.NewGuid();
-    private readonly IdentityData _identity = new("395f955b-f11b-4a55-ab51-92a526c1974b", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, CompanyUserCompanyId);
+    private readonly IIdentityData _identity;
 
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
@@ -50,7 +50,11 @@ public class OfferDocumentServiceTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identity.IdentityId).Returns(CompanyUserId);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyUserCompanyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -235,13 +239,14 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var id = _fixture.Create<Guid>();
-        var identity = _fixture.Create<IdentityData>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
             ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
             : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, offerStatusId, offerTypeId))
+        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, companyId, offerStatusId, offerTypeId))
             .Returns((true, false, true));
 
         // Act

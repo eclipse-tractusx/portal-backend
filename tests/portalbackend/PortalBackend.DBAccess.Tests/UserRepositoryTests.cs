@@ -247,11 +247,11 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetAppAssignedIamClientUserDataUntrackedAsync
 
     [Theory]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "SDE with EDC", "User", "Active")]
-    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, null, "User", "Active")]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "00000000-0000-0000-0000-000000000000", true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "SDE with EDC", "User", "Active")]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, null, false, null, null, null)]
-    public async Task GetAppAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, string resultIamUserId, bool sameCompany, string? offerName, string? firstName, string? lastName)
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, true, true, "SDE with EDC", "User", "Active")]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, false, true, null, "User", "Active")]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "00000000-0000-0000-0000-000000000000", true, true, false, "SDE with EDC", "User", "Active")]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, false, null, null, null)]
+    public async Task GetAppAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, bool sameCompany, string? offerName, string? firstName, string? lastName)
     {
         var sut = await CreateSut().ConfigureAwait(false);
 
@@ -262,7 +262,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         {
             iamUserData.Should().NotBeNull();
             iamUserData!.IsValidOffer.Should().Be(validOffer);
-            iamUserData.IamUserId.Should().Be(resultIamUserId);
             iamUserData.IsSameCompany.Should().Be(sameCompany);
             iamUserData.OfferName.Should().Be(offerName);
             iamUserData.Firstname.Should().Be(firstName);
@@ -279,11 +278,11 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetCoreOfferAssignedIamClientUserDataUntrackedAsync
 
     [Theory]
-    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "User", "Active")]
-    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "User", "Active")]
-    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", "00000000-0000-0000-0000-000000000000", true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "User", "Active")]
-    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, null, false, null, null)]
-    public async Task GetCoreOfferAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, string resultIamUserId, bool sameCompany, string? firstName, string? lastName)
+    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, true, true, "User", "Active")]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, false, true, "User", "Active")]
+    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", "00000000-0000-0000-0000-000000000000", true, true, false, "User", "Active")]
+    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, false, null, null)]
+    public async Task GetCoreOfferAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, bool sameCompany, string? firstName, string? lastName)
     {
         var sut = await CreateSut().ConfigureAwait(false);
 
@@ -294,7 +293,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         {
             iamUserData.Should().NotBeNull();
             iamUserData!.IsValidOffer.Should().Be(validOffer);
-            iamUserData.IamUserId.Should().Be(resultIamUserId);
             iamUserData.IsSameCompany.Should().Be(sameCompany);
             iamUserData.Firstname.Should().Be(firstName);
             iamUserData.Lastname.Should().Be(lastName);
@@ -428,26 +426,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x.ProviderLinkData.Single().UserName == "drstrange" &&
                 x.Email == "test@email.com" &&
                 x.Bpn == "BPNL00000003AYRE");
-    }
-
-    #endregion
-
-    #region GetNextServiceAccountsWithoutUserEntityId
-
-    [Fact]
-    public async Task GetNextServiceAccountsWithoutUserEntityId_ReturnsExpectedResult()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var results = await sut.GetNextServiceAccountsWithoutUserEntityId().ToListAsync().ConfigureAwait(false);
-
-        // Assert
-        results.Should().HaveCount(2)
-            .And.Satisfy(
-                x => x.ClientClientId == "sa-x-2" && x.ServiceAccountId == new Guid("93eecd4e-ca47-4dd2-85bf-775ea72eb009"),
-                x => x.ClientClientId == "sa-x-4" && x.ServiceAccountId == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2"));
     }
 
     #endregion

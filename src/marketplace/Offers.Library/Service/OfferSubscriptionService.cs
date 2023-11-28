@@ -36,7 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly IRoleBaseMailService _roleBaseMailService;
 
     /// <summary>
@@ -51,15 +51,14 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         IRoleBaseMailService roleBaseMailService)
     {
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _roleBaseMailService = roleBaseMailService;
     }
 
     /// <inheritdoc />
     public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients, IEnumerable<UserRoleConfig> serviceManagerRoles)
     {
-        var identity = _identityService.IdentityData;
-        var companyInformation = await ValidateCompanyInformationAsync(identity.CompanyId, identity.UserId).ConfigureAwait(false);
+        var companyInformation = await ValidateCompanyInformationAsync(_identityData.CompanyId, _identityData.IdentityId).ConfigureAwait(false);
         var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
 
         if (offerProviderDetails.ProviderCompanyId == null)
@@ -71,11 +70,11 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerSubscription = offerTypeId == OfferTypeId.APP
-            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, identity.UserId).ConfigureAwait(false)
-            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, identity.UserId);
+            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, _identityData.IdentityId).ConfigureAwait(false)
+            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, _identityData.IdentityId);
 
         CreateProcessSteps(offerSubscription);
-        CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
+        CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, _identityData.IdentityId);
 
         var content = JsonSerializer.Serialize(new
         {
@@ -85,7 +84,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             UserEmail = companyInformation.CompanyUserEmail,
             AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl) && !offerProviderDetails.IsSingleInstance
         });
-        await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, identity.UserId, content, serviceManagerRoles).ConfigureAwait(false);
+        await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, _identityData.IdentityId, content, serviceManagerRoles).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         await _roleBaseMailService.RoleBaseSendMail(

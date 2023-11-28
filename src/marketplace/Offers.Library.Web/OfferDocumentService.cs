@@ -33,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 public class OfferDocumentService : IOfferDocumentService
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
 
     /// <summary>
     /// Constructor.
@@ -43,7 +43,7 @@ public class OfferDocumentService : IOfferDocumentService
     public OfferDocumentService(IPortalRepositories portalRepositories, IIdentityService identityService)
     {
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
     }
 
     public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, OfferStatusId offerStatusId, CancellationToken cancellationToken)
@@ -58,7 +58,6 @@ public class OfferDocumentService : IOfferDocumentService
             throw new ControllerArgumentException("File name should not be null");
         }
 
-        var identity = _identityService.IdentityData;
         var uploadContentTypeSettings = uploadDocumentTypeIdSettings.FirstOrDefault(x => x.DocumentTypeId == documentTypeId);
         if (uploadContentTypeSettings == null)
         {
@@ -80,7 +79,7 @@ public class OfferDocumentService : IOfferDocumentService
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, offerStatusId, offerTypeId).ConfigureAwait(false);
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _identityData.CompanyId, offerStatusId, offerTypeId).ConfigureAwait(false);
 
         if (result == default)
         {
@@ -92,14 +91,14 @@ public class OfferDocumentService : IOfferDocumentService
 
         if (!result.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {identity.CompanyId} is not the provider company of {offerTypeId} {id}");
+            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of {offerTypeId} {id}");
         }
 
         var (content, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
 
         var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, content, hash, mediaTypeId, documentTypeId, x =>
         {
-            x.CompanyUserId = identity.UserId;
+            x.CompanyUserId = _identityData.IdentityId;
         });
         _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(id, doc.Id);
 

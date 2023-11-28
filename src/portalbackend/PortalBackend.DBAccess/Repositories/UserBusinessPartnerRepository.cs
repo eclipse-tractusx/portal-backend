@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -56,12 +55,12 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
     public void DeleteCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserAssignedBusinessPartnerIds) =>
         _dbContext.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
 
-    public Task<(string? UserEntityId, bool IsAssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, Guid userCompanyId, string businessPartnerNumber) =>
+    public Task<(bool IsValidUser, bool IsAssignedBusinessPartner, bool IsSameCompany)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, Guid userCompanyId, string businessPartnerNumber) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new ValueTuple<string?, bool, bool>(
-                companyUser.Identity!.UserEntityId,
+            .Select(companyUser => new ValueTuple<bool, bool, bool>(
+                true,
                 companyUser.CompanyUserAssignedBusinessPartners!.Any(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber),
                 companyUser.Identity!.CompanyId == userCompanyId
             ))

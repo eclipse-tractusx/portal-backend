@@ -18,17 +18,16 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class ClaimsIdentityServiceCollectionExtensions
 {
-    public static IServiceCollection AddClaimsIdentityIdDetermination(this IServiceCollection services)
+    public static IServiceCollection AddClaimsIdentityService(this IServiceCollection services)
     {
         return services
-            .AddScoped<IIdentityIdDetermination, ClaimsIdentityIdDetermination>()
-            .AddScoped<IIdentityService, IdentityService>();
+            .AddScoped<IClaimsIdentityDataBuilder, ClaimsIdentityDataBuilder>()
+            .AddTransient<IIdentityService, ClaimsIdentityService>();
     }
 }

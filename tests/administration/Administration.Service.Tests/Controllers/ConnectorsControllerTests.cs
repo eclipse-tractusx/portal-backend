@@ -42,8 +42,11 @@ public class ConnectorsControllerTests
     {
         _fixture = new Fixture();
         _logic = A.Fake<IConnectorsBusinessLogic>();
-        this._controller = new ConnectorsController(_logic);
-        var identity = new IdentityData("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+        _controller = new ConnectorsController(_logic);
+        var identity = A.Fake<IIdentityData>();
+        A.CallTo(() => identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => identity.CompanyId).Returns(Guid.NewGuid());
         _controller.AddControllerContextWithClaimAndBearer(AccessToken, identity);
     }
 

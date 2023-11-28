@@ -18,22 +18,15 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication.Tests;
 
 public class KeycloakClaimsTransformationTests
 {
-    private readonly KeycloakClaimsTransformation _sut;
-    private readonly IIdentityRepository _identityRepository;
     private readonly IFixture _fixture;
-    private readonly IMockLogger<KeycloakClaimsTransformation> _mockLogger;
 
     public KeycloakClaimsTransformationTests()
     {
@@ -41,88 +34,73 @@ public class KeycloakClaimsTransformationTests
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-        var portalRepositories = A.Fake<IPortalRepositories>();
-        _identityRepository = A.Fake<IIdentityRepository>();
-        A.CallTo(() => portalRepositories.GetInstance<IIdentityRepository>()).Returns(_identityRepository);
-
-        _mockLogger = A.Fake<IMockLogger<KeycloakClaimsTransformation>>();
-        ILogger<KeycloakClaimsTransformation> logger = new MockLogger<KeycloakClaimsTransformation>(_mockLogger);
-        _sut = new KeycloakClaimsTransformation(Options.Create(new JwtBearerOptions()), portalRepositories, logger);
     }
 
     [Fact]
-    public async Task TransformAsync_WithValid_ReturnsExpected()
+    public async Task TransformAsync_RurnsExpected()
     {
         // Arrange
-        var identityId = Guid.NewGuid();
-        var identity = new ClaimsIdentity(Enumerable.Repeat(new Claim(PortalClaimTypes.PreferredUserName, identityId.ToString()), 1));
-        var principal = new ClaimsPrincipal(identity);
-
-        // Act
-        var result = await _sut.TransformAsync(principal).ConfigureAwait(false);
-
-        // Assert
-        result.Identities.Should().Contain(x => x.Claims.Any(x => x.Type == PortalClaimTypes.IdentityId));
-    }
-
-    [Fact]
-    public async Task TransformAsync_WithoutIdentityIdWithValidUserEntityId_ReturnsExpected()
-    {
-        // Arrange
-        var identityId = Guid.NewGuid();
-        var userId = Guid.NewGuid().ToString();
-        A.CallTo(() => _identityRepository.GetIdentityIdByUserEntityId(userId))
-            .Returns(identityId);
-        var identity = new ClaimsIdentity(Enumerable.Repeat(new Claim(PortalClaimTypes.Sub, userId), 1));
-        var principal = new ClaimsPrincipal(identity);
-
-        // Act
-        var result = await _sut.TransformAsync(principal).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception?>._, $"Preferred user name (null) couldn't be parsed to uuid for userEntityId {userId}")).MustHaveHappenedOnceExactly();
-        result.Identities.Should().Contain(x => x.Claims.Any(x => x.Type == PortalClaimTypes.IdentityId));
-    }
-
-    [Fact]
-    public async Task TransformAsync_WithoutInvalidIdentityIdWithValidUserEntityId_ReturnsExpected()
-    {
-        // Arrange
-        var identityId = Guid.NewGuid();
-        var userId = Guid.NewGuid().ToString();
-        A.CallTo(() => _identityRepository.GetIdentityIdByUserEntityId(userId))
-            .Returns(identityId);
-        var identity = new ClaimsIdentity(new[]
+        var resource_access =
+        """
         {
-            new Claim(PortalClaimTypes.PreferredUserName, $"user.{identityId}"),
-            new Claim(PortalClaimTypes.Sub, userId)
+            "client1": {
+                "roles": [
+                    "client1_role1",
+                    "client1_role2"
+                ]
+            },
+            "client2": {
+                "roles": [
+                    "client2_role1",
+                    "client2_role2"
+                ]
+            },
+            "client3": {
+                "roles": [
+                    "client3_role1",
+                    "client3_role2"
+                ]
+            }
+        }
+        """;
+
+        var identity = new ClaimsIdentity(new[] { new Claim(PortalClaimTypes.ResourceAccess, resource_access, "JSON") });
+        var principal = new ClaimsPrincipal(identity);
+
+        var options = Options.Create(new JwtBearerOptions()
+        {
+            TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+            {
+                ValidAudience = "client2"
+            }
         });
-        var principal = new ClaimsPrincipal(identity);
+
+        var sut = new KeycloakClaimsTransformation(options);
 
         // Act
-        var result = await _sut.TransformAsync(principal).ConfigureAwait(false);
+        var result = await sut.TransformAsync(principal).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception?>._, $"Preferred user name user.{identityId} couldn't be parsed to uuid for userEntityId {userId}")).MustHaveHappenedOnceExactly();
-        result.Identities.Should().Contain(x => x.Claims.Any(x => x.Type == PortalClaimTypes.IdentityId));
-    }
+        result.Identities.Should().Contain(x =>
+            x.Claims.Any(x =>
+                x.Type == ClaimTypes.Role &&
+                x.Value == "client2_role1") &&
+            x.Claims.Any(x =>
+                x.Type == ClaimTypes.Role &&
+                x.Value == "client2_role2"));
 
-    [Fact]
-    public async Task TransformAsync_WithoutIdentityIdAndUserEntityId_ReturnsExpected()
-    {
-        // Arrange
-        var userId = Guid.NewGuid().ToString();
-        A.CallTo(() => _identityRepository.GetIdentityIdByUserEntityId(userId))
-            .Returns(Guid.Empty);
-        var identity = new ClaimsIdentity(Enumerable.Repeat(new Claim(PortalClaimTypes.Sub, userId), 1));
-        var principal = new ClaimsPrincipal(identity);
-
-        // Act
-        var result = await _sut.TransformAsync(principal).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception?>._, $"Preferred user name (null) couldn't be parsed to uuid for userEntityId {userId}")).MustHaveHappenedOnceExactly();
-        result.Identities.Should().NotContain(x => x.Claims.Any(x => x.Type == PortalClaimTypes.IdentityId));
+        result.Identities.Should().NotContain(x =>
+            x.Claims.Any(x =>
+                x.Type == ClaimTypes.Role &&
+                x.Value == "client1_role1") ||
+            x.Claims.Any(x =>
+                x.Type == ClaimTypes.Role &&
+                x.Value == "client1_role2") ||
+            x.Claims.Any(x =>
+                x.Type == ClaimTypes.Role &&
+                x.Value == "client3_role1") ||
+            x.Claims.Any(x =>
+                x.Type == ClaimTypes.Role &&
+                x.Value == "client3_role2"));
     }
 }

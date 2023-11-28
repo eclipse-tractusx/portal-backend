@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -43,10 +42,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 public class OfferSetupServiceTests
 {
     private const string Bpn = "CAXSDUMMYCATENAZZ";
-    private const string IamUserId = "9aae7a3b-b188-4a42-b46b-fb2ea5f47668";
     private static readonly Guid CompanyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
 
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, CompanyUserCompanyId);
+    private readonly IIdentityData _identity;
+    private readonly Guid _companyUserId = Guid.NewGuid();
+    private readonly Guid _companyId = Guid.NewGuid();
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly Guid _validSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
     private readonly Guid _pendingSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
@@ -98,7 +98,11 @@ public class OfferSetupServiceTests
         _mailingService = A.Fake<IMailingService>();
         _technicalUserProfileService = A.Fake<ITechnicalUserProfileService>();
         _offerSubscriptionProcessService = A.Fake<IOfferSubscriptionProcessService>();
+        _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identity.IdentityId).Returns(_companyUserId);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(_companyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()).Returns(_appSubscriptionDetailRepository);
@@ -321,7 +325,8 @@ public class OfferSetupServiceTests
         };
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
-        A.CallTo(() => _identityService.IdentityData).Returns(new IdentityData(IamUserId, _companyUserWithoutMailId, IdentityTypeId.COMPANY_USER, _companyUserWithoutMailCompanyId));
+        A.CallTo(() => _identity.IdentityId).Returns(_companyUserWithoutMailId);
+        A.CallTo(() => _identity.CompanyId).Returns(_companyUserWithoutMailCompanyId);
 
         // Act
         var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.SERVICE, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
@@ -366,7 +371,7 @@ public class OfferSetupServiceTests
         // Arrange
         SetupAutoSetup(OfferTypeId.APP);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://new-url.com/");
-        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(data.RequestId, _identity.CompanyId, OfferTypeId.SERVICE))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(data.RequestId, _companyId, OfferTypeId.SERVICE))
             .Returns((OfferSubscriptionTransferData?)null);
 
         // Act
@@ -401,7 +406,8 @@ public class OfferSetupServiceTests
         // Arrange
         SetupAutoSetup(OfferTypeId.APP);
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
-        A.CallTo(() => _identityService.IdentityData).Returns(new IdentityData(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid()));
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
 
         // Act
         async Task Action() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), OfferTypeId.SERVICE, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
@@ -666,7 +672,7 @@ public class OfferSetupServiceTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
-        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _identity.CompanyId, offerTypeId))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _companyId, offerTypeId))
             .Returns((OfferSubscriptionTransferData?)null);
 
         // Act
@@ -688,7 +694,7 @@ public class OfferSetupServiceTests
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
-        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _identity.UserId, offerTypeId))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _companyUserId, offerTypeId))
             .Returns(transferData);
 
         // Act
@@ -712,7 +718,7 @@ public class OfferSetupServiceTests
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
-        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _identity.CompanyId, offerTypeId))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _companyId, offerTypeId))
             .Returns(transferData);
 
         // Act
@@ -737,7 +743,7 @@ public class OfferSetupServiceTests
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
-        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _identity.CompanyId, offerTypeId))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _companyId, offerTypeId))
             .Returns(transferData);
 
         // Act
@@ -763,7 +769,7 @@ public class OfferSetupServiceTests
         var offerSubscriptionId = Guid.NewGuid();
         var process = _fixture.Create<Process>();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
-        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _identity.CompanyId, offerTypeId))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _companyId, offerTypeId))
             .Returns(transferData);
         A.CallTo(() =>
                 _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
@@ -800,7 +806,7 @@ public class OfferSetupServiceTests
         var offerSubscriptionId = Guid.NewGuid();
         var process = _fixture.Create<Process>();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
-        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _identity.CompanyId, offerTypeId))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(offerSubscriptionId, _companyId, offerTypeId))
             .Returns(transferData);
         A.CallTo(() =>
                 _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
@@ -931,7 +937,7 @@ public class OfferSetupServiceTests
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(true, "https://www.test.de"))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
-            .With(x => x.ProviderCompanyId, _identity.CompanyId)
+            .With(x => x.ProviderCompanyId, _companyId)
             .Create();
         var detail = new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId);
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
@@ -1134,10 +1140,10 @@ public class OfferSetupServiceTests
     public async Task ActivateSubscription_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _companyUserId, default);
         var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, Guid.NewGuid(), DateTimeOffset.Now);
 
-        A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscription.Id, _identity.CompanyId))
+        A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscription.Id, _companyId))
             .Returns(true);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
@@ -1178,7 +1184,7 @@ public class OfferSetupServiceTests
     public async Task ActivateSingleInstanceSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _companyUserId, default);
         var subscriptionProcessData = new List<OfferSubscriptionProcessData>
         {
             new(offerSubscription.Id, "https://www.test.de")
@@ -1188,7 +1194,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _identity.CompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _identity.CompanyId, null, Enumerable.Empty<string>()));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>()));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
@@ -1221,7 +1227,7 @@ public class OfferSetupServiceTests
 
         A.CallTo(() => _provisioningManager.EnableClient(A<string>._)).MustNotHaveHappened();
 
-        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _identity.CompanyId, A<string>._, offerSubscription.Id.ToString(), null))
+        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _companyId, A<string>._, offerSubscription.Id.ToString(), null))
             .MustHaveHappenedOnceExactly();
 
         A.CallTo(() => createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
@@ -1243,7 +1249,7 @@ public class OfferSetupServiceTests
     public async Task ActivateMultipleInstancesSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _identity.UserId, default);
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _companyUserId, default);
         var subscriptionProcessData = new List<OfferSubscriptionProcessData>
         {
             new(offerSubscription.Id, "https://www.test.de")
@@ -1256,7 +1262,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _identity.CompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _identity.CompanyId, clientClientId, serviceAccountClientIds));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
@@ -1291,7 +1297,7 @@ public class OfferSetupServiceTests
             A.CallTo(() => _provisioningManager.EnableClient(A<string>.That.Matches(x => serviceAccountClientIds.Contains(x)))).MustHaveHappened(serviceAccountClientIds.Length, Times.Exactly)
         );
 
-        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _identity.CompanyId, A<string>._, offerSubscription.Id.ToString(), null))
+        A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _companyId, A<string>._, offerSubscription.Id.ToString(), null))
             .MustHaveHappenedOnceExactly();
 
         A.CallTo(() => createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
@@ -1405,10 +1411,10 @@ public class OfferSetupServiceTests
 
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 _validSubscriptionId,
-                _identity.CompanyId,
+                _companyId,
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, true, "Company",
-                _identity.CompanyId, _identity.UserId, _existingServiceId, offerTypeId, "Test Service",
+                _companyId, _companyUserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
@@ -1417,37 +1423,37 @@ public class OfferSetupServiceTests
                 _companyUserWithoutMailCompanyId,
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true,
-                "Company", _identity.CompanyId, _identity.UserId, _existingServiceId, offerTypeId, "Test Service",
+                "Company", _companyId, _companyUserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 _pendingSubscriptionId,
-                _identity.CompanyId,
+                _companyId,
                 A<OfferTypeId>._))
-            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, "Company", _identity.CompanyId,
-                _identity.UserId,
+            .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, "Company", _companyId,
+                _companyUserId,
                 _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 _offerIdWithMultipleInstances,
-                _identity.CompanyId,
+                _companyId,
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, "Company",
-                _identity.CompanyId, _identity.UserId, _existingServiceId, offerTypeId, "Test Service",
+                _companyId, _companyUserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, null),
                 Enumerable.Empty<Guid>(),
                 null));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 A<Guid>.That.Not.Matches(x => x == _pendingSubscriptionId || x == _validSubscriptionId || x == _offerIdWithMultipleInstances),
-                _identity.CompanyId,
+                _companyId,
                 A<OfferTypeId>._))
             .Returns((OfferSubscriptionTransferData?)null);
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 _pendingSubscriptionId,
-                A<Guid>.That.Not.Matches(x => x == _identity.CompanyId || x == _companyUserWithoutMailCompanyId),
+                A<Guid>.That.Not.Matches(x => x == _companyId || x == _companyUserWithoutMailCompanyId),
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, false, string.Empty,
                 Guid.NewGuid(), Guid.NewGuid(), _existingServiceId, OfferTypeId.APP, "Test Service",

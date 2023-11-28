@@ -36,6 +36,5 @@ public record CompanyUserInformation(
     string? Lastname,
     string CompanyName,
     DateTimeOffset DateCreated,
-    UserStatusId UserStatusId,
-    string? UserEntityId
+    UserStatusId UserStatusId
 );

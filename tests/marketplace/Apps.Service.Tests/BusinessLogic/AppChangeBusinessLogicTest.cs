@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -49,9 +48,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
 public class AppChangeBusinessLogicTest
 {
     private const string ClientId = "catenax-portal";
-    private const string IamUserId = "7469aa7e-517e-4204-9cf0-f5ccf69130e9";
     private static readonly Guid CompanyUserId = Guid.NewGuid();
-    private readonly IdentityData _identity = new(IamUserId, CompanyUserId, IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private static readonly Guid CompanyId = Guid.NewGuid();
+    private readonly IIdentityData _identity;
 
     private readonly IFixture _fixture;
     private readonly IProvisioningManager _provisioningManager;
@@ -88,6 +87,10 @@ public class AppChangeBusinessLogicTest
         _identityService = A.Fake<IIdentityService>();
         _offerDocumentService = A.Fake<IOfferDocumentService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(CompanyUserId);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
         _now = _fixture.Create<DateTimeOffset>();
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(_now);
@@ -131,7 +134,6 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
         _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, _identityService, Options.Create(settings), _offerDocumentService, _dateTimeProvider);
     }
 
@@ -557,8 +559,6 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var identity = _fixture.Create<IdentityData>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
         var appLeadImageContentTypes = new[] { MediaTypeId.JPEG, MediaTypeId.PNG };
         var file = FormFileHelper.GetFormFile("Test File", "TestImage.pdf", "application/pdf");
 
@@ -575,12 +575,10 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var identity = _fixture.Create<IdentityData>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
 
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => (false, true, null!));
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
+            .Returns((false, true, Enumerable.Empty<DocumentStatusData>()));
 
         // Act
         var Act = () => _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None);
@@ -588,6 +586,7 @@ public class AppChangeBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         result.Message.Should().Be("offerStatus is in incorrect State");
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -595,19 +594,18 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var identity = _fixture.Create<IdentityData>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
 
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, false, null!));
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
+            .Returns((true, false, Enumerable.Empty<DocumentStatusData>()));
 
         // Act
         async Task Act() => await _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None);
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be($"Company {identity.CompanyId} is not the provider company of App {appId}");
+        result.Message.Should().Be($"Company {CompanyId} is not the provider company of App {appId}");
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -615,12 +613,10 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var identity = _fixture.Create<IdentityData>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
 
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<bool, bool, IEnumerable<DocumentStatusData>>());
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
+            .Returns(default((bool, bool, IEnumerable<DocumentStatusData>)));
 
         // Act
         async Task Act() => await _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None);
@@ -628,6 +624,7 @@ public class AppChangeBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"App {appId} does not exist.");
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

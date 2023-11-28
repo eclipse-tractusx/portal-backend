@@ -63,7 +63,7 @@ public class ConnectorsRepository : IConnectorsRepository
                 con.CompanyServiceAccountId == null ? null : new TechnicalUserData(
                     con.CompanyServiceAccount!.Id,
                     con.CompanyServiceAccount.Name,
-                    con.CompanyServiceAccount.ClientId!,
+                    con.CompanyServiceAccount.ClientClientId,
                     con.CompanyServiceAccount.Description))
         ).SingleOrDefaultAsync();
 
@@ -89,7 +89,7 @@ public class ConnectorsRepository : IConnectorsRepository
                     c.CompanyServiceAccountId == default ? null : new TechnicalUserData(
                         c.CompanyServiceAccount!.Id,
                         c.CompanyServiceAccount.Name,
-                        c.CompanyServiceAccount.ClientId!,
+                        c.CompanyServiceAccount.ClientClientId,
                         c.CompanyServiceAccount.Description))
         ).SingleOrDefaultAsync();
 
@@ -111,7 +111,7 @@ public class ConnectorsRepository : IConnectorsRepository
                     connector.CompanyServiceAccountId == default ? null : new TechnicalUserData(
                         connector.CompanyServiceAccount!.Id,
                         connector.CompanyServiceAccount.Name,
-                        connector.CompanyServiceAccount.ClientId!,
+                        connector.CompanyServiceAccount.ClientClientId,
                         connector.CompanyServiceAccount.Description)),
                 connector.ProviderId == companyId
             ))

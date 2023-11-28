@@ -50,7 +50,7 @@ public class NetworkBusinessLogicTests
 
     private readonly IFixture _fixture;
 
-    private readonly IdentityData _identity = new(Guid.NewGuid().ToString(), Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IIdentityService _identityService;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _networkRegistrationProcessHelper;
@@ -84,6 +84,7 @@ public class NetworkBusinessLogicTests
         _networkRepository = A.Fake<INetworkRepository>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
+        _identity = A.Fake<IIdentityData>();
 
         var settings = new PartnerRegistrationSettings
         {
@@ -92,6 +93,9 @@ public class NetworkBusinessLogicTests
         var options = A.Fake<IOptions<PartnerRegistrationSettings>>();
 
         A.CallTo(() => options.Value).Returns(settings);
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
@@ -274,7 +278,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .Create();
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = NoIdpCompanyId });
+        A.CallTo(() => _identity.CompanyId).Returns(NoIdpCompanyId);
 
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
@@ -294,7 +298,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .Create();
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = MultiIdpCompanyId });
+        A.CallTo(() => _identity.CompanyId).Returns(MultiIdpCompanyId);
 
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
@@ -402,8 +406,7 @@ public class NetworkBusinessLogicTests
             new[] { new UserDetailData(null, "123", "ironman", "tony", "stark", "tony@stark.com") },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
-        A.CallTo(() => _identityService.IdentityData)
-            .Returns(_identity with { CompanyId = NoAliasIdpCompanyId });
+        A.CallTo(() => _identity.CompanyId).Returns(NoAliasIdpCompanyId);
 
         // Act
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);

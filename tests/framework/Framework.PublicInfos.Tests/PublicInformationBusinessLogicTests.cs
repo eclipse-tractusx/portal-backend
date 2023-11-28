@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -36,12 +35,17 @@ public class PublicInformationBusinessLogicTests
 {
     private readonly Guid _participantCompany = Guid.NewGuid();
     private readonly Guid _appProviderCompany = Guid.NewGuid();
+    private readonly IIdentityData _identity;
     private readonly IIdentityService _identityService;
     private readonly IPublicInformationBusinessLogic _sut;
 
     public PublicInformationBusinessLogicTests()
     {
+        _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
         var companyRepository = A.Fake<ICompanyRepository>();
         var portalRepositories = A.Fake<IPortalRepositories>();
 
@@ -57,7 +61,7 @@ public class PublicInformationBusinessLogicTests
     public async Task GetPublicUrls_ForParticipant_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _identityService.IdentityData).Returns(new IdentityData("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, _participantCompany));
+        A.CallTo(() => _identity.CompanyId).Returns(_participantCompany);
 
         // Act
         var result = await _sut.GetPublicUrls().ConfigureAwait(false);
@@ -70,7 +74,7 @@ public class PublicInformationBusinessLogicTests
     public async Task GetPublicUrls_ForAppProvider_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _identityService.IdentityData).Returns(new IdentityData("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, _appProviderCompany));
+        A.CallTo(() => _identity.CompanyId).Returns(_appProviderCompany);
 
         // Act
         var result = await _sut.GetPublicUrls().ConfigureAwait(false);

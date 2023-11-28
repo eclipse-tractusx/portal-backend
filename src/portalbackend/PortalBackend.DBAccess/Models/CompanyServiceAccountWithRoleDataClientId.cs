@@ -29,6 +29,5 @@ public record CompanyServiceAccountWithRoleDataClientId(
     string Description,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     Guid? OfferSubscriptionId,
-    string? ClientId,
     string? ClientClientId,
     IEnumerable<UserRoleData> UserRoleDatas);

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -249,13 +248,16 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var technicalUserId = Guid.NewGuid();
         var technicalUserClientId = "sa1";
+        var technicalUserInternalClientId = Guid.NewGuid().ToString();
         var serviceAccounts = new (Guid, string?)[]
         {
             new(technicalUserId, technicalUserClientId)
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
             .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
-        A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(technicalUserClientId))
+        A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(technicalUserClientId))
+            .Returns(technicalUserInternalClientId);
+        A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(technicalUserInternalClientId))
             .Returns(new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "test123" });
 
         // Act

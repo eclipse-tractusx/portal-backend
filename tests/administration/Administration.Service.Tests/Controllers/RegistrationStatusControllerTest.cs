@@ -35,7 +35,7 @@ public class RegistrationStatusControllerTest
     {
         _logic = A.Fake<IRegistrationStatusBusinessLogic>();
         _controller = new RegistrationStatusController(_logic);
-        _controller.AddControllerContextWithClaim("1234");
+        _controller.AddControllerContextWithClaim();
     }
 
     [Fact]

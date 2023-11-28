@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -31,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
@@ -42,7 +42,7 @@ public class UserUploadBusinessLogicTests
     private readonly IOptions<UserSettings> _options;
     private readonly IFormFile _document;
     private readonly Guid _identityProviderId;
-    private readonly IdentityData _identity;
+    private readonly IIdentityData _identity;
     private readonly IMailingService _mailingService;
     private readonly UserSettings _settings;
     private readonly Encoding _encoding;
@@ -70,9 +70,11 @@ public class UserUploadBusinessLogicTests
         var clientId = _fixture.Create<string>();
         _settings = _fixture.Build<UserSettings>().With(x => x.Portal, _fixture.Build<UserSetting>().With(x => x.KeycloakClientID, clientId).Create()).Create();
         _encoding = _fixture.Create<Encoding>();
-        _identity = new(Guid.NewGuid().ToString(), Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
-
+        _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         _errorMessageService = A.Fake<IErrorMessageService>();
@@ -94,7 +96,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.UserId)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.IdentityId)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -327,7 +329,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.UserId, A<Guid?>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.IdentityId, A<Guid?>._)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -524,10 +526,10 @@ public class UserUploadBusinessLogicTests
 
         A.CallTo(() => _options.Value).Returns(_settings);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.UserId))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.IdentityId))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create(), _fixture.Create<string>()));
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.UserId, A<Guid?>._))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.IdentityId, A<Guid?>._))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create(), _fixture.Create<string>()));
 
         A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._, A<IEnumerable<string>>._, A<Guid>._))

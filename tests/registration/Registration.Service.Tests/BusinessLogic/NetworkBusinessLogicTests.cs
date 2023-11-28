@@ -49,7 +49,7 @@ public class NetworkBusinessLogicTests
 
     private readonly IFixture _fixture;
 
-    private readonly IdentityData _identity = new(Guid.NewGuid().ToString(), Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IApplicationChecklistCreationService _checklistService;
 
@@ -83,8 +83,11 @@ public class NetworkBusinessLogicTests
         _consentRepository = A.Fake<IConsentRepository>();
 
         var identityService = A.Fake<IIdentityService>();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => identityService.IdentityData).Returns(_identity);
-        A.CallTo(() => identityService.IdentityId).Returns(_identity.UserId);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
@@ -319,7 +322,7 @@ public class NetworkBusinessLogicTests
         consents.Should().HaveCount(2)
             .And.AllSatisfy(x => x.Should().Match<Consent>(x =>
                 x.CompanyId == _identity.CompanyId &&
-                x.CompanyUserId == _identity.UserId &&
+                x.CompanyUserId == _identity.IdentityId &&
                 x.ConsentStatusId == ConsentStatusId.ACTIVE))
             .And.Satisfy(
                 x => x.AgreementId == agreementId,

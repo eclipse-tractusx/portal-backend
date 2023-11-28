@@ -42,7 +42,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly ILogger<ConnectorsBusinessLogic> _logger;
     private readonly ConnectorsSettings _settings;
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
@@ -60,7 +60,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         _portalRepositories = portalRepositories;
         _settings = options.Value;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _logger = logger;
     }
 
@@ -70,7 +70,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             page,
             size,
             _settings.MaxPageSize,
-            _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForCompanyId(_identityService.IdentityData.CompanyId));
+            _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForCompanyId(_identityData.CompanyId));
 
     /// <inheritdoc/>
     public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForCompany(int page, int size) =>
@@ -78,11 +78,11 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             page,
             size,
             _settings.MaxPageSize,
-            _portalRepositories.GetInstance<IConnectorsRepository>().GetManagedConnectorsForCompany(_identityService.IdentityData.CompanyId));
+            _portalRepositories.GetInstance<IConnectorsRepository>().GetManagedConnectorsForCompany(_identityData.CompanyId));
 
     public async Task<ConnectorData> GetCompanyConnectorData(Guid connectorId)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForCompany(connectorId, companyId).ConfigureAwait(false);
         if (result == default)
         {
@@ -104,7 +104,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
     private async Task<Guid> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var (name, connectorUrl, location, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location);
 
@@ -135,7 +135,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
     private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var (name, connectorUrl, location, subscriptionId, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location).ConfigureAwait(false);
 
@@ -252,7 +252,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// <inheritdoc/>
     public async Task DeleteConnectorAsync(Guid connectorId)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
         var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false) ?? throw new NotFoundException($"Connector {connectorId} does not exist");
         if (!result.IsProvidingOrHostCompany)
@@ -369,7 +369,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException($"Connector {data.ExternalId} already has a document assigned");
         }
 
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityService.IdentityId, cancellationToken).ConfigureAwait(false);
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityData.IdentityId, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -382,11 +382,10 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
     private async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data)
     {
-        var identity = _identityService.IdentityData;
         var connectorsRepository = _portalRepositories
             .GetInstance<IConnectorsRepository>();
         var connector = await connectorsRepository
-            .GetConnectorUpdateInformation(connectorId, identity.CompanyId)
+            .GetConnectorUpdateInformation(connectorId, _identityData.CompanyId)
             .ConfigureAwait(false);
 
         if (connector == null)
@@ -401,7 +400,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (!connector.IsHostCompany)
         {
-            throw new ForbiddenException($"Company {identity.CompanyId} is not the connectors host company");
+            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the connectors host company");
         }
 
         if (connector.Status == ConnectorStatusId.INACTIVE)
@@ -412,7 +411,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
             ? connector.Bpn
             : await _portalRepositories.GetInstance<IUserRepository>()
-                .GetCompanyBpnForIamUserAsync(identity.UserId)
+                .GetCompanyBpnForIamUserAsync(_identityData.IdentityId)
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(bpn))
         {
@@ -430,5 +429,5 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// <inheritdoc />
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet) =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetConnectorOfferSubscriptionData(connectorIdSet, _identityService.IdentityData.CompanyId);
+            .GetConnectorOfferSubscriptionData(connectorIdSet, _identityData.CompanyId);
 }

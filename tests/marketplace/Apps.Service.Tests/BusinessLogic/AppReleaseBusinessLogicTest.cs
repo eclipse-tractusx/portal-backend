@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -44,8 +43,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
 
 public class AppReleaseBusinessLogicTest
 {
-    private const string IamUserId = "3e8343f7-4fe5-4296-8312-f33aa6dbde5d";
-
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
@@ -53,7 +50,8 @@ public class AppReleaseBusinessLogicTest
     private readonly IDocumentRepository _documentRepository;
     private readonly IOptions<AppsSettings> _options;
     private readonly CompanyUser _companyUser;
-    private readonly IdentityData _identity;
+    private readonly Guid _companyId = Guid.NewGuid();
+    private readonly IIdentityData _identity;
     private readonly IOfferService _offerService;
     private readonly Guid _notExistingAppId = Guid.NewGuid();
     private readonly Guid _activeAppId = Guid.NewGuid();
@@ -87,17 +85,16 @@ public class AppReleaseBusinessLogicTest
         _offerSetupService = A.Fake<IOfferSetupService>();
         _options = A.Fake<IOptions<AppsSettings>>();
 
-        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER)
-        {
-            UserEntityId = IamUserId
-        };
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
 
         _companyUser = _fixture.Build<CompanyUser>()
             .With(u => u.Identity, identity)
             .Create();
-        _identity = new(IamUserId, _companyUser.Id, IdentityTypeId.COMPANY_USER, Guid.NewGuid());
-
+        _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identity.IdentityId).Returns(_companyUser.Id);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(_companyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         _settings = new AppsSettings
@@ -146,7 +143,7 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var appUserRoles = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(role, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
 
-        A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<Guid>.That.IsEqualTo(_identity.CompanyId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP)))
+        A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(appId, _identity.CompanyId, OfferTypeId.APP))
             .Returns((true, true));
 
         IEnumerable<UserRole>? userRoles = null;
@@ -862,7 +859,7 @@ public class AppReleaseBusinessLogicTest
         var appId = Guid.NewGuid();
         var data = new AppInstanceSetupData(true, "https://test.de");
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>());
+            .Returns(default((OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>)));
 
         //Act
         async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
@@ -879,7 +876,7 @@ public class AppReleaseBusinessLogicTest
         var appId = Guid.NewGuid();
         var data = new AppInstanceSetupData(true, "https://test.de");
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.ACTIVE, false, null, new List<(Guid, Guid, string)>()));
+            .Returns((OfferStatusId.ACTIVE, false, null, Enumerable.Empty<(Guid, Guid, string)>()));
 
         //Act
         async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
@@ -896,7 +893,7 @@ public class AppReleaseBusinessLogicTest
         var appId = Guid.NewGuid();
         var data = new AppInstanceSetupData(true, "https://test.de");
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.ACTIVE, true, null, new List<(Guid, Guid, string)>()));
+            .Returns((OfferStatusId.ACTIVE, true, null, Enumerable.Empty<(Guid, Guid, string)>()));
 
         //Act
         async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
@@ -915,7 +912,7 @@ public class AppReleaseBusinessLogicTest
         var data = new AppInstanceSetupData(false, null);
         var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, true, null);
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, new List<(Guid, Guid, string)>()));
+            .Returns((OfferStatusId.CREATED, true, instanceSetupTransferData, Enumerable.Empty<(Guid, Guid, string)>()));
 
         //Act
         async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
@@ -935,7 +932,7 @@ public class AppReleaseBusinessLogicTest
         var data = new AppInstanceSetupData(true, "https://test.de");
         AppInstanceSetup? instanceSetupData = null;
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, null, new List<(Guid, Guid, string)>()));
+            .Returns((OfferStatusId.CREATED, true, null, Enumerable.Empty<(Guid, Guid, string)>()));
         A.CallTo(() => _offerRepository.CreateAppInstanceSetup(appId, A<Action<AppInstanceSetup>>._))
             .Invokes((Guid callingAppId, Action<AppInstanceSetup> setOptionalParameters) =>
             {
@@ -969,7 +966,7 @@ public class AppReleaseBusinessLogicTest
         var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, true, "https://test.de");
         var instanceSetupData = new AppInstanceSetup(instanceSetupId, appId) { IsSingleInstance = true };
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
+            .Returns((OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
         A.CallTo(() => _offerRepository.AttachAndModifyAppInstanceSetup(instanceSetupId, appId, A<Action<AppInstanceSetup>>._, A<Action<AppInstanceSetup>>._))
             .Invokes((Guid _, Guid _, Action<AppInstanceSetup> setOptionalParameters,
                 Action<AppInstanceSetup>? initializeParameter) =>
@@ -998,7 +995,7 @@ public class AppReleaseBusinessLogicTest
         var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, false, null);
         var instanceSetupData = new AppInstanceSetup(instanceSetupId, appId) { IsSingleInstance = false };
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, new List<(Guid, Guid, string)>()));
+            .Returns((OfferStatusId.CREATED, true, instanceSetupTransferData, Enumerable.Empty<(Guid, Guid, string)>()));
         A.CallTo(() => _offerRepository.AttachAndModifyAppInstanceSetup(instanceSetupId, appId, A<Action<AppInstanceSetup>>._, A<Action<AppInstanceSetup>>._))
             .Invokes((Guid _, Guid _, Action<AppInstanceSetup> setOptionalParameters,
                 Action<AppInstanceSetup>? initializeParameter) =>
@@ -1031,7 +1028,7 @@ public class AppReleaseBusinessLogicTest
         var data = new AppInstanceSetupData(true, "https://test.de");
         var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, false, null);
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
+            .Returns((OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
         A.CallTo(() => _offerRepository.AttachAndModifyAppInstanceSetup(instanceSetupId, appId, A<Action<AppInstanceSetup>>._, A<Action<AppInstanceSetup>>._))
             .Invokes((Guid _, Guid _, Action<AppInstanceSetup> setOptionalParameters,
                 Action<AppInstanceSetup>? initializeParameter) =>
@@ -1064,7 +1061,7 @@ public class AppReleaseBusinessLogicTest
         var data = new AppInstanceSetupData(false, null);
         var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, true, null);
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
+            .Returns((OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
         A.CallTo(() => _offerRepository.AttachAndModifyAppInstanceSetup(instanceSetupId, appId, A<Action<AppInstanceSetup>>._, A<Action<AppInstanceSetup>>._))
             .Invokes((Guid _, Guid _, Action<AppInstanceSetup> setOptionalParameters,
                 Action<AppInstanceSetup>? initializeParameter) =>
@@ -1096,7 +1093,7 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
 
         A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         // Act
         var result = await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
@@ -1121,7 +1118,7 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
 
         A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP))
-            .ReturnsLazily(() => (InReviewOfferData?)default!);
+            .Returns(default(InReviewOfferData?));
 
         //Act
         async Task Act() => await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);

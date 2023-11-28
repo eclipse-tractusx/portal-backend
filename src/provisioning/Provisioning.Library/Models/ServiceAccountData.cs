@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,16 +19,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-public class ServiceAccountData
-{
-    public ServiceAccountData(string internalClientId, string userEntityId, ClientAuthData authData)
-    {
-        InternalClientId = internalClientId;
-        UserEntityId = userEntityId;
-        AuthData = authData;
-    }
-
-    public string InternalClientId { get; set; }
-    public string UserEntityId { get; set; }
-    public ClientAuthData AuthData { get; set; }
-}
+public record ServiceAccountData(
+    string InternalClientId,
+    string IamUserId,
+    ClientAuthData AuthData
+);

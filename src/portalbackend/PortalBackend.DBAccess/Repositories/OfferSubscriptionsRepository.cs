@@ -453,7 +453,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new ValueTuple<IEnumerable<(Guid, string?)>, string?, string?, OfferSubscriptionStatusId>(
-                    x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string?>(sa.Id, sa.ClientId)),
+                    x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string?>(sa.Id, sa.ClientClientId)),
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                     x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl,
                     x.OfferSubscriptionStatusId

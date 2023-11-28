@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -160,14 +159,13 @@ public class UserController : ControllerBase
     /// </summary>
     /// <param name="page">page index start from 0</param>
     /// <param name="size">size to get number of records</param>
-    /// <param name="userEntityId">User Entity Id</param>
     /// <param name="companyUserId">Company User Id</param>
     /// <param name="firstName">First Name of User</param>
     /// <param name="lastName">Last Name of User</param>
     /// <param name="email">Email Id of User</param>
     /// <returns>Paginated Result of Company User Data</returns>
     /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&amp;size=5</remarks>
-    /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&amp;size=5&amp;userEntityId="31404026-64ee-4023-a122-3c7fc40e57b1"</remarks>
+    /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&amp;size=5&amp;companyUserId="31404026-64ee-4023-a122-3c7fc40e57b1"</remarks>
     /// <response code="200">Result as a Company User Data</response>
     [HttpGet]
     [Authorize(Roles = "view_user_management")]
@@ -177,7 +175,6 @@ public class UserController : ControllerBase
     public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
         [FromQuery] int page,
         [FromQuery] int size,
-        [FromQuery] string? userEntityId = null,
         [FromQuery] Guid? companyUserId = null,
         [FromQuery] string? firstName = null,
         [FromQuery] string? lastName = null,
@@ -185,7 +182,7 @@ public class UserController : ControllerBase
         _logic.GetOwnCompanyUserDatasAsync(
             page,
             size,
-            new(companyUserId, userEntityId, firstName, lastName, email));
+            new(companyUserId, firstName, lastName, email));
 
     /// <summary>
     /// Gets the user details for the given user Id

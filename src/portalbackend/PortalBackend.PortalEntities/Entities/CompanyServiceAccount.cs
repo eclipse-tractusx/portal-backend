@@ -39,9 +39,6 @@ public class CompanyServiceAccount : IBaseEntity
     /// <inheritdoc />
     public Guid Id { get; set; }
 
-    [StringLength(36)]
-    public string? ClientId { get; set; }
-
     [StringLength(255)]
     public string? ClientClientId { get; set; }
 

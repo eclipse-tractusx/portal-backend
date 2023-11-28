@@ -59,9 +59,6 @@ public class BaseSeed
         {
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow,
                 new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER)
-            {
-                UserEntityId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65"
-            }
         });
 
         dbContext.CompanyUsers.AddRange(new List<CompanyUser>

@@ -19,11 +19,9 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using System.Json;
 using System.Security.Claims;
 
@@ -31,80 +29,45 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
 {
     public class KeycloakClaimsTransformation : IClaimsTransformation
     {
-        private readonly ILogger<KeycloakClaimsTransformation> _logger;
         private readonly JwtBearerOptions _options;
-        private readonly IIdentityRepository _identityRepository;
 
-        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options, IPortalRepositories portalRepositories, ILogger<KeycloakClaimsTransformation> logger)
+        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options)
         {
-            _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
-            _logger = logger;
             _options = options.Value;
         }
 
-        public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+        public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
         {
             var claimsIdentity = new ClaimsIdentity();
-            var rolesAdded = AddRoles(principal, claimsIdentity);
-            var identityAdded = await AddIdentity(principal, claimsIdentity).ConfigureAwait(false);
-
-            if (rolesAdded || identityAdded)
+            if (AddRoles(principal, claimsIdentity))
             {
                 principal.AddIdentity(claimsIdentity);
             }
-            return principal;
+            return Task.FromResult(principal);
         }
 
-        private bool AddRoles(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity)
-        {
-            var resource_access = principal.Claims
-                .FirstOrDefault(claim => claim.Type == PortalClaimTypes.ResourceAccess && claim.ValueType == "JSON")?.Value;
-            if (resource_access == null ||
-                !((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(
-                    _options.TokenValidationParameters.ValidAudience,
-                    out var audience) ?? false) ||
-                !((audience as JsonObject)?.TryGetValue("roles", out var roles) ?? false) ||
-                roles is not JsonArray)
-            {
-                return false;
-            }
-
-            var rolesAdded = false;
-            foreach (JsonValue role in roles)
-            {
-                if (role.JsonType != JsonType.String)
+        private bool AddRoles(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity) =>
+            principal.Claims
+                .Where(claim =>
+                    claim.Type == PortalClaimTypes.ResourceAccess &&
+                    claim.ValueType == "JSON")
+                .SelectMany(claim =>
+                    JsonValue.Parse(claim.Value) is JsonObject jsonObject &&
+                    jsonObject.TryGetValue(
+                        _options.TokenValidationParameters.ValidAudience,
+                        out var audience) &&
+                    audience is JsonObject client &&
+                    client.TryGetValue("roles", out var jsonRoles) &&
+                    jsonRoles is JsonArray roles
+                        ? roles.Where(x => x.JsonType == JsonType.String)
+                               .Select(role => new Claim(ClaimTypes.Role, role))
+                        : Enumerable.Empty<Claim>())
+                .IfAny(claims =>
                 {
-                    continue;
-                }
-
-                claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, role));
-                rolesAdded = true;
-            }
-
-            return rolesAdded;
-        }
-
-        private async ValueTask<bool> AddIdentity(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity)
-        {
-            var preferredUserName = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.PreferredUserName)?.Value;
-
-            if (!string.IsNullOrWhiteSpace(preferredUserName) && Guid.TryParse(preferredUserName, out var identityId))
-            {
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, preferredUserName!));
-                return true;
-            }
-
-            var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
-            _logger.LogInformation("Preferred user name {PreferredUserName} couldn't be parsed to uuid for userEntityId {Sub}", preferredUserName, sub);
-
-            if (string.IsNullOrWhiteSpace(sub) || (identityId = await _identityRepository.GetIdentityIdByUserEntityId(sub).ConfigureAwait(false)) == Guid.Empty)
-            {
-                _logger.LogWarning("No identity found for userEntityId {Sub}", sub);
-                return false;
-            }
-
-            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityId.ToString()));
-            return true;
-        }
+                    foreach (var claim in claims)
+                    {
+                        claimsIdentity.AddClaim(claim);
+                    }
+                });
     }
 }

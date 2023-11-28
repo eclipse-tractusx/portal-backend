@@ -117,12 +117,12 @@ public class BatchUpdateSeeder : ICustomSeeder
 
         await SeedTable<CompanyServiceAccount>("company_service_accounts",
             x => x.Id,
-            x => x.dataEntity.Description != x.dbEntity.Description || x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.ClientId != x.dbEntity.ClientId,
+            x => x.dataEntity.Description != x.dbEntity.Description || x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.ClientClientId != x.dbEntity.ClientClientId,
             (dbEntry, entry) =>
             {
                 dbEntry.Description = entry.Description;
                 dbEntry.Name = entry.Name;
-                dbEntry.ClientId = entry.ClientId;
+                dbEntry.ClientClientId = entry.ClientClientId;
             }, cancellationToken).ConfigureAwait(false);
 
         await SeedTable<Company>("companies",

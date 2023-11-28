@@ -26,11 +26,9 @@ public class FakeIdentityService : IIdentityService
 {
     private readonly Guid _identityId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
 
-    public ValueTask<IdentityData> GetIdentityData() => ValueTask.FromResult(IdentityData);
-
     /// <inheritdoc />
-    public IdentityData IdentityData =>
-        new("3d8142f1-860b-48aa-8c2b-1ccb18699f65", _identityId, IdentityTypeId.COMPANY_USER, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+    public IIdentityData IdentityData =>
+        new FakeIdentityData(_identityId, IdentityTypeId.COMPANY_USER, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
 
-    public Guid IdentityId { get => _identityId; }
+    private record FakeIdentityData(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId) : IIdentityData;
 }

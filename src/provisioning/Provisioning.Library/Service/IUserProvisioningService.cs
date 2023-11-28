@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -35,6 +34,6 @@ public interface IUserProvisioningService
     Task<string> GetIdentityProviderDisplayName(string idpAlias);
     IAsyncEnumerable<UserRoleData> GetRoleDatas(IEnumerable<UserRoleConfig> clientRoles);
     Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, Guid companyId);
-    Task<(Identity? identity, Guid companyUserId)> GetOrCreateCompanyUser(IUserRepository userRepository, string alias, UserCreationRoleDataIdpInfo user, Guid companyId, Guid identityProviderId, string? businessPartnerNumber);
-    Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleData> roleDatas, (string UserEntityId, Guid CompanyUserId) userdata);
+    Task<(Identity? Identity, Guid CompanyUserId)> GetOrCreateCompanyUser(IUserRepository userRepository, string alias, UserCreationRoleDataIdpInfo user, Guid companyId, Guid identityProviderId, string? businessPartnerNumber);
+    Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleData> roleDatas, (string IamUserId, Guid CompanyUserId) userdata);
 }
