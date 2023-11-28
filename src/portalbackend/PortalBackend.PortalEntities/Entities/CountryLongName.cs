@@ -22,28 +22,29 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CountryLongNames
+public class CountryLongName
 {
-    private CountryLongNames()
+    private CountryLongName()
     {
         Alpha2Code = null!;
         ShortName = null!;
-        CountryLongName = null!;
+        LongName = null!;
     }
 
-    public CountryLongNames(string alpha2Code, string shortName, string countryLongName)
+    public CountryLongName(string alpha2Code, string shortName, string longName)
     {
         Alpha2Code = alpha2Code;
         ShortName = shortName;
-        CountryLongName = countryLongName;
+        LongName = longName;
     }
+
     [StringLength(2, MinimumLength = 2)]
     [JsonPropertyName("alpha2code")]
     public string Alpha2Code { get; private set; }
 
     [StringLength(2, MinimumLength = 2)]
     public string ShortName { get; private set; }
-    public string CountryLongName { get; private set; }
+    public string LongName { get; private set; }
 
     // Navigation Properties
     public virtual Language? Language { get; private set; }

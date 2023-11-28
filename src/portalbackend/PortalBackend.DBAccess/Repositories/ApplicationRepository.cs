@@ -125,7 +125,7 @@ public class ApplicationRepository : IApplicationRepository
                     data.Company.AddressId,
                     data.Company.Address!.Streetname,
                     data.Company.Address.City,
-                    data.Company.Address.Country!.CountryNameDe,
+                    data.Company.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "de").Select(cln => cln.LongName).SingleOrDefault(),
                     data.Company.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),
                     data.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
                 data.Consents.Select(consent =>
@@ -262,7 +262,7 @@ public class ApplicationRepository : IApplicationRepository
                     companyApplication.Company.Address.Streetadditional,
                     companyApplication.Company.Address.Streetnumber,
                     companyApplication.Company.Address.Zipcode,
-                    companyApplication.Company.Address.Country!.CountryNameDe,
+                    companyApplication.Company.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "de").Select(cln => cln.LongName).SingleOrDefault(),
                     companyApplication.Company.CompanyAssignedRoles.SelectMany(assigned =>
                         assigned.CompanyRole!.AgreementAssignedCompanyRoles.Select(x =>
                             new AgreementsData(
@@ -359,7 +359,7 @@ public class ApplicationRepository : IApplicationRepository
                         ca.Company.BusinessPartnerNumber,
                         ca.Address.Region,
                         ca.Address.Zipcode,
-                        ca.Address.Country!.CountryNameEn,
+                        ca.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "en").Select(cln => cln.LongName).SingleOrDefault(),
                         ca.Address.CountryAlpha2Code),
                 ca.CompanyIdentifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifier!.Label, ci.Value))))
             .SingleOrDefaultAsync();

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,18 +18,27 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
 
 #nullable disable
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class CPLP3451CountryLongNames : Migration
+    public partial class CPLP3451CountryLongName : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "country_name_de",
+                schema: "portal",
+                table: "countries");
+
+            migrationBuilder.DropColumn(
+                name: "country_name_en",
+                schema: "portal",
+                table: "countries");
+
             migrationBuilder.CreateTable(
                 name: "country_long_names",
                 schema: "portal",
@@ -37,7 +46,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 {
                     alpha2code = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
                     short_name = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
-                    country_long_name = table.Column<string>(type: "text", nullable: false)
+                    long_name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -69,6 +78,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.DropTable(
                 name: "country_long_names",
                 schema: "portal");
+
+            migrationBuilder.AddColumn<string>(
+                name: "country_name_de",
+                schema: "portal",
+                table: "countries",
+                type: "character varying(255)",
+                maxLength: 255,
+                nullable: false,
+                defaultValue: "");
+
+            migrationBuilder.AddColumn<string>(
+                name: "country_name_en",
+                schema: "portal",
+                table: "countries",
+                type: "character varying(255)",
+                maxLength: 255,
+                nullable: false,
+                defaultValue: "");
         }
     }
 }

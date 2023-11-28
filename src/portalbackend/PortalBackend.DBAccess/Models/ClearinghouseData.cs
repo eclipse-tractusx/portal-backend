@@ -35,7 +35,7 @@ public record ParticipantDetails(
     [property: JsonPropertyName("bpn")] string? Bpn,
     [property: JsonPropertyName("region")] string? Region,
     [property: JsonPropertyName("zipCode")] string? ZipCode,
-    [property: JsonPropertyName("country")] string Country,
+    [property: JsonPropertyName("country")] string? Country,
     [property: JsonPropertyName("countryAlpha2Code")] string CountryAlpha2Code
 );
 

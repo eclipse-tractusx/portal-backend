@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -130,7 +129,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ConsentAssignedOffer> ConsentAssignedOffers { get; set; } = default!;
     public virtual DbSet<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
-    public virtual DbSet<CountryLongNames> CountryLongNames { get; set; } = default!;
+    public virtual DbSet<CountryLongName> CountryLongNames { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
     public virtual DbSet<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
@@ -879,7 +878,7 @@ public class PortalDbContext : DbContext
                     .Select(e => new ConsentStatus(e))
             );
 
-        modelBuilder.Entity<CountryLongNames>(entity =>
+        modelBuilder.Entity<CountryLongName>(entity =>
         {
             entity.HasKey(e => new { e.Alpha2Code, e.ShortName });
 

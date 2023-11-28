@@ -91,12 +91,10 @@ public class BatchUpdateSeeder : ICustomSeeder
         await SeedTable<Country>(
             "countries",
             x => x.Alpha2Code,
-            x => x.dbEntity.Alpha3Code != x.dataEntity.Alpha3Code || x.dbEntity.CountryNameDe != x.dataEntity.CountryNameDe || x.dbEntity.CountryNameEn != x.dataEntity.CountryNameEn,
+            x => x.dbEntity.Alpha3Code != x.dataEntity.Alpha3Code,
             (dbEntry, entry) =>
             {
                 dbEntry.Alpha3Code = entry.Alpha3Code;
-                dbEntry.CountryNameDe = entry.CountryNameDe;
-                dbEntry.CountryNameEn = entry.CountryNameEn;
             }, cancellationToken).ConfigureAwait(false);
 
         await SeedTable<CompanyIdentifier>("company_identifiers",
