@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -51,8 +50,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="200">Returns a list of all countries long name with language code i.e german and english</response>
         [HttpGet]
         [Route("countrylist")]
-        [ProducesResponseType(typeof(IAsyncEnumerable<CountriesLongNamesData>), StatusCodes.Status200OK)]
-        public IAsyncEnumerable<CountriesLongNamesData> GetCountries() =>
+        [ProducesResponseType(typeof(IAsyncEnumerable<CountryLongNameData>), StatusCodes.Status200OK)]
+        public IAsyncEnumerable<CountryLongNameData> GetCountries() =>
             _staticDataBusinessLogic.GetAllCountries();
     }
 }

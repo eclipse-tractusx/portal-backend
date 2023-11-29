@@ -23,7 +23,6 @@ using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
@@ -37,14 +36,14 @@ public class StaticDataControllerTest
     {
         _fixture = new Fixture();
         _logic = A.Fake<IStaticDataBusinessLogic>();
-        this._controller = new StaticDataController(_logic);
+        _controller = new StaticDataController(_logic);
     }
 
     [Fact]
     public async Task GetCountries_ReturnsExpectedResult()
     {
         //Arrange
-        var data = _fixture.CreateMany<CountriesLongNamesData>(5).ToAsyncEnumerable();
+        var data = _fixture.CreateMany<CountryLongNameData>(5).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetAllCountries())
             .Returns(data);
 
@@ -53,6 +52,6 @@ public class StaticDataControllerTest
 
         // Assert 
         A.CallTo(() => _logic.GetAllCountries()).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5).And.AllBeOfType<CountriesLongNamesData>();
+        result.Should().HaveCount(5).And.AllBeOfType<CountryLongNameData>();
     }
 }

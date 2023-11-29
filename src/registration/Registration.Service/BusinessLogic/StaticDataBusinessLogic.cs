@@ -37,7 +37,6 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<CountriesLongNamesData> GetAllCountries() =>
+    public IAsyncEnumerable<CountryLongNameData> GetAllCountries() =>
         _portalRepositories.GetInstance<IStaticDataRepository>().GetAllCountries();
-
 }

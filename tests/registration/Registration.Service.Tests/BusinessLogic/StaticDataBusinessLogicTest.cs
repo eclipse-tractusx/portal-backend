@@ -55,7 +55,7 @@ public class StaticDataBusinessLogicTest
     public async Task GetAllCountries_ReturnsExpectedResult()
     {
         // Arrange
-        var data = _fixture.CreateMany<CountriesLongNamesData>(3).ToImmutableArray();
+        var data = _fixture.CreateMany<CountryLongNameData>(3).ToImmutableArray();
 
         A.CallTo(() => _staticDataRepository.GetAllCountries())
             .Returns(data.ToAsyncEnumerable());
@@ -66,7 +66,7 @@ public class StaticDataBusinessLogicTest
         var result = await sut.GetAllCountries().ToListAsync().ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _staticDataRepository.GetAllLanguage())
+        A.CallTo(() => _staticDataRepository.GetAllCountries())
             .MustHaveHappenedOnceExactly();
         result.Should().HaveCount(3).And.ContainInOrder(data);
     }

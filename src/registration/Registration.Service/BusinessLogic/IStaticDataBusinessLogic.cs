@@ -29,5 +29,5 @@ public interface IStaticDataBusinessLogic
     /// Get all Countries.
     /// </summary>
     /// <returns>AsyncEnumerable of the result Counties with long names</returns>
-    IAsyncEnumerable<CountriesLongNamesData> GetAllCountries();
+    IAsyncEnumerable<CountryLongNameData> GetAllCountries();
 }

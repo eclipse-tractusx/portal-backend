@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,12 +20,12 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Model for CountriesLongNamesData
+/// Model for CountryLongNameData
 /// </summary>]
 /// <param name="Alpha2Code">Language Short Name</param>
 /// <param name="CountryName">Language Long Name</param>
 /// <returns></returns>
-public record CountriesLongNamesData(string Alpha2Code, IEnumerable<CountryName> CountryName);
+public record CountryLongNameData(string Alpha2Code, IEnumerable<CountryName> CountryName);
 
 /// <summary>
 /// Model for CountryName
@@ -34,4 +33,4 @@ public record CountriesLongNamesData(string Alpha2Code, IEnumerable<CountryName>
 /// <param name="Language">language</param>
 /// <param name="value">long Description</param>
 /// <returns></returns>
-public record CountryName(string Language, string value);
+public record CountryName(string Language, string Value);
