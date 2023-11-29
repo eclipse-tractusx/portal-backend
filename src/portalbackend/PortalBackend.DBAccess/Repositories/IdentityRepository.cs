@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,20 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class ProcessIdentityService : IIdentityService
+public class IdentityRepository : IIdentityRepository
 {
-    private readonly ProcessIdentitySettings _settings;
+    private readonly PortalDbContext _context;
 
-    public ProcessIdentityService(IOptions<ProcessIdentitySettings> options) =>
-        _settings = options.Value;
+    public IdentityRepository(PortalDbContext context)
+    {
+        _context = context;
+    }
 
-    /// <inheritdoc />
-    public IdentityData IdentityData =>
-        new(_settings.UserEntityId, _settings.ProcessUserId, _settings.IdentityTypeId, _settings.ProcessUserCompanyId);
+    public IdentityData? GetIdentityDataByIdentityId(Guid identityId) =>
+        _context.Identities.Where(x => x.Id == identityId && x.UserEntityId != null)
+            .Select(x => new IdentityData(x.UserEntityId!, x.Id, x.IdentityTypeId, x.CompanyId))
+            .SingleOrDefault();
 }

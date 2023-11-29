@@ -19,7 +19,6 @@
 
 using Castle.Core.Internal;
 using FluentAssertions;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.IdentityModel.Tokens.Jwt;
 using Xunit;

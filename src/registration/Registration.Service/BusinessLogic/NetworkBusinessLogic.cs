@@ -45,7 +45,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     public async Task Submit(PartnerSubmitData submitData)
     {
         var companyId = _identityService.IdentityData.CompanyId;
-        var userId = _identityService.IdentityData.UserId;
+        var userId = _identityService.IdentityId;
         var data = await _portalRepositories.GetInstance<INetworkRepository>()
             .GetSubmitData(companyId)
             .ConfigureAwait(false);

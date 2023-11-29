@@ -240,6 +240,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceAccountSync.Executor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Registration.Common", "registration\Registration.Common\Registration.Common.csproj", "{09EF5799-B375-49F1-B78F-0A94D8109F8B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keycloak.Authentication.Tests", "..\tests\keycloak\Keycloak.Authentication.Tests\Keycloak.Authentication.Tests.csproj", "{C7ACF748-DEF4-4646-A791-F1DA437CC965}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1522,6 +1524,18 @@ Global
 		{09EF5799-B375-49F1-B78F-0A94D8109F8B}.Release|x64.Build.0 = Release|Any CPU
 		{09EF5799-B375-49F1-B78F-0A94D8109F8B}.Release|x86.ActiveCfg = Release|Any CPU
 		{09EF5799-B375-49F1-B78F-0A94D8109F8B}.Release|x86.Build.0 = Release|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Debug|x64.Build.0 = Debug|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Debug|x86.Build.0 = Debug|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Release|x64.ActiveCfg = Release|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Release|x64.Build.0 = Release|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Release|x86.ActiveCfg = Release|Any CPU
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1636,5 +1650,6 @@ Global
 		{B2E5EBAB-AE49-47B6-8220-4844AC9DA456} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
 		{571DA63A-6B96-4C6C-8D82-D2C1F10BDAE5} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{09EF5799-B375-49F1-B78F-0A94D8109F8B} = {AB9C5AA2-DD5D-4A38-97C0-674A995C0AE0}
+		{C7ACF748-DEF4-4646-A791-F1DA437CC965} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 	EndGlobalSection
 EndGlobal

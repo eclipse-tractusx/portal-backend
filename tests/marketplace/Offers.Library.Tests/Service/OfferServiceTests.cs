@@ -106,6 +106,7 @@ public class OfferServiceTests
         _identityService = A.Fake<IIdentityService>();
         _logger = A.Fake<ILogger<OfferService>>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(_identity.UserId);
 
         _sut = new OfferService(_portalRepositories, _notificationService, _roleBaseMailService, _identityService, _offerSetupService, _logger);
 

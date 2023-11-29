@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -31,7 +30,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos.DependencyInject
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 
@@ -102,7 +100,7 @@ public static class StartupServiceExtensions
             .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new[] { "keycloak" });
 
         services.AddHttpContextAccessor();
-        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddClaimsIdentityIdDetermination();
 
         services.AddDateTimeProvider();
         services.AddPublicInfos();

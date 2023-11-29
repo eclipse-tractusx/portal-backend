@@ -24,6 +24,7 @@ public static class PortalClaimTypes
 {
     private const string Base = "https://catena-x.net//schema/2023/05/identity/claims";
     public const string Sub = "sub";
+    public const string PreferredUserName = "preferred_username";
     public const string ResourceAccess = "resource_access";
     public const string CompanyId = $"{Base}/company_id";
     public const string IdentityId = $"{Base}/identity_id";

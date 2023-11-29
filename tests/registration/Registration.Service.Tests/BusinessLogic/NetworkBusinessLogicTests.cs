@@ -84,6 +84,7 @@ public class NetworkBusinessLogicTests
 
         var identityService = A.Fake<IIdentityService>();
         A.CallTo(() => identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => identityService.IdentityId).Returns(_identity.UserId);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);

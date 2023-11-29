@@ -54,7 +54,7 @@ try
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddApplicationChecklistCreation()
                 .AddApplicationActivation(hostContext.Configuration)
-                .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddConfigurationIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
                 .AddNetworkRegistrationProcessExecutor(hostContext.Configuration)
                 .AddServiceAccountSyncProcessExecutor(hostContext.Configuration);
 

@@ -68,6 +68,7 @@ public class NotificationBusinessLogicTests
 
         _identityService = A.Fake<IIdentityService>();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(_identity.UserId);
 
         _readNotificationDetails = _fixture.Build<NotificationDetailData>()
             .CreateMany(1);
@@ -186,6 +187,7 @@ public class NotificationBusinessLogicTests
 
         var userId = Guid.NewGuid();
         A.CallTo(() => _identityService.IdentityData).Returns(_identity with { UserId = userId });
+        A.CallTo(() => _identityService.IdentityId).Returns(userId);
         var filter = _fixture.Create<NotificationFilters>();
 
         // Act
@@ -222,7 +224,7 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
         var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
@@ -366,7 +368,7 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
         var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
@@ -405,7 +407,7 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Create<IdentityData>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.IdentityId).Returns(identity.UserId);
         var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15

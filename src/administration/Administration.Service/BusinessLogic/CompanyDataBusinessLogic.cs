@@ -381,7 +381,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     public async Task ApproveCredential(Guid credentialId, CancellationToken cancellationToken)
     {
         var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
-        var userId = _identityService.IdentityData.UserId;
+        var userId = _identityService.IdentityId;
         var (exists, data) = await companySsiRepository.GetSsiApprovalData(credentialId).ConfigureAwait(false);
         if (!exists)
         {
@@ -455,7 +455,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     public async Task RejectCredential(Guid credentialId)
     {
         var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
-        var userId = _identityService.IdentityData.UserId;
+        var userId = _identityService.IdentityId;
         var (exists, status, type, requesterId, requesterEmail, requesterFirstname, requesterLastname) = await companySsiRepository.GetSsiRejectionData(credentialId).ConfigureAwait(false);
         if (!exists)
         {

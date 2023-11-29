@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,25 +17,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
-public class IdentityService : IIdentityService
+public static class ClaimsIdentityServiceCollectionExtensions
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private IdentityData? _identityData;
-
-    public IdentityService(IHttpContextAccessor httpContextAccessor)
+    public static IServiceCollection AddClaimsIdentityIdDetermination(this IServiceCollection services)
     {
-        _httpContextAccessor = httpContextAccessor;
+        return services
+            .AddScoped<IIdentityIdDetermination, ClaimsIdentityIdDetermination>()
+            .AddTransient<IIdentityService, IdentityService>();
     }
-
-    /// <inheritdoc />
-    public IdentityData IdentityData =>
-        _identityData ??= _httpContextAccessor.HttpContext?.User.GetIdentityData()
-            ?? throw new ConflictException("The identity should be set here");
 }
