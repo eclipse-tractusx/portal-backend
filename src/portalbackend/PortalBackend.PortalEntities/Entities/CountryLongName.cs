@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,25 +17,36 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public record ClearinghouseData(
-    CompanyApplicationStatusId ApplicationStatusId,
-    ParticipantDetails ParticipantDetails,
-    IEnumerable<UniqueIdData> UniqueIds);
+public class CountryLongName
+{
+    private CountryLongName()
+    {
+        Alpha2Code = null!;
+        ShortName = null!;
+        LongName = null!;
+    }
 
-public record ParticipantDetails(
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("city")] string? City,
-    [property: JsonPropertyName("street")] string Street,
-    [property: JsonPropertyName("bpn")] string? Bpn,
-    [property: JsonPropertyName("region")] string? Region,
-    [property: JsonPropertyName("zipCode")] string? ZipCode,
-    [property: JsonPropertyName("country")] string? Country,
-    [property: JsonPropertyName("countryAlpha2Code")] string CountryAlpha2Code
-);
+    public CountryLongName(string alpha2Code, string shortName, string longName)
+    {
+        Alpha2Code = alpha2Code;
+        ShortName = shortName;
+        LongName = longName;
+    }
 
-public record UniqueIdData(string Type, string Value);
+    [StringLength(2, MinimumLength = 2)]
+    [JsonPropertyName("alpha2code")]
+    public string Alpha2Code { get; private set; }
+
+    [StringLength(2, MinimumLength = 2)]
+    public string ShortName { get; private set; }
+    public string LongName { get; private set; }
+
+    // Navigation Properties
+    public virtual Language? Language { get; private set; }
+    public virtual Country? Country { get; private set; }
+}

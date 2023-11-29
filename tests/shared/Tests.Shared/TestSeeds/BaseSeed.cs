@@ -32,8 +32,8 @@ public class BaseSeed
 
         dbContext.Countries.AddRange(new List<Country>
         {
-            new("DE", "Deutschland", "Germany") {Alpha3Code = "DEU"},
-            new("PT", "Portugal", "Portugal") {Alpha3Code = "PRT"}
+            new("DE") {Alpha3Code = "DEU"},
+            new("PT") {Alpha3Code = "PRT"}
         });
 
         dbContext.Addresses.AddRange(new List<Address>
