@@ -39,7 +39,7 @@ WebApplicationBuildRunner
             .AddProvisioningManager(builder.Configuration);
 
         builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
-
+        builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
         builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
             .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"))
             .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();

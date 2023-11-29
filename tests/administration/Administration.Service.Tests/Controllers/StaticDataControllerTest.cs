@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -33,7 +32,7 @@ public class StaticDataControllerTest
     {
         _fixture = new Fixture();
         _logic = A.Fake<IStaticDataBusinessLogic>();
-        this._controller = new StaticDataController(_logic);
+        _controller = new StaticDataController(_logic);
     }
 
     [Fact]

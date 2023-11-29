@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -54,6 +53,17 @@ public class StaticDataRepository : IStaticDataRepository
                 (
                     lang.ShortName,
                     lang.LanguageLongNames.Select(x => new LanguageDataLongName(x.LanguageShortName, x.LongName))
+                ))
+            .AsAsyncEnumerable();
+
+    ///<inheritdoc />
+    public IAsyncEnumerable<CountryLongNameData> GetAllCountries() =>
+        _dbContext.Countries
+            .AsNoTracking()
+            .Select(s => new CountryLongNameData
+                (
+                    s.Alpha2Code,
+                    s.CountryLongNames.Select(x => new CountryName(x.ShortName, x.LongName))
                 ))
             .AsAsyncEnumerable();
 
