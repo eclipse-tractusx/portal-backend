@@ -56,8 +56,7 @@ try
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddApplicationChecklistCreation()
                 .AddApplicationActivation(hostContext.Configuration)
-                .AddConfigurationIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
-                .AddTransient<IIdentityService, IdentityService>()
+                .AddConfigurationIdentityService(hostContext.Configuration.GetSection("ProcessIdentity"))
                 .AddNetworkRegistrationProcessExecutor(hostContext.Configuration)
                 .AddServiceAccountSyncProcessExecutor(hostContext.Configuration);
 
