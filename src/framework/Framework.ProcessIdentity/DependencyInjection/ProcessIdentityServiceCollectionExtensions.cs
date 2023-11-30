@@ -34,6 +34,16 @@ public static class ProcessIdentityServiceCollectionExtensions
             .ValidateOnStart();
 
         return services
+            .AddTransient<IIdentityIdDetermination, ConfigurationIdentityIdDetermination>();
+    }
+
+    public static IServiceCollection AddConfigurationIdentityService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<ProcessIdentitySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+
+        return services
             .AddTransient<IIdentityIdDetermination, ConfigurationIdentityIdDetermination>()
             .AddTransient<IIdentityService, IdentityService>();
     }

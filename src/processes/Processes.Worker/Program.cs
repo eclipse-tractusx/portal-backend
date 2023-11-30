@@ -28,6 +28,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
@@ -54,7 +56,7 @@ try
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddApplicationChecklistCreation()
                 .AddApplicationActivation(hostContext.Configuration)
-                .AddConfigurationIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddConfigurationIdentityService(hostContext.Configuration.GetSection("ProcessIdentity"))
                 .AddNetworkRegistrationProcessExecutor(hostContext.Configuration)
                 .AddServiceAccountSyncProcessExecutor(hostContext.Configuration);
 

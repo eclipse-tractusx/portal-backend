@@ -89,16 +89,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
         {
             var preferredUserName = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.PreferredUserName)?.Value;
 
-            if (!string.IsNullOrWhiteSpace(preferredUserName) && Guid.TryParse(preferredUserName, out var identityId))
+            IdentityData? identityData;
+            if (!string.IsNullOrWhiteSpace(preferredUserName) && Guid.TryParse(preferredUserName, out var identityId) && (identityData = await _userRepository.GetActiveUserDataByIdentityId(identityId).ConfigureAwait(false)) != null)
             {
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityId.ToString()));
+                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityData.UserId.ToString()));
+                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, identityData.IdentityType.ToString()));
+                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, identityData.CompanyId.ToString()));
                 return true;
             }
 
             var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
             _logger.LogInformation("Preferred user name {PreferredUserName} couldn't be parsed to uuid for userEntityId {Sub}", preferredUserName, sub);
 
-            IdentityData? identityData;
             if (string.IsNullOrWhiteSpace(sub) || (identityData = await _userRepository.GetActiveUserDataByUserEntityId(sub).ConfigureAwait(false)) == null)
             {
                 _logger.LogWarning("No identity found for userEntityId {Sub}", sub);
@@ -106,6 +108,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
             }
 
             claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityData.UserId.ToString()));
+            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, identityData.IdentityType.ToString()));
+            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, identityData.CompanyId.ToString()));
             return true;
         }
     }
