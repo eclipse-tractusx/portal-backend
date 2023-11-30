@@ -73,13 +73,13 @@
   },
   {
     "id": "70f0f368-5058-4aca-808b-cece869bcef2",
-    "process_type_id" : 7,
+    "process_type_id" : 6,
     "lock_expiry_date" : "2023-03-01 00:00:00.000000 +00:00",
     "version" : "deadbeef-dead-beef-dead-beefdeadbeef"
   },
   {
     "id": "44927361-3766-4f07-9f18-860158880d86",
-    "process_type_id" : 6,
+    "process_type_id" : 5,
     "lock_expiry_date" : "2023-03-01 00:00:00.000000 +00:00",
     "version" : "deadbeef-dead-beef-dead-beefdeadbeef"
   }

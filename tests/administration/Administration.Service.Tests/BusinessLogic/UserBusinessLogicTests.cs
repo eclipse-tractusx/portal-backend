@@ -1209,14 +1209,14 @@ public class UserBusinessLogicTests
         // Arrange
         var companyUserId = _fixture.Create<Guid>();
         var businessPartnerNumber = _fixture.Create<string>();
-        A.CallTo(() => _identity.IdentityId).Returns(_adminUserId);
+        A.CallTo(() => _identity.IdentityId).Returns(companyUserId);
         A.CallTo(() => _identity.CompanyId).Returns(_adminCompanyId);
         A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString()))
             .Returns<string?>(null);
         A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminCompanyId, businessPartnerNumber.ToUpper()))
             .Returns((true, true, true));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
