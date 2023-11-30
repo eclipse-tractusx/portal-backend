@@ -58,7 +58,7 @@ public class IdentityServiceTests
         var sub = _fixture.Create<string>();
         var identityType = _fixture.Create<IdentityTypeId>();
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _identityRepository.GetIdentityDataByIdentityId(_identityId))
+        A.CallTo(() => _identityRepository.GetActiveIdentityDataByIdentityId(_identityId))
             .Returns(new IdentityData(sub, _identityId, identityType, companyId));
 
         // Act
@@ -74,15 +74,15 @@ public class IdentityServiceTests
                 x.IdentityType == identityType &&
                 x.CompanyId == companyId);
 
-        A.CallTo(() => _identityRepository.GetIdentityDataByIdentityId(_identityId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityRepository.GetActiveIdentityDataByIdentityId(_identityId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
     public void IdentityData_WithNotExistingIdentityId_Throws()
     {
         // Arrange
-        A.CallTo(() => _identityRepository.GetIdentityDataByIdentityId(_identityId))
-            .Returns(null);
+        A.CallTo(() => _identityRepository.GetActiveIdentityDataByIdentityId(_identityId))
+            .Returns((IdentityData?)null);
 
         // Act
         var error = Assert.Throws<ConflictException>(() => _sut.IdentityData);

@@ -23,5 +23,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IIdentityRepository
 {
-    IdentityData? GetIdentityDataByIdentityId(Guid identityId);
+    Task<IdentityData?> GetActiveIdentityDataByIdentityId(Guid identityId);
+    Task<Guid> GetIdentityIdByUserEntityId(string userEntityId);
 }

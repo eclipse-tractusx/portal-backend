@@ -36,12 +36,10 @@ public class IdentityService : IIdentityService
     }
 
     /// <inheritdoc />
-    public IdentityData IdentityData =>
-        _identityData ??= GetIdentityData();
+    public async ValueTask<IdentityData> GetIdentityData() =>
+        _identityData ??= await _identityRepository.GetActiveIdentityDataByIdentityId(IdentityId).ConfigureAwait(false) ?? throw new ConflictException($"Identity {_identityIdDetermination.IdentityId} could not be found");
 
-    private IdentityData GetIdentityData() =>
-        _identityRepository.GetIdentityDataByIdentityId(IdentityId) ??
-        throw new ConflictException($"Identity {_identityIdDetermination.IdentityId} could not be found");
+    public IdentityData IdentityData => _identityData ?? throw new UnexpectedConditionException("identityData should never be null here (endpoint must be annotated with an identity policy / as an alternative GetIdentityData should be used)");
 
     public Guid IdentityId => _identityIdDetermination.IdentityId;
 }

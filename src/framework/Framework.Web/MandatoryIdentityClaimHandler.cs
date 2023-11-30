@@ -47,17 +47,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web
             _logger = logger;
         }
 
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, MandatoryIdentityClaimRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MandatoryIdentityClaimRequirement requirement)
         {
             try
             {
                 if (requirement.PolicyTypeId switch
                 {
                     PolicyTypeId.ValidIdentity => _identityService.IdentityId != Guid.Empty,
-                    PolicyTypeId.ValidCompany => _identityService.IdentityData.CompanyId != Guid.Empty,
-                    PolicyTypeId.CompanyUser => _identityService.IdentityId != Guid.Empty && _identityService.IdentityData.IdentityType == IdentityTypeId.COMPANY_USER,
-                    PolicyTypeId.ServiceAccount => _identityService.IdentityId != Guid.Empty && _identityService.IdentityData.IdentityType == IdentityTypeId.COMPANY_SERVICE_ACCOUNT,
-                    var policyTypeId => throw new UnexpectedConditionException($"unexpected PolicyTypeId {policyTypeId}")
+                    PolicyTypeId.ValidCompany => (await _identityService.GetIdentityData().ConfigureAwait(false)).CompanyId != Guid.Empty,
+                    PolicyTypeId.CompanyUser => _identityService.IdentityId != Guid.Empty && (await _identityService.GetIdentityData().ConfigureAwait(false)).IdentityType == IdentityTypeId.COMPANY_USER,
+                    PolicyTypeId.ServiceAccount => _identityService.IdentityId != Guid.Empty && (await _identityService.GetIdentityData().ConfigureAwait(false)).IdentityType == IdentityTypeId.COMPANY_SERVICE_ACCOUNT,
+                    _ => throw new UnexpectedConditionException($"unexpected PolicyTypeId {requirement.PolicyTypeId}")
                 })
                 {
                     context.Succeed(requirement);
@@ -72,7 +72,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web
                 _logger.LogInformation(e, "unable to retrieve IdentityData");
                 context.Fail();
             }
-            return Task.CompletedTask;
         }
     }
 }

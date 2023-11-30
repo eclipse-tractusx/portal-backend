@@ -24,5 +24,7 @@ public interface IIdentityService : IIdentityIdDetermination
     /// <summary>
     /// Information of the currently logged in user
     /// </summary>
+    public ValueTask<IdentityData> GetIdentityData();
+
     public IdentityData IdentityData { get; }
 }
