@@ -18,24 +18,22 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Microsoft.Extensions.Logging;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Authorization
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web
 {
     public class MandatoryIdentityClaimRequirement : IAuthorizationRequirement
     {
-        private readonly PolicyTypeId _policyTypeId;
-
         public MandatoryIdentityClaimRequirement(PolicyTypeId policyTypeId)
         {
-            _policyTypeId = policyTypeId;
+            PolicyTypeId = policyTypeId;
         }
 
-        public PolicyTypeId PolicyTypeId { get => _policyTypeId; }
+        public PolicyTypeId PolicyTypeId { get; }
     }
 
     public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdentityClaimRequirement>
@@ -71,7 +69,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Authorization
             }
             catch (Exception e)
             {
-                _logger.LogInformation("unable to retrieve IdentityData", e);
+                _logger.LogInformation(e, "unable to retrieve IdentityData");
                 context.Fail();
             }
             return Task.CompletedTask;

@@ -35,7 +35,6 @@
     <ProjectReference Include="..\Framework.ProcessIdentity\Framework.ProcessIdentity.csproj" />
     <ProjectReference Include="..\Framework.PublicInfos\Framework.PublicInfos.csproj" />
     <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
-    <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" />
     <ProjectReference Include="..\Framework.Linq\Framework.Linq.csproj" />
     <ProjectReference Include="..\Framework.Logging\Framework.Logging.csproj" />
   </ItemGroup>
