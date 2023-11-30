@@ -347,10 +347,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync()
-    {
-        return Task.FromResult(new PrivacyPolicyData(Enum.GetValues<PrivacyPolicyId>()));
-    }
+    public PrivacyPolicyData GetPrivacyPolicyDataAsync() =>
+        new(Enum.GetValues<PrivacyPolicyId>());
 
     /// <inheritdoc />
     public Task DeclineAppRequestAsync(Guid appId, OfferDeclineRequest data) =>

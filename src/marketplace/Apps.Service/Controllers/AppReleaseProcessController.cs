@@ -332,7 +332,7 @@ public class AppReleaseProcessController : ControllerBase
     [Route("privacyPolicies")]
     [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(PrivacyPolicyData), StatusCodes.Status200OK)]
-    public Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync() =>
+    public PrivacyPolicyData GetPrivacyPolicyDataAsync() =>
         _appReleaseBusinessLogic.GetPrivacyPolicyDataAsync();
 
     /// <summary>

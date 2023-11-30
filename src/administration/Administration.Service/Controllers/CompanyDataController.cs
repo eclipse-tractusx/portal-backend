@@ -208,6 +208,7 @@ public class CompanyDataController : ControllerBase
     /// <response code="200">Returns a collection of VerifiedCredentialTypeIds.</response>
     [HttpGet]
     [Authorize(Roles = "request_ssicredential")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificateTypes")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>

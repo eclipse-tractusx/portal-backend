@@ -111,7 +111,7 @@ public class NetworkController : ControllerBase
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">No registration found for the externalId.</response>
     [HttpPost]
-    //[Authorize(Roles = "tbd")]
+    [Authorize(Roles = "approve_new_partner")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
     [Route("{externalId}/retrigger-callback-osp-decline")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -321,6 +321,8 @@ public class UserController : ControllerBase
     /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users/{companyUserId}/resetPassword")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -415,6 +417,7 @@ public class UserController : ControllerBase
     [HttpPut]
     [Authorize(Roles = "change_own_user_account")]
     [Route("ownUser/{companyUserId}")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

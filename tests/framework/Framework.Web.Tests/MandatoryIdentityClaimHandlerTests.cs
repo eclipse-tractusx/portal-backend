@@ -36,7 +36,7 @@ public class MandatoryIdentityClaimHandlerTests
         // Arrange
         var identity = _fixture.Build<IdentityData>().With(x => x.IdentityType, identityTypeId).Create();
         var principal = _fixture.Create<ClaimsPrincipal>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.GetIdentityData()).Returns(identity);
         A.CallTo(() => _identityService.IdentityId).Returns(Guid.NewGuid());
         var sut = new MandatoryIdentityClaimHandler(_identityService, _logger);
         var ctx = new AuthorizationHandlerContext(Enumerable.Repeat(new MandatoryIdentityClaimRequirement(policyTypeId), 1), principal, null);
@@ -56,7 +56,7 @@ public class MandatoryIdentityClaimHandlerTests
         // Arrange
         var identity = _fixture.Build<IdentityData>().With(x => x.IdentityType, identityTypeId).Create();
         var principal = _fixture.Create<ClaimsPrincipal>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.GetIdentityData()).Returns(identity);
         var sut = new MandatoryIdentityClaimHandler(_identityService, _logger);
         var ctx = new AuthorizationHandlerContext(Enumerable.Repeat(new MandatoryIdentityClaimRequirement(policyTypeId), 1), principal, null);
 
@@ -75,7 +75,7 @@ public class MandatoryIdentityClaimHandlerTests
         // Arrange
         var identity = _fixture.Build<IdentityData>().With(x => x.CompanyId, Guid.NewGuid).Create();
         var principal = _fixture.Create<ClaimsPrincipal>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.GetIdentityData()).Returns(identity);
         A.CallTo(() => _identityService.IdentityId).Returns(Guid.NewGuid());
         var sut = new MandatoryIdentityClaimHandler(_identityService, _logger);
         var ctx = new AuthorizationHandlerContext(Enumerable.Repeat(new MandatoryIdentityClaimRequirement(policyTypeId), 1), principal, null);
@@ -93,7 +93,7 @@ public class MandatoryIdentityClaimHandlerTests
         // Arrange
         var identity = _fixture.Build<IdentityData>().With(x => x.CompanyId, Guid.Empty).Create();
         var principal = _fixture.Create<ClaimsPrincipal>();
-        A.CallTo(() => _identityService.IdentityData).Returns(identity);
+        A.CallTo(() => _identityService.GetIdentityData()).Returns(identity);
         var sut = new MandatoryIdentityClaimHandler(_identityService, _logger);
         var ctx = new AuthorizationHandlerContext(Enumerable.Repeat(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidCompany), 1), principal, null);
 
@@ -127,7 +127,7 @@ public class MandatoryIdentityClaimHandlerTests
         var principal = _fixture.Create<ClaimsPrincipal>();
         var identityId = Guid.NewGuid();
         var exception = new ConflictException($"Identity {identityId} could not be found");
-        A.CallTo(() => _identityService.IdentityData).Throws(exception);
+        A.CallTo(() => _identityService.GetIdentityData()).Throws(exception);
         var sut = new MandatoryIdentityClaimHandler(_identityService, _logger);
         var ctx = new AuthorizationHandlerContext(Enumerable.Repeat(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidCompany), 1), principal, null);
 
