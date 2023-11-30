@@ -36,7 +36,7 @@ public static class ProcessIdentityServiceCollectionExtensions
         return services
             .AddTransient<IIdentityIdDetermination, ConfigurationIdentityIdDetermination>();
     }
-    
+
     public static IServiceCollection AddConfigurationIdentityService(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<ProcessIdentitySettings>()
