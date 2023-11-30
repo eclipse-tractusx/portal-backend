@@ -29,7 +29,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 
@@ -71,22 +70,13 @@ public static class StartupServiceExtensions
                 };
             }
         });
-        services.AddTransient<IAuthorizationHandler, MandatoryClaimHandler>();
-        services.AddTransient<IAuthorizationHandler, MandatoryEnumTypeClaimHandler>();
+        services.AddTransient<IAuthorizationHandler, MandatoryIdentityClaimHandler>();
         services.AddAuthorization(options =>
         {
-            options.AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId)));
-            options.AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.CompanyId)));
-            options.AddPolicy(PolicyTypes.CompanyUser, policy =>
-            {
-                policy.Requirements.Add(new MandatoryEnumTypeClaimRequirement(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_USER));
-                policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId));
-            });
-            options.AddPolicy(PolicyTypes.ServiceAccount, policy =>
-            {
-                policy.Requirements.Add(new MandatoryEnumTypeClaimRequirement(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_SERVICE_ACCOUNT));
-                policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId));
-            });
+            options.AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidIdentity)));
+            options.AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidCompany)));
+            options.AddPolicy(PolicyTypes.CompanyUser, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.CompanyUser)));
+            options.AddPolicy(PolicyTypes.ServiceAccount, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ServiceAccount)));
         });
 
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

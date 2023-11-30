@@ -27,3 +27,11 @@ public static class PolicyTypes
     public const string CompanyUser = "CompanyUser";
     public const string ServiceAccount = "ServiceAccount";
 }
+
+public enum PolicyTypeId
+{
+    ValidIdentity,
+    ValidCompany,
+    CompanyUser,
+    ServiceAccount
+}
