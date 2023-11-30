@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -61,17 +62,17 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
     public Task ExecuteInvitation(CompanyInvitationData invitationData)
     {
-        if (string.IsNullOrWhiteSpace(invitationData.email))
+        if (string.IsNullOrWhiteSpace(invitationData.Email))
         {
             throw new ControllerArgumentException("email must not be empty", "email");
         }
 
-        if (string.IsNullOrWhiteSpace(invitationData.organisationName))
+        if (string.IsNullOrWhiteSpace(invitationData.OrganisationName))
         {
             throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
         }
 
-        if (!string.IsNullOrEmpty(invitationData.organisationName) && !Company.IsMatch(invitationData.organisationName))
+        if (!string.IsNullOrEmpty(invitationData.OrganisationName) && !Company.IsMatch(invitationData.OrganisationName))
         {
             throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
         }
@@ -82,9 +83,9 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
     private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
     {
         var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-        await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName, _settings.InitialLoginTheme).ConfigureAwait(false);
+        await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.OrganisationName, _settings.InitialLoginTheme).ConfigureAwait(false);
 
-        var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
+        var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.OrganisationName);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, null);
@@ -114,11 +115,11 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         }
 
         var userCreationInfoIdps = new[] { new UserCreationRoleDataIdpInfo(
-            invitationData.firstName,
-            invitationData.lastName,
-            invitationData.email,
+            invitationData.FirstName,
+            invitationData.LastName,
+            invitationData.Email,
             roleDatas,
-            string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
+            string.IsNullOrWhiteSpace(invitationData.UserName) ? invitationData.Email : invitationData.UserName,
             "",
             UserStatusId.ACTIVE,
             true
@@ -140,13 +141,41 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password ?? "" },
-            { "companyName", invitationData.organisationName },
+            { "companyName", invitationData.OrganisationName },
             { "url", _settings.RegistrationAppAddress },
             { "passwordResendUrl", _settings.PasswordResendAddress },
             { "closeApplicationUrl", _settings.CloseApplicationAddress },
         };
 
-        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.email, "RegistrationTemplate", mailParameters);
-        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.email, "PasswordForRegistrationTemplate", mailParameters);
+        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.Email, "RegistrationTemplate", mailParameters);
+        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.Email, "PasswordForRegistrationTemplate", mailParameters);
+    }
+
+    public Task RetriggerProcessStep(Guid processId, ProcessStepTypeId processStepTypeId) =>
+        TriggerProcessStepInternal(processId, processStepTypeId);
+
+    private async Task TriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
+    {
+        var nextStep = stepToTrigger switch
+        {
+            ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP => ProcessStepTypeId.INVITATION_SETUP_IDP,
+            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP => ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
+            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER => ProcessStepTypeId.INVITATION_CREATE_USER,
+            ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL => ProcessStepTypeId.INVITATION_SEND_MAIL,
+            _ => throw new ConflictException($"Step {stepToTrigger} is not retriggerable")
+        };
+
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var (registrationIdExists, processData) = await processStepRepository.IsValidProcess(processId, ProcessTypeId.INVITATION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        if (!registrationIdExists)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+
+        var context = processData.CreateManualProcessData(stepToTrigger, _portalRepositories, () => $"processId {processId}");
+
+        context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
+        context.FinalizeProcessStep();
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

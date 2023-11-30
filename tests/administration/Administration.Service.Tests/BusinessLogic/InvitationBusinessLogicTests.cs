@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -37,6 +38,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 public class InvitationBusinessLogicTests
 {
     private readonly IFixture _fixture;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
@@ -46,6 +48,7 @@ public class InvitationBusinessLogicTests
     private readonly IApplicationRepository _applicationRepository;
     private readonly IMailingInformationRepository _mailingInformationRepository;
     private readonly IOptions<InvitationSettings> _options;
+    private readonly ICompanyInvitationRepository _companyInvitationRepository;
     private readonly string _companyName;
     private readonly string _idpName;
     private readonly Guid _companyId;
@@ -53,6 +56,7 @@ public class InvitationBusinessLogicTests
     private readonly Guid _applicationId;
     private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Exception _error;
+    private readonly InvitationBusinessLogic _sut;
 
     public InvitationBusinessLogicTests()
     {
@@ -70,16 +74,27 @@ public class InvitationBusinessLogicTests
         _applicationRepository = A.Fake<IApplicationRepository>();
         _mailingInformationRepository = A.Fake<IMailingInformationRepository>();
         _options = A.Fake<IOptions<InvitationSettings>>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _companyInvitationRepository = A.Fake<ICompanyInvitationRepository>();
 
         _companyName = "testCompany";
         _idpName = _fixture.Create<string>();
         _companyId = _fixture.Create<Guid>();
         _identityProviderId = _fixture.Create<Guid>();
         _applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyInvitationRepository>()).Returns(_companyInvitationRepository);
 
         _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 
         _error = _fixture.Create<TestException>();
+        
+        _sut = new InvitationBusinessLogic(
+            _provisioningManager,
+            _userProvisioningService,
+            _portalRepositories,
+            _options);
     }
 
     #region ExecuteInvitation
@@ -87,13 +102,16 @@ public class InvitationBusinessLogicTests
     [Fact]
     public async Task TestExecuteInvitationSuccess()
     {
-        SetupFakes();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var invitations = new List<CompanyInvitation>();
+        SetupFakesForInvite(processes, processSteps, invitations);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, _companyName)
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
+            .With(x => x.OrganisationName, _companyName)
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -105,9 +123,9 @@ public class InvitationBusinessLogicTests
         await sut.ExecuteInvitation(invitationData).ConfigureAwait(false);
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-        A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.OrganisationName), A<string?>._)).MustHaveHappened();
 
-        A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName), null)).MustHaveHappened();
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.OrganisationName), null)).MustHaveHappened();
         A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, A<Guid>._, A<Action<IdentityProvider>>._)).MustHaveHappened();
         A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<Guid>._, _idpName)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(_companyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, A<Action<CompanyApplication>>._)).MustHaveHappened();
@@ -117,8 +135,8 @@ public class InvitationBusinessLogicTests
             A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,
             A<CancellationToken>._)).MustHaveHappened();
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == invitationData.firstName))).MustHaveHappened();
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(u => u.FirstName == invitationData.firstName))).MustNotHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == invitationData.FirstName))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(u => u.FirstName == invitationData.FirstName))).MustNotHaveHappened();
 
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_applicationId), A<Guid>._)).MustHaveHappened();
 
@@ -130,12 +148,15 @@ public class InvitationBusinessLogicTests
     [Fact]
     public async Task TestExecuteInvitationNoEmailThrows()
     {
-        SetupFakes();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var invitations = new List<CompanyInvitation>();
+        SetupFakesForInvite(processes, processSteps, invitations);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .With(x => x.email, "")
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .With(x => x.Email, "")
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -158,13 +179,16 @@ public class InvitationBusinessLogicTests
     [Fact]
     public async Task TestExecuteInvitationNoOrganisationNameThrows()
     {
-        SetupFakes();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var invitations = new List<CompanyInvitation>();
+        SetupFakesForInvite(processes, processSteps, invitations);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, "")
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
+            .With(x => x.OrganisationName, "")
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -187,13 +211,16 @@ public class InvitationBusinessLogicTests
     [Fact]
     public async Task TestExecuteInvitationWrongPatternOrganisationNameThrows()
     {
-        SetupFakes();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var invitations = new List<CompanyInvitation>();
+        SetupFakesForInvite(processes, processSteps, invitations);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, "*Catena")
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
+            .With(x => x.OrganisationName, "*Catena")
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -216,7 +243,10 @@ public class InvitationBusinessLogicTests
     [Fact]
     public async Task TestExecuteInvitationCreateUserErrorThrows()
     {
-        SetupFakes();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var invitations = new List<CompanyInvitation>();
+        SetupFakesForInvite(processes, processSteps, invitations);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
@@ -225,10 +255,10 @@ public class InvitationBusinessLogicTests
                 .Create());
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, _companyName)
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
+            .With(x => x.OrganisationName, _companyName)
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -251,15 +281,18 @@ public class InvitationBusinessLogicTests
     [Fact]
     public async Task TestExecuteInvitationCreateUserThrowsThrows()
     {
-        SetupFakes();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var invitations = new List<CompanyInvitation>();
+        SetupFakesForInvite(processes, processSteps, invitations);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).Throws(_error);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, _companyName)
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
+            .With(x => x.OrganisationName, _companyName)
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -281,9 +314,77 @@ public class InvitationBusinessLogicTests
 
     #endregion
 
+    #region RetriggerSynchronizeUser
+
+    [Theory]
+    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP, ProcessStepTypeId.INVITATION_SETUP_IDP)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP, ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER, ProcessStepTypeId.INVITATION_CREATE_USER)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL, ProcessStepTypeId.INVITATION_SEND_MAIL)]
+    public async Task RetriggerSynchronizeUser_WithValidStep_CallsExpected(ProcessStepTypeId stepToTrigger, ProcessStepTypeId processStepTypeId)
+    {
+        // Arrange
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerProcessStep(process.Id, stepToTrigger).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(ProcessStepTypeId.INVITATION_SETUP_IDP)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER)]
+    [InlineData(ProcessStepTypeId.INVITATION_SEND_MAIL)]
+    public async Task RetriggerSynchronizeUser_WithNotRetriggerableStep_ThrowsException(ProcessStepTypeId stepToTrigger)
+    {
+        // Arrange
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        async Task Act() => await _sut.RetriggerProcessStep(process.Id, stepToTrigger).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"Step {stepToTrigger} is not retriggerable");
+    }
+
+    [Theory]
+    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL)]
+    public async Task RetriggerSynchronizeUser_WithNotExistingProcess_ThrowsException(ProcessStepTypeId stepToTrigger)
+    {
+        // Arrange
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerProcessStep(process.Id, stepToTrigger).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
     #region Setup
 
-    private void SetupFakes()
+    private void SetupFakesForInvite(List<Process> processes, List<ProcessStep> processSteps, List<CompanyInvitation> invitations)
     {
         A.CallTo(() => _options.Value).Returns(_fixture.Build<InvitationSettings>()
             .With(x => x.InvitedUserInitialRoles, new[]
@@ -323,6 +424,15 @@ public class InvitationBusinessLogicTests
                 .With(x => x.UserName, creationInfo.UserName)
                 .With(x => x.Error, default(Exception?))
                 .Create());
+    }
+
+    private void SetupFakesForRetrigger(List<ProcessStep> processSteps)
+    {
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
+                {
+                    processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
+                });
     }
 
     #endregion

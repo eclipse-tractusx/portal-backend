@@ -19,11 +19,13 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic
 {
     public interface IInvitationBusinessLogic
     {
         Task ExecuteInvitation(CompanyInvitationData invitationData);
+        Task RetriggerProcessStep(Guid processId, ProcessStepTypeId processStepTypeId);
     }
 }

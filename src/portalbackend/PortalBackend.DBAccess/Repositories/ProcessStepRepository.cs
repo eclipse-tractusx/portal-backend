@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -97,4 +98,19 @@ public class ProcessStepRepository : IProcessStepRepository
                     step.Id,
                     step.ProcessStepTypeId))
             .AsAsyncEnumerable();
+
+    public Task<(bool ProcessExists, VerifyProcessData processData)> IsValidProcess(Guid processId, ProcessTypeId processTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        _context.Processes
+            .Where(x => x.Id == processId && x.ProcessTypeId == processTypeId)
+            .Select(x => new ValueTuple<bool, VerifyProcessData>(
+                true,
+                new VerifyProcessData(
+                    x,
+                    x.ProcessSteps
+                        .Where(step =>
+                            processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO))
+            ))
+            .SingleOrDefaultAsync();
+
 }
