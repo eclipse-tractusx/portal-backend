@@ -72,21 +72,15 @@ public static class StartupServiceExtensions
             }
         });
         services.AddTransient<IAuthorizationHandler, MandatoryClaimHandler>();
-        services.AddTransient<IAuthorizationHandler, MandatoryEnumTypeClaimHandler>();
+        services.AddTransient<IAuthorizationHandler, CompanyUserClaimHandler>();
+        services.AddTransient<IAuthorizationHandler, ServiceAccountClaimHandler>();
+        services.AddTransient<IAuthorizationHandler, CompanyIdClaimHandler>();
         services.AddAuthorization(options =>
         {
             options.AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId)));
-            options.AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.CompanyId)));
-            options.AddPolicy(PolicyTypes.CompanyUser, policy =>
-            {
-                policy.Requirements.Add(new MandatoryEnumTypeClaimRequirement(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_USER));
-                policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId));
-            });
-            options.AddPolicy(PolicyTypes.ServiceAccount, policy =>
-            {
-                policy.Requirements.Add(new MandatoryEnumTypeClaimRequirement(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_SERVICE_ACCOUNT));
-                policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId));
-            });
+            options.AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new CompanyIdClaimRequirement()));
+            options.AddPolicy(PolicyTypes.CompanyUser, policy => policy.Requirements.Add(new CompanyUserClaimRequirement()));
+            options.AddPolicy(PolicyTypes.ServiceAccount, policy => policy.Requirements.Add(new ServiceAccountClaimRequirement()));
         });
 
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

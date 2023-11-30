@@ -34,4 +34,10 @@
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Security.Claims">
+      <HintPath>..\..\..\..\..\..\..\Program Files\dotnet\shared\Microsoft.NETCore.App\7.0.14\System.Security.Claims.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
