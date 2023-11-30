@@ -437,6 +437,13 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
+    public Task<IdentityData?> GetActiveUserDataByIdentityId(Guid identityId) =>
+        _dbContext.Identities
+            .Where(x => x.Id == identityId && x.UserStatusId == UserStatusId.ACTIVE)
+            .Select(x => new IdentityData(x.UserEntityId!, x.Id, x.IdentityTypeId, x.CompanyId))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
     public Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify)
     {
         var companyUser = new Identity(identityId, default, Guid.Empty, default, default);
