@@ -251,6 +251,7 @@ public class ConnectorsController : ControllerBase
     [HttpGet]
     [Route("offerSubscriptions")]
     [Authorize(Roles = "view_connectors")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData([FromQuery] bool? connectorIdSet) =>
         _businessLogic.GetConnectorOfferSubscriptionData(connectorIdSet);

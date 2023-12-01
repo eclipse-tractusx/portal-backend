@@ -46,7 +46,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// </summary>
         /// <returns>AsyncEnumerable of Countries Long name Data</returns>
         /// <remarks>
-        /// Example: GET: /api/registration/staticdata/countrylist        
+        /// Example: GET: /api/registration/staticdata/countrylist
+        /// </remarks> 
         /// <response code="200">Returns a list of all countries long name with language code i.e german and english</response>
         [HttpGet]
         [Route("countrylist")]

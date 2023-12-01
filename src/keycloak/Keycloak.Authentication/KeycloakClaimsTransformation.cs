@@ -24,7 +24,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Json;
 using System.Security.Claims;
 
@@ -34,11 +33,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
     {
         private readonly ILogger<KeycloakClaimsTransformation> _logger;
         private readonly JwtBearerOptions _options;
-        private readonly IUserRepository _userRepository;
+        private readonly IIdentityRepository _identityRepository;
 
         public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options, IPortalRepositories portalRepositories, ILogger<KeycloakClaimsTransformation> logger)
         {
-            _userRepository = portalRepositories.GetInstance<IUserRepository>();
+            _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
             _logger = logger;
             _options = options.Value;
         }
@@ -89,27 +88,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
         {
             var preferredUserName = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.PreferredUserName)?.Value;
 
-            IdentityData? identityData;
-            if (!string.IsNullOrWhiteSpace(preferredUserName) && Guid.TryParse(preferredUserName, out var identityId) && (identityData = await _userRepository.GetActiveUserDataByIdentityId(identityId).ConfigureAwait(false)) != null)
+            if (!string.IsNullOrWhiteSpace(preferredUserName) && Guid.TryParse(preferredUserName, out var identityId))
             {
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityData.UserId.ToString()));
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, identityData.IdentityType.ToString()));
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, identityData.CompanyId.ToString()));
+                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, preferredUserName!));
                 return true;
             }
 
             var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
             _logger.LogInformation("Preferred user name {PreferredUserName} couldn't be parsed to uuid for userEntityId {Sub}", preferredUserName, sub);
 
-            if (string.IsNullOrWhiteSpace(sub) || (identityData = await _userRepository.GetActiveUserDataByUserEntityId(sub).ConfigureAwait(false)) == null)
+            if (string.IsNullOrWhiteSpace(sub) || (identityId = await _identityRepository.GetIdentityIdByUserEntityId(sub).ConfigureAwait(false)) == Guid.Empty)
             {
                 _logger.LogWarning("No identity found for userEntityId {Sub}", sub);
                 return false;
             }
 
-            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityData.UserId.ToString()));
-            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, identityData.IdentityType.ToString()));
-            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, identityData.CompanyId.ToString()));
+            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityId.ToString()));
             return true;
         }
     }

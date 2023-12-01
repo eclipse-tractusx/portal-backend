@@ -30,7 +30,6 @@ public class IdentityServiceTests
     private readonly IFixture _fixture;
     private readonly Guid _identityId = Guid.NewGuid();
 
-    private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityRepository _identityRepository;
     private readonly IdentityService _sut;
 
@@ -44,22 +43,23 @@ public class IdentityServiceTests
         var identityIdDetermination = A.Fake<IIdentityIdDetermination>();
         A.CallTo(() => identityIdDetermination.IdentityId).Returns(_identityId);
 
-        _portalRepositories = A.Fake<IPortalRepositories>();
+        var portalRepositories = A.Fake<IPortalRepositories>();
         _identityRepository = A.Fake<IIdentityRepository>();
-        A.CallTo(() => _portalRepositories.GetInstance<IIdentityRepository>()).Returns(_identityRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IIdentityRepository>()).Returns(_identityRepository);
 
-        _sut = new IdentityService(_portalRepositories, identityIdDetermination);
+        _sut = new IdentityService(portalRepositories, identityIdDetermination);
     }
 
     [Fact]
-    public void IdentityData_ReturnsExpected()
+    public async Task IdentityData_ReturnsExpected()
     {
         // Arrange
         var sub = _fixture.Create<string>();
         var identityType = _fixture.Create<IdentityTypeId>();
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _identityRepository.GetIdentityDataByIdentityId(_identityId))
+        A.CallTo(() => _identityRepository.GetActiveIdentityDataByIdentityId(_identityId))
             .Returns(new IdentityData(sub, _identityId, identityType, companyId));
+        await _sut.GetIdentityData().ConfigureAwait(false);
 
         // Act
         var first = _sut.IdentityData;
@@ -74,20 +74,34 @@ public class IdentityServiceTests
                 x.IdentityType == identityType &&
                 x.CompanyId == companyId);
 
-        A.CallTo(() => _identityRepository.GetIdentityDataByIdentityId(_identityId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityRepository.GetActiveIdentityDataByIdentityId(_identityId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
-    public void IdentityData_WithNotExistingIdentityId_Throws()
+    public async Task GetIdentityData_WithNotExistingIdentityId_Throws()
     {
         // Arrange
-        A.CallTo(() => _identityRepository.GetIdentityDataByIdentityId(_identityId))
-            .Returns(null);
+        A.CallTo(() => _identityRepository.GetActiveIdentityDataByIdentityId(_identityId))
+            .Returns((IdentityData?)null);
 
         // Act
-        var error = Assert.Throws<ConflictException>(() => _sut.IdentityData);
+        var error = await Assert.ThrowsAsync<ConflictException>(async () => await _sut.GetIdentityData().ConfigureAwait(false)).ConfigureAwait(false);
 
         // Assert
         error.Message.Should().Be($"Identity {_identityId} could not be found");
+    }
+
+    [Fact]
+    public async Task IdentityData_WithoutGetIdentitDataCalled_Throws()
+    {
+        // Arrange
+        A.CallTo(() => _identityRepository.GetActiveIdentityDataByIdentityId(_identityId))
+            .Returns((IdentityData?)null);
+
+        // Act
+        var error = Assert.Throws<UnexpectedConditionException>(() => _sut.IdentityData);
+
+        // Assert
+        error.Message.Should().Be("identityData should never be null here (endpoint must be annotated with an identity policy / as an alternative GetIdentityData should be used)");
     }
 }

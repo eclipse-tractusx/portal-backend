@@ -23,7 +23,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Security.Claims;
 
@@ -32,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication.Tests;
 public class KeycloakClaimsTransformationTests
 {
     private readonly KeycloakClaimsTransformation _sut;
-    private readonly IUserRepository _userRepository;
+    private readonly IIdentityRepository _identityRepository;
     private readonly IFixture _fixture;
     private readonly IMockLogger<KeycloakClaimsTransformation> _mockLogger;
 
@@ -44,8 +43,8 @@ public class KeycloakClaimsTransformationTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var portalRepositories = A.Fake<IPortalRepositories>();
-        _userRepository = A.Fake<IUserRepository>();
-        A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        _identityRepository = A.Fake<IIdentityRepository>();
+        A.CallTo(() => portalRepositories.GetInstance<IIdentityRepository>()).Returns(_identityRepository);
 
         _mockLogger = A.Fake<IMockLogger<KeycloakClaimsTransformation>>();
         ILogger<KeycloakClaimsTransformation> logger = new MockLogger<KeycloakClaimsTransformation>(_mockLogger);
@@ -73,11 +72,8 @@ public class KeycloakClaimsTransformationTests
         // Arrange
         var identityId = Guid.NewGuid();
         var userId = Guid.NewGuid().ToString();
-        var identityData = _fixture.Build<IdentityData>()
-            .With(x => x.UserId, identityId)
-            .Create();
-        A.CallTo(() => _userRepository.GetActiveUserDataByUserEntityId(userId))
-            .Returns(identityData);
+        A.CallTo(() => _identityRepository.GetIdentityIdByUserEntityId(userId))
+            .Returns(identityId);
         var identity = new ClaimsIdentity(Enumerable.Repeat(new Claim(PortalClaimTypes.Sub, userId), 1));
         var principal = new ClaimsPrincipal(identity);
 
@@ -95,11 +91,8 @@ public class KeycloakClaimsTransformationTests
         // Arrange
         var identityId = Guid.NewGuid();
         var userId = Guid.NewGuid().ToString();
-        var identityData = _fixture.Build<IdentityData>()
-            .With(x => x.UserId, identityId)
-            .Create();
-        A.CallTo(() => _userRepository.GetActiveUserDataByUserEntityId(userId))
-            .Returns(identityData);
+        A.CallTo(() => _identityRepository.GetIdentityIdByUserEntityId(userId))
+            .Returns(identityId);
         var identity = new ClaimsIdentity(new[]
         {
             new Claim(PortalClaimTypes.PreferredUserName, $"user.{identityId}"),
@@ -120,8 +113,8 @@ public class KeycloakClaimsTransformationTests
     {
         // Arrange
         var userId = Guid.NewGuid().ToString();
-        A.CallTo(() => _userRepository.GetActiveUserDataByUserEntityId(userId))
-            .Returns((IdentityData?)null);
+        A.CallTo(() => _identityRepository.GetIdentityIdByUserEntityId(userId))
+            .Returns(Guid.Empty);
         var identity = new ClaimsIdentity(Enumerable.Repeat(new Claim(PortalClaimTypes.Sub, userId), 1));
         var principal = new ClaimsPrincipal(identity);
 
