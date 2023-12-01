@@ -23,7 +23,7 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine-amd64 AS publish
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY src/maintenance/Maintenance.App/ src/maintenance/Maintenance.App/
-COPY src/portalbackend/PortalBackend.DbAccess/ src/portalbackend/PortalBackend.DbAccess/
+COPY src/portalbackend/PortalBackend.DBAccess/ src/portalbackend/PortalBackend.DBAccess/
 COPY src/portalbackend/PortalBackend.PortalEntities/ src/portalbackend/PortalBackend.PortalEntities/
 COPY src/framework/Framework.BaseDependencies/ src/framework/Framework.BaseDependencies/
 COPY src/framework/Framework.DBAccess/ src/framework/Framework.DBAccess/
