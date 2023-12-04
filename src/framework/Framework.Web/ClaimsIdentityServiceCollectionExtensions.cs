@@ -29,6 +29,6 @@ public static class ClaimsIdentityServiceCollectionExtensions
     {
         return services
             .AddScoped<IIdentityIdDetermination, ClaimsIdentityIdDetermination>()
-            .AddTransient<IIdentityService, IdentityService>();
+            .AddScoped<IIdentityService, IdentityService>();
     }
 }
