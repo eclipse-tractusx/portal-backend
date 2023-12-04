@@ -493,6 +493,7 @@ public class RegistrationBusinessLogicTest
             A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync(IamAliasId))
             .MustHaveHappenedOnceExactly();
         }
+
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync(IamAliasId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync("user123"))

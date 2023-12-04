@@ -80,6 +80,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
+
         return GetCompanyWithAddressAsyncInternal(applicationId);
     }
 
@@ -90,6 +91,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
+
         return new CompanyWithAddressData(
             companyWithAddress.CompanyId,
             companyWithAddress.Name,
@@ -201,6 +203,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
         }
+
         if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
         {
             throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
@@ -292,10 +295,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"No companyApplication for BPN {data.BusinessPartnerNumber} is not in status SUBMITTED");
         }
+
         if (result.Count > 1)
         {
             throw new ConflictException($"more than one companyApplication in status SUBMITTED found for BPN {data.BusinessPartnerNumber} [{string.Join(", ", result)}]");
         }
+
         await _clearinghouseBusinessLogic.ProcessEndClearinghouse(result.Single(), data, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -335,8 +340,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new UnexpectedConditionException($"While the processStep {processStepTypeId} is configured to be retriggerable there is no next step configured");
         }
+
         return TriggerChecklistInternal(applicationId, entryTypeId, processStepTypeId, nextStepData.ProcessStepTypeId, nextStepData.ChecklistEntryStatusId);
     }
+
     private async Task TriggerChecklistInternal(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStepTypeId processStepTypeId, ProcessStepTypeId nextProcessStepTypeId, ApplicationChecklistEntryStatusId checklistEntryStatusId)
     {
         var context = await _checklistService
@@ -378,6 +385,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"companyApplication {data.ExternalId} not found");
         }
+
         if (!result.IsSubmitted)
         {
             throw new ConflictException($"companyApplication {data.ExternalId} is not in status SUBMITTED");
@@ -455,8 +463,9 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             {
                 await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
             }
+
             identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
-            if (idpType == IdentityProviderTypeId.OWN || idpType == IdentityProviderTypeId.SHARED)
+            if (idpType is IdentityProviderTypeId.OWN or IdentityProviderTypeId.SHARED)
             {
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(false);
                 identityProviderRepository.DeleteIamIdentityProvider(idpAlias);
@@ -482,8 +491,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
             }
         }
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>>(userId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
 
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>>(userId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
         if (processId != null)
         {
             _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, processId.Value), 1));
@@ -511,9 +520,9 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
             var mailParameters = new Dictionary<string, string>
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
                 { "companyName", companyName },
-                { "declineComment", comment},
+                { "declineComment", comment },
                 { "helpUrl", _settings.HelpAddress }
             };
 
