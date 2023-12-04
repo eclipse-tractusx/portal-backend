@@ -55,10 +55,11 @@ public class CompanySsiDetailsRepositoryTests
         var result = await sut.GetUseCaseParticipationForCompany(_validCompanyId, "en").ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(4);
-        result.Where(x => x.Description != null).Should().HaveCount(4).And.Satisfy(
+        result.Should().HaveCount(5);
+        result.Where(x => x.Description != null).Should().HaveCount(5).And.Satisfy(
             x => x.Description == "Traceability",
             x => x.Description == "Sustainability & CO2-Footprint",
+            x => x.Description == "Behavior Twin",
             x => x.Description == "Quality Management",
             x => x.Description == "Circular Economy");
         var traceability = result.Single(x => x.CredentialType == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);

@@ -37,4 +37,7 @@ public enum VerifiedCredentialExternalTypeId
 
     [EnumMember(Value = "SustainabilityCredential")]
     SUSTAINABILITY_CREDENTIAL = 5,
+
+    [EnumMember(Value = "QualityCredential")]
+    Quality_Credential = 6
 }
