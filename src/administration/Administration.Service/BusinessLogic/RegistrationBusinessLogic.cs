@@ -31,8 +31,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Text.RegularExpressions;
@@ -49,6 +51,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
+    private readonly IProvisioningManager _provisioningManager;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
 
     public RegistrationBusinessLogic(
@@ -58,6 +61,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
+        IProvisioningManager provisioningManager,
         ILogger<RegistrationBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
@@ -66,6 +70,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
+        _provisioningManager = provisioningManager;
         _logger = logger;
     }
 
@@ -419,7 +424,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
 
-        var (companyId, companyName, processId) = result;
+        var (companyId, companyName, processId, idps, identityData) = result;
+        if (idps.Count() != 1)
+        {
+            throw new UnexpectedConditionException($"There should only be one idp for application {applicationId}");
+        }
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -443,6 +452,13 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             },
             null);
 
+        var (idpAlias, idpType) = idps.Single();
+        if (idpType == IdentityProviderTypeId.SHARED)
+        {
+            await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
+        }
+        await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(false);
+
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
         {
             application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
@@ -452,6 +468,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             company.CompanyStatusId = CompanyStatusId.REJECTED;
         });
+
+        foreach (var userEntityId in identityData.Where(x => x.UserEntityId != null).Select(x => x.UserEntityId))
+        {
+            await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId).ConfigureAwait(false);
+        }
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(identityData.Select(x => new ValueTuple<Guid, Action<Identity>>(x.IdentityId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
 
         if (processId != null)
         {

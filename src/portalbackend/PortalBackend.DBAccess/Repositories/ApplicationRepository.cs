@@ -424,13 +424,15 @@ public class ApplicationRepository : IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the company id</returns>
-    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(string IamAlias, IdentityProviderTypeId TypeId)> Idps, IEnumerable<(Guid IdentityId, string? UserEntityId)> IdentityIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(x => new ValueTuple<Guid, string, Guid?>(
+            .Select(x => new ValueTuple<Guid, string, Guid?, IEnumerable<(string, IdentityProviderTypeId)>, IEnumerable<(Guid, string?)>>(
                 x.CompanyId,
                 x.Company!.Name,
-                x.Company!.NetworkRegistration!.ProcessId))
+                x.Company!.NetworkRegistration!.ProcessId,
+                x.Company.IdentityProviders.Where(idp => idp.IdentityProviderTypeId != IdentityProviderTypeId.MANAGED).Select(idp => new ValueTuple<string, IdentityProviderTypeId>(idp.IamIdentityProvider!.IamIdpAlias, idp.IdentityProviderTypeId)),
+                x.Company.Identities.Where(i => i.UserStatusId != UserStatusId.DELETED).Select(i => new ValueTuple<Guid, string?>(i.Id, i.UserEntityId))))
             .SingleOrDefaultAsync();
 
     public Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId) =>
