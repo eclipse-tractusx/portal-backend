@@ -106,6 +106,12 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * cors for localdev env
   * align applicationUrl for apps service
 * Keycloak auth path config updated inside the portal backend code to support auth path configuration (needed for older keycloak version)
+* adjusted keycloak seeding to exclude the following properties if already existing
+  * firstname, lastname, email and configurable attributes for users
+  * idp config urls
+  * client urls
+  * smtp server settings
+* extend keycloak seeding to seed ClientScopeMappers
 * Removed auth trail from the provisioning settings and added the use of the keycloak settings to set the correct useAuthTrail value
 * adjusted process worker workflow to build the process worker when changes within the networkRegistration directory appear
 * Controller slimlined
