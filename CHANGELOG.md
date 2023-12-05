@@ -2,129 +2,13 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 1.7.0-RC4
+## 1.7.0
 
 ### Change
-* add processStepTypeId field to provider/subscription endpoints
-
-### Feature
-n/a
-
-### Technical Support
-* enhanced consortia seeding file by adding "IRS Management" role and the assignments to the respective company roles/collections
-* adjusted keycloak seeding to exclude the following properties if already existing
-  * firstname, lastname, email and configurable attributes for users
-  * idp config urls
-  * client urls
-  * smtp server settings
-* extend keycloak seeding to seed ClientScopeMappers
-
-### Bugfix
-* fixed document auditing maintenance job - document hash null cases
-* fixed user role mapping to company role (OSP, App Provider and Service Provider)
-* Delete /api/apps/appreleaseprocess/{appId}/role/{roleId} 504 error fixed
-
-### Known Knowns
-* GET /api/services/{serviceId}/subscription/{subscriptionID}/provider - wrong property value for technicalUserData "name" responded
-
-## 1.7.0-RC3
-
-### Change
-* Email Template
- * OSP_Welcome_Email style updated (highlights added) and updated email message/text content
- * OSP_Welcome_Email changed from companyName to the idp display name as dynamic value
-
-### Feature
-* App Service (AppChange)
-  * released new endpoints to delete and add app related documents for an active app
-
-### Technical Support
-* Database view added
-  * Company-Connector-View
-  * Company-IdP-View
-  * Company-Role-Collection-Role-View
-  * Company-User-View
-
-### Bugfix
-* Query GetCompanyRoleAgreementConsentStatusUntrackedAsync has been adjusted to refer to companyId instead of userId in the where-condition
-* Modified (via migration) entries in table identity_providers setting the owner_id of shared-idps to the company_id that is linked in table company_identity_providers (if not ambiguous)
-* Connector pagination of GET /api/administration/connectors fixed - pagination failed as soon as there were connectors with same provider but different hosts existing
-
-### Known Knowns
-* declineFlow OSP currently not supported
-* password reset in welcome user email currently not supported
-* DELETE /api/apps/AppReleaseProcess/{appId}/role/{roleId} running on system error
-
-## 1.7.0-RC2
-
-### Change
-* Seeding Data
-  * updated technical user role description & user role names
-* Others
-  * added email value validation for invitation, network registration and user invitation to enable the user input data validation for valid email
-
-### Feature
-n/a
-
-### Technical Support
-* Released extended error response message method (incl. error-type, error-code, a message-template and multiple parameters) and enabled the same for administration POST endpoints /userfile and registration GET endpoint /companyDetailsWithAddress
-
-### Bugfix
-* Adjusted the json property name for bpn within the BpdmLegalEntityOutputData
-* Updated osp_welcome_email.html dynamic data field from idpAlias to companyName
-
-
-## 1.7.0-RC1
-
-### Change
-* Apps Service
-  * instead of creating the notification for an app subscription after triggering the provider, the notification will directly be created when subscribing to an offer
-  * enhanced POST /{appId}/subscribe endpoint business logic enhanced to set offer_subscriptions.date_created value when running the endpoint
-  * enhanced GET /api/apps/{appId} logic to fetch the "isSubscribe" value by the latest subscription record
-  * enhanced GET /api/Apps/provided/subscription-status & GET /api/Apps/{appId}/subscription/{subscriptionId}/provider by adding processStepTypeId responding with the latest subscription processStepTypeId
-* Services Service
-  * instead of creating the notification for an app subscription after triggering the provider, the notification will directly be created when subscribing to an offer
-  * POST {appId}/subscribe endpoint business logic enhanced to set offer_subscriptions.date_created value when running the endpoint
-* Administration
-  * endpoint GET api/administration/partnernetwork/memberCompanies enhanced to allow to send specific set of BPNs inside the request payload to request membership status for those BPNLs only
-* implemented business/backend logic to set/update company_applications.date_last_changed when running an update on the companyApplication
-
-### Feature
-* App Service
-  * added endpoint to AppChange controller to allow app document change process - fetch app documents api: GET /apps/appchange/{appId}/documents
-* Onboarding Service Provider *new function since 1.7.0 alpha* - released onboarding service provider functionality, incl.:
-  * moved creation of the users for network registrations in keycloak to the process step; if the call to keycloak fails operator can retrigger the process without impact to OSP/3rd party
-  * added /api/administration/identityprovider/network/identityproviders/managed/{identityProviderId} endpoint to retrieve idp information regarding IdP connected companies
-
-### Technical Support
-* Removed auth trail from the provisioning settings and added the use of the keycloak settings to set the correct useAuthTrail value
-* adjusted process worker workflow to build the process worker when changes within the networkRegistration directory appear
-* Controller slimlined
-  * removse all identity related code from controllers
-  * added identityservice to buisnessLogic to access idenitity
-* Mask sensitive information in portal logs
-* Extended logs for external service/component calls
-* Portal DB
-  * added inside portal.offer_subscription new attribute "date_created", incl. a migration to set all existing offer subscriptiond dates to "1970-01-01"
-* check constraints is_external_type_use_case, is_credential_type_use_case & is_connector_managed changed from function constraint to trigger function constraint
-* Add new process to synchronize keycloak user with company service account to set the correct user entity id
-
-### Bugfix
-* Application approval/verification process: adjusted bpdm businessPartnerNumber pull process to handle an unset SharingProcessStarted and retry the process
-* Onboarding Service Provider *new function since 1.7.0 alpha*
-  * OSP 3rd party customer registration submit endpoint run fixed by adding NetworkBusinessLogic Registration
-  * updated POST /partnerregistration endpoint - bpn propoerty value NULL allowed
-* Seeding data typo fixes (agreements.json)
-* Updated userRole for service endpoint PUT api/services/{subscriptionId}/unsubscribe to "unsubscribe_services"
-* Add user entity id when creating a company service account
-
-### Known Knowns
-* POST /api/registration/application/{applicationId}/inviteNewUser runs on error if user email is already known/existing in the portal db (no matter to which company the user is connected)
-
-
-## 1.7.0 alpha
-
-### Change
+* Registration Service
+  * enhance GET /api/registration/applications registration customer endpoint by adding the registration approval flow status
+  * added agreement_link to agreement table and enhanced existing agreement endpoint response to include the agreement link - GET /api/registration/companyRoleAgreementData
+  * implemented business/backend logic to set/update company_applications.date_last_changed when running an update on the companyApplication
 * Administration Service
   * enhanced DELETE ServiceAccount endpoint by adding a validation to allow provider as well as owner of the service account to trigger the deletion
   * added validation for DELETE ServiceAccount to not allow to deactivate if active subscription exists
@@ -132,19 +16,29 @@ n/a
   * enhanced GET /administration/companydata/certificateTypes business logic to return only those certificateTypes which the users company is able to request
   * added agreement_link to agreement table and enhanced existing agreement endpoint response to include the agreement link - GET api/administration/companydata/companyRolesAndConsents
   * enhanced response body of GET /api/administration/Connectors/{connectorId}; GET /api/administration/connectors & GET /api/administration/connectors/managed by adding linked technical user data (id, name, role, etc.)
-* Registration Service
-  * enhance GET /api/registration/applications registration customer endpoint by adding the registration approval flow status
-  * added agreement_link to agreement table and enhanced existing agreement endpoint response to include the agreement link - GET /api/registration/companyRoleAgreementData
+  * endpoint GET api/administration/partnernetwork/memberCompanies enhanced to allow to send specific set of BPNs inside the request payload to request membership status for those BPNLs only
 * App Service
   * enhanced backend logic of /autosetup process worker to only create technical users for app linked technical user profiles which have a role assigned
   * added status filter option for endpoint GET /apps/provided
   * enhanced GET /api/Apps/{appId}/subscription/{subscriptionId}/subscriber endpoint by responding (if existing) with connector details connected to the subscription
   * enhanced GET /api/Apps/subscribed/subscription-status response body by adding subscriptionId
+  * instead of creating the notification for an app subscription after triggering the provider, the notification will directly be created when subscribing to an offer
+  * enhanced POST /{appId}/subscribe endpoint business logic enhanced to set offer_subscriptions.date_created value when running the endpoint
+  * enhanced GET /api/apps/{appId} logic to fetch the "isSubscribe" value by the latest subscription record
+  * enhanced GET /api/Apps/provided/subscription-status & GET /api/Apps/{appId}/subscription/{subscriptionId}/provider by adding processStepTypeId responding with the latest subscription processStepTypeId
+  * added processStepTypeId field to provider/subscription endpoints
 * Services Service
   * enhanced backend logic of /autosetup process worker to only create technical users for service linked technical user profiles which have a role assigned
   * enhanced endpoint GET /api/services/provided by "leadPictureId" & "lastChanged" date
   * service types renamed from 'Consultance_Service' to 'Consultancy_Service'
- 
+  * instead of creating the notification for an app subscription after triggering the provider, the notification will directly be created when subscribing to an offer
+  * POST {appId}/subscribe endpoint business logic enhanced to set offer_subscriptions.date_created value when running the endpoint
+  * added processStepTypeId field to provider/subscription endpoints
+* Seeding Data
+  * updated and added technical user role description & user role names
+* Others
+  * added email value validation for invitation, network registration and user invitation to enable the user input data validation for valid email
+
 ### Feature
 * Administration Service
   * added /api/administration/staticdata/operator-bpn endpoint to fetch operator bpns
@@ -152,6 +46,7 @@ n/a
   * unsubscribe OfferSubscription released
   * added email send function for endpoint PUT /api/apps/AppReleaseProcess/{appId}/approveApp
   * introduce TRIGGER_ACTIVATE_SUBSCRIPTION process step to manually trigger the offer subscription activation enable client and service accounts when activating the offer subscription
+  * added endpoint to AppChange controller to allow app document change process - fetch app documents api: GET /apps/appchange/{appId}/documents
 * Services Service
   * unsubscribe OfferSubscription released
   * added email send function for endpoint PUT /api/services/ServiceRelease/{serviceId}/approveService
@@ -162,7 +57,7 @@ n/a
 * Onboarding Service Provider *new function* - released onboarding service provider functionality, incl.:
   * added new database structure for network to network
   * added seeding for n2n
-  * enhanced POST /api/administration/identityprovider/owncompany/identityproviders endpoint by identityProviderType (managed; own; shared)
+  * enhanced POST /api/administration/identityprovider/owncompany/identityproviders endpoint by identityProviderType (managed; own) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
   * network process worker registered to use process worker for onboarding service provider registration flow
   * added seeding (test data only) for the osp realm and company including users
   * added POST /api/administration/registration/network/partnerRegistration/submit endpoint
@@ -170,6 +65,7 @@ n/a
   * added new process to synchronize users with central keycloak instance for the partnerRegistration
   * added endpoint to get the callback url of an osp
   * added endpoint to set the callback url of an osp
+  * added /api/administration/identityprovider/network/identityproviders/managed/{identityProviderId} endpoint to retrieve idp information regarding IdP connected companies
 * Email templates
   * released new email template 'offer release approval'
   * released new email tempülate 'welcome onboarding service provider registration company' (connected to feature release Onboarding Service Provider)
@@ -181,9 +77,17 @@ n/a
 * Test Automation runs implemented (external service health checks & administration and registration e2e journeys) via gitHub workflow
 * added attribute logos in notice file
 * remove unused notice file (Docker Hub)
-* enhanced db table agreements by adding new attribute agreement_link to support links for agreement where needed
-* added custom migration script for identity_provider_type_id and owner_id
-* enhanced security.md file with newest release relevant guidelines regarding vulnerability/security finding handling
+* DB Changes
+  * enhanced db table agreements by adding new attribute agreement_link to support links for agreement where needed
+  * added "Identity_Provider_Types" table which is connected to portal.identity_providers table
+  * added inside the new table "Identity_Provider_Types" an id as well as a label
+  * new attribute identity_providers.owner_id added
+  * added custom migration script for identity_provider_type_id and owner_id
+  * added inside portal.offer_subscription new attribute "date_created", incl. a migration to set all existing offer subscriptiond dates to "1970-01-01"
+  * database view 'Company-Connector-View' added
+  * database view 'Company-IdP-View' added
+  * database view 'Company-Role-Collection-Role-View' added
+  * database view 'Company-User-View' added
 * Auditing
   * new migration has been created that recreates all triggers according to the new naming scheme being introduced by version 7.1.1 of the trigger-framework
   * trigger-extensions have been adjusted ensuring a consistent order of properties to avoid unnecessary recreation of trigger-functions when creating new migrations
@@ -197,17 +101,36 @@ n/a
 * removed e2e test files from sonar coverage check
 * support build images also for arm64, in addition to amd64
 * improve dockerfiles - 'dotnet build' not needed as implicit of 'dotnet publish'
+* enhanced security.md file with newest release relevant guidelines regarding vulnerability/security finding handling
 * change launchsettings
   * cors for localdev env
   * align applicationUrl for apps service
 * Keycloak auth path config updated inside the portal backend code to support auth path configuration (needed for older keycloak version)
+* adjusted keycloak seeding to exclude the following properties if already existing
+  * firstname, lastname, email and configurable attributes for users
+  * idp config urls
+  * client urls
+  * smtp server settings
+* extend keycloak seeding to seed ClientScopeMappers
+* Removed auth trail from the provisioning settings and added the use of the keycloak settings to set the correct useAuthTrail value
+* adjusted process worker workflow to build the process worker when changes within the networkRegistration directory appear
+* Controller slimlined
+  * removse all identity related code from controllers
+  * added identityservice to buisnessLogic to access idenitity
+* Mask sensitive information in portal logs
+* Extended logs for external service/component calls
+* check constraints is_external_type_use_case, is_credential_type_use_case & is_connector_managed changed from function constraint to trigger function constraint
+* Added new process to synchronize keycloak user with company service account to set the correct user entity id
+* Released extended error response message method (incl. error-type, error-code, a message-template and multiple parameters) and enabled the same for administration POST endpoints /userfile and registration GET endpoint /companyDetailsWithAddress
+* Updated email template dynamic keys to more generic technical keys and moved base url definition into the product config file of the specific environment ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 
 ### Bugfix
 * Seeding data
-  * spelling mistakes inside agreements.json and company_role_description.json fixed
+  * fixed typos inside agreements.json and company_role_description.json
   * 'user_entity_id' updated in identity.json file to match with the keycloak service account/client id
   * added sd documents in company.json file
-  * fixed connectors.json file (test data file only) value connectorType with owner/provider 
+  * fixed connectors.json file (test data file only) value connectorType with owner/provider
+  * fixed user role mapping to company role (App Provider and Service Provider)
 * Administration Service - adding validation for offerUrl by not supporting hash characters PUT /api/administration/identityprovider/owncompany/identityproviders/{identityProviderId}
 * GET app/provider/subscription-status endpoint results enhanced to include inactive subscriptions
 * GET service/provider/subscription-status endpoint results enhanced to include inactive subscriptions
@@ -217,10 +140,18 @@ ServiceChange service url is mismatched, now it is fixed
 * fixed GET: api/administration/identityprovider/owncompany/identityproviders/{identityTypeId} to handle not existing idps in keycloak by using null values
 * autoSetup issues fixed to support scenario where no appInstanceSetup is configured
 * fixed offerSubscription request email logic to get send to the respective offer manager (Sales Manager; Service Manager; App Manager) of the company
+* Application approval/verification process: adjusted bpdm businessPartnerNumber pull process to handle an unset SharingProcessStarted and retry the process
+* Updated userRole for service endpoint PUT api/services/{subscriptionId}/unsubscribe to "unsubscribe_services"
+* Add user entity id when creating a company service account
+* Adjusted the json property name for bpn within the BpdmLegalEntityOutputData
+* Connector pagination of GET /api/administration/connectors fixed - pagination failed as soon as there were connectors with same provider but different hosts existing
+* Fixed document auditing maintenance job - document hash null cases
+* Delete /api/apps/appreleaseprocess/{appId}/role/{roleId} 504 error fixed
 
 ### Known Knowns
-* Endpoint GET /api/Apps/{appId} response property 'isSubscribed' can not handle multiple subscription status. In case of multiple subscription status values are existing response includes the first found value and not the latest subscription value
-
+* GET /api/services/{serviceId}/subscription/{subscriptionID}/provider - wrong property value for technicalUserData "name" responded
+* declineFlow OSP currently not supported
+* password reset in welcome user email currently not supported
 
 ## 1.6.0
 
