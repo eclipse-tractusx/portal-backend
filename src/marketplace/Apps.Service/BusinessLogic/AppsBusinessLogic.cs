@@ -19,8 +19,8 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Offers.Library.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Offers.Library.Extensions;
 using Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
