@@ -145,13 +145,14 @@ ServiceChange service url is mismatched, now it is fixed
 * Add user entity id when creating a company service account
 * Adjusted the json property name for bpn within the BpdmLegalEntityOutputData
 * Connector pagination of GET /api/administration/connectors fixed - pagination failed as soon as there were connectors with same provider but different hosts existing
-* Fixed document auditing maintenance job - document hash null cases
+* Fixed maintenance job - document hash null cases and only delete not linked documents
 * Delete /api/apps/appreleaseprocess/{appId}/role/{roleId} 504 error fixed
 
 ### Known Knowns
 * GET /api/services/{serviceId}/subscription/{subscriptionID}/provider - wrong property value for technicalUserData "name" responded
 * declineFlow OSP currently not supported
 * password reset in welcome user email currently not supported
+* POST: api/administration/registration/application/{applicationId}/decline - does not disable the idp in keycloak when declining the application
 
 ## 1.6.0
 
