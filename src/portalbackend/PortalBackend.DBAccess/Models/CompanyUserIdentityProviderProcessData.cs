@@ -20,6 +20,22 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
+public record CompanyUserIdentityProviderProcessTransferData(
+    Guid CompanyUserId,
+    string? FirstName,
+    string? LastName,
+    string? Email,
+    string CompanyName,
+    string? Bpn,
+    IEnumerable<ProviderLinkTransferData> ProviderLinkData
+);
+
+public record ProviderLinkTransferData(
+    string UserName,
+    string? Alias,
+    string ProviderUserId
+);
+
 public record CompanyUserIdentityProviderProcessData(
     Guid CompanyUserId,
     string? FirstName,
@@ -33,5 +49,6 @@ public record CompanyUserIdentityProviderProcessData(
 public record ProviderLinkData(
     string UserName,
     string? Alias,
+    string? DisplayName,
     string ProviderUserId
 );
