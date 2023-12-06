@@ -51,6 +51,7 @@ public class NetworkController : ControllerBase
     /// Example: POST: api/administration/registration/network/{externalId}/retrigger-synchronize-users
     /// <response code="200">Empty response on success.</response>
     [HttpPost]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Authorize(Roles = "create_partner_registration")]
     [Route("partnerRegistration")]
     [ProducesResponseType(StatusCodes.Status200OK)]

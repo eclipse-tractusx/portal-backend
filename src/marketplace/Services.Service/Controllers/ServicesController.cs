@@ -119,6 +119,7 @@ public class ServicesController : ControllerBase
     [Route("{serviceId}", Name = nameof(GetServiceDetails))]
     [Authorize(Roles = "view_service_offering")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(ServiceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ServiceDetailResponse> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") =>
@@ -190,6 +191,7 @@ public class ServicesController : ControllerBase
         await _serviceBusinessLogic.StartAutoSetupAsync(data).ConfigureAwait(false);
         return NoContent();
     }
+
     /// <summary>
     /// Retrieves subscription statuses of provided services of the currently logged in user's company.
     /// </summary>
