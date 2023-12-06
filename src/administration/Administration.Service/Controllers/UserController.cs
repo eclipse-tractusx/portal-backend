@@ -196,9 +196,9 @@ public class UserController : ControllerBase
     [Authorize(Roles = "view_user_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users/{companyUserId}", Name = nameof(GetOwnCompanyUserDetails))]
-    [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyUserDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<CompanyUserDetails> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
+    public Task<CompanyUserDetailData> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
         _logic.GetOwnCompanyUserDetailsAsync(companyUserId);
 
     /// <summary>

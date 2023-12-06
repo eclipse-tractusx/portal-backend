@@ -154,7 +154,7 @@ public class RegistrationController : ControllerBase
     /// <param name="data">Comment to explain why the application got declined</param>
     /// <param name="cancellationToken">cancellation token</param>
     /// <remarks>
-    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/decline
+    /// Example: POST: api/administration/registration/application/{applicationId}/decline
     /// </remarks>
     /// <response code="204">Successfully declined the application</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>

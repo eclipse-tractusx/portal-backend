@@ -33,7 +33,7 @@ public interface IUserBusinessLogic
     Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(int page, int size, GetOwnCompanyUsersFilter filter);
     [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
-    Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid userId);
+    Task<CompanyUserDetailData> GetOwnCompanyUserDetailsAsync(Guid userId);
     Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers);
     Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string businessPartnerNumber);
     Task<CompanyOwnUserDetails> GetOwnUserDetails();

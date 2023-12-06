@@ -85,7 +85,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, null);
         identityProvider.Companies.Add(company);
-        identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, idpName);
+        identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, idpName, invitationData.organisationName);
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL);

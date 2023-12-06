@@ -33,5 +33,6 @@ public record CompanyUserIdentityProviderProcessData(
 public record ProviderLinkData(
     string UserName,
     string? Alias,
+    string? DisplayName,
     string ProviderUserId
 );

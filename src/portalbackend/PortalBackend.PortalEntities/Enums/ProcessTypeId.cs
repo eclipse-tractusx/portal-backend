@@ -1,5 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021,2023 BMW Group AG
+ * Copyright (c) 2021,2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,24 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public record CompanyUserData(
-    [property: JsonPropertyName("companyUserId")]
-    Guid CompanyUserId,
-    [property: JsonPropertyName("status")]
-    UserStatusId UserStatusId,
-    [property: JsonPropertyName("firstName")]
-    string? FirstName,
-    [property: JsonPropertyName("lastName")]
-    string? LastName,
-    [property: JsonPropertyName("email")]
-    string? Email,
-    [property: JsonPropertyName("roles")]
-    IEnumerable<string> Roles,
-    [property: JsonPropertyName("idpUserIds")]
-    IEnumerable<IdpUserId> IdpUserIds
-);
+public enum ProcessTypeId
+{
+    APPLICATION_CHECKLIST = 1,
+    OFFER_SUBSCRIPTION = 3,
+    PARTNER_REGISTRATION = 4,
+    IDP_DISPLAY_NAME_SYNC = 5
+}

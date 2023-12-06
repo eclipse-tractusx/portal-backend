@@ -29,9 +29,10 @@ public class IamIdentityProvider
         IamIdpAlias = null!;
     }
 
-    public IamIdentityProvider(string iamIdpAlias, Guid identityProviderId)
+    public IamIdentityProvider(string iamIdpAlias, string displayName, Guid identityProviderId)
     {
         IamIdpAlias = iamIdpAlias;
+        DisplayName = displayName;
         IdentityProviderId = identityProviderId;
     }
 
@@ -40,6 +41,8 @@ public class IamIdentityProvider
     [Key]
     [MaxLength(255)]
     public string IamIdpAlias { get; private set; }
+
+    public string? DisplayName { get; set; }
 
     // Navigation properties
     public virtual IdentityProvider? IdentityProvider { get; private set; }

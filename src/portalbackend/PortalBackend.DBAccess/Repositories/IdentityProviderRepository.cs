@@ -74,14 +74,15 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             )));
 
     /// <inheritdoc/>
-    public IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias) =>
+    public IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias, string displayName) =>
         _context.IamIdentityProviders.Add(
             new IamIdentityProvider(
                 idpAlias,
+                displayName,
                 identityProviderId)).Entity;
 
     public void DeleteIamIdentityProvider(string idpAlias) =>
-        _context.IamIdentityProviders.Remove(new IamIdentityProvider(idpAlias, Guid.Empty));
+        _context.IamIdentityProviders.Remove(new IamIdentityProvider(idpAlias, null!, Guid.Empty));
 
     public Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId) =>
         _context.IdentityProviders
@@ -257,4 +258,19 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                         s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
                         s.IdentityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)))
                 .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextIdpsWithoutDisplayName() =>
+        _context.IamIdentityProviders
+            .Where(x => x.DisplayName == null)
+            .Select(x => new ValueTuple<Guid, string>(x.IdentityProviderId, x.IamIdpAlias))
+            .Take(2)
+            .ToAsyncEnumerable();
+
+    public void AttachAndModifyIamIdentityProvider(string alias, Guid idpId, Action<IamIdentityProvider>? initialize, Action<IamIdentityProvider> modify)
+    {
+        var iam = new IamIdentityProvider(alias, null!, idpId);
+        initialize?.Invoke(iam);
+        _context.IamIdentityProviders.Attach(iam);
+        modify.Invoke(iam);
+    }
 }

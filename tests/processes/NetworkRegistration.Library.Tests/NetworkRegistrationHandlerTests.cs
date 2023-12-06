@@ -96,7 +96,7 @@ public class NetworkRegistrationHandlerTests
         var user1Id = Guid.NewGuid();
         var user1 = new CompanyUserIdentityProviderProcessData(user1Id, firstName, lastName, email,
             "Test Company", "BPNL00000001TEST",
-            Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
+            Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "the name", "id1234"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
             .Returns("Onboarding Service Provider");
@@ -122,7 +122,7 @@ public class NetworkRegistrationHandlerTests
         // Arrange
         var user1Id = Guid.NewGuid();
         var user1 = new CompanyUserIdentityProviderProcessData(user1Id, "tony", "stark", "tony@stark.com", "Test Company", "BPNL00000001TEST",
-            Enumerable.Repeat(new ProviderLinkData("ironman", null, "id1234"), 1));
+            Enumerable.Repeat(new ProviderLinkData("ironman", null, null, "id1234"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
             .Returns("Onboarding Service Provider");
@@ -149,10 +149,10 @@ public class NetworkRegistrationHandlerTests
         var user1Id = Guid.NewGuid().ToString();
         var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
             "Test Company", "BPNL00000001TEST",
-            Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
+            Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", null, "id1234"), 1));
         var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
             "steven@strange.com", "Test Company", "BPNL00000001TEST",
-            Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "id9876"), 1));
+            Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "the name", "id9876"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
             .Returns("Onboarding Service Provider");
@@ -171,8 +171,8 @@ public class NetworkRegistrationHandlerTests
         async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"DisplayName for idpAlias idp1 couldn't be determined");
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        ex.Message.Should().Be("providerLinkData.DisplayName should never be null here");
     }
 
     [Fact]
@@ -182,13 +182,13 @@ public class NetworkRegistrationHandlerTests
         var user1Id = Guid.NewGuid().ToString();
         var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
             "Test Company", "BPNL00000001TEST",
-            Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "id1234"), 1));
+            Enumerable.Repeat(new ProviderLinkData("ironman", "idp1", "DisplayName for Idp1", "id1234"), 1));
         var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
             "steven@strange.com", "Test Company", "BPNL00000001TEST",
-            Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "id9876"), 1));
+            Enumerable.Repeat(new ProviderLinkData("drstrange", "idp1", "DisplayName for Idp1", "id9876"), 1));
         var user3 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "foo", "bar",
             "foo@bar.com", "Acme Corp", "BPNL00000001TEST",
-            Enumerable.Repeat(new ProviderLinkData("foobar", "idp2", "id4711"), 1));
+            Enumerable.Repeat(new ProviderLinkData("foobar", "idp2", "DisplayName for Idp2", "id4711"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
             .Returns("Onboarding Service Provider");
@@ -204,10 +204,6 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _provisioningManger.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
         A.CallTo(() => _provisioningManger.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
         A.CallTo(() => _provisioningManger.GetUserByUserName(user3.CompanyUserId.ToString())).Returns((string?)null);
-        A.CallTo(() => _provisioningManger.GetIdentityProviderDisplayName("idp1"))
-            .Returns("DisplayName for Idp1");
-        A.CallTo(() => _provisioningManger.GetIdentityProviderDisplayName("idp2"))
-            .Returns("DisplayName for Idp2");
 
         // Act
         var result = await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);

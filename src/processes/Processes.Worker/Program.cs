@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Synchronization.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
 
@@ -53,7 +54,8 @@ try
                 .AddApplicationChecklistCreation()
                 .AddApplicationActivation(hostContext.Configuration)
                 .AddConfigurationProcessIdentityService(hostContext.Configuration.GetSection("ProcessIdentity"))
-                .AddNetworkRegistrationProcessExecutor(hostContext.Configuration);
+                .AddNetworkRegistrationProcessExecutor(hostContext.Configuration)
+                .AddIdentityProviderSyncProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {

@@ -34,10 +34,11 @@ public interface IUserRepository
     Identity CreateIdentity(Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId, Action<Identity>? setOptionalFields);
     void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? initialize, Action<CompanyUser> setOptionalParameters);
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(Guid companyId, Guid? companyUserId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<UserStatusId>? statusIds = null);
+    Func<int, int, Task<Pagination.Source<CompanyUserData>?>> GetOwnCompanyUserData(Guid companyId, Guid? companyUserId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<UserStatusId>? statusIds = null);
     Task<(string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
     IAsyncEnumerable<(Guid CompanyUserId, bool IsFullMatch)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId, IEnumerable<UserStatusId> companyUserStatusIds);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, Guid companyId);
-    Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid companyId);
+    Task<CompanyUserDetailData?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid companyId);
     Task<(IEnumerable<string> AssignedBusinessPartnerNumbers, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId);
     Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(Guid companyUserId, IEnumerable<Guid> userRoleIds);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(Guid companyUserId);
@@ -123,4 +124,7 @@ public interface IUserRepository
     CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName);
     IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId);
     void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity> Modify)> identityData);
+    IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextServiceAccountsWithoutUserEntityId();
+    Task<(bool Exists, string ProviderId, string Username)> GetCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId);
+    void AttachAndModifyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, Action<CompanyUserAssignedIdentityProvider>? initialize, Action<CompanyUserAssignedIdentityProvider> modify);
 }

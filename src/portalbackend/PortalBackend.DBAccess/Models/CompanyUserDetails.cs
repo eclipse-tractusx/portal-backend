@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -41,6 +40,25 @@ public record CompanyUserDetails(
     public string? Email { get; set; }
 }
 
+public record CompanyUserDetailData(
+    [property: JsonPropertyName("companyUserId")] Guid CompanyUserId,
+    [property: JsonPropertyName("created")] DateTimeOffset CreatedAt,
+    [property: JsonPropertyName("bpn")] IEnumerable<string> BusinessPartnerNumbers,
+    [property: JsonPropertyName("company")] string CompanyName,
+    [property: JsonPropertyName("status")] UserStatusId UserStatusId,
+    [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles,
+    [property: JsonPropertyName("idpUserIds")] IEnumerable<IdpUserId> IdpUserIds)
+{
+    [JsonPropertyName("firstName")]
+    public string? FirstName { get; set; }
+
+    [JsonPropertyName("lastName")]
+    public string? LastName { get; set; }
+
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+}
+
 public record CompanyOwnUserDetails(
     [property: JsonPropertyName("companyUserId")] Guid CompanyUserId,
     [property: JsonPropertyName("created")] DateTimeOffset CreatedAt,
@@ -48,7 +66,8 @@ public record CompanyOwnUserDetails(
     [property: JsonPropertyName("company")] string CompanyName,
     [property: JsonPropertyName("status")] UserStatusId UserStatusId,
     [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles,
-    [property: JsonPropertyName("admin")] IEnumerable<CompanyUserAdminDetails> AdminDetails)
+    [property: JsonPropertyName("admin")] IEnumerable<CompanyUserAdminDetails> AdminDetails,
+    [property: JsonPropertyName("idpUserIds")] IEnumerable<IdpUserId> IdpUserIds)
 {
     [JsonPropertyName("firstName")]
     public string? FirstName { get; set; }
@@ -67,3 +86,7 @@ public record CompanyUserAdminDetails(
 public record CompanyUserAssignedRoleDetails(
     [property: JsonPropertyName("appId")] Guid OfferId,
     [property: JsonPropertyName("roles")] IEnumerable<string> UserRoles);
+
+public record IdpUserId(
+    [property: JsonPropertyName("idpDisplayName")] string? IdpDisplayName,
+    [property: JsonPropertyName("userId")] string UserId);

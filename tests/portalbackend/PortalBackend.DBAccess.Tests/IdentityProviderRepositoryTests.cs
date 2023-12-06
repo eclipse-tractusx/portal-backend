@@ -75,12 +75,13 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         var identityProviderId = new Guid("38f56465-ce26-4f25-9745-1791620dc198");
         var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
-        var result = sut.CreateIamIdentityProvider(identityProviderId, "idp-999");
+        var result = sut.CreateIamIdentityProvider(identityProviderId, "idp-999", "the display name");
 
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         result.IamIdpAlias.Should().Be("idp-999");
+        result.DisplayName.Should().Be("the display name");
         result.IdentityProviderId.Should().Be(identityProviderId);
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
@@ -88,6 +89,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Single().Entity.Should().BeOfType<IamIdentityProvider>();
         var idp = changedEntries.Single().Entity as IamIdentityProvider;
         idp!.IamIdpAlias.Should().Be("idp-999");
+        idp.DisplayName.Should().Be("the display name");
         idp.IdentityProviderId.Should().Be(identityProviderId);
     }
 

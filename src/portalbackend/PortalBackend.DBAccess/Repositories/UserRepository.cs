@@ -99,6 +99,37 @@ public class UserRepository : IUserRepository
                 (statusIds == null || statusIds.Contains(companyUser.Identity!.UserStatusId)));
     }
 
+    public Func<int, int, Task<Pagination.Source<CompanyUserData>?>> GetOwnCompanyUserData(
+        Guid companyId,
+        Guid? companyUserId = null,
+        string? firstName = null,
+        string? lastName = null,
+        string? email = null,
+        IEnumerable<UserStatusId>? statusIds = null) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _dbContext.CompanyUsers
+                .AsNoTracking()
+                .Where(companyUser =>
+                    companyUser.Identity!.CompanyId == companyId &&
+                    (!companyUserId.HasValue || companyUser.Id == companyUserId.Value) &&
+                    (firstName == null || companyUser.Firstname == firstName) &&
+                    (lastName == null || companyUser.Lastname == lastName) &&
+                    (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.EscapeForILike()}%")) &&
+                    (statusIds == null || statusIds.Contains(companyUser.Identity!.UserStatusId)))
+                .GroupBy(u => u.Id),
+            cu => cu.OrderByDescending(companyUser => companyUser.Identity!.DateCreated),
+            cu => new CompanyUserData(
+                cu.Id,
+                cu.Identity!.UserStatusId,
+                cu.Firstname,
+                cu.Lastname,
+                cu.Email,
+                cu.Identity!.IdentityAssignedRoles.Select(x => x.UserRole!).Select(userRole => userRole.UserRoleText),
+                cu.CompanyUserAssignedIdentityProviders.Select(x => new IdpUserId(x.IdentityProvider!.IamIdentityProvider!.DisplayName, x.ProviderId))
+            )).SingleOrDefaultAsync();
+
     public Task<(string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
@@ -129,14 +160,14 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers
             .AnyAsync(companyUser => companyUser.Identity!.CompanyId == companyId && companyUser.Email == email);
 
-    public Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid companyId) =>
+    public Task<CompanyUserDetailData?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser =>
                 companyUser.Id == companyUserId &&
                 companyUser.Identity!.UserStatusId == UserStatusId.ACTIVE &&
                 companyUser.Identity!.CompanyId == companyId)
-            .Select(companyUser => new CompanyUserDetails(
+            .Select(companyUser => new CompanyUserDetailData(
                 companyUser.Id,
                 companyUser.Identity!.DateCreated,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
@@ -148,7 +179,8 @@ public class UserRepository : IUserRepository
                     .Select(offer => new CompanyUserAssignedRoleDetails(
                         offer.Id,
                         offer.UserRoles.Where(role => companyUser.Identity!.IdentityAssignedRoles.Select(x => x.UserRole).Contains(role)).Select(x => x.UserRoleText)
-                    )))
+                    )),
+                companyUser.CompanyUserAssignedIdentityProviders.Select(cuidp => new IdpUserId(cuidp.IdentityProvider!.IamIdentityProvider!.DisplayName, cuidp.ProviderId)))
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
@@ -163,10 +195,8 @@ public class UserRepository : IUserRepository
                 companyUser.Id == companyUserId &&
                 companyUser.Identity!.CompanyId == companyId)
             .Select(companyUser => new ValueTuple<IEnumerable<string>, bool>(
-                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
-                    assignedPartner.BusinessPartnerNumber),
-                true)
-            )
+                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner => assignedPartner.BusinessPartnerNumber),
+                true))
             .SingleOrDefaultAsync();
 
     public Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(Guid companyUserId, IEnumerable<Guid> userRoleIds) =>
@@ -192,7 +222,8 @@ public class UserRepository : IUserRepository
                 companyUser.Identity!.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER && i.IdentityAssignedRoles.Any(role => userRoleIds.Contains(role.UserRoleId))).Select(i => i.CompanyUser!)
                     .Select(admin => new CompanyUserAdminDetails(
                         admin.Id,
-                        admin.Email)))
+                        admin.Email)),
+                companyUser.CompanyUserAssignedIdentityProviders.Select(cuidp => new IdpUserId(cuidp.IdentityProvider!.IamIdentityProvider!.DisplayName, cuidp.ProviderId)))
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
@@ -442,7 +473,12 @@ public class UserRepository : IUserRepository
                     cu.Email,
                     cu.Identity!.Company!.Name,
                     cu.Identity.Company.BusinessPartnerNumber,
-                    cu.CompanyUserAssignedIdentityProviders.Select(assigned => new ProviderLinkData(assigned.UserName, assigned.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, assigned.ProviderId))
+                    cu.CompanyUserAssignedIdentityProviders.Select(assigned =>
+                    new ProviderLinkData(
+                        assigned.UserName,
+                        assigned.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
+                        assigned.IdentityProvider!.IamIdentityProvider!.DisplayName,
+                        assigned.ProviderId))
                 ))
             .ToAsyncEnumerable();
 
@@ -456,5 +492,33 @@ public class UserRepository : IUserRepository
         ).ToList();
         _dbContext.AttachRange(initial.Select(x => x.Identity));
         initial.ForEach(x => x.Modify(x.Identity));
+    }
+
+    public IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextServiceAccountsWithoutUserEntityId() =>
+        _dbContext.Identities
+            .Where(x =>
+                x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT &&
+                x.CompanyServiceAccount!.ClientClientId != null &&
+                x.UserStatusId == UserStatusId.ACTIVE)
+            .Select(x => new ValueTuple<Guid, string>(x.Id, x.CompanyServiceAccount!.ClientClientId!))
+            .Take(2)
+            .ToAsyncEnumerable();
+
+    public Task<(bool Exists, string ProviderId, string Username)> GetCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId) =>
+        _dbContext.CompanyUserAssignedIdentityProviders
+            .Where(x => x.IdentityProviderId == identityProviderId && x.CompanyUserId == companyUserId)
+            .Select(x => new ValueTuple<bool, string, string>(
+                true,
+                x.ProviderId,
+                x.UserName
+            ))
+            .SingleOrDefaultAsync();
+
+    public void AttachAndModifyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, Action<CompanyUserAssignedIdentityProvider>? initialize, Action<CompanyUserAssignedIdentityProvider> modify)
+    {
+        var companyUser = new CompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, null!, null!);
+        initialize?.Invoke(companyUser);
+        var updatedEntity = _dbContext.Attach(companyUser).Entity;
+        modify.Invoke(updatedEntity);
     }
 }

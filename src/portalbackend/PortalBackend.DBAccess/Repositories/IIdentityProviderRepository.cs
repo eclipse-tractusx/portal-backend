@@ -30,7 +30,7 @@ public interface IIdentityProviderRepository
 {
     IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory, IdentityProviderTypeId identityProviderTypeId, Guid owner, Action<IdentityProvider>? setOptionalFields);
     void DeleteIdentityProvider(Guid identityProviderId);
-    IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias);
+    IamIdentityProvider CreateIamIdentityProvider(Guid identityProviderId, string idpAlias, string displayName);
     void DeleteIamIdentityProvider(string idpAlias);
     CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
     void DeleteCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
@@ -52,4 +52,7 @@ public interface IIdentityProviderRepository
         (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
         (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>
             GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, Guid companyUserId);
+
+    IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextIdpsWithoutDisplayName();
+    void AttachAndModifyIamIdentityProvider(string alias, Guid idpId, Action<IamIdentityProvider>? initialize, Action<IamIdentityProvider> modify);
 }
