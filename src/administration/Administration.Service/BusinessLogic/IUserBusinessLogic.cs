@@ -44,7 +44,6 @@ public interface IUserBusinessLogic
     /// Delete User Own Account using userId
     /// </summary>
     /// <param name="companyUserId"></param>
-    /// <param name="userId"></param>
     /// <returns></returns>
     Task<int> DeleteOwnUserAsync(Guid companyUserId);
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds);

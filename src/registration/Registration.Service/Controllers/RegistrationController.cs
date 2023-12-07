@@ -304,7 +304,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">The user is not assignable to the given application.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
-        [Authorize(Policy = PolicyTypes.ValidIdentity)]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         [ProducesResponseType(typeof(CompanyRoleAgreementConsents), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
