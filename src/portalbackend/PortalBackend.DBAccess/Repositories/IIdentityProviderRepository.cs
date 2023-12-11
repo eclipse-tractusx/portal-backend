@@ -52,4 +52,6 @@ public interface IIdentityProviderRepository
         (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
         (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>
             GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, Guid companyUserId);
+
+    IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, IEnumerable<Guid> IdpIds, IEnumerable<Guid> IdentityId)> GetIdpLinkedData(Guid identityProviderId);
 }

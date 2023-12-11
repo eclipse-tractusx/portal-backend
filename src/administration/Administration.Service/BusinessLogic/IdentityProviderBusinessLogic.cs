@@ -326,7 +326,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     public async ValueTask DeleteCompanyIdentityProviderAsync(Guid identityProviderId)
     {
         var companyId = _identityData.CompanyId;
-        var (alias, typeId) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId).ConfigureAwait(false);
+        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+        var (alias, typeId) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId, identityProviderRepository).ConfigureAwait(false);
 
         _portalRepositories.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
 
@@ -339,43 +340,62 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             }
             await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         }
+
+        if (typeId == IdentityProviderTypeId.MANAGED)
+        {
+            await DeleteManagedIdpLinks(identityProviderId, identityProviderRepository).ConfigureAwait(false);
+        }
+
         _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default, default)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask<(string? Alias, IdentityProviderTypeId TypeId)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId)
+    private async Task DeleteManagedIdpLinks(Guid identityProviderId, IIdentityProviderRepository identityProviderRepository)
+    {
+        var idpLinkedData = await identityProviderRepository.GetIdpLinkedData(identityProviderId)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        foreach (var data in idpLinkedData.Where(data => !data.IdpIds.Except(Enumerable.Repeat(identityProviderId, 1)).Any()))
+        {
+            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(data.CompanyId,
+                c => { c.CompanyStatusId = data.CompanyStatusId; },
+                c => { c.CompanyStatusId = CompanyStatusId.INACTIVE; });
+            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(data.IdentityId.Select(x => new ValueTuple<Guid, Action<Identity>>(x, identity => { identity.UserStatusId = UserStatusId.INACTIVE; })));
+        }
+    }
+
+    private async ValueTask<(string? Alias, IdentityProviderTypeId TypeId)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, IIdentityProviderRepository identityProviderRepository)
     {
         var companyId = _identityData.CompanyId;
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, companyId, true).ConfigureAwait(false);
+        var result = await identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, companyId, true).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
+
         var (isOwner, alias, _, typeId, aliase) = result;
         if (!isOwner)
         {
             throw new ForbiddenException($"company {companyId} is not the owner of identityProvider {identityProviderId}");
         }
 
-        if (typeId == IdentityProviderTypeId.MANAGED)
+        if (alias == null || typeId == IdentityProviderTypeId.MANAGED)
         {
-            throw new ConflictException($"IdentityProviders of type {typeId} can not be deleted");
+            return (alias, typeId);
         }
 
-        if (alias != null)
+        if (await _provisioningManager.IsCentralIdentityProviderEnabled(alias).ConfigureAwait(false))
         {
-            if (await _provisioningManager.IsCentralIdentityProviderEnabled(alias).ConfigureAwait(false))
-            {
-                throw new ControllerArgumentException($"cannot delete identityProvider {identityProviderId} as it is enabled");
-            }
+            throw new ControllerArgumentException($"cannot delete identityProvider {identityProviderId} as it is enabled");
+        }
 
-            if (!await ValidateOtherActiveIdentityProvider(
+        if (!await ValidateOtherActiveIdentityProvider(
                 alias,
                 aliase ?? throw new UnexpectedConditionException("CompanyIdAliase should never be null here")).ConfigureAwait(false))
-            {
-                throw new ControllerArgumentException($"cannot delete indentityProvider {identityProviderId} as no other active identityProvider exists for this company");
-            }
+        {
+            throw new ControllerArgumentException($"cannot delete indentityProvider {identityProviderId} as no other active identityProvider exists for this company");
         }
 
         return (alias, typeId);

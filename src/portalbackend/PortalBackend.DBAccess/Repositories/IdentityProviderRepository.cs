@@ -257,4 +257,9 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                         s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
                         s.IdentityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)))
                 .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, IEnumerable<Guid> IdpIds, IEnumerable<Guid> IdentityId)> GetIdpLinkedData(Guid identityProviderId) =>
+        _context.IdentityProviders.Where(x => x.Id == identityProviderId)
+            .SelectMany(x => x.Companies.Select(c => new ValueTuple<Guid, CompanyStatusId, IEnumerable<Guid>, IEnumerable<Guid>>(c.Id, c.CompanyStatusId, c.IdentityProviders.Select(idp => idp.Id), c.Identities.Select(i => i.Id))))
+            .ToAsyncEnumerable();
 }
