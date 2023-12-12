@@ -243,7 +243,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x.Name == "SDE with EDC" &&
             x.Customer == "Catena-X" &&
             x.Contact.SequenceEqual(new[] { "tobeadded@cx.com" }) &&
-            x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE);
+            x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE
+            && x.TechnicalUserData.All(x => x.Id == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2") && x.Name == "sa-x-4"));
     }
 
     [Fact]
