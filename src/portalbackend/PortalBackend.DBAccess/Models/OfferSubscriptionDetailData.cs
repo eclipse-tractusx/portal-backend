@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record SubscriptionTechnicalUserData(
     Guid Id,
-    string Name,
+    string? Name,
     IEnumerable<string> Permissions
 );
 
