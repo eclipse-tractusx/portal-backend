@@ -25,7 +25,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -63,6 +65,7 @@ public class IdentityProviderBusinessLogicTests
     private readonly Guid _otherIdentityProviderId;
     private readonly string _otherIdpAlias;
     private readonly Guid _identityProviderId;
+    private readonly IRoleBaseMailService _roleBaseMailService;
 
     public IdentityProviderBusinessLogicTests()
     {
@@ -77,6 +80,7 @@ public class IdentityProviderBusinessLogicTests
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _identityService = A.Fake<IIdentityService>();
+        _roleBaseMailService = A.Fake<IRoleBaseMailService>();
         _options = A.Fake<IOptions<IdentityProviderSettings>>();
         _document = A.Fake<IFormFile>();
         _logger = A.Fake<ILogger<IdentityProviderBusinessLogic>>();
@@ -142,6 +146,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -179,6 +184,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -229,6 +235,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -276,6 +283,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -323,6 +331,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -367,6 +376,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -402,6 +412,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -424,6 +435,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -444,6 +456,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -468,6 +481,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -489,6 +503,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -513,6 +528,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -538,6 +554,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
 
@@ -620,10 +637,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns(((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?))default);
+            .Returns(((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?, bool, string))default);
 
         // Act
         async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(invalidId).ConfigureAwait(false);
@@ -644,10 +662,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((false, string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((false, string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
@@ -668,10 +687,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled(A<string>._))
             .Returns(true);
 
@@ -695,10 +715,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, new[] { (_companyId, new[] { "other-alias" }.AsEnumerable()) }));
+            .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, new[] { (_companyId, new[] { "other-alias" }.AsEnumerable()) }, false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(false);
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("other-alias"))
@@ -729,10 +750,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "other-alias" }.AsEnumerable()) }));
+            .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "other-alias" }.AsEnumerable()) }, false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(false);
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("other-alias"))
@@ -772,10 +794,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.MANAGED, Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<string>>(company.Id, Enumerable.Empty<string>()), 1)));
+            .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.MANAGED, Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<string>>(company.Id, Enumerable.Empty<string>()), 1), false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(false);
         A.CallTo(() => _identityProviderRepository.GetIdpLinkedData(identityProviderId)).Returns(new[]
@@ -806,6 +829,8 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _portalRepositories.Remove(A<CompanyIdentityProvider>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.Remove(A<IamIdentityProvider>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.Remove(A<IdentityProvider>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForIdp(A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<(string ParameterName, string ParameterValue)>>._, A<(string ParameterName, string ParameterValue)>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "DeleteManagedIdp"), identityProviderId))
+            .MustHaveHappenedOnceExactly();
         company.CompanyStatusId.Should().Be(multipleIdps ? CompanyStatusId.ACTIVE : CompanyStatusId.INACTIVE);
         if (!multipleIdps)
         {
@@ -826,6 +851,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         var oidcGuid = Guid.NewGuid();
@@ -868,6 +894,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -891,6 +918,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -914,6 +942,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -940,6 +969,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -968,6 +998,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -994,6 +1025,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
@@ -1026,10 +1058,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns(((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?))default);
+            .Returns(((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?, bool, string))default);
 
         // Act
         async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
@@ -1050,10 +1083,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((false, string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((false, string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
@@ -1074,10 +1108,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }, false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("alt-cl1")).Returns(false);
 
         // Act
@@ -1100,10 +1135,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("cl1"))
@@ -1130,10 +1166,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }, false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("alt-cl1")).Returns(true);
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
@@ -1162,10 +1199,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }, false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("alt-cl1")).Returns(true);
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataSAMLAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigSaml>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-saml").Create());
@@ -1192,10 +1230,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }, false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("alt-cl1")).Returns(true);
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
@@ -1211,6 +1250,40 @@ public class IdentityProviderBusinessLogicTests
         result.mappers.Should().HaveCount(3);
         result.displayName.Should().Be("dis-oidc");
         result.enabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SetOwnCompanyIdentityProviderStatusAsync_DeactivateManaged_CallsExpected()
+    {
+        // Arrange
+        var identityProviderId = Guid.NewGuid();
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _roleBaseMailService,
+            _options,
+            _logger);
+        A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.MANAGED, new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }, true, string.Empty));
+        A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("alt-cl1")).Returns(true);
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
+            .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, false).With(x => x.DisplayName, "dis-oidc").Create());
+        A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("cl1"))
+            .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
+
+        // Act
+        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _provisioningManager.SetCentralIdentityProviderStatusAsync("cl1", false))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForIdp(A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<(string ParameterName, string ParameterValue)>>._, A<(string ParameterName, string ParameterValue)>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "DeactivateManagedIdp"), identityProviderId))
+            .MustHaveHappenedOnceExactly();
+        result.mappers.Should().HaveCount(3);
+        result.displayName.Should().Be("dis-oidc");
+        result.enabled.Should().BeFalse();
     }
 
     #endregion
@@ -1233,10 +1306,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns(((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?))default);
+            .Returns(((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?, bool, string))default);
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1259,10 +1333,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns(((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?))default);
+            .Returns(((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?, bool, string))default);
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1285,10 +1360,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((false, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((false, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1312,10 +1388,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1340,10 +1417,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1368,10 +1446,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("cl1"))
@@ -1402,10 +1481,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1430,10 +1510,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1458,10 +1539,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataSAMLAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigSaml>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-saml").Create());
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("cl1"))
@@ -1492,10 +1574,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1520,10 +1603,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
@@ -1548,10 +1632,11 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<(Guid, IEnumerable<string>)>()));
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-shared").Create());
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("cl1"))
@@ -1586,6 +1671,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1613,6 +1699,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1642,6 +1729,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1669,6 +1757,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1697,6 +1786,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1729,6 +1819,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1762,6 +1853,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1789,6 +1881,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1818,6 +1911,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1845,6 +1939,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1873,6 +1968,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1906,6 +2002,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1930,6 +2027,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1956,6 +2054,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -1980,6 +2079,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -2005,6 +2105,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -2037,6 +2138,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -2069,6 +2171,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -2098,6 +2201,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -2129,6 +2233,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
@@ -2152,6 +2257,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasDataUntracked(_identity.CompanyId, A<IEnumerable<Guid>>._))
@@ -2179,6 +2285,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2202,6 +2309,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2225,6 +2333,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2252,6 +2361,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2282,6 +2392,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
@@ -2310,6 +2421,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _identityService,
             _errorMessageService,
+            _roleBaseMailService,
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))

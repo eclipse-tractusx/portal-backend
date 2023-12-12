@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -26,6 +27,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class IdentityProviderSettings
 {
     public IdentityProviderCsvSettings CsvSettings { get; init; } = null!;
+    public IEnumerable<UserRoleConfig> DeactivateIdpRoles { get; init; } = null!;
+    public IEnumerable<UserRoleConfig> DeleteIdpRoles { get; init; } = null!;
 
     public bool Validate()
     {

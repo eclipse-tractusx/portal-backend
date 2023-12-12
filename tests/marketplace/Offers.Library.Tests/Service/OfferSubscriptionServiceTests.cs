@@ -166,7 +166,7 @@ public class OfferSubscriptionServiceTests
             A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _companyId, offerTypeId)).MustHaveHappenedOnceExactly();
         }
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_PROVIDER))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForCompany(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(subscriptionManagerRoles),
             A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
             userParameter,
@@ -223,7 +223,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForCompany(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(subscriptionManagerRoles),
             A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
             userParameter,

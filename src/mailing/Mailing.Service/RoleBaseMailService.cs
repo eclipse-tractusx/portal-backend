@@ -39,36 +39,57 @@ public class RoleBaseMailService : IRoleBaseMailService
         _mailingService = mailingService;
     }
 
-    public async Task RoleBaseSendMail(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> template, Guid companyId)
+    public async Task RoleBaseSendMailForCompany(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> template, Guid companyId)
     {
-        var receiverUserRoles = receiverRoles;
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
-        {
-            throw new ConfigurationException(
-                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
-        }
-
+        var roleData = await GetRoleData(receiverRoles).ConfigureAwait(false);
         var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
+        await SendMailsToUsers(parameters, userNameParameter, template, companyUserWithRoleIdForCompany).ConfigureAwait(false);
+    }
 
-        await foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
+    public async Task RoleBaseSendMailForIdp(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> template, Guid identityProviderId)
+    {
+        var roleData = await GetRoleData(receiverRoles).ConfigureAwait(false);
+        var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyUserEmailForIdpWithoutOwnerAndRoleId(roleData, identityProviderId);
+        await SendMailsToUsers(parameters, userNameParameter, template, companyUserWithRoleIdForCompany).ConfigureAwait(false);
+    }
+
+    private async Task<List<Guid>> GetRoleData(IEnumerable<UserRoleConfig> receiverRoles)
+    {
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var roleData = await userRolesRepository
+            .GetUserRoleIdsUntrackedAsync(receiverRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < receiverRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
+        {
+            throw new ConfigurationException(
+                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
+        }
+
+        return roleData;
+    }
+
+    private async Task SendMailsToUsers(
+        IEnumerable<(string ParameterName, string ParameterValue)> parameters,
+        (string ParameterName, string ParameterValue)? userNameParameter,
+        IEnumerable<string> template,
+        IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> companyUserWithRoleId)
+    {
+        await foreach (var (receiver, firstName, lastName) in companyUserWithRoleId)
         {
             IEnumerable<(string ParameterName, string ParameterValue)> ParametersWithUserName()
             {
-                if (userNameParameter.HasValue)
+                if (!userNameParameter.HasValue)
                 {
-                    var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-                    return parameters.Append(
-                        string.IsNullOrWhiteSpace(userName)
-                            ? userNameParameter.Value
-                            : new(userNameParameter.Value.ParameterName, userName));
+                    return parameters;
                 }
-                return parameters;
+
+                var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+                return parameters.Append(
+                    string.IsNullOrWhiteSpace(userName)
+                        ? userNameParameter.Value
+                        : new(userNameParameter.Value.ParameterName, userName));
             }
 
             await _mailingService.SendMails(receiver, ParametersWithUserName().ToImmutableDictionary(x => x.ParameterName, x => x.ParameterValue), template).ConfigureAwait(false);
