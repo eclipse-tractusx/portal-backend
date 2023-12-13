@@ -40,4 +40,4 @@ public record ConnectorResponseData(Guid Id, string Name);
 
 public record OfferResponseData(Guid Id, OfferTypeId Type, string? Name, Guid? SubscriptionId);
 
-public record CompanyLastEditorData(string Name, string CompanyName);
+public record CompanyLastEditorData(string? Name, string CompanyName);
