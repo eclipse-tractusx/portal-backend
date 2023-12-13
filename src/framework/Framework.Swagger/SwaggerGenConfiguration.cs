@@ -35,6 +35,7 @@ public static class SwaggerGenConfiguration
         c.SwaggerDoc(version, new OpenApiInfo { Title = assemblyName, Version = version });
 
         c.MapType(typeof(IFormFile), () => new OpenApiSchema { Type = "file", Format = "binary" });
+        c.SupportNonNullableReferenceTypes();
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
