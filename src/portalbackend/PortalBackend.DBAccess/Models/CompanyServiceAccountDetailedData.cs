@@ -33,8 +33,11 @@ public record CompanyServiceAccountDetailedData(
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     Guid? SubscriptionId,
     ConnectorResponseData? ConnectorData,
-    OfferResponseData? OfferSubscriptionData);
+    OfferResponseData? OfferSubscriptionData,
+    CompanyLastEditorData? CompanyLastEditorData);
 
 public record ConnectorResponseData(Guid Id, string Name);
 
 public record OfferResponseData(Guid Id, OfferTypeId Type, string? Name, Guid? SubscriptionId);
+
+public record CompanyLastEditorData(string Name, string CompanyName);

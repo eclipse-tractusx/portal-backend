@@ -169,6 +169,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             authData.Secret,
             result.ConnectorData,
             result.OfferSubscriptionData,
+            result.CompanyLastEditorData!.Name,
+            result.CompanyLastEditorData.CompanyName,
             result.SubscriptionId);
     }
 
@@ -264,12 +266,12 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.OfferSubscriptionId);
     }
 
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner) =>
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner, bool isUserStatusActive) =>
         Pagination.CreateResponseAsync(
             page,
             size,
             15,
-            _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(_identityService.IdentityData.CompanyId, clientId, isOwner));
+            _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(_identityService.IdentityData.CompanyId, clientId, isOwner, isUserStatusActive ? UserStatusId.ACTIVE : UserStatusId.INACTIVE));
 
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_identityService.IdentityData.CompanyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);

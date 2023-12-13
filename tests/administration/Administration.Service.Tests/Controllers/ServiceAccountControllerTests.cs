@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
@@ -91,5 +92,36 @@ public class ServiceAccountControllerTests
 
         result.Should().NotBeNull();
         result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetServiceAccountDetails_CallsExpected()
+    {
+        // Arrange
+        var serviceAcountId = _fixture.Create<Guid>();
+
+        // Act
+        await _controller.GetServiceAccountDetails(serviceAcountId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAcountId)).MustHaveHappenedOnceExactly();
+
+    }
+
+    [Fact]
+    public async Task GetServiceAccountsData_CallsExpected()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<CompanyServiceAccountData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyServiceAccountData>(5));
+        A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, true))
+                  .Returns(paginationResponse);
+
+        //Act
+        var result = await this._controller.GetServiceAccountsData(0, 15, null, null, true).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, true)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyServiceAccountData>>(result);
+        result.Content.Should().HaveCount(5);
     }
 }

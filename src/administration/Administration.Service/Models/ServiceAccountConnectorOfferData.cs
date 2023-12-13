@@ -36,5 +36,7 @@ public record ServiceAccountConnectorOfferData(
     [property: JsonPropertyName("secret")] string? Secret,
     [property: JsonPropertyName("connector")] ConnectorResponseData? Connector,
     [property: JsonPropertyName("offer")] OfferResponseData? Offer,
+    [property: JsonPropertyName("LastEditorName")] string? LastName,
+    [property: JsonPropertyName("LastEditorCompanyName")] string? CompanyName,
     [property: JsonPropertyName("subscriptionId")] Guid? SubscriptionId = null
 );

@@ -144,10 +144,19 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             serviceAccount.OfferSubscription.OfferId,
                             serviceAccount.OfferSubscription.Offer!.OfferTypeId,
                             serviceAccount.OfferSubscription.Offer.Name,
-                            serviceAccount.OfferSubscription.Id)))
+                            serviceAccount.OfferSubscription.Id),
+                    serviceAccount.Identity.LastEditor!.IdentityTypeId == IdentityTypeId.COMPANY_USER
+                        ? serviceAccount.Identity.LastEditor == null
+                            ? null
+                            : new CompanyLastEditorData(
+                                serviceAccount.Identity.LastEditor.CompanyUser!.Lastname!,
+                                serviceAccount.Identity.LastEditor.Company!.Name)
+                        : new CompanyLastEditorData(
+                            serviceAccount.Identity.LastEditor!.CompanyServiceAccount!.Name,
+                            serviceAccount.Identity.LastEditor.Company!.Name)))
             .SingleOrDefaultAsync();
 
-    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner, UserStatusId userStatusId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -156,7 +165,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 .Where(serviceAccount =>
                     (!isOwner.HasValue && (serviceAccount.CompaniesLinkedServiceAccount!.Owners == userCompanyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == userCompanyId) ||
                     isOwner.HasValue && (isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Owners == userCompanyId || !isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider == userCompanyId)) &&
-                    serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
+                    serviceAccount.Identity!.UserStatusId == userStatusId &&
                     (clientId == null || EF.Functions.ILike(serviceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
                 .GroupBy(serviceAccount => serviceAccount.Identity!.UserStatusId),
             serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
