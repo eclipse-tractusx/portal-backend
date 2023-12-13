@@ -374,19 +374,21 @@ public class ServiceAccountBusinessLogicTests
 
     #region GetOwnCompanyServiceAccountsDataAsync
 
-    [Fact]
-    public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData()
+    [Theory]
+    [InlineData(UserStatusId.ACTIVE, true)]
+    [InlineData(UserStatusId.INACTIVE, false)]
+    public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData(UserStatusId userStatusId, bool isUserStatusActive)
     {
         // Arrange
         var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
-        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(_identity.CompanyId, null, null))
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(_identity.CompanyId, null, null, userStatusId))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyServiceAccountData>?)new Pagination.Source<CompanyServiceAccountData>(data.Count(), data.Skip(skip).Take(take))));
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserStatusActive).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
