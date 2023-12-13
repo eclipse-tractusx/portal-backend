@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -27,13 +28,14 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers.V1;
 
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating identityProviders for companies.
 /// </summary>
-[Route("api/administration/identityprovider")]
 [ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/administration/identityprovider")]
 public class IdentityProviderController : ControllerBase
 {
     private readonly IIdentityProviderBusinessLogic _businessLogic;

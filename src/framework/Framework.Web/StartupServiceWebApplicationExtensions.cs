@@ -33,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceWebApplicationExtensions
 {
-    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, IHostEnvironment environment)
+    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, IHostEnvironment environment)
     {
         app.UseSerilogRequestLogging();
 
@@ -50,8 +50,6 @@ public static class StartupServiceWebApplicationExtensions
             }
         }
 
-        var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
-
         FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(), environment.IsDevelopment());
 
         if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null &&
@@ -61,8 +59,13 @@ public static class StartupServiceWebApplicationExtensions
                 c.RouteTemplate = $"/api/{apiPath}/swagger/{{documentName}}/swagger.{{json|yaml}}");
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint($"/api/{apiPath}/swagger/{version}/swagger.json",
-                    $"{assemblyName} {version}");
+                var descriptions = app.DescribeApiVersions();
+                foreach (var groupName in descriptions.Select(desc => desc.GroupName))
+                {
+                    var url = $"/api/{apiPath}/swagger/{groupName}/swagger.json";
+                    var name = groupName.ToUpperInvariant();
+                    c.SwaggerEndpoint(url, name);
+                }
                 c.RoutePrefix = $"api/{apiPath}/swagger";
             });
         }

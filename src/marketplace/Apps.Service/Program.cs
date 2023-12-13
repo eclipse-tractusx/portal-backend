@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Asp.Versioning;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -32,7 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 var VERSION = "v2";
 
 WebApplicationBuildRunner
-    .BuildAndRunWebApplication<Program>(args, "apps", VERSION, builder =>
+    .BuildAndRunWebApplication<Program>(args, "apps", builder =>
     {
         builder.Services
             .AddMailingAndTemplateManager(builder.Configuration)
@@ -52,4 +53,4 @@ WebApplicationBuildRunner
         builder.Services
             .AddOfferServices()
             .AddProvisioningDBAccess(builder.Configuration);
-    });
+    }, new ApiVersion(1, 0));

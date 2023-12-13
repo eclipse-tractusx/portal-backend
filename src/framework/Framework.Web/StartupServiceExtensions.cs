@@ -17,25 +17,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version)
+    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, ApiVersion defaultApiVersion)
     {
         services.AddCors(options => options.SetupCors(configuration));
 
@@ -52,7 +57,35 @@ public static class StartupServiceExtensions
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
             });
 
-        services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen<TProgram>(c, version));
+        services
+            .AddApiVersioning(setup =>
+            {
+                setup.DefaultApiVersion = defaultApiVersion;
+                setup.AssumeDefaultVersionWhenUnspecified = true;
+                setup.ReportApiVersions = true;
+                setup.UnsupportedApiVersionStatusCode = (int)HttpStatusCode.NotFound;
+            })
+            .AddApiExplorer(options =>
+            {
+                // the specified format code will format the version as "'v'major[.minor][-status]"
+                options.GroupNameFormat = "'v'VV";
+                options.SubstituteApiVersionInUrl = true;
+            });
+
+        services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+        services.AddSwaggerGen(options =>
+        {
+            try
+            {
+
+                var filePath = Path.Combine(AppContext.BaseDirectory, $"{typeof(TProgram).Assembly.FullName?.Split(',')[0]}.xml");
+                options.IncludeXmlComments(filePath);
+            }
+            catch (Exception e)
+            {
+                throw new ConfigurationException("error configuring swagger xmldocumentation", e);
+            }
+        });
 
         services.AddAuthentication(x =>
         {

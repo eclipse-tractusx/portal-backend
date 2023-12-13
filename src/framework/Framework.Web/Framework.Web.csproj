@@ -39,6 +39,9 @@
     <ProjectReference Include="..\Framework.Logging\Framework.Logging.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Http" Version="7.1.0" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="7.1.0" />
+    <PackageReference Include="Asp.Versioning.WebApi.ApiExplorer" Version="7.1.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
   </ItemGroup>

@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using UnsupportedMediaTypeException = Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.UnsupportedMediaTypeException;
 
 namespace Offer.Library.Web.Tests;
 

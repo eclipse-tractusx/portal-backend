@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers.V1;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using System.Diagnostics.CodeAnalysis;
@@ -37,8 +38,8 @@ public class PublicUrlActiveParticipantTests : BasePublicUrlTests<CompanyDataCon
     public async Task OpenInformationController_WithActiveParticipant_ReturnsCorrectAmount()
     {
         await OpenInformationController_ReturnsCorrectAmount(2,
-            x => x.HttpMethods == "POST" && x.Url == "api/administration/connectors/discovery",
-            x => x.HttpMethods == "GET" && x.Url == "api/administration/partnernetwork/membercompanies")
+            x => x.HttpMethods == "POST" && x.Url == "api/v{version:apiversion}/administration/connectors/discovery",
+            x => x.HttpMethods == "GET" && x.Url == "api/v{version:apiversion}/administration/partnernetwork/membercompanies")
             .ConfigureAwait(false);
     }
 }

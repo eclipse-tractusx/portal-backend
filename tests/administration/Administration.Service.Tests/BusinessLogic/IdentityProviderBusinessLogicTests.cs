@@ -37,6 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Text;
+using UnsupportedMediaTypeException = Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.UnsupportedMediaTypeException;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 

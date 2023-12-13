@@ -49,6 +49,7 @@ using System.Collections.Immutable;
 using Xunit;
 using Address = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address;
 using RegistrationData = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models.RegistrationData;
+using UnsupportedMediaTypeException = Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.UnsupportedMediaTypeException;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.BusinessLogic;
 
