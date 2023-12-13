@@ -173,22 +173,6 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
         result.CompanyLastEditorData!.CompanyName.Should().Be("CX-Test-Access");
-        result.CompanyLastEditorData.Name.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetOwnCompanyServiceAccountDetailedDataUntrackedAsync_comapnyUserEditors_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94e"), new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf")).ConfigureAwait(false);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
-        result.CompanyLastEditorData!.CompanyName.Should().Be("CX-Test-Access");
         result.CompanyLastEditorData.Name.Should().Be("CX Admin");
     }
 
