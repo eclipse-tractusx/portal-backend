@@ -27,14 +27,13 @@ public class VerifiedCredentialExternalTypeUseCaseDetailVersion : IBaseEntity
     public VerifiedCredentialExternalTypeUseCaseDetailVersion()
     {
         Version = null!;
-        Template = null!;
         CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
     public Guid Id { get; set; }
     public VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId { get; set; }
     public string Version { get; set; }
-    public string Template { get; set; }
+    public string? Template { get; set; }
     public DateTimeOffset ValidFrom { get; set; }
     public DateTimeOffset? Expiry { get; set; }
 

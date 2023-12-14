@@ -35,7 +35,7 @@ public record SsiApprovalData(
 
 public record UseCaseDetailData(
     VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId,
-    string Template,
+    string? Template,
     string Version
 );
 
