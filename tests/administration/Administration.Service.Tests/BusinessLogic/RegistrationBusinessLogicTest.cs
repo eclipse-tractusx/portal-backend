@@ -48,6 +48,7 @@ public class RegistrationBusinessLogicTest
     private const string ValidBpn = "BPNL123698762345";
     private const string CompanyName = "TestCompany";
     private const string IamAliasId = "idp1";
+    private static readonly Guid IdpId = Guid.NewGuid();
     private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid NotExistingApplicationId = new("9f0cfd0d-c512-438e-a07e-3198bce873bf");
     private static readonly Guid ActiveApplicationCompanyId = new("045abf01-7762-468b-98fb-84a30c39b7c7");
@@ -59,6 +60,7 @@ public class RegistrationBusinessLogicTest
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly IUserRepository _userRepository;
     private readonly IFixture _fixture;
@@ -80,6 +82,7 @@ public class RegistrationBusinessLogicTest
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
+        _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
@@ -97,6 +100,7 @@ public class RegistrationBusinessLogicTest
         _provisioningManager = A.Fake<IProvisioningManager>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
@@ -501,7 +505,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
-            .Returns(default((Guid, string, Guid?, IEnumerable<(string, IdentityProviderTypeId)>, IEnumerable<Guid>)));
+            .Returns(default((Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId)>, IEnumerable<Guid>)));
         async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -513,28 +517,49 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
-    public async Task DeclineRegistrationVerification_WithMultipleIdps_ThrowsUnexpectedConditionException()
+    public async Task DeclineRegistrationVerification_WithMultipleIdps_CallsExpected()
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var sharedIdpId = Guid.NewGuid();
+        var managedIdpId = Guid.NewGuid();
+        var ownIdpId = Guid.NewGuid();
+
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
             .Returns((
-                Guid.NewGuid(),
+                companyId,
                 "test",
                 null,
                 new[]
                 {
-                    ("idp1", IdentityProviderTypeId.SHARED),
-                    ("idp2", IdentityProviderTypeId.SHARED)
+                    (sharedIdpId, "idp1", IdentityProviderTypeId.SHARED),
+                    (managedIdpId, "idp2", IdentityProviderTypeId.MANAGED),
+                    (ownIdpId, "idp3", IdentityProviderTypeId.OWN),
                 },
                 Enumerable.Empty<Guid>()));
-        async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
 
         // Act
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        ex.Message.Should().Be($"There should only be one idp for application {applicationId}");
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(companyId, sharedIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("idp1")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(sharedIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp1")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp1")).MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(companyId, sharedIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("idp2")).MustNotHaveHappened();
+        A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(managedIdpId)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp2")).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp2")).MustNotHaveHappened();
+
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(companyId, ownIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("idp3")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(ownIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp3")).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp3")).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -886,7 +911,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IamAliasId, idpTypeId), 1), Enumerable.Repeat(UserId, 1)));
+            .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IdpId, IamAliasId, idpTypeId), 1), Enumerable.Repeat(UserId, 1)));
 
         A.CallTo(() => _provisioningManager.GetUserByUserName(UserId.ToString()))
             .Returns("user123");

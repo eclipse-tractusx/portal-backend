@@ -425,10 +425,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         var (companyId, companyName, processId, idps, companyUserIds) = result;
-        if (idps.Count() != 1)
-        {
-            throw new ConflictException($"There should only be one idp for application {applicationId}");
-        }
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -452,12 +448,21 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             },
             null);
 
-        var (idpAlias, idpType) = idps.Single();
-        if (idpType == IdentityProviderTypeId.SHARED)
+        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+        foreach (var (idpId, idpAlias, idpType) in idps)
         {
-            await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
+            if (idpType == IdentityProviderTypeId.SHARED)
+            {
+                await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
+            }
+            identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
+            if (idpType == IdentityProviderTypeId.OWN || idpType == IdentityProviderTypeId.SHARED)
+            {
+                await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(false);
+                identityProviderRepository.DeleteIamIdentityProvider(idpAlias);
+                identityProviderRepository.DeleteIdentityProvider(idpId);
+            }
         }
-        await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(false);
 
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
         {
