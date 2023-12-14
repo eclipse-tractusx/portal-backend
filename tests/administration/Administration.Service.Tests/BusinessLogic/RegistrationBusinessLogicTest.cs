@@ -501,7 +501,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
-            .Returns(new ValueTuple<Guid, string, Guid?, IEnumerable<ValueTuple<string, IdentityProviderTypeId>>, IEnumerable<ValueTuple<Guid, string?>>>());
+            .Returns(default((Guid, string, Guid?, IEnumerable<(string, IdentityProviderTypeId)>, IEnumerable<Guid>)));
         async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -518,7 +518,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
-            .Returns(new ValueTuple<Guid, string, Guid?, IEnumerable<ValueTuple<string, IdentityProviderTypeId>>, IEnumerable<ValueTuple<Guid, string?>>>(
+            .Returns((
                 Guid.NewGuid(),
                 "test",
                 null,
@@ -527,7 +527,7 @@ public class RegistrationBusinessLogicTest
                     ("idp1", IdentityProviderTypeId.SHARED),
                     ("idp2", IdentityProviderTypeId.SHARED)
                 },
-                Enumerable.Empty<ValueTuple<Guid, string?>>()));
+                Enumerable.Empty<Guid>()));
         async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -886,7 +886,10 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IamAliasId, idpTypeId), 1), Enumerable.Repeat<ValueTuple<Guid, string?>>((UserId, "user123"), 1)));
+            .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IamAliasId, idpTypeId), 1), Enumerable.Repeat(UserId, 1)));
+
+        A.CallTo(() => _provisioningManager.GetUserByUserName(UserId.ToString()))
+            .Returns("user123");
 
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> _, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>

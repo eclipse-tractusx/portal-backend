@@ -424,10 +424,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
 
-        var (companyId, companyName, processId, idps, identityData) = result;
+        var (companyId, companyName, processId, idps, companyUserIds) = result;
         if (idps.Count() != 1)
         {
-            throw new UnexpectedConditionException($"There should only be one idp for application {applicationId}");
+            throw new ConflictException($"There should only be one idp for application {applicationId}");
         }
 
         var context = await _checklistService
@@ -469,11 +469,15 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             company.CompanyStatusId = CompanyStatusId.REJECTED;
         });
 
-        foreach (var userEntityId in identityData.Where(x => x.UserEntityId != null).Select(x => x.UserEntityId))
+        foreach (var userId in companyUserIds)
         {
-            await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId).ConfigureAwait(false);
+            var iamUserId = await _provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(false);
+            if (iamUserId != null)
+            {
+                await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
+            }
         }
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(identityData.Select(x => new ValueTuple<Guid, Action<Identity>>(x.IdentityId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>>(userId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
 
         if (processId != null)
         {

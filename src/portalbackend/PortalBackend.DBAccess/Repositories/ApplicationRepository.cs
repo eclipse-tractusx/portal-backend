@@ -424,15 +424,16 @@ public class ApplicationRepository : IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the company id</returns>
-    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(string IamAlias, IdentityProviderTypeId TypeId)> Idps, IEnumerable<(Guid IdentityId, string? UserEntityId)> IdentityIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(string IamAlias, IdentityProviderTypeId TypeId)> Idps, IEnumerable<Guid> CompanyUserIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
+            .AsSplitQuery()
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(x => new ValueTuple<Guid, string, Guid?, IEnumerable<(string, IdentityProviderTypeId)>, IEnumerable<(Guid, string?)>>(
+            .Select(x => new ValueTuple<Guid, string, Guid?, IEnumerable<(string, IdentityProviderTypeId)>, IEnumerable<Guid>>(
                 x.CompanyId,
                 x.Company!.Name,
-                x.Company!.NetworkRegistration!.ProcessId,
+                x.Company.NetworkRegistration!.ProcessId,
                 x.Company.IdentityProviders.Where(idp => idp.IdentityProviderTypeId != IdentityProviderTypeId.MANAGED).Select(idp => new ValueTuple<string, IdentityProviderTypeId>(idp.IamIdentityProvider!.IamIdpAlias, idp.IdentityProviderTypeId)),
-                x.Company.Identities.Where(i => i.UserStatusId != UserStatusId.DELETED).Select(i => new ValueTuple<Guid, string?>(i.Id, i.UserEntityId))))
+                x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER && i.UserStatusId != UserStatusId.DELETED).Select(i => i.Id)))
             .SingleOrDefaultAsync();
 
     public Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId) =>

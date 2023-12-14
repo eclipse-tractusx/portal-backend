@@ -96,7 +96,7 @@ public interface IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>The id of the company for the given application</returns>
-    Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(string IamAlias, IdentityProviderTypeId TypeId)> Idps, IEnumerable<(Guid IdentityId, string? UserEntityId)> IdentityIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId);
+    Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(string IamAlias, IdentityProviderTypeId TypeId)> Idps, IEnumerable<Guid> CompanyUserIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId);
 
     Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId);
 }
