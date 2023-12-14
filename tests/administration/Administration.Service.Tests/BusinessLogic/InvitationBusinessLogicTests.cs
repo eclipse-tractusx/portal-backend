@@ -214,6 +214,7 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
+
     [Fact]
     public async Task TestExecuteInvitationCreateUserErrorThrows()
     {
