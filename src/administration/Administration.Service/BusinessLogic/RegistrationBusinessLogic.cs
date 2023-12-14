@@ -45,6 +45,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
     private static readonly Regex BpnRegex = new(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
+    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
     private readonly IMailingService _mailingService;
@@ -123,6 +125,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
     {
+        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        {
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", "companyName");
+        }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
                 companyName?.Length >= 3 ? companyName : null,
@@ -161,6 +167,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null)
     {
+        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        {
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", "companyName");
+        }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 
         return Pagination.CreateResponseAsync(
