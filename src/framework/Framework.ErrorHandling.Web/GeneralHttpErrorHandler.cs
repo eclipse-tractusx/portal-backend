@@ -132,7 +132,7 @@ public class GeneralHttpErrorHandler
         return (statusCode, messageFunc, logLevel);
     }
 
-    private ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, string errorId, string message, IEnumerable<ErrorDetails>? details, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages = null)
+    private ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, string errorId, string message, IEnumerable<ErrorDetails>? details, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages)
     {
         var meta = Metadata.GetValueOrDefault(statusCode, Metadata[HttpStatusCode.InternalServerError]);
         var (source, messages) = getSourceAndMessages?.Invoke(error) ?? (error.Source, Enumerable.Repeat(message, 1));
@@ -140,12 +140,12 @@ public class GeneralHttpErrorHandler
         var messageMap = new Dictionary<string, IEnumerable<string>> { { source ?? "unknown", messages } };
         while (error.InnerException != null)
         {
-            var inner = error.InnerException;
-            source = inner.Source ?? "inner";
+            error = error.InnerException;
+            source = error.Source ?? "inner";
 
             messageMap[source] = messageMap.TryGetValue(source, out messages)
-                ? messages.Append(GetErrorMessage(inner))
-                : Enumerable.Repeat(GetErrorMessage(inner), 1);
+                ? messages.Append(GetErrorMessage(error))
+                : Enumerable.Repeat(GetErrorMessage(error), 1);
         }
 
         return new ErrorResponse(

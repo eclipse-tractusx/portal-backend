@@ -251,6 +251,53 @@ public class GeneralHttpErrorHandlerTests
             x.Parameters.First(p => p.Name == "second").Value == "bar");
     }
 
+    [Fact]
+    public async Task Invoke_WithInnerException()
+    {
+        // Arrange
+        var expectedException = ServiceException.Create(TestErrors.FIRST_ERROR, new ErrorParameter[] { new("first", "foo"), new("second", "bar") }, new ForbiddenException("You don't have access to this resource", new UnauthorizedAccessException("No access")));
+        Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
+        using var body = new MemoryStream();
+        var httpContext = new DefaultHttpContext();
+        httpContext.Response.Body = body;
+
+        var mockLogger = A.Fake<IMockLogger<GeneralHttpErrorHandler>>();
+        var logger = new MockLogger<GeneralHttpErrorHandler>(mockLogger);
+
+        var errorMessageService = A.Fake<IErrorMessageService>();
+        A.CallTo(() => errorMessageService.GetMessage(A<Type>._, A<int>._))
+            .ReturnsLazily((Type type, int code) => $"type: {type.Name} code: {code} first: {{first}} second: {{second}}");
+
+        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger, errorMessageService);
+
+        // Act
+        await generalHttpErrorHandler.Invoke(httpContext);
+
+        // Assert
+        ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadGateway);
+        A.CallTo(() => mockLogger.Log(
+                A<LogLevel>.That.IsEqualTo(LogLevel.Information),
+                expectedException,
+                A<string>.That.Matches(x =>
+                    x.StartsWith("GeneralErrorHandler caught ServiceException with errorId:") &&
+                    x.EndsWith("resulting in response status code 502, message 'type: TestErrors code: 1 first: foo second: bar'"))))
+            .MustHaveHappenedOnceExactly();
+
+        body.Position = 0;
+        var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(body, Options);
+        errorResponse.Should().NotBeNull().And.BeOfType<ErrorResponse>();
+        errorResponse!.Errors.Should().HaveCount(2).And.Satisfy(
+            x => x.Key == "System.Private.CoreLib",
+            x => x.Key == "inner");
+        errorResponse.Details.Should().ContainSingle().Which.Should().Match<ErrorDetails>(x =>
+            x.Type == "TestErrors" &&
+            x.ErrorCode == "FIRST_ERROR" &&
+            x.Message == "type: TestErrors code: 1 first: {first} second: {second}" &&
+            x.Parameters.Count() == 2 &&
+            x.Parameters.First(p => p.Name == "first").Value == "foo" &&
+            x.Parameters.First(p => p.Name == "second").Value == "bar");
+    }
+
     private enum TestErrors
     {
         FIRST_ERROR = 1,
