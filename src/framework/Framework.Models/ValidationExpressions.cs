@@ -24,6 +24,5 @@ public static class ValidationExpressions
 {
     public const string Name = @"^.+$"; // TODO: should be @"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$";
     public const string Bpn = @"^(BPNL|bpnl)[\w|\d]{12}$";
-
-    public const string Company = @"^[^*+=#%\s]{0,2}[A-Za-zÀ-ÖØ-öø-ÿ&@$€¥0-9.,:;\-'\x22!?«»“”‘’()\/+^%#\\s]{3,40}$";
+    public const string Company = @"^\d*?[A-Za-zÀ-ÿ]\d?([A-Za-z0-9À-ÿ-_+=.,:;!?'\x22&#@()]\s?){2,80}$";
 }
