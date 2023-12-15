@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,4 +21,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record UserRoleWithId(string CompanyUserRoleText, Guid CompanyUserRoleId);
 
-public record UserRoleModificationData(string CompanyUserRoleText, Guid CompanyUserRoleId, bool IsAssignedToUser);
+public record UserRoleModificationData(string CompanyUserRoleText, Guid CompanyUserRoleId, bool IsAssigned, bool IsAssignable);

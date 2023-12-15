@@ -72,7 +72,8 @@ public class UserBusinessLogicTests
     private readonly Guid _createdCentralCompanyId;
     private readonly string _displayName;
     private readonly IIdentityData _identity;
-    private readonly ICollection<IdentityAssignedRole> _companyUserAssignedRole = new HashSet<IdentityAssignedRole>();
+    private readonly ICollection<IdentityAssignedRole> _addedRoles = new HashSet<IdentityAssignedRole>();
+    private readonly ICollection<IdentityAssignedRole> _removedRoles = new HashSet<IdentityAssignedRole>();
     private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Func<CompanyUserAccountData, CompanyUserAccountData> _companyUserSelectFunction;
     private readonly Exception _error;
@@ -667,7 +668,7 @@ public class UserBusinessLogicTests
         await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo).ConfigureAwait(false);
 
         // Assert
-        _companyUserAssignedRole.Should().HaveCount(2);
+        _addedRoles.Should().HaveCount(2);
     }
 
     [Fact]
@@ -814,7 +815,11 @@ public class UserBusinessLogicTests
         await sut.ModifyCoreOfferUserRolesAsync(_validOfferId, _companyUserId, userRoles).ConfigureAwait(false);
 
         // Assert
-        _companyUserAssignedRole.Should().HaveCount(2);
+        _addedRoles.Should().HaveCount(2).And.Satisfy(
+            x => x.UserRoleId == new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47660"),
+            x => x.UserRoleId == new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663"));
+        _removedRoles.Should().ContainSingle().Which.Should().Match<IdentityAssignedRole>(
+            x => x.UserRoleId == new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47664"));
         notifications.Should().ContainSingle();
         notifications.Single().ReceiverUserId.Should().Be(_companyUserId);
         notifications.Single().NotificationTypeId.Should().Be(NotificationTypeId.ROLE_UPDATE_CORE_OFFER);
@@ -851,7 +856,7 @@ public class UserBusinessLogicTests
         await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles).ConfigureAwait(false);
 
         // Assert
-        _companyUserAssignedRole.Should().HaveCount(2);
+        _addedRoles.Should().HaveCount(2);
         notifications.Should().ContainSingle();
         notifications.Single().ReceiverUserId.Should().Be(_companyUserId);
         notifications.Single().NotificationTypeId.Should().Be(NotificationTypeId.ROLE_UPDATE_APP_OFFER);
@@ -872,12 +877,12 @@ public class UserBusinessLogicTests
             .Returns(new OfferIamUserData(true, new[] { iamClientId, iamClientId1 }, true, "The offer", "Tony", "Stark"));
 
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
-            .Returns(new UserRoleModificationData[]
+            .Returns(new[]
             {
-                new("Existing Role", Guid.NewGuid(), false),
-                new("Buyer", buyerRoleId, true),
-                new("Company Admin", adminRoleId, true),
-                new("Supplier", supplierRoleId, false),
+                ("Existing Role", Guid.NewGuid(), false),
+                ("Buyer", buyerRoleId, true),
+                ("Company Admin", adminRoleId, true),
+                ("Supplier", supplierRoleId, false),
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
@@ -886,8 +891,7 @@ public class UserBusinessLogicTests
                 var companyUserId = x.Arguments.Get<Guid>("companyUserId");
                 var companyUserRoleId = x.Arguments.Get<Guid>("companyUserRoleId");
 
-                var companyUserAssignedRole = new IdentityAssignedRole(companyUserId, companyUserRoleId);
-                _companyUserAssignedRole.Add(companyUserAssignedRole);
+                _addedRoles.Add(new IdentityAssignedRole(companyUserId, companyUserRoleId));
             });
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
@@ -911,7 +915,7 @@ public class UserBusinessLogicTests
         await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles).ConfigureAwait(false);
 
         // Assert
-        _companyUserAssignedRole.Should().HaveCount(2);
+        _addedRoles.Should().HaveCount(2);
     }
 
     [Fact]
@@ -931,12 +935,12 @@ public class UserBusinessLogicTests
             .Returns(new OfferIamUserData(true, new[] { iamClientId, iamClientId1 }, true, "The offer", "Tony", "Stark"));
 
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
-            .Returns(new UserRoleModificationData[]
+            .Returns(new[]
             {
-                new("Existing Role", Guid.NewGuid(), false),
-                new("Buyer", buyerRoleId, true),
-                new("Company Admin", adminRoleId, true),
-                new("Supplier", supplierRoleId, false),
+                ("Existing Role", Guid.NewGuid(), false),
+                ("Buyer", buyerRoleId, true),
+                ("Company Admin", adminRoleId, true),
+                ("Supplier", supplierRoleId, false),
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
@@ -1592,9 +1596,11 @@ public class UserBusinessLogicTests
     private void SetupFakesForUserRoleModification(List<Notification>? notifications = null)
     {
         var iamClientId = "Cl1-CX-Registration";
+        var existingRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47660");
         var adminRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
         var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
         var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
+        var unassignableRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
             .Returns(new OfferIamUserData(true, new[] { iamClientId }, true, "The offer", "Tony", "Stark"));
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_offerWithoutNameId, _companyUserId, A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
@@ -1609,34 +1615,36 @@ public class UserBusinessLogicTests
             .Returns(_createdCentralIamUserId);
 
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
-            .Returns(new UserRoleModificationData[]
+            .Returns(new[]
             {
-                new("Existing Role", Guid.NewGuid(), false),
-                new("Buyer", buyerRoleId, true),
-                new("Company Admin", adminRoleId, true),
-                new("Supplier", supplierRoleId, false),
+                ("Existing Role", Guid.NewGuid(), false),
+                ("Buyer", buyerRoleId, true),
+                ("Company Admin", adminRoleId, true),
+                ("Supplier", supplierRoleId, false),
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingCoreOfferRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
             .Returns(new UserRoleModificationData[]
             {
-                new("Existing Role", Guid.NewGuid(), false),
-                new("Buyer", buyerRoleId, true),
-                new("Company Admin", adminRoleId, true),
-                new("Supplier", supplierRoleId, false),
+                new("Existing Role", existingRoleId, false, true),
+                new("Buyer", buyerRoleId, true, true),
+                new("Company Admin", adminRoleId, true, true),
+                new("Supplier", supplierRoleId, false, true),
+                new("Foo", unassignableRoleId, true, false)
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _userRepository.GetCoreOfferAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
             .Returns(new CoreOfferIamUserData(true, new[] { iamClientId }, true, "Tony", "Stark"));
 
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
-            .Invokes(x =>
-            {
-                var companyUserId = x.Arguments.Get<Guid>("companyUserId");
-                var companyUserRoleId = x.Arguments.Get<Guid>("companyUserRoleId");
+            .Invokes((Guid companyUserId, Guid companyUserRoleId) =>
+                _addedRoles.Add(new IdentityAssignedRole(companyUserId, companyUserRoleId)));
 
-                var companyUserAssignedRole = new IdentityAssignedRole(companyUserId, companyUserRoleId);
-                _companyUserAssignedRole.Add(companyUserAssignedRole);
+        A.CallTo(() => _portalRepositories.RemoveRange(A<IEnumerable<IdentityAssignedRole>>._))
+            .Invokes((IEnumerable<IdentityAssignedRole> roles) =>
+            {
+                foreach (var role in roles)
+                    _removedRoles.Add(role);
             });
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
