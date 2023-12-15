@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -39,9 +40,11 @@ public class NetworkRegistrationHandlerTests
     private static readonly Guid NetworkRegistrationId = Guid.NewGuid();
     private static readonly Guid UserRoleIds = Guid.NewGuid();
 
+    private readonly IFixture _fixture;
+
     private readonly IUserProvisioningService _userProvisioningService;
 
-    private readonly IProvisioningManager _provisioningManger;
+    private readonly IProvisioningManager _provisioningManager;
     private readonly IUserRepository _userRepository;
     private readonly INetworkRepository _networkRepository;
 
@@ -50,12 +53,17 @@ public class NetworkRegistrationHandlerTests
 
     public NetworkRegistrationHandlerTests()
     {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
         var portalRepositories = A.Fake<IPortalRepositories>();
         _userRepository = A.Fake<IUserRepository>();
         _networkRepository = A.Fake<INetworkRepository>();
 
         _userProvisioningService = A.Fake<IUserProvisioningService>();
-        _provisioningManger = A.Fake<IProvisioningManager>();
+        _provisioningManager = A.Fake<IProvisioningManager>();
         _mailingService = A.Fake<IMailingService>();
 
         var settings = new NetworkRegistrationProcessSettings
@@ -68,8 +76,10 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
 
-        _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManger, _mailingService, options);
+        _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManager, _mailingService, options);
     }
+
+    #region SynchronizeUser
 
     [Fact]
     public async Task SynchronizeUser_WithoutOspName_ThrowsUnexpectedConditionException()
@@ -164,8 +174,8 @@ public class NetworkRegistrationHandlerTests
             }.ToAsyncEnumerable());
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManger.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
-        A.CallTo(() => _provisioningManger.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
 
         // Act
         async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
@@ -201,12 +211,12 @@ public class NetworkRegistrationHandlerTests
             }.ToAsyncEnumerable());
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManger.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
-        A.CallTo(() => _provisioningManger.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
-        A.CallTo(() => _provisioningManger.GetUserByUserName(user3.CompanyUserId.ToString())).Returns((string?)null);
-        A.CallTo(() => _provisioningManger.GetIdentityProviderDisplayName("idp1"))
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user3.CompanyUserId.ToString())).Returns((string?)null);
+        A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1"))
             .Returns("DisplayName for Idp1");
-        A.CallTo(() => _provisioningManger.GetIdentityProviderDisplayName("idp2"))
+        A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp2"))
             .Returns("DisplayName for Idp2");
 
         // Act
@@ -233,4 +243,153 @@ public class NetworkRegistrationHandlerTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().BeNull();
     }
+
+    #endregion
+
+    #region Remove Keycloak User
+
+    [Fact]
+    public async Task RemoveKeycloakUser_WithNotFoundException_ReturnsExpected()
+    {
+        // Arrange
+        var networkRegistrationId = Guid.NewGuid();
+        var iamUserId = _fixture.Create<string>();
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId))
+            .Returns(new[]
+            {
+                identity.Id,
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._))
+            .Throws(new KeycloakEntityNotFoundException($"user {identity.Id} not found"));
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+            .Invokes((Guid _, Action<Identity>? initialize, Action<Identity> setOptionalFields) =>
+            {
+                initialize?.Invoke(identity);
+                setOptionalFields.Invoke(identity);
+            });
+
+        // Act
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+
+        // Assert
+        result.modified.Should().BeTrue();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.processMessage.Should().Be($"no user found for company user id {identity.Id}");
+        result.nextStepTypeIds.Should().BeNull();
+        identity.UserStatusId.Should().Be(UserStatusId.INACTIVE);
+
+        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(iamUserId))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task RemoveKeycloakUser_WithIamUserIdNull_ReturnsExpected()
+    {
+        // Arrange
+        var networkRegistrationId = Guid.NewGuid();
+        var iamUserId = _fixture.Create<string>();
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId))
+            .Returns(new[]
+            {
+                identity.Id,
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._))
+            .Returns((string?)null);
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+            .Invokes((Guid _, Action<Identity>? initialize, Action<Identity> setOptionalFields) =>
+            {
+                initialize?.Invoke(identity);
+                setOptionalFields.Invoke(identity);
+            });
+
+        // Act
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+
+        // Assert
+        result.modified.Should().BeTrue();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.processMessage.Should().Be($"no user found for company user id {identity.Id}");
+        result.nextStepTypeIds.Should().BeNull();
+        identity.UserStatusId.Should().Be(UserStatusId.INACTIVE);
+
+        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(iamUserId))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task RemoveKeycloakUser_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var networkRegistrationId = Guid.NewGuid();
+        var iamUserId = _fixture.Create<string>();
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId))
+            .Returns(new[]
+            {
+                identity.Id,
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._))
+            .Returns(iamUserId);
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+            .Invokes((Guid _, Action<Identity>? initialize, Action<Identity> setOptionalFields) =>
+            {
+                initialize?.Invoke(identity);
+                setOptionalFields.Invoke(identity);
+            });
+
+        // Act
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+
+        // Assert
+        result.modified.Should().BeTrue();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.processMessage.Should().Be($"deleted user {iamUserId} for company user {identity.Id}");
+        result.nextStepTypeIds.Should().BeNull();
+        identity.UserStatusId.Should().Be(UserStatusId.INACTIVE);
+
+        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(iamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RemoveKeycloakUser_WithMultipleIdentityIds_ReturnsExpected()
+    {
+        // Arrange
+        var networkRegistrationId = Guid.NewGuid();
+        var iamUserId = _fixture.Create<string>();
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
+        var otherIdentity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId))
+            .Returns(new[]
+            {
+                identity.Id,
+                otherIdentity.Id
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._))
+            .Returns(iamUserId);
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
+            .Invokes((Guid _, Action<Identity>? initialize, Action<Identity> setOptionalFields) =>
+            {
+                initialize?.Invoke(identity);
+                setOptionalFields.Invoke(identity);
+            });
+
+        // Act
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+
+        // Assert
+        result.modified.Should().BeTrue();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.processMessage.Should().Be($"deleted user {iamUserId} for company user {identity.Id}");
+        result.nextStepTypeIds.Should().ContainSingle().And.Satisfy(
+            x => x == ProcessStepTypeId.REMOVE_KEYCLOAK_USERS);
+        identity.UserStatusId.Should().Be(UserStatusId.INACTIVE);
+
+        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(iamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
 }

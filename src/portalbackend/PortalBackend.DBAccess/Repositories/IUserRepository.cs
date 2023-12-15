@@ -121,6 +121,8 @@ public interface IUserRepository
     Task<string?> GetCompanyBpnForIamUserAsync(Guid companyUserId);
 
     Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify);
+    void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity>? Initialize, Action<Identity> Modify)> identities);
     CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName);
     IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId);
+    IAsyncEnumerable<Guid> GetNextIdentitiesForNetworkRegistration(Guid networkRegistrationId);
 }

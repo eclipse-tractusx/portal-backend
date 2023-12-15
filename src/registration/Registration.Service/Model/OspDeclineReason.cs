@@ -17,12 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
-
-public interface INetworkBusinessLogic
+public enum OspDeclineReason
 {
-    Task Submit(PartnerSubmitData submitData);
-    Task DeclineOsp(Guid applicationId, DeclineOspData declineData);
+    REGISTRATION_NOT_REQUESTED = 1,
+    OPINION_CHANGED = 2,
+    INACCAPTABLE_DATASPACE_RULES = 3,
+    OTHERS = 4
 }

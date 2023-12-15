@@ -99,6 +99,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK)]
     [InlineData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION)]
     [InlineData(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS)]
     public void IsExecutableStepTypeId_WithInvalid_ReturnsExpected(ProcessStepTypeId processStepTypeId)
     {
         // Assert
@@ -109,11 +110,12 @@ public class NetworkRegistrationProcessTypeExecutorTests
     public void GetExecutableStepTypeIds_ReturnsExpected()
     {
         // Assert
-        _sut.GetExecutableStepTypeIds().Should().HaveCount(4).And.Satisfy(
+        _sut.GetExecutableStepTypeIds().Should().HaveCount(5).And.Satisfy(
             x => x == ProcessStepTypeId.SYNCHRONIZE_USER,
             x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,
             x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
-            x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED);
+            x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED,
+            x => x == ProcessStepTypeId.REMOVE_KEYCLOAK_USERS);
     }
 
     [Fact]
@@ -197,6 +199,37 @@ public class NetworkRegistrationProcessTypeExecutorTests
 
         // Act
         var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Modified.Should().BeFalse();
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ProcessMessage.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteProcessStep_WithRemoveKeycloakUser_CallsExpected()
+    {
+        // Arrange InitializeProcess
+        var validProcessId = Guid.NewGuid();
+        var networkRegistrationId = Guid.NewGuid();
+        A.CallTo(() => _networkRepository.GetNetworkRegistrationDataForProcessIdAsync(validProcessId))
+            .Returns(networkRegistrationId);
+
+        // Act InitializeProcess
+        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+
+        // Assert InitializeProcess
+        initializeResult.Modified.Should().BeFalse();
+        initializeResult.ScheduleStepTypeIds.Should().BeNull();
+
+        // Arrange
+        A.CallTo(() => _networkRegistrationHandler.RemoveKeycloakUser(networkRegistrationId))
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, false, null));
+
+        // Act
+        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Modified.Should().BeFalse();

@@ -419,7 +419,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
 
-        var (companyId, companyName, processId) = result;
+        var (companyId, companyName, networkRegistrationProcessId) = result;
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -453,9 +453,9 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             company.CompanyStatusId = CompanyStatusId.REJECTED;
         });
 
-        if (processId != null)
+        if (networkRegistrationProcessId != null)
         {
-            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, processId.Value), 1));
+            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, networkRegistrationProcessId.Value), 1));
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -480,7 +480,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
             var mailParameters = new Dictionary<string, string>
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
                 { "companyName", companyName },
                 { "declineComment", comment},
                 { "helpUrl", _settings.HelpAddress }
