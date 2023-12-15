@@ -31,6 +31,7 @@ public static class NetworkRegistrationExtensisons
             ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED },
             ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED },
             ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED },
+            ProcessStepTypeId.REMOVE_KEYCLOAK_USERS => new[] { ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS },
             _ => null
         };
 }

@@ -111,4 +111,24 @@ public class NetworkRepository : INetworkRepository
         _context.NetworkRegistrations.Where(x => x.Id == networkRegistrationId)
             .Select(x => x.OnboardingServiceProvider!.Name)
             .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, (Guid CompanyId, CompanyStatusId CompanyStatusId, IEnumerable<(Guid IdentityId, UserStatusId UserStatus)> Identities) CompanyData, IEnumerable<(Guid InvitationId, InvitationStatusId StatusId)> InvitationData, CompanyApplicationTypeId TypeId, CompanyApplicationStatusId StatusId, Guid ProcessId, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps)> GetDeclineDataForApplicationId(Guid applicationId) =>
+    _context.NetworkRegistrations
+        .Where(ca => ca.CompanyApplication!.Id == applicationId)
+        .Select(ca => new ValueTuple<bool, ValueTuple<Guid, CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>, IEnumerable<ValueTuple<Guid, InvitationStatusId>>, CompanyApplicationTypeId, CompanyApplicationStatusId, Guid, IEnumerable<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>>(
+            true,
+            new ValueTuple<Guid, CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>(
+                ca.CompanyId, ca.Company!.CompanyStatusId,
+                ca.Company!.Identities.Select(i => new ValueTuple<Guid, UserStatusId>(i.Id, i.UserStatusId))),
+            ca.CompanyApplication!.Invitations.Select(x => new ValueTuple<Guid, InvitationStatusId>(
+                x.Id,
+                x.InvitationStatusId)),
+            ca.CompanyApplication.CompanyApplicationTypeId,
+            ca.CompanyApplication.ApplicationStatusId,
+            ca.ProcessId,
+            ca.Process!.ProcessSteps
+                .Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)
+                .Select(x => new ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>(x.Id, x.ProcessStepTypeId, x.ProcessStepStatusId))
+        ))
+        .SingleOrDefaultAsync();
 }

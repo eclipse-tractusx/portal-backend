@@ -21,6 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
@@ -105,6 +106,63 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                 ca.ChecklistProcessId = processId;
             });
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public async Task DeclineOsp(Guid applicationId, DeclineOspData declineData)
+    {
+        var validStatus = new[]
+        {
+            CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.ADD_COMPANY_DATA,
+            CompanyApplicationStatusId.INVITE_USER, CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
+            CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.VERIFY
+        };
+        var companyId = _identityData.CompanyId;
+        var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
+        var data = await networkRepository.GetDeclineDataForApplicationId(applicationId).ConfigureAwait(false);
+        if (!data.Exists)
+        {
+            throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
+        }
+
+        if (data.CompanyData.CompanyId != companyId)
+        {
+            throw new ForbiddenException($"User is not allowed to decline application {applicationId}");
+        }
+
+        if (data.TypeId != CompanyApplicationTypeId.EXTERNAL)
+        {
+            throw new ConflictException("Only external registrations can be declined");
+        }
+
+        if (!validStatus.Contains(data.StatusId))
+        {
+            throw new ConflictException($"The status of the application {applicationId} must be one of the following: {string.Join(",", validStatus.Select(x => x.ToString()))}");
+        }
+
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, ca => { ca.ApplicationStatusId = CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER; });
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
+            data.CompanyData.CompanyId,
+            c => { c.CompanyStatusId = data.CompanyData.CompanyStatusId; },
+            c => { c.CompanyStatusId = CompanyStatusId.REJECTED; });
+
+        _portalRepositories.GetInstance<IInvitationRepository>().AttachAndModifyInvitations(data.InvitationData.Select(
+            x =>
+                new ValueTuple<Guid, Action<Invitation>?, Action<Invitation>>(
+                    x.InvitationId,
+                    i => { i.InvitationStatusId = x.StatusId; },
+                    i => { i.InvitationStatusId = InvitationStatusId.DECLINED; })));
+
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        processStepRepository.AttachAndModifyProcessSteps(data.ProcessSteps
+            .Select(x =>
+                new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
+                    x.ProcessStepId,
+                    ps => { ps.ProcessStepStatusId = x.ProcessStepStatusId; },
+                    ps => { ps.ProcessStepStatusId = ProcessStepStatusId.ABORTED; })));
+
+        processStepRepository.CreateProcessStep(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepStatusId.TODO, data.ProcessId);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

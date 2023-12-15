@@ -426,6 +426,19 @@ public class UserRepository : IUserRepository
         return updatedEntity;
     }
 
+    public void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity>? Initialize, Action<Identity> Modify)> identities)
+    {
+        var initial = identities.Select(x =>
+            {
+                var identity = new Identity(x.IdentityId, default, Guid.Empty, default, default);
+                x.Initialize?.Invoke(identity);
+                return (Identity: identity, modify: x.Modify);
+            }
+        ).ToList();
+        _dbContext.AttachRange(initial.Select(x => x.Identity));
+        initial.ForEach(x => x.modify(x.Identity));
+    }
+
     public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName) =>
         _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, providerId, userName)).Entity;
 
@@ -449,15 +462,10 @@ public class UserRepository : IUserRepository
                 ))
             .ToAsyncEnumerable();
 
-    public void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity> Modify)> identityData)
-    {
-        var initial = identityData.Select(x =>
-            {
-                var identity = new Identity(x.IdentityId, default, Guid.Empty, default, default);
-                return (Identity: identity, x.Modify);
-            }
-        ).ToList();
-        _dbContext.AttachRange(initial.Select(x => x.Identity));
-        initial.ForEach(x => x.Modify(x.Identity));
-    }
+    public IAsyncEnumerable<Guid> GetNextIdentitiesForNetworkRegistration(Guid networkRegistrationId) =>
+        _dbContext.NetworkRegistrations
+            .Where(x => x.Id == networkRegistrationId)
+            .SelectMany(x => x.Company!.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER && (i.UserStatusId != UserStatusId.DELETED || i.UserStatusId == UserStatusId.INACTIVE)).Select(i => i.Id))
+            .Take(2)
+            .ToAsyncEnumerable();
 }
