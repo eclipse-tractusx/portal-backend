@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
     <ProjectReference Include="..\Framework.Linq\Framework.Linq.csproj" />
     <ProjectReference Include="..\Framework.Logging\Framework.Logging.csproj" />
+    <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />

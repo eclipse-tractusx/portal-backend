@@ -20,4 +20,4 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyUserAccountData(Guid CompanyUserId, string? UserEntityId, IEnumerable<string> BusinessPartnerNumbers, IEnumerable<Guid> RoleIds, IEnumerable<Guid> OfferIds, IEnumerable<Guid> InvitationIds);
+public record CompanyUserAccountData(Guid CompanyUserId, IEnumerable<string> BusinessPartnerNumbers, IEnumerable<Guid> RoleIds, IEnumerable<Guid> OfferIds, IEnumerable<Guid> InvitationIds);

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021,2023 BMW Group AG
  * Copyright (c) 2021,2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -66,7 +65,4 @@ public enum ProcessStepTypeId
     RETRIGGER_CALLBACK_OSP_SUBMITTED = 205,
     RETRIGGER_CALLBACK_OSP_APPROVED = 206,
     RETRIGGER_CALLBACK_OSP_DECLINED = 207,
-
-    // ServiceACcountSync
-    SYNCHRONIZE_SERVICE_ACCOUNTS = 300,
 }

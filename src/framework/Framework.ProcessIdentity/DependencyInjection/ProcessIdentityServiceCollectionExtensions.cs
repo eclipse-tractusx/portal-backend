@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,31 +19,32 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 
 public static class ProcessIdentityServiceCollectionExtensions
 {
-    public static IServiceCollection AddConfigurationIdentityIdDetermination(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddConfigurationProcessIdentityIdDetermination(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<ProcessIdentitySettings>()
             .Bind(section)
             .ValidateOnStart();
 
         return services
-            .AddTransient<IIdentityIdDetermination, ConfigurationIdentityIdDetermination>();
+            .AddTransient<IProcessIdentityDataBuilder, ProcessIdentityDataBuilder>()
+            .AddTransient<IIdentityService, ProcessIdentityService>();
     }
 
-    public static IServiceCollection AddConfigurationIdentityService(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddConfigurationProcessIdentityService(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<ProcessIdentitySettings>()
             .Bind(section)
             .ValidateOnStart();
 
         return services
-            .AddScoped<IIdentityIdDetermination, ConfigurationIdentityIdDetermination>()
-            .AddScoped<IIdentityService, IdentityService>();
+            .AddScoped<IProcessIdentityDataBuilder, ProcessIdentityDataBuilder>()
+            .AddTransient<IProcessIdentityDataDetermination, ProcessIdentityDataDetermination>()
+            .AddTransient<IIdentityService, ProcessIdentityService>();
     }
 }

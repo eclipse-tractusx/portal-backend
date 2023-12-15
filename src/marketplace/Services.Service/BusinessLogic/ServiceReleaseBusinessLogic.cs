@@ -41,7 +41,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
     private readonly IOfferDocumentService _offerDocumentService;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly ServiceSettings _settings;
 
     /// <summary>
@@ -62,7 +62,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _portalRepositories = portalRepositories;
         _offerService = offerService;
         _offerDocumentService = offerDocumentService;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _settings = settings.Value;
     }
 
@@ -167,7 +167,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     /// <inheritdoc />
     public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var serviceData = await _portalRepositories
             .GetInstance<IOfferRepository>()
             .GetServiceUpdateData(serviceId, data.ServiceTypeIds, companyId)

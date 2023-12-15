@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Text;
 
@@ -30,8 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class DocumentsControllerTests
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IDocumentsBusinessLogic _logic;
     private readonly DocumentsController _controller;
     private readonly Fixture _fixture;
@@ -39,9 +39,13 @@ public class DocumentsControllerTests
     public DocumentsControllerTests()
     {
         _fixture = new Fixture();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         _logic = A.Fake<IDocumentsBusinessLogic>();
-        this._controller = new DocumentsController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId, _identity);
+        _controller = new DocumentsController(_logic);
+        _controller.AddControllerContextWithClaim(_identity);
     }
 
     [Fact]

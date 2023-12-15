@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,7 +19,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Security.Claims;
@@ -38,15 +36,12 @@ public static class ControllerExtensions
     /// <param name="controller">The controller that should be enriched</param>
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="identity">identity of the user</param>
-    public static void AddControllerContextWithClaim(this ControllerBase controller, string iamUserId, IdentityData? identity = null)
+    public static void AddControllerContextWithClaim(this ControllerBase controller, IIdentityData? identity = null)
     {
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
         if (identity != null)
         {
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.UserId.ToString()) });
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType) ?? throw new UnexpectedConditionException("itentityType should never be out of enum-values range here")) });
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.CompanyId, identity.CompanyId.ToString()) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString()) });
         }
 
         var httpContext = new DefaultHttpContext
@@ -68,13 +63,10 @@ public static class ControllerExtensions
     /// <param name="controller">The controller that should be enriched</param>
     /// <param name="accessToken">Access token</param>
     /// <param name="identity">Identity of the user</param>
-    public static void AddControllerContextWithClaimAndBearer(this ControllerBase controller, string accessToken, IdentityData identity)
+    public static void AddControllerContextWithClaimAndBearer(this ControllerBase controller, string accessToken, IIdentityData identity)
     {
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.Sub, identity.UserEntityId) });
-        claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.UserId.ToString()) });
-        claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType) ?? throw new UnexpectedConditionException("itentityType should never be out of enum-values range here")) });
-        claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.CompanyId, identity.CompanyId.ToString()) });
+        claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString()) });
 
         var httpContext = new DefaultHttpContext
         {

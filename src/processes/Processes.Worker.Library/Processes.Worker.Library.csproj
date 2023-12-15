@@ -25,6 +25,7 @@
       <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
       <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
       <ProjectReference Include="..\..\framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.ProcessIdentity\Framework.ProcessIdentity.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -101,21 +100,16 @@ public class ServiceAccountCreation : IServiceAccountCreation
 
         if (bpns.Any())
         {
-            await _provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.UserEntityId, bpns).ConfigureAwait(false);
+            await _provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.IamUserId, bpns).ConfigureAwait(false);
             await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(false);
         }
 
-        var identity = _portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT,
-            i =>
-            {
-                i.UserEntityId = serviceAccountData.UserEntityId;
-            });
+        var identity = _portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null);
 
         var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
             identity.Id,
             enhancedName,
             description,
-            serviceAccountData.InternalClientId,
             clientId,
             companyServiceAccountTypeId,
             setOptionalParameter);

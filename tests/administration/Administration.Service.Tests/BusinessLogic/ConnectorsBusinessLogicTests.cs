@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -46,15 +45,8 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid CompanyIdWithoutSdDocument = Guid.NewGuid();
     private static readonly Guid ExistingConnectorId = Guid.NewGuid();
     private static readonly Guid CompanyWithoutBpnId = Guid.NewGuid();
-    private static readonly string IamUserId = Guid.NewGuid().ToString();
-    private static readonly string IamUserWithoutSdDocumentId = Guid.NewGuid().ToString();
-    private static readonly string UserWithoutBpn = Guid.NewGuid().ToString();
-    private static readonly string TechnicalUserId = Guid.NewGuid().ToString();
     private readonly Guid ValidOfferSubscriptionId = Guid.NewGuid();
-    private readonly IdentityData _identity = new(IamUserId, CompanyUserId, IdentityTypeId.COMPANY_USER, ValidCompanyId);
-    private readonly IdentityData _identityWithoutSdDocument = new(IamUserWithoutSdDocumentId, CompanyUserId, IdentityTypeId.COMPANY_USER, CompanyIdWithoutSdDocument);
-    private readonly IdentityData _identityWithoutBpn = new(UserWithoutBpn, CompanyUserId, IdentityTypeId.COMPANY_USER, CompanyWithoutBpnId);
-    private readonly IdentityData _technicalUserIdentity = new(TechnicalUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_SERVICE_ACCOUNT, ValidCompanyId);
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly List<Connector> _connectors;
     private readonly ICountryRepository _countryRepository;
@@ -86,6 +78,7 @@ public class ConnectorsBusinessLogicTests
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _identityService = A.Fake<IIdentityService>();
+        _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
         var options = A.Fake<IOptions<ConnectorsSettings>>();
         _settings = new ConnectorsSettings
@@ -103,8 +96,9 @@ public class ConnectorsBusinessLogicTests
 
         A.CallTo(() => options.Value).Returns(_settings);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
-        A.CallTo(() => _identityService.IdentityId).Returns(_identity.UserId);
         var logger = A.Fake<ILogger<ConnectorsBusinessLogic>>();
+
+        SetupIdentity();
 
         _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, logger);
     }
@@ -191,7 +185,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
-        A.CallTo(() => _identityService.IdentityData).Returns(_identityWithoutSdDocument);
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
 
         // Act
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -220,7 +214,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
-        A.CallTo(() => _identityService.IdentityData).Returns(_identityWithoutBpn);
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyWithoutBpnId);
 
         // Act
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -269,7 +263,8 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, null);
-        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
+
+        SetupTechnicalIdentity();
 
         // Act
         var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -299,10 +294,11 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((false, default, default, default, default, default, default));
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
-        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
+
+        SetupTechnicalIdentity();
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -317,10 +313,11 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, false, default, default, default, default, default));
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
-        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
+
+        SetupTechnicalIdentity();
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -335,10 +332,11 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, true, true, default, default, default, default));
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
-        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
+
+        SetupTechnicalIdentity();
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -353,10 +351,11 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.INACTIVE, default, default, default));
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
-        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
+
+        SetupTechnicalIdentity();
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -371,7 +370,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, A<Guid>.That.Matches(x => x == _identity.CompanyId || x == _technicalUserIdentity.CompanyId)))
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, A<Guid>.That.Matches(x => x == ValidCompanyId)))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, null, ValidCompanyId, ValidCompanyBpn));
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
 
@@ -389,10 +388,11 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var subscriptionId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, _technicalUserIdentity.CompanyId))
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), companyId, null));
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
-        A.CallTo(() => _identityService.IdentityData).Returns(_technicalUserIdentity);
+
+        SetupTechnicalIdentity();
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -927,7 +927,7 @@ public class ConnectorsBusinessLogicTests
             .Create();
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
             .Returns(data);
-        A.CallTo(() => _userRepository.GetCompanyBpnForIamUserAsync(_identity.UserId))
+        A.CallTo(() => _userRepository.GetCompanyBpnForIamUserAsync(_identity.IdentityId))
             .Returns((string?)null);
 
         // Act
@@ -1118,7 +1118,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((ValidCompanyBpn, null));
         A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidCompanyId || x == CompanyIdWithoutSdDocument)))
             .Returns((null, null));
-        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(ValidOfferSubscriptionId, A<Guid>.That.Matches(x => x == _identity.CompanyId || x == _technicalUserIdentity.CompanyId)))
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(ValidOfferSubscriptionId, ValidCompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), ValidCompanyId, ValidCompanyBpn));
 
         A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
@@ -1158,6 +1158,19 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
+    }
+
+    private void SetupIdentity()
+    {
+        A.CallTo(() => _identity.IdentityId).Returns(CompanyUserId);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(ValidCompanyId);
+    }
+
+    private void SetupTechnicalIdentity()
+    {
+        A.CallTo(() => _identity.IdentityId).Returns(ServiceAccountUserId);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
     }
 
     #endregion

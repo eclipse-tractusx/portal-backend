@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -40,7 +39,7 @@ public class ServiceControllerTest
 {
     private const string AccessToken = "THISISTHEACCESSTOKEN";
     private static readonly Guid ServiceId = new("4C1A6851-D4E7-4E10-A011-3732CD045453");
-    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly IServiceBusinessLogic _logic;
     private readonly ServicesController _controller;
@@ -49,7 +48,11 @@ public class ServiceControllerTest
     {
         _fixture = new Fixture();
         _logic = A.Fake<IServiceBusinessLogic>();
-        this._controller = new ServicesController(_logic);
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
+        _controller = new ServicesController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(AccessToken, _identity);
     }
 
@@ -62,7 +65,7 @@ public class ServiceControllerTest
             .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetAllActiveServicesAsync().ConfigureAwait(false);
+        var result = await _controller.GetAllActiveServicesAsync().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
@@ -81,7 +84,7 @@ public class ServiceControllerTest
 
         //Act
         var serviceId = Guid.NewGuid();
-        var result = await this._controller.AddServiceSubscription(serviceId, consentData).ConfigureAwait(false);
+        var result = await _controller.AddServiceSubscription(serviceId, consentData).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData)).MustHaveHappenedOnceExactly();
@@ -99,7 +102,7 @@ public class ServiceControllerTest
             .Returns(serviceDetailData);
 
         //Act
-        var result = await this._controller.GetServiceDetails(serviceId).ConfigureAwait(false);
+        var result = await _controller.GetServiceDetails(serviceId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en")).MustHaveHappenedOnceExactly();
@@ -117,7 +120,7 @@ public class ServiceControllerTest
             .Returns(detailData);
 
         //Act
-        var result = await this._controller.GetSubscriptionDetail(subscriptionId).ConfigureAwait(false);
+        var result = await _controller.GetSubscriptionDetail(subscriptionId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetSubscriptionDetailAsync(subscriptionId)).MustHaveHappenedOnceExactly();
@@ -134,7 +137,7 @@ public class ServiceControllerTest
             .Returns(agreementData);
 
         //Act
-        var result = await this._controller.GetServiceAgreement(ServiceId).ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetServiceAgreement(ServiceId).ToListAsync().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetServiceAgreement(ServiceId)).MustHaveHappenedOnceExactly();
@@ -151,7 +154,7 @@ public class ServiceControllerTest
             .Returns(consentDetailData);
 
         //Act
-        var result = await this._controller.GetServiceAgreementConsentDetail(consentId).ConfigureAwait(false);
+        var result = await _controller.GetServiceAgreementConsentDetail(consentId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetServiceConsentDetailDataAsync(consentId)).MustHaveHappenedOnceExactly();
@@ -163,9 +166,11 @@ public class ServiceControllerTest
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        var userRoleData = new List<string>();
-        userRoleData.Add("Sales Manager");
-        userRoleData.Add("IT Manager");
+        var userRoleData = new[]
+        {
+            "Sales Manager",
+            "IT Manager"
+        };
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
         var responseData = new OfferAutoSetupResponseData(
             new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"),
@@ -175,7 +180,7 @@ public class ServiceControllerTest
             .Returns(responseData);
 
         //Act
-        var result = await this._controller.AutoSetupService(data).ConfigureAwait(false);
+        var result = await _controller.AutoSetupService(data).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.AutoSetupServiceAsync(data)).MustHaveHappenedOnceExactly();
@@ -196,7 +201,7 @@ public class ServiceControllerTest
             .Returns(pagination);
 
         //Act
-        var result = await this._controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync(offerId: offerId).ConfigureAwait(false);
+        var result = await _controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync(offerId: offerId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 15, null, null, offerId)).MustHaveHappenedOnceExactly();
@@ -216,7 +221,7 @@ public class ServiceControllerTest
             .Returns((content, "image/png", fileName));
 
         //Act
-        var result = await this._controller.GetServiceDocumentContentAsync(serviceId, documentId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _controller.GetServiceDocumentContentAsync(serviceId, documentId, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -235,7 +240,7 @@ public class ServiceControllerTest
             .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetCompanyProvidedServiceStatusDataAsync().ConfigureAwait(false);
+        var result = await _controller.GetCompanyProvidedServiceStatusDataAsync().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15, null, null, null)).MustHaveHappenedOnceExactly();
@@ -250,7 +255,7 @@ public class ServiceControllerTest
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
 
         //Act
-        var result = await this._controller.StartAutoSetupServiceProcess(data).ConfigureAwait(false);
+        var result = await _controller.StartAutoSetupServiceProcess(data).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.StartAutoSetupAsync(data)).MustHaveHappenedOnceExactly();
@@ -268,7 +273,7 @@ public class ServiceControllerTest
             .Returns(data);
 
         // Act
-        var result = await this._controller.GetSubscriptionDetailForProvider(serviceId, subscriptionId).ConfigureAwait(false);
+        var result = await _controller.GetSubscriptionDetailForProvider(serviceId, subscriptionId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.GetSubscriptionDetailForProvider(serviceId, subscriptionId)).MustHaveHappenedOnceExactly();
@@ -286,7 +291,7 @@ public class ServiceControllerTest
             .Returns(data);
 
         // Act
-        var result = await this._controller.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId).ConfigureAwait(false);
+        var result = await _controller.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId)).MustHaveHappenedOnceExactly();
@@ -305,7 +310,7 @@ public class ServiceControllerTest
             .Returns(pagination);
 
         //Act
-        var result = await this._controller.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync().ConfigureAwait(false);
+        var result = await _controller.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15)).MustHaveHappenedOnceExactly();
@@ -321,7 +326,7 @@ public class ServiceControllerTest
         var serviceId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.UnsubscribeCompanyServiceSubscriptionAsync(serviceId).ConfigureAwait(false);
+        var result = await _controller.UnsubscribeCompanyServiceSubscriptionAsync(serviceId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.UnsubscribeOwnCompanyServiceSubscriptionAsync(serviceId)).MustHaveHappenedOnceExactly();

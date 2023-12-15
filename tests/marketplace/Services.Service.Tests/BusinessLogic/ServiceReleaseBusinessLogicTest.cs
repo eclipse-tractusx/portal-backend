@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -45,11 +44,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLog
 
 public class ServiceReleaseBusinessLogicTest
 {
-    private const string IamUserId = "1cb10522-bd03-4214-bd85-de8122acf212";
     private static readonly Guid CompanyUserId = Guid.NewGuid();
     private static readonly Guid CompanyUserCompanyId = Guid.NewGuid();
 
-    private readonly IdentityData _identity = new(IamUserId, CompanyUserId, IdentityTypeId.COMPANY_USER, CompanyUserCompanyId);
+    private readonly IIdentityData _identity;
     private readonly Guid _notExistingServiceId = Guid.NewGuid();
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly Guid _activeServiceId = Guid.NewGuid();
@@ -80,6 +78,10 @@ public class ServiceReleaseBusinessLogicTest
         _technicalUserProfileRepository = A.Fake<ITechnicalUserProfileRepository>();
 
         _identityService = A.Fake<IIdentityService>();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(CompanyUserId);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyUserCompanyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         SetupRepositories();

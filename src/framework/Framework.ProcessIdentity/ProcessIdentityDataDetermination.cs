@@ -18,30 +18,31 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Identities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 
-public class IdentityService : IIdentityService
+public class ProcessIdentityDataDetermination : IProcessIdentityDataDetermination
 {
     private readonly IIdentityRepository _identityRepository;
-    private readonly IIdentityIdDetermination _identityIdDetermination;
-    private IdentityData? _identityData;
+    private readonly IProcessIdentityDataBuilder _processIdentityDataBuilder;
 
-    public IdentityService(IPortalRepositories portalRepositories, IIdentityIdDetermination identityIdDetermination)
+    public ProcessIdentityDataDetermination(IPortalRepositories portalRepositories, IProcessIdentityDataBuilder processIdentityDataBuilder)
     {
         _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
-        _identityIdDetermination = identityIdDetermination;
+        _processIdentityDataBuilder = processIdentityDataBuilder;
     }
 
     /// <inheritdoc />
-    public async ValueTask<IdentityData> GetIdentityData() =>
-        _identityData ?? (_identityData =
-            await _identityRepository.GetActiveIdentityDataByIdentityId(IdentityId).ConfigureAwait(false) ??
-            throw new ConflictException($"Identity {_identityIdDetermination.IdentityId} could not be found"));
+    public async Task GetIdentityData()
+    {
+        (IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
 
-    public IdentityData IdentityData => _identityData ?? throw new UnexpectedConditionException("identityData should never be null here (endpoint must be annotated with an identity policy / as an alternative GetIdentityData should be used)");
+        if ((identityData = await _identityRepository.GetActiveIdentityDataByIdentityId(_processIdentityDataBuilder.IdentityId).ConfigureAwait(false)) == default)
+            throw new ConflictException($"Identity {_processIdentityDataBuilder.IdentityId} could not be found");
 
-    public Guid IdentityId => _identityIdDetermination.IdentityId;
+        _processIdentityDataBuilder.AddIdentityData(identityData.IdentityTypeId, identityData.CompanyId);
+    }
 }

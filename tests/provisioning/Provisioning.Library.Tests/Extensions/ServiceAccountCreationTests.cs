@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -116,14 +115,18 @@ public class ServiceAccountCreationTests
         // Assert
         result.userRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");
         result.serviceAccountData.InternalClientId.Should().Be("internal-sa1");
-        result.serviceAccountData.UserEntityId.Should().Be(_iamUserId);
+        result.serviceAccountData.IamUserId.Should().Be(_iamUserId);
         result.serviceAccountData.AuthData.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(_iamUserId, bpns)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync("internal-sa1")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        serviceAccounts.Should().ContainSingle().Which.Name.Should().Be("testName");
-        serviceAccounts.Should().ContainSingle().Which.ClientId.Should().Be("internal-sa1");
-        identities.Should().ContainSingle().And.Satisfy(x => x.CompanyId == _companyId && x.UserEntityId == _iamUserId);
+        serviceAccounts.Should().ContainSingle().Which.Should().Match<CompanyServiceAccount>(
+            x => x.Name == "testName" &&
+                 x.ClientClientId == "sa1");
+        identities.Should().ContainSingle().Which.Should().Match<Identity>(
+            x => x.CompanyId == _companyId &&
+                 x.UserStatusId == UserStatusId.ACTIVE &&
+                 x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
     }
 
     [Fact]
@@ -145,15 +148,19 @@ public class ServiceAccountCreationTests
         // Assert
         result.userRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");
         result.serviceAccountData.InternalClientId.Should().Be("internal-sa1");
-        result.serviceAccountData.UserEntityId.Should().Be(_iamUserId);
+        result.serviceAccountData.IamUserId.Should().Be(_iamUserId);
         result.serviceAccountData.AuthData.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
         A.CallTo(() => _provisioningManager.SetupCentralServiceAccountClientAsync(A<string>._, A<ClientConfigRolesData>.That.Matches(x => x.Name == "sa1-testName"), A<bool>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(_iamUserId, bpns)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync("internal-sa1")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        serviceAccounts.Should().ContainSingle().Which.Name.Should().Be("sa1-testName");
-        serviceAccounts.Should().ContainSingle().Which.ClientId.Should().Be("internal-sa1");
-        identities.Should().ContainSingle().And.Satisfy(x => x.CompanyId == _companyId && x.UserEntityId == _iamUserId);
+        serviceAccounts.Should().ContainSingle().Which.Should().Match<CompanyServiceAccount>(
+            x => x.Name == "sa1-testName" &&
+                 x.ClientClientId == "sa1");
+        identities.Should().ContainSingle().Which.Should().Match<Identity>(
+            x => x.CompanyId == _companyId &&
+                 x.UserStatusId == UserStatusId.ACTIVE &&
+                 x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
     }
 
     #region Setup
@@ -174,8 +181,8 @@ public class ServiceAccountCreationTests
                 identities?.Add(identity);
             })
             .Returns(new Identity(_identityId, default, default, default, default));
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_identityId, A<string>._, A<string>._, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, A<Action<CompanyServiceAccount>>._))
-            .Invokes((Guid identityId, string name, string description, string clientId, string clientClientId, CompanyServiceAccountTypeId companyServiceAccountTypeId, Action<CompanyServiceAccount>? setOptionalParameters) =>
+        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_identityId, A<string>._, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, A<Action<CompanyServiceAccount>>._))
+            .Invokes((Guid identityId, string name, string description, string clientClientId, CompanyServiceAccountTypeId companyServiceAccountTypeId, Action<CompanyServiceAccount>? setOptionalParameters) =>
             {
                 var sa = new CompanyServiceAccount(
                     identityId,
@@ -183,7 +190,6 @@ public class ServiceAccountCreationTests
                     description,
                     companyServiceAccountTypeId)
                 {
-                    ClientId = clientId,
                     ClientClientId = clientClientId
                 };
                 setOptionalParameters?.Invoke(sa);

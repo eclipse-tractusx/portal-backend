@@ -93,12 +93,10 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                     userRepository.AttachAndModifyIdentity(cu.CompanyUserId, i =>
                         {
                             i.UserStatusId = UserStatusId.PENDING;
-                            i.UserEntityId = null;
                         },
                         i =>
                         {
                             i.UserStatusId = UserStatusId.ACTIVE;
-                            i.UserEntityId = userId;
                         });
 
                     await _userProvisioningService.AssignRolesToNewUserAsync(userRoleRepository, roleData, (userId, cu.CompanyUserId)).ConfigureAwait(false);

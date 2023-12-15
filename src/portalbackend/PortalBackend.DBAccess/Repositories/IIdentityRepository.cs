@@ -17,12 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 public interface IIdentityRepository
 {
-    Task<IdentityData?> GetActiveIdentityDataByIdentityId(Guid identityId);
-    Task<Guid> GetIdentityIdByUserEntityId(string userEntityId);
+    Task<Guid> GetActiveCompanyIdByIdentityId(Guid identityId);
+    Task<(IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByIdentityId(Guid identityId);
+    Task<(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByUserEntityId(string userEntityId);
 }

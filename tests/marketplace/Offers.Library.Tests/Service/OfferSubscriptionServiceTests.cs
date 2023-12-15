@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -40,7 +39,7 @@ public class OfferSubscriptionServiceTests
 
     private readonly Guid _notAssignedCompanyId;
     private readonly Guid _noBpnSetCompanyId;
-    private readonly IdentityData _identity;
+    private readonly IIdentityData _identity;
     private readonly Guid _companyUserId;
     private readonly Guid _companyId;
     private readonly Guid _existingActiveSubscriptionCompanyId;
@@ -79,7 +78,6 @@ public class OfferSubscriptionServiceTests
 
         _companyUserId = _fixture.Create<Guid>();
         _companyId = _fixture.Create<Guid>();
-        _identity = new IdentityData(_fixture.Create<string>(), _companyUserId, IdentityTypeId.COMPANY_USER, _companyId);
         _existingOfferIdWithoutProviderEmail = _fixture.Create<Guid>();
         _existingActiveSubscriptionCompanyId = _fixture.Create<Guid>();
         _existingInactiveSubscriptionCompanyId = _fixture.Create<Guid>();
@@ -93,7 +91,11 @@ public class OfferSubscriptionServiceTests
         _userRoleId = _fixture.Create<Guid>();
         _offerAgreementIds = _fixture.CreateMany<Guid>().ToImmutableArray();
         _validConsentData = _offerAgreementIds.Select(x => new OfferAgreementConsentData(x, ConsentStatusId.ACTIVE));
+        _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -317,7 +319,7 @@ public class OfferSubscriptionServiceTests
             new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })} : new[]{
             new UserRoleConfig("portal", new [] { "Service Manager", "Sales Manager" })};
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = _notAssignedCompanyId });
+        A.CallTo(() => _identity.CompanyId).Returns(_notAssignedCompanyId);
 
         // Act
         async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, Enumerable.Empty<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles).ConfigureAwait(false);
@@ -444,7 +446,7 @@ public class OfferSubscriptionServiceTests
             new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })} : new[]{
             new UserRoleConfig("portal", new [] { "Service Manager", "Sales Manager" })};
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = _noBpnSetCompanyId });
+        A.CallTo(() => _identity.CompanyId).Returns(_noBpnSetCompanyId);
         async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, Enumerable.Empty<OfferAgreementConsentData>(), offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles).ConfigureAwait(false);
 
         // Assert
@@ -485,7 +487,7 @@ public class OfferSubscriptionServiceTests
         var subscriptionManagerRoles = new[]{
             new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })};
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = _existingActiveSubscriptionCompanyId });
+        A.CallTo(() => _identity.CompanyId).Returns(_existingActiveSubscriptionCompanyId);
         A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _existingActiveSubscriptionCompanyId, A<OfferTypeId>._))
             .Returns(true);
 
@@ -527,15 +529,15 @@ public class OfferSubscriptionServiceTests
             .With(x => x.Id, _existingOfferId)
             .Create();
 
-        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_identity.CompanyId, _identity.UserId))
+        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_identity.CompanyId, _identity.IdentityId))
             .Returns(new CompanyInformationData(_companyId, "The Company", "DE", "BPM00000001", "test@mail.com"));
-        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_notAssignedCompanyId, _identity.UserId))
+        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_notAssignedCompanyId, _identity.IdentityId))
             .Returns((CompanyInformationData?)null);
-        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_noBpnSetCompanyId, _identity.UserId))
+        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_noBpnSetCompanyId, _identity.IdentityId))
             .Returns(new CompanyInformationData(_companyId, "The Company", "DE", null, "test@mail.com"));
-        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_existingActiveSubscriptionCompanyId, _identity.UserId))
+        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_existingActiveSubscriptionCompanyId, _identity.IdentityId))
             .Returns(new CompanyInformationData(_existingActiveSubscriptionCompanyId, "The Company", "DE", "BPM00000001", "test@mail.com"));
-        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_existingInactiveSubscriptionCompanyId, _identity.UserId))
+        A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_existingInactiveSubscriptionCompanyId, _identity.IdentityId))
             .Returns(new CompanyInformationData(_existingInactiveSubscriptionCompanyId, "The Company", "DE", "BPM00000001", "test@mail.com"));
         A.CallTo(() => _userRepository.GetServiceProviderCompanyUserWithRoleIdAsync(A<Guid>.That.Matches(x => x == _existingOfferId), A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _userRoleId })))
             .Returns(new[] { _companyUserId, _salesManagerId }.ToAsyncEnumerable());
@@ -580,14 +582,14 @@ public class OfferSubscriptionServiceTests
                 A<OfferTypeId>._))
             .Returns((SubscriptionDetailData?)null);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.UserId), A<OfferTypeId>._))
+                A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.IdentityId), A<OfferTypeId>._))
             .Returns((_companyId, offerSubscription));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.UserId),
+                A<Guid>.That.Not.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.IdentityId),
                 A<OfferTypeId>._))
             .Returns((_companyId, null));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Not.Matches(x => x == _identity.UserId),
+                A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Not.Matches(x => x == _identity.IdentityId),
                 A<OfferTypeId>._))
             .Returns(((Guid companyId, OfferSubscription? offerSubscription))default);
 

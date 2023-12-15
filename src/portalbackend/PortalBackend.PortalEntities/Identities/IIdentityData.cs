@@ -17,22 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-public class ClaimsIdentityIdDetermination : IIdentityIdDetermination
+public interface IIdentityData
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private Guid? _identityId;
-
-    public ClaimsIdentityIdDetermination(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
-    /// <inheritdoc />
-    public Guid IdentityId => (_identityId ??= _httpContextAccessor.HttpContext?.User.GetIdentityId())!.Value;
+    Guid IdentityId { get; }
+    IdentityTypeId IdentityTypeId { get; }
+    Guid CompanyId { get; }
 }

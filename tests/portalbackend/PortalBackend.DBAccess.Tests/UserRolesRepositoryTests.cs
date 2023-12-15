@@ -80,7 +80,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         data.Should().HaveCount(2);
-        data.Should().AllSatisfy(((Guid, string, IEnumerable<Guid> UserRoleIds) userData) => userData.UserRoleIds.Should().NotBeEmpty().And.AllSatisfy(userRoleId => userRoleIds.Should().Contain(userRoleId)));
+        data.Should().AllSatisfy(((Guid, IEnumerable<Guid> UserRoleIds) userData) => userData.UserRoleIds.Should().NotBeEmpty().And.AllSatisfy(userRoleId => userRoleIds.Should().Contain(userRoleId)));
     }
 
     #endregion

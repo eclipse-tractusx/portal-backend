@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +18,6 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -34,16 +32,16 @@ public class InvitationRepository : IInvitationRepository
     {
         _dbContext = dbContext;
     }
-    public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
+    public IAsyncEnumerable<(InvitationStatusId InvitationStatus, string? EmailId, IEnumerable<string> Roles)> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
         _dbContext.Invitations
             .AsNoTracking()
             .Where(invitation =>
                 invitation.CompanyApplicationId == applicationId &&
                 invitation.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)
-            .Select(invitation => new InvitedUserDetail(
-                invitation.CompanyUser!.Identity!.UserEntityId,
+            .Select(invitation => new ValueTuple<InvitationStatusId, string?, IEnumerable<string>>(
                 invitation.InvitationStatusId,
-                invitation.CompanyUser.Email))
+                invitation.CompanyUser!.Email,
+                invitation.CompanyUser.Identity!.IdentityAssignedRoles.Select(role => role.UserRole!.UserRoleText)))
             .AsAsyncEnumerable();
 
     public Task<Invitation?> GetInvitationStatusAsync(Guid companyUserId) =>

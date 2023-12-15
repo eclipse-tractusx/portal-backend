@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,8 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 
-public record InvitedUserDetail(string? UserId, InvitationStatusId InvitationStatus, string? EmailId);
+public class ProcessIdentityService : IIdentityService
+{
+    private readonly IIdentityData _identityData;
+    public ProcessIdentityService(IProcessIdentityDataBuilder processIdentityDataBuilder)
+    {
+        _identityData = processIdentityDataBuilder;
+    }
+
+    public IIdentityData IdentityData => _identityData;
+}

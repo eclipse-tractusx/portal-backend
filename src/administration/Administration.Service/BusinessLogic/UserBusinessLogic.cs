@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -45,7 +44,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IProvisioningDBAccess _provisioningDbAccess;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly IMailingService _mailingService;
     private readonly ILogger<UserBusinessLogic> _logger;
     private readonly UserSettings _settings;
@@ -75,7 +74,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         _userProvisioningService = userProvisioningService;
         _provisioningDbAccess = provisioningDbAccess;
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _mailingService = mailingService;
         _logger = logger;
         _settings = settings.Value;
@@ -98,7 +97,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     private async IAsyncEnumerable<string> CreateOwnCompanyUsersInternalAsync(IEnumerable<UserCreationInfo> userList)
     {
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityService.IdentityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(false);
 
         var distinctRoles = userList.SelectMany(user => user.Roles).Distinct().ToList();
 
@@ -161,12 +160,12 @@ public class UserBusinessLogic : IUserBusinessLogic
             Task.FromResult(Enumerable.Empty<UserRoleData>());
         }
 
-        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, roles, _identityService.IdentityData.CompanyId);
+        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, roles, _identityData.CompanyId);
     }
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo)
     {
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityService.IdentityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityData.IdentityId).ConfigureAwait(false);
         var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
         if (!userCreationInfo.Roles.Any())
@@ -227,9 +226,8 @@ public class UserBusinessLogic : IUserBusinessLogic
     public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(int page, int size, GetOwnCompanyUsersFilter filter)
     {
         var companyUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserQuery(
-            _identityService.IdentityData.CompanyId,
+            _identityData.CompanyId,
             filter.CompanyUserId,
-            filter.UserEntityId,
             filter.FirstName,
             filter.LastName,
             filter.Email,
@@ -245,7 +243,6 @@ public class UserBusinessLogic : IUserBusinessLogic
                 .Skip(skip)
                 .Take(take)
                 .Select(companyUser => new CompanyUserData(
-                    companyUser.Identity!.UserEntityId!,
                     companyUser.Id,
                     companyUser.Identity!.UserStatusId,
                     companyUser.Identity!.IdentityAssignedRoles.Select(x => x.UserRole!).Select(userRole => userRole.UserRoleText))
@@ -279,7 +276,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid userId)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var details = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserDetailsUntrackedAsync(userId, companyId).ConfigureAwait(false);
         if (details == null)
         {
@@ -294,16 +291,16 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             throw new ControllerArgumentException("businessPartnerNumbers must not exceed 20 characters", nameof(businessPartnerNumbers));
         }
-        var companyId = _identityService.IdentityData.CompanyId;
-        var user = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId).ConfigureAwait(false);
-        if (user == null || user.UserEntityId == null)
+        var companyId = _identityData.CompanyId;
+        var (assignedBusinessPartnerNumbers, isValidUser) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId).ConfigureAwait(false);
+        if (!isValidUser)
         {
             throw new NotFoundException($"user {userId} not found in company {companyId}");
         }
-
+        var iamUserId = await _provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(false) ?? throw new ConflictException("user {userId} not found in keycloak");
         var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-        await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
-        foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(user.AssignedBusinessPartnerNumbers))
+        await _provisioningManager.AddBpnAttributetoUserAsync(iamUserId, businessPartnerNumbers).ConfigureAwait(false);
+        foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(assignedBusinessPartnerNumbers))
         {
             businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(userId, businessPartnerToAdd);
         }
@@ -316,7 +313,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyOwnUserDetails> GetOwnUserDetails()
     {
-        var userId = _identityService.IdentityId;
+        var userId = _identityData.IdentityId;
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(_settings.UserAdminRoles).ToListAsync().ConfigureAwait(false);
         var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(userId, userRoleIds).ConfigureAwait(false);
@@ -329,7 +326,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails)
     {
-        var userId = _identityService.IdentityId;
+        var userId = _identityData.IdentityId;
         if (companyUserId != userId)
         {
             throw new ForbiddenException($"invalid userId {companyUserId} for user {userId}");
@@ -341,16 +338,13 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new ArgumentOutOfRangeException($"user {companyUserId} is not a shared idp user");
         }
         var companyUser = userData.CompanyUser;
-        if (string.IsNullOrWhiteSpace(companyUser.UserEntityId))
-        {
-            throw new ForbiddenException("UserEntityId must be set.");
-        }
 
+        var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {companyUserId} not found in keycloak");
         var iamIdpAlias = userData.IamIdpAlias;
-        var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.UserEntityId).ConfigureAwait(false);
+        var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, iamUserId).ConfigureAwait(false);
         if (userIdShared == null)
         {
-            throw new NotFoundException($"no shared realm userid found for {companyUser.UserEntityId} in realm {iamIdpAlias}");
+            throw new NotFoundException($"no shared realm userid found for {iamUserId} in realm {iamIdpAlias}");
         }
         await _provisioningManager.UpdateSharedRealmUserAsync(
             iamIdpAlias,
@@ -388,7 +382,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<int> DeleteOwnUserAsync(Guid companyUserId)
     {
-        var userId = _identityService.IdentityId;
+        var userId = _identityData.IdentityId;
         if (companyUserId != userId)
         {
             throw new ForbiddenException($"companyUser {companyUserId} is not the id of user {userId}");
@@ -405,7 +399,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         var iamIdpAlias = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasDataUntrackedAsync(companyId);
 
         await foreach (var accountData in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserAccountDataUntrackedAsync(userIds, companyId).ConfigureAwait(false))
@@ -437,46 +431,45 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     private async Task DeleteUserInternalAsync(string? sharedIdpAlias, CompanyUserAccountData accountData)
     {
-        var (userId, userEntityId, businessPartnerNumbers, roleIds, offerIds, invitationIds) = accountData;
-        if (userEntityId != null)
+        var (companyUserId, businessPartnerNumbers, roleIds, offerIds, invitationIds) = accountData;
+        var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(false);
+        if (iamUserId != null)
         {
-            await DeleteIamUserAsync(sharedIdpAlias, userEntityId).ConfigureAwait(false);
+            await DeleteIamUserAsync(sharedIdpAlias, iamUserId).ConfigureAwait(false);
         }
 
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(userId, i =>
-            {
-                i.UserEntityId = userEntityId;
-            },
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(
+            companyUserId,
+            null,
             i =>
             {
                 i.UserStatusId = UserStatusId.DELETED;
-                i.UserEntityId = null;
             });
 
         _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()
-            .DeleteCompanyUserAssignedBusinessPartners(businessPartnerNumbers.Select(bpn => (userId, bpn)));
+            .DeleteCompanyUserAssignedBusinessPartners(businessPartnerNumbers.Select(bpn => (companyUserId, bpn)));
 
         _portalRepositories.GetInstance<IOfferRepository>()
-            .DeleteAppFavourites(offerIds.Select(offerId => (offerId, userId)));
+            .DeleteAppFavourites(offerIds.Select(offerId => (offerId, companyUserId)));
 
         _portalRepositories.GetInstance<IUserRolesRepository>()
-            .DeleteCompanyUserAssignedRoles(roleIds.Select(userRoleId => (userId, userRoleId)));
+            .DeleteCompanyUserAssignedRoles(roleIds.Select(userRoleId => (companyUserId, userRoleId)));
 
         _portalRepositories.GetInstance<IApplicationRepository>()
             .DeleteInvitations(invitationIds);
     }
 
-    private async Task DeleteIamUserAsync(string? sharedIdpAlias, string userEntityId)
+    private async Task DeleteIamUserAsync(string? sharedIdpAlias, string iamUserId)
     {
         if (sharedIdpAlias != null)
         {
-            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(sharedIdpAlias, userEntityId).ConfigureAwait(false);
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(sharedIdpAlias, iamUserId).ConfigureAwait(false);
             if (userIdShared != null)
             {
                 await _provisioningManager.DeleteSharedRealmUserAsync(sharedIdpAlias, userIdShared).ConfigureAwait(false);
             }
         }
-        await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId).ConfigureAwait(false);
+        await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
     }
 
     private async Task<bool> CanResetPassword(Guid userId)
@@ -507,18 +500,18 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId)
     {
-        var identity = _identityService.IdentityData;
-        var idpUserName = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdpCategoryIdByUserIdAsync(companyUserId, identity.CompanyId).ConfigureAwait(false);
-        if (idpUserName != null && !string.IsNullOrWhiteSpace(idpUserName.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName.IdpName))
+        var (alias, isValidUser) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdpCategoryIdByUserIdAsync(companyUserId, _identityData.CompanyId).ConfigureAwait(false);
+        if (isValidUser && !string.IsNullOrWhiteSpace(alias))
         {
-            if (await CanResetPassword(identity.UserId).ConfigureAwait(false))
+            if (await CanResetPassword(_identityData.IdentityId).ConfigureAwait(false))
             {
-                await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
+                var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {companyUserId} not found in keycloak");
+                await _provisioningManager.ResetSharedUserPasswordAsync(alias, iamUserId).ConfigureAwait(false);
                 return true;
             }
             throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
         }
-        throw new NotFoundException($"Cannot identify companyId or shared idp : userId {companyUserId} is not associated with admin users company {identity.CompanyId}");
+        throw new NotFoundException($"Cannot identify companyId or shared idp : userId {companyUserId} is not associated with admin users company {_identityData.CompanyId}");
     }
 
     public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, int page, int size, CompanyUserFilter filter) =>
@@ -528,41 +521,37 @@ public class UserBusinessLogic : IUserBusinessLogic
             15,
             _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersPaginationSourceAsync(
                 appId,
-                _identityService.IdentityId,
+                _identityData.IdentityId,
                 new[] { OfferSubscriptionStatusId.ACTIVE },
                 new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
                 filter));
 
     public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber)
     {
-        var identity = _identityService.IdentityData;
         var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-        var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(userId, identity.CompanyId, businessPartnerNumber).ConfigureAwait(false);
+        var (isValidUser, isAssignedBusinessPartner, isSameCompany) = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(userId, _identityData.CompanyId, businessPartnerNumber).ConfigureAwait(false);
 
-        if (userWithBpn == default)
+        if (!isValidUser)
         {
             throw new NotFoundException($"user {userId} does not exist");
         }
 
-        if (!userWithBpn.IsAssignedBusinessPartner)
+        if (!isAssignedBusinessPartner)
         {
             throw new ForbiddenException($"businessPartnerNumber {businessPartnerNumber} is not assigned to user {userId}");
         }
 
-        if (userWithBpn.UserEntityId == null)
+        if (!isSameCompany)
         {
-            throw new ConflictException($"user {userId} is not associated with a user in keycloak");
+            throw new ForbiddenException($"userId {userId} and adminUserId {_identityData.IdentityId} do not belong to same company");
         }
 
-        if (!userWithBpn.IsValidUser)
-        {
-            throw new ForbiddenException($"userId {userId} and adminUserId {identity.UserId} do not belong to same company");
-        }
+        var iamUserId = await _provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {userId} is not associated with a user in keycloak");
 
         userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartner(userId, businessPartnerNumber);
 
-        await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(userWithBpn.UserEntityId, businessPartnerNumber).ConfigureAwait(false);
+        await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(iamUserId, businessPartnerNumber).ConfigureAwait(false);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

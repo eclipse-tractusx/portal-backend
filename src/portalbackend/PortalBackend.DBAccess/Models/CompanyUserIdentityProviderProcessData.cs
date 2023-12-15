@@ -25,7 +25,6 @@ public record CompanyUserIdentityProviderProcessData(
     string? FirstName,
     string? LastName,
     string? Email,
-    string? UserId,
     string CompanyName,
     string? Bpn,
     IEnumerable<ProviderLinkData> ProviderLinkData

@@ -60,7 +60,6 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validCompanyId,
             "test",
             "Only a test service account",
-            "test-1",
             "sa1",
             CompanyServiceAccountTypeId.MANAGED,
             sa =>
@@ -73,7 +72,6 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changedEntries = changeTracker.Entries().ToList();
         result.OfferSubscriptionId.Should().Be(_validSubscriptionId);
         result.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
-        result.ClientId.Should().Be("test-1");
         result.ClientClientId.Should().Be("sa1");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
@@ -127,7 +125,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBe(default);
-        result!.ClientId.Should().Be("dab9dd17-0d31-46c7-b313-aca61225dcd1");
+        result!.ClientClientId.Should().Be("sa-cl5-custodian-1");
     }
 
     [Fact]

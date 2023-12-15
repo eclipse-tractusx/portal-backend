@@ -179,13 +179,10 @@ public class ApplicationActivationService : IApplicationActivationService
             .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
         await foreach (var userData in invitedUsersData.ConfigureAwait(false))
         {
-            if (string.IsNullOrWhiteSpace(userData.UserEntityId))
-            {
-                throw new ConflictException($"UserEntityId must be set for company user {userData.CompanyUserId}.");
-            }
+            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
 
             assignedRoles = await _provisioningManager
-                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
+                .AssignClientRolesToCentralUserAsync(iamUserId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
                 .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
                 .ConfigureAwait(false);
 
@@ -200,7 +197,7 @@ public class ApplicationActivationService : IApplicationActivationService
 
             userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
             await _provisioningManager
-                .AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1))
+                .AddBpnAttributetoUserAsync(iamUserId, Enumerable.Repeat(businessPartnerNumber, 1))
                 .ConfigureAwait(false);
         }
 
@@ -226,6 +223,8 @@ public class ApplicationActivationService : IApplicationActivationService
                 throw new UnexpectedConditionException("userRoleIds should never be empty here");
             }
 
+            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+
             var roleNamesToDelete = userData.UserRoleIds
                 .Select(roleId => userRoles[roleId])
                 .GroupBy(clientRoleData => clientRoleData.ClientClientId)
@@ -233,7 +232,7 @@ public class ApplicationActivationService : IApplicationActivationService
                     clientRoleDataGroup => clientRoleDataGroup.Key,
                     clientRoleData => clientRoleData.Select(y => y.UserRoleText));
 
-            await _provisioningManager.DeleteClientRolesFromCentralUserAsync(userData.UserEntityId, roleNamesToDelete)
+            await _provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
                 .ConfigureAwait(false);
             userRolesRepository.DeleteCompanyUserAssignedRoles(userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
         }
@@ -277,7 +276,7 @@ public class ApplicationActivationService : IApplicationActivationService
             throw new ConflictException($"user(s) {string.Join(",", failedUserNames)} has no assigned email");
     }
 
-    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleConfig> roles)
+    private static async Task<IEnumerable<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleConfig> roles)
     {
         var roleData = await userRolesRepository
             .GetUserRoleDataUntrackedAsync(roles)

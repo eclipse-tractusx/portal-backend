@@ -32,11 +32,6 @@ public static class ControllerExtensions
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
         tokenConsumingFunction(controller.GetBearerToken());
 
-    public static Guid GetIdentityId(this ClaimsPrincipal user)
-    {
-        return user.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId);
-    }
-
     private static string GetBearerToken(this ControllerBase controller)
     {
         var authorization = controller.Request.Headers.Authorization.FirstOrDefault();
@@ -53,21 +48,5 @@ public static class ControllerExtensions
         }
 
         return bearer;
-    }
-
-    private static Guid GetGuidFromClaim(this IEnumerable<Claim> claims, string claimType)
-    {
-        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
-        if (string.IsNullOrWhiteSpace(claimValue))
-        {
-            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty", nameof(claims));
-        }
-
-        if (!Guid.TryParse(claimValue, out var result) || Guid.Empty == result)
-        {
-            throw new ControllerArgumentException($"Claim {claimType} must contain a Guid", nameof(claims));
-        }
-
-        return result;
     }
 }

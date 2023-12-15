@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,7 +22,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
@@ -35,12 +33,9 @@ public class FakePolicyEvaluator : IPolicyEvaluator
         var testScheme = "FakeScheme";
         var principal = new ClaimsPrincipal();
         principal.AddIdentity(new ClaimsIdentity(new[] {
-            new Claim(PortalClaimTypes.Sub, "3d8142f1-860b-48aa-8c2b-1ccb18699f65"),
+            new Claim(PortalClaimTypes.PreferredUserName, "ac1cf001-7fbc-1f2f-817f-bce058020001"),
             new Claim(ClaimTypes.Role, "Administrator"),
-            new Claim(ClaimTypes.NameIdentifier, "John"),
-            new Claim(PortalClaimTypes.IdentityId, "ac1cf001-7fbc-1f2f-817f-bce058020001"),
-            new Claim(PortalClaimTypes.IdentityType, IdentityTypeId.COMPANY_USER.ToString()),
-            new Claim(PortalClaimTypes.CompanyId, "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")
+            new Claim(ClaimTypes.NameIdentifier, "John")
         }, testScheme));
 
         return await Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal,

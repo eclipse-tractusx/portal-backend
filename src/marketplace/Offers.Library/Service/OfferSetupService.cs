@@ -48,7 +48,7 @@ public class OfferSetupService : IOfferSetupService
     private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
     private readonly IMailingService _mailingService;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly ILogger<OfferSetupService> _logger;
 
     /// <summary>
@@ -81,21 +81,20 @@ public class OfferSetupService : IOfferSetupService
         _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _mailingService = mailingService;
         _technicalUserProfileService = technicalUserProfileService;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _logger = logger;
     }
 
     public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IEnumerable<UserRoleConfig> itAdminRoles, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> serviceManagerRoles)
     {
-        var identity = _identityService.IdentityData;
-        _logger.LogDebug("AutoSetup started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", identity.CompanyId, data.RequestId, data.OfferUrl);
+        _logger.LogDebug("AutoSetup started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", _identityData.CompanyId, data.RequestId, data.OfferUrl);
         if (data.OfferUrl.Contains('#', StringComparison.OrdinalIgnoreCase))
         {
             throw new ControllerArgumentException($"OfferUrl {data.OfferUrl} must not contain #");
         }
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var offerDetails = await GetAndValidateOfferDetails(data.RequestId, identity.CompanyId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
+        var offerDetails = await GetAndValidateOfferDetails(data.RequestId, _identityData.CompanyId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
 
         offerSubscriptionsRepository.AttachAndModifyOfferSubscription(data.RequestId, subscription =>
         {
@@ -110,7 +109,7 @@ public class OfferSetupService : IOfferSetupService
                     appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
                     appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
                 });
-            await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, identity.UserId).ConfigureAwait(false);
+            await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(false);
             await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
             return new OfferAutoSetupResponseData(null, null);
@@ -129,7 +128,7 @@ public class OfferSetupService : IOfferSetupService
         var createTechnicalUserData = new CreateTechnicalUserData(offerDetails.CompanyId, offerDetails.OfferName, offerDetails.Bpn, technicalUserClientId, offerTypeId == OfferTypeId.APP, true);
         var technicalUserInfoData = await CreateTechnicalUserForSubscription(data.RequestId, createTechnicalUserData).ConfigureAwait(false);
 
-        await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, identity.UserId).ConfigureAwait(false);
+        await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(false);
         await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -403,7 +402,7 @@ public class OfferSetupService : IOfferSetupService
     /// <inheritdoc />
     public async Task StartAutoSetupAsync(OfferAutoSetupData data, OfferTypeId offerTypeId)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         _logger.LogDebug("AutoSetup Process started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", companyId, data.RequestId, data.OfferUrl);
         if (data.OfferUrl.Contains('#', StringComparison.OrdinalIgnoreCase))
         {
@@ -450,7 +449,7 @@ public class OfferSetupService : IOfferSetupService
             case true when offerDetails.AppInstanceIds.Count() != 1:
                 throw new ConflictException("There must only be one app instance for single instance apps");
             default:
-                if (offerDetails.ProviderCompanyId != _identityService.IdentityData.CompanyId)
+                if (offerDetails.ProviderCompanyId != _identityData.CompanyId)
                 {
                     throw new ConflictException("Subscription can only be activated by the provider of the offer");
                 }
@@ -559,10 +558,10 @@ public class OfferSetupService : IOfferSetupService
     {
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, null, true).ConfigureAwait(false);
         if (!await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityService.IdentityData.CompanyId).ConfigureAwait(false))
+            .CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityData.CompanyId).ConfigureAwait(false))
         {
             throw new ConflictException(
-                $"Company {_identityService.IdentityData.CompanyId} must be provider of the offer for offerSubscription {offerSubscriptionId}");
+                $"Company {_identityData.CompanyId} must be provider of the offer for offerSubscription {offerSubscriptionId}");
         }
 
         _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, 1));

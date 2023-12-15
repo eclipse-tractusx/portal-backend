@@ -24,16 +24,16 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
 public class SubscriptionConfigurationControllerTests
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private static readonly Guid OfferSubscriptionId = new("4C1A6851-D4E7-4E10-A011-3732CD049999");
     private static readonly Guid CompanyId = new("4C1A6851-D4E7-4E10-A011-3732CD049999");
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly ISubscriptionConfigurationBusinessLogic _logic;
     private readonly SubscriptionConfigurationController _controller;
     private readonly Fixture _fixture;
@@ -41,9 +41,13 @@ public class SubscriptionConfigurationControllerTests
     public SubscriptionConfigurationControllerTests()
     {
         _fixture = new Fixture();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         _logic = A.Fake<ISubscriptionConfigurationBusinessLogic>();
         _controller = new SubscriptionConfigurationController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId, _identity);
+        _controller.AddControllerContextWithClaim(_identity);
     }
 
     [Fact]

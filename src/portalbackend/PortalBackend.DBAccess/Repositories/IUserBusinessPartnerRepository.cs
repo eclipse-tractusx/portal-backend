@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -27,5 +26,5 @@ public interface IUserBusinessPartnerRepository
     CompanyUserAssignedBusinessPartner CreateCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber);
     CompanyUserAssignedBusinessPartner DeleteCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber);
     void DeleteCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserAssignedBusinessPartnerIds);
-    Task<(string? UserEntityId, bool IsAssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, Guid userCompanyId, string businessPartnerNumber);
+    Task<(bool IsValidUser, bool IsAssignedBusinessPartner, bool IsSameCompany)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, Guid userCompanyId, string businessPartnerNumber);
 }

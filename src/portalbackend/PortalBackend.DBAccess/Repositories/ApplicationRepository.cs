@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -221,7 +220,6 @@ public class ApplicationRepository : IApplicationRepository
             .Where(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE)
             .Select(companyUser => new CompanyInvitedUserData(
                 companyUser!.Id,
-                companyUser.Identity!.UserEntityId,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(companyUserAssignedBusinessPartner => companyUserAssignedBusinessPartner.BusinessPartnerNumber),
                 companyUser.Identity!.IdentityAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
             .AsAsyncEnumerable();

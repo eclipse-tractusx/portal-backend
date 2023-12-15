@@ -50,6 +50,7 @@ public class Identity : IBaseEntity, IAuditableV1
     [JsonPropertyName("user_status_id")]
     public UserStatusId UserStatusId { get; set; }
 
+    [Obsolete("remove as soon test-data has been cleaned up")]
     [StringLength(36)]
     public string? UserEntityId { get; set; }
 

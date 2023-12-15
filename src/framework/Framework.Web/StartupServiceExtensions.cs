@@ -89,7 +89,7 @@ public static class StartupServiceExtensions
             .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new[] { "keycloak" });
 
         services.AddHttpContextAccessor();
-        services.AddClaimsIdentityIdDetermination();
+        services.AddClaimsIdentityService();
 
         services.AddDateTimeProvider();
         services.AddPublicInfos();

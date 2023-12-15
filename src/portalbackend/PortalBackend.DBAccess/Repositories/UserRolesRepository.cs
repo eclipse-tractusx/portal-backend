@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -245,16 +244,14 @@ public class UserRolesRepository : IUserRolesRepository
                 instance.App!.UserRoles.Select(role => new ValueTuple<Guid, string>(role.Id, role.UserRoleText))))
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds) =>
+    public IAsyncEnumerable<(Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .SelectMany(application => application.Company!.Identities)
-            .Where(user => user.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)) &&
-                           user.UserEntityId != null)
-            .Select(user => new ValueTuple<Guid, string, IEnumerable<Guid>>(
+            .Where(user => user.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)))
+            .Select(user => new ValueTuple<Guid, IEnumerable<Guid>>(
                 user.Id,
-                user.UserEntityId!,
                 user.IdentityAssignedRoles.Where(assigned => userRoleIds.Contains(assigned.UserRoleId)).Select(assigned => assigned.UserRoleId)))
             .ToAsyncEnumerable();
 
