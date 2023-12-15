@@ -53,12 +53,18 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             .Add(idp).Entity;
     }
 
+    public void DeleteIdentityProvider(Guid identityProviderId) =>
+        _context.IdentityProviders.Remove(new IdentityProvider(identityProviderId, default, default, Guid.Empty, default));
+
     public CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
         _context.CompanyIdentityProviders
             .Add(new CompanyIdentityProvider(
                 companyId,
                 identityProviderId
             )).Entity;
+
+    public void DeleteCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
+        _context.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
 
     public void CreateCompanyIdentityProviders(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdIdentityProviderIds) =>
         _context.CompanyIdentityProviders
@@ -73,6 +79,9 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             new IamIdentityProvider(
                 idpAlias,
                 identityProviderId)).Entity;
+
+    public void DeleteIamIdentityProvider(string idpAlias) =>
+        _context.IamIdentityProviders.Remove(new IamIdentityProvider(idpAlias, Guid.Empty));
 
     public Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId) =>
         _context.IdentityProviders
