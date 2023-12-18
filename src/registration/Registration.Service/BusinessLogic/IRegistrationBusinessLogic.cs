@@ -39,6 +39,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId);
 
         IAsyncEnumerable<CompanyApplicationWithStatus> GetAllApplicationsForUserWithStatus();
+        IAsyncEnumerable<CompanyApplicationDeclineData> GetApplicationsDeclineData();
         Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId);
         Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails);
         Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo);
