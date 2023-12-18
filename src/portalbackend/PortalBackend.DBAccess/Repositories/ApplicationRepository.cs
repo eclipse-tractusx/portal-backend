@@ -165,6 +165,20 @@ public class ApplicationRepository : IApplicationRepository
                     .Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
             .SingleOrDefaultAsync();
 
+    public IAsyncEnumerable<CompanyApplicationDeclineData> GetCompanyApplicationsDeclineData(Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application =>
+                application.Company!.Id == userCompanyId &&
+                applicationStatusIds.Contains(application.ApplicationStatusId))
+            .Select(application => new CompanyApplicationDeclineData(
+                application.Id,
+                application.ApplicationStatusId,
+                application.Company!.Name,
+                application.Company!.Identities.Where(identity => identity.CompanyUser!.Email != null).Select(
+                    identity => identity.CompanyUser!.Email!)))
+            .AsAsyncEnumerable();
+
     public Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()

@@ -48,13 +48,22 @@ public class RegistrationSettings
     public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
 
     /// <summary>
-    /// Document Type Id
+    /// ApplicationStatusIds that permit deletion of documents
     /// </summary>
     /// <value></value>
     [Required]
     [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<CompanyApplicationStatusId> ApplicationStatusIds { get; set; } = null!;
+
+    /// <summary>
+    /// ApplicationStatusIds that permit decline of application by invited user
+    /// </summary>
+    /// <value></value>
+    [Required]
+    [EnumEnumeration]
+    [DistinctValues]
+    public IEnumerable<CompanyApplicationStatusId> ApplicationDeclineStatusIds { get; set; } = null!;
 
     /// <summary>
     /// RegistrationDocument Type Id
