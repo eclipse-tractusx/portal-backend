@@ -206,6 +206,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<CompanyApplicationWithStatus> GetAllApplicationsForUserWithStatus() =>
         _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(_identityData.CompanyId);
 
+    public IAsyncEnumerable<CompanyApplicationDeclineData> GetApplicationsDeclineData() =>
+        _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsDeclineData(_identityData.CompanyId, _settings.ApplicationDeclineStatusIds);
+
     public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationDetailDataAsync(applicationId, _identityData.CompanyId).ConfigureAwait(false);

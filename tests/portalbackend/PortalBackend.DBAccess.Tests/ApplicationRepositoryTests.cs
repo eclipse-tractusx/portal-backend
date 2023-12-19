@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -529,6 +530,52 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
             x => x.State == EntityState.Modified && ((CompanyApplication)x.Entity).Id == companyApplicationData[2].applicationId && ((CompanyApplication)x.Entity).ApplicationStatusId == CompanyApplicationStatusId.DECLINED,
             x => x.State == EntityState.Unchanged && ((CompanyApplication)x.Entity).Id == companyApplicationData[3].applicationId && ((CompanyApplication)x.Entity).ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
         );
+    }
+
+    #endregion
+
+    #region GetCompanyApplicationsDeclineData
+
+    [Fact]
+    public async Task GetCompanyApplicationsDeclineData_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        var statusIds = new[] {
+            CompanyApplicationStatusId.CREATED,
+            CompanyApplicationStatusId.ADD_COMPANY_DATA,
+            CompanyApplicationStatusId.INVITE_USER,
+            CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
+            CompanyApplicationStatusId.UPLOAD_DOCUMENTS,
+            CompanyApplicationStatusId.VERIFY
+        };
+
+        // Act
+        var result = await sut.GetCompanyApplicationsDeclineData(CompanyId, statusIds).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetCompanyApplicationsDeclineData_WithSubmittedApplication_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        var statusIds = new[] {
+            CompanyApplicationStatusId.SUBMITTED
+        };
+
+        // Act
+        var result = await sut.GetCompanyApplicationsDeclineData(CompanyId, statusIds).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle().Which.Should().Match<CompanyApplicationDeclineData>(x =>
+            x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9f") &&
+            x.ApplicationStatus == CompanyApplicationStatusId.SUBMITTED &&
+            x.CompanyName == "CX-Test-Access" &&
+            x.Users.Count() == 1 &&
+            x.Users.First() == "cxadmin@acme.corp");
     }
 
     #endregion

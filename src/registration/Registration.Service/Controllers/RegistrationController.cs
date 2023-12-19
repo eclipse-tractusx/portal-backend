@@ -168,6 +168,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
             _registrationBusinessLogic.GetAllApplicationsForUserWithStatus();
 
         /// <summary>
+        /// Gets the applications with each status, company-name and linked users
+        /// </summary>
+        /// <returns>Returns a list of company applications</returns>
+        /// <remarks>Example: Get: /api/registration/applications/declinedata</remarks>
+        /// <response code="200">Returns a list of company applications</response>
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
+        [Route("applications/declinedata")]
+        [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationDeclineData>), StatusCodes.Status200OK)]
+        public IAsyncEnumerable<CompanyApplicationDeclineData> GetApplicationsDeclineData() =>
+            _registrationBusinessLogic.GetApplicationsDeclineData();
+
+        /// <summary>
         /// Sets the status of a specific application.
         /// </summary>
         /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application which status should be set.</param>
