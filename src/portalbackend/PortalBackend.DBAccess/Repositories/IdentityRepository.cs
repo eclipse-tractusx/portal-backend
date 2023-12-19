@@ -31,13 +31,14 @@ public class IdentityRepository : IIdentityRepository
     {
         _context = context;
     }
+
     public Task<Guid> GetActiveCompanyIdByIdentityId(Guid identityId) =>
-        _context.Identities.Where(x => x.Id == identityId && x.UserEntityId != null && x.UserStatusId == UserStatusId.ACTIVE)
+        _context.Identities.Where(x => x.Id == identityId && x.UserStatusId == UserStatusId.ACTIVE)
             .Select(x => x.CompanyId)
             .SingleOrDefaultAsync();
 
     public Task<(IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByIdentityId(Guid identityId) =>
-        _context.Identities.Where(x => x.Id == identityId && x.UserEntityId != null && x.UserStatusId == UserStatusId.ACTIVE)
+        _context.Identities.Where(x => x.Id == identityId && x.UserStatusId == UserStatusId.ACTIVE)
             .Select(x => new ValueTuple<IdentityTypeId, Guid>(
                 x.IdentityTypeId,
                 x.CompanyId))
