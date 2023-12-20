@@ -23,22 +23,22 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record IdentityProviderEditableDetails(string displayName)
+public record IdentityProviderEditableDetails(string DisplayName)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IdentityProviderEditableDetailsOidc? oidc { get; init; } = null;
+    public IdentityProviderEditableDetailsOidc? Oidc { get; init; } = null;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IdentityProviderEditableDetailsSaml? saml { get; init; } = null;
+    public IdentityProviderEditableDetailsSaml? Saml { get; init; } = null;
 }
 
-public record IdentityProviderEditableDetailsOidc(string metadataUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId)
+public record IdentityProviderEditableDetailsOidc(string MetadataUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? secret { get; init; } = null;
+    public string? Secret { get; init; } = null;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IamIdentityProviderSignatureAlgorithm? signatureAlgorithm { get; init; } = null;
+    public IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm { get; init; } = null;
 }
 
-public record IdentityProviderEditableDetailsSaml(string serviceProviderEntityId, string singleSignOnServiceUrl);
+public record IdentityProviderEditableDetailsSaml(string ServiceProviderEntityId, string SingleSignOnServiceUrl);

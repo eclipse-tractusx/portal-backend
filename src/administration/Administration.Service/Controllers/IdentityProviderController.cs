@@ -88,7 +88,7 @@ public class IdentityProviderController : ControllerBase
     public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery] IamIdentityProviderProtocol protocol, [FromQuery] IdentityProviderTypeId typeId, [FromQuery] string? displayName = null)
     {
         var details = await _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, typeId, displayName).ConfigureAwait(false);
-        return (ActionResult<IdentityProviderDetails>)CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details);
+        return (ActionResult<IdentityProviderDetails>)CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.IdentityProviderId }, details);
     }
 
     /// <summary>

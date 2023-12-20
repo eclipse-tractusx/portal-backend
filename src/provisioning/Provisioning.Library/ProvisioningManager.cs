@@ -178,7 +178,10 @@ public partial class ProvisioningManager : IProvisioningManager
         return new IdentityProviderConfigOidc(
             identityProvider.DisplayName,
             redirectUri,
+            identityProvider.Config.TokenUrl,
+            identityProvider.Config.LogoutUrl,
             identityProvider.Config.ClientId,
+            identityProvider.Config.ClientSecret,
             identityProvider.Enabled ?? false,
             identityProvider.Config.AuthorizationUrl,
             IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod),

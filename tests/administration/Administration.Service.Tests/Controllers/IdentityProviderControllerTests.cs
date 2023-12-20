@@ -51,7 +51,7 @@ public class IdentityProviderControllerTests
 
         //Assert
         result.Should().Be(data);
-        A.CallTo(() => _logic.UpdateOwnCompanyIdentityProviderAsync(id, A<IdentityProviderEditableDetails>.That.Matches(x => x.displayName == "test"))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateOwnCompanyIdentityProviderAsync(id, A<IdentityProviderEditableDetails>.That.Matches(x => x.DisplayName == "test"))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

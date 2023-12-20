@@ -22,5 +22,5 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-public record IdentityProviderConfigOidc(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm);
+public record IdentityProviderConfigOidc(string DisplayName, string RedirectUrl, string TokenUrl, string? LogoutUrl, string ClientId, string? ClientSecret, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm);
 public record IdentityProviderEditableConfigOidc(string Alias, string DisplayName, string MetadataUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, string? Secret = null, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm = null);
