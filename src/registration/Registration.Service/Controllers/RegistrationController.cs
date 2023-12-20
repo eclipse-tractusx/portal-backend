@@ -175,10 +175,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="200">Returns a list of company applications</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
-        [Authorize(Policy = PolicyTypes.ValidCompany)]
+        [Authorize(Policy = PolicyTypes.CompanyUser)]
         [Route("applications/declinedata")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationDeclineData>), StatusCodes.Status200OK)]
-        public IAsyncEnumerable<CompanyApplicationDeclineData> GetApplicationsDeclineData() =>
+        public Task<IEnumerable<CompanyApplicationDeclineData>> GetApplicationsDeclineData() =>
             _registrationBusinessLogic.GetApplicationsDeclineData();
 
         /// <summary>

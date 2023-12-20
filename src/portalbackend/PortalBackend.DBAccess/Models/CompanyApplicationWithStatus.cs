@@ -33,6 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
     public record CompanyApplicationDeclineData(
         Guid ApplicationId,
         CompanyApplicationStatusId ApplicationStatus,
+        string User,
         string CompanyName,
         IEnumerable<string> Users
     );
