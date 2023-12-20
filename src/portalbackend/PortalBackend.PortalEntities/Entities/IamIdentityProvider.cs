@@ -41,6 +41,8 @@ public class IamIdentityProvider
     [MaxLength(255)]
     public string IamIdpAlias { get; private set; }
 
+    public string? MetadataUrl { get; set; }
+
     // Navigation properties
     public virtual IdentityProvider? IdentityProvider { get; private set; }
 }

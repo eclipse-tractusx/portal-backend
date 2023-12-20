@@ -83,6 +83,14 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     public void DeleteIamIdentityProvider(string idpAlias) =>
         _context.IamIdentityProviders.Remove(new IamIdentityProvider(idpAlias, Guid.Empty));
 
+    public void AttachAndModifyIamIdentityProvider(string idpAlias, Action<IamIdentityProvider>? initialize, Action<IamIdentityProvider> modify)
+    {
+        var iamIdentityProvider = new IamIdentityProvider(idpAlias, Guid.Empty);
+        initialize?.Invoke(iamIdentityProvider);
+        _context.Attach(iamIdentityProvider);
+        modify(iamIdentityProvider);
+    }
+
     public Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId) =>
         _context.IdentityProviders
             .AsNoTracking()
@@ -104,61 +112,96 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 true))
             .SingleOrDefaultAsync();
 
-    public Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnOrOwnerCompany, IdentityProviderTypeId TypeId)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, Guid companyId) =>
+    public Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnOrOwnerCompany, IdentityProviderTypeId TypeId, string? MetadataUrl)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>
-                new ValueTuple<string?, IdentityProviderCategoryId, bool, IdentityProviderTypeId>(
+                new ValueTuple<string?, IdentityProviderCategoryId, bool, IdentityProviderTypeId, string?>(
                     identityProvider.IamIdentityProvider!.IamIdpAlias,
                     identityProvider.IdentityProviderCategoryId,
                     identityProvider.OwnerId == companyId || identityProvider.Companies.Any(company => company.Id == companyId),
-                    identityProvider.IdentityProviderTypeId))
+                    identityProvider.IdentityProviderTypeId,
+                    identityProvider.IamIdentityProvider.MetadataUrl))
             .SingleOrDefaultAsync();
 
-    public Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnerCompany, IdentityProviderTypeId TypeId, IEnumerable<ConnectedCompanyData> ConnectedCompanies)> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId, Guid companyId) =>
+    public Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnerCompany, IdentityProviderTypeId TypeId, string? MetadataUrl, IEnumerable<ConnectedCompanyData> ConnectedCompanies)> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>
-                new ValueTuple<string?, IdentityProviderCategoryId, bool, IdentityProviderTypeId, IEnumerable<ConnectedCompanyData>>(
+                new ValueTuple<string?, IdentityProviderCategoryId, bool, IdentityProviderTypeId, string?, IEnumerable<ConnectedCompanyData>>(
                     identityProvider.IamIdentityProvider!.IamIdpAlias,
                     identityProvider.IdentityProviderCategoryId,
                     identityProvider.OwnerId == companyId,
                     identityProvider.IdentityProviderTypeId,
-                    identityProvider.Companies.Select(c => new ConnectedCompanyData(c.Id, c.Name))
-                    ))
+                    identityProvider.IamIdentityProvider.MetadataUrl,
+                    identityProvider.Companies.Select(c => new ConnectedCompanyData(c.Id, c.Name))))
             .SingleOrDefaultAsync();
 
-    public Task<(bool IsOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase, bool CompanyUsersLinked, string IdpOwnerName)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId, bool queryAliase) =>
+    public Task<(bool IsOwner, (string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, string? MetadataUrl) IdentityProviderData, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase, bool CompanyUsersLinked, string IdpOwnerName)> GetOwnCompanyIdentityProviderStatusUpdateData(Guid identityProviderId, Guid companyId, bool queryAliase) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>
-                new ValueTuple<bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?, bool, string>(
+                new ValueTuple<bool, (string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?), IEnumerable<(Guid, IEnumerable<string>)>?, bool, string>(
                     identityProvider.OwnerId == companyId,
-                    identityProvider.IamIdentityProvider!.IamIdpAlias,
-                    identityProvider.IdentityProviderCategoryId,
-                    identityProvider.IdentityProviderTypeId,
-                    queryAliase
-                        ? identityProvider.Companies
-                            .Select(c => new ValueTuple<Guid, IEnumerable<string>>(
-                                c.Id,
-                                c.IdentityProviders
-                                    .Where(i => i.IamIdentityProvider != null)
-                                    .Select(i => i.IamIdentityProvider!.IamIdpAlias)))
-                        : null,
+                    new ValueTuple<string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?>(
+                        identityProvider.IamIdentityProvider!.IamIdpAlias,
+                        identityProvider.IdentityProviderCategoryId,
+                        identityProvider.IdentityProviderTypeId,
+                        identityProvider.IamIdentityProvider.MetadataUrl),
+                        queryAliase
+                            ? identityProvider.Companies
+                                .Select(c => new ValueTuple<Guid, IEnumerable<string>>(
+                                    c.Id,
+                                    c.IdentityProviders
+                                        .Where(i => i.IamIdentityProvider != null)
+                                        .Select(i => i.IamIdentityProvider!.IamIdpAlias)))
+                            : null,
                     identityProvider.CompanyUserAssignedIdentityProviders.Any(),
                     identityProvider.Owner!.Name
                 ))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string? Alias, IdentityProviderTypeId TypeId)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId) =>
+    public Task<(bool IsOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, string? MetadataUrl)> GetOwnCompanyIdentityProviderUpdateData(Guid identityProviderId, Guid companyId) =>
+        _context.IdentityProviders
+            .Where(identityProvider => identityProvider.Id == identityProviderId)
+            .Select(identityProvider =>
+                new ValueTuple<bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?>(
+                    identityProvider.OwnerId == companyId,
+                    identityProvider.IamIdentityProvider!.IamIdpAlias,
+                    identityProvider.IdentityProviderCategoryId,
+                    identityProvider.IdentityProviderTypeId,
+                    identityProvider.IamIdentityProvider.MetadataUrl
+                ))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool IsOwner, string? Alias, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)> CompanyIdAliase, string IdpOwnerName)> GetOwnCompanyIdentityProviderUpdateDataForDelete(Guid identityProviderId, Guid companyId) =>
+        _context.IdentityProviders
+            .Where(identityProvider => identityProvider.Id == identityProviderId)
+            .Select(identityProvider =>
+                new ValueTuple<bool, string?, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>, string>(
+                    identityProvider.OwnerId == companyId,
+                    identityProvider.IamIdentityProvider!.IamIdpAlias,
+                    identityProvider.IdentityProviderTypeId,
+                    identityProvider.Companies
+                        .Select(c => new ValueTuple<Guid, IEnumerable<string>>(
+                            c.Id,
+                            c.IdentityProviders
+                                .Where(i => i.IamIdentityProvider != null)
+                                .Select(i => i.IamIdentityProvider!.IamIdpAlias))),
+                    identityProvider.Owner!.Name
+                ))
+            .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string? Alias, IdentityProviderTypeId TypeId, string? MetadataUrl)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId) =>
         _context.IdentityProviders
             .AsNoTracking()
             .Where(identityProvider => identityProvider.OwnerId == companyId || identityProvider.Companies.Any(company => company.Id == companyId))
-            .Select(identityProvider => new ValueTuple<Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId>(
+            .Select(identityProvider => new ValueTuple<Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?>(
                 identityProvider.Id,
                 identityProvider.IdentityProviderCategoryId,
                 identityProvider.IamIdentityProvider!.IamIdpAlias,
-                identityProvider.IdentityProviderTypeId
+                identityProvider.IdentityProviderTypeId,
+                identityProvider.IamIdentityProvider.MetadataUrl
             ))
             .ToAsyncEnumerable();
 
