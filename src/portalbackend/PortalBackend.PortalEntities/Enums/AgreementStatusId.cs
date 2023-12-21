@@ -17,18 +17,21 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyRoleConsentData(
-    CompanyRoleId CompanyRoleId,
-    string? RoleDescription,
-    bool CompanyRolesActive,
-    IEnumerable<ConsentAgreementData> Agreements
-);
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public record ConsentAgreementData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId ConsentStatus, string? AgreementLink);
+/// <summary>
+/// Possible status for agreements
+/// </summary>
+public enum AgreementStatusId
+{
+    /// <summary>
+    /// The agreement status is active
+    /// </summary>
+    ACTIVE = 1,
 
-public record ConsentStatusDetails(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId);
-
-public record AgreementStatusData(Guid AgreementId, AgreementStatusId AgreementStatusId);
+    /// <summary>
+    /// The agreement status is inactive
+    /// </summary>
+    INACTIVE = 2,
+}

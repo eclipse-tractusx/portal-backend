@@ -184,7 +184,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
 
         var agreementAssignedRoleData = await companyRepositories.GetAgreementAssignedRolesDataAsync(companyRoleConsentDetails.Select(x => x.CompanyRole))
-                .PreSortedGroupBy(x => x.CompanyRoleId, x => x.AgreementId)
+                .PreSortedGroupBy(x => x.CompanyRoleId, x => x.agreementStatusData)
                 .ToDictionaryAsync(g => g.Key, g => g.AsEnumerable()).ConfigureAwait(false);
 
         var joined = companyRoleConsentDetails
@@ -195,9 +195,9 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                     CompanyRoleId: details.CompanyRole,
                     AllActiveAgreements: details.Agreements.All(x => x.ConsentStatus == ConsentStatusId.ACTIVE),
                     AllInActiveAgreements: details.Agreements.All(x => x.ConsentStatus == ConsentStatusId.INACTIVE),
-                    Agreements: details.Agreements,
-                    MissingAgreementIds: data.Value.Except(details.Agreements.Where(x => x.ConsentStatus == ConsentStatusId.ACTIVE).Select(x => x.AgreementId)),
-                    ExtraAgreementIds: details.Agreements.ExceptBy(data.Value, x => x.AgreementId).Select(x => x.AgreementId)))
+                    Agreements: details.Agreements.ExceptBy(data.Value.Where(x => x.AgreementStatusId == AgreementStatusId.INACTIVE).Select(x => x.AgreementId), x => x.AgreementId),
+                    MissingAgreementIds: data.Value.Select(x => x.AgreementId).Except(details.Agreements.Where(x => x.ConsentStatus == ConsentStatusId.ACTIVE).Select(x => x.AgreementId)),
+                    ExtraAgreementIds: details.Agreements.ExceptBy(data.Value.Select(x => x.AgreementId), x => x.AgreementId).Select(x => x.AgreementId)))
             .ToList();
 
         var missing = joined.Where(x => x.MissingAgreementIds.Any() && !x.AllInActiveAgreements);

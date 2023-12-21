@@ -149,7 +149,7 @@ public interface ICompanyRepository
     /// </summary>
     /// <param name="companyRoleIds">Id of the CompanyRole</param>
     /// <returns>Returns the AgreementAssignedCompanyRoles Data</returns>
-    IAsyncEnumerable<(Guid AgreementId, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync(IEnumerable<CompanyRoleId> companyRoleIds);
+    IAsyncEnumerable<(AgreementStatusData agreementStatusData, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync(IEnumerable<CompanyRoleId> companyRoleIds);
 
     /// <summary>
     /// Gets the the CompanyStatus Data

@@ -196,6 +196,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyIdpView> CompanyIdpView { get; set; } = default!;
     public virtual DbSet<CompanyConnectorView> CompanyConnectorView { get; set; } = default!;
     public virtual DbSet<CompanyRoleCollectionRolesView> CompanyRoleCollectionRolesView { get; set; } = default!;
+    public virtual DbSet<AgreementStatus> AgreementStatuses { get; set; } = default!;
+    public virtual DbSet<AgreementView> AgreementView { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -218,6 +220,12 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.Agreements)
                 .HasForeignKey(d => d.IssuerCompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.Property(a => a.AgreementStatusId)
+                .HasDefaultValue(AgreementStatusId.ACTIVE);
+
+            entity.Property(a => a.Mandatory)
+                .HasDefaultValue(true);
         });
 
         modelBuilder.Entity<AgreementAssignedCompanyRole>(entity =>
@@ -1482,6 +1490,15 @@ public class PortalDbContext : DbContext
         {
             entity.HasAuditV1Triggers<Document, AuditDocument20231115>();
         });
+        modelBuilder.Entity<AgreementStatus>()
+            .HasData(
+                Enum.GetValues(typeof(AgreementStatusId))
+                    .Cast<AgreementStatusId>()
+                    .Select(e => new AgreementStatus(e))
+            );
+        modelBuilder.Entity<AgreementView>()
+            .ToView("agreement_view", "portal")
+            .HasNoKey();
     }
 
     /// <inheritdoc />

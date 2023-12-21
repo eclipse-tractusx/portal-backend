@@ -17,18 +17,31 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.ComponentModel.DataAnnotations;
 
-public record CompanyRoleConsentData(
-    CompanyRoleId CompanyRoleId,
-    string? RoleDescription,
-    bool CompanyRolesActive,
-    IEnumerable<ConsentAgreementData> Agreements
-);
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public record ConsentAgreementData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId ConsentStatus, string? AgreementLink);
+public class AgreementStatus
+{
+    private AgreementStatus()
+    {
+        Label = null!;
+        Agreements = new HashSet<Agreement>();
+    }
 
-public record ConsentStatusDetails(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId);
+    public AgreementStatus(AgreementStatusId agreementStatusId) : this()
+    {
+        Id = agreementStatusId;
+        Label = agreementStatusId.ToString();
+    }
 
-public record AgreementStatusData(Guid AgreementId, AgreementStatusId AgreementStatusId);
+    public AgreementStatusId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+
+    // Navigation properties
+    public virtual ICollection<Agreement> Agreements { get; private set; }
+}

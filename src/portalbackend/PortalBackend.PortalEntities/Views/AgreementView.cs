@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -17,18 +16,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+// See https://aka.ms/new-console-template for more information
 
-public record CompanyRoleConsentData(
-    CompanyRoleId CompanyRoleId,
-    string? RoleDescription,
-    bool CompanyRolesActive,
-    IEnumerable<ConsentAgreementData> Agreements
-);
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 
-public record ConsentAgreementData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId ConsentStatus, string? AgreementLink);
-
-public record ConsentStatusDetails(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId);
-
-public record AgreementStatusData(Guid AgreementId, AgreementStatusId AgreementStatusId);
+public class AgreementView
+{
+    public Guid AgreementId { get; set; }
+    public string AgreementName { get; set; } = null!;
+    public string AgreementCompanyRole { get; set; } = null!;
+    public string AgreementStatus { get; set; } = null!;
+    public bool Mandatory { get; set; }
+}
