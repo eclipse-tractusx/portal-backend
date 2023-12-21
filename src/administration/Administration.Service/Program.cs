@@ -83,6 +83,7 @@ WebApplicationBuildRunner
 
         builder.Services
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
+            .AddSingleton<IErrorMessageContainer, AdministrationConnectorErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationRegistrationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ProvisioningServiceErrorMessageContainer>();
 
