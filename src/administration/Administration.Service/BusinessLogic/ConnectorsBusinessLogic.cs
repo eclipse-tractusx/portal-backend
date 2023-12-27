@@ -255,7 +255,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     {
         var companyId = _identityData.CompanyId;
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
-        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false) ?? throw new NotFoundException($"Connector {connectorId} does not exist");
+        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
         if (!result.IsProvidingOrHostCompany)
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, new ErrorParameter[] { new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString()) });
