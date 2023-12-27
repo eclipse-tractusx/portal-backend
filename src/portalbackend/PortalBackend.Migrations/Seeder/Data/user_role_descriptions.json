@@ -208,5 +208,25 @@
     "user_role_id": "9956fa8d-e454-49ca-a3b1-83e2c106fe59",
     "language_short_name": "en",
     "description": "View, add and delete business partner records from the business partner data pool."
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e6",
+    "language_short_name": "de",
+    "description": "Zugriff auf das BPDM Gate - lesend."
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e6",
+    "language_short_name": "en",
+    "description": "Access to the BPDM Gate Read data."
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e5",
+    "language_short_name": "de",
+    "description": "Zugriff auf das BPDM Gate - lesend & schreibend."
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e5",
+    "language_short_name": "en",
+    "description": "Access to the BPDM Gate Read & Write data."
   }
 ]
