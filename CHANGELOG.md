@@ -38,8 +38,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * updated and added technical user role description & user role names
 * Others
   * added email value validation for invitation, network registration and user invitation to enable the user input data validation for valid email
-* Email templates
-  * released new email template 'decline registration'
   
 ### Feature
 * Administration Service
