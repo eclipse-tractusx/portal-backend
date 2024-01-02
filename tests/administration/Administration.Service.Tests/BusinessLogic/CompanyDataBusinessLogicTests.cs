@@ -292,15 +292,15 @@ public class CompanyDataBusinessLogicTests
                 }),
         };
 
-        var agreementData = new (Guid, CompanyRoleId)[]{
-            new (agreementId1, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId2, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.APP_PROVIDER),
-            new (agreementId4, CompanyRoleId.APP_PROVIDER),
-            new (agreementId5, CompanyRoleId.APP_PROVIDER),
-            new (agreementId6, CompanyRoleId.SERVICE_PROVIDER),
-            new (agreementId7, CompanyRoleId.SERVICE_PROVIDER),
+        var agreementData = new (AgreementStatusData, CompanyRoleId)[]{
+            new (new AgreementStatusData(agreementId1, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId2, AgreementStatusId.INACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId4, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId5, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId6, AgreementStatusId.ACTIVE), CompanyRoleId.SERVICE_PROVIDER),
+            new (new AgreementStatusData(agreementId7, AgreementStatusId.ACTIVE), CompanyRoleId.SERVICE_PROVIDER),
         }.ToAsyncEnumerable();
 
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
@@ -337,9 +337,8 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _consentRepository.AddAttachAndModifyConsents(
                 consentStatusDetails,
                 A<IEnumerable<(Guid, ConsentStatusId)>>.That.Matches(x =>
-                    x.Count() == 7 &&
+                    x.Count() == 6 &&
                     x.Contains(new(agreementId1, ConsentStatusId.ACTIVE)) &&
-                    x.Contains(new(agreementId2, ConsentStatusId.ACTIVE)) &&
                     x.Contains(new(agreementId3, ConsentStatusId.ACTIVE)) &&
                     x.Contains(new(agreementId4, ConsentStatusId.ACTIVE)) &&
                     x.Contains(new(agreementId5, ConsentStatusId.ACTIVE)) &&
@@ -407,13 +406,13 @@ public class CompanyDataBusinessLogicTests
                 }),
         };
 
-        var agreementData = new (Guid, CompanyRoleId)[]{
-            new (agreementId1, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId2, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.APP_PROVIDER),
-            new (agreementId4, CompanyRoleId.APP_PROVIDER),
-            new (agreementId5, CompanyRoleId.APP_PROVIDER),
+        var agreementData = new (AgreementStatusData, CompanyRoleId)[]{
+            new (new AgreementStatusData(agreementId1, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId2, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId4, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId5, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
@@ -465,13 +464,13 @@ public class CompanyDataBusinessLogicTests
                 }),
         };
 
-        var agreementData = new (Guid, CompanyRoleId)[]{
-            new (agreementId1, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId2, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.APP_PROVIDER),
-            new (agreementId4, CompanyRoleId.APP_PROVIDER),
-            new (agreementId5, CompanyRoleId.APP_PROVIDER),
+        var agreementData = new (AgreementStatusData, CompanyRoleId)[]{
+            new (new AgreementStatusData(agreementId1, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId2, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId4, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId5, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))

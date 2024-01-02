@@ -1674,9 +1674,9 @@ public class RegistrationBusinessLogicTest
         {
             CompanyRoleId.APP_PROVIDER,
         };
-        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
+        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)>
         {
-            new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.APP_PROVIDER, _fixture.CreateMany<Guid>(5)),
+            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.APP_PROVIDER, _fixture.CreateMany<AgreementStatusData>(5)),
         };
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
             .ReturnsLazily(() => data);
@@ -1697,26 +1697,25 @@ public class RegistrationBusinessLogicTest
     public async Task SubmitRoleConsentsAsync_WithoutAllRolesConsentGiven_ThrowsControllerArgumentException()
     {
         // Arrange
+        var agreementIds1 = new Guid("0a283850-5a73-4940-9215-e713d0e1c419");
+        var agreementIds2 = new Guid("e38da3a1-36f9-4002-9447-c55a38ac2a53");
         var consents = new CompanyRoleAgreementConsents(new[]
             {
                 CompanyRoleId.APP_PROVIDER,
             },
             new[]
             {
-                new AgreementConsentStatus(new("0a283850-5a73-4940-9215-e713d0e1c419"), ConsentStatusId.ACTIVE),
-                new AgreementConsentStatus(new("e38da3a1-36f9-4002-9447-c55a38ac2a53"), ConsentStatusId.INACTIVE)
+                new AgreementConsentStatus(agreementIds1, ConsentStatusId.ACTIVE),
+                new AgreementConsentStatus(agreementIds2, ConsentStatusId.INACTIVE)
             });
         var applicationId = _fixture.Create<Guid>();
         var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
-        var agreementIds = new List<Guid>
-        {
-            new("0a283850-5a73-4940-9215-e713d0e1c419"),
-            new ("e38da3a1-36f9-4002-9447-c55a38ac2a53")
-        };
         var data = new CompanyRoleAgreementConsentData(_identity.CompanyId, applicationStatusId, new[] { CompanyRoleId.APP_PROVIDER }, new List<ConsentData>());
-        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
+        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)>
         {
-            new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.APP_PROVIDER, agreementIds)
+            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.APP_PROVIDER,
+                new[]{new AgreementStatusData(agreementIds1, AgreementStatusId.ACTIVE),
+                new AgreementStatusData(agreementIds2, AgreementStatusId.ACTIVE)})
         };
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
             .ReturnsLazily(() => data);
@@ -1774,11 +1773,14 @@ public class RegistrationBusinessLogicTest
             new[] {
                 new ConsentData(consentId, ConsentStatusId.INACTIVE, agreementId_1)
             });
-        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
+        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)>
         {
-            new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.APP_PROVIDER, new [] { agreementId_1, agreementId_2 }),
-            new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.ACTIVE_PARTICIPANT, new [] { agreementId_1 }),
-            new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.SERVICE_PROVIDER, new [] { agreementId_1, agreementId_3 }),
+            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.APP_PROVIDER,
+                new [] { new AgreementStatusData(agreementId_1, AgreementStatusId.ACTIVE), new AgreementStatusData(agreementId_2, AgreementStatusId.ACTIVE) }),
+            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.ACTIVE_PARTICIPANT,
+                new [] { new AgreementStatusData(agreementId_1, AgreementStatusId.INACTIVE) }),
+            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.SERVICE_PROVIDER,
+                new [] { new AgreementStatusData(agreementId_1, AgreementStatusId.INACTIVE), new AgreementStatusData(agreementId_3, AgreementStatusId.INACTIVE) }),
         };
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
@@ -1824,6 +1826,49 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         application.DateLastChanged.Should().Be(now);
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.UPLOAD_DOCUMENTS);
+    }
+
+    [Fact]
+    public async Task SubmitRoleConsentsAsync_WithextraAgreement_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var agreementIds1 = new Guid("e38da3a1-36f9-4002-9447-c55a38ac2a53");
+        var agreementIds2 = new Guid("0a283850-5a73-4940-9215-e713d0e1c419");
+        var agreementIds3 = new Guid("e38da3a1-36f9-4002-9447-c55a38ac2a54");
+        var consents = new CompanyRoleAgreementConsents(new[]
+            {
+                CompanyRoleId.APP_PROVIDER,
+            },
+            new[]
+            {
+                new AgreementConsentStatus(agreementIds1, ConsentStatusId.ACTIVE),
+                new AgreementConsentStatus(agreementIds2, ConsentStatusId.ACTIVE),
+                new AgreementConsentStatus(agreementIds3, ConsentStatusId.ACTIVE)
+            });
+        var applicationId = _fixture.Create<Guid>();
+        var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
+
+        var data = new CompanyRoleAgreementConsentData(_identity.CompanyId, applicationStatusId, new[] { CompanyRoleId.APP_PROVIDER }, new List<ConsentData>());
+        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)>
+        {
+            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.APP_PROVIDER,
+                new[]{new AgreementStatusData(agreementIds1, AgreementStatusId.ACTIVE),
+                new AgreementStatusData(agreementIds2, AgreementStatusId.ACTIVE)})
+        };
+        A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
+            .ReturnsLazily(() => data);
+        A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(A<IEnumerable<CompanyRoleId>>._))
+            .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
+
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
+
+        // Act
+        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, consents)
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Agreements which not associated with requested companyRoles: {agreementIds3}");
     }
 
     #endregion

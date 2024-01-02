@@ -36,12 +36,14 @@ public class Agreement : IBaseEntity
         AgreementAssignedOfferTypes = new HashSet<AgreementAssignedOfferType>();
     }
 
-    public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTimeOffset dateCreated) : this()
+    public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTimeOffset dateCreated, AgreementStatusId agreementStatusId, bool mandatory) : this()
     {
         Id = id;
         AgreementCategoryId = agreementCategoryId;
         Name = name;
         DateCreated = dateCreated;
+        AgreementStatusId = agreementStatusId;
+        Mandatory = mandatory;
     }
 
     public AgreementCategoryId AgreementCategoryId { get; private set; }
@@ -53,8 +55,7 @@ public class Agreement : IBaseEntity
     [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    [MaxLength(255)]
-    public string? AgreementType { get; set; }
+    public AgreementStatusId AgreementStatusId { get; set; }
 
     [MaxLength(255)]
     public string Name { get; set; }
@@ -65,6 +66,8 @@ public class Agreement : IBaseEntity
 
     public Guid? DocumentId { get; set; }
     public string? AgreementLink { get; set; }
+
+    public bool Mandatory { get; set; }
 
     // Navigation properties
     public virtual AgreementCategory? AgreementCategory { get; set; }

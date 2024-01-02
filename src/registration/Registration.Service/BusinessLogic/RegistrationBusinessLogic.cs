@@ -521,7 +521,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         var companyRoleAssignedAgreements = await companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet)
-            .ToDictionaryAsync(x => x.CompanyRoleId, x => x.AgreementIds)
+            .ToDictionaryAsync(x => x.CompanyRoleId, x => x.AgreementStatusData)
             .ConfigureAwait(false);
 
         var invalidRoles = companyRoleIdsToSet.Except(companyRoleAssignedAgreements.Keys);
@@ -534,10 +534,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId =>
                     agreementConsentsToSet
                         .Any(agreementConsent =>
-                            agreementConsent.AgreementId == assignedAgreementId
+                            agreementConsent.AgreementId == assignedAgreementId.AgreementId
                             && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE))))
         {
             throw new ControllerArgumentException("consent must be given to all CompanyRole assigned agreements");
+        }
+
+        var extraAgreement = agreementConsentsToSet.ExceptBy(companyRoleAssignedAgreements.SelectMany(x => x.Value).Select(x => x.AgreementId), x => x.AgreementId);
+        if (extraAgreement.Any())
+        {
+            throw new ControllerArgumentException($"Agreements which not associated with requested companyRoles: {string.Join(", ", extraAgreement.Select(x => x.AgreementId))}");
         }
 
         companyRolesRepository.RemoveCompanyAssignedRoles(companyId, companyAssignedRoleIds.Except(companyRoleIdsToSet));
@@ -547,8 +553,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyRolesRepository.CreateCompanyAssignedRole(companyId, companyRoleId);
         }
 
-        HandleConsent(consents, agreementConsentsToSet, consentRepository, companyId, userId);
-
+        HandleConsent(consents, agreementConsentsToSet.ExceptBy(companyRoleAssignedAgreements.SelectMany(x => x.Value).Where(x => x.AgreementStatusId == AgreementStatusId.INACTIVE).Select(x => x.AgreementId), x => x.AgreementId), consentRepository, companyId, userId);
         UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>(), _dateTimeProvider);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
