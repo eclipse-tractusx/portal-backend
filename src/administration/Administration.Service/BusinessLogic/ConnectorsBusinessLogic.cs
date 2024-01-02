@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -156,23 +156,23 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (result.OfferSubscriptionAlreadyLinked)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTER_CONFLICT_OFFERSUBSCRIPTION_LINKED);
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_OFFERSUBSCRIPTION_LINKED);
         }
 
         if (result.OfferSubscriptionStatus != OfferSubscriptionStatusId.ACTIVE &&
             result.OfferSubscriptionStatus != OfferSubscriptionStatusId.PENDING)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTER_CONFLICT_STATUS_ACTIVE_OR_PENDING, new ErrorParameter[] { new("OfferSubscriptionStatusIdActive", OfferSubscriptionStatusId.ACTIVE.ToString()), new("OfferSubscriptionStatusIdPending", OfferSubscriptionStatusId.PENDING.ToString()) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_STATUS_ACTIVE_OR_PENDING, new ErrorParameter[] { new("offerSubscriptionStatusIdActive", OfferSubscriptionStatusId.ACTIVE.ToString()), new("offerSubscriptionStatusIdPending", OfferSubscriptionStatusId.PENDING.ToString()) });
         }
 
         if (result.SelfDescriptionDocumentId is null)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, new ErrorParameter[] { new("CompanyId", result.CompanyId.ToString()) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, new ErrorParameter[] { new("companyId", result.CompanyId.ToString()) });
         }
 
         if (string.IsNullOrWhiteSpace(result.ProviderBpn))
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("CompanyId", result.CompanyId.ToString()) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("companyId", result.CompanyId.ToString()) });
         }
 
         await ValidateTechnicalUser(technicalUserId, result.CompanyId).ConfigureAwait(false);
@@ -191,7 +191,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
                 .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
         {
-            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_LOCATION_NOT_EXIST, new ErrorParameter[] { new("location", location.ToString()) });
+            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_LOCATION_NOT_EXIST, new ErrorParameter[] { new("location", location) });
         }
     }
 
@@ -326,7 +326,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         if (activeConnectorOfferSubscription.Any())
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_DELETION_FAILED_OFFER_SUBSCRIPTION, new ErrorParameter[] { new("connectorId", connectorId.ToString()), new("activeConnectorOfferSubscription", string.Join(",", activeConnectorOfferSubscription)) });
-            //new ForbiddenException($"Deletion Failed. Connector {connectorId} connected to an active offer subscription [{string.Join(",", activeConnectorOfferSubscription)}]");
         }
         var assignedOfferSubscriptions = connectorOfferSubscriptions.Select(cos => cos.AssignedOfferSubscriptionIds);
         if (assignedOfferSubscriptions.Any())
@@ -341,7 +340,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         if (bpns.Any(bpn => !bpnRegex.IsMatch(bpn)))
         {
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_INCORRECT_BPN, new ErrorParameter[] { new("bpns", string.Join(", ", bpns.Where(bpn => !bpnRegex.IsMatch(bpn)))) });
-            //new ControllerArgumentException($"Incorrect BPN [{string.Join(", ", bpns.Where(bpn => !bpnRegex.IsMatch(bpn)))}] attribute value");
         }
 
         return _portalRepositories.GetInstance<IConnectorsRepository>()
@@ -364,14 +362,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (result == default)
         {
-            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_EXIST, new ErrorParameter[] { new("ExternalId", data.ExternalId.ToString()) });
-            //new NotFoundException($"Connector {data.ExternalId} does not exist");
+            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_EXIST, new ErrorParameter[] { new("externalId", data.ExternalId.ToString()) });
         }
 
         if (result.SelfDescriptionDocumentId != null)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED, new ErrorParameter[] { new("ExternalId", data.ExternalId.ToString()) });
-            //new ConflictException($"Connector {data.ExternalId} already has a document assigned");
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED, new ErrorParameter[] { new("externalId", data.ExternalId.ToString()) });
         }
 
         await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityData.IdentityId, cancellationToken).ConfigureAwait(false);
@@ -405,14 +401,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (!connector.IsHostCompany)
         {
-            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_HOST_COMPANY, new ErrorParameter[] { new("CompanyId", _identityData.CompanyId.ToString()) });
-            //new ForbiddenException($"Company {_identityData.CompanyId} is not the connectors host company");
+            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_HOST_COMPANY, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()) });
         }
 
         if (connector.Status == ConnectorStatusId.INACTIVE)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE, new ErrorParameter[] { new("connectorId", connectorId.ToString()), new("ConnectorStatusId", ConnectorStatusId.INACTIVE.ToString()) });
-            //new ConflictException($"Connector {connectorId} is in state {ConnectorStatusId.INACTIVE}");
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE, new ErrorParameter[] { new("connectorId", connectorId.ToString()), new("connectorStatusId", ConnectorStatusId.INACTIVE.ToString()) });
         }
 
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
@@ -422,7 +416,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(bpn))
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_BPN_MUST_SET);
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()) });
         }
 
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>

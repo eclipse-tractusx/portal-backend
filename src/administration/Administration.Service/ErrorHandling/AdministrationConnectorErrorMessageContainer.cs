@@ -20,7 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 
 public class AdministrationConnectorErrorMessageContainer : IErrorMessageContainer
 {
@@ -31,21 +31,20 @@ public class AdministrationConnectorErrorMessageContainer : IErrorMessageContain
                 { AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_DESCRIPTION, "provider company {companyId} has no self description document" },
                 { AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST,"OfferSubscription {subscriptionId} does not exist"},
                 { AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_OFFER,"Company is not the provider of the offer"},
-                { AdministrationConnectorErrors.CONNECTER_CONFLICT_OFFERSUBSCRIPTION_LINKED,"OfferSubscription is already linked to a connector"},
-                { AdministrationConnectorErrors.CONNECTER_CONFLICT_STATUS_ACTIVE_OR_PENDING,"The offer subscription must be either {OfferSubscriptionStatusIdActive} or {OfferSubscriptionStatusIdPending}"},
+                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_OFFERSUBSCRIPTION_LINKED,"OfferSubscription is already linked to a connector"},
+                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_STATUS_ACTIVE_OR_PENDING,"The offer subscription must be either {offerSubscriptionStatusIdActive} or {offerSubscriptionStatusIdPending}"},
                 { AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION,"provider company {CompanyId} has no self description document"},
-                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN,"The bpn of compay {CompanyId} must be set"},
+                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN,"The bpn of company {companyId} must be set"},
                 { AdministrationConnectorErrors.CONNECTOR_ARGUMENT_LOCATION_NOT_EXIST,"Location {location} does not exist"},
                 { AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE,"Technical User {technicalUserId} is not assigned to company {companyId} or is not active"},
                 { AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST,"company {companyId} is neither provider nor host-company of connector {connectorId}"},
                 { AdministrationConnectorErrors.CONNECTOR_CONFLICT_DELETION_DECLINED,"Connector status does not match a deletion scenario. Deletion declined"},
                 { AdministrationConnectorErrors.CONNECTOR_DELETION_FAILED_OFFER_SUBSCRIPTION,"Deletion Failed. Connector {connectorId} connected to an active offer subscription, {activeConnectorOfferSubscription}"},
                 { AdministrationConnectorErrors.CONNECTOR_ARGUMENT_INCORRECT_BPN,"Incorrect BPN {bpns} attribute value"},
-                { AdministrationConnectorErrors.CONNECTOR_NOT_EXIST,"Connector {ExternalId} does not exist"},
-                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED,"Connector {ExternalId} already has a document assigned"},
-                { AdministrationConnectorErrors.CONNECTOR_NOT_HOST_COMPANY,"Company {CompanyId} is not the connectors host company"},
-                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE,"Connector {connectorId} is in state {ConnectorStatusId}"},
-                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_BPN_MUST_SET,"The business partner number must be set here"}
+                { AdministrationConnectorErrors.CONNECTOR_NOT_EXIST,"Connector {externalId} does not exist"},
+                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED,"Connector {externalId} already has a document assigned"},
+                { AdministrationConnectorErrors.CONNECTOR_NOT_HOST_COMPANY,"Company {companyId} is not the connectors host company"},
+                { AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE,"Connector {connectorId} is in state {connectorStatusId}"}
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(AdministrationConnectorErrors); }
@@ -60,8 +59,8 @@ public enum AdministrationConnectorErrors
     CONNECTOR_UNEXPECTED_NO_DESCRIPTION,
     CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST,
     CONNECTOR_NOT_PROVIDER_COMPANY_OFFER,
-    CONNECTER_CONFLICT_OFFERSUBSCRIPTION_LINKED,
-    CONNECTER_CONFLICT_STATUS_ACTIVE_OR_PENDING,
+    CONNECTOR_CONFLICT_OFFERSUBSCRIPTION_LINKED,
+    CONNECTOR_CONFLICT_STATUS_ACTIVE_OR_PENDING,
     CONNECTOR_CONFLICT_NO_DESCRIPTION,
     CONNECTOR_CONFLICT_SET_BPN,
     CONNECTOR_ARGUMENT_LOCATION_NOT_EXIST,
@@ -73,7 +72,5 @@ public enum AdministrationConnectorErrors
     CONNECTOR_NOT_EXIST,
     CONNECTOR_CONFLICT_ALREADY_ASSIGNED,
     CONNECTOR_NOT_HOST_COMPANY,
-    CONNECTOR_CONFLICT_INACTIVE_STATE,
-    CONNECTOR_CONFLICT_BPN_MUST_SET
-
+    CONNECTOR_CONFLICT_INACTIVE_STATE
 }
