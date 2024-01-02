@@ -223,14 +223,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
             if (email != null)
             {
-                sb.AppendFormat((firstName == null && lastName == null) ? "{0}" : " ({0})", email);
+                sb.AppendFormat(firstName == null && lastName == null ? "{0}" : " ({0})", email);
             }
 
             return firstName == null && lastName == null && email == null ? "unknown user" : sb.ToString();
         }
 
         var data = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsDeclineData(_identityData.IdentityId, _settings.ApplicationDeclineStatusIds).ConfigureAwait(false);
-        var user = CreateNameString(data.FirstName, data.LastName, data.Email) ?? "unknown user";
+        var user = CreateNameString(data.FirstName, data.LastName, data.Email);
 
         return data.Applications.Select(application =>
             new CompanyApplicationDeclineData(
