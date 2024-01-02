@@ -3117,6 +3117,48 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region GetApplicationsDeclineData
+
+    [Fact]
+    public async Task Foo()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var data = ("Acme Corp", (string?)"Tony", (string?)"Stark", (string?)"t.stark@acme.corp", new[] {
+            (applicationId, CompanyApplicationStatusId.CREATED, new (string?, string?, string?)[] {
+                ("Test", "User", "t.user@acme.corp"),
+                (null, null, "foo@bar.org")
+            }.AsEnumerable())
+        });
+
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsDeclineData(A<Guid>._, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns(data);
+
+        var options = Options.Create(new RegistrationSettings
+        {
+            ApplicationDeclineStatusIds = new[] { CompanyApplicationStatusId.CREATED }
+        });
+
+        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, null!);
+
+        // Act
+        var result = await sut.GetApplicationsDeclineData().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsDeclineData(_identity.IdentityId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CREATED })))
+            .MustHaveHappenedOnceExactly();
+
+        result.Should().ContainSingle().Which.Should().Match<CompanyApplicationDeclineData>(x =>
+            x.ApplicationId == applicationId &&
+            x.ApplicationStatus == CompanyApplicationStatusId.CREATED &&
+            x.CompanyName == "Acme Corp" &&
+            x.User == "Tony, Stark (t.stark@acme.corp)");
+
+        result.First().Users.Should().ContainInOrder(new[] { "Test, User (t.user@acme.corp)", "foo@bar.org" });
+    }
+
+    #endregion
+
     [Serializable]
     public class TestException : Exception
     {

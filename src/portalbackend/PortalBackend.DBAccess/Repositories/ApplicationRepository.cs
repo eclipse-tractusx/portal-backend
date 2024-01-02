@@ -165,19 +165,32 @@ public class ApplicationRepository : IApplicationRepository
                     .Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<CompanyApplicationDeclineData> GetCompanyApplicationsDeclineData(Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
-        _dbContext.CompanyApplications
+    public Task<(string CompanyName, string? FirstName, string? LastName, string? Email, IEnumerable<(Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(string? FirstName, string? LastName, string? Email)> InvitedUsers)> Applications)> GetCompanyApplicationsDeclineData(Guid companyUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+        _dbContext.CompanyUsers
             .AsNoTracking()
-            .Where(application =>
-                application.Company!.Id == userCompanyId &&
-                applicationStatusIds.Contains(application.ApplicationStatusId))
-            .Select(application => new CompanyApplicationDeclineData(
-                application.Id,
-                application.ApplicationStatusId,
-                application.Company!.Name,
-                application.Company!.Identities.Where(identity => identity.CompanyUser!.Email != null).Select(
-                    identity => identity.CompanyUser!.Email!)))
-            .AsAsyncEnumerable();
+            .AsSplitQuery()
+            .Where(user =>
+                user.Id == companyUserId &&
+                user.Identity!.UserStatusId == UserStatusId.ACTIVE
+                )
+            .Select(user => new ValueTuple<string, string?, string?, string?, IEnumerable<(Guid, CompanyApplicationStatusId, IEnumerable<(string?, string?, string?)>)>>(
+                user.Identity!.Company!.Name,
+                user.Firstname,
+                user.Lastname,
+                user.Email,
+                user.Identity.Company.CompanyApplications.Where(application => applicationStatusIds.Contains(application.ApplicationStatusId)).Select(application => new ValueTuple<Guid, CompanyApplicationStatusId, IEnumerable<(string?, string?, string?)>>(
+                    application.Id,
+                    application.ApplicationStatusId,
+                    application.Invitations
+                        .Where(invitation => invitation.CompanyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE)
+                        .Select(invitation => new ValueTuple<string?, string?, string?>(
+                            invitation.CompanyUser!.Firstname,
+                            invitation.CompanyUser.Lastname,
+                            invitation.CompanyUser.Email
+                    ))
+                ))
+            ))
+            .SingleOrDefaultAsync();
 
     public Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId) =>
         _dbContext.CompanyApplications

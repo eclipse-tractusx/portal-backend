@@ -34,11 +34,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
@@ -206,8 +206,41 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<CompanyApplicationWithStatus> GetAllApplicationsForUserWithStatus() =>
         _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(_identityData.CompanyId);
 
-    public IAsyncEnumerable<CompanyApplicationDeclineData> GetApplicationsDeclineData() =>
-        _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsDeclineData(_identityData.CompanyId, _settings.ApplicationDeclineStatusIds);
+    public async Task<IEnumerable<CompanyApplicationDeclineData>> GetApplicationsDeclineData()
+    {
+        string CreateNameString(string? firstName, string? lastName, string? email)
+        {
+            var sb = new StringBuilder();
+            if (firstName != null)
+            {
+                sb.Append(firstName);
+            }
+
+            if (lastName != null)
+            {
+                sb.AppendFormat(firstName == null ? "{0}" : ", {0}", lastName);
+            }
+
+            if (email != null)
+            {
+                sb.AppendFormat(firstName == null && lastName == null ? "{0}" : " ({0})", email);
+            }
+
+            return firstName == null && lastName == null && email == null ? "unknown user" : sb.ToString();
+        }
+
+        var data = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsDeclineData(_identityData.IdentityId, _settings.ApplicationDeclineStatusIds).ConfigureAwait(false);
+        var user = CreateNameString(data.FirstName, data.LastName, data.Email);
+
+        return data.Applications.Select(application =>
+            new CompanyApplicationDeclineData(
+                application.ApplicationId,
+                application.ApplicationStatusId,
+                user,
+                data.CompanyName,
+                application.InvitedUsers.Select(user => CreateNameString(user.FirstName, user.LastName, user.Email))
+        ));
+    }
 
     public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId)
     {
