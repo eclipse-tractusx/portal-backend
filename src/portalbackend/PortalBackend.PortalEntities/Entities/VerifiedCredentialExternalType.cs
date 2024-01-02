@@ -29,7 +29,7 @@ public class VerifiedCredentialExternalType
         Label = id.ToString();
 
         VerifiedCredentialTypeAssignedExternalTypes = new HashSet<VerifiedCredentialTypeAssignedExternalType>();
-        VerifiedCredentialExternalTypeUseCaseDetailVersions = new HashSet<VerifiedCredentialExternalTypeUseCaseDetailVersion>();
+        VerifiedCredentialExternalTypeDetailVersions = new HashSet<VerifiedCredentialExternalTypeDetailVersion>();
     }
 
     public VerifiedCredentialExternalTypeId Id { get; private set; }
@@ -39,5 +39,5 @@ public class VerifiedCredentialExternalType
     // Navigation properties
     public virtual ICollection<VerifiedCredentialTypeAssignedExternalType> VerifiedCredentialTypeAssignedExternalTypes { get; private set; }
 
-    public virtual ICollection<VerifiedCredentialExternalTypeUseCaseDetailVersion> VerifiedCredentialExternalTypeUseCaseDetailVersions { get; private set; }
+    public virtual ICollection<VerifiedCredentialExternalTypeDetailVersion> VerifiedCredentialExternalTypeDetailVersions { get; private set; }
 }

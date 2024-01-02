@@ -132,6 +132,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
         CredentialRejected,
 
         /// <summary>
+        /// Email template for credential expiration
+        /// </summary>
+        [Path("verified_credential_expiry.html")]
+        CredentialExpiry,
+
+        /// <summary>
         /// Email template for app release activation approval
         /// </summary>
         [Path("appactivation_offer_release_approval.html")]

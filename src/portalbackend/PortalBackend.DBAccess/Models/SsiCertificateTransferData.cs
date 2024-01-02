@@ -25,5 +25,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record SsiCertificateTransferData
 (
     VerifiedCredentialTypeId CredentialType,
+    IEnumerable<SsiCertificateExternalTypeDetailTransferData> Credentials
+);
+
+public record SsiCertificateExternalTypeDetailTransferData
+(
+    ExternalTypeDetailData ExternalDetailData,
     IEnumerable<CompanySsiDetailTransferData> SsiDetailData
 );

@@ -31,15 +31,17 @@ public interface ICompanySsiDetailsRepository
     /// </summary>
     /// <param name="companyId">Id of the company</param>
     /// <param name="language">language short code for the use case name</param>
+    /// <param name="minExpiry">The minimum datetime the expiry date should have</param>
     /// <returns>AsyncEnumerable of UseCaseParticipation</returns>
-    IAsyncEnumerable<UseCaseParticipationTransferData> GetUseCaseParticipationForCompany(Guid companyId, string language);
+    IAsyncEnumerable<UseCaseParticipationTransferData> GetUseCaseParticipationForCompany(Guid companyId, string language, DateTimeOffset minExpiry);
 
     /// <summary>
     /// Gets the company credential details for the given company id
     /// </summary>
     /// <param name="companyId">Id of the company</param>
+    /// <param name="minExpiry">The minimum datetime the expiry date should have</param>
     /// <returns>AsyncEnumerable of SsiCertificateData</returns>
-    IAsyncEnumerable<SsiCertificateTransferData> GetSsiCertificates(Guid companyId);
+    IAsyncEnumerable<SsiCertificateTransferData> GetSsiCertificates(Guid companyId, DateTimeOffset minExpiry);
 
     /// <summary>
     /// Creates the credential details
@@ -49,6 +51,7 @@ public interface ICompanySsiDetailsRepository
     /// <param name="docId">id of the document</param>
     /// <param name="companySsiDetailStatusId">id of detail status</param>
     /// <param name="userId">Id of the creator</param>
+    /// <param name="detailVersionId">Id of the external type detail version</param>
     /// <param name="setOptionalFields">sets the optional fields</param>
     /// <returns>The created entity</returns>
     CompanySsiDetail CreateSsiDetails(Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, Guid docId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid userId, Action<CompanySsiDetail>? setOptionalFields);
@@ -69,14 +72,14 @@ public interface ICompanySsiDetailsRepository
     /// <param name="verifiedCredentialExternalTypeUseCaseDetailId">Id of vc external type use case detail id</param>
     /// <param name="verifiedCredentialTypeId">Id of the vc type</param>
     /// <returns>Returns a valueTuple with identifiers if the externalTypeUseCaseDetailId exists and the corresponding credentialTypeId</returns>
-    Task<bool> CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(Guid verifiedCredentialExternalTypeUseCaseDetailId, VerifiedCredentialTypeId verifiedCredentialTypeId);
+    Task<DateTimeOffset> CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(Guid verifiedCredentialExternalTypeUseCaseDetailId, VerifiedCredentialTypeId verifiedCredentialTypeId);
 
     /// <summary>
     /// Checks whether the given credentialTypeId is a <see cref="VerifiedCredentialTypeKindId"/> Certificate
     /// </summary>
     /// <param name="credentialTypeId">Id of the credentialTypeId</param>
     /// <returns><c>true</c> if the tpye is a certificate, otherwise <c>false</c></returns>
-    Task<bool> CheckSsiCertificateType(VerifiedCredentialTypeId credentialTypeId);
+    Task<(bool Exists, IEnumerable<Guid> DetailVersionIds)> CheckSsiCertificateType(VerifiedCredentialTypeId credentialTypeId);
 
     /// <summary>
     /// Gets all credential details
@@ -91,4 +94,6 @@ public interface ICompanySsiDetailsRepository
     Task<(bool Exists, CompanySsiDetailStatusId Status, VerifiedCredentialTypeId Type, Guid RequesterId, string? RequesterEmail, string? Firstname, string? Lastname)> GetSsiRejectionData(Guid credentialId);
     void AttachAndModifyCompanySsiDetails(Guid id, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields);
     IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes(Guid companyId);
+    IAsyncEnumerable<CredentialExpiryData> GetExpiryData(DateTimeOffset now, DateTimeOffset inactiveVcsToDelete, DateTimeOffset expiredVcsToDelete);
+    void RemoveSsiDetail(Guid companySsiDetailId);
 }

@@ -166,19 +166,3 @@ public class ServiceSettings
     [Required(AllowEmptyStrings = false)]
     public string OfferDetailAddress { get; init; } = null!;
 }
-
-public static class ServiceSettingsExtension
-{
-    public static IServiceCollection ConfigureServiceSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<ServiceSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
-        return services;
-    }
-}

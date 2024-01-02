@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -28,10 +27,12 @@ public record CustodianFrameworkRequest(
     [property: JsonPropertyName("holderIdentifier")] string HolderIdentifier,
     [property: JsonPropertyName("type"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialExternalTypeId>))] VerifiedCredentialExternalTypeId Type,
     [property: JsonPropertyName("contract-template")] string Template,
-    [property: JsonPropertyName("contract-version")] string Version
+    [property: JsonPropertyName("contract-version")] string Version,
+    [property: JsonPropertyName("expiry")] DateTimeOffset Expiry
 );
 
 public record CustodianDismantlerRequest(
     [property: JsonPropertyName("bpn")] string Bpn,
-    [property: JsonPropertyName("activityType"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialTypeId>))] VerifiedCredentialTypeId Type
+    [property: JsonPropertyName("activityType"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialTypeId>))] VerifiedCredentialTypeId Type,
+    [property: JsonPropertyName("expiry")] DateTimeOffset Expiry
 );

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -41,17 +40,14 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<UseCaseParticipationTransferData> GetUseCaseParticipationForCompany(Guid companyId, string language) =>
+    public IAsyncEnumerable<UseCaseParticipationTransferData> GetUseCaseParticipationForCompany(Guid companyId, string language, DateTimeOffset minExpiry) =>
         _context.VerifiedCredentialTypes
-            .Where(types => types.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId ==
-                            VerifiedCredentialTypeKindId.USE_CASE)
-            .Select(types => new
+            .Where(t => t.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.USE_CASE)
+            .Select(t => new
             {
-                UseCase = types.VerifiedCredentialTypeAssignedUseCase!.UseCase,
-                TypeId = types.Id,
-                ExternalTypeDetails =
-                    types.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType!
-                        .VerifiedCredentialExternalTypeUseCaseDetailVersions,
+                UseCase = t.VerifiedCredentialTypeAssignedUseCase!.UseCase,
+                TypeId = t.Id,
+                ExternalTypeDetails = t.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType!.VerifiedCredentialExternalTypeDetailVersions
             })
             .Select(x => new UseCaseParticipationTransferData(
                 x.UseCase!.Name,
@@ -61,21 +57,22 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                     .SingleOrDefault(),
                 x.TypeId,
                 x.ExternalTypeDetails
-                    .Select(external =>
+                    .Select(e =>
                         new CompanySsiExternalTypeDetailTransferData(
                             new ExternalTypeDetailData(
-                                external.Id,
-                                external.VerifiedCredentialExternalTypeId,
-                                external.Version,
-                                external.Template,
-                                external.ValidFrom,
-                                external.Expiry),
-                            external.CompanySsiDetails
+                                e.Id,
+                                e.VerifiedCredentialExternalTypeId,
+                                e.Version,
+                                e.Template,
+                                e.ValidFrom,
+                                e.Expiry),
+                            e.CompanySsiDetails
                                 .Where(ssi =>
                                     ssi.CompanyId == companyId &&
                                     ssi.VerifiedCredentialTypeId == x.TypeId &&
                                     ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE &&
-                                    ssi.VerifiedCredentialExternalTypeUseCaseDetailId == external.Id)
+                                    ssi.VerifiedCredentialExternalTypeDetailVersionId == e.Id &&
+                                    ssi.ExpiryDate > minExpiry)
                                 .Select(ssi =>
                                     new CompanySsiDetailTransferData(
                                         ssi.Id,
@@ -92,26 +89,45 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<SsiCertificateTransferData> GetSsiCertificates(Guid companyId) =>
+    public IAsyncEnumerable<SsiCertificateTransferData> GetSsiCertificates(Guid companyId, DateTimeOffset minExpiry) =>
         _context.VerifiedCredentialTypes
             .Where(types => types.VerifiedCredentialTypeAssignedKind != null && types.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
-            .Select(types => new SsiCertificateTransferData(
-                types.Id,
-                types.CompanySsiDetails
-                    .Where(ssi =>
-                        ssi.VerifiedCredentialTypeId == types.Id &&
-                        ssi.CompanyId == companyId)
-                    .Select(ssi =>
-                        new CompanySsiDetailTransferData(
-                            ssi.Id,
-                            ssi.CompanySsiDetailStatusId,
-                            ssi.ExpiryDate,
-                            ssi.Document == null
-                                ? null
-                                : new DocumentData(
-                                    ssi.Document!.Id,
-                                    ssi.Document.DocumentName)))
-             ))
+            .Select(t => new
+            {
+                TypeId = t.Id,
+                ExternalTypeDetails = t.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType!.VerifiedCredentialExternalTypeDetailVersions
+            })
+            .Select(x => new SsiCertificateTransferData(
+                x.TypeId,
+                x.ExternalTypeDetails
+                    .Select(e =>
+                        new SsiCertificateExternalTypeDetailTransferData(
+                            new ExternalTypeDetailData(
+                                e.Id,
+                                e.VerifiedCredentialExternalTypeId,
+                                e.Version,
+                                e.Template,
+                                e.ValidFrom,
+                                e.Expiry),
+                            e.CompanySsiDetails
+                                .Where(ssi =>
+                                    ssi.CompanyId == companyId &&
+                                    ssi.VerifiedCredentialTypeId == x.TypeId &&
+                                    ssi.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE &&
+                                    ssi.ExpiryDate > minExpiry)
+                                .Select(ssi =>
+                                    new CompanySsiDetailTransferData(
+                                        ssi.Id,
+                                        ssi.CompanySsiDetailStatusId,
+                                        ssi.ExpiryDate,
+                                        ssi.Document == null
+                                            ? null
+                                            : new DocumentData(
+                                                ssi.Document!.Id,
+                                                ssi.Document.DocumentName)))
+                                .Take(2)
+                        ))
+            ))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
@@ -130,21 +146,28 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                 x.VerifiedCredentialTypeId == verifiedCredentialTypeId &&
                 x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId == kindId &&
                 x.CompanySsiDetailStatusId != CompanySsiDetailStatusId.INACTIVE &&
-                (verifiedCredentialExternalTypeUseCaseDetailId == null || x.VerifiedCredentialExternalTypeUseCaseDetailId == verifiedCredentialExternalTypeUseCaseDetailId));
+                (verifiedCredentialExternalTypeUseCaseDetailId == null || x.VerifiedCredentialExternalTypeDetailVersionId == verifiedCredentialExternalTypeUseCaseDetailId));
 
     /// <inheritdoc />
-    public Task<bool> CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(Guid verifiedCredentialExternalTypeUseCaseDetailId, VerifiedCredentialTypeId verifiedCredentialTypeId) =>
-        _context.VerifiedCredentialExternalTypeUseCaseDetailVersions
-            .AnyAsync(x =>
+    public Task<DateTimeOffset> CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(Guid verifiedCredentialExternalTypeUseCaseDetailId, VerifiedCredentialTypeId verifiedCredentialTypeId) =>
+        _context.VerifiedCredentialExternalTypeDetailVersions
+            .Where(x =>
                 x.Id == verifiedCredentialExternalTypeUseCaseDetailId &&
-                x.VerifiedCredentialExternalType!.VerifiedCredentialTypeAssignedExternalTypes.Any(y => y.VerifiedCredentialTypeId == verifiedCredentialTypeId));
+                x.VerifiedCredentialExternalType!.VerifiedCredentialTypeAssignedExternalTypes.Any(y => y.VerifiedCredentialTypeId == verifiedCredentialTypeId))
+            .Select(x => x.Expiry)
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<bool> CheckSsiCertificateType(VerifiedCredentialTypeId credentialTypeId) =>
+    public Task<(bool Exists, IEnumerable<Guid> DetailVersionIds)> CheckSsiCertificateType(VerifiedCredentialTypeId credentialTypeId) =>
         _context.VerifiedCredentialTypeAssignedKinds
-            .AnyAsync(x =>
+            .Where(x =>
                 x.VerifiedCredentialTypeId == credentialTypeId &&
-                x.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE);
+                x.VerifiedCredentialTypeKindId == VerifiedCredentialTypeKindId.CERTIFICATE)
+            .Select(x => new ValueTuple<bool, IEnumerable<Guid>>(
+                true,
+                x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedExternalType!.VerifiedCredentialExternalType!.VerifiedCredentialExternalTypeDetailVersions.Select(x => x.Id)
+            ))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public IQueryable<CompanySsiDetail> GetAllCredentialDetails(CompanySsiDetailStatusId? companySsiDetailStatusId, VerifiedCredentialTypeId? credentialTypeId, string? companyName) =>
@@ -166,14 +189,12 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                     x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind == null ? null : x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId,
                     x.Company!.Name,
                     x.Company.BusinessPartnerNumber,
-                    x.ExpiryDate,
-                    x.VerifiedCredentialType!.VerifiedCredentialTypeAssignedKind!.VerifiedCredentialTypeKindId != VerifiedCredentialTypeKindId.USE_CASE ?
-                        null :
-                        new UseCaseDetailData(
-                            x.VerifiedCredentialExternalTypeUseCaseDetailVersion!.VerifiedCredentialExternalTypeId,
-                            x.VerifiedCredentialExternalTypeUseCaseDetailVersion.Template,
-                            x.VerifiedCredentialExternalTypeUseCaseDetailVersion.Version
-                        ),
+                    new DetailData(
+                        x.VerifiedCredentialExternalTypeDetailVersion!.VerifiedCredentialExternalTypeId,
+                        x.VerifiedCredentialExternalTypeDetailVersion.Template,
+                        x.VerifiedCredentialExternalTypeDetailVersion.Version,
+                        x.VerifiedCredentialExternalTypeDetailVersion.Expiry
+                    ),
                     new SsiRequesterData(
                         x.CreatorUserId,
                         x.CreatorUser!.Email,
@@ -217,4 +238,34 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                     (ssi.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING || ssi.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE)))
             .Select(x => x.Id)
             .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<CredentialExpiryData> GetExpiryData(DateTimeOffset now, DateTimeOffset inactiveVcsToDelete, DateTimeOffset expiredVcsToDelete) =>
+        _context.CompanySsiDetails
+            .Where(x =>
+                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE && x.DateCreated < inactiveVcsToDelete) ||
+                ((x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE || x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE) && x.ExpiryDate < expiredVcsToDelete) ||
+                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING && x.ExpiryDate < now) ||
+                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE &&
+                    (x.ExpiryDate <= now.AddDays(1) && x.ExpiryCheckTypeId != ExpiryCheckTypeId.OneDay) ||
+                    (x.ExpiryDate <= now.AddDays(14) && x.ExpiryCheckTypeId != ExpiryCheckTypeId.TwoWeeks) ||
+                    (x.ExpiryDate <= now.AddMonths(2) && x.ExpiryCheckTypeId == null)
+                ))
+            .Select(x => new CredentialExpiryData(
+                x.Id,
+                x.DateCreated,
+                x.ExpiryDate!.Value,
+                x.ExpiryCheckTypeId,
+                x.VerifiedCredentialExternalTypeDetailVersion!.Version,
+                x.CompanySsiDetailStatusId,
+                x.VerifiedCredentialTypeId,
+                new UserMailingData(
+                    x.CreatorUserId,
+                    x.CreatorUser!.Email,
+                    x.CreatorUser.Firstname,
+                    x.CreatorUser.Lastname)
+            ))
+            .ToAsyncEnumerable();
+
+    public void RemoveSsiDetail(Guid companySsiDetailId) =>
+        _context.CompanySsiDetails.Remove(new CompanySsiDetail(companySsiDetailId, Guid.Empty, default, default, Guid.Empty, Guid.Empty, default));
 }

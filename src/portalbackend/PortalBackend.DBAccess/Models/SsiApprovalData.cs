@@ -28,15 +28,15 @@ public record SsiApprovalData(
     VerifiedCredentialTypeKindId? Kind,
     string CompanyName,
     string? Bpn,
-    DateTimeOffset? ExpiryDate,
-    UseCaseDetailData? UseCaseDetailData,
+    DetailData? DetailData,
     SsiRequesterData RequesterData
 );
 
-public record UseCaseDetailData(
+public record DetailData(
     VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId,
     string? Template,
-    string Version
+    string? Version,
+    DateTimeOffset ExpiryDate
 );
 
 public record SsiRequesterData(

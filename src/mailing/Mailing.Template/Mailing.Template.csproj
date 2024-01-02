@@ -41,6 +41,9 @@
   <ItemGroup>
     <None Remove="EmailTemplates" />
     <Content Include="EmailTemplates\**" LinkBase="EmailTemplates" CopyToOutputDirectory="Always" />
+    <Content Update="EmailTemplates\verified_credential_expiry.html">
+      <LinkBase>EmailTemplates/</LinkBase>
+    </Content>
   </ItemGroup>
 
 <ItemGroup>

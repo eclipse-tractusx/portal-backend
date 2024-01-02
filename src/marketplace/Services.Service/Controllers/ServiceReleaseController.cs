@@ -266,7 +266,7 @@ public class ServiceReleaseController : ControllerBase
     /// Approve Service to change status from IN_REVIEW to Active and create notification
     /// </summary>
     /// <param name="serviceId"></param>
-    /// <remarks>Example: PUT: /api/services/servicerelease/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveService</remarks>
+    /// <remarks>Example: PUT: /api/services/servicerelease/{serviceId}/approveService</remarks>
     /// <response code="204">The service was successfully submitted to Active State.</response>
     /// <response code="409">Service is in InCorrect Status</response>
     /// <response code="404">service does not exist.</response>

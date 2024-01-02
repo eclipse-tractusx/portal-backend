@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjection;
@@ -26,9 +27,12 @@ public static class ServiceLogicExtensions
 {
     public static IServiceCollection AddServiceBusinessLogic(this IServiceCollection services, IConfiguration config)
     {
+        var section = config.GetSection("Services");
         services.AddOptions<ServiceSettings>()
-            .Bind(config.GetSection("Services"))
+            .Bind(section)
             .ValidateDataAnnotations()
+            .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>();
     }

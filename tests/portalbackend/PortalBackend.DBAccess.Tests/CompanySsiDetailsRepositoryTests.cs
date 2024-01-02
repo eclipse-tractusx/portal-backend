@@ -52,7 +52,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetUseCaseParticipationForCompany(_validCompanyId, "en").ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetUseCaseParticipationForCompany(_validCompanyId, "en", DateTimeOffset.MinValue).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);
@@ -65,6 +65,31 @@ public class CompanySsiDetailsRepositoryTests
         var traceability = result.Single(x => x.CredentialType == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
         traceability.VerifiedCredentials.Should().HaveCount(3).And.Satisfy(
             x => x.ExternalDetailData.Version == "1.0.0" && x.SsiDetailData.Single().ParticipationStatus == CompanySsiDetailStatusId.PENDING,
+            x => x.ExternalDetailData.Version == "2.0.0" && !x.SsiDetailData.Any(),
+            x => x.ExternalDetailData.Version == "3.0.0" && !x.SsiDetailData.Any());
+    }
+
+    [Fact]
+    public async Task GetDetailsForCompany_WithExpiryFilter_ReturnsExpected()
+    {
+        // Arrange
+        var dt = new DateTimeOffset(2023, 9, 29, 0, 0, 0, TimeSpan.Zero);
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetUseCaseParticipationForCompany(_validCompanyId, "en", dt).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
+        result.Where(x => x.Description != null).Should().HaveCount(5).And.Satisfy(
+            x => x.Description == "Traceability",
+            x => x.Description == "Sustainability & CO2-Footprint",
+            x => x.Description == "Behavior Twin",
+            x => x.Description == "Quality Management",
+            x => x.Description == "Circular Economy");
+        var traceability = result.Single(x => x.CredentialType == VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
+        traceability.VerifiedCredentials.Should().HaveCount(3).And.Satisfy(
+            x => x.ExternalDetailData.Version == "1.0.0" && x.SsiDetailData.Count() == 1,
             x => x.ExternalDetailData.Version == "2.0.0" && !x.SsiDetailData.Any(),
             x => x.ExternalDetailData.Version == "3.0.0" && !x.SsiDetailData.Any());
     }
@@ -158,15 +183,14 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSsiCertificates(_validCompanyId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetSsiCertificates(_validCompanyId, new DateTimeOffset(2023, 01, 01, 01, 01, 01, TimeSpan.Zero)).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().ContainSingle()
             .Which.Should().Match<Models.SsiCertificateTransferData>(x =>
                 x.CredentialType == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE &&
-                x.SsiDetailData.Count() == 3 &&
-                x.SsiDetailData.Count(x => x.ParticipationStatus == CompanySsiDetailStatusId.PENDING) == 1 &&
-                x.SsiDetailData.Count(x => x.ParticipationStatus == CompanySsiDetailStatusId.INACTIVE) == 2);
+                x.Credentials.Count() == 1 &&
+                x.Credentials.Single().SsiDetailData.Count(ssi => ssi.ParticipationStatus == CompanySsiDetailStatusId.PENDING) == 1);
     }
 
     #endregion
@@ -197,7 +221,7 @@ public class CompanySsiDetailsRepositoryTests
         sut.CreateSsiDetails(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, new Guid("00000000-0000-0000-0000-000000000001"), CompanySsiDetailStatusId.PENDING, _userId,
             ssi =>
             {
-                ssi.VerifiedCredentialExternalTypeUseCaseDetailId = new("1268a76a-ca19-4dd8-b932-01f24071d561");
+                ssi.VerifiedCredentialExternalTypeDetailVersionId = new("1268a76a-ca19-4dd8-b932-01f24071d561");
             });
         async Task Act() => await context.SaveChangesAsync().ConfigureAwait(false);
 
@@ -269,12 +293,12 @@ public class CompanySsiDetailsRepositoryTests
     #region CheckUseCaseCredentialAndExternalTypeDetails
 
     [Theory]
-    [InlineData(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, "1268a76a-ca19-4dd8-b932-01f24071d560", true)]
-    [InlineData(VerifiedCredentialTypeId.PCF_FRAMEWORK, "1268a76a-ca19-4dd8-b932-01f24071d561", true)]
+    [InlineData(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, "1268a76a-ca19-4dd8-b932-01f24071d560", "2023-09-30 +0")]
+    [InlineData(VerifiedCredentialTypeId.PCF_FRAMEWORK, "1268a76a-ca19-4dd8-b932-01f24071d561", "2023-09-30 +0")]
 #pragma warning disable xUnit1012
-    [InlineData(default, "1268a76a-ca19-6666-b932-01f24071d561", false)]
+    [InlineData(default, "1268a76a-ca19-6666-b932-01f24071d561", default)]
 #pragma warning restore xUnit1012
-    public async Task CheckUseCaseCredentialAndExternalTypeDetails_WithTypeId_ReturnsTrue(VerifiedCredentialTypeId typeId, Guid detailId, bool exists)
+    public async Task CheckUseCaseCredentialAndExternalTypeDetails_WithTypeId_ReturnsTrue(VerifiedCredentialTypeId typeId, Guid detailId, DateTimeOffset expiry)
     {
         // Arrange
         var sut = await CreateSut();
@@ -283,7 +307,7 @@ public class CompanySsiDetailsRepositoryTests
         var result = await sut.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(detailId, typeId).ConfigureAwait(false);
 
         // Assert
-        result.Should().Be(exists);
+        result.Should().Be(expiry);
     }
 
     #endregion
@@ -304,7 +328,7 @@ public class CompanySsiDetailsRepositoryTests
         var result = await sut.CheckSsiCertificateType(typeId).ConfigureAwait(false);
 
         // Assert
-        result.Should().Be(expectedResult);
+        result.Exists.Should().Be(expectedResult);
     }
 
     #endregion
@@ -323,8 +347,8 @@ public class CompanySsiDetailsRepositoryTests
         // Assert
         result.exists.Should().BeTrue();
         result.data.Bpn.Should().Be("BPNL00000003CRHK");
-        result.data.UseCaseDetailData.Should().NotBeNull();
-        result.data.UseCaseDetailData!.VerifiedCredentialExternalTypeId.Should().Be(VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL);
+        result.data.DetailData.Should().NotBeNull();
+        result.data.DetailData!.VerifiedCredentialExternalTypeId.Should().Be(VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL);
     }
 
     [Fact]
@@ -451,6 +475,28 @@ public class CompanySsiDetailsRepositoryTests
 
         // Assert
         result.Should().ContainSingle().Which.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+    }
+
+    #endregion
+
+    #region GetExpiryData
+
+    [Fact]
+    public async Task GetExpiryData_ReturnsExpected()
+    {
+        // Arrange
+        var now = new DateTimeOffset(2024, 1, 1, 1, 1, 1, TimeSpan.Zero);
+        var inactiveVcsToDelete = now.AddMonths(-12);
+        var expiredVcsToDelete = now.AddDays(-42);
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(7);
+        result.Where(x => x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING).Should().HaveCount(4);
+        result.Where(x => x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE).Should().HaveCount(3);
     }
 
     #endregion

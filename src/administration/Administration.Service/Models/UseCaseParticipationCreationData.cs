@@ -31,6 +31,7 @@ public record UseCaseParticipationCreationData
 
 public record SsiCertificateCreationData
 (
+    Guid? VerifiedCredentialExternalTypeDetailId,
     VerifiedCredentialTypeId CredentialType,
     IFormFile Document
 );

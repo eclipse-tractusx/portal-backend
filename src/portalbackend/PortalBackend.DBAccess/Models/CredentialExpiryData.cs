@@ -19,10 +19,20 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record SsiCertificateData
-(
-    VerifiedCredentialTypeId CredentialType,
-    IEnumerable<CompanySsiDetailData> SsiDetailData
-);
+public record CredentialExpiryData(
+    Guid Id,
+    DateTimeOffset DateCreated,
+    DateTimeOffset ExpiryDate,
+    ExpiryCheckTypeId? ExpiryCheckTypeId,
+    string? DetailVersion,
+    CompanySsiDetailStatusId CompanySsiDetailStatusId,
+    VerifiedCredentialTypeId VerifiedCredentialTypeId,
+    UserMailingData UserMailingData);
+
+public record UserMailingData(
+    Guid Id,
+    string? Email,
+    string? Firstname,
+    string? Lastname);

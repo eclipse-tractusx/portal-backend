@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
@@ -40,6 +41,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IIdentityData _identity;
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
+    private readonly Guid _detailVersionId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IConsentRepository _consentRepository;
@@ -67,7 +69,6 @@ public class CompanyDataBusinessLogicTests
         _consentRepository = A.Fake<IConsentRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
-        _companySsiDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
@@ -126,7 +127,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"company {_identity.CompanyId} is not a valid company");
+        ex.Message.Should().Be(CompanyDataErrors.INVALID_COMPANY.ToString());
     }
 
     #endregion
@@ -202,7 +203,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"company {companyId} does not exist");
+        ex.Message.Should().Be(CompanyDataErrors.COMPANY_NOT_FOUND.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(companyId)).MustHaveHappenedOnceExactly();
     }
 
@@ -225,7 +226,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Status is Incorrect");
+        ex.Message.Should().Be(CompanyDataErrors.INVALID_COMPANY_STATUS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(companyId)).MustHaveHappenedOnceExactly();
     }
 
@@ -244,7 +245,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"language {languageShortName} is not a valid languagecode");
+        ex.Message.Should().Be(CompanyDataErrors.INVALID_LANGUAGECODE.ToString());
 
     }
 
@@ -373,7 +374,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Status is Incorrect");
+        ex.Message.Should().Be(CompanyDataErrors.INVALID_COMPANY_STATUS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -426,7 +427,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"All agreements need to get signed as Active or InActive. Missing consents: [ACTIVE_PARTICIPANT: [{agreementId2}, {agreementId3}], APP_PROVIDER: [{agreementId3}]]");
+        ex.Message.Should().Be(CompanyDataErrors.MISSING_AGREEMENTS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -484,7 +485,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Agreements not associated with requested companyRoles: [ACTIVE_PARTICIPANT: [{agreementId4}], APP_PROVIDER: [{agreementId1}, {agreementId2}]]");
+        ex.Message.Should().Be(CompanyDataErrors.UNASSIGN_ALL_ROLES.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -511,7 +512,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company can't unassign from all roles, Atleast one Company role need to signed as active");
+        ex.Message.Should().Be(CompanyDataErrors.UNASSIGN_ALL_ROLES.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -528,7 +529,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"company {_identity.CompanyId} does not exist");
+        ex.Message.Should().Be(CompanyDataErrors.COMPANY_NOT_FOUND.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -545,7 +546,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"neither CompanyRoleIds nor ConsentStatusDetails should ever be null here");
+        ex.Message.Should().Be(CompanyDataErrors.COMPANY_ROLE_IDS_CONSENT_STATUS_NULL.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -562,7 +563,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"neither CompanyRoleIds nor ConsentStatusDetails should ever be null here");
+        ex.Message.Should().Be(CompanyDataErrors.COMPANY_ROLE_IDS_CONSENT_STATUS_NULL.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -648,7 +649,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Status is Incorrect");
+        ex.Message.Should().Be(CompanyDataErrors.INVALID_COMPANY_STATUS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
     }
 
@@ -688,7 +689,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Status is Incorrect");
+        ex.Message.Should().Be(CompanyDataErrors.INVALID_COMPANY_STATUS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
     }
 
@@ -708,7 +709,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"UseCaseId {useCaseId} is not available");
+        ex.Message.Should().Be(CompanyDataErrors.USE_CASE_NOT_FOUND.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
     }
 
@@ -723,7 +724,7 @@ public class CompanyDataBusinessLogicTests
         var verifiedCredentials = _fixture.Build<CompanySsiExternalTypeDetailTransferData>()
             .With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(1))
             .CreateMany(5);
-        A.CallTo(() => _companySsiDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en"))
+        A.CallTo(() => _companySsiDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en", A<DateTimeOffset>._))
             .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
 
         // Act
@@ -740,7 +741,7 @@ public class CompanyDataBusinessLogicTests
         var verifiedCredentials = _fixture.Build<CompanySsiExternalTypeDetailTransferData>()
             .With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(2))
             .CreateMany(4);
-        A.CallTo(() => _companySsiDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en"))
+        A.CallTo(() => _companySsiDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en", A<DateTimeOffset>._))
             .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
 
         // Act
@@ -748,7 +749,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be("There should only be one pending or active ssi detail be assigned");
+        ex.Message.Should().Be(CompanyDataErrors.MULTIPLE_SSI_DETAIL.ToString());
     }
 
     #endregion
@@ -759,14 +760,32 @@ public class CompanyDataBusinessLogicTests
     public async Task GetSsiCertificates_WithValidRequest_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiCertificates(_identity.CompanyId))
-            .Returns(_fixture.Build<SsiCertificateTransferData>().With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(1)).CreateMany(5).ToAsyncEnumerable());
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiCertificates(_identity.CompanyId, A<DateTimeOffset>._))
+            .Returns(_fixture.Build<SsiCertificateTransferData>().With(x => x.Credentials, Enumerable.Repeat(new SsiCertificateExternalTypeDetailTransferData(_fixture.Create<ExternalTypeDetailData>(), _fixture.CreateMany<CompanySsiDetailTransferData>(1)), 1)).CreateMany(5).ToAsyncEnumerable());
 
         // Act
         var result = await _sut.GetSsiCertificatesAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetSsiCertificates_WithMultipleSsiDetailData_ThrowsException()
+    {
+        // Arrange
+        var verifiedCredentials = _fixture.Build<SsiCertificateExternalTypeDetailTransferData>()
+            .With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(2))
+            .CreateMany(4);
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiCertificates(_identity.CompanyId, A<DateTimeOffset>._))
+            .Returns(_fixture.Build<SsiCertificateTransferData>().With(x => x.Credentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
+
+        // Act
+        var Act = () => _sut.GetSsiCertificatesAsync();
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be(CompanyDataErrors.MULTIPLE_SSI_DETAIL.ToString());
     }
 
     #endregion
@@ -802,7 +821,26 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
+        ex.Message.Should().Be(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_NOT_FOUND.ToString());
+    }
+
+    [Fact]
+    public async Task CreateUseCaseParticipation_WithExpiryInPast_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var verifiedCredentialExternalTypeDetailId = Guid.NewGuid();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(DateTimeOffset.UtcNow);
+        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(verifiedCredentialExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK))
+            .Returns(DateTimeOffset.UtcNow.AddDays(-1));
+        var data = new UseCaseParticipationCreationData(verifiedCredentialExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
+
+        // Act
+        async Task Act() => await _sut.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(CompanyDataErrors.EXPIRY_DATE_IN_PAST.ToString());
     }
 
     [Fact]
@@ -821,7 +859,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Credential request already existing");
+        ex.Message.Should().Be(CompanyDataErrors.CREDENTIAL_ALREADY_EXISTING.ToString());
     }
 
     [Fact]
@@ -872,7 +910,7 @@ public class CompanyDataBusinessLogicTests
         detail.DocumentId.Should().Be(document.Id);
         detail.VerifiedCredentialTypeId.Should().Be(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
         detail.ExpiryDate.Should().Be(null);
-        detail.VerifiedCredentialExternalTypeUseCaseDetailId.Should().Be(_traceabilityExternalTypeDetailId);
+        detail.VerifiedCredentialExternalTypeDetailVersionId.Should().Be(_traceabilityExternalTypeDetailId);
     }
 
     #endregion
@@ -884,7 +922,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PNG.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
+        var data = new SsiCertificateCreationData(null, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
 
         // Act
         async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
@@ -900,14 +938,14 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         SetupCreateSsiCertificate();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
+        var data = new SsiCertificateCreationData(null, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
         async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"{VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK} is not assigned to a certificate");
+        ex.Message.Should().Be(CompanyDataErrors.CREDENTIAL_NO_CERTIFICATE.ToString());
     }
 
     [Fact]
@@ -916,9 +954,9 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         SetupCreateSsiCertificate();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
+        var data = new SsiCertificateCreationData(null, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
 
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, VerifiedCredentialTypeKindId.CERTIFICATE, null))
+        A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, VerifiedCredentialTypeKindId.CERTIFICATE, A<Guid>._))
             .Returns(true);
 
         // Act
@@ -926,7 +964,42 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Credential request already existing");
+        ex.Message.Should().Be(CompanyDataErrors.CREDENTIAL_ALREADY_EXISTING.ToString());
+    }
+
+    [Fact]
+    public async Task CreateSsiCertificate_WithMultipleDetailsButDetailIdNotSet_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var data = new SsiCertificateCreationData(null, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
+        A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE))
+            .Returns((true, _fixture.CreateMany<Guid>(5)));
+
+        // Act
+        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_ID_NOT_SET.ToString());
+    }
+
+    [Fact]
+    public async Task CreateSsiCertificate_WithDetailsIdNotExisting_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var data = new SsiCertificateCreationData(Guid.NewGuid(), VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
+
+        A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE))
+            .Returns((true, Enumerable.Repeat(_detailVersionId, 1)));
+
+        // Act
+        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -935,7 +1008,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         SetupCreateSsiCertificate();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
+        var data = new SsiCertificateCreationData(null, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
         var documentId = Guid.NewGuid();
         var documents = new List<Document>();
         var ssiDetails = new List<CompanySsiDetail>();
@@ -977,7 +1050,7 @@ public class CompanyDataBusinessLogicTests
         detail.DocumentId.Should().Be(document.Id);
         detail.VerifiedCredentialTypeId.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
         detail.ExpiryDate.Should().Be(null);
-        detail.VerifiedCredentialExternalTypeUseCaseDetailId.Should().BeNull();
+        detail.VerifiedCredentialExternalTypeDetailVersionId.Should().Be(_detailVersionId);
     }
 
     #endregion
@@ -988,13 +1061,14 @@ public class CompanyDataBusinessLogicTests
     public async Task GetCredentials_WithFilter_ReturnsList()
     {
         // Arrange
+        var useCaseId = Guid.NewGuid();
         var companySsiDetailStatusId = _fixture.Create<CompanySsiDetailStatusId>();
         var credentialTypeId = _fixture.Create<VerifiedCredentialTypeId>();
         var companyName = _fixture.Create<string>();
         var verificationCredentialType = _fixture.Build<VerifiedCredentialType>()
-            .With(x => x.VerifiedCredentialTypeAssignedUseCase, new VerifiedCredentialTypeAssignedUseCase(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, Guid.NewGuid())
+            .With(x => x.VerifiedCredentialTypeAssignedUseCase, new VerifiedCredentialTypeAssignedUseCase(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, useCaseId)
             {
-                UseCase = new UseCase(Guid.NewGuid(), "test", "name")
+                UseCase = new UseCase(useCaseId, "test", "name"),
             })
             .Create();
         var data = _fixture.Build<CompanySsiDetail>()
@@ -1031,7 +1105,7 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
 
         // Assert
-        ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
+        ex.Message.Should().Be(CompanyDataErrors.SSI_DETAILS_NOT_FOUND.ToString());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1055,7 +1129,7 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
 
         // Assert
-        ex.Message.Should().Be($"Credential {alreadyActiveId} must be {CompanySsiDetailStatusId.PENDING}");
+        ex.Message.Should().Be(CompanyDataErrors.CREDENTIAL_NOT_PENDING.ToString());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1079,67 +1153,87 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
 
         // Assert
-        ex.Message.Should().Be($"Bpn should be set for company {approvalData.CompanyName}");
+        ex.Message.Should().Be(CompanyDataErrors.BPN_NOT_SET.ToString());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
-    public async Task ApproveCredential_WithoutExternalDetailSet_ThrowsConflictException()
-    {
-        // Arrange
-        var alreadyActiveId = Guid.NewGuid();
-        var approvalData = _fixture.Build<SsiApprovalData>()
-            .With(x => x.Status, CompanySsiDetailStatusId.PENDING)
-            .With(x => x.Bpn, "test")
-            .With(x => x.CompanyName, "Test Company")
-            .With(x => x.Kind, VerifiedCredentialTypeKindId.USE_CASE)
-            .With(x => x.UseCaseDetailData, (UseCaseDetailData?)null)
-            .Create();
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
-            .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
-        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None).ConfigureAwait(false);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-
-        // Assert
-        ex.Message.Should().Be("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Theory]
-    [InlineData(VerifiedCredentialTypeKindId.USE_CASE, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK)]
-    [InlineData(VerifiedCredentialTypeKindId.CERTIFICATE, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)]
-    public async Task ApproveCredential_WithValidRequest_ReturnsExpected(VerifiedCredentialTypeKindId kindId, VerifiedCredentialTypeId typeId)
+    public async Task ApproveCredential_WithExpiryInThePast_ReturnsExpected()
     {
         // Arrange
         const string recipientMail = "test@mail.com";
-        var now = DateTimeOffset.UtcNow;
+        const string bpn = "BPNL00000001TEST";
+        const VerifiedCredentialTypeId typeId = VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK;
+        var now = DateTimeOffset.Now;
+        var requesterId = Guid.NewGuid();
+        var detailData = new DetailData(
+            VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL,
+            "test",
+            "1.0.0",
+            DateTimeOffset.Now.AddDays(-5)
+        );
+
+        var data = new SsiApprovalData(
+            CompanySsiDetailStatusId.PENDING,
+            typeId,
+            VerifiedCredentialTypeKindId.USE_CASE,
+            "Stark Industries",
+            bpn,
+            detailData,
+            new SsiRequesterData(
+                requesterId,
+                recipientMail,
+                "Tony",
+                "Stark"
+            )
+        );
+
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(_validCredentialId))
+            .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
+        async Task Act() => await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be(CompanyDataErrors.EXPIRY_DATE_IN_PAST.ToString());
+        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, A<DateTimeOffset>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+    }
+
+    [Theory]
+    [InlineData(VerifiedCredentialTypeKindId.USE_CASE, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, "2024-01-05 +0", "2024-01-05 +0")]
+    [InlineData(VerifiedCredentialTypeKindId.CERTIFICATE, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, "2027-01-30 +0", "2025-01-01 +0")]
+    public async Task ApproveCredential_WithValidRequest_ReturnsExpected(VerifiedCredentialTypeKindId kindId, VerifiedCredentialTypeId typeId, DateTimeOffset expiry, DateTimeOffset expectedExpiry)
+    {
+        // Arrange
+        const string recipientMail = "test@mail.com";
+        const string bpn = "BPNL00000001TEST";
+        var now = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var requesterId = Guid.NewGuid();
         var notifications = new List<Notification>();
-        UseCaseDetailData? useCaseData = null;
-        if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
-        {
-            useCaseData = new UseCaseDetailData(
-                VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL,
-                "test",
-                "1.0.0"
-            );
-        }
+        var detailData = new DetailData(
+            kindId == VerifiedCredentialTypeKindId.USE_CASE ? VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL : VerifiedCredentialExternalTypeId.PCF_CREDENTIAL,
+            "test",
+            "1.0.0",
+            expiry
+        );
 
-        var bpn = "BPNL00000001TEST";
         var data = new SsiApprovalData(
             CompanySsiDetailStatusId.PENDING,
             typeId,
             kindId,
             "Stark Industries",
             bpn,
-            null,
-            useCaseData,
+            detailData,
             new SsiRequesterData(
                 requesterId,
                 recipientMail,
@@ -1175,16 +1269,16 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
         {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<UseCaseDetailData>._, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, expectedExpiry, A<CancellationToken>._))
                 .MustHaveHappenedOnceExactly();
-            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustNotHaveHappened();
         }
         else
         {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<UseCaseDetailData>._, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, expectedExpiry, A<CancellationToken>._))
                 .MustNotHaveHappened();
-            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustHaveHappenedOnceExactly();
         }
 
@@ -1195,6 +1289,7 @@ public class CompanyDataBusinessLogicTests
 
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.ACTIVE);
         detail.DateLastChanged.Should().Be(now);
+        detail.ExpiryDate.Should().Be(expectedExpiry);
     }
 
     [Fact]
@@ -1204,10 +1299,11 @@ public class CompanyDataBusinessLogicTests
         const string recipientMail = "test@mail.com";
         var now = DateTimeOffset.UtcNow;
         var requesterId = Guid.NewGuid();
-        var useCaseData = new UseCaseDetailData(
+        var useCaseData = new DetailData(
             VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL,
             "test",
-            "1.0.0"
+            "1.0.0",
+            DateTimeOffset.UtcNow
         );
 
         var bpn = "BPNL00000001TEST";
@@ -1217,7 +1313,6 @@ public class CompanyDataBusinessLogicTests
             VerifiedCredentialTypeKindId.USE_CASE,
             "Stark Industries",
             bpn,
-            null,
             useCaseData,
             new SsiRequesterData(
                 requesterId,
@@ -1236,7 +1331,52 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be("VerifiedCredentialType 0 does not exists");
+        ex.Message.Should().Be(CompanyDataErrors.CREDENTIAL_TYPE_NOT_FOUND.ToString());
+    }
+
+    [Theory]
+    [InlineData(VerifiedCredentialTypeKindId.USE_CASE, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK)]
+    [InlineData(VerifiedCredentialTypeKindId.CERTIFICATE, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)]
+    public async Task ApproveCredential_WithDetailVersionNotSet_ThrowsConflictException(VerifiedCredentialTypeKindId kindId, VerifiedCredentialTypeId typeId)
+    {
+        // Arrange
+        var now = DateTimeOffset.UtcNow;
+        var requesterId = Guid.NewGuid();
+
+        var bpn = "BPNL00000001TEST";
+        var data = new SsiApprovalData(
+            CompanySsiDetailStatusId.PENDING,
+            typeId,
+            kindId,
+            "Stark Industries",
+            bpn,
+            null,
+            new SsiRequesterData(
+                requesterId,
+                null,
+                null,
+                null
+            )
+        );
+
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
+        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(_validCredentialId))
+            .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
+        async Task Act() => await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+
+        A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, A<DateTimeOffset>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+        ex.Message.Should().Be(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_ID_NOT_SET.ToString());
     }
 
     [Theory]
@@ -1248,25 +1388,21 @@ public class CompanyDataBusinessLogicTests
         var now = DateTimeOffset.UtcNow;
         var requesterId = Guid.NewGuid();
         var notifications = new List<Notification>();
-        UseCaseDetailData? useCaseData = null;
-        if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
-        {
-            useCaseData = new UseCaseDetailData(
-                VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL,
-                "test",
-                "1.0.0"
-            );
-        }
+        var detailData = new DetailData(
+            kindId == VerifiedCredentialTypeKindId.USE_CASE ? VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL : VerifiedCredentialExternalTypeId.PCF_CREDENTIAL,
+            "test",
+            "1.0.0",
+            DateTimeOffset.UtcNow
+        );
 
-        var bpn = "BPNL00000001TEST";
+        const string bpn = "BPNL00000001TEST";
         var data = new SsiApprovalData(
             CompanySsiDetailStatusId.PENDING,
             typeId,
             kindId,
             "Stark Industries",
             bpn,
-            null,
-            useCaseData,
+            detailData,
             new SsiRequesterData(
                 requesterId,
                 null,
@@ -1302,16 +1438,16 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
         {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<UseCaseDetailData>._, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustHaveHappenedOnceExactly();
-            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustNotHaveHappened();
         }
         else
         {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<UseCaseDetailData>._, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustNotHaveHappened();
-            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustHaveHappenedOnceExactly();
         }
 
@@ -1341,7 +1477,7 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
 
         // Assert
-        ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
+        ex.Message.Should().Be(CompanyDataErrors.SSI_DETAILS_NOT_FOUND.ToString());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1362,7 +1498,7 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
 
         // Assert
-        ex.Message.Should().Be($"Credential {alreadyInactiveId} must be {CompanySsiDetailStatusId.PENDING}");
+        ex.Message.Should().Be(CompanyDataErrors.CREDENTIAL_NOT_PENDING.ToString());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1481,17 +1617,17 @@ public class CompanyDataBusinessLogicTests
     private void SetupCreateUseCaseParticipation()
     {
         A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK))
-            .Returns(true);
+            .Returns(DateTimeOffset.UtcNow);
         A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(A<Guid>.That.Not.Matches(x => x == _traceabilityExternalTypeDetailId), A<VerifiedCredentialTypeId>._))
-            .Returns(false);
+            .Returns((DateTimeOffset)default);
     }
 
     private void SetupCreateSsiCertificate()
     {
         A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE))
-            .Returns(true);
+            .Returns((true, Enumerable.Repeat(_detailVersionId, 1)));
         A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(A<VerifiedCredentialTypeId>.That.Matches(x => x != VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)))
-            .Returns(false);
+            .Returns((false, Enumerable.Empty<Guid>()));
     }
 
     #endregion
