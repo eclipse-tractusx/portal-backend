@@ -38,7 +38,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * updated and added technical user role description & user role names
 * Others
   * added email value validation for invitation, network registration and user invitation to enable the user input data validation for valid email
-  
+
 ### Feature
 * Administration Service
   * added /api/administration/staticdata/operator-bpn endpoint to fetch operator bpns
