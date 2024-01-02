@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -45,7 +46,7 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid CompanyIdWithoutSdDocument = Guid.NewGuid();
     private static readonly Guid ExistingConnectorId = Guid.NewGuid();
     private static readonly Guid CompanyWithoutBpnId = Guid.NewGuid();
-    private readonly Guid ValidOfferSubscriptionId = Guid.NewGuid();
+    private readonly Guid _validOfferSubscriptionId = Guid.NewGuid();
     private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly List<Connector> _connectors;
@@ -57,10 +58,8 @@ public class ConnectorsBusinessLogicTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly ConnectorsBusinessLogic _logic;
-    private readonly ConnectorsSettings _settings;
     private readonly IDocumentRepository _documentRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
-    private readonly IIdentityService _identityService;
 
     public ConnectorsBusinessLogicTests()
     {
@@ -77,11 +76,11 @@ public class ConnectorsBusinessLogicTests
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
-        _identityService = A.Fake<IIdentityService>();
+        var identityService = A.Fake<IIdentityService>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
         var options = A.Fake<IOptions<ConnectorsSettings>>();
-        _settings = new ConnectorsSettings
+        var settings = new ConnectorsSettings
         {
             MaxPageSize = 15,
             ValidCertificationContentTypes = new[]
@@ -94,13 +93,13 @@ public class ConnectorsBusinessLogicTests
         _documentRepository = A.Fake<IDocumentRepository>();
         SetupRepositoryMethods();
 
-        A.CallTo(() => options.Value).Returns(_settings);
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => options.Value).Returns(settings);
+        A.CallTo(() => identityService.IdentityData).Returns(_identity);
         var logger = A.Fake<ILogger<ConnectorsBusinessLogic>>();
 
         SetupIdentity();
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, logger);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, identityService, logger);
     }
 
     #region GetAllCompanyConnectorDatas
@@ -162,8 +161,15 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Technical User {saId} is not assigned to company {ValidCompanyId} or is not active (Parameter 'technicalUserId')");
-        ex.ParamName.Should().Be("technicalUserId");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE.ToString());
+        ex.Parameters.Should().NotBeNull().And.Satisfy(
+           x => x.Name == "technicalUserId"
+           &&
+           x.Value == saId.ToString(),
+           y => y.Name == "companyId"
+           &&
+           y.Value == _identity.CompanyId.ToString()
+           );
     }
 
     [Fact]
@@ -192,7 +198,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        exception.Message.Should().Be($"provider company {CompanyIdWithoutSdDocument} has no self description document");
+        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_DESCRIPTION.ToString());
     }
 
     [Fact]
@@ -206,7 +212,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be("Location invalid does not exist (Parameter 'location')");
+        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_LOCATION_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -221,7 +227,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        exception.Message.Should().Be($"provider company {CompanyWithoutBpnId} has no businessPartnerNumber assigned");
+        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED.ToString());
     }
 
     [Fact]
@@ -247,7 +253,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, ServiceAccountUserId);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
 
         // Act
         var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
@@ -255,14 +261,14 @@ public class ConnectorsBusinessLogicTests
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, ValidOfferSubscriptionId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
     public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, null);
 
         SetupTechnicalIdentity();
 
@@ -272,21 +278,25 @@ public class ConnectorsBusinessLogicTests
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, ValidOfferSubscriptionId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
     public async Task CreateManagedConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "invalid", ValidOfferSubscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "invalid", _validOfferSubscriptionId, null);
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.ParamName.Should().Be("location");
+        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_LOCATION_NOT_EXIST.ToString());
+        exception.Parameters.Should().NotBeNull().And.Satisfy(
+            x => x.Name == "location"
+            &&
+            x.Value == "invalid");
     }
 
     [Fact]
@@ -305,7 +315,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"OfferSubscription {subscriptionId} does not exist");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST.ToString());
     }
 
     [Fact]
@@ -324,7 +334,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be("Company is not the provider of the offer");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_OFFER.ToString());
     }
 
     [Fact]
@@ -343,7 +353,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("OfferSubscription is already linked to a connector");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_OFFERSUBSCRIPTION_LINKED.ToString());
     }
 
     [Fact]
@@ -362,7 +372,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"The offer subscription must be either {OfferSubscriptionStatusId.ACTIVE} or {OfferSubscriptionStatusId.PENDING}");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_STATUS_ACTIVE_OR_PENDING.ToString());
     }
 
     [Fact]
@@ -379,7 +389,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"provider company {ValidCompanyId} has no self description document");
+        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION.ToString());
     }
 
     [Fact]
@@ -399,7 +409,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"The bpn of compay {companyId} must be set");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN.ToString());
     }
 
     [Fact]
@@ -407,15 +417,22 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var saId = Guid.NewGuid();
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", ValidOfferSubscriptionId, saId);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, saId);
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Technical User {saId} is not assigned to company {ValidCompanyId} or is not active (Parameter 'technicalUserId')");
-        ex.ParamName.Should().Be("technicalUserId");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE.ToString());
+        ex.Parameters.Should().NotBeNull().And.Satisfy(
+          x => x.Name == "technicalUserId"
+          &&
+          x.Value == saId.ToString(),
+          y => y.Name == "companyId"
+          &&
+          y.Value == _identity.CompanyId.ToString()
+          );
     }
 
     #endregion
@@ -455,7 +472,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Connector {data.ExternalId} does not exist");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_EXIST.ToString());
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
     }
 
@@ -473,7 +490,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Connector {data.ExternalId} already has a document assigned");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED.ToString());
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
     }
 
@@ -659,7 +676,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Connector status does not match a deletion scenario. Deletion declined");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_DELETION_DECLINED.ToString());
     }
 
     [Fact]
@@ -675,7 +692,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Connector status does not match a deletion scenario. Deletion declined");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_DELETION_DECLINED.ToString());
     }
 
     [Fact]
@@ -691,7 +708,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Connector {connectorId} does not exist");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -707,7 +724,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"company {_identity.CompanyId} is neither provider nor host-company of connector {connectorId}");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST.ToString());
     }
 
     [Fact]
@@ -731,7 +748,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Deletion Failed. Connector {connectorId} connected to an active offer subscription [{offerSubscriptionId1},{offerSubscriptionId2}]");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_DELETION_FAILED_OFFER_SUBSCRIPTION.ToString());
     }
 
     [Fact]
@@ -757,7 +774,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Deletion Failed. Connector {connectorId} connected to an active offer subscription [{offerSubscriptionId1},{offerSubscriptionId2}]");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_DELETION_FAILED_OFFER_SUBSCRIPTION.ToString());
     }
 
     #endregion
@@ -828,7 +845,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Connector {connectorId} does not exists");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -866,7 +883,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} is not the connectors host company");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_HOST_COMPANY.ToString());
     }
 
     [Fact]
@@ -887,7 +904,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Connector {connectorId} is in state {ConnectorStatusId.INACTIVE}");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE.ToString());
     }
 
     [Fact]
@@ -910,7 +927,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("The business partner number must be set here");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN.ToString());
     }
 
     [Fact]
@@ -935,7 +952,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("The business partner number must be set here");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN.ToString());
     }
 
     [Fact]
@@ -1024,7 +1041,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Incorrect BPN [{bpns[0]}] attribute value");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_INCORRECT_BPN.ToString());
     }
 
     #endregion
@@ -1064,7 +1081,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"company {_identity.CompanyId} is not provider of connector {connectorId}");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY.ToString());
     }
 
     [Fact]
@@ -1080,7 +1097,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"connector {connectorId} does not exist");
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -1118,7 +1135,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((ValidCompanyBpn, null));
         A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidCompanyId || x == CompanyIdWithoutSdDocument)))
             .Returns((null, null));
-        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(ValidOfferSubscriptionId, ValidCompanyId))
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(_validOfferSubscriptionId, ValidCompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), ValidCompanyId, ValidCompanyBpn));
 
         A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
