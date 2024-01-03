@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -50,6 +51,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     private readonly IIdentityData _identityData;
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ILogger<UserBusinessLogic> _logger;
+    private readonly IBpnAccess _bpnAccess;
     private readonly UserSettings _settings;
 
     /// <summary>
@@ -62,6 +64,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     /// <param name="mailingProcessCreation"></param>
     /// <param name="logger">logger</param>
     /// <param name="settings">Settings</param>
+    /// <param name="bpnAccess">bpnAccess</param>
     /// <param name="portalRepositories">Portal Repositories</param>
     public UserBusinessLogic(
         IProvisioningManager provisioningManager,
@@ -71,6 +74,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         IIdentityService identityService,
         IMailingProcessCreation mailingProcessCreation,
         ILogger<UserBusinessLogic> logger,
+        IBpnAccess bpnAccess,
         IOptions<UserSettings> settings)
     {
         _provisioningManager = provisioningManager;
@@ -80,6 +84,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _logger = logger;
+        _bpnAccess = bpnAccess;
         _settings = settings.Value;
     }
 
@@ -291,13 +296,10 @@ public class UserBusinessLogic : IUserBusinessLogic
             details.Email);
     }
 
-    public async Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers)
+    public async Task<CompanyUsersBPNDetails> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, string token, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken)
     {
-        if (businessPartnerNumbers.Any(bpn => !BpnRegex.IsMatch(bpn)))
-        {
-            throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(businessPartnerNumbers));
-        }
-
+        var successfullBPNs = new List<string>();
+        var unSuccessfullBPNs = new List<UnSuccessfullBPNs>();
         var companyId = _identityData.CompanyId;
         var (assignedBusinessPartnerNumbers, isValidUser) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValidUser)
@@ -307,17 +309,54 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var iamUserId = await _provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException("user {userId} not found in keycloak");
         var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-        await _provisioningManager.AddBpnAttributetoUserAsync(iamUserId, businessPartnerNumbers).ConfigureAwait(ConfigureAwaitOptions.None);
-        foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(assignedBusinessPartnerNumbers))
+        foreach (var bpn in businessPartnerNumbers)
         {
-            businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(userId, businessPartnerToAdd.ToUpper());
+            var (bpns, error) = await CompanyUsersBPNCheck(bpn, token, cancellationToken);
+            if (error == null)
+            {
+                successfullBPNs.Add(bpns);
+            }
+            else
+            {
+                unSuccessfullBPNs.Add(new UnSuccessfullBPNs(bpns, error.Message));
+            }
         }
-
-        return await _portalRepositories.SaveAsync();
+        if (successfullBPNs != null)
+        {
+            await _provisioningManager.AddBpnAttributetoUserAsync(iamUserId, successfullBPNs).ConfigureAwait(false);
+            foreach (var businessPartnerToAdd in successfullBPNs.Except(assignedBusinessPartnerNumbers))
+            {
+                businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(userId, businessPartnerToAdd);
+            }
+        }
+        await _portalRepositories.SaveAsync();
+        return new CompanyUsersBPNDetails(successfullBPNs!, unSuccessfullBPNs);
     }
 
-    public Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string businessPartnerNumber) =>
-        AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, Enumerable.Repeat(businessPartnerNumber, 1));
+    private async ValueTask<(string bpns, Exception? error)> CompanyUsersBPNCheck(string bpn, string token, CancellationToken cancellationToken)
+    {
+        Exception? error = null;
+        try
+        {
+            if (bpn.Length > 20)
+            {
+                throw new ControllerArgumentException("BusinessPartnerNumbers must not exceed 20 characters");
+            }
+            var legalEntity = await _bpnAccess.FetchLegalEntityByBpn(bpn, token, cancellationToken).ConfigureAwait(false);
+            if (!bpn.Equals(legalEntity.Bpn, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
+            }
+        }
+        catch (Exception ex)
+        {
+            error = ex;
+        }
+        return (bpn, error);
+    }
+
+    public Task<CompanyUsersBPNDetails> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string token, string businessPartnerNumber, CancellationToken cancellationToken) =>
+        AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, token, Enumerable.Repeat(businessPartnerNumber, 1), cancellationToken);
 
     public async Task<CompanyOwnUserDetails> GetOwnUserDetails()
     {

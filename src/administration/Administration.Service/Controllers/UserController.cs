@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
@@ -250,6 +251,7 @@ public class UserController : ControllerBase
     /// </summary>
     /// <param name="companyUserId" example="ac1cf001-7fbc-1f2f-817f-bce0575a0011">Id of the user to add the business partner numbers to.</param>
     /// <param name="businessPartnerNumbers">the business partner numbers that should be added.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <remarks>Example: POST: api/administration/user/owncompany/users/{companyUserId}/businessPartnerNumbers</remarks>
     /// <response code="200">The business partner numbers have been added successfully.</response>
@@ -262,14 +264,15 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<int> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers) =>
-        _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumbers);
+    public Task<CompanyUsersBPNDetails> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken) =>
+        this.WithBearerToken(token => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, token, businessPartnerNumbers, cancellationToken));
 
     /// <summary>
     /// Adds the given business partner number to the user for the given id.
     /// </summary>
     /// <param name="companyUserId" example="ac1cf001-7fbc-1f2f-817f-bce0575a0011">Id of the user to add the business partner numbers to.</param>
     /// <param name="businessPartnerNumber" example="CAXSDUMMYCATENAZZ">the business partner number that should be added.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <remarks>Example: PUT: api/administration/user/owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}</remarks>
     /// <response code="200">The business partner number have been added successfully.</response>
@@ -286,8 +289,8 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public Task<int> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber) =>
-        _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber);
+    public Task<CompanyUsersBPNDetails> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber, CancellationToken cancellationToken) =>
+        this.WithBearerToken(token => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, token, businessPartnerNumber, cancellationToken));
 
     /// <summary>
     /// Deletes the users with the given ids.
