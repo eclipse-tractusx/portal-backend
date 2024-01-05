@@ -37,7 +37,6 @@ public class AdministrationServiceAccountErrorMessageContainer : IErrorMessageCo
                 { AdministrationServiceAccountErrors.SERVICE_ID_PATH_NOT_MATCH_ARGUMENT,"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetailsServiceAccountId}"},
                 { AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT,"serviceAccount {serviceAccountId} is already INACTIVE"},
                 { AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT,"clientClientId of serviceAccount {serviceAccountId} should not be null"}
-
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(AdministrationServiceAccountErrors); }
