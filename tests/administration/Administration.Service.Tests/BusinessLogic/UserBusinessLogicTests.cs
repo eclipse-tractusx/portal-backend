@@ -1632,14 +1632,14 @@ public class UserBusinessLogicTests
             "THISBPNISVALID17",
             "THISBPNISVALID18",
             "THISISINVALIDBPNID111" };
-        var successfulBpns = new[] {
+        var successfullBpns = new[] {
             "THISBPNISVALID12",
             "THISBPNISVALID13",
             "THISBPNISVALID14",
             "THISBPNISVALID16",
             "THISBPNISVALID18" };
         var token = _fixture.Create<string>();
-        foreach (var bpns in successfulBpns)
+        foreach (var bpns in successfullBpns)
         {
             var legalEntity = _fixture.Build<BpdmLegalEntityDto>()
                 .With(x => x.Bpn, bpns)
@@ -1664,12 +1664,12 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._)).MustHaveHappened(4, Times.Exactly);
         A.CallTo(() => _bpnAccess.FetchLegalEntityByBpn(A<string>._, A<string>._, CancellationToken.None)).MustHaveHappened(8, Times.Exactly);
         result.Should().NotBeNull();
-        result.SuccessfullBPNs.Should().HaveCount(successfulBpns.Count());
-        result.UnSuccessfullBPNs.Should().HaveCount(4).And.Satisfy(
-            x => x.BPNs == "THISBPNISVALID11" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
-            x => x.BPNs == "THISBPNISVALID15" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
-            x => x.BPNs == "THISBPNISVALID17" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
-            x => x.BPNs == "THISISINVALIDBPNID111" && x.ErrorMessage == "BusinessPartnerNumbers must not exceed 20 characters"
+        result.SuccessfullBpns.Should().HaveCount(successfullBpns.Count());
+        result.UnSuccessfullBpns.Should().HaveCount(4).And.Satisfy(
+            x => x.Bpns == "THISBPNISVALID11" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
+            x => x.Bpns == "THISBPNISVALID15" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
+            x => x.Bpns == "THISBPNISVALID17" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
+            x => x.Bpns == "THISISINVALIDBPNID111" && x.ErrorMessage == "BusinessPartnerNumbers must not exceed 20 characters"
         );
     }
 

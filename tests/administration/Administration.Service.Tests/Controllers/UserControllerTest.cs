@@ -90,7 +90,7 @@ public class UserControllerTest
     {
         //Arrange
         var bpns = _fixture.CreateMany<string>();
-        var data = _fixture.Create<CompanyUsersBPNDetails>();
+        var data = _fixture.Create<CompanyUsersBpnDetails>();
         A.CallTo(() => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(A<Guid>._, A<string>._, A<IEnumerable<string>>._, CancellationToken.None))
             .Returns(data);
 
@@ -107,7 +107,7 @@ public class UserControllerTest
     {
         //Arrange
         var bpn = _fixture.Create<string>();
-        var data = _fixture.Create<CompanyUsersBPNDetails>();
+        var data = _fixture.Create<CompanyUsersBpnDetails>();
         A.CallTo(() => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(A<Guid>._, A<string>._, A<string>._, CancellationToken.None))
             .Returns(data);
 

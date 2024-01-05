@@ -20,9 +20,9 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record CompanyUsersBPNDetails(
-    IEnumerable<string> SuccessfullBPNs,
-    IEnumerable<UnSuccessfullBPNs> UnSuccessfullBPNs
+public record CompanyUsersBpnDetails(
+    IEnumerable<string> SuccessfullBpns,
+    IEnumerable<UnSuccessfullBpns> UnSuccessfullBpns
 );
 
-public record UnSuccessfullBPNs(string BPNs, string ErrorMessage);
+public record UnSuccessfullBpns(string Bpns, string ErrorMessage);

@@ -323,10 +323,10 @@ public class UserBusinessLogic : IUserBusinessLogic
             details.Email);
     }
 
-    public async Task<CompanyUsersBPNDetails> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, string token, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken)
+    public async Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, string token, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken)
     {
-        var successfullBPNs = new List<string>();
-        var unSuccessfullBPNs = new List<UnSuccessfullBPNs>();
+        var successfullBpns = new List<string>();
+        var unSuccessfullBpns = new List<UnSuccessfullBpns>();
         var companyId = _identityData.CompanyId;
         var (assignedBusinessPartnerNumbers, isValidUser) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId).ConfigureAwait(false);
         if (!isValidUser)
@@ -341,23 +341,23 @@ public class UserBusinessLogic : IUserBusinessLogic
             var (bpns, error) = await CompanyUsersBPNCheck(bpn, token, cancellationToken);
             if (error == null)
             {
-                successfullBPNs.Add(bpns);
+                successfullBpns.Add(bpns);
             }
             else
             {
-                unSuccessfullBPNs.Add(new UnSuccessfullBPNs(bpns, error.Message));
+                unSuccessfullBpns.Add(new UnSuccessfullBpns(bpns, error.Message));
             }
         }
-        if (successfullBPNs != null)
+        if (successfullBpns != null)
         {
-            await _provisioningManager.AddBpnAttributetoUserAsync(iamUserId, successfullBPNs).ConfigureAwait(false);
-            foreach (var businessPartnerToAdd in successfullBPNs.Except(assignedBusinessPartnerNumbers))
+            await _provisioningManager.AddBpnAttributetoUserAsync(iamUserId, successfullBpns).ConfigureAwait(false);
+            foreach (var businessPartnerToAdd in successfullBpns.Except(assignedBusinessPartnerNumbers))
             {
                 businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(userId, businessPartnerToAdd);
             }
         }
         await _portalRepositories.SaveAsync();
-        return new CompanyUsersBPNDetails(successfullBPNs!, unSuccessfullBPNs);
+        return new CompanyUsersBpnDetails(successfullBpns!, unSuccessfullBpns);
     }
 
     private async ValueTask<(string bpns, Exception? error)> CompanyUsersBPNCheck(string bpn, string token, CancellationToken cancellationToken)
@@ -382,7 +382,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         return (bpn, error);
     }
 
-    public Task<CompanyUsersBPNDetails> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string token, string businessPartnerNumber, CancellationToken cancellationToken) =>
+    public Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string token, string businessPartnerNumber, CancellationToken cancellationToken) =>
         AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, token, Enumerable.Repeat(businessPartnerNumber, 1), cancellationToken);
 
     public async Task<CompanyOwnUserDetails> GetOwnUserDetails()
