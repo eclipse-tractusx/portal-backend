@@ -264,7 +264,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<CompanyUsersBPNDetails> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken) =>
+    public Task<CompanyUsersBpnDetails> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken) =>
         this.WithBearerToken(token => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, token, businessPartnerNumbers, cancellationToken));
 
     /// <summary>
@@ -289,7 +289,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public Task<CompanyUsersBPNDetails> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber, CancellationToken cancellationToken) =>
+    public Task<CompanyUsersBpnDetails> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber, CancellationToken cancellationToken) =>
         this.WithBearerToken(token => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, token, businessPartnerNumber, cancellationToken));
 
     /// <summary>
