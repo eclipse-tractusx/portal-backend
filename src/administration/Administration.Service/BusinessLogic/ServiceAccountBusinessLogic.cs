@@ -84,7 +84,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         if (unassignable.Any())
         {
             throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, new ErrorParameter[] { new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds)) });
-            //new ControllerArgumentException($"The roles {string.Join(",", unassignable)} are not assignable to a service account", "userRoleIds");
+
         }
 
         var companyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;
