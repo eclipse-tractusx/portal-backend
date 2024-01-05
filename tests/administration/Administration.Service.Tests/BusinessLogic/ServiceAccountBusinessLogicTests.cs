@@ -18,8 +18,12 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using MimeKit.Encodings;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -121,7 +125,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"company {identity.CompanyId} does not exist");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_COMPANY_NOT_EXIST_CONFLICT.ToString());
     }
 
     [Fact]
@@ -137,8 +141,10 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be("name must not be empty (Parameter 'name')");
-        exception.ParamName.Should().Be("name");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT.ToString());
+        exception.Parameters.Should().NotBeNull().And.Satisfy(
+           x => x.Name == "name"
+        );
     }
 
     [Fact]
@@ -154,8 +160,10 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be("other authenticationType values than SECRET are not supported yet (Parameter 'authenticationType')");
-        exception.ParamName.Should().Be("authenticationType");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT.ToString());
+        exception.Parameters.Should().NotBeNull().And.Satisfy(
+            x => x.Name == "authenticationType"
+        );
     }
 
     [Fact]
@@ -172,8 +180,11 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be($"The roles {wrongUserRoleId} are not assignable to a service account (Parameter 'userRoleIds')");
-        exception.ParamName.Should().Be("userRoleIds");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT.ToString());
+        exception.Parameters.Should().NotBeNull().And.Satisfy(
+            x => x.Name == "unassignable",
+            y => y.Name == "userRoleIds"
+        );
     }
 
     #endregion
@@ -209,7 +220,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"serviceAccount {ValidServiceAccountId} not found for company {invalidCompanyId}");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
     [Fact]
@@ -225,7 +236,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found for company {_identity.CompanyId}");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
     #endregion
@@ -261,7 +272,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"serviceAccount {ValidServiceAccountId} not found for company {invalidUser.CompanyId}");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
     [Fact]
@@ -277,7 +288,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found for company {_identity.CompanyId}");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
     #endregion
@@ -312,8 +323,10 @@ public class ServiceAccountBusinessLogicTests
         async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(Act);
-        exception.ParamName.Should().Be("authenticationType");
+        var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        exception.Parameters.Should().NotBeNull().And.Satisfy(
+            x => x.Name == "authenticationType"
+        );
     }
 
     [Fact]
@@ -328,8 +341,11 @@ public class ServiceAccountBusinessLogicTests
         async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(Guid.NewGuid(), data).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(Act);
-        exception.ParamName.Should().Be("serviceAccountId");
+        var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        exception.Parameters.Should().NotBeNull().And.Satisfy(
+            x => x.Name == "serviceAccountId",
+            y => y.Name == "serviceAccountDetailsServiceAccountId"
+        );
     }
 
     [Fact]
@@ -348,7 +364,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found for company {_identity.CompanyId}");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
     [Fact]
@@ -369,7 +385,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"serviceAccount {InactiveServiceAccount} is already INACTIVE");
+        exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT.ToString());
     }
 
     #endregion
@@ -415,7 +431,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"serviceAccount {serviceAccountId} not found for company {_identity.CompanyId}");
+        ex.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
     [Fact]
@@ -431,7 +447,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Technical User is linked to an active subscription. Deactivate the subscription to delete the technical user.");
+        ex.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_ACTIVE_CONFLICT.ToString());
     }
 
     [Fact]
@@ -447,7 +463,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user.");
+        ex.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_PENDING_CONFLICT.ToString());
     }
 
     [Theory]
