@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using PasswordGenerator;
 using RestAssured.Response.Logging;
+using System.Net;
 using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
@@ -46,31 +47,31 @@ public static class RegistrationEndpointHelper
 
     public static async Task<string> GetBpn()
     {
-        _portalUserToken =
-            await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
-                Secrets.PortalUserPassword);
+        const string endpoint = "/companies/test-company/api/catena/input/legal-entities?page=0&size=10";
+        _portalUserToken = await new AuthFlow(PortalUserCompanyName)
+            .GetAccessToken(Secrets.PortalUserName, Secrets.PortalUserPassword);
 
-        var endpoint = "/api/catena/legal-entities?page=0&size=20";
         var data = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
                 $"Bearer {_portalUserToken}")
             .When()
-            .Get(bpdmBaseUrl + endpoint)
+                .Post($"{bpdmBaseUrl}{endpoint}")
             .Then()
-            .StatusCode(200)
             .And()
-            .Extract()
-            .Response();
-        var bpdmLegalEntityDatas =
-            DataHandleHelper.DeserializeData<Pagination.Response<BpdmContent>>(data.Content.ReadAsStringAsync().Result);
+                .StatusCode(200)
+                .And()
+                .Extract()
+                .Response();
+
+        var bpdmLegalEntityDatas = DataHandleHelper.DeserializeData<BpdmPaginationContent>(data.Content.ReadAsStringAsync().Result);
         if (bpdmLegalEntityDatas is null)
         {
             throw new Exception($"Could not get bpn from {endpoint} should not be null.");
         }
-        return bpdmLegalEntityDatas.Content.ElementAt(new Random().Next(bpdmLegalEntityDatas.Content.Count()))
-            .LegalEntity.Bpn;
+
+        return bpdmLegalEntityDatas.Content.ElementAt(new Random().Next(bpdmLegalEntityDatas.Content.Count())).Bpn;
     }
 
     //GET /api/registration/legalEntityAddress/{bpn}
@@ -95,6 +96,7 @@ public static class RegistrationEndpointHelper
         {
             throw new Exception($"Could not get bpdm detail data from {endpoint} should not be null.");
         }
+
         return bpdmDetailData;
     }
 
@@ -358,8 +360,7 @@ public static class RegistrationEndpointHelper
 
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
-    public static int UploadDocument_WithEmptyTitle(string? documentTypeId,
-        string? documentName)
+    public static void UploadDocument_WithEmptyTitle(string? documentTypeId, string? documentName)
     {
         if (documentTypeId is null || documentName is null)
             throw new Exception("No document type id or name provided but expected");
@@ -376,16 +377,14 @@ public static class RegistrationEndpointHelper
             .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
             .Then()
             .Log(ResponseLogLevel.OnError)
-            .StatusCode(200)
+            .StatusCode(204)
             .Extract()
             .Response();
 
-        var result = DataHandleHelper.DeserializeData<int>(response.Content.ReadAsStringAsync().Result);
-
-        if (result == 1)
+        if (response.StatusCode == HttpStatusCode.NoContent)
+        {
             SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
-
-        return result;
+        }
     }
 
     // POST /api/registration/application/{applicationId}/submitRegistration

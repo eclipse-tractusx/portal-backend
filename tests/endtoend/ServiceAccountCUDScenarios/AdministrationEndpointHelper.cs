@@ -40,9 +40,7 @@ public static class AdministrationEndpointHelper
 
     public static async Task<bool> GetOperatorToken()
     {
-        PortalUserToken =
-            await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
-                Secrets.PortalUserPassword);
+        PortalUserToken = await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName, Secrets.PortalUserPassword);
         return !PortalUserToken.IsNullOrEmpty();
     }
 
@@ -104,12 +102,10 @@ public static class AdministrationEndpointHelper
 
         foreach (var p in permissions)
         {
-            userRoleIds.AddRange(
-                from t in allServiceAccountsRoles where t.UserRoleText.Contains(p) select t.UserRoleId);
+            userRoleIds.AddRange(from t in allServiceAccountsRoles where t.UserRoleText.Contains(p) select t.UserRoleId);
         }
 
-        var serviceAccountCreationInfo =
-            new ServiceAccountCreationInfo(techUserName, Description, IamClientAuthMethod.SECRET, userRoleIds);
+        var serviceAccountCreationInfo = new ServiceAccountCreationInfo(techUserName, Description, IamClientAuthMethod.SECRET, userRoleIds);
         var endpoint = $"{EndPoint}/serviceaccount/owncompany/serviceaccounts";
         var response = Given()
             .DisableSslCertificateValidation()

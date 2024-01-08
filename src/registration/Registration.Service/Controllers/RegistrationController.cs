@@ -79,7 +79,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <param name="cancellationToken">CancellationToken (provided by controller)</param>
         /// <returns></returns>
         /// <remarks>Example: Post: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents</remarks>
-        /// <response code="200">Successfully uploaded the document</response>
+        /// <response code="204">Successfully uploaded the document</response>
         /// <response code="403">The user is not assigned with the CompanyApplication.</response>
         /// <response code="415">Only PDF files are supported.</response>
         /// <response code="400">Input is incorrect.</response>
@@ -90,12 +90,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [Consumes("multipart/form-data")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-        public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-            _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, cancellationToken);
+        public async Task<NoContentResult> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+        {
+            await _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId,
+                cancellationToken).ConfigureAwait(false);
+            return NoContent();
+        }
 
         /// <summary>
         /// Gets a specific document by its id

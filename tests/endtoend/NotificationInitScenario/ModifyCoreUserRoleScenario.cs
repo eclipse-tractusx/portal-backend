@@ -77,9 +77,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
 
     private async Task GetPortalUserToken()
     {
-        _portalUserToken =
-            await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
-                Secrets.PortalUserPassword);
+        _portalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName, Secrets.PortalUserPassword);
     }
 
     //GET: api/administration/user/owncompany/roles/coreoffers
