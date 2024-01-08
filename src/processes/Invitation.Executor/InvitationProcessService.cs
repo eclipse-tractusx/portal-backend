@@ -66,7 +66,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> SetupIdp(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var orgName = await companyInvitationRepository.GetInvitationIdpData(invitationId).ConfigureAwait(false);
+        var orgName = await companyInvitationRepository.GetOrganisationNameForInvitation(invitationId).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(orgName))
         {

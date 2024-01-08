@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -27,9 +26,9 @@ public interface ICompanyInvitationRepository
 {
     CompanyInvitation CreateCompanyInvitation(string firstName, string lastName, string email, string organisationName, Guid processId, Action<CompanyInvitation>? setOptionalFields);
     Task<Guid> GetCompanyInvitationForProcessId(Guid processId);
-    Task<string?> GetInvitationIdpData(Guid invitationId);
-    Task<(bool exists, Guid? applicationId, Guid? companyId, string companyName, IEnumerable<(Guid idpId, string idpName)> idpInformation, UserInvitationInformation userInformation)> GetInvitationUserData(Guid companyInvitationId);
-    Task<(bool exists, string orgName, string? idpName)> GetInvitationIdpCreationData(Guid invitationId);
+    Task<string?> GetOrganisationNameForInvitation(Guid invitationId);
+    Task<(bool Exists, Guid? ApplicationId, Guid? CompanyId, string CompanyName, IEnumerable<(Guid IdpId, string IdpName)> IdpInformation, UserInvitationInformation UserInformation)> GetInvitationUserData(Guid companyInvitationId);
+    Task<(bool Exists, string OrgName, string? IdpName)> GetInvitationIdpCreationData(Guid invitationId);
     void AttachAndModifyCompanyInvitation(Guid invitationId, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify);
-    Task<(bool exists, string orgName, byte[]? userPassword, string email)> GetMailData(Guid companyInvitationId);
+    Task<(bool Exists, string OrgName, byte[]? UserPassword, string Email)> GetMailData(Guid companyInvitationId);
 }

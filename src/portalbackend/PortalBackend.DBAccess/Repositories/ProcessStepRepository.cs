@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -99,7 +98,7 @@ public class ProcessStepRepository : IProcessStepRepository
                     step.ProcessStepTypeId))
             .AsAsyncEnumerable();
 
-    public Task<(bool ProcessExists, VerifyProcessData processData)> IsValidProcess(Guid processId, ProcessTypeId processTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<(bool ProcessExists, VerifyProcessData ProcessData)> IsValidProcess(Guid processId, ProcessTypeId processTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.Processes
             .Where(x => x.Id == processId && x.ProcessTypeId == processTypeId)
             .Select(x => new ValueTuple<bool, VerifyProcessData>(

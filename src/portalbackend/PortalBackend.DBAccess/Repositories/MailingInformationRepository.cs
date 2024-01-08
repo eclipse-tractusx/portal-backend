@@ -33,7 +33,7 @@ public class MailingInformationRepository : IMailingInformationRepository
     }
 
     public IAsyncEnumerable<(Guid Id, string EmailAddress, string Template, Dictionary<string, string> MailParameter)> GetMailingInformationForProcess(Guid processId) =>
-        _context.MailingInformations.Where(x => x.ProcessId == processId && x.MailingStatusId == MailingStatusId.Pending)
+        _context.MailingInformations.Where(x => x.ProcessId == processId && x.MailingStatusId == MailingStatusId.PENDING)
             .Select(x => new ValueTuple<Guid, string, string, Dictionary<string, string>>(
                     x.Id,
                     x.Email,
@@ -44,7 +44,7 @@ public class MailingInformationRepository : IMailingInformationRepository
 
     public MailingInformation CreateMailingInformation(Guid processId, string email, string template, Dictionary<string, string> mailParameter)
     {
-        var mailingInformation = new MailingInformation(Guid.NewGuid(), processId, email, template, mailParameter, MailingStatusId.Pending);
+        var mailingInformation = new MailingInformation(Guid.NewGuid(), processId, email, template, mailParameter, MailingStatusId.PENDING);
         return _context.Add(mailingInformation).Entity;
     }
 

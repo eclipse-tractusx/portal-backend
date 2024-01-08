@@ -151,8 +151,10 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.Email, "PasswordForRegistrationTemplate", mailParameters);
     }
 
-    public Task RetriggerProcessStep(Guid processId, ProcessStepTypeId processStepTypeId) =>
-        TriggerProcessStepInternal(processId, processStepTypeId);
+    public Task RetriggerSetupIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP);
+    public Task RetriggerCreateDatabaseIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP);
+    public Task RetriggerInvitationCreateUser(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER);
+    public Task RetriggerInvitationSendMail(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL);
 
     private async Task TriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
     {
@@ -162,7 +164,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP => ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER => ProcessStepTypeId.INVITATION_CREATE_USER,
             ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL => ProcessStepTypeId.INVITATION_SEND_MAIL,
-            _ => throw new ConflictException($"Step {stepToTrigger} is not retriggerable")
+            _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
         };
 
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();

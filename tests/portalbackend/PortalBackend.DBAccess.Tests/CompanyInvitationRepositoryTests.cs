@@ -1,3 +1,22 @@
+/********************************************************************************
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -76,29 +95,29 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetInvitationIdpData
+    #region GetOrganisationNameForInvitation
 
     [Fact]
-    public async Task GetInvitationIdpData_WithExistingForProcessId_ReturnsExpected()
+    public async Task GetOrganisationNameForInvitation_WithExistingForProcessId_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetInvitationIdpData(_invitationId).ConfigureAwait(false);
+        var data = await sut.GetOrganisationNameForInvitation(_invitationId).ConfigureAwait(false);
 
         // Assert
         data.Should().Be("stark industry");
     }
 
     [Fact]
-    public async Task GetInvitationIdpData_WithoutExistingForProcessId_ReturnsExpected()
+    public async Task GetOrganisationNameForInvitation_WithoutExistingForProcessId_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetInvitationIdpData(Guid.NewGuid()).ConfigureAwait(false);
+        var data = await sut.GetOrganisationNameForInvitation(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         data.Should().BeNull();
@@ -118,9 +137,9 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetInvitationUserData(_invitationId).ConfigureAwait(false);
 
         // Assert
-        data.exists.Should().BeTrue();
-        data.userInformation.Email.Should().Be("tony@stark.com");
-        data.userInformation.FirstName.Should().Be("tony");
+        data.Exists.Should().BeTrue();
+        data.UserInformation.Email.Should().Be("tony@stark.com");
+        data.UserInformation.FirstName.Should().Be("tony");
     }
 
     [Fact]
@@ -133,7 +152,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetInvitationUserData(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        data.exists.Should().BeFalse();
+        data.Exists.Should().BeFalse();
     }
 
     #endregion
@@ -150,9 +169,9 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetInvitationIdpCreationData(_invitationId).ConfigureAwait(false);
 
         // Assert
-        data.exists.Should().BeTrue();
-        data.orgName.Should().Be("stark industry");
-        data.idpName.Should().Be("test idp");
+        data.Exists.Should().BeTrue();
+        data.OrgName.Should().Be("stark industry");
+        data.IdpName.Should().Be("test idp");
     }
 
     [Fact]
@@ -165,7 +184,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetInvitationIdpCreationData(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        data.exists.Should().BeFalse();
+        data.Exists.Should().BeFalse();
     }
 
     #endregion
@@ -205,9 +224,9 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetMailData(_invitationId).ConfigureAwait(false);
 
         // Assert
-        data.exists.Should().BeTrue();
-        data.orgName.Should().Be("stark industry");
-        data.email.Should().Be("tony@stark.com");
+        data.Exists.Should().BeTrue();
+        data.OrgName.Should().Be("stark industry");
+        data.Email.Should().Be("tony@stark.com");
     }
 
     [Fact]
@@ -220,7 +239,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetMailData(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        data.exists.Should().BeFalse();
+        data.Exists.Should().BeFalse();
     }
 
     #endregion

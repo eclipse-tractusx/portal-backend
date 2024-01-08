@@ -5139,12 +5139,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 1,
-                            Label = "Pending"
+                            Label = "PENDING"
                         },
                         new
                         {
                             Id = 2,
-                            Label = "Send"
+                            Label = "SENT"
                         });
                 });
 

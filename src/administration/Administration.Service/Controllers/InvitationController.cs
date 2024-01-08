@@ -26,6 +26,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -90,7 +92,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerSetupIdp([FromRoute] Guid processId)
     {
-        await _logic.RetriggerProcessStep(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP).ConfigureAwait(false);
+        await _logic.RetriggerSetupIdp(processId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -111,7 +113,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateDatabaseIdp([FromRoute] Guid processId)
     {
-        await _logic.RetriggerProcessStep(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP).ConfigureAwait(false);
+        await _logic.RetriggerCreateDatabaseIdp(processId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -132,7 +134,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerInvitationCreateUser([FromRoute] Guid processId)
     {
-        await _logic.RetriggerProcessStep(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER).ConfigureAwait(false);
+        await _logic.RetriggerInvitationCreateUser(processId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -153,7 +155,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerInvitationSendMail([FromRoute] Guid processId)
     {
-        await _logic.RetriggerProcessStep(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL).ConfigureAwait(false);
+        await _logic.RetriggerInvitationSendMail(processId).ConfigureAwait(false);
         return NoContent();
     }
 }

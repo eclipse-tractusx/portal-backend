@@ -20,7 +20,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -44,7 +43,7 @@ public class InvitationControllerTests
         var data = _fixture.Create<CompanyInvitationData>();
 
         // Act
-        await this._controller.ExecuteInvitation(data).ConfigureAwait(false);
+        await _controller.ExecuteInvitation(data).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.ExecuteInvitation(data)).MustHaveHappenedOnceExactly();
@@ -57,11 +56,11 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await this._controller.RetriggerSetupIdp(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerSetupIdp(processId).ConfigureAwait(false);
 
         // Assert
         result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.RetriggerProcessStep(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP))
+        A.CallTo(() => _logic.RetriggerSetupIdp(processId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -72,11 +71,11 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await this._controller.RetriggerCreateDatabaseIdp(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerCreateDatabaseIdp(processId).ConfigureAwait(false);
 
         // Assert
         result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.RetriggerProcessStep(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP))
+        A.CallTo(() => _logic.RetriggerCreateDatabaseIdp(processId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -87,11 +86,11 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await this._controller.RetriggerInvitationCreateUser(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerInvitationCreateUser(processId).ConfigureAwait(false);
 
         // Assert
         result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.RetriggerProcessStep(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER))
+        A.CallTo(() => _logic.RetriggerInvitationCreateUser(processId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -102,11 +101,11 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await this._controller.RetriggerInvitationSendMail(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerInvitationSendMail(processId).ConfigureAwait(false);
 
         // Assert
         result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.RetriggerProcessStep(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL))
+        A.CallTo(() => _logic.RetriggerInvitationSendMail(processId))
             .MustHaveHappenedOnceExactly();
     }
 }

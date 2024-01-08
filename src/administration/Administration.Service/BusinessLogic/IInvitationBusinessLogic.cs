@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,13 +18,15 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic
 {
     public interface IInvitationBusinessLogic
     {
         Task ExecuteInvitation(CompanyInvitationData invitationData);
-        Task RetriggerProcessStep(Guid processId, ProcessStepTypeId processStepTypeId);
+        Task RetriggerSetupIdp(Guid processId);
+        Task RetriggerCreateDatabaseIdp(Guid processId);
+        Task RetriggerInvitationCreateUser(Guid processId);
+        Task RetriggerInvitationSendMail(Guid processId);
     }
 }

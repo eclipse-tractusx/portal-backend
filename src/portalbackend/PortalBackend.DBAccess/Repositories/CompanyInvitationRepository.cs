@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -44,13 +43,13 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
             .Select(process => process.CompanyInvitation!.Id)
             .SingleOrDefaultAsync();
 
-    public Task<string?> GetInvitationIdpData(Guid invitationId) =>
+    public Task<string?> GetOrganisationNameForInvitation(Guid invitationId) =>
         _context.CompanyInvitations
             .Where(x => x.Id == invitationId)
             .Select(x => x.OrganisationName)
             .SingleOrDefaultAsync();
 
-    public Task<(bool exists, Guid? applicationId, Guid? companyId, string companyName, IEnumerable<(Guid idpId, string idpName)> idpInformation, UserInvitationInformation userInformation)> GetInvitationUserData(Guid companyInvitationId) =>
+    public Task<(bool Exists, Guid? ApplicationId, Guid? CompanyId, string CompanyName, IEnumerable<(Guid IdpId, string IdpName)> IdpInformation, UserInvitationInformation UserInformation)> GetInvitationUserData(Guid companyInvitationId) =>
         _context.CompanyInvitations
             .Where(x => x.Id == companyInvitationId)
             .Select(x => new ValueTuple<bool, Guid?, Guid?, string, IEnumerable<ValueTuple<Guid, string>>, UserInvitationInformation>(
@@ -63,7 +62,7 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool exists, string orgName, string? idpName)> GetInvitationIdpCreationData(Guid invitationId) =>
+    public Task<(bool Exists, string OrgName, string? IdpName)> GetInvitationIdpCreationData(Guid invitationId) =>
         _context.CompanyInvitations
             .Where(x => x.Id == invitationId)
             .Select(x => new ValueTuple<bool, string, string?>(
@@ -81,7 +80,7 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
         modify(entity);
     }
 
-    public Task<(bool exists, string orgName, byte[]? userPassword, string email)> GetMailData(Guid companyInvitationId) =>
+    public Task<(bool Exists, string OrgName, byte[]? UserPassword, string Email)> GetMailData(Guid companyInvitationId) =>
         _context.CompanyInvitations
             .Where(x => x.Id == companyInvitationId)
             .Select(x => new ValueTuple<bool, string, byte[]?, string>(

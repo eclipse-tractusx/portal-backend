@@ -102,7 +102,7 @@ public class InvitationProcessServiceTests
     {
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
-        A.CallTo(() => _companyInvitationRepository.GetInvitationIdpData(companyInvitation.Id))
+        A.CallTo(() => _companyInvitationRepository.GetOrganisationNameForInvitation(companyInvitation.Id))
             .Returns("testCorp");
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync())
             .Returns("cl1-testCorp");
@@ -130,7 +130,7 @@ public class InvitationProcessServiceTests
     {
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
-        A.CallTo(() => _companyInvitationRepository.GetInvitationIdpData(companyInvitation.Id))
+        A.CallTo(() => _companyInvitationRepository.GetOrganisationNameForInvitation(companyInvitation.Id))
             .Returns((string?)null);
 
         // Act

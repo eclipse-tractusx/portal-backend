@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240312070826_CPLP-3383-AddNewProcesses")]
+    [Migration("20240312073637_CPLP-3383-AddNewProcesses")]
     partial class CPLP3383AddNewProcesses
     {
         /// <inheritdoc />
@@ -5145,12 +5145,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 1,
-                            Label = "Pending"
+                            Label = "PENDING"
                         },
                         new
                         {
                             Id = 2,
-                            Label = "Send"
+                            Label = "SENT"
                         });
                 });
 

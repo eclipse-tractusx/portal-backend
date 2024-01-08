@@ -88,11 +88,11 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
             mailingRepository.AttachAndModifyMailingInformation(id,
                 i =>
                 {
-                    i.MailingStatusId = MailingStatusId.Pending;
+                    i.MailingStatusId = MailingStatusId.PENDING;
                 },
                 i =>
                 {
-                    i.MailingStatusId = MailingStatusId.Send;
+                    i.MailingStatusId = MailingStatusId.SENT;
                 });
             var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
                 ? Enumerable.Repeat(ProcessStepTypeId.SEND_MAIL, 1) // in case there are further mailing information eligible to send the same step is created again

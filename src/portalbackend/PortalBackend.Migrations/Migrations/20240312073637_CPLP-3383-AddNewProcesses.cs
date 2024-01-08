@@ -17,8 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore.Migrations;
 using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -113,8 +113,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
-                    { 1, "Pending" },
-                    { 2, "Send" }
+                    { 1, "PENDING" },
+                    { 2, "SENT" }
                 });
 
             migrationBuilder.InsertData(

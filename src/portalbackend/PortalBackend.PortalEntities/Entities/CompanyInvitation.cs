@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -35,12 +34,12 @@ public class CompanyInvitation : IBaseEntity
     public CompanyInvitation(Guid id, string firstName, string lastName, string email, string organisationName, Guid processId)
         : this()
     {
-        this.Id = id;
-        this.FirstName = firstName;
-        this.LastName = lastName;
-        this.Email = email;
-        this.OrganisationName = organisationName;
-        this.ProcessId = processId;
+        Id = id;
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        OrganisationName = organisationName;
+        ProcessId = processId;
     }
 
     public Guid Id { get; set; }

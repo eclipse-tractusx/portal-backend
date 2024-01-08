@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -314,16 +313,14 @@ public class InvitationBusinessLogicTests
 
     #endregion
 
-    #region RetriggerSynchronizeUser
+    #region RetriggerSetupIdp
 
-    [Theory]
-    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP, ProcessStepTypeId.INVITATION_SETUP_IDP)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP, ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER, ProcessStepTypeId.INVITATION_CREATE_USER)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL, ProcessStepTypeId.INVITATION_SEND_MAIL)]
-    public async Task RetriggerSynchronizeUser_WithValidStep_CallsExpected(ProcessStepTypeId stepToTrigger, ProcessStepTypeId processStepTypeId)
+    [Fact]
+    public async Task RetriggerSetupIdp_CallsExpected()
     {
         // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_SETUP_IDP;
         var processSteps = new List<ProcessStep>();
         var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
         var processStepId = Guid.NewGuid();
@@ -333,7 +330,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerProcessStep(process.Id, stepToTrigger).ConfigureAwait(false);
+        await _sut.RetriggerSetupIdp(process.Id).ConfigureAwait(false);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -342,36 +339,150 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
-    [Theory]
-    [InlineData(ProcessStepTypeId.INVITATION_SETUP_IDP)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER)]
-    [InlineData(ProcessStepTypeId.INVITATION_SEND_MAIL)]
-    public async Task RetriggerSynchronizeUser_WithNotRetriggerableStep_ThrowsException(ProcessStepTypeId stepToTrigger)
+    [Fact]
+    public async Task RetriggerSetupIdp_WithNotExistingProcess_ThrowsException()
     {
         // Arrange
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
-        async Task Act() => await _sut.RetriggerProcessStep(process.Id, stepToTrigger).ConfigureAwait(false);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-
-        // Assert
-        ex.Message.Should().Be($"Step {stepToTrigger} is not retriggerable");
-    }
-
-    [Theory]
-    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL)]
-    public async Task RetriggerSynchronizeUser_WithNotExistingProcess_ThrowsException(ProcessStepTypeId stepToTrigger)
-    {
-        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP;
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerProcessStep(process.Id, stepToTrigger).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerSetupIdp(process.Id).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
+    #region RetriggerCreateDatabaseIdp
+
+    [Fact]
+    public async Task RetriggerCreateDatabaseIdp_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerCreateDatabaseIdp(process.Id).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateDatabaseIdp_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
+    #region RetriggerInvitationCreateUser
+
+    [Fact]
+    public async Task RetriggerInvitationCreateUser_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_USER;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerInvitationCreateUser(process.Id).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerInvitationCreateUser_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerInvitationCreateUser(process.Id).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
+    #region RetriggerInvitationSendMail
+
+    [Fact]
+    public async Task RetriggerInvitationSendMail_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_SEND_MAIL;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerInvitationSendMail(process.Id).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerInvitationSendMail_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerInvitationSendMail(process.Id).ConfigureAwait(false);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);

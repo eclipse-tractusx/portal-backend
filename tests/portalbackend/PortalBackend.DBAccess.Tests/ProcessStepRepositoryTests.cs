@@ -332,7 +332,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.IsValidProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, Enumerable.Repeat(ProcessStepTypeId.START_CLEARING_HOUSE, 1)).ConfigureAwait(false);
         result.ProcessExists.Should().BeTrue();
-        result.processData.ProcessSteps.Should().ContainSingle()
+        result.ProcessData.ProcessSteps.Should().ContainSingle()
             .And.Satisfy(
                 x => x.ProcessStepTypeId == ProcessStepTypeId.START_CLEARING_HOUSE && x.ProcessStepStatusId == ProcessStepStatusId.TODO
             );
@@ -348,7 +348,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.IsValidProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, Enumerable.Repeat(ProcessStepTypeId.CREATE_IDENTITY_WALLET, 1)).ConfigureAwait(false);
         result.ProcessExists.Should().BeTrue();
-        result.processData.ProcessSteps.Should().BeEmpty();
+        result.ProcessData.ProcessSteps.Should().BeEmpty();
     }
 
     [Fact]

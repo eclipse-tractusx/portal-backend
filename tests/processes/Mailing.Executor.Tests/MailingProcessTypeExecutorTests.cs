@@ -88,8 +88,8 @@ public class MailingProcessTypeExecutorTests
         // Arrange
         var mailingId1 = Guid.NewGuid();
         var mailingId2 = Guid.NewGuid();
-        var mailing1 = new MailingInformation(mailingId1, processId, "test@mail.de", "test-template", new Dictionary<string, string>(), MailingStatusId.Pending);
-        var mailing2 = new MailingInformation(mailingId2, processId, "other@mail.de", "test-template", new Dictionary<string, string>(), MailingStatusId.Pending);
+        var mailing1 = new MailingInformation(mailingId1, processId, "test@mail.de", "test-template", new Dictionary<string, string>(), MailingStatusId.PENDING);
+        var mailing2 = new MailingInformation(mailingId2, processId, "other@mail.de", "test-template", new Dictionary<string, string>(), MailingStatusId.PENDING);
         SetupFakes(processId, mailing1, mailing2);
 
         // Act
