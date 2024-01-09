@@ -390,7 +390,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                         c.VerifiedCredentialExternalTypeDetailVersion == null
                             ? null
                             : new ExternalTypeDetailData(
-                                c.VerifiedCredentialExternalTypeDetailVersion!.Id,
+                                c.VerifiedCredentialExternalTypeDetailVersion.Id,
                                 c.VerifiedCredentialExternalTypeDetailVersion.VerifiedCredentialExternalTypeId,
                                 c.VerifiedCredentialExternalTypeDetailVersion.Version!,
                                 c.VerifiedCredentialExternalTypeDetailVersion.Template,
@@ -406,7 +406,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
         var userId = _identityData.IdentityId;
         var (exists, data) = await companySsiRepository.GetSsiApprovalData(credentialId).ConfigureAwait(false);
-        ValidateApprovalData(credentialId, exists, data);
+        var (bpn, detailData) = ValidateApprovalData(credentialId, exists, data);
 
         var typeValue = data.Type.GetEnumValue() ?? throw UnexpectedConditionException.Create(CompanyDataErrors.CREDENTIAL_TYPE_NOT_FOUND, new ErrorParameter[] { new("verifiedCredentialType", data.Type.ToString()) });
         var content = JsonSerializer.Serialize(new { Type = data.Type, CredentialId = credentialId }, Options);
@@ -416,7 +416,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             n.Content = content;
         });
 
-        var expiryDate = GetExpiryDate(data.DetailData!.ExpiryDate);
+        var expiryDate = GetExpiryDate(detailData.ExpiryDate);
         companySsiRepository.AttachAndModifyCompanySsiDetails(credentialId, c =>
             {
                 c.CompanySsiDetailStatusId = data.Status;
@@ -432,10 +432,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         switch (data.Kind)
         {
             case VerifiedCredentialTypeKindId.USE_CASE:
-                await _custodianService.TriggerFrameworkAsync(data.Bpn!, data.DetailData!, expiryDate, cancellationToken).ConfigureAwait(false);
+                await _custodianService.TriggerFrameworkAsync(bpn, detailData, expiryDate, cancellationToken).ConfigureAwait(false);
                 break;
             case VerifiedCredentialTypeKindId.CERTIFICATE:
-                await _custodianService.TriggerDismantlerAsync(data.Bpn!, data.Type, expiryDate, cancellationToken).ConfigureAwait(false);
+                await _custodianService.TriggerDismantlerAsync(bpn, data.Type, expiryDate, cancellationToken).ConfigureAwait(false);
                 break;
             default:
                 throw new ArgumentOutOfRangeException($"{data.Kind} is currently not supported");
@@ -461,7 +461,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             Enumerable.Repeat("CredentialApproval", 1)).ConfigureAwait(false);
     }
 
-    private static void ValidateApprovalData(Guid credentialId, bool exists, SsiApprovalData data)
+    private static (string Bpn, DetailData DetailData) ValidateApprovalData(Guid credentialId, bool exists, SsiApprovalData data)
     {
         if (!exists)
         {
@@ -482,6 +482,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             throw ConflictException.Create(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_ID_NOT_SET);
         }
+        return (data.Bpn, data.DetailData);
     }
 
     private DateTimeOffset GetExpiryDate(DateTimeOffset expiryDate)
