@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -78,7 +79,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
 
             if (missingRoleIds.Any())
             {
-                throw new NotFoundException($"{string.Join(", ", missingRoleIds)} are not a valid UserRoleIds");
+                throw NotFoundException.Create(ProvisioningServiceErrors.USER_NOT_VALID_USERROLEID, new ErrorParameter[] { new("missingRoleIds", string.Join(", ", missingRoleIds)) });
             }
         }
 

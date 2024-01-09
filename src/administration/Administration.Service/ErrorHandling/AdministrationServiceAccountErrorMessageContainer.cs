@@ -20,23 +20,23 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 
 public class AdministrationServiceAccountErrorMessageContainer : IErrorMessageContainer
 {
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<AdministrationServiceAccountErrors, string> {
                 { AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, "other authenticationType values than SECRET are not supported yet , {authenticationType}" },
-                { AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT,"name must not be empty, {name}"},
-                { AdministrationServiceAccountErrors.SERVICE_COMPANY_NOT_EXIST_CONFLICT,"company {companyId} does not exist"},
-                { AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT,"bpn not set for company {companyId}"},
-                { AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT,"The roles {unassignable} are not assignable to a service account, {userRoleIds}"},
-                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT,"serviceAccount {serviceAccountId} not found for company {companyId}"},
-                { AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_PENDING_CONFLICT,"Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user."},
-                { AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_ACTIVE_CONFLICT,"Technical User is linked to an active subscription. Deactivate the subscription to delete the technical user."},
-                { AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT,"undefined clientId for serviceAccount {serviceAccountId}"},
-                { AdministrationServiceAccountErrors.SERVICE_ID_PATH_NOT_MATCH_ARGUMENT,"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetailsServiceAccountId}"},
-                { AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT,"serviceAccount {serviceAccountId} is already INACTIVE"},
-                { AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT,"clientClientId of serviceAccount {serviceAccountId} should not be null"}
+                { AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT, "name must not be empty, {name}"},
+                { AdministrationServiceAccountErrors.SERVICE_COMPANY_NOT_EXIST_CONFLICT, "company {companyId} does not exist"},
+                { AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT, "bpn not set for company {companyId}"},
+                { AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, "The roles {unassignable} are not assignable to a service account, {userRoleIds}"},
+                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, "serviceAccount {serviceAccountId} not found for company {companyId}"},
+                { AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_PENDING_CONFLICT, "Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user."},
+                { AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_ACTIVE_CONFLICT, "Technical User is linked to an active subscription. Deactivate the subscription to delete the technical user."},
+                { AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, "undefined clientId for serviceAccount {serviceAccountId}"},
+                { AdministrationServiceAccountErrors.SERVICE_ID_PATH_NOT_MATCH_ARGUMENT, "serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetailsServiceAccountId}"},
+                { AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT, "serviceAccount {serviceAccountId} is already INACTIVE"},
+                { AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT, "clientClientId of serviceAccount {serviceAccountId} should not be null"}
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(AdministrationServiceAccountErrors); }

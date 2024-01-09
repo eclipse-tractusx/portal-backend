@@ -18,7 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -31,7 +31,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System.Xml;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -62,7 +61,6 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
             throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, new ErrorParameter[] { new("authenticationType", serviceAccountCreationInfos.IamClientAuthMethod.ToString()) });//TODO implement other authenticationTypes
-
         }
         if (string.IsNullOrWhiteSpace(serviceAccountCreationInfos.Name))
         {
@@ -84,7 +82,6 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         if (unassignable.Any())
         {
             throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, new ErrorParameter[] { new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds)) });
-
         }
 
         var companyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;

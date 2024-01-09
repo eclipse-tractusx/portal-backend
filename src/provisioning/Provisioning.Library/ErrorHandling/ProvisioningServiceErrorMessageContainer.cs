@@ -30,7 +30,8 @@ public class ProvisioningServiceErrorMessageContainer : IErrorMessageContainer
                 { ProvisioningServiceErrors.USER_CREATION_NOTFOUND, "realm {realm} not found to create userName {userName}" },
                 { ProvisioningServiceErrors.USER_CREATION_ARGUMENT, "invalid realm {realm} or userName {userName} for usercreation" },
                 { ProvisioningServiceErrors.USER_CREATION_FAILURE, "unexpected error while creating userName {userName} in realm {realm}" },
-                { ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, "creation of userName {userName} in realm {realm} returns null" }
+                { ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, "creation of userName {userName} in realm {realm} returns null" },
+                { ProvisioningServiceErrors.USER_NOT_VALID_USERROLEID, "{missingRoleIds} are not a valid UserRoleIds"}
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(ProvisioningServiceErrors); }
@@ -45,4 +46,5 @@ public enum ProvisioningServiceErrors
     USER_CREATION_ARGUMENT,
     USER_CREATION_FAILURE,
     USER_CREATION_RETURNS_NULL,
+    USER_NOT_VALID_USERROLEID
 }
