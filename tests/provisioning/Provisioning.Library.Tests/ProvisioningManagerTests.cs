@@ -39,8 +39,6 @@ public class ProvisioningManagerTests
 {
     private const string ValidClientName = "valid";
     private const string CentralRealm = "test";
-    private const string OrgName = "Stark Industries";
-    private const string LoginTheme = "colorful-theme";
     private const string CentralUrl = "https://central.de";
     private const string SharedUrl = "https://shared.de";
     private readonly IProvisioningManager _sut;
@@ -121,52 +119,6 @@ public class ProvisioningManagerTests
             .WithVerb(HttpMethod.Post)
             .Times(1);
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{newClientId}/roles")
-            .WithVerb(HttpMethod.Post)
-            .Times(1);
-    }
-
-    [Fact]
-    public async Task SetupSharedIdpAsync_CallsExpected()
-    {
-        // Arrange
-        const string userId = "userid";
-        const string newClientId = "client1";
-        using var httpTest = new HttpTest();
-        httpTest.WithAuthorization()
-            .WithCreateClient(newClientId)
-            .WithGetUserForServiceAccount(newClientId, new User { Id = userId })
-            .WithGetRoleByNameAsync(newClientId, "create-realm", new Role())
-            .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" })
-            .WithGetOpenIdConfigurationAsync(new OpenIDConfiguration
-            {
-                AuthorizationEndpoint = new Uri("https://test.com/auth"),
-                TokenEndpoint = new Uri("https://test.com/token"),
-                EndSessionEndpoint = new Uri("https://test.com/end-session"),
-                JwksUri = new Uri("https://test.com/jwksUri"),
-                Issuer = new Uri("https://test.com/issuer")
-            })
-            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Config = new IdentityProvider.Config() });
-
-        // Act
-        await _sut.SetupSharedIdpAsync(ValidClientName, OrgName, LoginTheme).ConfigureAwait(false);
-
-        // Assert
-        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/identity-provider/instances")
-            .WithVerb(HttpMethod.Post)
-            .Times(1);
-        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/clients")
-            .WithVerb(HttpMethod.Post)
-            .Times(1);
-        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/users/{userId}/role-mappings/realm")
-            .WithVerb(HttpMethod.Post)
-            .Times(1);
-        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms")
-            .WithVerb(HttpMethod.Post)
-            .Times(1);
-        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/identity-provider/instances/{ValidClientName}")
-            .WithVerb(HttpMethod.Put)
-            .Times(2);
-        httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/identity-provider/instances/{ValidClientName}/mappers")
             .WithVerb(HttpMethod.Post)
             .Times(1);
     }

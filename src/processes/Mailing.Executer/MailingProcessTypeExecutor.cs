@@ -84,7 +84,7 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
         if (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
             var (id, mail, template, mailParameter) = enumerator.Current;
-            await _mailingService.SendMails(mail, mailParameter, Enumerable.Repeat(template, 1)).ConfigureAwait(false);
+            await _mailingService.SendMails(mail, mailParameter, template).ConfigureAwait(false);
             mailingRepository.AttachAndModifyMailingInformation(id,
                 i =>
                 {
@@ -99,6 +99,7 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
                 : null;
             return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"send mail to {mail}");
         }
+
         return (null, ProcessStepStatusId.DONE, false, "no pending mails found");
     }
 

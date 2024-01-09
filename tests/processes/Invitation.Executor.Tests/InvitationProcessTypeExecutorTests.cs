@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -53,10 +53,16 @@ public class InvitationProcessTypeExecutorTests
             _invitationProcessService);
 
         _executableSteps = new[] {
-            ProcessStepTypeId.INVITATION_SETUP_IDP,
+            ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP,
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT,
+            ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS,
+            ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER,
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT,
+            ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
             ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
             ProcessStepTypeId.INVITATION_CREATE_USER,
-            ProcessStepTypeId.INVITATION_SEND_MAIL };
+            ProcessStepTypeId.INVITATION_SEND_MAIL
+        };
     }
 
     #region InitializeProcess
@@ -117,7 +123,12 @@ public class InvitationProcessTypeExecutorTests
     }
 
     [Theory]
-    [InlineData(ProcessStepTypeId.INVITATION_SETUP_IDP, ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT, ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS)]
+    [InlineData(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT, ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP)]
+    [InlineData(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, ProcessStepTypeId.INVITATION_CREATE_USER)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, ProcessStepTypeId.INVITATION_SEND_MAIL)]
     [InlineData(ProcessStepTypeId.INVITATION_SEND_MAIL, null)]
@@ -154,6 +165,7 @@ public class InvitationProcessTypeExecutorTests
         {
             executionResult.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == expectedResult);
         }
+
         executionResult.SkipStepTypeIds.Should().BeNull();
     }
 
@@ -177,19 +189,19 @@ public class InvitationProcessTypeExecutorTests
 
         // Arrange execute
         var error = _fixture.Create<TestException>();
-        A.CallTo(() => _invitationProcessService.SetupIdp(invitationId))
+        A.CallTo(() => _invitationProcessService.CreateCentralIdp(invitationId))
             .Throws(error);
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_SETUP_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert execute
-        A.CallTo(() => _invitationProcessService.SetupIdp(invitationId))
+        A.CallTo(() => _invitationProcessService.CreateCentralIdp(invitationId))
             .MustHaveHappenedOnceExactly();
 
         executionResult.Modified.Should().BeTrue();
         executionResult.ProcessStepStatusId.Should().Be(ProcessStepStatusId.FAILED);
-        executionResult.ScheduleStepTypeIds.Should().ContainInOrder(ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP);
+        executionResult.ScheduleStepTypeIds.Should().ContainInOrder(ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP);
         executionResult.SkipStepTypeIds.Should().BeNull();
         executionResult.ProcessMessage.Should().Be(error.Message);
     }
@@ -214,14 +226,14 @@ public class InvitationProcessTypeExecutorTests
 
         // Arrange execute
         var error = new ServiceException(_fixture.Create<string>(), true);
-        A.CallTo(() => _invitationProcessService.SetupIdp(invitationId))
+        A.CallTo(() => _invitationProcessService.CreateCentralIdp(invitationId))
             .Throws(error);
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_SETUP_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert execute
-        A.CallTo(() => _invitationProcessService.SetupIdp(invitationId))
+        A.CallTo(() => _invitationProcessService.CreateCentralIdp(invitationId))
             .MustHaveHappenedOnceExactly();
 
         executionResult.Modified.Should().BeTrue();
@@ -250,11 +262,11 @@ public class InvitationProcessTypeExecutorTests
 
         // Arrange execute
         var error = new SystemException(_fixture.Create<string>());
-        A.CallTo(() => _invitationProcessService.SetupIdp(invitationId))
+        A.CallTo(() => _invitationProcessService.CreateCentralIdp(invitationId))
             .Throws(error);
 
         // Act execute
-        async Task Act() => await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_SETUP_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
         var ex = await Assert.ThrowsAsync<SystemException>(Act);
 
         // Assert execute
@@ -285,7 +297,7 @@ public class InvitationProcessTypeExecutorTests
     public void IsExecutableProcessStep_ReturnsExpected(bool checklistHandlerReturnValue)
     {
         // Arrange
-        var processStepTypeId = checklistHandlerReturnValue ? ProcessStepTypeId.INVITATION_SETUP_IDP : ProcessStepTypeId.START_AUTOSETUP;
+        var processStepTypeId = checklistHandlerReturnValue ? ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP : ProcessStepTypeId.START_AUTOSETUP;
 
         // Act
         var result = _executor.IsExecutableStepTypeId(processStepTypeId);
@@ -299,11 +311,15 @@ public class InvitationProcessTypeExecutorTests
     #region IsLockRequested
 
     [Theory]
-    [InlineData(ProcessStepTypeId.INVITATION_SETUP_IDP, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, false)]
     [InlineData(ProcessStepTypeId.INVITATION_SEND_MAIL, false)]
-
     public async Task IsLockRequested_ReturnsExpected(ProcessStepTypeId stepTypeId, bool isLocked)
     {
         // Act
@@ -334,7 +350,17 @@ public class InvitationProcessTypeExecutorTests
 
     private void SetupFakes()
     {
-        A.CallTo(() => _invitationProcessService.SetupIdp(_invitationId))
+        A.CallTo(() => _invitationProcessService.CreateCentralIdp(_invitationId))
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT, 1), ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _invitationProcessService.CreateSharedIdpServiceAccount(_invitationId))
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, 1), ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _invitationProcessService.UpdateCentralIdpUrl(_invitationId))
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, 1), ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _invitationProcessService.CreateCentralIdpOrgMapper(_invitationId))
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT, 1), ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _invitationProcessService.CreateSharedIdpRealmIdpClient(_invitationId))
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, 1), ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _invitationProcessService.EnableCentralIdp(_invitationId))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, 1), ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _invitationProcessService.CreateIdpDatabase(_invitationId))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_USER, 1), ProcessStepStatusId.DONE, true, null));
@@ -352,6 +378,7 @@ public class InvitationProcessTypeExecutorTests
         public TestException() { }
         public TestException(string message) : base(message) { }
         public TestException(string message, Exception inner) : base(message, inner) { }
+
         protected TestException(
             System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }

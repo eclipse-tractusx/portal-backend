@@ -49,27 +49,6 @@ public partial class ProvisioningManager : IProvisioningManager
     {
     }
 
-    public async Task SetupSharedIdpAsync(string idpName, string organisationName, string? loginTheme)
-    {
-        await CreateCentralIdentityProviderAsync(idpName, organisationName, _Settings.CentralIdentityProvider).ConfigureAwait(false);
-
-        var (clientId, secret) = await CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(false);
-        var sharedKeycloak = _Factory.CreateKeycloakClient("shared", clientId, secret);
-
-        await CreateSharedRealmAsync(sharedKeycloak, idpName, organisationName, loginTheme).ConfigureAwait(false);
-
-        await UpdateCentralIdentityProviderUrlsAsync(idpName, await sharedKeycloak.GetOpenIDConfigurationAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false);
-
-        await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
-
-        await CreateSharedRealmIdentityProviderClientAsync(sharedKeycloak, idpName, new IdentityProviderClientConfig(
-            await GetCentralBrokerEndpointOIDCAsync(idpName).ConfigureAwait(false) + "/*",
-            await GetCentralRealmJwksUrlAsync().ConfigureAwait(false)
-        )).ConfigureAwait(false);
-
-        await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false);
-    }
-
     public async ValueTask DeleteSharedIdpRealmAsync(string alias)
     {
         var deleteSharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
@@ -82,7 +61,7 @@ public partial class ProvisioningManager : IProvisioningManager
     {
         var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
 
-        await CreateCentralIdentityProviderAsync(idpName, displayName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
+        await CreateCentralIdentityProviderAsyncInternal(idpName, displayName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
 
         await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
 

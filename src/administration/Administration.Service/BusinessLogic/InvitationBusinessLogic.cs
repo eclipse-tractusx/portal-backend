@@ -82,58 +82,17 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
     private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
     {
-        var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-        await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.OrganisationName, _settings.InitialLoginTheme).ConfigureAwait(false);
-
-        var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.OrganisationName);
-
-        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, null);
-        identityProvider.Companies.Add(company);
-        identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, idpName);
-
-        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL);
-
-        var companyNameIdpAliasData = new CompanyNameIdpAliasData(
-            company.Id,
-            company.Name,
-            null,
-            idpName,
-            identityProvider.Id,
-            true
-        );
-
-        IEnumerable<UserRoleData> roleDatas;
-        try
-        {
-            roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            throw new ConfigurationException($"{nameof(_settings.InvitedUserInitialRoles)}: {e.Message}");
-        }
-
-        var userCreationInfoIdps = new[] { new UserCreationRoleDataIdpInfo(
-            invitationData.FirstName,
-            invitationData.LastName,
-            invitationData.Email,
-            roleDatas,
-            string.IsNullOrWhiteSpace(invitationData.UserName) ? invitationData.Email : invitationData.UserName,
-            "",
-            UserStatusId.ACTIVE,
-            true
-        )}.ToAsyncEnumerable();
-
-        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
-
-        if (error != null)
-        {
-            throw error;
-        }
-
-        applicationRepository.CreateInvitation(application.Id, companyUserId);
-
+        var (userName, firstName, lastName, email, organisationName) = invitationData;
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processId = processStepRepository.CreateProcess(ProcessTypeId.INVITATION).Id;
+        processStepRepository.CreateProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepStatusId.TODO, processId);
+        _portalRepositories.GetInstance<ICompanyInvitationRepository>().CreateCompanyInvitation(firstName, lastName, email, organisationName, processId, ci =>
+            {
+                if (!string.IsNullOrWhiteSpace(userName))
+                {
+                    ci.UserName = userName;
+                }
+            });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
@@ -151,7 +110,12 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.Email, "PasswordForRegistrationTemplate", mailParameters);
     }
 
-    public Task RetriggerSetupIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP);
+    public Task RetriggerCreateCentralIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP);
+    public Task RetriggerCreateSharedIdpServiceAccount(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT);
+    public Task RetriggerUpdateCentralIdpUrls(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS);
+    public Task RetriggerCreateCentralIdpOrgMapper(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER);
+    public Task RetriggerCreateSharedRealmIdpClient(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM_IDP_CLIENT);
+    public Task RetriggerEnableCentralIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP);
     public Task RetriggerCreateDatabaseIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP);
     public Task RetriggerInvitationCreateUser(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER);
     public Task RetriggerInvitationSendMail(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL);
@@ -160,9 +124,14 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
     {
         var nextStep = stepToTrigger switch
         {
-            ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP => ProcessStepTypeId.INVITATION_SETUP_IDP,
-            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP => ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
+            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP => ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP,
+            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT => ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT,
+            ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS => ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS,
+            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER => ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER,
+            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM_IDP_CLIENT => ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT,
+            ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP => ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER => ProcessStepTypeId.INVITATION_CREATE_USER,
+            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP => ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
             ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL => ProcessStepTypeId.INVITATION_SEND_MAIL,
             _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
         };

@@ -3417,6 +3417,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("application_id");
 
+                    b.Property<string>("ClientId")
+                        .HasColumnType("text")
+                        .HasColumnName("client_id");
+
+                    b.Property<byte[]>("ClientSecret")
+                        .HasColumnType("bytea")
+                        .HasColumnName("client_secret");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text")
@@ -6461,42 +6469,92 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         },
                         new
                         {
+                            Id = 400,
+                            Label = "INVITATION_CREATE_CENTRAL_IDP"
+                        },
+                        new
+                        {
                             Id = 401,
-                            Label = "INVITATION_SETUP_IDP"
+                            Label = "INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT"
                         },
                         new
                         {
                             Id = 402,
-                            Label = "INVITATION_CREATE_DATABASE_IDP"
+                            Label = "INVITATION_UPDATE_CENTRAL_IDP_URLS"
                         },
                         new
                         {
                             Id = 403,
-                            Label = "INVITATION_CREATE_USER"
+                            Label = "INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER"
                         },
                         new
                         {
                             Id = 404,
-                            Label = "INVITATION_SEND_MAIL"
+                            Label = "INVITATION_CREATE_SHARED_REALM_IDP_CLIENT"
                         },
                         new
                         {
                             Id = 405,
-                            Label = "RETRIGGER_INVITATION_SETUP_IDP"
+                            Label = "INVITATION_ENABLE_CENTRAL_IDP"
                         },
                         new
                         {
                             Id = 406,
-                            Label = "RETRIGGER_INVITATION_CREATE_USER"
+                            Label = "INVITATION_CREATE_DATABASE_IDP"
                         },
                         new
                         {
                             Id = 407,
-                            Label = "RETRIGGER_INVITATION_CREATE_DATABASE_IDP"
+                            Label = "INVITATION_CREATE_USER"
                         },
                         new
                         {
                             Id = 408,
+                            Label = "INVITATION_SEND_MAIL"
+                        },
+                        new
+                        {
+                            Id = 409,
+                            Label = "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP"
+                        },
+                        new
+                        {
+                            Id = 410,
+                            Label = "RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT"
+                        },
+                        new
+                        {
+                            Id = 411,
+                            Label = "RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS"
+                        },
+                        new
+                        {
+                            Id = 412,
+                            Label = "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER"
+                        },
+                        new
+                        {
+                            Id = 413,
+                            Label = "RETRIGGER_INVITATION_CREATE_SHARED_REALM_IDP_CLIENT"
+                        },
+                        new
+                        {
+                            Id = 414,
+                            Label = "RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP"
+                        },
+                        new
+                        {
+                            Id = 415,
+                            Label = "RETRIGGER_INVITATION_CREATE_USER"
+                        },
+                        new
+                        {
+                            Id = 416,
+                            Label = "RETRIGGER_INVITATION_CREATE_DATABASE_IDP"
+                        },
+                        new
+                        {
+                            Id = 417,
                             Label = "RETRIGGER_INVITATION_SEND_MAIL"
                         });
                 });

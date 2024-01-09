@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -41,7 +42,7 @@ public class InvitationProcessServiceTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly IApplicationRepository _applicationRepository;
-    private readonly IProvisioningManager _provisioningManager;
+    private readonly IIdpManagement idpManagement;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IMailingService _mailingService;
     private readonly IInvitationProcessService _sut;
@@ -61,7 +62,7 @@ public class InvitationProcessServiceTests
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
 
-        _provisioningManager = A.Fake<IProvisioningManager>();
+        idpManagement = A.Fake<IIdpManagement>();
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _mailingService = A.Fake<IMailingService>();
 
@@ -88,7 +89,7 @@ public class InvitationProcessServiceTests
         });
 
         _sut = new InvitationProcessService(
-            _provisioningManager,
+            idpManagement,
             _userProvisioningService,
             portalRepositories,
             _mailingService,
@@ -104,7 +105,7 @@ public class InvitationProcessServiceTests
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetOrganisationNameForInvitation(companyInvitation.Id))
             .Returns("testCorp");
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync())
+        A.CallTo(() => idpManagement.GetNextCentralIdentityProviderNameAsync())
             .Returns("cl1-testCorp");
         A.CallTo(() => _companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitation.Id, A<Action<CompanyInvitation>>._, A<Action<CompanyInvitation>>._))
             .Invokes((Guid _, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify) =>
@@ -114,7 +115,7 @@ public class InvitationProcessServiceTests
             });
 
         // Act
-        var result = await _sut.SetupIdp(companyInvitation.Id).ConfigureAwait(false);
+        var result = await _sut.CreateCentralIdp(companyInvitation.Id).ConfigureAwait(false);
 
         // Act
         companyInvitation.IdpName.Should().Be("cl1-testCorp");
@@ -122,7 +123,7 @@ public class InvitationProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP);
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT);
     }
 
     [Fact]
@@ -134,7 +135,7 @@ public class InvitationProcessServiceTests
             .Returns((string?)null);
 
         // Act
-        async Task Act() => await _sut.SetupIdp(companyInvitation.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCentralIdp(companyInvitation.Id).ConfigureAwait(false);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
 
         // Act
@@ -438,7 +439,9 @@ public class InvitationProcessServiceTests
         var result = await _sut.SendMail(companyInvitationId).ConfigureAwait(false);
 
         // Act
-        A.CallTo(() => _mailingService.SendMails("test@email.com", A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 2 && x.Contains("RegistrationTemplate") && x.Contains("PasswordForRegistrationTemplate"))))
+        A.CallTo(() => _mailingService.SendMails("test@email.com", A<IDictionary<string, string>>._, "RegistrationTemplate"))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails("test@email.com", A<IDictionary<string, string>>._, "PasswordForRegistrationTemplate"))
             .MustHaveHappenedOnceExactly();
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);

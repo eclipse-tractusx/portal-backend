@@ -36,12 +36,9 @@ public class MailingService : IMailingService
         _settings = options.Value;
     }
 
-    public async Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates)
+    public async Task SendMails(string recipient, IDictionary<string, string> parameters, string template)
     {
-        foreach (var temp in templates)
-        {
-            var email = await _templateManager.ApplyTemplateAsync(temp, parameters).ConfigureAwait(false);
-            await _sendMail.Send(_settings.SenderEmail, recipient, email.Subject, email.Body, email.isHtml).ConfigureAwait(false);
-        }
+        var email = await _templateManager.ApplyTemplateAsync(template, parameters).ConfigureAwait(false);
+        await _sendMail.Send(_settings.SenderEmail, recipient, email.Subject, email.Body, email.isHtml).ConfigureAwait(false);
     }
 }

@@ -50,17 +50,77 @@ public class InvitationControllerTests
     }
 
     [Fact]
-    public async Task RetriggerSetupIdp_ReturnsExpected()
+    public async Task RetriggerCreateSharedIdpServiceAccount_ReturnsExpected()
     {
         // Arrange
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerSetupIdp(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerCreateSharedIdpServiceAccount(processId).ConfigureAwait(false);
 
         // Assert
         result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.RetriggerSetupIdp(processId))
+        A.CallTo(() => _logic.RetriggerCreateSharedIdpServiceAccount(processId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerUpdateCentralIdpUrls_ReturnsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerUpdateCentralIdpUrls(processId).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerUpdateCentralIdpUrls(processId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateCentralIdpOrgMapper_ReturnsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerCreateCentralIdpOrgMapper(processId).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerCreateCentralIdpOrgMapper(processId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateSharedRealmIdpClient_ReturnsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerCreateSharedRealmIdpClient(processId).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerCreateSharedRealmIdpClient(processId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerEnableCentralIdp_ReturnsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerEnableCentralIdp(processId).ConfigureAwait(false);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerEnableCentralIdp(processId))
             .MustHaveHappenedOnceExactly();
     }
 

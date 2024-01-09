@@ -104,7 +104,7 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid();
-        var user1 = new CompanyUserIdentityProviderProcessTransferData(user1Id, firstName, lastName, email,
+        var user1 = new CompanyUserIdentityProviderProcessData(user1Id, firstName, lastName, email,
             "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("ironman", "idp1", "id1234"), 1));
 
@@ -131,7 +131,7 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid();
-        var user1 = new CompanyUserIdentityProviderProcessTransferData(user1Id, "tony", "stark", "tony@stark.com", "Test Company", "BPNL00000001TEST",
+        var user1 = new CompanyUserIdentityProviderProcessData(user1Id, "tony", "stark", "tony@stark.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("ironman", null, "id1234"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
@@ -157,10 +157,10 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid().ToString();
-        var user1 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
+        var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
             "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("ironman", "idp1", "id1234"), 1));
-        var user2 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "steven", "strange",
+        var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
             "steven@strange.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("drstrange", "idp1", "id9876"), 1));
 
@@ -191,13 +191,13 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid().ToString();
-        var user1 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
+        var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
             "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("ironman", "idp1", "id1234"), 1));
-        var user2 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "steven", "strange",
+        var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
             "steven@strange.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("drstrange", "idp1", "id9876"), 1));
-        var user3 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "foo", "bar",
+        var user3 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "foo", "bar",
             "foo@bar.com", "Acme Corp", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("foobar", "idp2", "id4711"), 1));
 
@@ -232,11 +232,11 @@ public class NetworkRegistrationHandlerTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(user2.CompanyUserId, A<Action<Identity>>._, A<Action<Identity>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails("tony@stark.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<IEnumerable<string>>._))
+        A.CallTo(() => _mailingService.SendMails("tony@stark.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<string>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("steven@strange.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<IEnumerable<string>>._))
+        A.CallTo(() => _mailingService.SendMails("steven@strange.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<string>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("foo@bar.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2"), A<IEnumerable<string>>._))
+        A.CallTo(() => _mailingService.SendMails("foo@bar.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2"), A<string>._))
             .MustHaveHappenedOnceExactly();
 
         result.modified.Should().BeFalse();

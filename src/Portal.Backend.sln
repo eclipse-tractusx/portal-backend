@@ -260,6 +260,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Invitation.Executor.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailing.Executor.Tests", "..\tests\processes\Mailing.Executor.Tests\Mailing.Executor.Tests.csproj", "{BF8EB6BB-E8CA-423C-AC50-01FB44D0D08B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provisioning.Library", "externalsystems\Provisioning.Library\Provisioning.Library.csproj", "{16E69264-C872-41EB-9914-112416D1220C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1662,6 +1664,18 @@ Global
 		{BF8EB6BB-E8CA-423C-AC50-01FB44D0D08B}.Release|x64.Build.0 = Release|Any CPU
 		{BF8EB6BB-E8CA-423C-AC50-01FB44D0D08B}.Release|x86.ActiveCfg = Release|Any CPU
 		{BF8EB6BB-E8CA-423C-AC50-01FB44D0D08B}.Release|x86.Build.0 = Release|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Debug|x64.Build.0 = Debug|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Debug|x86.Build.0 = Debug|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Release|x64.ActiveCfg = Release|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Release|x64.Build.0 = Release|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Release|x86.ActiveCfg = Release|Any CPU
+		{16E69264-C872-41EB-9914-112416D1220C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1785,5 +1799,6 @@ Global
 		{0551F0AF-5373-4516-87AA-01D7FFD29C0D} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
 		{4693D24A-E6AA-4C3D-9990-5F095EACBD0B} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{BF8EB6BB-E8CA-423C-AC50-01FB44D0D08B} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
+		{16E69264-C872-41EB-9914-112416D1220C} = {C8957230-4203-452C-A085-34091C5E370B}
 	EndGlobalSection
 EndGlobal

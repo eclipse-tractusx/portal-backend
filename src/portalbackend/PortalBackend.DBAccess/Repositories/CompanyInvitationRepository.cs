@@ -89,4 +89,22 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
                 x.Password,
                 x.Email))
             .SingleOrDefaultAsync();
+
+    public Task<string?> GetIdpNameForInvitationId(Guid invitationId) =>
+        _context.CompanyInvitations
+            .Where(x => x.Id == invitationId)
+            .Select(x => x.IdpName)
+            .SingleOrDefaultAsync();
+
+    public Task<(string orgName, string? idpName, string? clientId, byte[]? clientSecret)> GetUpdateCentralIdpUrlData(Guid invitationId) =>
+        _context.CompanyInvitations
+            .Where(x => x.Id == invitationId)
+            .Select(x => new ValueTuple<string, string?, string?, byte[]?>(x.OrganisationName, x.IdpName, x.ClientId, x.ClientSecret))
+            .SingleOrDefaultAsync();
+
+    public Task<(string orgName, string? idpName)> GetIdpAndOrgNameAsync(Guid invitationId) =>
+        _context.CompanyInvitations
+            .Where(x => x.Id == invitationId)
+            .Select(x => new ValueTuple<string, string?>(x.OrganisationName, x.IdpName))
+            .SingleOrDefaultAsync();
 }

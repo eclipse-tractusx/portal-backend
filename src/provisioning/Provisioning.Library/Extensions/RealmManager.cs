@@ -26,16 +26,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private Task CreateSharedRealmAsync(KeycloakClient keycloak, string realm, string displayName, string? loginTheme)
-    {
-        var newRealm = CloneRealm(_Settings.SharedRealm);
-        newRealm.Id = realm;
-        newRealm._Realm = realm;
-        newRealm.DisplayName = displayName;
-        newRealm.LoginTheme = loginTheme;
-        return keycloak.ImportRealmAsync(realm, newRealm);
-    }
-
     private static async ValueTask UpdateSharedRealmAsync(KeycloakClient keycloak, string alias, string displayName, string? loginTheme)
     {
         var realm = await keycloak.GetRealmAsync(alias).ConfigureAwait(false);
@@ -50,7 +40,4 @@ public partial class ProvisioningManager
         realm.Enabled = enabled;
         await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false);
     }
-
-    private static Realm CloneRealm(Realm realm) =>
-        JsonSerializer.Deserialize<Realm>(JsonSerializer.Serialize(realm))!;
 }

@@ -36,6 +36,7 @@ public partial class ProvisioningManager
         {
             throw new KeycloakEntityConflictException($"serviceAccountUser {internalClientId} has no Id in keycloak");
         }
+
         var assignedRoles = await AssignClientRolesToCentralUserAsync(serviceAccountUser.Id, config.ClientRoles)
             .ToDictionaryAsync(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error)).ConfigureAwait(false);
 

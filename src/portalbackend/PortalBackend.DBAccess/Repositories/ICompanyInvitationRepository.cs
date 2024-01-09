@@ -31,4 +31,7 @@ public interface ICompanyInvitationRepository
     Task<(bool Exists, string OrgName, string? IdpName)> GetInvitationIdpCreationData(Guid invitationId);
     void AttachAndModifyCompanyInvitation(Guid invitationId, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify);
     Task<(bool Exists, string OrgName, byte[]? UserPassword, string Email)> GetMailData(Guid companyInvitationId);
+    Task<string?> GetIdpNameForInvitationId(Guid invitationId);
+    Task<(string orgName, string? idpName, string? clientId, byte[]? clientSecret)> GetUpdateCentralIdpUrlData(Guid invitationId);
+    Task<(string orgName, string? idpName)> GetIdpAndOrgNameAsync(Guid invitationId);
 }

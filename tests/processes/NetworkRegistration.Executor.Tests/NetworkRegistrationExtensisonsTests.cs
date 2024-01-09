@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.Tests;
@@ -33,7 +34,7 @@ public class NetworkRegistrationExtensisonsTests
     public void GetRetriggerStep_WithValid_ReturnsExpected(ProcessStepTypeId processStep, ProcessStepTypeId expectedStep)
     {
         // Act
-        var result = processStep.GetRetriggerStep();
+        var result = processStep.GetNetworkRetriggerStep();
 
         // Assert
         result.Should().ContainSingle()
@@ -44,9 +45,9 @@ public class NetworkRegistrationExtensisonsTests
     public void GetRetriggerStep_WithInvalidStep_ReturnsNull()
     {
         // Act
-        var result = ProcessStepTypeId.START_AUTOSETUP.GetRetriggerStep();
+        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.START_AUTOSETUP.GetNetworkRetriggerStep());
 
         // Assert
-        result.Should().BeNull();
+        ex.Message.Should().Be("ProcessStepTypeId START_AUTOSETUP is not supported for Process NetworkRegistration");
     }
 }

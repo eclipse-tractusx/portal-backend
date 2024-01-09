@@ -64,7 +64,10 @@ public partial class ProvisioningManager
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
         $"{_Settings.IdpPrefix}{await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false)}";
 
-    private Task CreateCentralIdentityProviderAsync(string alias, string displayName, IdentityProvider identityProvider)
+    public Task CreateCentralIdentityProviderAsync(string alias, string displayName)
+        => CreateCentralIdentityProviderAsyncInternal(alias, displayName, _Settings.CentralIdentityProvider);
+
+    private Task CreateCentralIdentityProviderAsyncInternal(string alias, string displayName, IdentityProvider identityProvider)
     {
         var newIdp = CloneIdentityProvider(identityProvider);
         newIdp.Alias = alias;

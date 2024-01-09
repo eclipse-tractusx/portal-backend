@@ -272,7 +272,7 @@ public class ApplicationActivationService : IApplicationActivationService
                 { "dataspaceUrl", _settings.DataspaceAddress }
             };
 
-            await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+            await _mailingService.SendMails(user.Email, mailParameters, "EmailRegistrationWelcomeTemplate").ConfigureAwait(false);
         }
 
         if (failedUserNames.Any())

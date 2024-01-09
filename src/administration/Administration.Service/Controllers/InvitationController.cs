@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -80,19 +79,124 @@ public class InvitationController : ControllerBase
     /// </summary>
     /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/invitation/{processId}/retrigger-setup-idp
+    /// Example: POST: api/administration/invitation/{processId}/retrigger-create-central-idp
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">No registration found for the externalId.</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
-    [Route("{processId}/retrigger-setup-idp")]
+    [Route("{processId}/retrigger-create-central-idp")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> RetriggerSetupIdp([FromRoute] Guid processId)
+    public async Task<NoContentResult> RetriggerCreateCentralIdp([FromRoute] Guid processId)
     {
-        await _logic.RetriggerSetupIdp(processId).ConfigureAwait(false);
+        await _logic.RetriggerCreateCentralIdp(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/invitation/{processId}/retrigger-create-shared-idp-sa
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Roles = "invite_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-create-shared-idp-sa")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCreateSharedIdpServiceAccount([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerCreateSharedIdpServiceAccount(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/invitation/{processId}/retrigger-update-central-idp-urls
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Roles = "invite_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-update-central-idp-urls")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerUpdateCentralIdpUrls([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerUpdateCentralIdpUrls(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/invitation/{processId}/retrigger-create-central-idp-org-mapper
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Roles = "invite_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-create-central-idp-org-mapper")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCreateCentralIdpOrgMapper([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerCreateCentralIdpOrgMapper(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/invitation/{processId}/retrigger-create-shared-realm-idp-client
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Roles = "invite_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-create-shared-realm-idp-client")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCreateSharedRealmIdpClient([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerCreateSharedRealmIdpClient(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/invitation/{processId}/retrigger-enable-central-idp
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Roles = "invite_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-enable-central-idp")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerEnableCentralIdp([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerEnableCentralIdp(processId).ConfigureAwait(false);
         return NoContent();
     }
 

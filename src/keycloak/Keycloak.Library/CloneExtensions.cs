@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,8 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-global using AutoFixture;
-global using AutoFixture.AutoFakeItEasy;
-global using FakeItEasy;
-global using FluentAssertions;
-global using Xunit;
+using System.Text.Json;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
+
+public static class CloneExtensions
+{
+    public static T Clone<T>(this T cloneObject)
+        where T : class =>
+        JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(cloneObject))!;
+}

@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
@@ -27,6 +28,7 @@ public static class InvitationProcessCollectionExtensions
 {
     public static IServiceCollection AddInvitationProcessExecutor(this IServiceCollection services, IConfiguration config) =>
         services
+            .AddIdpManagement(config)
             .AddTransient<IInvitationProcessService, InvitationProcessService>()
             .AddTransient<IProcessTypeExecutor, InvitationProcessTypeExecutor>()
             .ConfigureInvitationSettings(config.GetSection("Invitation"));

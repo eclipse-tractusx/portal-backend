@@ -37,10 +37,16 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
         (int)HttpStatusCode.GatewayTimeout);
 
     private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps = ImmutableArray.Create(
-        ProcessStepTypeId.INVITATION_SETUP_IDP,
+        ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP,
+        ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT,
+        ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS,
+        ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER,
+        ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT,
+        ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
         ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
         ProcessStepTypeId.INVITATION_CREATE_USER,
         ProcessStepTypeId.INVITATION_SEND_MAIL);
+
     private readonly IPortalRepositories _portalRepositories;
     private readonly IInvitationProcessService _invitationProcessService;
     private Guid _companyInvitationId;
@@ -93,7 +99,17 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
         {
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
-                ProcessStepTypeId.INVITATION_SETUP_IDP => await _invitationProcessService.SetupIdp(_companyInvitationId)
+                ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP => await _invitationProcessService.CreateCentralIdp(_companyInvitationId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT => await _invitationProcessService.CreateSharedIdpServiceAccount(_companyInvitationId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS => await _invitationProcessService.UpdateCentralIdpUrl(_companyInvitationId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER => await _invitationProcessService.CreateCentralIdpOrgMapper(_companyInvitationId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT => await _invitationProcessService.CreateSharedIdpRealmIdpClient(_companyInvitationId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP => await _invitationProcessService.EnableCentralIdp(_companyInvitationId)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP => await _invitationProcessService.CreateIdpDatabase(_companyInvitationId)
                     .ConfigureAwait(false),
@@ -118,6 +134,6 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
         {
             ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, ex.Message, null),
             FlurlHttpException { StatusCode: not null } flurlHttpException when RecoverableStatusCodes.Contains(flurlHttpException.StatusCode.Value) => (ProcessStepStatusId.TODO, ex.Message, null),
-            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep())
+            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetInvitationRetriggerStep())
         };
 }

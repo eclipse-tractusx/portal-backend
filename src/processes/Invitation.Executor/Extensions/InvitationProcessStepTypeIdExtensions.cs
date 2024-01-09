@@ -17,20 +17,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.Extensions;
 
-public static class ProcessStepTypeIdExtensions
+public static class InvitationProcessStepTypeIdExtensions
 {
-    public static IEnumerable<ProcessStepTypeId>? GetRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
+    public static IEnumerable<ProcessStepTypeId> GetInvitationRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
         processStepTypeId switch
         {
-            ProcessStepTypeId.INVITATION_SETUP_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP },
+            ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP },
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT },
+            ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS },
+            ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER },
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM_IDP_CLIENT },
+            ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP },
+            ProcessStepTypeId.INVITATION_SEND_MAIL => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL },
             ProcessStepTypeId.INVITATION_CREATE_USER => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER },
             ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP },
-            ProcessStepTypeId.INVITATION_SEND_MAIL => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL },
-            _ => null
+            _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process Invitation")
         };
 
 }

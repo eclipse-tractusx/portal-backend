@@ -302,13 +302,9 @@ public class InvitationBusinessLogicTests
 
         Task Act() => sut.ExecuteInvitation(invitationData);
 
-        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be(_error.Message);
-
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._))
-            .MustNotHaveHappened();
+        processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.INVITATION);
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
+        invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName");
     }
 
     #endregion
@@ -316,11 +312,11 @@ public class InvitationBusinessLogicTests
     #region RetriggerSetupIdp
 
     [Fact]
-    public async Task RetriggerSetupIdp_CallsExpected()
+    public async Task RetriggerCreateCentralIdp_CallsExpected()
     {
         // Arrange
-        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP;
-        var processStepTypeId = ProcessStepTypeId.INVITATION_SETUP_IDP;
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP;
         var processSteps = new List<ProcessStep>();
         var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
         var processStepId = Guid.NewGuid();
@@ -330,7 +326,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerSetupIdp(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerCreateCentralIdp(process.Id).ConfigureAwait(false);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -343,11 +339,11 @@ public class InvitationBusinessLogicTests
     public async Task RetriggerSetupIdp_WithNotExistingProcess_ThrowsException()
     {
         // Arrange
-        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SETUP_IDP;
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER;
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerSetupIdp(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerCreateCentralIdp(process.Id).ConfigureAwait(false);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -502,7 +498,14 @@ public class InvitationBusinessLogicTests
             {
                 new UserRoleConfig(_fixture.Create<string>(), _fixture.CreateMany<string>())
             })
-            .Create());
+            .Returns(new Process(createdProcessId, ProcessTypeId.INVITATION, Guid.NewGuid()));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepStatusId.TODO, createdProcessId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
+            {
+                var processStep = new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId,
+                    DateTimeOffset.UtcNow);
+                processSteps.Add(processStep);
+            });
 
         A.CallTo(() => _portalRepositories.GetInstance<IMailingInformationRepository>()).Returns(_mailingInformationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
