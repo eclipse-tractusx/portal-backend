@@ -9,6 +9,8 @@
     "process_id": "70f0f368-5058-4aca-808b-cece869bcef2",
     "application_id": null,
     "idp_name": "test idp",
-    "password": null
+    "password": null,
+    "client_id": "cl1",
+    "client_secret": null
   }
 ]

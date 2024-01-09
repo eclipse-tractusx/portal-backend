@@ -31,6 +31,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly Guid _processId = new("70f0f368-5058-4aca-808b-cece869bcef2");
     private readonly Guid _invitationId = new("32705785-b056-4f36-9a71-71b795344bb2");
+
     public CompanyInvitationRepositoryTests(TestDbFixture testDbFixture)
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -240,6 +241,73 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         data.Exists.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region GetIdpNameForInvitationId
+
+    [Fact]
+    public async Task GetIdpNameForInvitationId_WithExistingForProcessId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetIdpNameForInvitationId(_invitationId).ConfigureAwait(false);
+
+        // Assert
+        data.Should().Be("test idp");
+    }
+
+    [Fact]
+    public async Task GetIdpNameForInvitationId_WithoutExistingForProcessId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetIdpNameForInvitationId(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        data.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetUpdateCentralIdpUrlData
+
+    [Fact]
+    public async Task GetUpdateCentralIdpUrlData_WithExistingForProcessId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetUpdateCentralIdpUrlData(_invitationId).ConfigureAwait(false);
+
+        // Assert
+        data.orgName.Should().Be("stark industry");
+        data.idpName.Should().Be("test idp");
+        data.clientId.Should().Be("cl1");
+    }
+
+    #endregion
+
+    #region GetUpdateCentralIdpUrlData
+
+    [Fact]
+    public async Task GetIdpAndOrgNameAsync_WithExistingForProcessId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetIdpAndOrgNameAsync(_invitationId).ConfigureAwait(false);
+
+        // Assert
+        data.orgName.Should().Be("stark industry");
+        data.idpName.Should().Be("test idp");
     }
 
     #endregion

@@ -42,7 +42,7 @@ public class InvitationProcessServiceTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly IApplicationRepository _applicationRepository;
-    private readonly IIdpManagement idpManagement;
+    private readonly IIdpManagement _idpManagement;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IMailingService _mailingService;
     private readonly IInvitationProcessService _sut;
@@ -62,7 +62,7 @@ public class InvitationProcessServiceTests
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
 
-        idpManagement = A.Fake<IIdpManagement>();
+        _idpManagement = A.Fake<IIdpManagement>();
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _mailingService = A.Fake<IMailingService>();
 
@@ -89,23 +89,23 @@ public class InvitationProcessServiceTests
         });
 
         _sut = new InvitationProcessService(
-            idpManagement,
+            _idpManagement,
             _userProvisioningService,
             portalRepositories,
             _mailingService,
             _setting);
     }
 
-    #region SetupIdp
+    #region CreateCentralIdp
 
     [Fact]
-    public async Task SetupIdp_WithValid_ReturnsExpected()
+    public async Task CreateCentralIdp_WithValid_ReturnsExpected()
     {
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetOrganisationNameForInvitation(companyInvitation.Id))
             .Returns("testCorp");
-        A.CallTo(() => idpManagement.GetNextCentralIdentityProviderNameAsync())
+        A.CallTo(() => _idpManagement.GetNextCentralIdentityProviderNameAsync())
             .Returns("cl1-testCorp");
         A.CallTo(() => _companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitation.Id, A<Action<CompanyInvitation>>._, A<Action<CompanyInvitation>>._))
             .Invokes((Guid _, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify) =>
@@ -127,7 +127,7 @@ public class InvitationProcessServiceTests
     }
 
     [Fact]
-    public async Task SetupIdp_WithNotExisting_ThrowsConflictException()
+    public async Task CreateCentralIdp_WithNotExisting_ThrowsConflictException()
     {
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
@@ -140,6 +140,316 @@ public class InvitationProcessServiceTests
 
         // Act
         ex.Message.Should().Be("Org name must not be null");
+    }
+
+    #endregion
+
+    #region CreateSharedIdpServiceAccount
+
+    [Fact]
+    public async Task CreateSharedIdpServiceAccount_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetIdpNameForInvitationId(companyInvitation.Id))
+            .Returns("idp1");
+        A.CallTo(() => _idpManagement.CreateSharedIdpServiceAccountAsync("idp1"))
+            .Returns(new ValueTuple<string, string>("cl1", "test"));
+        A.CallTo(() => _companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitation.Id, A<Action<CompanyInvitation>>._, A<Action<CompanyInvitation>>._))
+            .Invokes((Guid _, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify) =>
+            {
+                initialize?.Invoke(companyInvitation);
+                modify(companyInvitation);
+            });
+
+        // Act
+        var result = await _sut.CreateSharedIdpServiceAccount(companyInvitation.Id).ConfigureAwait(false);
+
+        // Act
+        companyInvitation.ClientId.Should().Be("cl1");
+        companyInvitation.ClientSecret.Should().NotBeNull();
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.nextStepTypeIds.Should().ContainSingle()
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS);
+    }
+
+    [Fact]
+    public async Task CreateSharedIdpServiceAccount_WithNotExisting_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetIdpNameForInvitationId(companyInvitation.Id))
+            .Returns((string?)null);
+
+        // Act
+        async Task Act() => await _sut.CreateSharedIdpServiceAccount(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("Idp name must not be null");
+    }
+
+    #endregion
+
+    #region UpdateCentralIdpUrl
+
+    [Fact]
+    public async Task UpdateCentralIdpUrl_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        var pw = "test";
+        using var aes = Aes.Create();
+        aes.Key = Encoding.UTF8.GetBytes(_setting.Value.EncryptionKey);
+        aes.Mode = CipherMode.ECB;
+        aes.Padding = PaddingMode.PKCS7;
+        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+        using (var memoryStream = new MemoryStream())
+        {
+            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+            {
+                using var sw = new StreamWriter(cryptoStream, Encoding.UTF8);
+                sw.Write(pw);
+            }
+
+            var secret = memoryStream.ToArray();
+            A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+                .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "idp1", "cl1", secret));
+        }
+
+        // Act
+        var result = await _sut.UpdateCentralIdpUrl(companyInvitation.Id).ConfigureAwait(false);
+
+        // Act
+        A.CallTo(() => _idpManagement.UpdateCentralIdentityProviderUrlsAsync("idp1", "testCorp", "TestLoginTheme", "cl1", "test"))
+            .MustHaveHappenedOnceExactly();
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.nextStepTypeIds.Should().ContainSingle()
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER);
+    }
+
+    [Fact]
+    public async Task UpdateCentralIdpUrl_WithClientSecretNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "cl1", "idp1", null));
+
+        // Act
+        async Task Act() => await _sut.UpdateCentralIdpUrl(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("ClientSecret must not be null");
+    }
+
+    [Fact]
+    public async Task UpdateCentralIdpUrl_WithClientIdNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "cl1", null, null));
+
+        // Act
+        async Task Act() => await _sut.UpdateCentralIdpUrl(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("ClientId must not be null");
+    }
+
+    [Fact]
+    public async Task UpdateCentralIdpUrl_WithIdpNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", null, null, null));
+
+        // Act
+        async Task Act() => await _sut.UpdateCentralIdpUrl(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("Idp name must not be null");
+    }
+
+    #endregion
+
+    #region CreateCentralIdpOrgMapper
+
+    [Fact]
+    public async Task CreateCentralIdpOrgMapper_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetIdpAndOrgNameAsync(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?>("testCorp", "idp1"));
+
+        // Act
+        var result = await _sut.CreateCentralIdpOrgMapper(companyInvitation.Id).ConfigureAwait(false);
+
+        // Act
+        A.CallTo(() => _idpManagement.CreateCentralIdentityProviderOrganisationMapperAsync("idp1", "testCorp"))
+            .MustHaveHappenedOnceExactly();
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.nextStepTypeIds.Should().ContainSingle()
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT);
+    }
+
+    [Fact]
+    public async Task CreateCentralIdpOrgMapper_WithNotExisting_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetIdpAndOrgNameAsync(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?>("testCorp", null));
+
+        // Act
+        async Task Act() => await _sut.CreateCentralIdpOrgMapper(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("Idp name must not be null");
+    }
+
+    #endregion
+
+    #region CreateSharedIdpRealmIdpClient
+
+    [Fact]
+    public async Task CreateSharedIdpRealmIdpClient_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        var pw = "test";
+        using var aes = Aes.Create();
+        aes.Key = Encoding.UTF8.GetBytes(_setting.Value.EncryptionKey);
+        aes.Mode = CipherMode.ECB;
+        aes.Padding = PaddingMode.PKCS7;
+        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+        using (var memoryStream = new MemoryStream())
+        {
+            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+            {
+                using var sw = new StreamWriter(cryptoStream, Encoding.UTF8);
+                sw.Write(pw);
+            }
+
+            var secret = memoryStream.ToArray();
+            A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+                .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "idp1", "cl1", secret));
+        }
+
+        // Act
+        var result = await _sut.CreateSharedIdpRealmIdpClient(companyInvitation.Id).ConfigureAwait(false);
+
+        // Act
+        A.CallTo(() => _idpManagement.CreateSharedRealmIdpClientAsync("idp1", "TestLoginTheme", "testCorp", "cl1", "test"))
+            .MustHaveHappenedOnceExactly();
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.nextStepTypeIds.Should().ContainSingle()
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP);
+    }
+
+    [Fact]
+    public async Task CreateSharedIdpRealmIdpClient_WithClientSecretNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "cl1", "idp1", null));
+
+        // Act
+        async Task Act() => await _sut.CreateSharedIdpRealmIdpClient(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("ClientSecret must not be null");
+    }
+
+    [Fact]
+    public async Task CreateSharedIdpRealmIdpClient_WithClientIdNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "cl1", null, null));
+
+        // Act
+        async Task Act() => await _sut.CreateSharedIdpRealmIdpClient(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("ClientId must not be null");
+    }
+
+    [Fact]
+    public async Task CreateSharedIdpRealmIdpClient_WithIdpNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", null, null, null));
+
+        // Act
+        async Task Act() => await _sut.CreateSharedIdpRealmIdpClient(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("Idp name must not be null");
+    }
+
+    #endregion
+
+    #region EnableCentralIdp
+
+    [Fact]
+    public async Task EnableCentralIdp_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetIdpNameForInvitationId(companyInvitation.Id))
+            .Returns("idp123");
+
+        // Act
+        var result = await _sut.EnableCentralIdp(companyInvitation.Id).ConfigureAwait(false);
+
+        // Act
+        A.CallTo(() => _idpManagement.EnableCentralIdentityProviderAsync("idp123"))
+            .MustHaveHappenedOnceExactly();
+
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.nextStepTypeIds.Should().ContainSingle()
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP);
+    }
+
+    [Fact]
+    public async Task EnableCentralIdp_WithNotExisting_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetIdpNameForInvitationId(companyInvitation.Id))
+            .Returns((string?)null);
+
+        // Act
+        async Task Act() => await _sut.EnableCentralIdp(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("Idp name must not be null");
     }
 
     #endregion

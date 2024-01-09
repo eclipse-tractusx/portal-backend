@@ -23,10 +23,12 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
+using System.Diagnostics.CodeAnalysis;
 using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.IdentityProvider;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library.DependencyInjection;
 
+[ExcludeFromCodeCoverage]
 public static class ProvisioningLibraryExtensions
 {
     public static IServiceCollection AddIdpManagement(this IServiceCollection services, IConfiguration configuration) =>

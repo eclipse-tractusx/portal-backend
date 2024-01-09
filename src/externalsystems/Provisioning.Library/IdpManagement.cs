@@ -44,18 +44,18 @@ public class IdpManagement : IIdpManagement
     private readonly IKeycloakFactory _factory;
     private readonly KeycloakClient _centralIdp;
     private readonly IdpCreationSettings _settings;
-    private readonly IProvisioningDBAccess? _provisioningDBAccess;
+    private readonly IProvisioningDBAccess? _provisioningDbAccess;
 
     public IdpManagement(IKeycloakFactory keycloakFactory, IProvisioningDBAccess? provisioningDBAccess, IOptions<IdpCreationSettings> options)
     {
         _factory = keycloakFactory;
         _centralIdp = keycloakFactory.CreateKeycloakClient("central");
         _settings = options.Value;
-        _provisioningDBAccess = provisioningDBAccess;
+        _provisioningDbAccess = provisioningDBAccess;
     }
 
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
-        $"{_settings.IdpPrefix}{await _provisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false)}";
+        $"{_settings.IdpPrefix}{await _provisioningDbAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false)}";
 
     public Task CreateCentralIdentityProviderAsync(string alias, string displayName)
     {
