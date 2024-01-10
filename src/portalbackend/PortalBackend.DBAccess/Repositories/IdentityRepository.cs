@@ -51,4 +51,15 @@ public class IdentityRepository : IIdentityRepository
                 x.IdentityTypeId,
                 x.CompanyId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdentityIdsWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, IEnumerable<Guid> identityIds) =>
+        _context.CompanyUsers
+            .Where(x =>
+                x.Identity!.Company!.IdentityProviders.Any(idp => identityIds.Contains(idp.Id) && idp.OwnerId != x.Identity!.CompanyId) &&
+                x.Identity!.UserStatusId == UserStatusId.ACTIVE &&
+                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => ur == u)) &&
+                x.Email != null)
+            .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
+            .ToAsyncEnumerable();
 }

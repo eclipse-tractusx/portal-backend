@@ -396,6 +396,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
 
+        var identityIds = new List<Guid>();
         await foreach (var data in idpLinkedData.ConfigureAwait(false))
         {
             if (!data.HasMoreIdentityProviders)
@@ -407,9 +408,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             }
             identityProviderRepository.DeleteCompanyIdentityProvider(data.CompanyId, identityProviderId);
             userRepository.RemoveCompanyUserAssignedIdentityProviders(data.Identities.Where(x => x.IsLinkedCompanyUser).Select(x => (x.IdentityId, identityProviderId)));
+            identityIds.AddRange(data.Identities.Select(x => x.IdentityId));
         }
 
-        await SendIdpMail(identityProviderId, alias, false, ownerCompanyName, _settings.DeactivateIdpRoles).ConfigureAwait(false);
+        await _roleBaseMailService.RoleBaseSendMailForIdentityIds(
+            _settings.DeactivateIdpRoles,
+            new[] { ("idpAlias", alias ?? identityProviderId.ToString()), ("ownerCompanyName", ownerCompanyName) },
+            ("username", "User"),
+            new[] { "DeleteManagedIdp" },
+            identityIds.Distinct()).ConfigureAwait(false);
     }
 
     private async ValueTask<(string? Alias, IdentityProviderTypeId TypeId, string OwnerCompanyName)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, IIdentityProviderRepository identityProviderRepository)

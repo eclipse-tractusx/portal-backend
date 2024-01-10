@@ -457,6 +457,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             null);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         foreach (var (idpId, idpAlias, idpType) in idps)
         {
             if (idpType == IdentityProviderTypeId.SHARED)
@@ -490,9 +491,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             {
                 await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
             }
+            userRepository.RemoveCompanyUserAssignedIdentityProviders(idps.Select(idp => (userId, idp.IdentityProviderId)));
         }
 
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>>(userId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
+        userRepository.AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>>(userId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
         if (processId != null)
         {
             _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, processId.Value), 1));

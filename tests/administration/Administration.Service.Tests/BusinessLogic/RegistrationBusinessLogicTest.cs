@@ -526,6 +526,9 @@ public class RegistrationBusinessLogicTest
         var sharedIdpId = Guid.NewGuid();
         var managedIdpId = Guid.NewGuid();
         var ownIdpId = Guid.NewGuid();
+        var user1 = Guid.NewGuid();
+        var user2 = Guid.NewGuid();
+        var user3 = Guid.NewGuid();
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
             .Returns((
@@ -538,7 +541,12 @@ public class RegistrationBusinessLogicTest
                     (managedIdpId, "idp2", IdentityProviderTypeId.MANAGED),
                     (ownIdpId, "idp3", IdentityProviderTypeId.OWN),
                 },
-                Enumerable.Empty<Guid>()));
+                new[]
+                {
+                    user1,
+                    user2,
+                    user3
+                }));
 
         // Act
         await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
@@ -561,6 +569,9 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(ownIdpId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp3")).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp3")).MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<ValueTuple<Guid, Guid>>>._)).MustHaveHappened(3, Times.Exactly);
+
     }
 
     #endregion
