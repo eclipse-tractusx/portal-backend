@@ -429,6 +429,9 @@ public class UserRepository : IUserRepository
     public CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName) =>
         _dbContext.CompanyUserAssignedIdentityProviders.Add(new CompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, providerId, userName)).Entity;
 
+    public void RemoveCompanyUserAssignedIdentityProviders(IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)> companyUserIdentityProviderIds) =>
+        _dbContext.CompanyUserAssignedIdentityProviders.RemoveRange(companyUserIdentityProviderIds.Select(x => new CompanyUserAssignedIdentityProvider(x.CompanyUserId, x.IdentityProviderId, null!, null!)));
+
     public IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
         _dbContext.CompanyUsers
             .Where(cu =>

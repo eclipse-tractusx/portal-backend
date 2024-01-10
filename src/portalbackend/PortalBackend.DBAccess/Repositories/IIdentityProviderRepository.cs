@@ -53,6 +53,7 @@ public interface IIdentityProviderRepository
         (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>
             GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, Guid companyUserId);
 
-    IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, IEnumerable<Guid> IdpIds, IEnumerable<Guid> IdentityId)> GetIdpLinkedData(Guid identityProviderId);
+    IAsyncEnumerable<Guid> GetIdpLinkedCompanyUserIds(Guid identityProviderId, Guid companyId);
+    IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, bool HasMoreIdentityProviders, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser)> Identities)> GetManagedIdpLinkedData(Guid identityProviderId);
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdpWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, Guid identityProviderId);
 }

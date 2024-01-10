@@ -265,9 +265,25 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                         s.IdentityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)))
                 .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, IEnumerable<Guid> IdpIds, IEnumerable<Guid> IdentityId)> GetIdpLinkedData(Guid identityProviderId) =>
-        _context.IdentityProviders.Where(x => x.Id == identityProviderId)
-            .SelectMany(x => x.Companies.Select(c => new ValueTuple<Guid, CompanyStatusId, IEnumerable<Guid>, IEnumerable<Guid>>(c.Id, c.CompanyStatusId, c.IdentityProviders.Select(idp => idp.Id), c.Identities.Select(i => i.Id))))
+    public IAsyncEnumerable<Guid> GetIdpLinkedCompanyUserIds(Guid identityProviderId, Guid companyId) =>
+        _context.CompanyUserAssignedIdentityProviders
+            .Where(x =>
+                x.IdentityProviderId == identityProviderId &&
+                x.CompanyUser!.Identity!.CompanyId == companyId)
+            .Select(x => x.CompanyUserId)
+            .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, bool HasMoreIdentityProviders, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser)> Identities)> GetManagedIdpLinkedData(Guid identityProviderId) =>
+        _context.IdentityProviders
+            .AsSplitQuery()
+            .Where(x => x.Id == identityProviderId)
+            .SelectMany(x => x.Companies.Select(c => new ValueTuple<Guid, CompanyStatusId, bool, IEnumerable<(Guid, bool)>>(
+                c.Id,
+                c.CompanyStatusId,
+                c.IdentityProviders.Where(idp => idp.Id != identityProviderId).Any(),
+                c.Identities.Select(i => new ValueTuple<Guid, bool>(
+                    i.Id,
+                    i.CompanyUser!.CompanyUserAssignedIdentityProviders.Where(x => x.IdentityProviderId == identityProviderId).Any())))))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />

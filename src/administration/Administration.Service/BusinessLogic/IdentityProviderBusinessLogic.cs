@@ -353,15 +353,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     public async ValueTask DeleteCompanyIdentityProviderAsync(Guid identityProviderId)
     {
-        var companyId = _identityData.CompanyId;
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var (alias, typeId, ownerCompanyName) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId, identityProviderRepository).ConfigureAwait(false);
 
-        _portalRepositories.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
-
         if (alias != null)
         {
-            _portalRepositories.Remove(new IamIdentityProvider(alias, Guid.Empty));
+            identityProviderRepository.DeleteIamIdentityProvider(alias);
             if (typeId == IdentityProviderTypeId.SHARED)
             {
                 await _provisioningManager.DeleteSharedIdpRealmAsync(alias).ConfigureAwait(false);
@@ -373,24 +370,43 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             await DeleteManagedIdpLinks(identityProviderId, alias, ownerCompanyName, identityProviderRepository).ConfigureAwait(false);
         }
+        else
+        {
+            await DeleteOwnCompanyIdpLinks(identityProviderId, identityProviderRepository).ConfigureAwait(false);
+        }
 
-        _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default, default, default)));
+        identityProviderRepository.DeleteIdentityProvider(identityProviderId);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
+    private async Task DeleteOwnCompanyIdpLinks(Guid identityProviderId, IIdentityProviderRepository identityProviderRepository)
+    {
+        var companyId = _identityData.CompanyId;
+        var companyUserIds = await identityProviderRepository.GetIdpLinkedCompanyUserIds(identityProviderId, companyId).ToListAsync();
+
+        identityProviderRepository.DeleteCompanyIdentityProvider(companyId, identityProviderId);
+        _portalRepositories.GetInstance<IUserRepository>().RemoveCompanyUserAssignedIdentityProviders(companyUserIds.Select(id => (id, identityProviderId)));
+    }
+
     private async Task DeleteManagedIdpLinks(Guid identityProviderId, string? alias, string ownerCompanyName, IIdentityProviderRepository identityProviderRepository)
     {
-        var idpLinkedData = await identityProviderRepository.GetIdpLinkedData(identityProviderId)
-            .ToListAsync()
-            .ConfigureAwait(false);
+        var idpLinkedData = identityProviderRepository.GetManagedIdpLinkedData(identityProviderId);
 
-        foreach (var data in idpLinkedData.Where(data => !data.IdpIds.Except(Enumerable.Repeat(identityProviderId, 1)).Any()))
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+
+        await foreach (var data in idpLinkedData.ConfigureAwait(false))
         {
-            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(data.CompanyId,
-                c => { c.CompanyStatusId = data.CompanyStatusId; },
-                c => { c.CompanyStatusId = CompanyStatusId.INACTIVE; });
-            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(data.IdentityId.Select(x => new ValueTuple<Guid, Action<Identity>>(x, identity => { identity.UserStatusId = UserStatusId.INACTIVE; })));
+            if (!data.HasMoreIdentityProviders)
+            {
+                companyRepository.AttachAndModifyCompany(data.CompanyId,
+                    c => { c.CompanyStatusId = data.CompanyStatusId; },
+                    c => { c.CompanyStatusId = CompanyStatusId.INACTIVE; });
+                userRepository.AttachAndModifyIdentities(data.Identities.Select(x => new ValueTuple<Guid, Action<Identity>>(x.IdentityId, identity => { identity.UserStatusId = UserStatusId.INACTIVE; })));
+            }
+            identityProviderRepository.DeleteCompanyIdentityProvider(data.CompanyId, identityProviderId);
+            userRepository.RemoveCompanyUserAssignedIdentityProviders(data.Identities.Where(x => x.IsLinkedCompanyUser).Select(x => (x.IdentityId, identityProviderId)));
         }
 
         await SendIdpMail(identityProviderId, alias, false, ownerCompanyName, _settings.DeactivateIdpRoles).ConfigureAwait(false);
