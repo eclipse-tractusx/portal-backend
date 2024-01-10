@@ -19,7 +19,6 @@ nuget/nuget/-/Mono.TextTemplating/2.2.1, MIT, approved, clearlydefined
 nuget/nuget/-/NHamcrest/3.2.0, MIT, approved, #9299
 nuget/nuget/-/NJsonSchema/10.9.0, MIT, approved, #9300
 nuget/nuget/-/Namotion.Reflection/2.1.2, MIT, approved, #9320
-nuget/nuget/-/Newtonsoft.Json/12.0.2, MIT AND BSD-3-Clause, approved, #11114
 nuget/nuget/-/Newtonsoft.Json/13.0.1, MIT AND BSD-3-Clause, approved, #3266
 nuget/nuget/-/Newtonsoft.Json/13.0.3, MIT AND BSD-3-Clause, approved, #3266
 nuget/nuget/-/Npgsql.EntityFrameworkCore.PostgreSQL/7.0.4, PostgreSQL AND MIT AND Apache-2.0, approved, #10081
