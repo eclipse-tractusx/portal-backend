@@ -215,7 +215,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task UpdateCompanyBpnInternal(Guid applicationId, string bpn)
     {
         var result = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
+            .GetBpnForIamUserUntrackedAsync(applicationId, bpn.ToUpper()).ToListAsync().ConfigureAwait(false);
         if (!result.Exists(item => item.IsApplicationCompany))
         {
             throw new NotFoundException($"application {applicationId} not found");
@@ -262,7 +262,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .ConfigureAwait(false);
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
-            c => { c.BusinessPartnerNumber = bpn; });
+            c => { c.BusinessPartnerNumber = bpn.ToUpper(); });
 
         var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.FAILED, null);
 
