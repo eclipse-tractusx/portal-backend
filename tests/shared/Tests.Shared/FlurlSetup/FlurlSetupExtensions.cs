@@ -26,7 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using System.Net;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.FlurlSetup;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 
 public static class FlurlSetupExtensions
 {

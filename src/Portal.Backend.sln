@@ -262,6 +262,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailing.Executor.Tests", ".
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provisioning.Library", "externalsystems\Provisioning.Library\Provisioning.Library.csproj", "{16E69264-C872-41EB-9914-112416D1220C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalSystems.Provisioning.Library.Tests", "..\tests\externalsystems\ExternalSystems.Provisioning.Library.Tests\ExternalSystems.Provisioning.Library.Tests.csproj", "{B6A2A753-5876-4C6C-8CC2-151B022C87F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1676,6 +1678,18 @@ Global
 		{16E69264-C872-41EB-9914-112416D1220C}.Release|x64.Build.0 = Release|Any CPU
 		{16E69264-C872-41EB-9914-112416D1220C}.Release|x86.ActiveCfg = Release|Any CPU
 		{16E69264-C872-41EB-9914-112416D1220C}.Release|x86.Build.0 = Release|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Debug|x64.Build.0 = Debug|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Debug|x86.Build.0 = Debug|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Release|x64.ActiveCfg = Release|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Release|x64.Build.0 = Release|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Release|x86.ActiveCfg = Release|Any CPU
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1800,5 +1814,6 @@ Global
 		{4693D24A-E6AA-4C3D-9990-5F095EACBD0B} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{BF8EB6BB-E8CA-423C-AC50-01FB44D0D08B} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{16E69264-C872-41EB-9914-112416D1220C} = {C8957230-4203-452C-A085-34091C5E370B}
+		{B6A2A753-5876-4C6C-8CC2-151B022C87F7} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 	EndGlobalSection
 EndGlobal

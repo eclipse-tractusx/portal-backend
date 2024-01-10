@@ -27,7 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.FlurlSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 using System.Net;
 using Config = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.Config;
 using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.IdentityProvider;

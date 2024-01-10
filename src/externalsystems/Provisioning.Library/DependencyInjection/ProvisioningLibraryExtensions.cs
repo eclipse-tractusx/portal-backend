@@ -39,20 +39,20 @@ public static class ProvisioningLibraryExtensions
             .AddScoped<IIdpManagement, IdpManagement>();
 }
 
-public class IdpCreationSettings
+public class IdpManagementSettings
 {
     public string CentralRealm { get; init; } = null!;
-    public string IdpPrefix { get; init; } = null!;
     public IdentityProvider CentralIdentityProvider { get; init; } = null!;
-    public Realm SharedRealm { get; init; } = null!;
-    public Client ServiceAccountClient { get; init; } = null!;
-    public Client SharedRealmClient { get; init; } = null!;
+    public string IdpPrefix { get; init; } = null!;
     public string MappedCompanyAttribute { get; init; } = null!;
     public string ServiceAccountClientPrefix { get; init; } = null!;
+    public Client ServiceAccountClient { get; init; } = null!;
+    public Realm SharedRealm { get; init; } = null!;
+    public Client SharedRealmClient { get; init; } = null!;
 
-    public IdpCreationSettings ValidateIdpCreationSettings()
+    public IdpManagementSettings ValidateIdpCreationSettings()
     {
-        new ConfigurationValidation<IdpCreationSettings>()
+        new ConfigurationValidation<IdpManagementSettings>()
             .NotNullOrWhiteSpace(CentralRealm, () => nameof(CentralRealm))
             .NotNullOrWhiteSpace(IdpPrefix, () => nameof(IdpPrefix))
             .NotNull(CentralIdentityProvider, () => nameof(CentralIdentityProvider))
@@ -70,7 +70,7 @@ public static class IdpCreationSettingsExtensions
     public static IServiceCollection ConfigureIdpCreationSettings(
         this IServiceCollection services,
         IConfigurationSection section) =>
-        services.Configure<IdpCreationSettings>(x =>
+        services.Configure<IdpManagementSettings>(x =>
         {
             section.Bind(x);
             x.ValidateIdpCreationSettings();

@@ -1,6 +1,5 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
-- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+- Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -19,8 +18,8 @@
 -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests</AssemblyName>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests</RootNamespace>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library.Tests</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library.Tests</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -45,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
-    <ProjectReference Include="..\..\..\src\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
-    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\src\externalsystems\Provisioning.Library\Provisioning.Library.csproj" />
+    <ProjectReference Include="..\..\provisioning\Provisioning.Library.Tests\Provisioning.Library.Tests.csproj" />
   </ItemGroup>
 </Project>

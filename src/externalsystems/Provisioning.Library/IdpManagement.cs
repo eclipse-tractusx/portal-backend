@@ -43,15 +43,15 @@ public class IdpManagement : IIdpManagement
 
     private readonly IKeycloakFactory _factory;
     private readonly KeycloakClient _centralIdp;
-    private readonly IdpCreationSettings _settings;
+    private readonly IdpManagementSettings _settings;
     private readonly IProvisioningDBAccess? _provisioningDbAccess;
 
-    public IdpManagement(IKeycloakFactory keycloakFactory, IProvisioningDBAccess? provisioningDBAccess, IOptions<IdpCreationSettings> options)
+    public IdpManagement(IKeycloakFactory keycloakFactory, IProvisioningDBAccess provisioningDBAccess, IOptions<IdpManagementSettings> options)
     {
         _factory = keycloakFactory;
         _centralIdp = keycloakFactory.CreateKeycloakClient("central");
-        _settings = options.Value;
         _provisioningDbAccess = provisioningDBAccess;
+        _settings = options.Value;
     }
 
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
@@ -164,8 +164,11 @@ public class IdpManagement : IIdpManagement
             .ToString();
     }
 
-    private async Task<string> GetCentralRealmJwksUrlAsync() =>
-        (await _centralIdp.GetOpenIDConfigurationAsync(_settings.CentralRealm).ConfigureAwait(false)).JwksUri.ToString();
+    private async Task<string> GetCentralRealmJwksUrlAsync()
+    {
+        var config = await _centralIdp.GetOpenIDConfigurationAsync(_settings.CentralRealm).ConfigureAwait(false);
+        return config.JwksUri.ToString();
+    }
 
     public async ValueTask EnableCentralIdentityProviderAsync(string alias)
     {
