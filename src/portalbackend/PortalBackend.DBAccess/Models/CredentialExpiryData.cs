@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,16 +23,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CredentialExpiryData(
     Guid Id,
-    DateTimeOffset DateCreated,
-    DateTimeOffset ExpiryDate,
+    DateTimeOffset? ExpiryDate,
     ExpiryCheckTypeId? ExpiryCheckTypeId,
     string? DetailVersion,
     CompanySsiDetailStatusId CompanySsiDetailStatusId,
     VerifiedCredentialTypeId VerifiedCredentialTypeId,
+    CredentialScheduleData ScheduleData,
     UserMailingData UserMailingData);
 
 public record UserMailingData(
     Guid Id,
     string? Email,
     string? Firstname,
-    string? Lastname);
+    string? Lastname
+);
+
+public record CredentialScheduleData(
+    bool IsVcToDelete,
+    bool IsOneDayNotification,
+    bool IsTwoWeeksNotification,
+    bool IsOneMonthNotification,
+    bool IsVcToDecline
+);

@@ -242,22 +242,26 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
     public IAsyncEnumerable<CredentialExpiryData> GetExpiryData(DateTimeOffset now, DateTimeOffset inactiveVcsToDelete, DateTimeOffset expiredVcsToDelete) =>
         _context.CompanySsiDetails
             .Where(x =>
+                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING && x.VerifiedCredentialExternalTypeDetailVersion!.Expiry < now) ||
                 (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE && x.DateCreated < inactiveVcsToDelete) ||
                 ((x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE || x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE) && x.ExpiryDate < expiredVcsToDelete) ||
-                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING && x.ExpiryDate < now) ||
-                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE &&
-                    (x.ExpiryDate <= now.AddDays(1) && x.ExpiryCheckTypeId != ExpiryCheckTypeId.ONE_DAY) ||
-                    (x.ExpiryDate <= now.AddDays(14) && x.ExpiryCheckTypeId != ExpiryCheckTypeId.TWO_WEEKS) ||
-                    (x.ExpiryDate <= now.AddMonths(2) && x.ExpiryCheckTypeId == null)
-                ))
+                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE && x.ExpiryDate <= now.AddDays(1) && (x.ExpiryCheckTypeId == ExpiryCheckTypeId.TWO_WEEKS || x.ExpiryCheckTypeId == null)) ||
+                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE && x.ExpiryDate <= now.AddDays(14) && (x.ExpiryCheckTypeId == ExpiryCheckTypeId.ONE_MONTH || x.ExpiryCheckTypeId == null)) ||
+                (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE && x.ExpiryDate <= now.AddMonths(2) && x.ExpiryCheckTypeId == null))
             .Select(x => new CredentialExpiryData(
                 x.Id,
-                x.DateCreated,
-                x.ExpiryDate!.Value,
+                x.ExpiryDate,
                 x.ExpiryCheckTypeId,
                 x.VerifiedCredentialExternalTypeDetailVersion!.Version,
                 x.CompanySsiDetailStatusId,
                 x.VerifiedCredentialTypeId,
+                new CredentialScheduleData(
+                    (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE && x.DateCreated < inactiveVcsToDelete) || (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE || x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE) && x.ExpiryDate < expiredVcsToDelete,
+                    x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE && x.ExpiryDate <= now.AddDays(1) && (x.ExpiryCheckTypeId == ExpiryCheckTypeId.TWO_WEEKS || x.ExpiryCheckTypeId == null),
+                    x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE && x.ExpiryDate <= now.AddDays(14) && (x.ExpiryCheckTypeId == ExpiryCheckTypeId.ONE_MONTH || x.ExpiryCheckTypeId == null),
+                    x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE && x.ExpiryDate <= now.AddMonths(2) && x.ExpiryCheckTypeId == null,
+                    x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING && x.VerifiedCredentialExternalTypeDetailVersion!.Expiry < now
+                ),
                 new UserMailingData(
                     x.CreatorUserId,
                     x.CreatorUser!.Email,

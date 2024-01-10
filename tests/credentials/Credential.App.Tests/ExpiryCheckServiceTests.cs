@@ -92,36 +92,12 @@ public class ExpiryCheckServiceTests
         var now = DateTimeOffset.UtcNow;
         var inactiveVcsToDelete = now.AddDays(-(_settings.InactiveVcsToDeleteInWeeks * 7));
         var credentialId = Guid.NewGuid();
+        var credentialScheduleData = _fixture.Build<CredentialScheduleData>()
+            .With(x => x.IsVcToDelete, true)
+            .Create();
         var data = new CredentialExpiryData[]
         {
-            new(credentialId, inactiveVcsToDelete.AddDays(-1), now.AddMonths(12), null, null, CompanySsiDetailStatusId.INACTIVE, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, _fixture.Create<UserMailingData>())
-        };
-        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companySsiDetailsRepository.GetExpiryData(A<DateTimeOffset>._, A<DateTimeOffset>._, A<DateTimeOffset>._))
-            .Returns(data.ToAsyncEnumerable());
-
-        // Act
-        await _sut.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
-        A.CallTo(() => _companySsiDetailsRepository.RemoveSsiDetail(credentialId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-    }
-
-    [Theory]
-    [InlineData(CompanySsiDetailStatusId.ACTIVE)]
-    [InlineData(CompanySsiDetailStatusId.INACTIVE)]
-    public async Task ExecuteAsync_WithExpiredEligibleForDeletion_RemovesEntry(CompanySsiDetailStatusId statusId)
-    {
-        // Arrange
-        var now = DateTimeOffset.UtcNow;
-        var inactiveVcsToDelete = now.AddDays(-(_settings.InactiveVcsToDeleteInWeeks * 7));
-        var expiredVcsToDeleteInMonth = now.AddMonths(-_settings.ExpiredVcsToDeleteInMonth);
-        var credentialId = Guid.NewGuid();
-        var data = new CredentialExpiryData[]
-        {
-            new(credentialId, inactiveVcsToDelete.AddDays(3), expiredVcsToDeleteInMonth.AddDays(-3), null, null, statusId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, _fixture.Create<UserMailingData>())
+            new(credentialId, inactiveVcsToDelete.AddDays(-1), null, null, CompanySsiDetailStatusId.INACTIVE, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE,  credentialScheduleData, _fixture.Create<UserMailingData>())
         };
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
         A.CallTo(() => _companySsiDetailsRepository.GetExpiryData(A<DateTimeOffset>._, A<DateTimeOffset>._, A<DateTimeOffset>._))
@@ -148,11 +124,14 @@ public class ExpiryCheckServiceTests
         {
             ExpiryDate = expiredVcsToDeleteInMonth.AddDays(-2)
         };
+        var credentialScheduleData = _fixture.Build<CredentialScheduleData>()
+            .With(x => x.IsVcToDecline, true)
+            .Create();
         var userId = Guid.NewGuid();
         var userMailingData = new UserMailingData(userId, email, "Test", "User");
         var data = new CredentialExpiryData[]
         {
-            new(ssiDetail.Id, ssiDetail.DateCreated, ssiDetail.ExpiryDate.Value, ssiDetail.ExpiryCheckTypeId, null, ssiDetail.CompanySsiDetailStatusId, ssiDetail.VerifiedCredentialTypeId, userMailingData)
+            new(ssiDetail.Id, ssiDetail.ExpiryDate.Value, ssiDetail.ExpiryCheckTypeId, null, ssiDetail.CompanySsiDetailStatusId, ssiDetail.VerifiedCredentialTypeId, credentialScheduleData, userMailingData)
         };
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
         A.CallTo(() => _companySsiDetailsRepository.GetExpiryData(A<DateTimeOffset>._, A<DateTimeOffset>._, A<DateTimeOffset>._))
@@ -200,11 +179,17 @@ public class ExpiryCheckServiceTests
             ExpiryDate = now.AddDays(-days),
             ExpiryCheckTypeId = currentExpiryCheckTypeId
         };
+        var credentialScheduleData = _fixture.Build<CredentialScheduleData>()
+            .With(x => x.IsVcToDecline, false)
+            .With(x => x.IsOneDayNotification, expiryCheckTypeId == ExpiryCheckTypeId.ONE_DAY)
+            .With(x => x.IsTwoWeeksNotification, expiryCheckTypeId == ExpiryCheckTypeId.TWO_WEEKS)
+            .With(x => x.IsOneMonthNotification, expiryCheckTypeId == ExpiryCheckTypeId.ONE_MONTH)
+            .Create();
         var userId = Guid.NewGuid();
         var userMailingData = new UserMailingData(userId, email, "Test", "User");
         var data = new CredentialExpiryData[]
         {
-            new(ssiDetail.Id, ssiDetail.DateCreated, ssiDetail.ExpiryDate.Value, ssiDetail.ExpiryCheckTypeId, null, ssiDetail.CompanySsiDetailStatusId, ssiDetail.VerifiedCredentialTypeId, userMailingData)
+            new(ssiDetail.Id, ssiDetail.ExpiryDate.Value, ssiDetail.ExpiryCheckTypeId, null, ssiDetail.CompanySsiDetailStatusId, ssiDetail.VerifiedCredentialTypeId, credentialScheduleData, userMailingData)
         };
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
         A.CallTo(() => _companySsiDetailsRepository.GetExpiryData(A<DateTimeOffset>._, A<DateTimeOffset>._, A<DateTimeOffset>._))

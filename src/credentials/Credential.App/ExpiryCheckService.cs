@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class ExpiryCheckService
             var credentials = companySsiDetailsRepository.GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete);
             await foreach (var credential in credentials.WithCancellation(stoppingToken))
             {
-                await ProcessCredentials(credential, inactiveVcsToDelete, expiredVcsToDelete, companySsiDetailsRepository, now, mailingService, notificationRepository, portalRepositories);
+                await ProcessCredentials(credential, companySsiDetailsRepository, mailingService, notificationRepository, portalRepositories);
             }
         }
         catch (Exception ex)
@@ -96,26 +96,22 @@ public class ExpiryCheckService
 
     private static async Task ProcessCredentials(
         CredentialExpiryData data,
-        DateTimeOffset inactiveVcsToDelete,
-        DateTimeOffset expiredVcsToDelete,
         ICompanySsiDetailsRepository companySsiDetailsRepository,
-        DateTimeOffset now,
         IMailingService mailingService,
         INotificationRepository notificationRepository,
         IPortalRepositories portalRepositories)
     {
-        switch (data.CompanySsiDetailStatusId)
+        if (data.ScheduleData.IsVcToDelete)
         {
-            case CompanySsiDetailStatusId.INACTIVE when data.DateCreated < inactiveVcsToDelete:
-            case CompanySsiDetailStatusId.ACTIVE or CompanySsiDetailStatusId.INACTIVE when data.ExpiryDate < expiredVcsToDelete:
-                companySsiDetailsRepository.RemoveSsiDetail(data.Id);
-                break;
-            case CompanySsiDetailStatusId.PENDING when data.ExpiryDate < now:
-                await HandleDecline(data, mailingService, companySsiDetailsRepository, notificationRepository).ConfigureAwait(false);
-                break;
-            default:
-                await HandleNotification(data, now, mailingService, companySsiDetailsRepository, notificationRepository).ConfigureAwait(false);
-                break;
+            companySsiDetailsRepository.RemoveSsiDetail(data.Id);
+        }
+        else if (data.ScheduleData.IsVcToDecline)
+        {
+            await HandleDecline(data, mailingService, companySsiDetailsRepository, notificationRepository).ConfigureAwait(false);
+        }
+        else
+        {
+            await HandleNotification(data, mailingService, companySsiDetailsRepository, notificationRepository).ConfigureAwait(false);
         }
 
         // Saving here to make sure the each credential is handled by there own 
@@ -147,7 +143,7 @@ public class ExpiryCheckService
             var userName = string.Join(" ", new[] { data.UserMailingData.Firstname, data.UserMailingData.Lastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
             var mailParameters = new Dictionary<string, string>
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : email },
+                { "userName", string.IsNullOrWhiteSpace(userName) ? email : userName },
                 { "requestName", typeValue },
                 { "reason", "The credential is already expired" }
             };
@@ -156,25 +152,22 @@ public class ExpiryCheckService
         }
     }
 
-    private static async ValueTask HandleNotification(CredentialExpiryData data, DateTimeOffset now, IMailingService mailingService, ICompanySsiDetailsRepository companySsiDetailsRepository, INotificationRepository notificationRepository)
+    private static async ValueTask HandleNotification(CredentialExpiryData data, IMailingService mailingService, ICompanySsiDetailsRepository companySsiDetailsRepository, INotificationRepository notificationRepository)
     {
-        ExpiryCheckTypeId? newExpiryCheckTypeId = null;
-        if (data.ExpiryDate.AddDays(-1) <= now && data.ExpiryCheckTypeId != ExpiryCheckTypeId.ONE_DAY)
+        ExpiryCheckTypeId? newExpiryCheckTypeId;
+        if (data.ScheduleData.IsOneDayNotification)
         {
             newExpiryCheckTypeId = ExpiryCheckTypeId.ONE_DAY;
         }
-
-        if (data.ExpiryDate.AddDays(-14) <= now && data.ExpiryCheckTypeId != ExpiryCheckTypeId.TWO_WEEKS)
+        else if (data.ScheduleData.IsTwoWeeksNotification)
         {
             newExpiryCheckTypeId = ExpiryCheckTypeId.TWO_WEEKS;
         }
-
-        if (data.ExpiryDate.AddMonths(-1) <= now && data.ExpiryCheckTypeId == null)
+        else if (data.ScheduleData.IsOneMonthNotification)
         {
             newExpiryCheckTypeId = ExpiryCheckTypeId.ONE_MONTH;
         }
-
-        if (newExpiryCheckTypeId == null)
+        else
         {
             return;
         }
@@ -193,7 +186,7 @@ public class ExpiryCheckService
         var content = JsonSerializer.Serialize(new
         {
             Type = data.VerifiedCredentialTypeId,
-            ExpiryDate = data.ExpiryDate.ToString("O"),
+            ExpiryDate = data.ExpiryDate?.ToString("O") ?? throw new ConflictException("Expiry Date must be set here"),
             Version = data.DetailVersion,
             CredentialId = data.Id,
             ExpiryCheckTypeId = newExpiryCheckTypeId
@@ -211,10 +204,10 @@ public class ExpiryCheckService
             var userName = string.Join(" ", new[] { data.UserMailingData.Firstname, data.UserMailingData.Lastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
             var mailParameters = new Dictionary<string, string>
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : email },
+                { "userName", string.IsNullOrWhiteSpace(userName) ? email : userName },
                 { "typeId", typeValue },
                 { "version", data.DetailVersion ?? "no version" },
-                { "expiryDate", data.ExpiryDate.ToString("dd MMMM yyyy") }
+                { "expiryDate", data.ExpiryDate?.ToString("dd MMMM yyyy") ?? throw new ConflictException("Expiry Date must be set here") }
             };
 
             await mailingService.SendMails(email, mailParameters, Enumerable.Repeat("CredentialExpiry", 1)).ConfigureAwait(false);

@@ -408,7 +408,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
         var userId = _identityData.IdentityId;
         var (exists, data) = await companySsiRepository.GetSsiApprovalData(credentialId).ConfigureAwait(false);
-        var (bpn, detailData) = ValidateApprovalData(credentialId, exists, data);
+        var (bpn, externalTypeId, template, version, dataExpiryDate) = ValidateApprovalData(credentialId, exists, data);
 
         var typeValue = data.Type.GetEnumValue() ?? throw UnexpectedConditionException.Create(CompanyDataErrors.CREDENTIAL_TYPE_NOT_FOUND, new ErrorParameter[] { new("verifiedCredentialType", data.Type.ToString()) });
         var content = JsonSerializer.Serialize(new { Type = data.Type, CredentialId = credentialId }, Options);
@@ -418,7 +418,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             n.Content = content;
         });
 
-        var expiryDate = GetExpiryDate(detailData.ExpiryDate);
+        var expiryDate = GetExpiryDate(dataExpiryDate);
         companySsiRepository.AttachAndModifyCompanySsiDetails(credentialId, c =>
             {
                 c.CompanySsiDetailStatusId = data.Status;
@@ -437,9 +437,9 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 new CustodianFrameworkRequest
                 (
                     bpn,
-                    detailData.VerifiedCredentialExternalTypeId,
-                    detailData.Template,
-                    detailData.Version!,
+                    externalTypeId,
+                    template,
+                    version ?? throw ConflictException.Create(CompanyDataErrors.EMPTY_VERSION),
                     expiryDate
                 ), cancellationToken).ConfigureAwait(false);
         }
@@ -468,7 +468,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             Enumerable.Repeat("CredentialApproval", 1)).ConfigureAwait(false);
     }
 
-    private static (string Bpn, DetailData DetailData) ValidateApprovalData(Guid credentialId, bool exists, SsiApprovalData data)
+    private static (string Bpn, VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId, string? Template, string? Version, DateTimeOffset ExpiryDate) ValidateApprovalData(Guid credentialId, bool exists, SsiApprovalData data)
     {
         if (!exists)
         {
@@ -490,6 +490,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw ConflictException.Create(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_ID_NOT_SET);
         }
 
+        var (externalTypeId, template, version, expiryDate) = data.DetailData;
         if (data.Kind != VerifiedCredentialTypeKindId.USE_CASE && data.Kind != VerifiedCredentialTypeKindId.CERTIFICATE)
         {
             throw ConflictException.Create(CompanyDataErrors.KIND_NOT_SUPPORTED, new ErrorParameter[] { new("kind", data.Kind != null ? data.Kind.Value.ToString() : "empty kind") });
@@ -500,7 +501,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw ConflictException.Create(CompanyDataErrors.EMPTY_VERSION);
         }
 
-        return (data.Bpn, data.DetailData);
+        return (data.Bpn, externalTypeId, template, version, expiryDate);
     }
 
     private DateTimeOffset GetExpiryDate(DateTimeOffset expiryDate)

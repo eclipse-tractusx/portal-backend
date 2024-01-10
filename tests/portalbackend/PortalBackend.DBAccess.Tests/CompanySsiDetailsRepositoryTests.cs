@@ -494,8 +494,8 @@ public class CompanySsiDetailsRepositoryTests
         var result = await sut.GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(7);
-        result.Where(x => x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING).Should().HaveCount(4);
+        result.Should().HaveCount(6);
+        result.Where(x => x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING).Should().HaveCount(3);
         result.Where(x => x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE).Should().HaveCount(3);
     }
 
