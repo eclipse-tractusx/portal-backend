@@ -19,13 +19,13 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Credential.App;
+using Org.Eclipse.TractusX.Portal.Backend.Credential.App.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.Eclipse.TractusX.Portal.Backend.VerifiedCredential.App;
-using Org.Eclipse.TractusX.Portal.Backend.VerifiedCredential.App.DependencyInjection;
 using Serilog;
 
 LoggingExtensions.EnsureInitialized();

@@ -240,9 +240,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.ProcessIdentity.T
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "credentials", "credentials", "{9362B621-A41D-43EF-AB00-5E78114CDC61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VerifiedCredential.App", "credentials\VerifiedCredential.App\VerifiedCredential.App.csproj", "{7AC81FFD-D6B3-49B9-899A-173ACDA9B0D3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Credential.App", "credentials\Credential.App\Credential.App.csproj", "{7AC81FFD-D6B3-49B9-899A-173ACDA9B0D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VerifiedCredential.App.Tests", "..\tests\credentials\VerifiedCredential.App.Tests\VerifiedCredential.App.Tests.csproj", "{ECFD047A-00E4-4B4C-A3A2-8C9567061EC0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Credential.App.Tests", "..\tests\credentials\Credential.App.Tests\Credential.App.Tests.csproj", "{ECFD047A-00E4-4B4C-A3A2-8C9567061EC0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

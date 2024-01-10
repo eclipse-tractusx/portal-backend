@@ -45,6 +45,8 @@ public class CompanyDataErrorMessageContainer : IErrorMessageContainer
         { CompanyDataErrors.CREDENTIAL_NOT_PENDING, "Credential {credentialId} must be {status}" },
         { CompanyDataErrors.BPN_NOT_SET, "Bpn should be set for company {companyName}" },
         { CompanyDataErrors.EXPIRY_DATE_NOT_SET, "Expiry date must always be set for use cases" },
+        { CompanyDataErrors.EMPTY_VERSION, "External Detail Version must not be null" },
+        { CompanyDataErrors.KIND_NOT_SUPPORTED, "{kind} is currently not supported"}
     }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(CompanyDataErrors); }
@@ -72,5 +74,7 @@ public enum CompanyDataErrors
     SSI_DETAILS_NOT_FOUND,
     CREDENTIAL_NOT_PENDING,
     BPN_NOT_SET,
-    EXPIRY_DATE_NOT_SET
+    EXPIRY_DATE_NOT_SET,
+    EMPTY_VERSION,
+    KIND_NOT_SUPPORTED
 }

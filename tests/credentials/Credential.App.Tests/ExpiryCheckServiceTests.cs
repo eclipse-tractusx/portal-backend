@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,6 +21,8 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Credential.App;
+using Org.Eclipse.TractusX.Portal.Backend.Credential.App.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -29,10 +31,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.VerifiedCredential.App;
-using Org.Eclipse.TractusX.Portal.Backend.VerifiedCredential.App.DependencyInjection;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.VerifiedCredentials.App.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Credentials.App.Tests;
 
 public class ExpiryCheckServiceTests
 {
@@ -185,12 +185,12 @@ public class ExpiryCheckServiceTests
     }
 
     [Theory]
-    [InlineData(null, 1, ExpiryCheckTypeId.OneDay, ExpiryCheckTypeId.TwoWeeks)]
-    [InlineData("test@example.org", 1, ExpiryCheckTypeId.OneDay, ExpiryCheckTypeId.TwoWeeks)]
-    [InlineData(null, 13, ExpiryCheckTypeId.TwoWeeks, ExpiryCheckTypeId.OneMonth)]
-    [InlineData("test@example.org", 13, ExpiryCheckTypeId.TwoWeeks, ExpiryCheckTypeId.OneMonth)]
-    [InlineData(null, 27, ExpiryCheckTypeId.OneMonth, null)]
-    [InlineData("test@example.org", 27, ExpiryCheckTypeId.OneMonth, null)]
+    [InlineData(null, 1, ExpiryCheckTypeId.ONE_DAY, ExpiryCheckTypeId.TWO_WEEKS)]
+    [InlineData("test@example.org", 1, ExpiryCheckTypeId.ONE_DAY, ExpiryCheckTypeId.TWO_WEEKS)]
+    [InlineData(null, 13, ExpiryCheckTypeId.TWO_WEEKS, ExpiryCheckTypeId.ONE_MONTH)]
+    [InlineData("test@example.org", 13, ExpiryCheckTypeId.TWO_WEEKS, ExpiryCheckTypeId.ONE_MONTH)]
+    [InlineData(null, 27, ExpiryCheckTypeId.ONE_MONTH, null)]
+    [InlineData("test@example.org", 27, ExpiryCheckTypeId.ONE_MONTH, null)]
     public async Task ExecuteAsync_WithActiveCloseToExpiry_NotifiesCreator(string? email, int days, ExpiryCheckTypeId expiryCheckTypeId, ExpiryCheckTypeId? currentExpiryCheckTypeId)
     {
         // Arrange

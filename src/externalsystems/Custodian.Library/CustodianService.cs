@@ -119,20 +119,11 @@ public class CustodianService : ICustodianService
     }
 
     /// <inheritdoc />
-    public async Task TriggerFrameworkAsync(string bpn, DetailData detailData, DateTimeOffset expiryDate, CancellationToken cancellationToken)
+    public async Task TriggerFrameworkAsync(CustodianFrameworkRequest requestData, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        var requestBody = new CustodianFrameworkRequest
-        (
-            bpn,
-            detailData.VerifiedCredentialExternalTypeId,
-            detailData.Template!,
-            detailData.Version!,
-            expiryDate
-        );
-
-        await httpClient.PostAsJsonAsync("/api/credentials/issuer/framework", requestBody, Options, cancellationToken)
+        await httpClient.PostAsJsonAsync("/api/credentials/issuer/framework", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-framework-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 

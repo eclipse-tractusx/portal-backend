@@ -1,6 +1,6 @@
 ## Notice for Docker image
 
-DockerHub: [https://hub.docker.com/r/tractusx/portal-credential-service](https://hub.docker.com/r/tractusx/portal-maintenance-service)
+DockerHub: [https://hub.docker.com/r/tractusx/portal-credential-service](https://hub.docker.com/r/tractusx/portal-credential-service)
 
 Eclipse Tractus-X product(s) installed within the image:
 

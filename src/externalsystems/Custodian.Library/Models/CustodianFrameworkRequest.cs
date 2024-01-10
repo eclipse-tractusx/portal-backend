@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 public record CustodianFrameworkRequest(
     [property: JsonPropertyName("holderIdentifier")] string HolderIdentifier,
     [property: JsonPropertyName("type"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialExternalTypeId>))] VerifiedCredentialExternalTypeId Type,
-    [property: JsonPropertyName("contract-template")] string Template,
+    [property: JsonPropertyName("contract-template")] string? Template,
     [property: JsonPropertyName("contract-version")] string Version,
     [property: JsonPropertyName("expiry")] DateTimeOffset Expiry
 );

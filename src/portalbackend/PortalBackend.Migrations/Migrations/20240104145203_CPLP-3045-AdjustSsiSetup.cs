@@ -168,9 +168,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
-                    { 1, "OneMonth" },
-                    { 2, "TwoWeeks" },
-                    { 3, "OneDay" }
+                    { 1, "ONE_MONTH" },
+                    { 2, "TWO_WEEKS" },
+                    { 3, "ONE_DAY" }
                 });
 
             migrationBuilder.InsertData(

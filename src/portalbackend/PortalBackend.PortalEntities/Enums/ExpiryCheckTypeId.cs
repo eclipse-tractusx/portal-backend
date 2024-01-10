@@ -21,7 +21,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum ExpiryCheckTypeId
 {
-    OneMonth = 1,
-    TwoWeeks = 2,
-    OneDay = 3
+    ONE_MONTH = 1,
+    TWO_WEEKS = 2,
+    ONE_DAY = 3
 }

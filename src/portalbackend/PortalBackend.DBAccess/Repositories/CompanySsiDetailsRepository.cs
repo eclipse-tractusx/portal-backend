@@ -246,8 +246,8 @@ public class CompanySsiDetailsRepository : ICompanySsiDetailsRepository
                 ((x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE || x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.INACTIVE) && x.ExpiryDate < expiredVcsToDelete) ||
                 (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.PENDING && x.ExpiryDate < now) ||
                 (x.CompanySsiDetailStatusId == CompanySsiDetailStatusId.ACTIVE &&
-                    (x.ExpiryDate <= now.AddDays(1) && x.ExpiryCheckTypeId != ExpiryCheckTypeId.OneDay) ||
-                    (x.ExpiryDate <= now.AddDays(14) && x.ExpiryCheckTypeId != ExpiryCheckTypeId.TwoWeeks) ||
+                    (x.ExpiryDate <= now.AddDays(1) && x.ExpiryCheckTypeId != ExpiryCheckTypeId.ONE_DAY) ||
+                    (x.ExpiryDate <= now.AddDays(14) && x.ExpiryCheckTypeId != ExpiryCheckTypeId.TWO_WEEKS) ||
                     (x.ExpiryDate <= now.AddMonths(2) && x.ExpiryCheckTypeId == null)
                 ))
             .Select(x => new CredentialExpiryData(

@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -1205,7 +1206,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, A<DateTimeOffset>._, A<CancellationToken>._))
+        A.CallTo(() => _custodianService.TriggerFrameworkAsync(A<CustodianFrameworkRequest>.That.Matches(x => x.HolderIdentifier == bpn), A<CancellationToken>._))
             .MustNotHaveHappened();
     }
 
@@ -1269,14 +1270,14 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
         {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, expectedExpiry, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerFrameworkAsync(A<CustodianFrameworkRequest>.That.Matches(x => x.HolderIdentifier == bpn && x.Expiry == expectedExpiry), A<CancellationToken>._))
                 .MustHaveHappenedOnceExactly();
             A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustNotHaveHappened();
         }
         else
         {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, expectedExpiry, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerFrameworkAsync(A<CustodianFrameworkRequest>.That.Matches(x => x.HolderIdentifier == bpn && x.Expiry == expectedExpiry), A<CancellationToken>._))
                 .MustNotHaveHappened();
             A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustHaveHappenedOnceExactly();
@@ -1374,7 +1375,7 @@ public class CompanyDataBusinessLogicTests
 
         A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, A<DateTimeOffset>._, A<CancellationToken>._))
+        A.CallTo(() => _custodianService.TriggerFrameworkAsync(A<CustodianFrameworkRequest>.That.Matches(x => x.HolderIdentifier == bpn), A<CancellationToken>._))
             .MustNotHaveHappened();
         ex.Message.Should().Be(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_ID_NOT_SET.ToString());
     }
@@ -1438,14 +1439,14 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
         {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, A<DateTimeOffset>._, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerFrameworkAsync(A<CustodianFrameworkRequest>.That.Matches(x => x.HolderIdentifier == bpn), A<CancellationToken>._))
                 .MustHaveHappenedOnceExactly();
             A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustNotHaveHappened();
         }
         else
         {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<DetailData>._, A<DateTimeOffset>._, A<CancellationToken>._))
+            A.CallTo(() => _custodianService.TriggerFrameworkAsync(A<CustodianFrameworkRequest>.That.Matches(x => x.HolderIdentifier == bpn), A<CancellationToken>._))
                 .MustNotHaveHappened();
             A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<DateTimeOffset>._, A<CancellationToken>._))
                 .MustHaveHappenedOnceExactly();

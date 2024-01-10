@@ -496,18 +496,18 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/credentials/VerifiedCredential.App
+        run: dotnet restore src/credentials/Credential.App
 
       - name: Build and publish
         run: |
-          cd src/credentials/VerifiedCredential.App
+          cd src/credentials/Credential.App
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-credential-service.zip
-          src/credentials/VerifiedCredential.App/.publish
+          src/credentials/Credential.App/.publish
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1

@@ -4346,17 +4346,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 1,
-                            Label = "OneMonth"
+                            Label = "ONE_MONTH"
                         },
                         new
                         {
                             Id = 2,
-                            Label = "TwoWeeks"
+                            Label = "TWO_WEEKS"
                         },
                         new
                         {
                             Id = 3,
-                            Label = "OneDay"
+                            Label = "ONE_DAY"
                         });
                 });
 

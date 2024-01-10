@@ -19,7 +19,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.VerifiedCredential.App.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Credential.App.DependencyInjection;
 
 /// <summary>
 /// Settings for the ExpiryCheckService

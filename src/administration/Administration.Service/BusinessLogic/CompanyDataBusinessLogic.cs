@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -34,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Globalization;
@@ -318,7 +320,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw ControllerArgumentException.Create(CompanyDataErrors.CREDENTIAL_NO_CERTIFICATE, new ErrorParameter[] { new("credentialTypeId", credentialTypeId.ToString()) });
         }
 
-        if (verifiedCredentialExternalTypeDetailId == null && detailVersionIds.Count() > 1)
+        if (verifiedCredentialExternalTypeDetailId == null && detailVersionIds.Count() != 1)
         {
             throw ControllerArgumentException.Create(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_ID_NOT_SET, Enumerable.Empty<ErrorParameter>(), nameof(data.VerifiedCredentialExternalTypeDetailId));
         }
@@ -392,7 +394,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                             : new ExternalTypeDetailData(
                                 c.VerifiedCredentialExternalTypeDetailVersion.Id,
                                 c.VerifiedCredentialExternalTypeDetailVersion.VerifiedCredentialExternalTypeId,
-                                c.VerifiedCredentialExternalTypeDetailVersion.Version!,
+                                c.VerifiedCredentialExternalTypeDetailVersion.Version,
                                 c.VerifiedCredentialExternalTypeDetailVersion.Template,
                                 c.VerifiedCredentialExternalTypeDetailVersion.ValidFrom,
                                 c.VerifiedCredentialExternalTypeDetailVersion.Expiry))
@@ -429,16 +431,21 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 c.ExpiryDate = expiryDate;
             });
 
-        switch (data.Kind)
+        if (data.Kind == VerifiedCredentialTypeKindId.USE_CASE)
         {
-            case VerifiedCredentialTypeKindId.USE_CASE:
-                await _custodianService.TriggerFrameworkAsync(bpn, detailData, expiryDate, cancellationToken).ConfigureAwait(false);
-                break;
-            case VerifiedCredentialTypeKindId.CERTIFICATE:
-                await _custodianService.TriggerDismantlerAsync(bpn, data.Type, expiryDate, cancellationToken).ConfigureAwait(false);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException($"{data.Kind} is currently not supported");
+            await _custodianService.TriggerFrameworkAsync(
+                new CustodianFrameworkRequest
+                (
+                    bpn,
+                    detailData.VerifiedCredentialExternalTypeId,
+                    detailData.Template,
+                    detailData.Version!,
+                    expiryDate
+                ), cancellationToken).ConfigureAwait(false);
+        }
+        else if (data.Kind == VerifiedCredentialTypeKindId.CERTIFICATE)
+        {
+            await _custodianService.TriggerDismantlerAsync(bpn, data.Type, expiryDate, cancellationToken).ConfigureAwait(false);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -482,6 +489,17 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             throw ConflictException.Create(CompanyDataErrors.EXTERNAL_TYPE_DETAIL_ID_NOT_SET);
         }
+
+        if (data.Kind != VerifiedCredentialTypeKindId.USE_CASE && data.Kind != VerifiedCredentialTypeKindId.CERTIFICATE)
+        {
+            throw ConflictException.Create(CompanyDataErrors.KIND_NOT_SUPPORTED, new ErrorParameter[] { new("kind", data.Kind != null ? data.Kind.Value.ToString() : "empty kind") });
+        }
+
+        if (data.Kind == VerifiedCredentialTypeKindId.USE_CASE && string.IsNullOrWhiteSpace(data.DetailData.Version))
+        {
+            throw ConflictException.Create(CompanyDataErrors.EMPTY_VERSION);
+        }
+
         return (data.Bpn, data.DetailData);
     }
 

@@ -22,7 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.VerifiedCredential.App.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Credential.App.DependencyInjection;
 
 /// <summary>
 /// Extension method to register the expiry check service and dependent services

@@ -20,6 +20,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Credential.App.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -29,10 +30,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.VerifiedCredential.App.DependencyInjection;
 using System.Text.Json;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.VerifiedCredential.App;
+namespace Org.Eclipse.TractusX.Portal.Backend.Credential.App;
 
 /// <summary>
 /// Service to delete the pending and inactive documents as well as the depending consents from the database
@@ -66,34 +66,31 @@ public class ExpiryCheckService
     /// <param name="stoppingToken">Cancellation Token</param>
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!stoppingToken.IsCancellationRequested)
+        try
         {
-            try
-            {
-                using var processServiceScope = _serviceScopeFactory.CreateScope();
-                var portalRepositories = processServiceScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
-                var dateTimeProvider = processServiceScope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
-                var mailingService = processServiceScope.ServiceProvider.GetRequiredService<IMailingService>();
-                var processIdentityDataDetermination = processServiceScope.ServiceProvider.GetRequiredService<IProcessIdentityDataDetermination>();
-                //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
-                await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(false);
+            using var processServiceScope = _serviceScopeFactory.CreateScope();
+            var portalRepositories = processServiceScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
+            var dateTimeProvider = processServiceScope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
+            var mailingService = processServiceScope.ServiceProvider.GetRequiredService<IMailingService>();
+            var processIdentityDataDetermination = processServiceScope.ServiceProvider.GetRequiredService<IProcessIdentityDataDetermination>();
+            //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
+            await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(false);
 
-                var now = dateTimeProvider.OffsetNow;
-                var companySsiDetailsRepository = portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
-                var notificationRepository = portalRepositories.GetInstance<INotificationRepository>();
-                var inactiveVcsToDelete = now.AddDays(-(_settings.InactiveVcsToDeleteInWeeks * 7));
-                var expiredVcsToDelete = now.AddMonths(-_settings.ExpiredVcsToDeleteInMonth);
-                var credentials = companySsiDetailsRepository.GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete);
-                await foreach (var credential in credentials)
-                {
-                    await ProcessCredentials(credential, inactiveVcsToDelete, expiredVcsToDelete, companySsiDetailsRepository, now, mailingService, notificationRepository, portalRepositories);
-                }
-            }
-            catch (Exception ex)
+            var now = dateTimeProvider.OffsetNow;
+            var companySsiDetailsRepository = portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
+            var notificationRepository = portalRepositories.GetInstance<INotificationRepository>();
+            var inactiveVcsToDelete = now.AddDays(-(_settings.InactiveVcsToDeleteInWeeks * 7));
+            var expiredVcsToDelete = now.AddMonths(-_settings.ExpiredVcsToDeleteInMonth);
+            var credentials = companySsiDetailsRepository.GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete);
+            await foreach (var credential in credentials.WithCancellation(stoppingToken))
             {
-                Environment.ExitCode = 1;
-                _logger.LogError("Verified Credential expiry check failed with: {Errors}", ex.Message);
+                await ProcessCredentials(credential, inactiveVcsToDelete, expiredVcsToDelete, companySsiDetailsRepository, now, mailingService, notificationRepository, portalRepositories);
             }
+        }
+        catch (Exception ex)
+        {
+            Environment.ExitCode = 1;
+            _logger.LogError("Verified Credential expiry check failed with: {Errors}", ex.Message);
         }
     }
 
@@ -162,19 +159,19 @@ public class ExpiryCheckService
     private static async ValueTask HandleNotification(CredentialExpiryData data, DateTimeOffset now, IMailingService mailingService, ICompanySsiDetailsRepository companySsiDetailsRepository, INotificationRepository notificationRepository)
     {
         ExpiryCheckTypeId? newExpiryCheckTypeId = null;
-        if (data.ExpiryDate.AddDays(-1) <= now && data.ExpiryCheckTypeId != ExpiryCheckTypeId.OneDay)
+        if (data.ExpiryDate.AddDays(-1) <= now && data.ExpiryCheckTypeId != ExpiryCheckTypeId.ONE_DAY)
         {
-            newExpiryCheckTypeId = ExpiryCheckTypeId.OneDay;
+            newExpiryCheckTypeId = ExpiryCheckTypeId.ONE_DAY;
         }
 
-        if (data.ExpiryDate.AddDays(-14) <= now && data.ExpiryCheckTypeId != ExpiryCheckTypeId.TwoWeeks)
+        if (data.ExpiryDate.AddDays(-14) <= now && data.ExpiryCheckTypeId != ExpiryCheckTypeId.TWO_WEEKS)
         {
-            newExpiryCheckTypeId = ExpiryCheckTypeId.TwoWeeks;
+            newExpiryCheckTypeId = ExpiryCheckTypeId.TWO_WEEKS;
         }
 
         if (data.ExpiryDate.AddMonths(-1) <= now && data.ExpiryCheckTypeId == null)
         {
-            newExpiryCheckTypeId = ExpiryCheckTypeId.OneMonth;
+            newExpiryCheckTypeId = ExpiryCheckTypeId.ONE_MONTH;
         }
 
         if (newExpiryCheckTypeId == null)

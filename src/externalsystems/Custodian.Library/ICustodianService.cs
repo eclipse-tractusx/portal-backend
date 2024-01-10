@@ -58,11 +58,9 @@ public interface ICustodianService
     /// <summary>
     /// Issue a verifiable credential for a use case
     /// </summary>
-    /// <param name="bpn">BusinessPartnerNumber of the company to issue the credentials for</param>
-    /// <param name="detailData">Additional data needed for the endpoint</param>
-    /// <param name="expiryDate">Date of expiry for the credential</param>
+    /// <param name="requestData">The requestData</param>
     /// <param name="cancellationToken">CancellationToken</param>
-    Task TriggerFrameworkAsync(string bpn, DetailData detailData, DateTimeOffset expiryDate, CancellationToken cancellationToken);
+    Task TriggerFrameworkAsync(CustodianFrameworkRequest requestData, CancellationToken cancellationToken);
 
     /// <summary>
     /// Issue a verifiable credential for a dismantler
