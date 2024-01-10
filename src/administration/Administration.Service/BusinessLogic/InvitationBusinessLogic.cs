@@ -136,9 +136,8 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
         };
 
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var (registrationIdExists, processData) = await processStepRepository.IsValidProcess(processId, ProcessTypeId.INVITATION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
-        if (!registrationIdExists)
+        var (validProcessId, processData) = await _portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.INVITATION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        if (!validProcessId)
         {
             throw new NotFoundException($"process {processId} does not exist");
         }

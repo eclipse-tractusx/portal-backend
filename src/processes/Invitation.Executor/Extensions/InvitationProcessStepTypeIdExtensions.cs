@@ -38,5 +38,4 @@ public static class InvitationProcessStepTypeIdExtensions
             ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP },
             _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process Invitation")
         };
-
 }
