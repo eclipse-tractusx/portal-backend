@@ -1466,17 +1466,17 @@ public class UserBusinessLogicTests
         var businessPartnerNumber = _fixture.Create<string>();
         A.CallTo(() => _identity.IdentityId).Returns(_adminUserId);
         A.CallTo(() => _identity.CompanyId).Returns(_adminCompanyId);
-        A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminCompanyId, businessPartnerNumber))
+        A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminCompanyId, businessPartnerNumber.ToUpper()))
             .Returns((true, true, true));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString())).Returns(iamUserId);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
-        await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber).ConfigureAwait(false);
+        await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber.ToUpper()).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(iamUserId, businessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(iamUserId, businessPartnerNumber.ToUpper())).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
