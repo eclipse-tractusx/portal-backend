@@ -35,8 +35,9 @@ public interface INotificationBusinessLogic
     /// <param name="page">the requested page</param>
     /// <param name="size">the requested size</param>
     /// <param name="filters">additional filters to query notifications</param>
+    /// <param name="semantic">use AND or OR semantic</param>
     /// <returns>Returns a collection of the users notification</returns>
-    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, NotificationFilters filters);
+    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, NotificationFilters filters, SearchSemanticTypeId semantic);
 
     /// <summary>
     ///     Gets a specific notification for the given user.

@@ -72,20 +72,28 @@ public class NotificationRepository : INotificationRepository
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting, bool? doneState, IEnumerable<NotificationTypeId> searchTypeIds, string? searchQuery) =>
+    public Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, SearchSemanticTypeId semantic, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting, bool? doneState, IEnumerable<NotificationTypeId> searchTypeIds, string? searchQuery) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _dbContext.Notifications.AsNoTracking()
                 .Where(notification =>
                     notification.ReceiverUserId == receiverUserId &&
-                    (!isRead.HasValue || notification.IsRead == isRead.Value) &&
-                    (!typeId.HasValue || notification.NotificationTypeId == typeId.Value) &&
-                    (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value) &&
-                    (!onlyDueDate || notification.DueDate.HasValue) &&
-                    (!doneState.HasValue || notification.Done == doneState.Value) &&
-                    (!searchTypeIds.Any() || searchTypeIds.Contains(notification.NotificationTypeId)) &&
-                    (searchQuery == null || notification.Content != null && EF.Functions.ILike(notification.Content, $"%{searchQuery.EscapeForILike()}%")))
+                    semantic == SearchSemanticTypeId.AND
+                        ? ((!isRead.HasValue || notification.IsRead == isRead.Value) &&
+                           (!typeId.HasValue || notification.NotificationTypeId == typeId.Value) &&
+                           (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value) &&
+                           (!onlyDueDate || notification.DueDate.HasValue) &&
+                           (!doneState.HasValue || notification.Done == doneState.Value) &&
+                           (!searchTypeIds.Any() || searchTypeIds.Contains(notification.NotificationTypeId)) &&
+                           (searchQuery == null || notification.Content != null && EF.Functions.ILike(notification.Content, $"%{searchQuery.EscapeForILike()}%")))
+                        : ((isRead.HasValue && notification.IsRead == isRead.Value) ||
+                           (typeId.HasValue && notification.NotificationTypeId == typeId.Value) ||
+                           (topicId.HasValue && notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value) ||
+                           (onlyDueDate && notification.DueDate.HasValue) ||
+                           (doneState.HasValue && notification.Done == doneState.Value) ||
+                           (searchTypeIds.Any() && searchTypeIds.Contains(notification.NotificationTypeId)) ||
+                           (searchQuery != null && notification.Content != null && EF.Functions.ILike(notification.Content, $"%{searchQuery.EscapeForILike()}%"))))
                 .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {

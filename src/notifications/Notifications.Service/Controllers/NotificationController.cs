@@ -56,6 +56,7 @@ public class NotificationController : ControllerBase
     /// <param name="searchTypeIds">OPTIONAL: types for the search</param>
     /// <param name="page">The page to get</param>
     /// <param name="size">Amount of entries</param>
+    /// <param name="searchSemantic">OPTIONAL: choose AND or OR semantics (defaults to AND)</param>
     /// <param name="isRead">OPTIONAL: Filter for read or unread notifications</param>
     /// <param name="notificationTypeId">OPTIONAL: Type of the notifications</param>
     /// <param name="notificationTopicId">OPTIONAL: Topic of the notifications</param>
@@ -75,6 +76,7 @@ public class NotificationController : ControllerBase
         [FromQuery] IEnumerable<NotificationTypeId> searchTypeIds,
         [FromQuery] int page = 0,
         [FromQuery] int size = 15,
+        [FromQuery] SearchSemanticTypeId searchSemantic = SearchSemanticTypeId.AND,
         [FromQuery] bool? isRead = null,
         [FromQuery] NotificationTypeId? notificationTypeId = null,
         [FromQuery] NotificationTopicId? notificationTopicId = null,
@@ -83,7 +85,7 @@ public class NotificationController : ControllerBase
         [FromQuery] bool? doneState = null,
         [FromQuery] string? searchQuery = null
         ) =>
-        _logic.GetNotificationsAsync(page, size, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState, searchTypeIds, searchQuery));
+        _logic.GetNotificationsAsync(page, size, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState, searchTypeIds, searchQuery), searchSemantic);
 
     /// <summary>
     ///     Gets a notification for the logged in user

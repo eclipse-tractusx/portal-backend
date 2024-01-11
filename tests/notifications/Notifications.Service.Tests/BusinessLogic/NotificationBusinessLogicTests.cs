@@ -94,7 +94,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(status, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(status, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND).ConfigureAwait(false);
 
         // Assert
         var expectedCount = status ?
@@ -117,7 +117,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(null, null, null, false, sorting, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(null, null, null, false, sorting, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND).ConfigureAwait(false);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(_notificationDetails.Count());
@@ -137,7 +137,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var results = await sut.GetNotificationsAsync(1, 3, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)).ConfigureAwait(false);
+        var results = await sut.GetNotificationsAsync(1, 3, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -157,7 +157,7 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(0, 20, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null));
+        var Act = () => sut.GetNotificationsAsync(0, 20, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND);
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -172,7 +172,7 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(-1, 15, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null));
+        var Act = () => sut.GetNotificationsAsync(-1, 15, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND);
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -192,10 +192,10 @@ public class NotificationBusinessLogicTests
         var filter = _fixture.Create<NotificationFilters>();
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 20, filter).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 20, filter, SearchSemanticTypeId.AND).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(userId, filter.IsRead, filter.TypeId, filter.TopicId, filter.OnlyDueDate, filter.Sorting, filter.DoneState, A<IEnumerable<NotificationTypeId>>.That.Matches(x => x.Count() == filter.SearchTypeIds.Count()), filter.SearchQuery))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(userId, SearchSemanticTypeId.AND, filter.IsRead, filter.TypeId, filter.TopicId, filter.OnlyDueDate, filter.Sorting, filter.DoneState, A<IEnumerable<NotificationTypeId>>.That.Matches(x => x.Count() == filter.SearchTypeIds.Count()), filter.SearchQuery))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -485,11 +485,11 @@ public class NotificationBusinessLogicTests
         var readPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_readNotificationDetails.Count(), _readNotificationDetails.Skip(skip).Take(take)));
         var notificationsPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails.Skip(skip).Take(take)));
 
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identityId, false, null, null, false, A<NotificationSorting>._, null, A<IEnumerable<NotificationTypeId>>._, null))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identityId, SearchSemanticTypeId.AND, false, null, null, false, A<NotificationSorting>._, null, A<IEnumerable<NotificationTypeId>>._, null))
             .Returns(unreadPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identityId, true, null, null, false, A<NotificationSorting>._, null, A<IEnumerable<NotificationTypeId>>._, null))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identityId, SearchSemanticTypeId.AND, true, null, null, false, A<NotificationSorting>._, null, A<IEnumerable<NotificationTypeId>>._, null))
             .Returns(readPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identityId, null, null, null, false, A<NotificationSorting>._, null, A<IEnumerable<NotificationTypeId>>._, null))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identityId, SearchSemanticTypeId.AND, null, null, null, false, A<NotificationSorting>._, null, A<IEnumerable<NotificationTypeId>>._, null))
             .Returns(notificationsPaging);
     }
 
