@@ -154,7 +154,7 @@ public class InvitationProcessServiceTests
         A.CallTo(() => _companyInvitationRepository.GetIdpNameForInvitationId(companyInvitation.Id))
             .Returns("idp1");
         A.CallTo(() => _idpManagement.CreateSharedIdpServiceAccountAsync("idp1"))
-            .Returns(new ValueTuple<string, string>("cl1", "test"));
+            .Returns(new ValueTuple<string, string, string>("cl1", "test", Guid.NewGuid().ToString()));
         A.CallTo(() => _companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitation.Id, A<Action<CompanyInvitation>>._, A<Action<CompanyInvitation>>._))
             .Invokes((Guid _, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify) =>
             {
@@ -172,7 +172,7 @@ public class InvitationProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS);
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_ADD_REALM_ROLE);
     }
 
     [Fact]
@@ -189,6 +189,46 @@ public class InvitationProcessServiceTests
 
         // Act
         ex.Message.Should().Be("Idp name must not be null");
+    }
+
+    #endregion
+
+    #region AddRealmRoleMappingsToUserAsync
+
+    [Fact]
+    public async Task AddRealmRoleMappingsToUserAsync_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var companyInvitationId = Guid.NewGuid();
+        var serviceAccountId = Guid.NewGuid().ToString();
+        A.CallTo(() => _companyInvitationRepository.GetServiceAccountUserIdForInvitation(companyInvitationId))
+            .Returns(serviceAccountId);
+
+        // Act
+        var result = await _sut.AddRealmRoleMappingsToUserAsync(companyInvitationId).ConfigureAwait(false);
+
+        // Act
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.nextStepTypeIds.Should().ContainSingle()
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS);
+    }
+
+    [Fact]
+    public async Task AddRealmRoleMappingsToUserAsync_WithNotExisting_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetServiceAccountUserIdForInvitation(companyInvitation.Id))
+            .Returns((string?)null);
+
+        // Act
+        async Task Act() => await _sut.AddRealmRoleMappingsToUserAsync(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("ServiceAccountUserId must not be null");
     }
 
     #endregion
@@ -302,7 +342,7 @@ public class InvitationProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT);
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM);
     }
 
     [Fact]
@@ -350,7 +390,7 @@ public class InvitationProcessServiceTests
         }
 
         // Act
-        var result = await _sut.CreateSharedIdpRealmIdpClient(companyInvitation.Id).ConfigureAwait(false);
+        var result = await _sut.CreateSharedIdpRealm(companyInvitation.Id).ConfigureAwait(false);
 
         // Act
         A.CallTo(() => _idpManagement.CreateSharedRealmIdpClientAsync("idp1", "TestLoginTheme", "testCorp", "cl1", "test"))
@@ -359,7 +399,7 @@ public class InvitationProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP);
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT);
     }
 
     [Fact]
@@ -371,7 +411,7 @@ public class InvitationProcessServiceTests
             .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "cl1", "idp1", null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedIdpRealmIdpClient(companyInvitation.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSharedIdpRealm(companyInvitation.Id).ConfigureAwait(false);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
 
         // Act
@@ -387,7 +427,7 @@ public class InvitationProcessServiceTests
             .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "cl1", null, null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedIdpRealmIdpClient(companyInvitation.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSharedIdpRealm(companyInvitation.Id).ConfigureAwait(false);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
 
         // Act
@@ -403,7 +443,96 @@ public class InvitationProcessServiceTests
             .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", null, null, null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedIdpRealmIdpClient(companyInvitation.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSharedIdpRealm(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("Idp name must not be null");
+    }
+
+    #endregion
+
+    #region CreateSharedClient
+
+    [Fact]
+    public async Task CreateSharedClient_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        var pw = "test";
+        using var aes = Aes.Create();
+        aes.Key = Encoding.UTF8.GetBytes(_setting.Value.EncryptionKey);
+        aes.Mode = CipherMode.ECB;
+        aes.Padding = PaddingMode.PKCS7;
+        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+        using (var memoryStream = new MemoryStream())
+        {
+            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+            {
+                using var sw = new StreamWriter(cryptoStream, Encoding.UTF8);
+                sw.Write(pw);
+            }
+
+            var secret = memoryStream.ToArray();
+            A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+                .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "idp1", "cl1", secret));
+        }
+
+        // Act
+        var result = await _sut.CreateSharedClient(companyInvitation.Id).ConfigureAwait(false);
+
+        // Act
+        A.CallTo(() => _idpManagement.CreateSharedClientAsync("idp1", "cl1", "test"))
+            .MustHaveHappenedOnceExactly();
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.nextStepTypeIds.Should().ContainSingle()
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP);
+    }
+
+    [Fact]
+    public async Task CreateSharedClient_WithClientSecretNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "cl1", "idp1", null));
+
+        // Act
+        async Task Act() => await _sut.CreateSharedClient(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("ClientSecret must not be null");
+    }
+
+    [Fact]
+    public async Task CreateSharedClient_WithClientIdNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", "cl1", null, null));
+
+        // Act
+        async Task Act() => await _sut.CreateSharedClient(companyInvitation.Id).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Act
+        ex.Message.Should().Be("ClientId must not be null");
+    }
+
+    [Fact]
+    public async Task CreateSharedClient_WithIdpNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+        A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
+            .Returns(new ValueTuple<string, string?, string?, byte[]?>("testCorp", null, null, null));
+
+        // Act
+        async Task Act() => await _sut.CreateSharedClient(companyInvitation.Id).ConfigureAwait(false);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
 
         // Act

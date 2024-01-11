@@ -37,20 +37,17 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly NetworkRegistrationProcessSettings _settings;
 
     public NetworkRegistrationHandler(
         IPortalRepositories portalRepositories,
         IUserProvisioningService userProvisioningService,
         IProvisioningManager provisioningManager,
-        IMailingProcessCreation mailingProcessCreation,
         IOptions<NetworkRegistrationProcessSettings> options)
     {
         _portalRepositories = portalRepositories;
         _userProvisioningService = userProvisioningService;
         _provisioningManager = provisioningManager;
-        _mailingProcessCreation = mailingProcessCreation;
 
         _settings = options.Value;
     }
@@ -151,8 +148,12 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
 
     private async Task CreateMailProcess(IAsyncEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
     {
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         await foreach (var (receiver, firstName, lastName, displayNames) in companyUserWithRoleIdForCompany)
         {
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
+
             var userName = string.Join(" ", firstName, lastName);
             var mailParameters = new Dictionary<string, string>
             {
@@ -164,10 +165,10 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 { "url", _settings.BasePortalAddress },
                 { "idpAlias", string.Join(",", displayNames) }
             };
-            _mailingProcessCreation.CreateMailProcess(receiver, "CredentialRejected", mailParameters);
+            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, receiver, "CredentialRejected", mailParameters);
         }
     }
-    
+
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> RemoveKeycloakUser(Guid networkRegistrationId)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();

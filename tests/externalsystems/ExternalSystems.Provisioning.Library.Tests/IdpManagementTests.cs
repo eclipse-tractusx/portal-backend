@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfigur
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 using Config = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.Config;
@@ -155,6 +156,29 @@ public class IdpManagementTests
         httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/clients")
             .WithVerb(HttpMethod.Post)
             .Times(1);
+    }
+
+    #endregion
+
+    #region AddRealmRoleMappingsToUserAsync
+
+    [Fact]
+    public async Task AddRealmRoleMappingsToUserAsync_CallsExpected()
+    {
+        // Arrange
+        const string newClientId = "saidp1";
+        using var httpTest = new HttpTest();
+        var userId = Guid.NewGuid().ToString();
+        httpTest.WithAuthorization()
+            .WithCreateClient(newClientId)
+            .WithGetUserForServiceAccount(newClientId, new User { Id = userId })
+            .WithGetRoleByNameAsync(newClientId, "create-realm", new Role { Id = Guid.NewGuid().ToString() })
+            .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" });
+
+        // Act
+        await _sut.AddRealmRoleMappingsToUserAsync(userId).ConfigureAwait(false);
+
+        // Assert
         httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/users/{userId}/role-mappings/realm")
             .WithVerb(HttpMethod.Post)
             .Times(1);
@@ -177,10 +201,7 @@ public class IdpManagementTests
                 EndSessionEndpoint = new Uri("https://example.org/session"),
                 JwksUri = new Uri("https://example.org/jwks")
             })
-            .WithGetIdentityProviderAsync("idp1", new IdentityProvider
-            {
-                Config = new Keycloak.Library.Models.RealmsAdmin.Config()
-            });
+            .WithGetIdentityProviderAsync("idp1", new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow));
 
         // Act
         await _sut.UpdateCentralIdentityProviderUrlsAsync("idp1", "testCorp", "theme1", "cl1", "safePw").ConfigureAwait(false);
@@ -231,6 +252,31 @@ public class IdpManagementTests
         await _sut.CreateSharedRealmIdpClientAsync("idp1", "testCorp", "theme1", "cl1", "safePw").ConfigureAwait(false);
 
         // Assert
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms")
+            .WithVerb(HttpMethod.Post)
+            .Times(1);
+    }
+
+    #endregion
+
+    #region CreateSharedClientAsync
+
+    [Fact]
+    public async Task CreateSharedClientAsync_CallsExpected()
+    {
+        // Arrange
+        using var httpTest = new HttpTest();
+        httpTest.WithAuthorization()
+            .WithGetOpenIdConfigurationAsync(new OpenIDConfiguration
+            {
+                JwksUri = new Uri("https://test.org/jwks"),
+                Issuer = new Uri("https://example.org/issuer")
+            });
+
+        // Act
+        await _sut.CreateSharedClientAsync("idp1", "cl1", "safePw").ConfigureAwait(false);
+
+        // Assert
         httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/idp1/clients")
             .WithVerb(HttpMethod.Post)
             .Times(1);
@@ -246,11 +292,7 @@ public class IdpManagementTests
         // Arrange
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync("idp1", new IdentityProvider
-            {
-                Alias = "testCorp",
-                Config = new Keycloak.Library.Models.RealmsAdmin.Config()
-            });
+            .WithGetIdentityProviderAsync("idp1", new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow));
 
         // Act
         await _sut.EnableCentralIdentityProviderAsync("idp1").ConfigureAwait(false);

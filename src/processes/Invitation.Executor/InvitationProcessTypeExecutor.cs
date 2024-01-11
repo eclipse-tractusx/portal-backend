@@ -40,8 +40,10 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
         ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP,
         ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT,
         ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS,
+        ProcessStepTypeId.INVITATION_ADD_REALM_ROLE,
         ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER,
-        ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT,
+        ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM,
+        ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT,
         ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
         ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
         ProcessStepTypeId.INVITATION_CREATE_USER,
@@ -103,11 +105,15 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
                     .ConfigureAwait(false),
                 ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT => await _invitationProcessService.CreateSharedIdpServiceAccount(_companyInvitationId)
                     .ConfigureAwait(false),
+                ProcessStepTypeId.INVITATION_ADD_REALM_ROLE => await _invitationProcessService.AddRealmRoleMappingsToUserAsync(_companyInvitationId)
+                    .ConfigureAwait(false),
                 ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS => await _invitationProcessService.UpdateCentralIdpUrl(_companyInvitationId)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER => await _invitationProcessService.CreateCentralIdpOrgMapper(_companyInvitationId)
                     .ConfigureAwait(false),
-                ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT => await _invitationProcessService.CreateSharedIdpRealmIdpClient(_companyInvitationId)
+                ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM => await _invitationProcessService.CreateSharedIdpRealm(_companyInvitationId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT => await _invitationProcessService.CreateSharedClient(_companyInvitationId)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP => await _invitationProcessService.EnableCentralIdp(_companyInvitationId)
                     .ConfigureAwait(false),
@@ -117,7 +123,7 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
                     .ConfigureAwait(false),
                 ProcessStepTypeId.INVITATION_SEND_MAIL => await _invitationProcessService.SendMail(_companyInvitationId)
                     .ConfigureAwait(false),
-                _ => (null, ProcessStepStatusId.TODO, false, null)
+                _ => throw new UnexpectedConditionException($"Execution for {processStepTypeId} is currently not supported.")
             };
         }
         catch (Exception ex) when (ex is not SystemException)

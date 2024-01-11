@@ -24,40 +24,38 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 
-using System.Text.Json;
-
 public class IdentityProvider
 {
-    [JsonPropertyName("alias")]
+    [JsonProperty("alias")]
     public string? Alias { get; set; }
-    [JsonPropertyName("internalId")]
+    [JsonProperty("internalId")]
     public string? InternalId { get; set; }
-    [JsonPropertyName("providerId")]
+    [JsonProperty("providerId")]
     public string? ProviderId { get; set; }
-    [JsonPropertyName("enabled")]
+    [JsonProperty("enabled")]
     public bool? Enabled { get; set; }
-    [JsonPropertyName("updateProfileFirstLoginMode")]
+    [JsonProperty("updateProfileFirstLoginMode")]
     public string? UpdateProfileFirstLoginMode { get; set; }
-    [JsonPropertyName("trustEmail")]
+    [JsonProperty("trustEmail")]
     public bool? TrustEmail { get; set; }
-    [JsonPropertyName("storeToken")]
+    [JsonProperty("storeToken")]
     public bool? StoreToken { get; set; }
-    [JsonPropertyName("addReadTokenRoleOnCreate")]
+    [JsonProperty("addReadTokenRoleOnCreate")]
     public bool? AddReadTokenRoleOnCreate { get; set; }
-    [JsonPropertyName("authenticateByDefault")]
+    [JsonProperty("authenticateByDefault")]
     public bool? AuthenticateByDefault { get; set; }
-    [JsonPropertyName("linkOnly")]
+    [JsonProperty("linkOnly")]
     public bool? LinkOnly { get; set; }
-    [JsonPropertyName("firstBrokerLoginFlowAlias")]
+    [JsonProperty("firstBrokerLoginFlowAlias")]
     public string? FirstBrokerLoginFlowAlias { get; set; }
-    [JsonPropertyName("postBrokerLoginFlowAlias")]
+    [JsonProperty("postBrokerLoginFlowAlias")]
     public string? PostBrokerLoginFlowAlias { get; set; }
-    [JsonPropertyName("displayName")]
+    [JsonProperty("displayName")]
     public string? DisplayName { get; set; }
-    [JsonPropertyName("config")]
+    [JsonProperty("config")]
     public Config? Config { get; set; }
 }

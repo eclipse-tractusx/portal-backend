@@ -65,20 +65,6 @@ public partial class ProvisioningManager
         return (await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false)).Id;
     }
 
-    private async Task<(string ClientId, string Secret)> CreateSharedIdpServiceAccountAsync(string realm)
-    {
-        var sharedIdp = _Factory.CreateKeycloakClient("shared");
-        var clientId = GetServiceAccountClientId(realm);
-        var internalClientId = await CreateServiceAccountClient(sharedIdp, MasterRealm, clientId, clientId, IamClientAuthMethod.SECRET, true);
-        var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync(MasterRealm, internalClientId).ConfigureAwait(false);
-        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync(MasterRealm, "create-realm").ConfigureAwait(false);
-
-        await sharedIdp.AddRealmRoleMappingsToUserAsync(MasterRealm, serviceAccountUser.Id ?? throw new KeycloakInvalidResponseException("id of serviceAccountUser is null"), Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
-
-        var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(false);
-        return new ValueTuple<string, string>(clientId, credentials.Value);
-    }
-
     private async Task<(string ClientId, string Secret)> GetSharedIdpServiceAccountSecretAsync(string realm)
     {
         var clientId = GetServiceAccountClientId(realm);

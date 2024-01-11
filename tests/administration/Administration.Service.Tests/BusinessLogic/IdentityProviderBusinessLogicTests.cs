@@ -927,7 +927,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(company.Id, identityProviderId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("test@example.org", A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "DeleteManagedIdp")))
+        A.CallTo(() => _mailingService.SendMails("test@example.org", A<IDictionary<string, string>>._, "DeleteManagedIdp"))
             .MustHaveHappenedOnceExactly();
         company.CompanyStatusId.Should().Be(multipleIdps ? CompanyStatusId.ACTIVE : CompanyStatusId.INACTIVE);
         if (multipleIdps)

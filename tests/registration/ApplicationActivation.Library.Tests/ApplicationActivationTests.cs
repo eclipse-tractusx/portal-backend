@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -64,10 +63,10 @@ public class ApplicationActivationTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserRolesRepository _rolesRepository;
     private readonly IProcessStepRepository _processStepRepository;
+    private readonly IMailingInformationRepository _mailingInformationRepository;
     private readonly List<Notification> _notifications = new();
     private readonly List<Guid> _notifiedUserIds = new();
     private readonly INotificationService _notificationService;
-    private readonly IMailingService _mailingService;
     private readonly IProvisioningManager _provisioningManager;
     private readonly ApplicationActivationSettings _settings;
     private readonly ApplicationActivationService _sut;
@@ -83,9 +82,9 @@ public class ApplicationActivationTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
+        _mailingInformationRepository = A.Fake<IMailingInformationRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _rolesRepository = A.Fake<IUserRolesRepository>();
-        _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _custodianService = A.Fake<ICustodianService>();
@@ -112,9 +111,10 @@ public class ApplicationActivationTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IMailingInformationRepository>()).Returns(_mailingInformationRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
-        _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _mailingService, _dateTimeProvider, _custodianService, options);
+        _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _dateTimeProvider, _custodianService, options);
     }
 
     #region HandleApplicationActivation
@@ -258,7 +258,10 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<string>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "EmailRegistrationWelcomeTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING))
+            .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)
@@ -340,7 +343,10 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<string>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "EmailRegistrationWelcomeTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING))
+            .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)
@@ -554,7 +560,10 @@ public class ApplicationActivationTests
         A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "EmailRegistrationWelcomeTemplate", A<Dictionary<string, string>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING))
+            .MustNotHaveHappened();
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustNotHaveHappened();
         _notifications.Should().BeEmpty();
         _notifiedUserIds.Should().BeEmpty();
@@ -637,7 +646,10 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<string>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, "EmailRegistrationWelcomeTemplate", A<Dictionary<string, string>>._))
+            .MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING))
+            .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)

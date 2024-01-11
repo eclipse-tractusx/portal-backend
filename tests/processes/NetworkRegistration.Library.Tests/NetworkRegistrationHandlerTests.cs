@@ -22,7 +22,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -47,9 +46,9 @@ public class NetworkRegistrationHandlerTests
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserRepository _userRepository;
     private readonly INetworkRepository _networkRepository;
-
+    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IMailingInformationRepository _mailingInformationRepository;
     private readonly NetworkRegistrationHandler _sut;
-    private readonly IMailingService _mailingService;
 
     public NetworkRegistrationHandlerTests()
     {
@@ -61,10 +60,11 @@ public class NetworkRegistrationHandlerTests
         var portalRepositories = A.Fake<IPortalRepositories>();
         _userRepository = A.Fake<IUserRepository>();
         _networkRepository = A.Fake<INetworkRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _mailingInformationRepository = A.Fake<IMailingInformationRepository>();
 
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _provisioningManager = A.Fake<IProvisioningManager>();
-        _mailingService = A.Fake<IMailingService>();
 
         var settings = new NetworkRegistrationProcessSettings
         {
@@ -75,8 +75,10 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => options.Value).Returns(settings);
         A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IMailingInformationRepository>()).Returns(_mailingInformationRepository);
 
-        _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManager, _mailingService, options);
+        _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManager, options);
     }
 
     #region SynchronizeUser
@@ -232,12 +234,15 @@ public class NetworkRegistrationHandlerTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(user2.CompanyUserId, A<Action<Identity>>._, A<Action<Identity>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails("tony@stark.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<string>._))
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, "tony@stark.com", "CredentialRejected", A<Dictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1")))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("steven@strange.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<string>._))
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, "steven@strange.com", "CredentialRejected", A<Dictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1")))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("foo@bar.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2"), A<string>._))
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, "foo@bar.com", "CredentialRejected", A<Dictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2")))
             .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, A<Guid>._)).MustHaveHappened(3, Times.Exactly);
 
         result.modified.Should().BeFalse();
         result.processMessage.Should().BeNull();

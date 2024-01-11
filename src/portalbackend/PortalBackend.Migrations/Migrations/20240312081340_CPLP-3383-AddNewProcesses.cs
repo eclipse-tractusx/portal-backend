@@ -17,8 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 #nullable disable
 
@@ -48,7 +48,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     idp_name = table.Column<string>(type: "text", nullable: true),
                     password = table.Column<byte[]>(type: "bytea", nullable: true),
                     client_id = table.Column<string>(type: "text", nullable: true),
-                    client_secret = table.Column<byte[]>(type: "bytea", nullable: true)
+                    client_secret = table.Column<byte[]>(type: "bytea", nullable: true),
+                    service_account_user_id = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -130,21 +131,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 400, "INVITATION_CREATE_CENTRAL_IDP" },
                     { 401, "INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT" },
                     { 402, "INVITATION_UPDATE_CENTRAL_IDP_URLS" },
-                    { 403, "INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER" },
-                    { 404, "INVITATION_CREATE_SHARED_REALM_IDP_CLIENT" },
-                    { 405, "INVITATION_ENABLE_CENTRAL_IDP" },
-                    { 406, "INVITATION_CREATE_DATABASE_IDP" },
-                    { 407, "INVITATION_CREATE_USER" },
-                    { 408, "INVITATION_SEND_MAIL" },
-                    { 409, "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP" },
-                    { 410, "RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT" },
-                    { 411, "RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS" },
-                    { 412, "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER" },
-                    { 413, "RETRIGGER_INVITATION_CREATE_SHARED_REALM_IDP_CLIENT" },
-                    { 414, "RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP" },
-                    { 415, "RETRIGGER_INVITATION_CREATE_USER" },
-                    { 416, "RETRIGGER_INVITATION_CREATE_DATABASE_IDP" },
-                    { 417, "RETRIGGER_INVITATION_SEND_MAIL" }
+                    { 403, "INVITATION_ADD_REALM_ROLE" },
+                    { 404, "INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER" },
+                    { 405, "INVITATION_CREATE_SHARED_REALM" },
+                    { 406, "INVITATION_CREATE_SHARED_CLIENT" },
+                    { 407, "INVITATION_ENABLE_CENTRAL_IDP" },
+                    { 408, "INVITATION_CREATE_DATABASE_IDP" },
+                    { 409, "INVITATION_CREATE_USER" },
+                    { 410, "INVITATION_SEND_MAIL" },
+                    { 411, "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP" },
+                    { 412, "RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT" },
+                    { 413, "RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS" },
+                    { 414, "RETRIGGER_INVITATION_ADD_REALM_ROLE" },
+                    { 415, "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER" },
+                    { 416, "RETRIGGER_INVITATION_CREATE_SHARED_REALM" },
+                    { 417, "RETRIGGER_INVITATION_CREATE_SHARED_CLIENT" },
+                    { 418, "RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP" },
+                    { 419, "RETRIGGER_INVITATION_CREATE_USER" },
+                    { 420, "RETRIGGER_INVITATION_CREATE_DATABASE_IDP" },
+                    { 421, "RETRIGGER_INVITATION_SEND_MAIL" }
                 });
 
             migrationBuilder.InsertData(
@@ -319,6 +324,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "process_step_types",
                 keyColumn: "id",
                 keyValue: 417);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 418);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 419);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 420);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 421);
 
             migrationBuilder.DeleteData(
                 schema: "portal",

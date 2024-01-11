@@ -94,27 +94,13 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
                 }
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-        processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-        var mailParameters = new Dictionary<string, string>
-        {
-            { "password", password ?? "" },
-            { "companyName", invitationData.OrganisationName },
-            { "url", _settings.RegistrationAppAddress },
-            { "passwordResendUrl", _settings.PasswordResendAddress },
-            { "closeApplicationUrl", _settings.CloseApplicationAddress },
-        };
-
-        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.Email, "RegistrationTemplate", mailParameters);
-        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, invitationData.Email, "PasswordForRegistrationTemplate", mailParameters);
     }
 
     public Task RetriggerCreateCentralIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP);
     public Task RetriggerCreateSharedIdpServiceAccount(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT);
     public Task RetriggerUpdateCentralIdpUrls(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS);
     public Task RetriggerCreateCentralIdpOrgMapper(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER);
-    public Task RetriggerCreateSharedRealmIdpClient(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM_IDP_CLIENT);
+    public Task RetriggerCreateSharedRealmIdpClient(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM);
     public Task RetriggerEnableCentralIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP);
     public Task RetriggerCreateDatabaseIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP);
     public Task RetriggerInvitationCreateUser(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER);
@@ -128,7 +114,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT => ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT,
             ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS => ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS,
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER => ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER,
-            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM_IDP_CLIENT => ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT,
+            ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM => ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM,
             ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP => ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER => ProcessStepTypeId.INVITATION_CREATE_USER,
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP => ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,

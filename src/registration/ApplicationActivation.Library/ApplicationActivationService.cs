@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -43,7 +42,6 @@ public class ApplicationActivationService : IApplicationActivationService
     private readonly IPortalRepositories _portalRepositories;
     private readonly INotificationService _notificationService;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly IMailingService _mailingService;
     private readonly IDateTimeProvider _dateTime;
     private readonly ICustodianService _custodianService;
     private readonly ApplicationActivationSettings _settings;
@@ -52,7 +50,6 @@ public class ApplicationActivationService : IApplicationActivationService
         IPortalRepositories portalRepositories,
         INotificationService notificationService,
         IProvisioningManager provisioningManager,
-        IMailingService mailingService,
         IDateTimeProvider dateTime,
         ICustodianService custodianService,
         IOptions<ApplicationActivationSettings> options)
@@ -60,7 +57,6 @@ public class ApplicationActivationService : IApplicationActivationService
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
         _provisioningManager = provisioningManager;
-        _mailingService = mailingService;
         _dateTime = dateTime;
         _custodianService = custodianService;
         _settings = options.Value;
@@ -251,6 +247,7 @@ public class ApplicationActivationService : IApplicationActivationService
 
     private async Task PostRegistrationWelcomeEmailAsync(IApplicationRepository applicationRepository, Guid applicationId, string companyName, string businessPartnerNumber)
     {
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         var failedUserNames = new List<string>();
         await foreach (var user in applicationRepository.GetEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
         {
@@ -261,6 +258,8 @@ public class ApplicationActivationService : IApplicationActivationService
                 continue;
             }
 
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
@@ -271,8 +270,7 @@ public class ApplicationActivationService : IApplicationActivationService
                 { "companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress },
                 { "dataspaceUrl", _settings.DataspaceAddress }
             };
-
-            await _mailingService.SendMails(user.Email, mailParameters, "EmailRegistrationWelcomeTemplate").ConfigureAwait(false);
+            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, user.Email, "EmailRegistrationWelcomeTemplate", mailParameters);
         }
 
         if (failedUserNames.Any())

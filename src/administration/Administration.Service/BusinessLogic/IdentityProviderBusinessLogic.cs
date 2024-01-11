@@ -436,11 +436,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             }
         }
 
-        var mailTemplates = Enumerable.Repeat("DeleteManagedIdp", 1);
-
         foreach (var mailData in await DeleteLinksReturningMaildata().ToListAsync().ConfigureAwait(false))
         {
-            await _mailingService.SendMails(mailData.Email, mailData.Parameters, mailTemplates).ConfigureAwait(false);
+            await _mailingService.SendMails(mailData.Email, mailData.Parameters, "DeleteManagedIdp").ConfigureAwait(false);
         }
     }
 

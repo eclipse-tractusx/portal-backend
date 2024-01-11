@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 using Config = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.Config;
@@ -128,7 +129,7 @@ public class ProvisioningManagerTests
         const string id = "123";
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { DisplayName = "test", Config = new IdentityProvider.Config() })
+            .WithGetIdentityProviderAsync(ValidClientName, new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow))
             .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
@@ -152,7 +153,7 @@ public class ProvisioningManagerTests
         const string id = "123";
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { DisplayName = "test", Config = new IdentityProvider.Config() })
+            .WithGetIdentityProviderAsync(ValidClientName, new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow))
             .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
@@ -173,7 +174,7 @@ public class ProvisioningManagerTests
         const string alias = "idp123";
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync(alias, new IdentityProvider.IdentityProvider { DisplayName = "test", Config = new IdentityProvider.Config() });
+            .WithGetIdentityProviderAsync(alias, new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow));
 
         // Act
         var displayName = await _sut.GetIdentityProviderDisplayName(alias).ConfigureAwait(false);

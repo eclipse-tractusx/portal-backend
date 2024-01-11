@@ -56,8 +56,10 @@ public class InvitationProcessTypeExecutorTests
             ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP,
             ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT,
             ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS,
+            ProcessStepTypeId.INVITATION_ADD_REALM_ROLE,
             ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER,
-            ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT,
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM,
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT,
             ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
             ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
             ProcessStepTypeId.INVITATION_CREATE_USER,
@@ -126,8 +128,8 @@ public class InvitationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT, ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS)]
     [InlineData(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT, ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP)]
     [InlineData(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, ProcessStepTypeId.INVITATION_CREATE_USER)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, ProcessStepTypeId.INVITATION_SEND_MAIL)]
@@ -315,7 +317,7 @@ public class InvitationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT, false)]
     [InlineData(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, false)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, false)]
     [InlineData(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, false)]
@@ -357,8 +359,8 @@ public class InvitationProcessTypeExecutorTests
         A.CallTo(() => _invitationProcessService.UpdateCentralIdpUrl(_invitationId))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, 1), ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _invitationProcessService.CreateCentralIdpOrgMapper(_invitationId))
-            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM_IDP_CLIENT, 1), ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _invitationProcessService.CreateSharedIdpRealmIdpClient(_invitationId))
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, 1), ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _invitationProcessService.CreateSharedIdpRealm(_invitationId))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, 1), ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _invitationProcessService.EnableCentralIdp(_invitationId))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, 1), ProcessStepStatusId.DONE, true, null));

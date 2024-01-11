@@ -65,23 +65,26 @@ public class IdpManagement : IIdpManagement
         return _centralIdp.CreateIdentityProviderAsync(_settings.CentralRealm, newIdp);
     }
 
-    public async Task<(string ClientId, string Secret)> CreateSharedIdpServiceAccountAsync(string realm)
+    public async Task<(string ClientId, string Secret, string ServiceAccountUserId)> CreateSharedIdpServiceAccountAsync(string realm)
     {
         var sharedIdp = _factory.CreateKeycloakClient("shared");
         var clientId = GetServiceAccountClientId(realm);
         var internalClientId = await CreateServiceAccountClient(sharedIdp, "master", clientId, clientId, IamClientAuthMethod.SECRET, true);
         var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync("master", internalClientId).ConfigureAwait(false);
-        if (serviceAccountUser == null)
+        if (serviceAccountUser == null || string.IsNullOrWhiteSpace(serviceAccountUser.Id))
         {
             throw new NotFoundException("ServiceAccount could not be found for client id: {internalClientId}");
         }
 
-        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync("master", "create-realm").ConfigureAwait(false);
-
-        await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUser.Id!, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
-
         var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
-        return new ValueTuple<string, string>(clientId, credentials.Value);
+        return new(clientId, credentials.Value, serviceAccountUser.Id);
+    }
+
+    public async Task AddRealmRoleMappingsToUserAsync(string serviceAccountUserId)
+    {
+        var sharedIdp = _factory.CreateKeycloakClient("shared");
+        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync("master", "create-realm").ConfigureAwait(false);
+        await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUserId, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
     }
 
     private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod, bool enabled)
@@ -141,17 +144,22 @@ public class IdpManagement : IIdpManagement
 
     public async Task CreateSharedRealmIdpClientAsync(string realm, string loginTheme, string organisationName, string clientId, string secret)
     {
+        await CreateSharedRealmAsync(realm, organisationName, loginTheme, clientId, secret).ConfigureAwait(false);
+    }
+
+    public async Task CreateSharedClientAsync(string realm, string clientId, string secret)
+    {
         var redirectUrl = await GetCentralBrokerEndpointOIDCAsync(realm).ConfigureAwait(false);
         var jwksUrl = await GetCentralRealmJwksUrlAsync().ConfigureAwait(false);
         var config = new IdentityProviderClientConfig(
             $"{redirectUrl}/*",
             jwksUrl);
-        var keycloak = await CreateSharedRealmAsync(realm, organisationName, loginTheme, clientId, secret).ConfigureAwait(false);
+        var sharedKeycloak = _factory.CreateKeycloakClient("shared", clientId, secret);
         var newClient = _settings.SharedRealmClient.Clone();
         newClient.RedirectUris = Enumerable.Repeat(config.RedirectUri, 1);
         newClient.Attributes ??= new Dictionary<string, string>();
         newClient.Attributes["jwks.url"] = config.JwksUrl;
-        await keycloak.CreateClientAsync(realm, newClient).ConfigureAwait(false);
+        await sharedKeycloak.CreateClientAsync(realm, newClient).ConfigureAwait(false);
     }
 
     private async ValueTask<string> GetCentralBrokerEndpointOIDCAsync(string alias)
@@ -178,8 +186,7 @@ public class IdpManagement : IIdpManagement
         await _centralIdp.UpdateIdentityProviderAsync(_settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
     }
 
-    private async Task<KeycloakClient> CreateSharedRealmAsync(string idpName, string organisationName, string? loginTheme, string clientId,
-        string secret)
+    private async Task<KeycloakClient> CreateSharedRealmAsync(string idpName, string organisationName, string? loginTheme, string clientId, string secret)
     {
         var sharedKeycloak = _factory.CreateKeycloakClient("shared", clientId, secret);
 
