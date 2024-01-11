@@ -213,38 +213,6 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetMailData
-
-    [Fact]
-    public async Task GetMailData_WithExistingForProcessId_ReturnsExpected()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var data = await sut.GetMailData(_invitationId).ConfigureAwait(false);
-
-        // Assert
-        data.Exists.Should().BeTrue();
-        data.OrgName.Should().Be("stark industry");
-        data.Email.Should().Be("tony@stark.com");
-    }
-
-    [Fact]
-    public async Task GetMailData_WithoutExistingForProcessId_ReturnsExpected()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var data = await sut.GetMailData(Guid.NewGuid()).ConfigureAwait(false);
-
-        // Assert
-        data.Exists.Should().BeFalse();
-    }
-
-    #endregion
-
     #region GetIdpNameForInvitationId
 
     [Fact]

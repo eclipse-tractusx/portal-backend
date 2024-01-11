@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -44,6 +45,7 @@ public class OfferSetupService : IOfferSetupService
     private readonly IServiceAccountCreation _serviceAccountCreation;
     private readonly INotificationService _notificationService;
     private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
     private readonly IIdentityData _identityData;
     private readonly ILogger<OfferSetupService> _logger;
@@ -58,6 +60,7 @@ public class OfferSetupService : IOfferSetupService
     /// <param name="offerSubscriptionProcessService">Access to offer subscription process service</param>
     /// <param name="technicalUserProfileService">Access to the technical user profile service</param>
     /// <param name="identityService">Access to the identity of the user</param>
+    /// <param name="mailingProcessCreation">Mailing Process Creation</param>
     /// <param name="logger">Access to the logger</param>
     public OfferSetupService(
         IPortalRepositories portalRepositories,
@@ -67,6 +70,7 @@ public class OfferSetupService : IOfferSetupService
         IOfferSubscriptionProcessService offerSubscriptionProcessService,
         ITechnicalUserProfileService technicalUserProfileService,
         IIdentityService identityService,
+        IMailingProcessCreation mailingProcessCreation,
         ILogger<OfferSetupService> logger)
     {
         _portalRepositories = portalRepositories;
@@ -75,6 +79,7 @@ public class OfferSetupService : IOfferSetupService
         _notificationService = notificationService;
         _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _technicalUserProfileService = technicalUserProfileService;
+        _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _logger = logger;
     }
@@ -387,12 +392,7 @@ public class OfferSetupService : IOfferSetupService
             {"offerName", offerName ?? "unnamed Offer"},
             {"url", basePortalAddress},
         };
-
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-        processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-
-        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, requesterEmail, $"{offerType.ToString().ToLower()}-subscription-activation", mailParams);
+        _mailingProcessCreation.CreateMailProcess(requesterEmail, $"{offerType.ToString().ToLower()}-subscription-activation", mailParams);
     }
 
     /// <inheritdoc />

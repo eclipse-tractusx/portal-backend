@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -46,6 +47,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     private readonly IProvisioningDBAccess _provisioningDbAccess;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityData _identityData;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ILogger<UserBusinessLogic> _logger;
     private readonly UserSettings _settings;
 
@@ -56,6 +58,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="provisioningDbAccess">Provisioning DBAccess</param>
     /// <param name="identityService">Access to the identity</param>
+    /// <param name="mailingProcessCreation"></param>
     /// <param name="logger">logger</param>
     /// <param name="settings">Settings</param>
     /// <param name="portalRepositories">Portal Repositories</param>
@@ -65,6 +68,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         IProvisioningDBAccess provisioningDbAccess,
         IPortalRepositories portalRepositories,
         IIdentityService identityService,
+        IMailingProcessCreation mailingProcessCreation,
         ILogger<UserBusinessLogic> logger,
         IOptions<UserSettings> settings)
     {
@@ -72,6 +76,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         _userProvisioningService = userProvisioningService;
         _provisioningDbAccess = provisioningDbAccess;
         _portalRepositories = portalRepositories;
+        _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _logger = logger;
         _settings = settings.Value;
@@ -128,10 +133,6 @@ public class UserBusinessLogic : IUserBusinessLogic
                 continue;
             }
 
-            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-
             var mailParameters = new Dictionary<string, string>
             {
                 { "password", password ?? "" },
@@ -140,8 +141,8 @@ public class UserBusinessLogic : IUserBusinessLogic
                 { "url", _settings.Portal.BasePortalAddress },
                 { "passwordResendUrl", _settings.Portal.PasswordResendAddress },
             };
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, email, "NewUserTemplate", mailParameters);
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, email, "NewUserPasswordTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(email, "NewUserTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(email, "NewUserPasswordTemplate", mailParameters);
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
             yield return email;
@@ -207,13 +208,9 @@ public class UserBusinessLogic : IUserBusinessLogic
             mailParameters["password"] = result.Password;
         }
 
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-        processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-
         foreach (var template in mailTemplates)
         {
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, userCreationInfo.Email, template, mailParameters);
+            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, template, mailParameters);
         }
 
         return result.CompanyUserId;

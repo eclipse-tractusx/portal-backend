@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Security.Cryptography;
@@ -35,11 +36,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor;
 
 public class InvitationProcessService : IInvitationProcessService
 {
+    private const string IdpNotSetErrorMessage = "Idp name must not be null";
+
     private readonly IIdpManagement _idpManagement;
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IMailingService _mailingService;
     private readonly InvitationSettings _settings;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
 
     /// <summary>
     /// Constructor.
@@ -47,19 +50,19 @@ public class InvitationProcessService : IInvitationProcessService
     /// <param name="idpManagement">Shared Idp Creation</param>
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="portalRepositories">Portal Repositories</param>
-    /// <param name="mailingService">Mailing Service</param>
+    /// <param name="mailingProcessCreation">MailingProcessCreation</param>
     /// <param name="settings">Settings</param>
     public InvitationProcessService(
         IIdpManagement idpManagement,
         IUserProvisioningService userProvisioningService,
         IPortalRepositories portalRepositories,
-        IMailingService mailingService,
+        IMailingProcessCreation mailingProcessCreation,
         IOptions<InvitationSettings> settings)
     {
         _idpManagement = idpManagement;
         _userProvisioningService = userProvisioningService;
         _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
+        _mailingProcessCreation = mailingProcessCreation;
         _settings = settings.Value;
     }
 
@@ -87,7 +90,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
-            throw new ConflictException("Idp name must not be null");
+            throw new ConflictException(IdpNotSetErrorMessage);
         }
 
         var (clientId, clientSecret, serviceAccountUserId) = await _idpManagement.CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(false);
@@ -147,7 +150,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
-            throw new ConflictException("Idp name must not be null");
+            throw new ConflictException(IdpNotSetErrorMessage);
         }
 
         if (string.IsNullOrWhiteSpace(clientId))
@@ -183,7 +186,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
-            throw new ConflictException("Idp name must not be null");
+            throw new ConflictException(IdpNotSetErrorMessage);
         }
 
         await _idpManagement.CreateCentralIdentityProviderOrganisationMapperAsync(idpName, orgName).ConfigureAwait(false);
@@ -198,7 +201,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
-            throw new ConflictException("Idp name must not be null");
+            throw new ConflictException(IdpNotSetErrorMessage);
         }
 
         if (string.IsNullOrWhiteSpace(clientId))
@@ -236,7 +239,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
-            throw new ConflictException("Idp name must not be null");
+            throw new ConflictException(IdpNotSetErrorMessage);
         }
 
         if (string.IsNullOrWhiteSpace(clientId))
@@ -274,7 +277,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
-            throw new ConflictException("Idp name must not be null");
+            throw new ConflictException(IdpNotSetErrorMessage);
         }
 
         await _idpManagement
@@ -375,6 +378,18 @@ public class InvitationProcessService : IInvitationProcessService
             throw error;
         }
 
+        foreach (var template in new[] { "RegistrationTemplate", "PasswordForRegistrationTemplate" })
+        {
+            var mailParameters = new Dictionary<string, string>
+            {
+                {"password", password ?? ""},
+                {"companyName", companyName},
+                {"url", _settings.RegistrationAppAddress},
+                {"passwordResendUrl", _settings.PasswordResendAddress},
+            };
+            _mailingProcessCreation.CreateMailProcess(userInformation.Email, template, mailParameters);
+        }
+
         using var aes = Aes.Create();
         aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
         aes.Mode = CipherMode.ECB;
@@ -400,44 +415,6 @@ public class InvitationProcessService : IInvitationProcessService
         }
 
         _portalRepositories.GetInstance<IApplicationRepository>().CreateInvitation(applicationId.Value, companyUserId);
-
-        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_SEND_MAIL, 1), ProcessStepStatusId.DONE, true, null);
-    }
-
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> SendMail(Guid companyInvitationId)
-    {
-        var (exists, orgName, userPassword, email) = await _portalRepositories.GetInstance<ICompanyInvitationRepository>().GetMailData(companyInvitationId).ConfigureAwait(false);
-        if (!exists)
-        {
-            throw new NotFoundException($"CompanyInvitation {companyInvitationId} does not exist");
-        }
-
-        if (userPassword is null)
-        {
-            throw new ConflictException("Password needs to be set");
-        }
-
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-        using (var msDecrypt = new MemoryStream(userPassword))
-        {
-            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            using var srDecrypt = new StreamReader(csDecrypt, Encoding.UTF8);
-            var password = srDecrypt.ReadToEnd();
-            var mailParameters = new Dictionary<string, string>
-            {
-                { "password", password ?? "" },
-                { "companyName", orgName },
-                { "url", _settings.RegistrationAppAddress },
-                { "passwordResendUrl", _settings.PasswordResendAddress },
-            };
-
-            await _mailingService.SendMails(email, mailParameters, "RegistrationTemplate").ConfigureAwait(false);
-            await _mailingService.SendMails(email, mailParameters, "PasswordForRegistrationTemplate").ConfigureAwait(false);
-        }
 
         return (null, ProcessStepStatusId.DONE, true, null);
     }

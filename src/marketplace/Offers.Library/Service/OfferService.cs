@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -34,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -42,7 +42,7 @@ public class OfferService : IOfferService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly INotificationService _notificationService;
-    private readonly IRoleBaseMailService _roleBaseMailService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IIdentityData _identityData;
     private readonly IOfferSetupService _offerSetupService;
     private readonly ILogger<OfferService> _logger;
@@ -52,20 +52,20 @@ public class OfferService : IOfferService
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="notificationService">Creates notifications for the user</param>
-    /// <param name="roleBaseMailService">Mailing service to send mails to the user</param>
+    /// <param name="mailingProcessCreation">Mailing service to send mails to the user</param>
     /// <param name="identityService">Access to the identity</param>
     /// <param name="offerSetupService">The offer Setup Service</param>
     /// <param name="logger">Access to the logger</param>
     public OfferService(IPortalRepositories portalRepositories,
         INotificationService notificationService,
-        IRoleBaseMailService roleBaseMailService,
+        IMailingProcessCreation mailingProcessCreation,
         IIdentityService identityService,
         IOfferSetupService offerSetupService,
         ILogger<OfferService> logger)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
-        _roleBaseMailService = roleBaseMailService;
+        _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _offerSetupService = offerSetupService;
         _logger = logger;
@@ -531,7 +531,7 @@ public class OfferService : IOfferService
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        await _roleBaseMailService.RoleBaseSendMailForCompany(
+        await _mailingProcessCreation.RoleBaseSendMail(
             notificationRecipients,
             new[]
             {
@@ -606,7 +606,7 @@ public class OfferService : IOfferService
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        await _roleBaseMailService.RoleBaseSendMailForCompany(
+        await _mailingProcessCreation.RoleBaseSendMail(
             notificationRecipients,
             new[]
             {

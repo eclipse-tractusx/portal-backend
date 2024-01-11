@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
@@ -51,6 +52,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IApplicationChecklistCreationService _checklistService;
     private readonly IIdentityData _identityData;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
 
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -62,7 +64,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IPortalRepositories portalRepositories,
         IApplicationChecklistCreationService checklistService,
         IIdentityService identityService,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IMailingProcessCreation mailingProcessCreation)
     {
         _settings = settings.Value;
         _bpnAccess = bpnAccess;
@@ -72,6 +75,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _checklistService = checklistService;
         _identityData = identityService.IdentityData;
         _dateTimeProvider = dateTimeProvider;
+        _mailingProcessCreation = mailingProcessCreation;
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -431,12 +435,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             { "username", userCreationInfo.eMail },
         };
 
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-        processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-
-        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, userCreationInfo.eMail, inviteTemplateName, mailParameters);
-        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, userCreationInfo.eMail, "password", mailParameters);
+        _mailingProcessCreation.CreateMailProcess(userCreationInfo.eMail, inviteTemplateName, mailParameters);
+        _mailingProcessCreation.CreateMailProcess(userCreationInfo.eMail, "password", mailParameters);
         return modified;
     }
 
@@ -599,11 +599,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (applicationUserData.Email != null)
         {
-            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, applicationUserData.Email, "SubmitRegistrationTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(applicationUserData.Email, "SubmitRegistrationTemplate", mailParameters);
         }
         else
         {

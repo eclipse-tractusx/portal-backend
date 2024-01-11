@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -44,7 +45,7 @@ public class InvitationProcessServiceTests
     private readonly IApplicationRepository _applicationRepository;
     private readonly IIdpManagement _idpManagement;
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IInvitationProcessService _sut;
     private readonly IOptions<InvitationSettings> _setting;
     private readonly IFixture _fixture;
@@ -64,7 +65,7 @@ public class InvitationProcessServiceTests
 
         _idpManagement = A.Fake<IIdpManagement>();
         _userProvisioningService = A.Fake<IUserProvisioningService>();
-        _mailingService = A.Fake<IMailingService>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
         A.CallTo(() => portalRepositories.GetInstance<ICompanyInvitationRepository>())
             .Returns(_companyInvitationRepository);
@@ -92,7 +93,7 @@ public class InvitationProcessServiceTests
             _idpManagement,
             _userProvisioningService,
             portalRepositories,
-            _mailingService,
+            _mailingProcessCreation,
             _setting);
     }
 
@@ -590,7 +591,7 @@ public class InvitationProcessServiceTests
     {
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
-        var company = _fixture.Build<Company>().With(x => x.Name, "testCorp").Create();
+        var company = _fixture.Build<Company>().With(x => x.Name, "testCorp").With(x => x.CompanyWalletData, (CompanyWalletData?)null).Create();
         var applicationId = Guid.NewGuid();
         var idpId = Guid.NewGuid();
 
@@ -695,8 +696,7 @@ public class InvitationProcessServiceTests
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_SEND_MAIL);
+        result.nextStepTypeIds.Should().BeNull();
     }
 
     [Fact]
@@ -806,86 +806,6 @@ public class InvitationProcessServiceTests
 
         // Act
         ex.Message.Should().Be("InvitedUserInitialRoles: test");
-    }
-
-    #endregion
-
-    #region SendMail
-
-    [Fact]
-    public async Task SendMail_WithoutExisting_ThrowsNotFoundException()
-    {
-        // Arrange
-        var companyInvitationId = Guid.NewGuid();
-        A.CallTo(() => _companyInvitationRepository.GetMailData(companyInvitationId))
-            .Returns((false, string.Empty, (byte[]?)null, string.Empty));
-        A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
-            .Throws(new ConflictException("test"));
-
-        // Act
-        async Task Act() => await _sut.SendMail(companyInvitationId).ConfigureAwait(false);
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-
-        // Act
-        ex.Message.Should().Be($"CompanyInvitation {companyInvitationId} does not exist");
-    }
-
-    [Fact]
-    public async Task SendMail_WithWrongUserRoles_ThrowsConflictException()
-    {
-        // Arrange
-        var companyInvitationId = Guid.NewGuid();
-        A.CallTo(() => _companyInvitationRepository.GetMailData(companyInvitationId))
-            .Returns((true, string.Empty, (byte[]?)null, string.Empty));
-        A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
-            .Throws(new ConflictException("test"));
-
-        // Act
-        async Task Act() => await _sut.SendMail(companyInvitationId).ConfigureAwait(false);
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-
-        // Act
-        ex.Message.Should().Be("Password needs to be set");
-    }
-
-    [Fact]
-    public async Task SendMail_WithValid_ThrowsConflictException()
-    {
-        // Arrange
-        var companyInvitationId = Guid.NewGuid();
-        var pw = "test";
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_setting.Value.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-        using (var memoryStream = new MemoryStream())
-        {
-            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-            {
-                using var sw = new StreamWriter(cryptoStream, Encoding.UTF8);
-                sw.Write(pw);
-            }
-
-            var secret = memoryStream.ToArray();
-            A.CallTo(() => _companyInvitationRepository.GetMailData(companyInvitationId))
-                .Returns((true, "testCorp", secret, "test@email.com"));
-            A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
-                .Throws(new ConflictException("test"));
-        }
-
-        // Act
-        var result = await _sut.SendMail(companyInvitationId).ConfigureAwait(false);
-
-        // Act
-        A.CallTo(() => _mailingService.SendMails("test@email.com", A<IDictionary<string, string>>._, "RegistrationTemplate"))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("test@email.com", A<IDictionary<string, string>>._, "PasswordForRegistrationTemplate"))
-            .MustHaveHappenedOnceExactly();
-        result.processMessage.Should().BeNull();
-        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.modified.Should().BeTrue();
-        result.nextStepTypeIds.Should().BeNull();
     }
 
     #endregion

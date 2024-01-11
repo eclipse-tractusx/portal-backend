@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using System.Globalization;
 using System.Text.Json;
 
@@ -47,6 +48,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IIdentityData _identityData;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly CompanyDataSettings _settings;
 
     /// <summary>
@@ -56,13 +58,15 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     /// <param name="custodianService"></param>
     /// <param name="dateTimeProvider"></param>
     /// <param name="identityService"></param>
+    /// <param name="mailingProcessCreation"></param>
     /// <param name="options"></param>
-    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IIdentityService identityService, IOptions<CompanyDataSettings> options)
+    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IIdentityService identityService, IMailingProcessCreation mailingProcessCreation, IOptions<CompanyDataSettings> options)
     {
         _portalRepositories = portalRepositories;
         _custodianService = custodianService;
         _dateTimeProvider = dateTimeProvider;
         _identityData = identityService.IdentityData;
+        _mailingProcessCreation = mailingProcessCreation;
         _settings = options.Value;
     }
 
@@ -503,9 +507,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         if (!string.IsNullOrWhiteSpace(data.RequesterData.RequesterEmail))
         {
-            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
             var userName = string.Join(" ", new[] { data.RequesterData.Firstname, data.RequesterData.Lastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
             var mailParameters = new Dictionary<string, string>
             {
@@ -517,8 +518,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                     "expiryDate", data.ExpiryDate == null ? string.Empty : data.ExpiryDate.Value.ToString("o", CultureInfo.InvariantCulture)
                 }
             };
-
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, data.RequesterData.RequesterEmail, "CredentialApproval", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(data.RequesterData.RequesterEmail, "CredentialApproval", mailParameters);
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -559,17 +559,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         if (!string.IsNullOrWhiteSpace(requesterEmail))
         {
-            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
             var userName = string.Join(" ", new[] { requesterFirstname, requesterLastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : requesterEmail },
                 { "requestName", typeValue }
             };
-
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, requesterEmail, "CredentialRejected", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(requesterEmail, "CredentialRejected", mailParameters);
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 

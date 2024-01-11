@@ -48,6 +48,5 @@
     <ProjectReference Include="..\..\..\src\marketplace\Offers.Library\Offers.Library.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
-    <ProjectReference Include="..\..\..\src\mailing\Mailing.Service\Mailing.Service.csproj" />
   </ItemGroup>
 </Project>

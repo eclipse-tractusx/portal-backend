@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\externalsystems\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+    <ProjectReference Include="..\Mailing.Library\Mailing.Library.csproj" />
     <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
   </ItemGroup>
 

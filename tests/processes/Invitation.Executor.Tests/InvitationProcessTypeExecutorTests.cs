@@ -132,8 +132,7 @@ public class InvitationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP)]
     [InlineData(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, ProcessStepTypeId.INVITATION_CREATE_USER)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, ProcessStepTypeId.INVITATION_SEND_MAIL)]
-    [InlineData(ProcessStepTypeId.INVITATION_SEND_MAIL, null)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, null)]
     public async Task ExecuteProcessStep_ReturnsExpected(ProcessStepTypeId processStepTypeId, ProcessStepTypeId? expectedResult)
     {
         // Arrange initialize
@@ -367,8 +366,6 @@ public class InvitationProcessTypeExecutorTests
         A.CallTo(() => _invitationProcessService.CreateIdpDatabase(_invitationId))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_USER, 1), ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _invitationProcessService.CreateUser(_invitationId, A<CancellationToken>._))
-            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.INVITATION_SEND_MAIL, 1), ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _invitationProcessService.SendMail(_invitationId))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, true, null));
     }
 

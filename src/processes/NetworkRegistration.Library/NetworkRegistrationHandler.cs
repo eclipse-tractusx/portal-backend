@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -37,17 +38,20 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly NetworkRegistrationProcessSettings _settings;
 
     public NetworkRegistrationHandler(
         IPortalRepositories portalRepositories,
         IUserProvisioningService userProvisioningService,
         IProvisioningManager provisioningManager,
+        IMailingProcessCreation mailingProcessCreation,
         IOptions<NetworkRegistrationProcessSettings> options)
     {
         _portalRepositories = portalRepositories;
         _userProvisioningService = userProvisioningService;
         _provisioningManager = provisioningManager;
+        _mailingProcessCreation = mailingProcessCreation;
 
         _settings = options.Value;
     }
@@ -129,8 +133,10 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 {
                     throw new ConflictException($"DisplayName for idpAlias {idpAlias} couldn't be determined");
                 }
+
                 mapping.Add(idpAlias, displayName);
             }
+
             return displayName;
         }
 
@@ -148,12 +154,8 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
 
     private async Task CreateMailProcess(IAsyncEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
     {
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         await foreach (var (receiver, firstName, lastName, displayNames) in companyUserWithRoleIdForCompany)
         {
-            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-
             var userName = string.Join(" ", firstName, lastName);
             var mailParameters = new Dictionary<string, string>
             {
@@ -165,7 +167,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 { "url", _settings.BasePortalAddress },
                 { "idpAlias", string.Join(",", displayNames) }
             };
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, receiver, "CredentialRejected", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(receiver, "CredentialRejected", mailParameters);
         }
     }
 

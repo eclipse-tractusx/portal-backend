@@ -33,6 +33,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Libra
 
 public class IdpManagement : IIdpManagement
 {
+    private static readonly string MasterRealm = "master";
+    private static readonly string SharedRealm = "shared";
     private static readonly IReadOnlyDictionary<IamClientAuthMethod, string> IamClientAuthMethodsInternalDictionary = new Dictionary<IamClientAuthMethod, string>
     {
         { IamClientAuthMethod.JWT, "client-jwt" },
@@ -46,11 +48,11 @@ public class IdpManagement : IIdpManagement
     private readonly IdpManagementSettings _settings;
     private readonly IProvisioningDBAccess? _provisioningDbAccess;
 
-    public IdpManagement(IKeycloakFactory keycloakFactory, IProvisioningDBAccess provisioningDBAccess, IOptions<IdpManagementSettings> options)
+    public IdpManagement(IKeycloakFactory keycloakFactory, IProvisioningDBAccess provisioningDbAccess, IOptions<IdpManagementSettings> options)
     {
         _factory = keycloakFactory;
         _centralIdp = keycloakFactory.CreateKeycloakClient("central");
-        _provisioningDbAccess = provisioningDBAccess;
+        _provisioningDbAccess = provisioningDbAccess;
         _settings = options.Value;
     }
 
@@ -67,24 +69,24 @@ public class IdpManagement : IIdpManagement
 
     public async Task<(string ClientId, string Secret, string ServiceAccountUserId)> CreateSharedIdpServiceAccountAsync(string realm)
     {
-        var sharedIdp = _factory.CreateKeycloakClient("shared");
+        var sharedIdp = _factory.CreateKeycloakClient(SharedRealm);
         var clientId = GetServiceAccountClientId(realm);
-        var internalClientId = await CreateServiceAccountClient(sharedIdp, "master", clientId, clientId, IamClientAuthMethod.SECRET, true);
-        var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync("master", internalClientId).ConfigureAwait(false);
+        var internalClientId = await CreateServiceAccountClient(sharedIdp, MasterRealm, clientId, clientId, IamClientAuthMethod.SECRET, true);
+        var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync(MasterRealm, internalClientId).ConfigureAwait(false);
         if (serviceAccountUser == null || string.IsNullOrWhiteSpace(serviceAccountUser.Id))
         {
             throw new NotFoundException("ServiceAccount could not be found for client id: {internalClientId}");
         }
 
-        var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
+        var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(false);
         return new(clientId, credentials.Value, serviceAccountUser.Id);
     }
 
     public async Task AddRealmRoleMappingsToUserAsync(string serviceAccountUserId)
     {
-        var sharedIdp = _factory.CreateKeycloakClient("shared");
-        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync("master", "create-realm").ConfigureAwait(false);
-        await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUserId, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
+        var sharedIdp = _factory.CreateKeycloakClient(SharedRealm);
+        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync(MasterRealm, "create-realm").ConfigureAwait(false);
+        await sharedIdp.AddRealmRoleMappingsToUserAsync(MasterRealm, serviceAccountUserId, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
     }
 
     private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod, bool enabled)
@@ -154,7 +156,7 @@ public class IdpManagement : IIdpManagement
         var config = new IdentityProviderClientConfig(
             $"{redirectUrl}/*",
             jwksUrl);
-        var sharedKeycloak = _factory.CreateKeycloakClient("shared", clientId, secret);
+        var sharedKeycloak = _factory.CreateKeycloakClient(SharedRealm, clientId, secret);
         var newClient = _settings.SharedRealmClient.Clone();
         newClient.RedirectUris = Enumerable.Repeat(config.RedirectUri, 1);
         newClient.Attributes ??= new Dictionary<string, string>();
@@ -188,7 +190,7 @@ public class IdpManagement : IIdpManagement
 
     private async Task<KeycloakClient> CreateSharedRealmAsync(string idpName, string organisationName, string? loginTheme, string clientId, string secret)
     {
-        var sharedKeycloak = _factory.CreateKeycloakClient("shared", clientId, secret);
+        var sharedKeycloak = _factory.CreateKeycloakClient(SharedRealm, clientId, secret);
 
         await CreateSharedRealmAsyncInternal(sharedKeycloak, idpName, organisationName, loginTheme).ConfigureAwait(false);
         return sharedKeycloak;

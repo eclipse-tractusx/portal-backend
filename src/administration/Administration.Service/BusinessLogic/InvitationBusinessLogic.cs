@@ -36,28 +36,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class InvitationBusinessLogic : IInvitationBusinessLogic
 {
     private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private readonly IProvisioningManager _provisioningManager;
-    private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly InvitationSettings _settings;
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="provisioningManager">Provisioning Manager</param>
-    /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="portalRepositories">Portal Repositories</param>
-    /// <param name="settings">Settings</param>
     public InvitationBusinessLogic(
-        IProvisioningManager provisioningManager,
-        IUserProvisioningService userProvisioningService,
-        IPortalRepositories portalRepositories,
-        IOptions<InvitationSettings> settings)
+        IPortalRepositories portalRepositories)
     {
-        _provisioningManager = provisioningManager;
-        _userProvisioningService = userProvisioningService;
         _portalRepositories = portalRepositories;
-        _settings = settings.Value;
     }
 
     public Task ExecuteInvitation(CompanyInvitationData invitationData)

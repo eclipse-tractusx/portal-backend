@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
@@ -68,7 +69,7 @@ public class OfferSetupServiceTests
     private readonly IOfferRepository _offerRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly INotificationRepository _notificationRepository;
-    private readonly IMailingInformationRepository _mailingInformationRepository;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IServiceAccountCreation _serviceAccountCreation;
@@ -88,7 +89,7 @@ public class OfferSetupServiceTests
         _appInstanceRepository = A.Fake<IAppInstanceRepository>();
         _clientRepository = A.Fake<IClientRepository>();
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
-        _mailingInformationRepository = A.Fake<IMailingInformationRepository>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
         _offerRepository = A.Fake<IOfferRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _provisioningManager = A.Fake<IProvisioningManager>();
@@ -111,9 +112,8 @@ public class OfferSetupServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IMailingInformationRepository>()).Returns(_mailingInformationRepository);
 
-        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _technicalUserProfileService, _identityService, A.Fake<ILogger<OfferSetupService>>());
+        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _technicalUserProfileService, _identityService, _mailingProcessCreation, A.Fake<ILogger<OfferSetupService>>());
     }
 
     #region AutoSetupServiceAsync
@@ -242,7 +242,7 @@ public class OfferSetupServiceTests
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         if (!isSingleInstance)
         {
-            A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, $"{offerTypeId.ToString().ToLower()}-subscription-activation", A<Dictionary<string, string>>._))
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, $"{offerTypeId.ToString().ToLower()}-subscription-activation", A<Dictionary<string, string>>._))
                 .MustHaveHappenedOnceExactly();
         }
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1215,11 +1215,11 @@ public class OfferSetupServiceTests
             .MustHaveHappenedOnceExactly();
         if (string.IsNullOrWhiteSpace(requesterEmail))
         {
-            A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
         }
         else
         {
-            A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, requesterEmail, A<string>._, A<Dictionary<string, string>>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(requesterEmail, A<string>._, A<Dictionary<string, string>>._)).MustHaveHappenedOnceExactly();
         }
     }
 
@@ -1279,11 +1279,11 @@ public class OfferSetupServiceTests
             .MustHaveHappenedOnceExactly();
         if (string.IsNullOrWhiteSpace(requesterEmail))
         {
-            A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
         }
         else
         {
-            A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, requesterEmail, A<string>._, A<Dictionary<string, string>>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(requesterEmail, A<string>._, A<Dictionary<string, string>>._)).MustHaveHappenedOnceExactly();
         }
     }
 

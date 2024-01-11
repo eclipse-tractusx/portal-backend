@@ -80,16 +80,6 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
         modify(entity);
     }
 
-    public Task<(bool Exists, string OrgName, byte[]? UserPassword, string Email)> GetMailData(Guid companyInvitationId) =>
-        _context.CompanyInvitations
-            .Where(x => x.Id == companyInvitationId)
-            .Select(x => new ValueTuple<bool, string, byte[]?, string>(
-                true,
-                x.OrganisationName,
-                x.Password,
-                x.Email))
-            .SingleOrDefaultAsync();
-
     public Task<string?> GetIdpNameForInvitationId(Guid invitationId) =>
         _context.CompanyInvitations
             .Where(x => x.Id == invitationId)

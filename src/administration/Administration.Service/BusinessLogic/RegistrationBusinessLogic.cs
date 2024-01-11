@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -54,6 +55,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
 
     public RegistrationBusinessLogic(
@@ -64,6 +66,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
         IDimBusinessLogic dimBusinessLogic,
         IProvisioningManager provisioningManager,
+        IMailingProcessCreation mailingProcessCreation,
         ILogger<RegistrationBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
@@ -73,6 +76,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
         _dimBusinessLogic = dimBusinessLogic;
         _provisioningManager = provisioningManager;
+        _mailingProcessCreation = mailingProcessCreation;
         _logger = logger;
     }
 
@@ -544,10 +548,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 throw new ConflictException($"user {userName} has no assigned email");
             }
 
-            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
@@ -555,7 +555,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 { "declineComment", comment },
                 { "helpUrl", _settings.HelpAddress }
             };
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
         }
     }
 

@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
@@ -52,6 +53,7 @@ public static class WebAppHelper
                     });
                     builder.Services.AddClaimsIdentityService();
                     builder.Services.AddPublicInfos();
+                    builder.Services.AddMailingProcessCreation();
                 },
                 (app, environment) =>
                 {

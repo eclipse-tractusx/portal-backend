@@ -201,7 +201,7 @@ public class IdpManagementTests
                 EndSessionEndpoint = new Uri("https://example.org/session"),
                 JwksUri = new Uri("https://example.org/jwks")
             })
-            .WithGetIdentityProviderAsync("idp1", new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow));
+            .WithGetIdentityProviderAsync("idp1", new IdentityProvider { Alias = "idp1", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() });
 
         // Act
         await _sut.UpdateCentralIdentityProviderUrlsAsync("idp1", "testCorp", "theme1", "cl1", "safePw").ConfigureAwait(false);
@@ -292,7 +292,7 @@ public class IdpManagementTests
         // Arrange
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync("idp1", new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow));
+            .WithGetIdentityProviderAsync("idp1", new IdentityProvider { Alias = "Test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() });
 
         // Act
         await _sut.EnableCentralIdentityProviderAsync("idp1").ConfigureAwait(false);

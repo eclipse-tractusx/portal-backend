@@ -121,8 +121,6 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
                     .ConfigureAwait(false),
                 ProcessStepTypeId.INVITATION_CREATE_USER => await _invitationProcessService.CreateUser(_companyInvitationId, cancellationToken)
                     .ConfigureAwait(false),
-                ProcessStepTypeId.INVITATION_SEND_MAIL => await _invitationProcessService.SendMail(_companyInvitationId)
-                    .ConfigureAwait(false),
                 _ => throw new UnexpectedConditionException($"Execution for {processStepTypeId} is currently not supported.")
             };
         }

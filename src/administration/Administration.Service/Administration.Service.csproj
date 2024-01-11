@@ -54,6 +54,7 @@
     <ProjectReference Include="..\..\mailing\Mailing.Service\Mailing.Service.csproj" />
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
     <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
+    <ProjectReference Include="..\..\processes\Mailing.Library\Mailing.Library.csproj" />
     <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />

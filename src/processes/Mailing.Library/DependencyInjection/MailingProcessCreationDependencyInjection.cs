@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,24 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Mail
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
+
+public static class MailingProcessCreationDependencyInjection
 {
-    public class UserEmailSettings
-    {
-        public string SenderEmail { get; set; } = null!;
-        public string Template { get; set; } = null!;
-    }
-    public static class UserEmailSettingsExtention
-    {
-        public static IServiceCollection ConfigureUserEmailSettings(
-            this IServiceCollection services,
-            IConfigurationSection section
-            )
-        {
-            return services.Configure<UserEmailSettings>(x => section.Bind(x));
-        }
-    }
+    public static IServiceCollection AddMailingProcessCreation(this IServiceCollection services) =>
+        services
+            .AddTransient<IMailingProcessCreation, MailingProcessCreation>();
 }

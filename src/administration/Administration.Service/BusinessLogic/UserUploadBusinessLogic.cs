@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Runtime.CompilerServices;
@@ -37,7 +38,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 {
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IPortalRepositories _portalRepositories;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly UserSettings _settings;
     private readonly IIdentityData _identityData;
     private readonly IErrorMessageService _errorMessageService;
@@ -46,19 +47,19 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     /// Constructor.
     /// </summary>
     /// <param name="userProvisioningService">User Provisioning Service</param>
-    /// <param name="portalRepositories">The portalRepositories</param>
+    /// <param name="mailingProcessCreation">The mailingProcessCreation</param>
     /// <param name="identityService">Access to the identity Service</param>
     /// <param name="errorMessageService">ErrorMessage Service</param>
     /// <param name="settings">Settings</param>
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
-        IPortalRepositories portalRepositories,
+        IMailingProcessCreation mailingProcessCreation,
         IIdentityService identityService,
         IErrorMessageService errorMessageService,
         IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;
-        _portalRepositories = portalRepositories;
+        _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _errorMessageService = errorMessageService;
         _settings = settings.Value;
@@ -158,12 +159,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                 { "nameCreatedBy", nameCreatedBy },
                 { "url", _settings.Portal.BasePortalAddress },
             };
-
-            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-            var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
-            processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
-
-            _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, userCreationInfo.Email, "NewUserOwnIdpTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, "NewUserOwnIdpTemplate", mailParameters);
 
             yield return (result.CompanyUserId, result.UserName, result.Password, null);
         }

@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using System.Net;
-using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 
@@ -96,14 +95,6 @@ public static class FlurlSetupExtensions
     }
 
     public static HttpTest WithGetClientAsync(this HttpTest testClient, string alias, string clientId, Client client)
-    {
-        testClient.ForCallsTo($"*/admin/realms/{alias}/clients/{clientId}")
-            .WithVerb(HttpMethod.Get)
-            .RespondWithJson(client);
-        return testClient;
-    }
-
-    public static HttpTest With(this HttpTest testClient, string alias, string clientId, Client client)
     {
         testClient.ForCallsTo($"*/admin/realms/{alias}/clients/{clientId}")
             .WithVerb(HttpMethod.Get)

@@ -129,7 +129,7 @@ public class ProvisioningManagerTests
         const string id = "123";
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync(ValidClientName, new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow))
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
             .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
@@ -153,7 +153,7 @@ public class ProvisioningManagerTests
         const string id = "123";
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync(ValidClientName, new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow))
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
             .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
@@ -174,7 +174,7 @@ public class ProvisioningManagerTests
         const string alias = "idp123";
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
-            .WithGetIdentityProviderAsync(alias, new PortalBackend.PortalEntities.Entities.IdentityProvider(Guid.NewGuid(), IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, Guid.NewGuid(), DateTimeOffset.UtcNow));
+            .WithGetIdentityProviderAsync(alias, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() });
 
         // Act
         var displayName = await _sut.GetIdentityProviderDisplayName(alias).ConfigureAwait(false);

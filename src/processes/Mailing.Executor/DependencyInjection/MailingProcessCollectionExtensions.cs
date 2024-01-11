@@ -17,9 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.DependencyInjection;
