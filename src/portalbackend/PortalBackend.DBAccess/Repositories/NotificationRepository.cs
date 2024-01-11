@@ -84,8 +84,8 @@ public class NotificationRepository : INotificationRepository
                     (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value) &&
                     (!onlyDueDate || notification.DueDate.HasValue) &&
                     (!doneState.HasValue || notification.Done == doneState.Value) &&
-                    (!searchTypeIds.Any() || searchTypeIds.Contains(notification.NotificationTypeId) ||
-                    searchQuery == null || notification.Content != null && EF.Functions.ILike(notification.Content, $"%{searchQuery.EscapeForILike()}%")))
+                    (!searchTypeIds.Any() || searchTypeIds.Contains(notification.NotificationTypeId)) &&
+                    (searchQuery == null || notification.Content != null && EF.Functions.ILike(notification.Content, $"%{searchQuery.EscapeForILike()}%")))
                 .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {
