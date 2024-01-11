@@ -81,8 +81,8 @@ public class ExpiryCheckService
             var notificationRepository = portalRepositories.GetInstance<INotificationRepository>();
             var inactiveVcsToDelete = now.AddDays(-(_settings.InactiveVcsToDeleteInWeeks * 7));
             var expiredVcsToDelete = now.AddMonths(-_settings.ExpiredVcsToDeleteInMonth);
-            var credentials = companySsiDetailsRepository.GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete);
-            await foreach (var credential in credentials.WithCancellation(stoppingToken))
+            var credentials = await companySsiDetailsRepository.GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete).ToListAsync(stoppingToken).ConfigureAwait(false);
+            foreach (var credential in credentials)
             {
                 await ProcessCredentials(credential, companySsiDetailsRepository, mailingService, notificationRepository, portalRepositories);
             }
