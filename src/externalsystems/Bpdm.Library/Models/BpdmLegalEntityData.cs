@@ -22,68 +22,52 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
-public record BpdmLegalEntityData(
-    string ExternalId,
-    IEnumerable<string> LegalNameParts,
-    string? LegalShortName,
-    string? LegalForm,
-    IEnumerable<BpdmIdentifier> Identifiers,
-    IEnumerable<BpdmStatus> States,
-    IEnumerable<BpdmProfileClassification> Classifications,
-    IEnumerable<string> Roles,
-    BpdmLegalAddress LegalAddress
-);
-
 public record BpdmIdentifier(
-    string Value,
     BpdmIdentifierId Type,
+    string Value,
     string? IssuingBody
 );
 
-public record BpdmStatus(
-    string OfficialDenotation,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidUntil,
+public record BpdmState(
+    DateTime ValidFrom,
+    DateTime ValidTo,
     string Type
 );
 
-public record BpdmProfileClassification(
-    string Value,
+public record BpdmClassification(
+    string Type,
     string Code,
-    string Type
+    string Value
 );
 
-public record BpdmLegalAddress(
-    IEnumerable<string> NameParts,
-    IEnumerable<BpdmAddressState> States,
-    IEnumerable<BpdmAddressIdentifier> Identifiers,
-    BpdmAddressPhysicalPostalAddress PhysicalPostalAddress,
-    BpdmAddressAlternativePostalAddress? AlternativePostalAddress,
-    IEnumerable<string> Roles
+public record BpdmGeographicCoordinates(
+    double Longitude,
+    double Latitude,
+    double Altitude
 );
 
-public record BpdmAddressState(
-    string Description,
-    DateTimeOffset? ValidFrom,
-    DateTimeOffset? ValidTo,
-    string Type
+public record BpdmPutStreet(
+    string? NamePrefix,
+    string? AdditionalNamePrefix,
+    string Name,
+    string? NameSuffix,
+    string? AdditionalNameSuffix,
+    string? HouseNumber,
+    string? HouseNumberSupplement,
+    string? Milestone,
+    string? Direction
 );
 
-public record BpdmAddressIdentifier(
-    string Value,
-    BpdmIdentifierId Type
-);
-
-public record BpdmAddressPhysicalPostalAddress(
-    BpdmGeographicCoordinatesDto? GeographicCoordinates,
-    string? Country,
-    string? PostalCode,
-    string? City,
-    BpdmLegalEntityStreet? Street,
+public record BpdmPutPhysicalPostalAddress(
+    BpdmGeographicCoordinates? GeographicCoordinates,
+    string Country,
     string? AdministrativeAreaLevel1,
     string? AdministrativeAreaLevel2,
     string? AdministrativeAreaLevel3,
+    string? PostalCode,
+    string? City,
     string? District,
+    BpdmPutStreet Street,
     string? CompanyPostalCode,
     string? IndustrialZone,
     string? Building,
@@ -91,24 +75,46 @@ public record BpdmAddressPhysicalPostalAddress(
     string? Door
 );
 
-public record BpdmAddressAlternativePostalAddress(
-    BpdmGeographicCoordinatesDto? GeographicCoordinates,
-    string? Country,
-    string? PostalCode,
-    string? City,
-    string? AdministrativeAreaLevel1,
-    string? DeliveryServiceNumber,
-    string? DeliveryServiceType,
-    string? DeliveryServiceQualifier
+public record BpdmPutAlternativePostalAddress(
+    BpdmGeographicCoordinates? GeographicCoordinates,
+    string Country,
+    string AdministrativeAreaLevel1,
+    string PostalCode,
+    string City,
+    string DeliveryServiceType,
+    string DeliveryServiceQualifier,
+    string DeliveryServiceNumber
 );
 
-public record BpdmLegalEntityStreet(
-    string? NamePrefix,
-    string? AdditionalNamePrefix,
-    string Name,
-    string? NameSuffix,
-    string? AdditionalNameSuffix,
-    string? HouseNumber,
-    string? Milestone,
-    string? Direction
+public record BpdmAddress(
+    string? AddressBpn,
+    string? Name,
+    string? AddressType,
+    BpdmPutPhysicalPostalAddress PhysicalPostalAddress,
+    BpdmPutAlternativePostalAddress? AlternativePostalAddress
+);
+
+public record BpdmLegalEntity(
+    string? LegalEntityBpn,
+    string LegalName,
+    string? ShortName,
+    string? LegalForm,
+    IEnumerable<BpdmClassification> Classifications
+);
+
+public record BpdmSite(
+    string SiteBpn,
+    string Name
+);
+
+public record BpdmLegalEntityData(
+    string ExternalId,
+    IEnumerable<string> NameParts,
+    IEnumerable<BpdmIdentifier> Identifiers,
+    IEnumerable<BpdmState> States,
+    IEnumerable<string> Roles,
+    BpdmLegalEntity LegalEntity,
+    BpdmSite? Site,
+    BpdmAddress Address,
+    bool OwnCompanyData
 );

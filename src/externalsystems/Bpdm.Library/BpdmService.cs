@@ -57,49 +57,58 @@ public class BpdmService : IBpdmService
         {
             new(
                 data.ExternalId,                               // Index
-                Enumerable.Repeat(data.CompanyName, 1),        // LegalName
-                data.ShortName,                                // LegalShortName
-                null,                                          // LegalForm
+                new []
+                {
+                    data.CompanyName,   // LegalName
+                    data.ShortName     // ShortName
+                },
                 data.Identifiers.Select(x =>
                     new BpdmIdentifier(
-                        x.Value,                               // Value
                         x.BpdmIdentifierId,                    // Type
+                        x.Value,                               // Value
                         null)),                                // IssuingBody
-                Enumerable.Empty<BpdmStatus>(),                // Status
-                Enumerable.Empty<BpdmProfileClassification>(), // Classifications
+                Enumerable.Empty<BpdmState>(),                // Status
                 Enumerable.Empty<string>(),                    // Roles
-                new BpdmLegalAddress(
-                    Enumerable.Empty<string>(),                // Name
-                    Enumerable.Empty<BpdmAddressState>(),      // States 
-                    Enumerable.Empty<BpdmAddressIdentifier>(), // Identifiers
-                    new BpdmAddressPhysicalPostalAddress(      // PhysicalPostalAddress
-                        null,                                  // GeographicCoordinates
-                        data.AlphaCode2,                       // Country
-                        data.ZipCode,                          // PostalCode
-                        data.City,                             // City
-                        new BpdmLegalEntityStreet(
-                            null,                              // NamePrefix
-                            null,                              // AdditionalNamePrefix
-                            data.StreetName,                   // Name
-                            null,                              // NameSuffix
-                            null,                              // AdditionalNameSuffix
-                            data.StreetNumber,                 // StreetNumber
-                            null,                              // Milestone
-                            null                               // Direction
-                        ),
-                        data.Region,                           // AdministrativeAreaLevel1
-                        null,                                  // AdministrativeAreaLevel2
-                        null,                                  // AdministrativeAreaLevel3
-                        null,                                  // District
-                        null,                                  // CompanyPostalCode
-                        null,                                  // IndustrialZone
-                        null,                                  // Building
-                        null,                                  // Floor
-                        null                                   // Door
+                new BpdmLegalEntity(
+                    null,
+                    data.CompanyName,
+                    data.ShortName,
+                    null,
+                    Enumerable.Empty<BpdmClassification>()
+                ),
+                null,
+                new BpdmAddress(
+                    null,
+                    null,
+                    null,
+                    new BpdmPutPhysicalPostalAddress(
+                        null,
+                        data.AlphaCode2,
+                        null,
+                        null,
+                        null,
+                        data.ZipCode,
+                        data.City,
+                        data.Region,
+                        new BpdmPutStreet(
+                            null,
+                            null,
+                            data.StreetName,
+                            null,
+                            null,
+                            data.StreetNumber,
+                            null,
+                            null,
+                            null),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
                     ),
-                    null,                                      // AlternativePostalAddress
-                    Enumerable.Empty<string>()
-                )
+                    null
+                ),
+                true
             )
         };
 
