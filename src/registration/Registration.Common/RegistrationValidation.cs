@@ -74,9 +74,9 @@ public static class RegistrationValidation
         }
     }
 
-    public static async Task ValidateDatabaseData(this RegistrationData data, Func<string, Task<bool>> checkBpn, Func<string, Task<bool>> checkCountryExistByAlpha2Code, Func<string, IEnumerable<UniqueIdentifierId>, Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)>> getCountryAssignedIdentifiers)
+    public static async Task ValidateDatabaseData(this RegistrationData data, Func<string, Task<bool>> checkBpn, Func<string, Task<bool>> checkCountryExistByAlpha2Code, Func<string, IEnumerable<UniqueIdentifierId>, Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)>> getCountryAssignedIdentifiers, bool checkBpnAlreadyExists)
     {
-        if (data.BusinessPartnerNumber != null && await checkBpn(data.BusinessPartnerNumber.ToUpper()).ConfigureAwait(false))
+        if (data.BusinessPartnerNumber != null && checkBpnAlreadyExists && await checkBpn(data.BusinessPartnerNumber.ToUpper()).ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"The Bpn {data.BusinessPartnerNumber} already exists", nameof(data.BusinessPartnerNumber));
         }
