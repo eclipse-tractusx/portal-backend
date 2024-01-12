@@ -65,7 +65,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
             .Where(companyRole => companyRole.CompanyRoleRegistrationData!.IsRegistrationRole && companyRoleIds.Contains(companyRole.Id))
             .Select(companyRole => new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(
                 companyRole.Id,
-                companyRole.AgreementAssignedCompanyRoles!
+                companyRole.AgreementAssignedCompanyRoles.Where(x => x.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE)
                     .Select(agreementAssignedCompanyRole => new AgreementStatusData(
                         agreementAssignedCompanyRole.AgreementId,
                         agreementAssignedCompanyRole.Agreement!.AgreementStatusId
