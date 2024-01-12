@@ -17,17 +17,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+namespace Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
-public static class ClaimsIdentityServiceCollectionExtensions
+public interface IClaimsIdentityDataBuilder : IIdentityData
 {
-    public static IServiceCollection AddClaimsIdentityService(this IServiceCollection services)
-    {
-        return services
-            .AddScoped<IClaimsIdentityDataBuilder, ClaimsIdentityDataBuilder>()
-            .AddTransient<IIdentityService, ClaimsIdentityService>();
-    }
+    void AddIdentityId(Guid identityId);
+    void AddIdentityTypeId(IdentityTypeId identityTypeId);
+    void AddCompanyId(Guid companyId);
+
+    IClaimsIdentityDataBuilderStatus Status { get; set; }
+}
+
+public enum IClaimsIdentityDataBuilderStatus
+{
+    Initial,
+    Initialized,
+    Complete,
+    Empty
 }

@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Web.Identity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
@@ -36,7 +35,6 @@ WebAppHelper
     .BuildAndRunWebApplication<Program>(args, "registration", VERSION, builder =>
     {
         builder.Services
-            .AddIdentityService()
             .AddPublicInfos();
 
         builder.Services

@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
 public static class PolicyTypes
 {

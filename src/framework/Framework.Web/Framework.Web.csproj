@@ -30,7 +30,7 @@
   <PropertyGroup>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</Title>
-    <Authors>TractusX</Authors>
+    <Authors>Eclipse Tractus-X</Authors>
     <Copyright>All content is the property of the respective authors or their employers. For more information regarding authorship of content, please consult the listed source code repository logs.</Copyright>
     <Description>
       The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks.
@@ -69,11 +69,11 @@
     <ProjectReference Include="..\Framework.Logging\Framework.Logging.csproj" />
     <ProjectReference Include="..\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
-    <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Flurl.Signed" Version="3.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.15" />
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>

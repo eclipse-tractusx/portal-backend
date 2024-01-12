@@ -19,8 +19,6 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 

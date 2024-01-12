@@ -1,5 +1,5 @@
 <!--
-- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+- Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -31,7 +31,7 @@
   <PropertyGroup>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger</Title>
-    <Authors>TractusX</Authors>
+    <Authors>Eclipse Tractus-X</Authors>
     <Copyright>All content is the property of the respective authors or their employers. For more information regarding authorship of content, please consult the listed source code repository logs.</Copyright>
     <Description>
       The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks.

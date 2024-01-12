@@ -39,11 +39,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider" Version="1.0.0-beta.4" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.5" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.IO" Version="1.0.0-beta.5" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.4" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Token" Version="1.0.0-beta.5" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider" Version="1.0.0-beta.5" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.6" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.IO" Version="1.0.0-beta.6" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.5" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Token" Version="1.0.0-beta.6" />
     <PackageReference Include="PasswordGenerator" Version="2.1.0" />
   </ItemGroup>
 

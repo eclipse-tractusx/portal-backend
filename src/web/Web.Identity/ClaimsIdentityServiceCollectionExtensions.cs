@@ -17,12 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-public static class PortalClaimTypes
+namespace Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
+
+public static class ClaimsIdentityServiceCollectionExtensions
 {
-    public const string Sub = "sub";
-    public const string ClientId = "client_id";
-    public const string PreferredUserName = "preferred_username";
-    public const string ResourceAccess = "resource_access";
+    public static IServiceCollection AddClaimsIdentityService(this IServiceCollection services)
+    {
+        return services
+            .AddScoped<IClaimsIdentityDataBuilder, ClaimsIdentityDataBuilder>()
+            .AddTransient<IIdentityService, ClaimsIdentityService>();
+    }
 }

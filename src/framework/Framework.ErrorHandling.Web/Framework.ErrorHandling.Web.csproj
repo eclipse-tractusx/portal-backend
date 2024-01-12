@@ -32,7 +32,7 @@
   <PropertyGroup>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web</PackageId>
     <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web</Title>
-    <Authors>TractusX</Authors>
+    <Authors>Eclipse Tractus-X</Authors>
     <Copyright>All content is the property of the respective authors or their employers. For more information regarding authorship of content, please consult the listed source code repository logs.</Copyright>
     <Description>
       The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks.

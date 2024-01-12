@@ -20,7 +20,6 @@
 
 using Flurl.Util;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -37,8 +36,7 @@ public static class WebApplicationBuildRunner
         string version,
         string cookieName,
         Action<WebApplicationBuilder>? configureBuilder,
-        Action<WebApplication, IHostEnvironment>? configureApp,
-        Action<AuthorizationOptions>? addAdditionalAuth) where TClaimsTransformation : class, IClaimsTransformation
+        Action<WebApplication, IHostEnvironment>? configureApp) where TClaimsTransformation : class, IClaimsTransformation
     {
         LoggingExtensions.EnsureInitialized();
         Log.Information("Starting the application");
@@ -60,7 +58,7 @@ public static class WebApplicationBuildRunner
                 }
             });
             builder.Services
-                .AddDefaultServices<TProgram, TClaimsTransformation>(builder.Configuration, version, addAdditionalAuth, cookieName);
+                .AddDefaultServices<TProgram, TClaimsTransformation>(builder.Configuration, version, cookieName);
 
             configureBuilder?.Invoke(builder);
 

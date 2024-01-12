@@ -32,8 +32,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.DBAccess.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.DependencyInjection", "Framework.DependencyInjection\Framework.DependencyInjection.csproj", "{8EFECF3A-946B-4055-9E37-50EBAA0E3C4F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Authorization", "Framework.Authorization\Framework.Authorization.csproj", "{61CD9B4E-69E9-48BC-9ADE-F07E269BF397}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Async.Tests", "..\..\tests\framework\Framework.Async.Tests\Framework.Async.Tests.csproj", "{B43BA7FA-0073-4879-9DD6-DC87DE72D737}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Cors", "Framework.Cors\Framework.Cors.csproj", "{7C5DCDA7-0C5D-41EB-AF1E-A2FF273799B8}"
@@ -126,10 +124,6 @@ Global
 		{8EFECF3A-946B-4055-9E37-50EBAA0E3C4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EFECF3A-946B-4055-9E37-50EBAA0E3C4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EFECF3A-946B-4055-9E37-50EBAA0E3C4F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{61CD9B4E-69E9-48BC-9ADE-F07E269BF397}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{61CD9B4E-69E9-48BC-9ADE-F07E269BF397}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{61CD9B4E-69E9-48BC-9ADE-F07E269BF397}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{61CD9B4E-69E9-48BC-9ADE-F07E269BF397}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B43BA7FA-0073-4879-9DD6-DC87DE72D737}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B43BA7FA-0073-4879-9DD6-DC87DE72D737}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B43BA7FA-0073-4879-9DD6-DC87DE72D737}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -22,6 +22,7 @@
 
     <PropertyGroup>
       <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Services.Service</AssemblyName>
+      <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Services.Service</RootNamespace>
       <TargetFramework>net7.0</TargetFramework>
       <Nullable>enable</Nullable>
       <ImplicitUsings>enable</ImplicitUsings>

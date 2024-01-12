@@ -19,7 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
 
 public class ProcessIdentityService : IIdentityService
 {

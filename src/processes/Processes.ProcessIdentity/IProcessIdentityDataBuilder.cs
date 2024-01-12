@@ -20,7 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
 
 public interface IProcessIdentityDataBuilder : IIdentityData
 {

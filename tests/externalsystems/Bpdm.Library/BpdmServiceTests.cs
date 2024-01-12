@@ -23,8 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;

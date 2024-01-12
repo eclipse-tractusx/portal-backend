@@ -18,11 +18,11 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
 
 public class ProcessIdentityDataBuilder : IProcessIdentityDataBuilder
 {

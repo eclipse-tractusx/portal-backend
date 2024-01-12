@@ -24,20 +24,12 @@ dotnet nuget add source ~/packages --name local
 
 After the changes within the source code are done you can execute the following script from the root of the project to update the packages:
 
-To update the version for all packages:
+To update the version for the packages:
 
 ```bash
-./scripts/update_all_framework_versions.sh <version>
+./scripts/update_framework_versions.sh <version>
 ```
 
-To only update the packages that were changed, including the dependent packages you can run:
-
-```bash
-./scripts/update_framework_version.sh <location> <version>
-```
-
-When passing 'local' as the location the script will update all packages where local changes are available and not yet have been committed.
-When passing 'build' as the location the script will update all packages where changes were made in the last commit.
 For version there are the following options:
  - major
  - minor
@@ -79,13 +71,13 @@ After all packages are updated to the wanted version you can run the following c
 To push the updated packages to the local source
 
 ```bash
-./scripts/pack_and_push_packages.sh local
+./scripts/pack_and_push_packages_local.sh
 ```
 
 To update the version of a specific package:
 
 ```bash
-./scripts/pack_and_push_packages.sh nuget <NUGET_API_KEY>
+./scripts/pack_and_push_packages.sh <NUGET_API_KEY>
 ```
 
 NUGET_API_KEY is the key generated on nuget.org. The last command should only be executed within the github action

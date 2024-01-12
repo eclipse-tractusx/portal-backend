@@ -33,7 +33,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
-using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 using Testcontainers.PostgreSql;
 using Xunit;
 

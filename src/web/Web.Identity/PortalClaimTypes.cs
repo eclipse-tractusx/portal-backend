@@ -17,20 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
-public class ClaimsIdentityService : IIdentityService
+public static class PortalClaimTypes
 {
-    private readonly IIdentityData _identityData;
-    public ClaimsIdentityService(IClaimsIdentityDataBuilder claimsIdentityDataBuilder)
-    {
-        _identityData = claimsIdentityDataBuilder;
-    }
-
-    public IIdentityData IdentityData => _identityData;
+    public const string Sub = "sub";
+    public const string ClientId = "client_id";
+    public const string PreferredUserName = "preferred_username";
+    public const string ResourceAccess = "resource_access";
 }

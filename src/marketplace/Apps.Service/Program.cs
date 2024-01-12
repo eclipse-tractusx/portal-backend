@@ -27,7 +27,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Web.Identity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
@@ -37,7 +36,6 @@ WebAppHelper
     .BuildAndRunWebApplication<Program>(args, "apps", VERSION, builder =>
     {
         builder.Services
-            .AddIdentityService()
             .AddPublicInfos();
 
         builder.Services
