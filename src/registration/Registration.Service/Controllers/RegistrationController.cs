@@ -250,7 +250,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// </summary>
         /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application to set the company for.</param>
         /// <param name="companyDetailData">The company with its address</param>
-        /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress</remarks>
+        /// <remarks>Example: Post: /api/registration/application/{applicationId}/companyDetailsWithAddress</remarks>
         /// <response code="200">Successfully set the company with its address</response>
         /// <response code="400">A request parameter was incorrect.</response>
         /// <response code="404">CompanyApplication was not found for the given id.</response>
