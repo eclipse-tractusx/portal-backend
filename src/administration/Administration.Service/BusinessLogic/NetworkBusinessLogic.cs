@@ -184,7 +184,8 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         await data.ValidateDatabaseData(
             bpn => _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(bpn),
             alpha2Code => countryRepository.CheckCountryExistsByAlpha2CodeAsync(alpha2Code),
-            (countryAlpha2Code, uniqueIdentifierIds) => countryRepository.GetCountryAssignedIdentifiers(countryAlpha2Code, uniqueIdentifierIds)).ConfigureAwait(false);
+            (countryAlpha2Code, uniqueIdentifierIds) => countryRepository.GetCountryAssignedIdentifiers(countryAlpha2Code, uniqueIdentifierIds),
+            true).ConfigureAwait(false);
 
         if (!data.CompanyRoles.Any())
         {

@@ -559,12 +559,13 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
-    public async Task SetCompanyWithAddressAsync__WithExistingBpn_ThrowsControllerArgumentException()
+    public async Task SetCompanyWithAddressAsync__WithExistingBpn_ModifiesCompany()
     {
         //Arrange
         var applicationId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
         var identityData = A.Fake<IIdentityData>();
+        Company? company = null;
         A.CallTo(() => identityData.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
         A.CallTo(() => identityData.CompanyId).Returns(companyId);
@@ -587,12 +588,35 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
+        var existingData = _fixture.Build<CompanyApplicationDetailData>()
+            .With(x => x.IsUserOfCompany, true)
+            .Create();
+
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
+            .Returns(existingData);
+
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                company = new Company(companyId, null!, default, default);
+                initialize?.Invoke(company);
+                modify(company);
+            });
+
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"The Bpn {companyData.BusinessPartnerNumber} already exists (Parameter 'BusinessPartnerNumber')");
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+
+        company.Should().NotBeNull();
+        company.Should().Match<Company>(c =>
+            c.Id == companyId &&
+            c.Name == companyData.Name &&
+            c.Shortname == companyData.ShortName &&
+            c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
     }
 
     [Fact]

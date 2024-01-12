@@ -287,7 +287,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 _portalRepositories.GetInstance<ICountryRepository>()
                     .GetCountryAssignedIdentifiers(
                         countryAlpha2Code,
-                        uniqueIdentifierIds)).ConfigureAwait(false);
+                        uniqueIdentifierIds),
+            false).ConfigureAwait(false);
 
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
