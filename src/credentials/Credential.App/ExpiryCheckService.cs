@@ -76,13 +76,17 @@ public class ExpiryCheckService
             //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
             await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(false);
 
+            using var outerLoopScope = _serviceScopeFactory.CreateScope();
+            var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
+
             var now = dateTimeProvider.OffsetNow;
             var companySsiDetailsRepository = portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
             var notificationRepository = portalRepositories.GetInstance<INotificationRepository>();
             var inactiveVcsToDelete = now.AddDays(-(_settings.InactiveVcsToDeleteInWeeks * 7));
             var expiredVcsToDelete = now.AddMonths(-_settings.ExpiredVcsToDeleteInMonth);
-            var credentials = await companySsiDetailsRepository.GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete).ToListAsync(stoppingToken).ConfigureAwait(false);
-            foreach (var credential in credentials)
+
+            var credentials = outerLoopRepositories.GetInstance<ICompanySsiDetailsRepository>().GetExpiryData(now, inactiveVcsToDelete, expiredVcsToDelete);
+            await foreach (var credential in credentials.WithCancellation(stoppingToken).ConfigureAwait(false))
             {
                 await ProcessCredentials(credential, companySsiDetailsRepository, mailingService, notificationRepository, portalRepositories);
             }
@@ -154,23 +158,13 @@ public class ExpiryCheckService
 
     private static async ValueTask HandleNotification(CredentialExpiryData data, IMailingService mailingService, ICompanySsiDetailsRepository companySsiDetailsRepository, INotificationRepository notificationRepository)
     {
-        ExpiryCheckTypeId? newExpiryCheckTypeId;
-        if (data.ScheduleData.IsOneDayNotification)
+        var newExpiryCheckTypeId = data.ScheduleData switch
         {
-            newExpiryCheckTypeId = ExpiryCheckTypeId.ONE_DAY;
-        }
-        else if (data.ScheduleData.IsTwoWeeksNotification)
-        {
-            newExpiryCheckTypeId = ExpiryCheckTypeId.TWO_WEEKS;
-        }
-        else if (data.ScheduleData.IsOneMonthNotification)
-        {
-            newExpiryCheckTypeId = ExpiryCheckTypeId.ONE_MONTH;
-        }
-        else
-        {
-            return;
-        }
+            { IsOneDayNotification: true } => ExpiryCheckTypeId.ONE_DAY,
+            { IsTwoWeeksNotification: true } => ExpiryCheckTypeId.TWO_WEEKS,
+            { IsOneMonthNotification: true } => ExpiryCheckTypeId.ONE_MONTH,
+            _ => throw new UnexpectedConditionException("one of IsVcToDelete, IsOneDayNotification, IsTwoWeeksNotification, IsOneMonthNotification, IsVcToDecline is expected to be true")
+        };
 
         companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(
             data.Id,
