@@ -27,8 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library" Version="1.0.0-beta.6" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.6" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library" Version="1.0.0-beta.7" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.7" />
   </ItemGroup>
 
   <ItemGroup>

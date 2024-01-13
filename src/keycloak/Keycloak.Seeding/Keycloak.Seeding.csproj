@@ -39,9 +39,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.1.2" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Linq" Version="1.0.0-beta.6" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Logging" Version="1.0.0-beta.5" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.6" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Linq" Version="1.0.0-beta.7" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Logging" Version="1.0.0-beta.6" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.7" />
   </ItemGroup>
 
   <ItemGroup>
