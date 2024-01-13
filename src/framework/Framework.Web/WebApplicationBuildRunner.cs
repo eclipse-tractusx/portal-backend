@@ -68,7 +68,7 @@ public static class WebApplicationBuildRunner
         }
         catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
         {
-            Log.Fatal("Unhandled exception {Exception}", ex);
+            Log.Fatal(ex, "Start failed due to unhandled exception");
         }
         finally
         {
