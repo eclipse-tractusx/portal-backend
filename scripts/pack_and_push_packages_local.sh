@@ -27,7 +27,7 @@ iterate_directories() {
     if [ -d "$dir" ]; then
       proj="$(basename "$dir")"
       echo "Pack project: $proj"
-      dotnet pack --no-build --no-restore src/framework/$proj/$proj.csproj -c Release -o "$folderPath"
+      dotnet pack src/framework/$proj/$proj.csproj -c Release -o "$folderPath"
     fi
   done
 }

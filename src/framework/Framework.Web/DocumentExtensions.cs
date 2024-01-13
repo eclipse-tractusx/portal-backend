@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Security.Cryptography;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;

@@ -1,6 +1,6 @@
 # Update nuget packages
 
-Currently each project of the framework directory is build and provided as an nuget package.
+Each project of the [framework](/src/framework/) directory is build and provided as an nuget package.
 
 To be able to build and test changes locally we recommend the following setup:
 
@@ -80,4 +80,4 @@ To update the version of a specific package:
 ./scripts/pack_and_push_packages.sh <NUGET_API_KEY>
 ```
 
-NUGET_API_KEY is the key generated on nuget.org. The last command should only be executed within the github action
+NUGET_API_KEY is the key generated on nuget.org. The last command should only be executed within the github action [nuget-package-push](/.github/workflows/nuget-package-push.yml)

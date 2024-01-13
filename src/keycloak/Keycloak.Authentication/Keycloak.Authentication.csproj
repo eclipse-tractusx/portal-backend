@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+    <ProjectReference Include="..\..\web\Web.Identity\Web.Identity.csproj" />
   </ItemGroup>
 
 </Project>

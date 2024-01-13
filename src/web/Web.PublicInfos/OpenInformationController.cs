@@ -21,7 +21,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos;
 

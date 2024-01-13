@@ -17,22 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 [Serializable]
-public class NotFoundException : DetailException
+public class UnsupportedMediaTypeException : DetailException
 {
-    public NotFoundException() : base() { }
-    public NotFoundException(string message) : base(message) { }
-    public NotFoundException(string message, Exception inner) : base(message, inner) { }
-    protected NotFoundException(
+    public UnsupportedMediaTypeException() : base() { }
+    public UnsupportedMediaTypeException(string message) : base(message) { }
+    public UnsupportedMediaTypeException(string message, Exception inner) : base(message, inner) { }
+    protected UnsupportedMediaTypeException(
         System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
-    protected NotFoundException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
+    protected UnsupportedMediaTypeException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
 
-    public static NotFoundException Create<T>(T error, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) where T : Enum =>
+    public static UnsupportedMediaTypeException Create<T>(T error, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) where T : Enum =>
         new(typeof(T), ValueOf(error), parameters, inner);
-    public static NotFoundException Create<T>(T error, Exception inner) where T : Enum =>
+    public static UnsupportedMediaTypeException Create<T>(T error, Exception inner) where T : Enum =>
         new(typeof(T), ValueOf(error), null, inner);
 }

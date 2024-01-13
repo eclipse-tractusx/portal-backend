@@ -17,9 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 
-public interface IErrorMessageService
+public interface IErrorMessageContainer
 {
-    public string GetMessage(Type type, int code);
+    public Type Type { get; }
+    public IReadOnlyDictionary<int, string> MessageContainer { get; }
 }

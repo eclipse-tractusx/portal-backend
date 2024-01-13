@@ -17,10 +17,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using System.Collections.Immutable;
 
-public interface IErrorMessageContainer
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+
+public sealed class ErrorMessageService : IErrorMessageService
 {
-    public Type Type { get; }
-    public IReadOnlyDictionary<int, string> MessageContainer { get; }
+    private readonly IReadOnlyDictionary<Type, IReadOnlyDictionary<int, string>> _messageContainers;
+
+    public ErrorMessageService(IEnumerable<IErrorMessageContainer> errorMessageContainers)
+    {
+        _messageContainers = errorMessageContainers.ToImmutableDictionary(x => x.Type, x => x.MessageContainer);
+    }
+
+    public string GetMessage(Type type, int code)
+    {
+        if (!_messageContainers.TryGetValue(type, out var container))
+            throw new ArgumentException($"unexpected type {type.Name}");
+
+        if (!container.TryGetValue(code, out var message))
+            throw new ArgumentException($"no message defined for {type.Name}.{Enum.GetName(type, code)}");
+
+        return message;
+    }
 }

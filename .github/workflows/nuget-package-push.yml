@@ -25,6 +25,7 @@ on:
         - 'src/framework/**'
       branches:
         - 'dev'
+        - 'release/v*.*.*-RC*'
   workflow_dispatch:
     
 jobs:

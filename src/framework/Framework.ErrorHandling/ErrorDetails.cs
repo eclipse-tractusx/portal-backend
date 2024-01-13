@@ -17,13 +17,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
-public record ErrorResponse(
+public record ErrorDetails(
+    string ErrorCode,
     string Type,
-    string Title,
-    int Status,
-    IDictionary<string, IEnumerable<string>> Errors,
-    string ErrorId,
-    IEnumerable<ErrorDetails>? Details
+    string Message,
+    IEnumerable<ErrorParameter> Parameters
+);
+
+public record ErrorParameter(
+    string Name,
+    string Value
 );

@@ -20,7 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Runtime.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;

@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 public class ConfigurationValidation<TSettings>
 {

@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.DateTimeProvider"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.DBAccess", "Framework.DBAccess\Framework.DBAccess.csproj", "{10140004-3749-43B2-8923-D7BFBBFF9294}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.ErrorHandling.Library", "Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj", "{B45DDFDE-7ECE-4859-828F-45429D9A1695}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.ErrorHandling", "Framework.ErrorHandling\Framework.ErrorHandling.csproj", "{B45DDFDE-7ECE-4859-828F-45429D9A1695}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.IO", "Framework.IO\Framework.IO.csproj", "{BBD7C87D-790A-49C5-B198-FEB03C431264}"
 EndProject

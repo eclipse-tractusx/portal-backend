@@ -40,14 +40,15 @@ nuget/nuget/-/Serilog.Extensions.Hosting/7.0.0, Apache-2.0, approved, #10078
 nuget/nuget/-/Serilog.Extensions.Logging/7.0.0, Apache-2.0, approved, #10070
 nuget/nuget/-/Serilog.Formatting.Compact/1.1.0, Apache-2.0, approved, #11115
 nuget/nuget/-/Serilog.Settings.Configuration/7.0.0, Apache-2.0, approved, #10069
+nuget/nuget/-/Serilog.Sinks.Console/4.0.1, Apache-2.0, approved, #12858
 nuget/nuget/-/Serilog.Sinks.Console/4.1.0, Apache-2.0, approved, #8434
 nuget/nuget/-/Serilog.Sinks.Debug/2.0.0, Apache-2.0, approved, clearlydefined
 nuget/nuget/-/Serilog.Sinks.File/5.0.0, Apache-2.0, approved, #11116
+nuget/nuget/-/Serilog/2.12.0, Apache-2.0, approved, #8435
 nuget/nuget/-/Serilog/3.0.1, Apache-2.0, approved, #10063
 nuget/nuget/-/SharpZipLib/1.4.2, MIT AND GFDL-1.3-or-later AND (Apache-2.0 AND MIT) AND WTFPL AND bzip2-1.0.6 AND LicenseRef-Permissive-license-with-conditions AND LicenseRef-Permission-Notice, approved, #10058
 nuget/nuget/-/SshNet.Security.Cryptography/1.3.0, MIT, approved, clearlydefined
 nuget/nuget/-/Stubble.Core/1.10.8, MIT AND BSD-2-Clause, approved, #9297
-nuget/nuget/-/SwashBuckle.AspNetCore/6.5.0, MIT AND Apache-2.0, approved, #7159
 nuget/nuget/-/Swashbuckle.AspNetCore.Swagger/6.5.0, MIT AND Apache-2.0, approved, #7160
 nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerGen/6.5.0, MIT AND Apache-2.0, approved, #7156
 nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerUI/6.5.0, MIT AND Apache-2.0, approved, #7158

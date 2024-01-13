@@ -17,22 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 [Serializable]
-public class ConflictException : DetailException
+public class ConfigurationException : DetailException
 {
-    public ConflictException() : base() { }
-    public ConflictException(string message) : base(message) { }
-    public ConflictException(string message, Exception inner) : base(message, inner) { }
-    protected ConflictException(
+    public ConfigurationException() : base() { }
+    public ConfigurationException(string message) : base(message) { }
+    public ConfigurationException(string message, Exception inner) : base(message, inner) { }
+    protected ConfigurationException(
         System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
-    protected ConflictException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
+    protected ConfigurationException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
 
-    public static ConflictException Create<T>(T error, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) where T : Enum =>
+    public static ConfigurationException Create<T>(T error, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) where T : Enum =>
         new(typeof(T), ValueOf(error), parameters, inner);
-    public static ConflictException Create<T>(T error, Exception inner) where T : Enum =>
+    public static ConfigurationException Create<T>(T error, Exception inner) where T : Enum =>
         new(typeof(T), ValueOf(error), null, inner);
 }

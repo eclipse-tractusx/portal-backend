@@ -43,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.IO\Framework.IO.csproj" />
     <ProjectReference Include="..\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
   </ItemGroup>

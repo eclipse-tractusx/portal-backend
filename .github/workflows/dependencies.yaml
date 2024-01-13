@@ -54,7 +54,7 @@ jobs:
         run: dotnet restore src
 
       - name: List packages
-        run: dotnet list src package --include-transitive --interactive | grep ">" | grep -Pv "\s(Org|Microsoft|NuGet|System|runtime|docker|Docker|NETStandard)" | sed -E -e "s/\s+> ([a-zA-Z\.\-]+).+\s([0-9]+\.[0-9]+\.[0-9]+)\s*/nuget\/nuget\/\-\/\1\/\2/g" | awk '!seen[$0]++' > PACKAGES
+        run: dotnet list src package --include-transitive --interactive | grep ">" | grep -Pv "\s(Microsoft|NuGet|System|runtime|docker|Docker|NETStandard)" | grep -Pv "Org\.Eclipse\.TractusX\.Portal\.Backend\.(?!Framework)" | sed -E -e "s/\s+> ([a-zA-Z\.\-]+).+\s([0-9]+\.[0-9]+\.[0-9]+)\s*/nuget\/nuget\/\-\/\1\/\2/g" | awk '!seen[$0]++' > PACKAGES
 
       - name: Generate Dependencies file
         run: java -jar ./scripts/download/org.eclipse.dash.licenses-1.0.2.jar PACKAGES -project automotive.tractusx -summary DEPENDENCIES || true

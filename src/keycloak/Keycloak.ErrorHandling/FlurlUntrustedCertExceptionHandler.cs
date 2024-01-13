@@ -20,7 +20,7 @@
 
 using Flurl.Http;
 using Flurl.Http.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
