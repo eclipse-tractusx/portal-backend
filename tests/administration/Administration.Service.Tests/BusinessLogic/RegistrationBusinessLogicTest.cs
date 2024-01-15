@@ -264,22 +264,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.ParamName.Should().Be("bpn");
-        ex.Message.Should().Be("BPN must contain exactly 16 characters long. (Parameter 'bpn')");
-    }
-
-    [Fact]
-    public async Task UpdateCompanyBpnAsync_WithInvalidBpnPrefix_ThrowsControllerArgumentException()
-    {
-        // Arrange
-        var bpn = "BPXX123698762345";
-
-        // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, bpn).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("bpn");
-        ex.Message.Should().Be("businessPartnerNumbers must prefixed with BPNL (Parameter 'bpn')");
+        ex.Message.Should().Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'bpn')");
     }
 
     [Fact]

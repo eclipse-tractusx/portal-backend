@@ -43,7 +43,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
-    private static readonly Regex BpnRegex = new(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
@@ -290,7 +290,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
             throw new NotFoundException($"No companyApplication for BPN {data.BusinessPartnerNumber} is not in status SUBMITTED");
