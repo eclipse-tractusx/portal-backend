@@ -461,16 +461,10 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         const string comment = "application rejected because of reasons.";
-        var processSteps = new List<ProcessStep>();
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, checklistStatusId, DateTimeOffset.UtcNow);
         var company = new Company(CompanyId, null!, CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
         var application = new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.SUBMITTED, CompanyApplicationTypeId.INTERNAL, DateTimeOffset.UtcNow);
         SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId, idpTypeId);
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
-            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepData) =>
-            {
-                processSteps.AddRange(processStepData.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
-            });
 
         // Act
         await _logic.DeclineRegistrationVerification(IdWithBpn, comment, CancellationToken.None).ConfigureAwait(false);
@@ -485,9 +479,8 @@ public class RegistrationBusinessLogicTest
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.VERIFY_REGISTRATION)))
             .MustHaveHappenedOnceExactly();
-        processSteps.Should().ContainSingle().Which.Should().Match<ProcessStep>(x =>
-            x.ProcessStepStatusId == ProcessStepStatusId.TODO &&
-            x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED);
+        A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, A<Guid>._))
+            .MustHaveHappenedOnceExactly();
         if (idpTypeId == IdentityProviderTypeId.SHARED)
         {
             A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync(IamAliasId))
@@ -506,7 +499,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
-            .Returns(default((Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId)>, IEnumerable<Guid>)));
+            .Returns(default((Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId, IEnumerable<Guid>)>, IEnumerable<Guid>)));
         async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -537,9 +530,9 @@ public class RegistrationBusinessLogicTest
                 null,
                 new[]
                 {
-                    (sharedIdpId, "idp1", IdentityProviderTypeId.SHARED),
-                    (managedIdpId, "idp2", IdentityProviderTypeId.MANAGED),
-                    (ownIdpId, "idp3", IdentityProviderTypeId.OWN),
+                    (sharedIdpId, "idp1", IdentityProviderTypeId.SHARED, new[] { user1 }.AsEnumerable()),
+                    (managedIdpId, "idp2", IdentityProviderTypeId.MANAGED, new[] { user2 }.AsEnumerable()),
+                    (ownIdpId, "idp3", IdentityProviderTypeId.OWN, new[] { user3 }.AsEnumerable()),
                 },
                 new[]
                 {
@@ -570,8 +563,9 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp3")).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp3")).MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<ValueTuple<Guid, Guid>>>._)).MustHaveHappened(3, Times.Exactly);
-
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<ValueTuple<Guid, Guid>>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user1, sharedIdpId) }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<ValueTuple<Guid, Guid>>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user2, managedIdpId) }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<ValueTuple<Guid, Guid>>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user3, ownIdpId) }))).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -923,7 +917,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IdpId, IamAliasId, idpTypeId), 1), Enumerable.Repeat(UserId, 1)));
+            .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IdpId, IamAliasId, idpTypeId, Enumerable.Repeat(UserId, 1)), 1), Enumerable.Repeat(UserId, 1)));
 
         A.CallTo(() => _provisioningManager.GetUserByUserName(UserId.ToString()))
             .Returns("user123");

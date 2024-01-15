@@ -458,7 +458,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        foreach (var (idpId, idpAlias, idpType) in idps)
+        foreach (var (idpId, idpAlias, idpType, linkedUserIds) in idps)
         {
             if (idpType == IdentityProviderTypeId.SHARED)
             {
@@ -472,6 +472,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 identityProviderRepository.DeleteIamIdentityProvider(idpAlias);
                 identityProviderRepository.DeleteIdentityProvider(idpId);
             }
+            userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
         }
 
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
@@ -491,13 +492,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             {
                 await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
             }
-            userRepository.RemoveCompanyUserAssignedIdentityProviders(idps.Select(idp => (userId, idp.IdentityProviderId)));
         }
 
         userRepository.AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>>(userId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
         if (processId != null)
         {
-            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, processId.Value), 1));
+            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStep(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, processId.Value);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
