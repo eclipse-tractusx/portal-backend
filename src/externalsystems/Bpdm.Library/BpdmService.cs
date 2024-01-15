@@ -59,8 +59,7 @@ public class BpdmService : IBpdmService
                 data.ExternalId,                               // Index
                 new []
                 {
-                    data.CompanyName,   // LegalName
-                    data.ShortName     // ShortName
+                    data.CompanyName   // LegalName
                 },
                 data.Identifiers.Select(x =>
                     new BpdmIdentifier(
