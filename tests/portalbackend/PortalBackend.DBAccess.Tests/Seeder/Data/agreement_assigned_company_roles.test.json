@@ -2,5 +2,9 @@
     {
         "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1094",
         "company_role_id": 3
+    },
+    {
+      "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1018",
+      "company_role_id": 3
     }
 ]

@@ -167,7 +167,7 @@ public class NetworkRepositoryTests
         // Assert
         result.Exists.Should().BeTrue();
         result.CompanyApplications.Should().BeEmpty();
-        result.CompanyRoleAgreementIds.Should().Satisfy(x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.AgreementIds.Count() == 2);
+        result.CompanyRoleAgreementIds.Should().Satisfy(x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.AgreementIds.Count() == 3);
         result.ProcessId.Should().BeNull();
     }
 

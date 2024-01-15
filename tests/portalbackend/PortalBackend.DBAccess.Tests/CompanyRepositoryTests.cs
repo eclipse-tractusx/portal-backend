@@ -565,8 +565,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
             .And.Satisfy(
                 x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT && x.RoleDescription == activeDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 2 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
                 x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER && x.RoleDescription == appDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
-                x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.RoleDescription == serviceDscription && x.CompanyRolesActive == true && x.Agreements.Count() == 2
-                    && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") && agr.DocumentId == null && agr.AgreementName == "Terms & Conditions - Consultant" && agr.ConsentStatus == ConsentStatusId.ACTIVE)
+                x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.RoleDescription == serviceDscription && x.CompanyRolesActive == true && x.Agreements.Count() == 3
+                     && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") && agr.DocumentId == null && agr.AgreementName == "Terms & Conditions - Consultant" && agr.ConsentStatus == ConsentStatusId.ACTIVE)
+                     && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018") && agr.DocumentId == null && agr.AgreementName == "Data Sharing Approval - allow CX to submit company data (company name, requester) to process the subscription" && agr.ConsentStatus == 0)
                     && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017") && agr.DocumentId == new Guid("00000000-0000-0000-0000-000000000004") && agr.AgreementName == "Terms & Conditions Service Provider" && agr.ConsentStatus == 0),
                 x => x.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER && x.RoleDescription == onboardingServiceProviderDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0));
     }
@@ -630,7 +631,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull()
-            .And.HaveCount(6)
+            .And.HaveCount(7)
             .And.Satisfy(
                 x => x.agreementStatusData.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1090")
                     && x.agreementStatusData.AgreementStatusId == AgreementStatusId.INACTIVE
@@ -641,15 +642,18 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x => x.agreementStatusData.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1013")
                     && x.agreementStatusData.AgreementStatusId == AgreementStatusId.ACTIVE
                     && x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT,
-                x => x.agreementStatusData.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094")
-                    && x.agreementStatusData.AgreementStatusId == AgreementStatusId.ACTIVE
-                    && x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER,
+                x => x.agreementStatusData.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1011")
+                     && x.agreementStatusData.AgreementStatusId == AgreementStatusId.ACTIVE
+                     && x.CompanyRoleId == CompanyRoleId.APP_PROVIDER,
+                x => x.agreementStatusData.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018")
+                     && x.agreementStatusData.AgreementStatusId == AgreementStatusId.ACTIVE
+                     && x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER,
                 x => x.agreementStatusData.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017")
                     && x.agreementStatusData.AgreementStatusId == AgreementStatusId.ACTIVE
                     && x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER,
-                x => x.agreementStatusData.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1011")
-                    && x.agreementStatusData.AgreementStatusId == AgreementStatusId.ACTIVE
-                    && x.CompanyRoleId == CompanyRoleId.APP_PROVIDER
+                x => x.agreementStatusData.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094")
+                     && x.agreementStatusData.AgreementStatusId == AgreementStatusId.ACTIVE
+                     && x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER
             );
         result.Select(x => x.CompanyRoleId).Should().BeInAscendingOrder();
     }
