@@ -90,7 +90,7 @@ public interface IServiceBusinessLogic
     /// <param name="statusId"></param>
     /// <param name="offerId"></param>
     /// <returns>Pagination of user's company's provided service' statuses.</returns>
-    Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
+    Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName = null);
 
     /// <summary>
     /// Get the document content by given Id for Service

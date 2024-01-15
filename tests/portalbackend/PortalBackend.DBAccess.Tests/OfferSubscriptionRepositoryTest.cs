@@ -136,26 +136,26 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
 
     [Theory]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new OfferSubscriptionStatusId[] { }, 0, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, false)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfae", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, true)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 0, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.INACTIVE }, 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING }, 1, false)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE }, 2, false)]
-    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, OfferTypeId offerTypeId, IEnumerable<OfferSubscriptionStatusId> offerSubscriptionStatusIds, int count, bool technicalUser)
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true, 2)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.SERVICE, new OfferSubscriptionStatusId[] { }, 0, false, 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, false, 1)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true, 2)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 2, true, 2)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false, 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfae", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, true, 2)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", OfferTypeId.SERVICE, new[] { OfferSubscriptionStatusId.ACTIVE }, 0, false, 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.ACTIVE }, 1, false, 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.INACTIVE }, 1, false, 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING }, 1, false, 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, OfferTypeId.APP, new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE }, 2, false, 1)]
+    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, OfferTypeId offerTypeId, IEnumerable<OfferSubscriptionStatusId> offerSubscriptionStatusIds, int count, bool technicalUser, int companySubscriptionCount)
     {
         // Arrange
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, offerTypeId, sorting, offerSubscriptionStatusIds, offerId)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, offerTypeId, sorting, offerSubscriptionStatusIds, offerId, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         if (count > 0)
@@ -163,14 +163,29 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             results.Should().NotBeNull();
             results!.Count.Should().Be(count);
             results.Data.Should().HaveCount(count);
-            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
-            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == 1 && x.First().TechnicalUser == technicalUser);
-            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == 1);
+            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(companySubscriptionCount);
+            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == companySubscriptionCount && x.First().TechnicalUser == technicalUser);
         }
         else
         {
             results.Should().BeNull();
         }
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_WithCompanyFilter_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, OfferTypeId.SERVICE, SubscriptionStatusSorting.CompanyNameAsc, new[] { OfferSubscriptionStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING }, null, "catena")(0, 15).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(2);
+        results.Data.Should().HaveCount(2);
+        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
     }
 
     #endregion

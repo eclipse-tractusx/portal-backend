@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -47,7 +48,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId) =>
+    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId, string? companyName) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
@@ -72,7 +73,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     OfferId = g.Id,
                     ServiceName = g.Name,
                     CompanySubscriptionStatuses = g.OfferSubscriptions
-                        .Where(os => statusIds.Contains(os.OfferSubscriptionStatusId))
+                        .Where(os =>
+                            statusIds.Contains(os.OfferSubscriptionStatusId) &&
+                            (companyName == null || EF.Functions.ILike(os.Company!.Name, $"%{companyName.EscapeForILike()}%")))
                         .Select(s =>
                             new CompanySubscriptionStatusData(
                                 s.CompanyId,

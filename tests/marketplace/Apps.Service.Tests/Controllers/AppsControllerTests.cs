@@ -182,14 +182,14 @@ public class AppsControllerTests
         var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5);
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._, A<string?>._))
             .Returns(pagination);
 
         //Act
         var result = await _controller.GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync(offerId: offerId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 15, null, null, offerId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 15, null, null, offerId, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 

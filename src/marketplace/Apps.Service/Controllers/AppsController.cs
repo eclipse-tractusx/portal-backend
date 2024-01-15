@@ -176,8 +176,8 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_app_subscription")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusResponse>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null) =>
-        _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, sorting, statusId, offerId);
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null, [FromQuery] string? companyName = null) =>
+        _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, sorting, statusId, offerId, companyName);
 
     /// <summary>
     /// Adds an app to current user's company's subscriptions.
