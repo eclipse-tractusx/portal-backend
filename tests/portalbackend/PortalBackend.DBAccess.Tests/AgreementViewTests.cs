@@ -48,7 +48,7 @@ public class AgreementViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.AgreementView.ToListAsync().ConfigureAwait(false);
-        result.Should().HaveCount(7);
+        result.Should().HaveCount(8);
     }
 
     [Fact]

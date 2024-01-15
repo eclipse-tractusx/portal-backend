@@ -80,10 +80,12 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 company.CompanyApplications.Any(application => application.Id == applicationId))
             .Select(company => new CompanyRoleAgreementConsents(
                 company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE && consent.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE).Select(consent => new AgreementConsentStatus(
-                    consent.AgreementId,
-                    consent.ConsentStatusId
-                )))).SingleOrDefaultAsync();
+                company.Consents
+                    .Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE && consent.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE && consent.Agreement.AgreementAssignedCompanyRoles.Any())
+                    .Select(consent => new AgreementConsentStatus(
+                        consent.AgreementId,
+                        consent.ConsentStatusId
+                    )))).SingleOrDefaultAsync();
 
     public async IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync()
     {

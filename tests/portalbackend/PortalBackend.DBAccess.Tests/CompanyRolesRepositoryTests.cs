@@ -103,7 +103,7 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var activeAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1010"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1013") };
         var appAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1011") };
-        var serviceAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") };
+        var serviceAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") };
         var onboardingAgreementIds = new[] { new Guid("311aac58-932b-4622-be8b-34337e48d70d") };
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
@@ -116,7 +116,7 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x.AgreementIds.SequenceEqual(activeAgreementIds),
             x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER && x.AgreementIds.Count() == 1 &&
                 x.AgreementIds.SequenceEqual(appAgreementIds),
-            x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.AgreementIds.Count() == 2 &&
+            x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.AgreementIds.Count() == 3 &&
                 x.AgreementIds.SequenceEqual(serviceAgreementIds),
             x => x.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER && x.AgreementIds.Count() == 1 &&
                 x.AgreementIds.SequenceEqual(onboardingAgreementIds)
