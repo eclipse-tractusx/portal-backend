@@ -65,9 +65,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_ADMINISTRATION }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -117,9 +121,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -169,9 +177,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_REGISTRATION }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -221,9 +233,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -273,9 +289,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -325,9 +345,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MAINTENANCE }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -377,9 +401,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_NOTIFICATION }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -429,9 +457,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_SERVICES }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -481,9 +513,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4

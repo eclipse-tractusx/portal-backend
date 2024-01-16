@@ -57,9 +57,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME}}
+           # Automatically prepare image tags;
+           # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
