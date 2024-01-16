@@ -61,7 +61,7 @@ public class RoleBaseMailService : IRoleBaseMailService
         await SendMailsToUsers(parameters, userNameParameter, template, companyUserWithRoleIdForCompany).ConfigureAwait(false);
     }
 
-    private async Task<List<Guid>> GetRoleData(IEnumerable<UserRoleConfig> receiverRoles)
+    public async Task<List<Guid>> GetRoleData(IEnumerable<UserRoleConfig> receiverRoles)
     {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository

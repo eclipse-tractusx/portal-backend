@@ -273,17 +273,21 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             .Select(x => x.CompanyUserId)
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, bool HasMoreIdentityProviders, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser)> Identities)> GetManagedIdpLinkedData(Guid identityProviderId) =>
+    public IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, bool HasMoreIdentityProviders, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser, (string? UserMail, string? FirstName, string? LastName) Userdata, bool IsInUserRoles, IEnumerable<Guid> UserRoleIds)> Identities)> GetManagedIdpLinkedData(Guid identityProviderId, IEnumerable<Guid> userRoleIds) =>
         _context.IdentityProviders
             .AsSplitQuery()
             .Where(x => x.Id == identityProviderId)
-            .SelectMany(x => x.Companies.Select(c => new ValueTuple<Guid, CompanyStatusId, bool, IEnumerable<(Guid, bool)>>(
+            .SelectMany(x => x.Companies.Select(c => new ValueTuple<Guid, CompanyStatusId, bool, IEnumerable<(Guid, bool, ValueTuple<string?, string?, string?>, bool, IEnumerable<Guid>)>>(
                 c.Id,
                 c.CompanyStatusId,
-                c.IdentityProviders.Where(idp => idp.Id != identityProviderId).Any(),
-                c.Identities.Select(i => new ValueTuple<Guid, bool>(
+                c.IdentityProviders.Any(idp => idp.Id != identityProviderId),
+                c.Identities
+                    .Select(i => new ValueTuple<Guid, bool, ValueTuple<string?, string?, string?>, bool, IEnumerable<Guid>>(
                     i.Id,
-                    i.CompanyUser!.CompanyUserAssignedIdentityProviders.Where(x => x.IdentityProviderId == identityProviderId).Any())))))
+                    i.CompanyUser!.CompanyUserAssignedIdentityProviders.Any(cuIdp => cuIdp.IdentityProviderId == identityProviderId),
+                    new ValueTuple<string?, string?, string?>(i.CompanyUser.Email, i.CompanyUser.Firstname, i.CompanyUser.Lastname),
+                    i.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => ur == u)),
+                    i.IdentityAssignedRoles.Select(u => u.UserRoleId))))))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />

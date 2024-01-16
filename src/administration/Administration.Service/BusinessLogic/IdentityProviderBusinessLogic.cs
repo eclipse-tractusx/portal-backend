@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -46,9 +47,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IIdentityData _identityData;
     private readonly IErrorMessageService _errorMessageService;
-    private readonly ILogger<IdentityProviderBusinessLogic> _logger;
-    private readonly IdentityProviderSettings _settings;
     private readonly IRoleBaseMailService _roleBaseMailService;
+    private readonly IMailingService _mailingService;
+    private readonly IdentityProviderSettings _settings;
+    private readonly ILogger<IdentityProviderBusinessLogic> _logger;
 
     private static readonly Regex DisplayNameValidationExpression = new(@"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -58,6 +60,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         IIdentityService identityService,
         IErrorMessageService errorMessageService,
         IRoleBaseMailService roleBaseMailService,
+        IMailingService mailingService,
         IOptions<IdentityProviderSettings> options,
         ILogger<IdentityProviderBusinessLogic> logger)
     {
@@ -66,6 +69,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         _identityData = identityService.IdentityData;
         _errorMessageService = errorMessageService;
         _roleBaseMailService = roleBaseMailService;
+        _mailingService = mailingService;
         _settings = options.Value;
         _logger = logger;
     }
@@ -197,14 +201,14 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 await _provisioningManager.SetCentralIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
                 if (typeId == IdentityProviderTypeId.MANAGED && !enabled && companyUsersLinked)
                 {
-                    await SendIdpMail(identityProviderId, alias, true, ownerCompanyName, _settings.DeactivateIdpRoles).ConfigureAwait(false);
+                    await SendIdpMail(identityProviderId, alias, ownerCompanyName, _settings.DeactivateIdpRoles).ConfigureAwait(false);
                 }
                 return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 await _provisioningManager.SetCentralIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
                 if (typeId == IdentityProviderTypeId.MANAGED && !enabled && companyUsersLinked)
                 {
-                    await SendIdpMail(identityProviderId, alias, true, ownerCompanyName, _settings.DeactivateIdpRoles).ConfigureAwait(false);
+                    await SendIdpMail(identityProviderId, alias, ownerCompanyName, _settings.DeactivateIdpRoles).ConfigureAwait(false);
                 }
                 return await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false);
             default:
@@ -212,12 +216,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private Task SendIdpMail(Guid identityProviderId, string? alias, bool deactivate, string ownerCompanyName, IEnumerable<UserRoleConfig> idpRoles) =>
+    private Task SendIdpMail(Guid identityProviderId, string? alias, string ownerCompanyName, IEnumerable<UserRoleConfig> idpRoles) =>
         _roleBaseMailService.RoleBaseSendMailForIdp(
             idpRoles,
             new[] { ("idpAlias", alias ?? identityProviderId.ToString()), ("ownerCompanyName", ownerCompanyName) },
             ("username", "User"),
-            new[] { deactivate ? "DeactivateManagedIdp" : "DeleteManagedIdp" },
+            new[] { "DeactivateManagedIdp" },
             identityProviderId);
 
     private async ValueTask<(IdentityProviderCategoryId Category, string Alias, IdentityProviderTypeId TypeId, bool CompanyUsersLinked, string OwnerCompanyName)> ValidateSetOwnCompanyIdentityProviderStatusArguments(Guid identityProviderId, bool enabled)
@@ -391,10 +395,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     private async Task DeleteManagedIdpLinks(Guid identityProviderId, string? alias, string ownerCompanyName, IIdentityProviderRepository identityProviderRepository)
     {
-        var idpLinkedData = identityProviderRepository.GetManagedIdpLinkedData(identityProviderId);
+        var roleIds = await _roleBaseMailService.GetRoleData(_settings.DeleteIdpRoles).ConfigureAwait(false);
+        var idpLinkedData = identityProviderRepository.GetManagedIdpLinkedData(identityProviderId, roleIds.Distinct());
 
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
         var identityIds = new List<Guid>();
         await foreach (var data in idpLinkedData.ConfigureAwait(false))
@@ -408,15 +414,21 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             }
             identityProviderRepository.DeleteCompanyIdentityProvider(data.CompanyId, identityProviderId);
             userRepository.RemoveCompanyUserAssignedIdentityProviders(data.Identities.Where(x => x.IsLinkedCompanyUser).Select(x => (x.IdentityId, identityProviderId)));
-            identityIds.AddRange(data.Identities.Select(x => x.IdentityId));
-        }
+            userRolesRepository.DeleteCompanyUserAssignedRoles(data.Identities.Where(i => i.IsLinkedCompanyUser).SelectMany(i => i.UserRoleIds.Select(ur => new ValueTuple<Guid, Guid>(i.IdentityId, ur))));
+            identityIds.AddRange(data.Identities.Select(i => i.IdentityId));
 
-        await _roleBaseMailService.RoleBaseSendMailForIdentityIds(
-            _settings.DeactivateIdpRoles,
-            new[] { ("idpAlias", alias ?? identityProviderId.ToString()), ("ownerCompanyName", ownerCompanyName) },
-            ("username", "User"),
-            new[] { "DeleteManagedIdp" },
-            identityIds.Distinct()).ConfigureAwait(false);
+            foreach (var identity in data.Identities.Where(i => i is { IsInUserRoles: true, Userdata.UserMail: not null }))
+            {
+                var userName = string.Join(" ", new[] { identity.Userdata.FirstName, identity.Userdata.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+                var mailParameters = new Dictionary<string, string>
+                {
+                    {"idpAlias", alias ?? identityProviderId.ToString()},
+                    {"ownerCompanyName", ownerCompanyName},
+                    { "username", string.IsNullOrWhiteSpace(userName) ? "User" : userName }
+                };
+                await _mailingService.SendMails(identity.Userdata.UserMail!, mailParameters, Enumerable.Repeat("DeleteManagedIdp", 1)).ConfigureAwait(false);
+            }
+        }
     }
 
     private async ValueTask<(string? Alias, IdentityProviderTypeId TypeId, string OwnerCompanyName)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, IIdentityProviderRepository identityProviderRepository)
