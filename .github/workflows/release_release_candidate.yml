@@ -68,6 +68,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -120,6 +122,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -172,6 +176,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -224,6 +230,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -276,6 +284,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -328,6 +338,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -380,6 +392,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -432,6 +446,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -484,6 +500,8 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.ref_name }}
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
