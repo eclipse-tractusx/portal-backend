@@ -2,7 +2,7 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 1.8.0 RC-1
+## 1.8.0-RC1
 
 ### Change
 * Administration Service
@@ -10,9 +10,9 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * updated controller connector endpoints by enhancing the error to the new error handling method with extended user information
   * updated controller serviceAccount endpoints by enhancing the error to the new error handling method with extended user information
 * Seeding data generic/release scope updated
-  * add additional ssi credentials
-  * adjust existing template urls
-  * release new technical user/service account roles 'BPDM Gate read' and 'BPDM Gate read&write'
+  * added additional ssi credentials
+  * adjusted existing template urls
+  * released new technical user/service account roles 'BPDM Gate read' and 'BPDM Gate read&write'
 * App Service
   * enhanced GET endpoint for offer subscription with a filter to filter by company name
 * Services Service
@@ -32,17 +32,18 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * released 'Decline Registration' template
 
 ### Technical Support
-* Removed configuration values needed for the process identity - identity needed for the process worker is now done with a database request to get the needed values for the specified user
+* removed configuration values needed for the process identity - identity needed for the process worker is now done with a database request to get the needed values for the specified user
 * Updated claims to include/set identityType and companyId
 * refactored the IdentityService implementation - IdentityData is read asynchronously from the database which is triggered by the respective policy in the controller. This avoids unnecessary accesses to the database in case only the identity_id or no identity-data at all is required to execute the respective business-logic
 * adjusted the path for portal backend dbaccess in the maintenance docker image
 * changed registration of identity service to scoped
-* Swagger document schema updated - nullable and fix values updated
+* updated Swagger document schema - nullable and fix values updated
 * IdentityService has been refactored using claims preferred_username or clientId from token querying the database for identityId or (for service_accounts) clientClientId instead of UserEntityId. As a fallback (for inconsistent test-data) the previous logic (using claim sub + UserEntityId) still exists. Code that makes use of UserEntityId or (ServiceAccount) ClientId has been refactored to use IdentityId and ClientClientId instead. The (now obsolete) ServiceAccountSync-process has been removed.
 * removed obsolete UserEntityId != null condition from queries being used in authorization
 * fixed security vulnerability for referenced external packages
 * updated dependencies file and file header template
 * updated the Newtonsoft.Json package to fix a high security finding
+* added additional image tags of type semver to release workflows
 
 ### Bugfix
 * updated GET /api/services/{serviceId}/subscription/{subscriptionID}/provider to return clientClientId instead of the serviceAccount name
