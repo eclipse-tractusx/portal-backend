@@ -22,7 +22,7 @@ name: Release IAM Seeding
 on:
   push:
     tags:
-      - 'v*.*.*-iam'
+      - 'v*.*.*-iam*'
   workflow_dispatch:
 
 env:
