@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -52,6 +53,7 @@ public class RegistrationStatusController : ControllerBase
     /// <response code="400">Company is no onboarding service provider.</response>
     [HttpGet]
     [Authorize(Roles = "configure_partner_registration")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("callback")]
     [ProducesResponseType(typeof(OnboardingServiceProviderCallbackRequestData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -65,7 +67,8 @@ public class RegistrationStatusController : ControllerBase
     /// <remarks>Example: POST: api/administration/registrationstatus/callback</remarks>
     /// <response code="204">Returns no content.</response>
     [HttpPost]
-    // [Authorize(Roles = "configure_partner_registration")]
+    [Authorize(Roles = "configure_partner_registration")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("callback")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

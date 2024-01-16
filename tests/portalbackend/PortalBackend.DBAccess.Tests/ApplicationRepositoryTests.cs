@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -529,6 +530,69 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
             x => x.State == EntityState.Modified && ((CompanyApplication)x.Entity).Id == companyApplicationData[2].applicationId && ((CompanyApplication)x.Entity).ApplicationStatusId == CompanyApplicationStatusId.DECLINED,
             x => x.State == EntityState.Unchanged && ((CompanyApplication)x.Entity).Id == companyApplicationData[3].applicationId && ((CompanyApplication)x.Entity).ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
         );
+    }
+
+    #endregion
+
+    #region GetCompanyApplicationsDeclineData
+
+    [Fact]
+    public async Task GetCompanyApplicationsDeclineData_ReturnsExpected()
+    {
+        // Arrange
+        var companyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019994");
+        var statusIds = new[] {
+            CompanyApplicationStatusId.CREATED,
+            CompanyApplicationStatusId.ADD_COMPANY_DATA,
+            CompanyApplicationStatusId.INVITE_USER,
+            CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
+            CompanyApplicationStatusId.UPLOAD_DOCUMENTS,
+            CompanyApplicationStatusId.VERIFY,
+            CompanyApplicationStatusId.CONFIRMED,
+            CompanyApplicationStatusId.DECLINED
+        };
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyApplicationsDeclineData(companyUserId, statusIds).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<(string CompanyName, string? FirstName, string? LastName, string? Email, IEnumerable<(Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(string? FirstName, string? LastName, string? Email)> InvitedUsers)> Applications)>(x =>
+            x.CompanyName == "Security Company" &&
+            x.FirstName == "Test User" &&
+            x.LastName == "Company Admin 1" &&
+            x.Email == "company.admin1@acme.corp");
+
+        result.Applications.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetCompanyApplicationsDeclineData_WithSubmittedApplication_ReturnsExpected()
+    {
+        // Arrange
+        var companyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019994");
+        var statusIds = new[] {
+            CompanyApplicationStatusId.SUBMITTED
+        };
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyApplicationsDeclineData(companyUserId, statusIds).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<(string CompanyName, string? FirstName, string? LastName, string? Email, IEnumerable<(Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(string? FirstName, string? LastName, string? Email)> InvitedUsers)> Applications)>(x =>
+            x.CompanyName == "Security Company" &&
+            x.FirstName == "Test User" &&
+            x.LastName == "Company Admin 1" &&
+            x.Email == "company.admin1@acme.corp");
+
+        result.Applications.Should().ContainSingle().Which.Should().Match<(Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(string? FirstName, string? LastName, string? Email)> InvitedUsers)>(x =>
+            x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e") &&
+            x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED);
+
+        result.Applications.First().InvitedUsers.Should().HaveCount(2).And.Satisfy(
+            x => x.FirstName == "Test User" && x.LastName == "Company Admin 1" && x.Email == "company.admin1@acme.corp",
+            x => x.FirstName == "Test" && x.LastName == "User" && x.Email == "test@user.com");
     }
 
     #endregion

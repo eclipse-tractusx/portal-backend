@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -56,8 +55,8 @@ public interface IUserRolesRepository
     /// <returns>Returns a list of user role ids</returns>
     IAsyncEnumerable<string> GetUserRolesForOfferIdAsync(Guid offerId);
 
-    IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingAppRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId);
-    IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingCoreOfferRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId);
+    IAsyncEnumerable<(string UserRoleText, Guid RoleId, bool IsAssigned)> GetAssignedAndMatchingAppRoles(Guid identityId, IEnumerable<string> userRoles, Guid offerId);
+    IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingCoreOfferRoles(Guid identityId, IEnumerable<string> userRoles, Guid offerId);
 
     /// <summary>
     /// Get user name data by assinged roles
@@ -69,6 +68,6 @@ public interface IUserRolesRepository
 
     IAsyncEnumerable<(string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)> UserRoles)> GetUserRolesByClientId(IEnumerable<string> iamClientIds);
 
-    IAsyncEnumerable<(Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds);
+    IAsyncEnumerable<(Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<Guid> GetRolesForClient(string technicalUserProfileClient);
 }

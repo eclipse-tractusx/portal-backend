@@ -111,6 +111,7 @@ public class AppChangeController : ControllerBase
         await _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, offerDescriptionDatas).ConfigureAwait(false);
         return NoContent();
     }
+
     /// <summary>
     /// Upload offerassigned AppLeadImage document for active apps for given appId for same company as user
     /// </summary>

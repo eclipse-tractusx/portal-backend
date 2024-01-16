@@ -24,17 +24,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyServiceAccountDetailedData(
     Guid ServiceAccountId,
-    string? ClientId,
     string? ClientClientId,
-    string? UserEntityId,
     string Name,
     string Description,
     IEnumerable<UserRoleData> UserRoleDatas,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     Guid? SubscriptionId,
     ConnectorResponseData? ConnectorData,
-    OfferResponseData? OfferSubscriptionData);
+    OfferResponseData? OfferSubscriptionData,
+    CompanyLastEditorData? CompanyLastEditorData);
 
 public record ConnectorResponseData(Guid Id, string Name);
 
 public record OfferResponseData(Guid Id, OfferTypeId Type, string? Name, Guid? SubscriptionId);
+
+public record CompanyLastEditorData(string? Name, string CompanyName);

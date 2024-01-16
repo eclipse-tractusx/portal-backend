@@ -57,7 +57,7 @@ public interface INotificationRepository
     /// <param name="sorting"></param>
     /// <param name="doneState"></param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting, bool? doneState, IEnumerable<NotificationTypeId> searchTypeIds, string? searchQuery);
+    Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, SearchSemanticTypeId semantic, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting, bool? doneState, IEnumerable<NotificationTypeId> searchTypeIds, string? searchQuery);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null

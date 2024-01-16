@@ -34,7 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogi
 public class NotificationBusinessLogic : INotificationBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly NotificationSettings _settings;
 
     /// <summary>
@@ -46,19 +46,19 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     public NotificationBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IOptions<NotificationSettings> settings)
     {
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _settings = settings.Value;
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, NotificationFilters filters) =>
+    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, NotificationFilters filters, SearchSemanticTypeId semantic) =>
         Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, _portalRepositories.GetInstance<INotificationRepository>()
-                .GetAllNotificationDetailsByReceiver(_identityService.IdentityData.UserId, filters.IsRead, filters.TypeId, filters.TopicId, filters.OnlyDueDate, filters.Sorting ?? NotificationSorting.DateDesc, filters.DoneState, filters.SearchTypeIds, filters.SearchQuery));
+                .GetAllNotificationDetailsByReceiver(_identityData.IdentityId, semantic, filters.IsRead, filters.TypeId, filters.TopicId, filters.OnlyDueDate, filters.Sorting ?? NotificationSorting.DateDesc, filters.DoneState, filters.SearchTypeIds, filters.SearchQuery));
 
     /// <inheritdoc />
     public async Task<NotificationDetailData> GetNotificationDetailDataAsync(Guid notificationId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndValidateReceiverAsync(notificationId, _identityService.IdentityData.UserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"Notification {notificationId} does not exist.");
@@ -72,12 +72,12 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
     /// <inheritdoc />
     public Task<int> GetNotificationCountAsync(bool? isRead) =>
-        _portalRepositories.GetInstance<INotificationRepository>().GetNotificationCountForUserAsync(_identityService.IdentityData.UserId, isRead);
+        _portalRepositories.GetInstance<INotificationRepository>().GetNotificationCountForUserAsync(_identityData.IdentityId, isRead);
 
     /// <inheritdoc />
     public async Task<NotificationCountDetails> GetNotificationCountDetailsAsync()
     {
-        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(_identityService.IdentityData.UserId).ToListAsync().ConfigureAwait(false);
+        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(_identityData.IdentityId).ToListAsync().ConfigureAwait(false);
         var unreadNotifications = details.Where(x => !x.IsRead);
         return new NotificationCountDetails(
             details.Where(x => x.IsRead).Sum(x => x.Count),
@@ -116,7 +116,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
     private async Task<bool> CheckNotificationExistsAndValidateReceiver(Guid notificationId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, _identityService.IdentityData.UserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(false);
         if (result == default || !result.IsNotificationExisting)
         {
             throw new NotFoundException($"Notification {notificationId} does not exist.");

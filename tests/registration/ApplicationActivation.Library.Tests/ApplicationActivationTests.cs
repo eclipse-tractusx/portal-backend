@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -52,9 +51,9 @@ public class ApplicationActivationTests
     private static readonly Guid CompanyUserId3 = new("857b93b1-8fcb-4141-81b0-ae81950d48af");
     private static readonly Guid UserRoleId = new("607818be-4978-41f4-bf63-fa8d2de51154");
     private static readonly Guid CompanyUserRoleId = new("607818be-4978-41f4-bf63-fa8d2de51154");
-    private static readonly Guid CentralUserId1 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f");
-    private static readonly Guid CentralUserId2 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd70");
-    private static readonly Guid CentralUserId3 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd71");
+    private static readonly string CentralUserId1 = "6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f";
+    private static readonly string CentralUserId2 = "6bc51706-9a30-4eb9-9e60-77fdd6d9cd70";
+    private static readonly string CentralUserId3 = "6bc51706-9a30-4eb9-9e60-77fdd6d9cd71";
     private static readonly Guid ProcessId = new("db9d99cd-51a3-4933-a1cf-dc1b836b53bb");
 
     private readonly IFixture _fixture;
@@ -257,9 +256,9 @@ public class ApplicationActivationTests
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("1", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("2", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
@@ -338,9 +337,9 @@ public class ApplicationActivationTests
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("1", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("2", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -473,9 +472,9 @@ public class ApplicationActivationTests
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
         A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("1", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("2", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         processSteps.Should().ContainSingle().And.Satisfy(
@@ -642,9 +641,9 @@ public class ApplicationActivationTests
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("1", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("2", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -935,9 +934,9 @@ public class ApplicationActivationTests
 
         var companyInvitedUsers = new CompanyInvitedUserData[]
         {
-            new(CompanyUserId1, CentralUserId1.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
-            new(CompanyUserId2, CentralUserId2.ToString(), Enumerable.Repeat(BusinessPartnerNumber, 1), Enumerable.Repeat(UserRoleId, 1)),
-            new(CompanyUserId3, CentralUserId3.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
+            new(CompanyUserId1, Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
+            new(CompanyUserId2, Enumerable.Repeat(BusinessPartnerNumber, 1), Enumerable.Repeat(UserRoleId, 1)),
+            new(CompanyUserId3, Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
         }.ToAsyncEnumerable();
         var businessPartnerNumbers = new[] { BusinessPartnerNumber }.AsEnumerable();
 
@@ -982,18 +981,25 @@ public class ApplicationActivationTests
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id))
             .Returns(companyInvitedUsers);
 
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1.ToString(), A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
+        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId1.ToString()))
+            .Returns(CentralUserId1);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId2.ToString()))
+            .Returns(CentralUserId2);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId3.ToString()))
+            .Returns(CentralUserId3);
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
             .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2.ToString(), A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
             .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3.ToString(), A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
             .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
 
-        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1.ToString(), businessPartnerNumbers))
+        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1, businessPartnerNumbers))
             .Returns(Task.CompletedTask);
-        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId2.ToString(), businessPartnerNumbers))
+        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId2, businessPartnerNumbers))
             .Returns(Task.CompletedTask);
-        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId3.ToString(), businessPartnerNumbers))
+        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId3, businessPartnerNumbers))
             .Returns(Task.CompletedTask);
 
         A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, CompanyUserRoleId))
@@ -1050,11 +1056,11 @@ public class ApplicationActivationTests
 
     private void SetupForDelete()
     {
-        var userData = new (Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds)[]
+        var userData = new (Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)[]
         {
-            new (CompanyUserId1, "1", new [] {CompanyUserRoleId}),
-            new (CompanyUserId2, "2", new [] {CompanyUserRoleId}),
-            new (CompanyUserId3, "3", new [] {CompanyUserRoleId}),
+            new (CompanyUserId1, new [] {CompanyUserRoleId}),
+            new (CompanyUserId2, new [] {CompanyUserRoleId}),
+            new (CompanyUserId3, new [] {CompanyUserRoleId}),
         };
         var userRoles = new (string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)>)[] {
             ( "remove-id", new [] { ( CompanyUserRoleId, "Company Admin" ) } )

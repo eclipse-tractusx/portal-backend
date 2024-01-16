@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -54,12 +53,18 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             .Add(idp).Entity;
     }
 
+    public void DeleteIdentityProvider(Guid identityProviderId) =>
+        _context.IdentityProviders.Remove(new IdentityProvider(identityProviderId, default, default, Guid.Empty, default));
+
     public CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
         _context.CompanyIdentityProviders
             .Add(new CompanyIdentityProvider(
                 companyId,
                 identityProviderId
             )).Entity;
+
+    public void DeleteCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
+        _context.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
 
     public void CreateCompanyIdentityProviders(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdIdentityProviderIds) =>
         _context.CompanyIdentityProviders
@@ -75,6 +80,9 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 idpAlias,
                 identityProviderId)).Entity;
 
+    public void DeleteIamIdentityProvider(string idpAlias) =>
+        _context.IamIdentityProviders.Remove(new IamIdentityProvider(idpAlias, Guid.Empty));
+
     public Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId) =>
         _context.IdentityProviders
             .AsNoTracking()
@@ -84,18 +92,17 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
             .SingleOrDefaultAsync();
 
-    public Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, Guid userCompanyId) =>
+    public Task<(string? Alias, bool IsValidUser)> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, Guid userCompanyId) =>
         _context.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId
                 && companyUser.Identity!.CompanyId == userCompanyId)
-            .Select(companyUser => new IdpUser
-            {
-                TargetIamUserId = companyUser.Identity!.UserEntityId,
-                IdpName = companyUser.Identity!.Company!.IdentityProviders
+            .Select(companyUser => new ValueTuple<string?, bool>(
+                companyUser.Identity!.Company!.IdentityProviders
                     .Where(identityProvider => identityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                    .SingleOrDefault()
-            }).SingleOrDefaultAsync();
+                    .SingleOrDefault(),
+                true))
+            .SingleOrDefaultAsync();
 
     public Task<(string? Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnOrOwnerCompany, IdentityProviderTypeId TypeId)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, Guid companyId) =>
         _context.IdentityProviders
@@ -185,12 +192,12 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             ))
             .ToAsyncEnumerable();
 
-    public Task<(string? UserEntityId, string? Alias, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, Guid identityProviderId, Guid companyId) =>
+    public Task<(bool IsValidUser, string? Alias, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, Guid identityProviderId, Guid companyId) =>
         _context.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new ValueTuple<string?, string?, bool>(
-                companyUser.Identity!.UserEntityId,
+            .Select(companyUser => new ValueTuple<bool, string?, bool>(
+                true,
                 companyUser.Identity!.Company!.IdentityProviders
                     .Where(identityProvider => identityProvider.Id == identityProviderId)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)

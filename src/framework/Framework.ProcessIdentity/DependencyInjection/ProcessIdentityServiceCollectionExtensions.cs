@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,12 +25,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.Dependen
 
 public static class ProcessIdentityServiceCollectionExtensions
 {
-    public static IServiceCollection AddProcessIdentity(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddConfigurationProcessIdentityIdDetermination(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<ProcessIdentitySettings>()
             .Bind(section)
             .ValidateOnStart();
 
-        return services.AddTransient<IIdentityService, ProcessIdentityService>();
+        return services
+            .AddTransient<IProcessIdentityDataBuilder, ProcessIdentityDataBuilder>()
+            .AddTransient<IIdentityService, ProcessIdentityService>();
+    }
+
+    public static IServiceCollection AddConfigurationProcessIdentityService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<ProcessIdentitySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+
+        return services
+            .AddScoped<IProcessIdentityDataBuilder, ProcessIdentityDataBuilder>()
+            .AddTransient<IProcessIdentityDataDetermination, ProcessIdentityDataDetermination>()
+            .AddTransient<IIdentityService, ProcessIdentityService>();
     }
 }

@@ -19,7 +19,29 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public record IdentityData(string UserEntityId, Guid UserId, IdentityTypeId IdentityType, Guid CompanyId);
+public class AgreementStatus
+{
+    private AgreementStatus()
+    {
+        Label = null!;
+        Agreements = new HashSet<Agreement>();
+    }
+
+    public AgreementStatus(AgreementStatusId agreementStatusId) : this()
+    {
+        Id = agreementStatusId;
+        Label = agreementStatusId.ToString();
+    }
+
+    public AgreementStatusId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+
+    // Navigation properties
+    public virtual ICollection<Agreement> Agreements { get; private set; }
+}

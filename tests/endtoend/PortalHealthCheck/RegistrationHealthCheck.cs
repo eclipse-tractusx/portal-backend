@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Castle.Core.Internal;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -50,8 +51,11 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public void GetCompanyRoles()
+    public async Task GetCompanyRoles()
     {
+        if (PortalUserToken.IsNullOrEmpty())
+            await GetAccessToken().ConfigureAwait(false);
+
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
@@ -68,8 +72,11 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public void GetCompanyRoleAgreementData()
+    public async Task GetCompanyRoleAgreementData()
     {
+        if (PortalUserToken.IsNullOrEmpty())
+            await GetAccessToken().ConfigureAwait(false);
+
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
@@ -87,8 +94,11 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public void GetClientRolesComposite()
+    public async Task GetClientRolesComposite()
     {
+        if (PortalUserToken.IsNullOrEmpty())
+            await GetAccessToken().ConfigureAwait(false);
+
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
@@ -105,8 +115,11 @@ public class RegistrationHealthCheck : EndToEndTestBase
     }
 
     [Fact]
-    public void GetApplicationsWithStatus()
+    public async Task GetApplicationsWithStatus()
     {
+        if (PortalUserToken.IsNullOrEmpty())
+            await GetAccessToken().ConfigureAwait(false);
+
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(

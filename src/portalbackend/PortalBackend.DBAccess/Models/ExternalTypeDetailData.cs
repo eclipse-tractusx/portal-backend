@@ -26,7 +26,7 @@ public record ExternalTypeDetailData(
     Guid Id,
     VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId,
     string Version,
-    string Template,
+    string? Template,
     DateTimeOffset? ValidFrom,
     DateTimeOffset? Expiry
 );

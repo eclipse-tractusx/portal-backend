@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -39,6 +38,12 @@ public interface IStaticDataRepository
     /// </summary>
     /// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
     IAsyncEnumerable<LanguageData> GetAllLanguage();
+
+    /// <summary>
+    /// Get all Countries.
+    /// </summary>
+    /// <returns>AsyncEnumerable of the result Counties with long names</returns>
+    IAsyncEnumerable<CountryLongNameData> GetAllCountries();
 
     /// <summary>
     /// Retrieve Unique Identifier Data for Country Alpha2Code

@@ -28,7 +28,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
@@ -62,7 +61,7 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
         });
         builder.ConfigureTestServices(services =>
         {
-            var identityService = services.SingleOrDefault(d => d.ServiceType == typeof(IdentityService));
+            var identityService = services.SingleOrDefault(d => d.ServiceType.GetInterfaces().Contains(typeof(IIdentityService)));
             if (identityService != null)
                 services.Remove(identityService);
             services.AddScoped<IIdentityService, FakeIdentityService>();

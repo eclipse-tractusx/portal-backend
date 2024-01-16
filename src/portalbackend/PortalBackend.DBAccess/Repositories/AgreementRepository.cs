@@ -57,7 +57,7 @@ public class AgreementRepository : IAgreementRepository
     public IAsyncEnumerable<AgreementDocumentData> GetAgreementsForCompanyRolesUntrackedAsync() =>
         _context.Agreements
             .AsNoTracking()
-            .Where(agreement => agreement.AgreementAssignedCompanyRoles.Any())
+            .Where(agreement => agreement.AgreementAssignedCompanyRoles.Any() && agreement.AgreementStatusId == AgreementStatusId.ACTIVE)
             .Select(agreement => new AgreementDocumentData(
                 agreement.Id,
                 agreement.Name,

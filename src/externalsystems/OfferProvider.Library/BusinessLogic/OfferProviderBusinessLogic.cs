@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -125,12 +124,12 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         if (data.ServiceAccounts.Count() == 1)
         {
             var serviceAccount = data.ServiceAccounts.FirstOrDefault();
-            if (serviceAccount != default && serviceAccount.TechnicalClientId == null)
+            if (serviceAccount.TechnicalClientId == null)
             {
                 throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
             }
-
-            var authData = await _provisioningManager.GetCentralClientAuthDataAsync(serviceAccount.TechnicalClientId).ConfigureAwait(false);
+            var internalClientId = await _provisioningManager.GetIdOfCentralClientAsync(serviceAccount.TechnicalClientId).ConfigureAwait(false);
+            var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false);
             technicalUserInfoData = new CallbackTechnicalUserInfoData(
                 serviceAccount.TechnicalUserId,
                 authData.Secret,

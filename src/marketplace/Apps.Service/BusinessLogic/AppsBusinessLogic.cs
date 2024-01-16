@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -39,12 +40,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public class AppsBusinessLogic : IAppsBusinessLogic
 {
+    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
     private readonly IOfferSetupService _offerSetupService;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly ILogger<AppsBusinessLogic> _logger;
 
     /// <summary>
@@ -70,7 +72,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerSubscriptionService = offerSubscriptionService;
         _offerService = offerService;
         _offerSetupService = offerSetupService;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _logger = logger;
         _settings = settings.Value;
     }
@@ -91,7 +93,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync() =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetAllBusinessAppDataForUserIdAsync(_identityService.IdentityData.UserId)
+            .GetAllBusinessAppDataForUserIdAsync(_identityData.IdentityId)
             .Select(x =>
                 new BusinessAppData(
                     x.OfferId,
@@ -105,7 +107,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string? languageShortName = null)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetOfferDetailsByIdAsync(appId, _identityService.IdentityData.CompanyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(false);
+            .GetOfferDetailsByIdAsync(appId, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(false);
         if (result == null)
         {
             throw new NotFoundException($"appId {appId} does not exist");
@@ -138,19 +140,19 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync() =>
         _portalRepositories
             .GetInstance<IUserRepository>()
-            .GetAllFavouriteAppsForUserUntrackedAsync(_identityService.IdentityData.UserId);
+            .GetAllFavouriteAppsForUserUntrackedAsync(_identityData.IdentityId);
 
     /// <inheritdoc/>
     public async Task RemoveFavouriteAppForUserAsync(Guid appId)
     {
-        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, _identityService.IdentityData.UserId));
+        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, _identityData.IdentityId));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task AddFavouriteAppForUserAsync(Guid appId)
     {
-        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, _identityService.IdentityData.UserId);
+        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, _identityData.IdentityId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -159,12 +161,17 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
 
     /// <inheritdoc/>
-    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
+    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName)
     {
+        if (!string.IsNullOrWhiteSpace(companyName) && !Company.IsMatch(companyName))
+        {
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+        }
+
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityService.IdentityData.CompanyId, OfferTypeId.APP, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId)(skip, take).ConfigureAwait(false);
+                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityData.CompanyId, OfferTypeId.APP, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId, companyName)(skip, take).ConfigureAwait(false);
 
             return offerCompanySubscriptionResponse == null
                 ? null
@@ -195,7 +202,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public Task<Pagination.Response<AllOfferData>> GetCompanyProvidedAppsDataForUserAsync(int page, int size, OfferSorting? sorting, string? offerName, AppStatusIdFilter? statusId) =>
         Pagination.CreateResponseAsync(page, size, 15,
-            _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(GetOfferStatusIds(statusId), OfferTypeId.APP, _identityService.IdentityData.CompanyId, sorting ?? OfferSorting.DateDesc, offerName));
+            _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(GetOfferStatusIds(statusId), OfferTypeId.APP, _identityData.CompanyId, sorting ?? OfferSorting.DateDesc, offerName));
 
     private static IEnumerable<OfferStatusId> GetOfferStatusIds(AppStatusIdFilter? appStatusIdFilter) =>
         appStatusIdFilter switch
@@ -236,9 +243,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
     /// <inheritdoc />
     public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync() =>
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(_identityService.IdentityData.CompanyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(_identityData.CompanyId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
 
     /// <inheritdoc />
     public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync() =>
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(_identityService.IdentityData.CompanyId, OfferTypeId.APP);
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(_identityData.CompanyId, OfferTypeId.APP);
 }

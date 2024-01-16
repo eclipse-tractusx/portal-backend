@@ -79,7 +79,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <param name="cancellationToken">CancellationToken (provided by controller)</param>
         /// <returns></returns>
         /// <remarks>Example: Post: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents</remarks>
-        /// <response code="200">Successfully uploaded the document</response>
+        /// <response code="204">Successfully uploaded the document</response>
         /// <response code="403">The user is not assigned with the CompanyApplication.</response>
         /// <response code="415">Only PDF files are supported.</response>
         /// <response code="400">Input is incorrect.</response>
@@ -90,12 +90,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [Consumes("multipart/form-data")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-        public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-            _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, cancellationToken);
+        public async Task<NoContentResult> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+        {
+            await _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId,
+                cancellationToken).ConfigureAwait(false);
+            return NoContent();
+        }
 
         /// <summary>
         /// Gets a specific document by its id
@@ -168,6 +172,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
             _registrationBusinessLogic.GetAllApplicationsForUserWithStatus();
 
         /// <summary>
+        /// Gets the applications with each status, company-name and linked users
+        /// </summary>
+        /// <returns>Returns a list of company applications</returns>
+        /// <remarks>Example: Get: /api/registration/applications/declinedata</remarks>
+        /// <response code="200">Returns a list of company applications</response>
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.CompanyUser)]
+        [Route("applications/declinedata")]
+        [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationDeclineData>), StatusCodes.Status200OK)]
+        public Task<IEnumerable<CompanyApplicationDeclineData>> GetApplicationsDeclineData() =>
+            _registrationBusinessLogic.GetApplicationsDeclineData();
+
+        /// <summary>
         /// Sets the status of a specific application.
         /// </summary>
         /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application which status should be set.</param>
@@ -232,7 +250,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// </summary>
         /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application to set the company for.</param>
         /// <param name="companyDetailData">The company with its address</param>
-        /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress</remarks>
+        /// <remarks>Example: Post: /api/registration/application/{applicationId}/companyDetailsWithAddress</remarks>
         /// <response code="200">Successfully set the company with its address</response>
         /// <response code="400">A request parameter was incorrect.</response>
         /// <response code="404">CompanyApplication was not found for the given id.</response>
@@ -304,7 +322,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">The user is not assignable to the given application.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
-        [Authorize(Policy = PolicyTypes.ValidIdentity)]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         [ProducesResponseType(typeof(CompanyRoleAgreementConsents), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]

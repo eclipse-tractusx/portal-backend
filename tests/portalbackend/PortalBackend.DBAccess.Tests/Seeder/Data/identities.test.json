@@ -158,5 +158,14 @@
     "user_status_id": 2,
     "user_entity_id": null,
     "identity_type_id": 2
+  },
+  {
+    "id": "38c92162-6328-40ce-80f3-22e3f3e9b94e",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "company_id": "729e0af2-6723-4a7f-85a1-833d84b39bdf",
+    "user_status_id": 1,
+    "user_entity_id": "3d8142f1-860b-48aa-8c2b-1ccb18699f66",
+    "identity_type_id": 2,
+    "last_editor_id":"8b42e6de-7b59-4217-a63c-198e83d93777"
   }
 ]

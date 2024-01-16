@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -43,12 +42,13 @@ public interface IProvisioningManager
     Task<string> SetupClientAsync(string redirectUrl, string? baseUrl = null, IEnumerable<string>? optionalRoleNames = null, bool enabled = true);
     Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config, bool enabled);
     Task<string?> GetServiceAccountUserId(string clientId);
-    Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config);
-    Task DeleteCentralClientAsync(string internalClientId);
+    Task<string> UpdateCentralClientAsync(string clientId, ClientConfigData config);
+    Task DeleteCentralClientAsync(string clientId);
     Task UpdateClient(string clientId, string url, string redirectUrl);
     Task EnableClient(string clientId);
     Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId);
-    Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId);
+    Task<ClientAuthData> ResetCentralClientAuthDataAsync(string clientId);
+    Task<string> GetIdOfCentralClientAsync(string clientId);
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
     Task AddProtocolMapperAsync(string clientId);
     Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId, string businessPartnerNumber);

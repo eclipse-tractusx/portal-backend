@@ -24,6 +24,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -69,6 +70,9 @@ public class ProcessExecutionService
             using var processServiceScope = _serviceScopeFactory.CreateScope();
             var executorRepositories = processServiceScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
             var processExecutor = processServiceScope.ServiceProvider.GetRequiredService<IProcessExecutor>();
+            var processIdentityDataDetermination = processServiceScope.ServiceProvider.GetRequiredService<IProcessIdentityDataDetermination>();
+            //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
+            await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(false);
 
             using var outerLoopScope = _serviceScopeFactory.CreateScope();
             var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IPortalRepositories>();

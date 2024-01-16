@@ -129,7 +129,7 @@ public interface IAppReleaseBusinessLogic
     /// Get All Privacy Policy
     /// </summary>
     /// <returns></returns>
-    Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync();
+    PrivacyPolicyData GetPrivacyPolicyDataAsync();
 
     /// <summary>
     /// Declines the app request

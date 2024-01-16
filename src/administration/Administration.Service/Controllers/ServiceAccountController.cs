@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -163,6 +162,7 @@ public class ServiceAccountController : ControllerBase
     /// <param name="size">number of service account data</param>
     /// <param name="isOwner">isOwner either true or false</param>
     /// <param name="clientId">clientId is string clientclientid</param>
+    /// <param name="isUserStatusActive">isUserStatusActive is True or False</param>
     /// <returns>Returns the specific number of service account data for the given page.</returns>
     /// <remarks>Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
@@ -171,8 +171,8 @@ public class ServiceAccountController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId) =>
-        _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner);
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId, [FromQuery] bool isUserStatusActive) =>
+        _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner, isUserStatusActive);
 
     /// <summary>
     /// Get all service account roles

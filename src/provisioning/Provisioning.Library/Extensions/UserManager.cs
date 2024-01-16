@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -56,8 +55,7 @@ public partial class ProvisioningManager
     {
         try
         {
-            var users = await _CentralIdp.GetUsersAsync(_Settings.CentralRealm, username: userName).ConfigureAwait(false);
-            return users.Count() != 1 ? null : users.Single().Id;
+            return (await _CentralIdp.GetUsersAsync(_Settings.CentralRealm, username: userName).ConfigureAwait(false)).SingleOrDefault(user => user.UserName == userName)?.Id;
         }
         catch (FlurlHttpException ex)
         {
@@ -67,6 +65,10 @@ public partial class ProvisioningManager
             }
 
             throw;
+        }
+        catch (InvalidOperationException)
+        {
+            throw new UnexpectedConditionException($"there should never be multiple users in keycloak having the same username '{userName}'");
         }
     }
 

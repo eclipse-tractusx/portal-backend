@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,30 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
-public class IdentityUserStatus
+public static class ClaimsIdentityServiceCollectionExtensions
 {
-    private IdentityUserStatus()
+    public static IServiceCollection AddClaimsIdentityService(this IServiceCollection services)
     {
-        Label = null!;
-        Identities = new HashSet<Identity>();
+        return services
+            .AddScoped<IClaimsIdentityDataBuilder, ClaimsIdentityDataBuilder>()
+            .AddTransient<IIdentityService, ClaimsIdentityService>();
     }
-
-    public IdentityUserStatus(UserStatusId userStatusId) : this()
-    {
-        Id = userStatusId;
-        Label = userStatusId.ToString();
-    }
-
-    public UserStatusId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
-
-    // Navigation properties
-    public virtual ICollection<Identity> Identities { get; private set; }
 }

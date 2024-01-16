@@ -228,6 +228,7 @@ public class CompanyRepository : ICompanyRepository
                 companyRole.CompanyRoleDescriptions.SingleOrDefault(lc => lc.LanguageShortName == languageShortName)!.Description,
                 companyRole.CompanyAssignedRoles.Any(assigned => assigned.CompanyId == companyId),
                 companyRole.AgreementAssignedCompanyRoles
+                    .Where(assigned => assigned.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE)
                     .Select(assigned => new ConsentAgreementData(
                         assigned.AgreementId,
                         assigned.Agreement!.Name,
@@ -265,12 +266,12 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid AgreementId, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
+    public IAsyncEnumerable<(AgreementStatusData agreementStatusData, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
         _context.AgreementAssignedCompanyRoles
             .Where(assigned => companyRoleIds.Contains(assigned.CompanyRoleId))
             .OrderBy(assigned => assigned.CompanyRoleId)
-            .Select(assigned => new ValueTuple<Guid, CompanyRoleId>(
-                assigned.AgreementId,
+            .Select(assigned => new ValueTuple<AgreementStatusData, CompanyRoleId>(
+                new AgreementStatusData(assigned.AgreementId, assigned.Agreement!.AgreementStatusId),
                 assigned.CompanyRoleId))
             .AsAsyncEnumerable();
 

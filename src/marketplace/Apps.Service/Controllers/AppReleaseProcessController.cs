@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -333,7 +332,7 @@ public class AppReleaseProcessController : ControllerBase
     [Route("privacyPolicies")]
     [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(PrivacyPolicyData), StatusCodes.Status200OK)]
-    public Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync() =>
+    public PrivacyPolicyData GetPrivacyPolicyDataAsync() =>
         _appReleaseBusinessLogic.GetPrivacyPolicyDataAsync();
 
     /// <summary>

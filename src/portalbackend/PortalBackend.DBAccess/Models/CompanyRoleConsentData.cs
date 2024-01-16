@@ -30,3 +30,5 @@ public record CompanyRoleConsentData(
 public record ConsentAgreementData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId ConsentStatus, string? AgreementLink);
 
 public record ConsentStatusDetails(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId);
+
+public record AgreementStatusData(Guid AgreementId, AgreementStatusId AgreementStatusId);

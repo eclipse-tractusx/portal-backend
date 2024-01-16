@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Castle.Core.Internal;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using RestAssured.Response.Logging;
 using Xunit;
@@ -33,25 +32,22 @@ public class SdFactoryEndpointTests : EndToEndTestBase
 {
     private static readonly string BaseUrl = TestResources.SdFactoryBaseUrl;
 
-    private static readonly string TokenUrl =
-        TestResources.BaseCentralIdpUrl + "/auth/realms/CX-Central/protocol/openid-connect/token";
+    private static readonly string TokenUrl = TestResources.BaseCentralIdpUrl + "/auth/realms/CX-Central/protocol/openid-connect/token";
 
     private const string EndPoint = "/api/rel3/selfdescription";
-    private string? InterfaceHealthCheckTechUserToken;
+    private readonly string? _interfaceHealthCheckTechUserToken;
 
     private static readonly Secrets Secrets = new();
 
     public SdFactoryEndpointTests(ITestOutputHelper output) : base(output)
     {
+        _interfaceHealthCheckTechUserToken = TechTokenRetriever.GetToken(TokenUrl, Secrets.InterfaceHealthCheckTechClientId, Secrets.InterfaceHealthCheckTechClientSecret);
     }
 
     [Fact]
     public void InterfaceHealthCheck_SdDocCreation()
     {
-        InterfaceHealthCheckTechUserToken = TechTokenRetriever.GetToken(TokenUrl,
-            Secrets.InterfaceHealthCheckTechClientId,
-            Secrets.InterfaceHealthCheckTechClientSecret);
-        if (InterfaceHealthCheckTechUserToken.IsNullOrEmpty())
+        if (_interfaceHealthCheckTechUserToken.IsNullOrEmpty())
             throw new Exception("Could not fetch token for interface partner health check");
 
         var body = DataHandleHelper.SerializeData(
@@ -71,7 +67,7 @@ public class SdFactoryEndpointTests : EndToEndTestBase
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {InterfaceHealthCheckTechUserToken}")
+                $"Bearer {_interfaceHealthCheckTechUserToken}")
             .When()
             .Body(body)
             .Post($"{BaseUrl}{EndPoint}")

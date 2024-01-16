@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -28,18 +27,15 @@ public class Country
     private Country()
     {
         Alpha2Code = null!;
-        CountryNameDe = null!;
-        CountryNameEn = null!;
         Addresses = new HashSet<Address>();
         Connectors = new HashSet<Connector>();
         CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
+        CountryLongNames = new HashSet<CountryLongName>();
     }
 
-    public Country(string alpha2Code, string countryNameDe, string countryNameEn) : this()
+    public Country(string alpha2Code) : this()
     {
         Alpha2Code = alpha2Code;
-        CountryNameDe = countryNameDe;
-        CountryNameEn = countryNameEn;
     }
 
     [Key]
@@ -51,14 +47,9 @@ public class Country
     [JsonPropertyName("alpha3code")]
     public string? Alpha3Code { get; set; }
 
-    [MaxLength(255)]
-    public string CountryNameDe { get; set; }
-
-    [MaxLength(255)]
-    public string CountryNameEn { get; set; }
-
     // Navigation properties
     public virtual ICollection<Address> Addresses { get; private set; }
     public virtual ICollection<Connector> Connectors { get; private set; }
     public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
+    public virtual ICollection<CountryLongName> CountryLongNames { get; private set; }
 }

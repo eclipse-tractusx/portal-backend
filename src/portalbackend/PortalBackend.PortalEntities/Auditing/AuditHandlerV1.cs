@@ -30,12 +30,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 public class AuditHandlerV1 : IAuditHandler
 {
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly IDateTimeProvider _dateTimeProvider;
 
     public AuditHandlerV1(IIdentityService identityService, IDateTimeProvider dateTimeProvider)
     {
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _dateTimeProvider = dateTimeProvider;
     }
 
@@ -60,7 +60,7 @@ public class AuditHandlerV1 : IAuditHandler
                              lastEditorNames,
                              property => property.Metadata.Name))
                 {
-                    prop.CurrentValue = _identityService.IdentityData.UserId;
+                    prop.CurrentValue = _identityData.IdentityId;
                 }
 
                 foreach (var prop in properties.IntersectBy(
@@ -101,7 +101,7 @@ public class AuditHandlerV1 : IAuditHandler
         newAuditEntity.AuditV1Id = Guid.NewGuid();
         newAuditEntity.AuditV1OperationId = entityEntry.State.ToAuditOperation();
         newAuditEntity.AuditV1DateLastChanged = _dateTimeProvider.OffsetNow;
-        newAuditEntity.AuditV1LastEditorId = _identityService.IdentityData.UserId;
+        newAuditEntity.AuditV1LastEditorId = _identityData.IdentityId;
 
         context.Add(newAuditEntity);
     }

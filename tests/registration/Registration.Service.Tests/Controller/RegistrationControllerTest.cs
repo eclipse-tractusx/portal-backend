@@ -37,7 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
 
 public class RegistrationControllerTest
 {
-    private readonly IdentityData _identity = new("7478542d-7878-47a8-a931-08bd8779532d", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly RegistrationController _controller;
     private readonly IRegistrationBusinessLogic _registrationBusinessLogicFake;
@@ -45,6 +45,10 @@ public class RegistrationControllerTest
     public RegistrationControllerTest()
     {
         _fixture = new Fixture();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         _registrationBusinessLogicFake = A.Fake<IRegistrationBusinessLogic>();
         _controller = new RegistrationController(_registrationBusinessLogicFake);
         _controller.AddControllerContextWithClaimAndBearer("ac-token", _identity);

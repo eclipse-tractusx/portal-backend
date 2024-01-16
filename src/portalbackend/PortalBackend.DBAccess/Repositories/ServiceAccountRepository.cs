@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -41,7 +40,6 @@ public class ServiceAccountRepository : IServiceAccountRepository
         Guid identityId,
         string name,
         string description,
-        string clientId,
         string clientClientId,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         Action<CompanyServiceAccount>? setOptionalParameters = null)
@@ -52,7 +50,6 @@ public class ServiceAccountRepository : IServiceAccountRepository
             description,
             companyServiceAccountTypeId)
         {
-            ClientId = clientId,
             ClientClientId = clientClientId
         };
         setOptionalParameters?.Invoke(entity);
@@ -87,7 +84,6 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.Description,
                     serviceAccount.CompanyServiceAccountTypeId,
                     serviceAccount.OfferSubscriptionId,
-                    serviceAccount.ClientId,
                     serviceAccount.ClientClientId,
                     serviceAccount.Identity!.IdentityAssignedRoles
                         .Select(assignedRole => assignedRole.UserRole)
@@ -97,7 +93,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             userRole.UserRoleText))))
             .SingleOrDefaultAsync();
 
-    public Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientId, ConnectorStatusId? statusId, OfferSubscriptionStatusId? OfferStatusId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId) =>
+    public Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientClientId, ConnectorStatusId? statusId, OfferSubscriptionStatusId? OfferStatusId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId) =>
         _dbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
@@ -106,7 +102,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Select(sa => new ValueTuple<IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?>(
                 sa.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
                 sa.Connector!.Id,
-                sa.ClientId,
+                sa.ClientClientId,
                 sa.Connector!.StatusId,
                 sa.OfferSubscription!.OfferSubscriptionStatusId))
             .SingleOrDefaultAsync();
@@ -120,12 +116,10 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
-                    serviceAccount.ClientId,
                     serviceAccount.ClientClientId,
-                    serviceAccount.Identity!.UserEntityId,
                     serviceAccount.Name,
                     serviceAccount.Description,
-                    serviceAccount.Identity.IdentityAssignedRoles
+                    serviceAccount.Identity!.IdentityAssignedRoles
                         .Select(assignedRole => assignedRole.UserRole)
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
@@ -144,10 +138,16 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             serviceAccount.OfferSubscription.OfferId,
                             serviceAccount.OfferSubscription.Offer!.OfferTypeId,
                             serviceAccount.OfferSubscription.Offer.Name,
-                            serviceAccount.OfferSubscription.Id)))
+                            serviceAccount.OfferSubscription.Id),
+                    serviceAccount.Identity.LastEditorId == null ? null :
+                        new CompanyLastEditorData(
+                            serviceAccount.Identity.LastEditor!.IdentityTypeId == IdentityTypeId.COMPANY_USER
+                                ? serviceAccount.Identity.LastEditor.CompanyUser!.Lastname
+                                : serviceAccount.Identity.LastEditor.CompanyServiceAccount!.Name,
+                            serviceAccount.Identity.LastEditor.Company!.Name)))
             .SingleOrDefaultAsync();
 
-    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner, UserStatusId userStatusId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -156,7 +156,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 .Where(serviceAccount =>
                     (!isOwner.HasValue && (serviceAccount.CompaniesLinkedServiceAccount!.Owners == userCompanyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == userCompanyId) ||
                     isOwner.HasValue && (isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Owners == userCompanyId || !isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider == userCompanyId)) &&
-                    serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
+                    serviceAccount.Identity!.UserStatusId == userStatusId &&
                     (clientId == null || EF.Functions.ILike(serviceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
                 .GroupBy(serviceAccount => serviceAccount.Identity!.UserStatusId),
             serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
@@ -189,4 +189,12 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 sa.Identity!.UserStatusId == UserStatusId.ACTIVE &&
                 sa.Identity.CompanyId == companyId)
             .AnyAsync();
+
+    public Task<(Guid IdentityId, Guid CompanyId)> GetServiceAccountDataByClientId(string clientId) =>
+        _dbContext.CompanyServiceAccounts
+            .Where(sa => sa.ClientClientId == clientId)
+            .Select(sa => new ValueTuple<Guid, Guid>(
+                sa.Id,
+                sa.Identity!.CompanyId))
+            .SingleOrDefaultAsync();
 }

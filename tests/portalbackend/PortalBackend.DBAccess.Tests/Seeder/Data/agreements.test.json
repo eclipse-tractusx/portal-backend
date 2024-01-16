@@ -4,19 +4,21 @@
     "agreement_category_id": 1,
     "date_created": "2022-03-24 18:01:33.388000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Terms & Conditions - Consultant",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1094",
     "agreement_category_id": 1,
     "date_created": "2022-03-24 18:01:33.388000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Terms & Conditions - Consultant",
     "issuer_company_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "mandatory": true
   }
 ]

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,20 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 
 public class ProcessIdentityService : IIdentityService
 {
-    private readonly ProcessIdentitySettings _settings;
+    private readonly IIdentityData _identityData;
+    public ProcessIdentityService(IProcessIdentityDataBuilder processIdentityDataBuilder)
+    {
+        _identityData = processIdentityDataBuilder;
+    }
 
-    public ProcessIdentityService(IOptions<ProcessIdentitySettings> options) =>
-        _settings = options.Value;
-
-    /// <inheritdoc />
-    public IdentityData IdentityData =>
-        new(_settings.UserEntityId, _settings.ProcessUserId, _settings.IdentityTypeId, _settings.ProcessUserCompanyId);
+    public IIdentityData IdentityData => _identityData;
 }

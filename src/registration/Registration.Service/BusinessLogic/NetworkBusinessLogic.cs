@@ -32,20 +32,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 public class NetworkBusinessLogic : INetworkBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly IApplicationChecklistCreationService _checklistService;
 
     public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IApplicationChecklistCreationService checklistService)
     {
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _checklistService = checklistService;
     }
 
     public async Task Submit(PartnerSubmitData submitData)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
-        var userId = _identityService.IdentityData.UserId;
+        var companyId = _identityData.CompanyId;
+        var userId = _identityData.IdentityId;
         var data = await _portalRepositories.GetInstance<INetworkRepository>()
             .GetSubmitData(companyId)
             .ConfigureAwait(false);

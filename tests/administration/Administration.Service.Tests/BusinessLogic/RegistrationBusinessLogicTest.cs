@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -46,6 +47,8 @@ public class RegistrationBusinessLogicTest
     private const string AlreadyTakenBpn = "BPNL123698762666";
     private const string ValidBpn = "BPNL123698762345";
     private const string CompanyName = "TestCompany";
+    private const string IamAliasId = "idp1";
+    private static readonly Guid IdpId = Guid.NewGuid();
     private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid NotExistingApplicationId = new("9f0cfd0d-c512-438e-a07e-3198bce873bf");
     private static readonly Guid ActiveApplicationCompanyId = new("045abf01-7762-468b-98fb-84a30c39b7c7");
@@ -53,10 +56,11 @@ public class RegistrationBusinessLogicTest
     private static readonly Guid ExistingExternalId = Guid.NewGuid();
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
     private static readonly Guid ApplicationId = new("6084d6e0-0e01-413c-850d-9f944a6c494c");
+    private static readonly Guid UserId = Guid.NewGuid();
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
-    private readonly IApplicationChecklistRepository _applicationChecklistRepository;
+    private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly IUserRepository _userRepository;
     private readonly IFixture _fixture;
@@ -67,6 +71,7 @@ public class RegistrationBusinessLogicTest
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IMailingService _mailingService;
     private readonly IDocumentRepository _documentRepository;
+    private readonly IProvisioningManager _provisioningManager;
 
     public RegistrationBusinessLogicTest()
     {
@@ -77,31 +82,33 @@ public class RegistrationBusinessLogicTest
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
-        _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
+        _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
 
         var options = A.Fake<IOptions<RegistrationSettings>>();
+        var settings = A.Fake<RegistrationSettings>();
+        settings.ApplicationsMaxPageSize = 15;
+        A.CallTo(() => options.Value).Returns(settings);
+
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _checklistService = A.Fake<IApplicationChecklistService>();
         _mailingService = A.Fake<IMailingService>();
-        var settings = A.Fake<RegistrationSettings>();
-        settings.ApplicationsMaxPageSize = 15;
+        _provisioningManager = A.Fake<IProvisioningManager>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
-        A.CallTo(() => options.Value).Returns(settings);
 
         var logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, logger);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _provisioningManager, logger);
     }
 
     #region GetCompanyApplicationDetailsAsync
@@ -446,9 +453,11 @@ public class RegistrationBusinessLogicTest
     }
 
     [Theory]
-    [InlineData(ApplicationChecklistEntryStatusId.TO_DO)]
-    [InlineData(ApplicationChecklistEntryStatusId.DONE)]
-    public async Task DeclineRegistrationVerification_WithDecline_StateAndCommentSetCorrectly(ApplicationChecklistEntryStatusId checklistStatusId)
+    [InlineData(ApplicationChecklistEntryStatusId.TO_DO, IdentityProviderTypeId.SHARED)]
+    [InlineData(ApplicationChecklistEntryStatusId.DONE, IdentityProviderTypeId.SHARED)]
+    [InlineData(ApplicationChecklistEntryStatusId.TO_DO, IdentityProviderTypeId.OWN)]
+    [InlineData(ApplicationChecklistEntryStatusId.DONE, IdentityProviderTypeId.OWN)]
+    public async Task DeclineRegistrationVerification_WithDecline_StateAndCommentSetCorrectly(ApplicationChecklistEntryStatusId checklistStatusId, IdentityProviderTypeId idpTypeId)
     {
         // Arrange
         const string comment = "application rejected because of reasons.";
@@ -456,7 +465,7 @@ public class RegistrationBusinessLogicTest
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, checklistStatusId, DateTimeOffset.UtcNow);
         var company = new Company(CompanyId, null!, CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
         var application = new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.SUBMITTED, CompanyApplicationTypeId.INTERNAL, DateTimeOffset.UtcNow);
-        SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId);
+        SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId, idpTypeId);
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepData) =>
             {
@@ -479,6 +488,78 @@ public class RegistrationBusinessLogicTest
         processSteps.Should().ContainSingle().Which.Should().Match<ProcessStep>(x =>
             x.ProcessStepStatusId == ProcessStepStatusId.TODO &&
             x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED);
+        if (idpTypeId == IdentityProviderTypeId.SHARED)
+        {
+            A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync(IamAliasId))
+            .MustHaveHappenedOnceExactly();
+        }
+        A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync(IamAliasId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync("user123"))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeclineRegistrationVerification_WithApplicationNotFound_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
+            .Returns(default((Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId)>, IEnumerable<Guid>)));
+        async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"CompanyApplication {applicationId} is not in status SUBMITTED (Parameter 'applicationId')");
+        ex.ParamName.Should().Be("applicationId");
+    }
+
+    [Fact]
+    public async Task DeclineRegistrationVerification_WithMultipleIdps_CallsExpected()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var sharedIdpId = Guid.NewGuid();
+        var managedIdpId = Guid.NewGuid();
+        var ownIdpId = Guid.NewGuid();
+
+        A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
+            .Returns((
+                companyId,
+                "test",
+                null,
+                new[]
+                {
+                    (sharedIdpId, "idp1", IdentityProviderTypeId.SHARED),
+                    (managedIdpId, "idp2", IdentityProviderTypeId.MANAGED),
+                    (ownIdpId, "idp3", IdentityProviderTypeId.OWN),
+                },
+                Enumerable.Empty<Guid>()));
+
+        // Act
+        await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(companyId, sharedIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("idp1")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(sharedIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp1")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp1")).MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(companyId, sharedIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("idp2")).MustNotHaveHappened();
+        A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(managedIdpId)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp2")).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp2")).MustNotHaveHappened();
+
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(companyId, ownIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("idp3")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(ownIdpId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp3")).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp3")).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -808,15 +889,12 @@ public class RegistrationBusinessLogicTest
             {
                 { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null) }
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
-
-        A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName, ExistingExternalId));
     }
 
-    private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId)
+    private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId, IdentityProviderTypeId idpTypeId)
     {
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry>? initail, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
+            .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry>? _, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
             {
                 action.Invoke(applicationChecklistEntry);
             });
@@ -833,10 +911,13 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
-            .Returns((CompanyId, CompanyName, ExistingExternalId));
+            .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IdpId, IamAliasId, idpTypeId), 1), Enumerable.Repeat(UserId, 1)));
+
+        A.CallTo(() => _provisioningManager.GetUserByUserName(UserId.ToString()))
+            .Returns("user123");
 
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> initial, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
+            .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> _, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
             {
                 action.Invoke(applicationChecklistEntry);
             });

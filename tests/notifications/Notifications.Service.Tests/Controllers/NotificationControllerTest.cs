@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -36,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.Contro
 
 public class NotificationControllerTest
 {
-    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly INotificationBusinessLogic _logic;
     private readonly NotificationController _controller;
@@ -45,7 +44,11 @@ public class NotificationControllerTest
     {
         _fixture = new Fixture();
         _logic = A.Fake<INotificationBusinessLogic>();
-        this._controller = new NotificationController(_logic);
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
+        _controller = new NotificationController(_logic);
         _controller.AddControllerContextWithClaimAndBearer("THISISTHEACCESSTOKEN", _identity);
     }
 
@@ -60,14 +63,14 @@ public class NotificationControllerTest
         var sorting = _fixture.Create<NotificationSorting?>();
         var doneState = _fixture.Create<bool?>();
         var paginationResponse = new Pagination.Response<NotificationDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<NotificationDetailData>(5));
-        A.CallTo(() => _logic.GetNotificationsAsync(A<int>._, A<int>._, A<NotificationFilters>._))
+        A.CallTo(() => _logic.GetNotificationsAsync(A<int>._, A<int>._, A<NotificationFilters>._, SearchSemanticTypeId.AND))
             .ReturnsLazily(() => paginationResponse);
 
         //Act
-        var result = await this._controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting, doneState: doneState, searchTypeIds: Enumerable.Empty<NotificationTypeId>()).ConfigureAwait(false);
+        var result = await _controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting, doneState: doneState, searchTypeIds: Enumerable.Empty<NotificationTypeId>()).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<NotificationFilters>.That.Matches(x => x.IsRead == isRead && x.TypeId == typeId && x.TopicId == topicId && x.OnlyDueDate == onlyDueDate && x.Sorting == sorting && x.DoneState == doneState))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<NotificationFilters>.That.Matches(x => x.IsRead == isRead && x.TypeId == typeId && x.TopicId == topicId && x.OnlyDueDate == onlyDueDate && x.Sorting == sorting && x.DoneState == doneState), SearchSemanticTypeId.AND)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<NotificationDetailData>>(result);
         result.Content.Should().HaveCount(5);
     }
@@ -82,7 +85,7 @@ public class NotificationControllerTest
             .ReturnsLazily(() => data);
 
         //Act
-        var result = await this._controller.GetNotification(notificationId).ConfigureAwait(false);
+        var result = await _controller.GetNotification(notificationId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetNotificationDetailDataAsync(notificationId)).MustHaveHappenedOnceExactly();
@@ -98,7 +101,7 @@ public class NotificationControllerTest
             .ReturnsLazily(() => data);
 
         //Act
-        var result = await this._controller.NotificationCountDetails().ConfigureAwait(false);
+        var result = await _controller.NotificationCountDetails().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetNotificationCountDetailsAsync()).MustHaveHappenedOnceExactly();
@@ -115,7 +118,7 @@ public class NotificationControllerTest
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
-        var result = await this._controller.SetNotificationToRead(notificationId).ConfigureAwait(false);
+        var result = await _controller.SetNotificationToRead(notificationId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.SetNotificationStatusAsync(notificationId, true)).MustHaveHappenedOnceExactly();
@@ -131,7 +134,7 @@ public class NotificationControllerTest
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
-        var result = await this._controller.DeleteNotification(notificationId).ConfigureAwait(false);
+        var result = await _controller.DeleteNotification(notificationId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.DeleteNotificationAsync(notificationId)).MustHaveHappenedOnceExactly();

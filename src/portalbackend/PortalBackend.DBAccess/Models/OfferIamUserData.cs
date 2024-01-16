@@ -23,7 +23,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record OfferIamUserData(
     bool IsValidOffer,
     IEnumerable<string> IamClientIds,
-    string? IamUserId,
     bool IsSameCompany,
     string? OfferName,
     string? Firstname,
@@ -32,7 +31,6 @@ public record OfferIamUserData(
 public record CoreOfferIamUserData(
     bool IsValidOffer,
     IEnumerable<string> IamClientIds,
-    string? IamUserId,
     bool IsSameCompany,
     string? Firstname,
     string? Lastname);

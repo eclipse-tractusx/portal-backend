@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -44,7 +43,6 @@ public interface IUserBusinessLogic
     /// Delete User Own Account using userId
     /// </summary>
     /// <param name="companyUserId"></param>
-    /// <param name="userId"></param>
     /// <returns></returns>
     Task<int> DeleteOwnUserAsync(Guid companyUserId);
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds);

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,10 +20,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using System.Json;
 using System.Security.Claims;
 
@@ -32,72 +29,45 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
 {
     public class KeycloakClaimsTransformation : IClaimsTransformation
     {
-        private readonly IPortalRepositories _portalDbRepositories;
         private readonly JwtBearerOptions _options;
 
-        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options, IPortalRepositories portalDbRepositories)
+        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options)
         {
-            _portalDbRepositories = portalDbRepositories;
             _options = options.Value;
         }
 
-        public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+        public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
         {
             var claimsIdentity = new ClaimsIdentity();
-            var rolesAdded = AddRoles(principal, claimsIdentity);
-            var identityAdded = await AddIdentity(principal, claimsIdentity).ConfigureAwait(false);
-
-            if (rolesAdded || identityAdded)
+            if (AddRoles(principal, claimsIdentity))
             {
                 principal.AddIdentity(claimsIdentity);
             }
-            return principal;
+            return Task.FromResult(principal);
         }
 
-        private bool AddRoles(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity)
-        {
-            var resource_access = principal.Claims
-                .FirstOrDefault(claim => claim.Type == PortalClaimTypes.ResourceAccess && claim.ValueType == "JSON")?.Value;
-            if (resource_access == null ||
-                !((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(
-                    _options.TokenValidationParameters.ValidAudience,
-                    out var audience) ?? false) ||
-                !((audience as JsonObject)?.TryGetValue("roles", out var roles) ?? false) ||
-                roles is not JsonArray)
-            {
-                return false;
-            }
-
-            var rolesAdded = false;
-            foreach (JsonValue role in roles)
-            {
-                if (role.JsonType != JsonType.String)
+        private bool AddRoles(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity) =>
+            principal.Claims
+                .Where(claim =>
+                    claim.Type == PortalClaimTypes.ResourceAccess &&
+                    claim.ValueType == "JSON")
+                .SelectMany(claim =>
+                    JsonValue.Parse(claim.Value) is JsonObject jsonObject &&
+                    jsonObject.TryGetValue(
+                        _options.TokenValidationParameters.ValidAudience,
+                        out var audience) &&
+                    audience is JsonObject client &&
+                    client.TryGetValue("roles", out var jsonRoles) &&
+                    jsonRoles is JsonArray roles
+                        ? roles.Where(x => x.JsonType == JsonType.String)
+                               .Select(role => new Claim(ClaimTypes.Role, role))
+                        : Enumerable.Empty<Claim>())
+                .IfAny(claims =>
                 {
-                    continue;
-                }
-
-                claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, role));
-                rolesAdded = true;
-            }
-
-            return rolesAdded;
-        }
-
-        private async ValueTask<bool> AddIdentity(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity)
-        {
-            var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
-            var identityData = string.IsNullOrWhiteSpace(sub)
-                ? null
-                : await _portalDbRepositories.GetInstance<IUserRepository>().GetActiveUserDataByUserEntityId(sub).ConfigureAwait(false);
-
-            if (identityData != null)
-            {
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityData.UserId.ToString()));
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identityData.IdentityType) ?? throw new ConflictException($"IdentityType {(int)identityData.IdentityType} is out of range")));
-                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, identityData.CompanyId.ToString()));
-                return true;
-            }
-            return false;
-        }
+                    foreach (var claim in claims)
+                    {
+                        claimsIdentity.AddClaim(claim);
+                    }
+                });
     }
 }

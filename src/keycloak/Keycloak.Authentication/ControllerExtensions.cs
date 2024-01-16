@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,8 +20,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
@@ -34,15 +31,6 @@ public static class ControllerExtensions
 {
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
         tokenConsumingFunction(controller.GetBearerToken());
-
-    public static IdentityData GetIdentityData(this ClaimsPrincipal user)
-    {
-        var sub = user.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
-        var identityId = user.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId);
-        var identityType = user.Claims.GetEnumFromClaim<IdentityTypeId>(PortalClaimTypes.IdentityType);
-        var companyId = user.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId);
-        return new IdentityData(sub, identityId, identityType, companyId);
-    }
 
     private static string GetBearerToken(this ControllerBase controller)
     {
@@ -60,48 +48,5 @@ public static class ControllerExtensions
         }
 
         return bearer;
-    }
-
-    private static string GetStringFromClaim(this IEnumerable<Claim> claims, string claimType)
-    {
-        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
-        if (string.IsNullOrWhiteSpace(claimValue))
-        {
-            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty", nameof(claims));
-        }
-
-        return claimValue;
-    }
-
-    private static Guid GetGuidFromClaim(this IEnumerable<Claim> claims, string claimType)
-    {
-        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
-        if (string.IsNullOrWhiteSpace(claimValue))
-        {
-            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty", nameof(claims));
-        }
-
-        if (!Guid.TryParse(claimValue, out var result) || Guid.Empty == result)
-        {
-            throw new ControllerArgumentException($"Claim {claimType} must contain a Guid", nameof(claims));
-        }
-
-        return result;
-    }
-
-    private static T GetEnumFromClaim<T>(this IEnumerable<Claim> claims, string claimType) where T : struct, Enum
-    {
-        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
-        if (string.IsNullOrWhiteSpace(claimValue))
-        {
-            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty", nameof(claims));
-        }
-
-        if (!Enum.TryParse(claimValue, true, out T result))
-        {
-            throw new ControllerArgumentException($"Claim {claimType} must contain a {typeof(T)}", nameof(claims));
-        }
-
-        return result;
     }
 }

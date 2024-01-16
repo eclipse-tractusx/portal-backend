@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -36,8 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
 
 public class AppChangeControllerTest
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly AppChangeController _controller;
     private readonly IAppChangeBusinessLogic _logic;
@@ -46,8 +44,12 @@ public class AppChangeControllerTest
     {
         _fixture = new Fixture();
         _logic = A.Fake<IAppChangeBusinessLogic>();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         _controller = new AppChangeController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId, _identity);
+        _controller.AddControllerContextWithClaim(_identity);
     }
 
     [Fact]

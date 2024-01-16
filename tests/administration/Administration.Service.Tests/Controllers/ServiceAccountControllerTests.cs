@@ -22,18 +22,19 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
 public class ServiceAccountControllerTests
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly IServiceAccountBusinessLogic _logic;
     private readonly ServiceAccountController _controller;
@@ -45,9 +46,13 @@ public class ServiceAccountControllerTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         _logic = A.Fake<IServiceAccountBusinessLogic>();
-        this._controller = new ServiceAccountController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId, _identity);
+        _controller = new ServiceAccountController(_logic);
+        _controller.AddControllerContextWithClaim(_identity);
     }
 
     [Fact]
@@ -91,5 +96,36 @@ public class ServiceAccountControllerTests
 
         result.Should().NotBeNull();
         result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetServiceAccountDetails_CallsExpected()
+    {
+        // Arrange
+        var serviceAcountId = _fixture.Create<Guid>();
+
+        // Act
+        await _controller.GetServiceAccountDetails(serviceAcountId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAcountId)).MustHaveHappenedOnceExactly();
+
+    }
+
+    [Fact]
+    public async Task GetServiceAccountsData_CallsExpected()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<CompanyServiceAccountData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyServiceAccountData>(5));
+        A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, true))
+                  .Returns(paginationResponse);
+
+        //Act
+        var result = await this._controller.GetServiceAccountsData(0, 15, null, null, true).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, true)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyServiceAccountData>>(result);
+        result.Content.Should().HaveCount(5);
     }
 }

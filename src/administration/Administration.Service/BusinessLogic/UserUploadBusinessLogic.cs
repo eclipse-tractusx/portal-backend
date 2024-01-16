@@ -38,7 +38,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IMailingService _mailingService;
     private readonly UserSettings _settings;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly IErrorMessageService _errorMessageService;
 
     /// <summary>
@@ -58,7 +58,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         _userProvisioningService = userProvisioningService;
         _mailingService = mailingService;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _errorMessageService = errorMessageService;
         _settings = settings.Value;
     }
@@ -73,8 +73,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var identity = _identityService.IdentityData;
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, identity.UserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityData.IdentityId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -93,7 +92,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     parsed.FirstName,
                     parsed.LastName,
                     parsed.Email,
-                    await GetUserRoleDatas(parsed.Roles, validRoleData, identity.CompanyId).ConfigureAwait(false),
+                    await GetUserRoleDatas(parsed.Roles, validRoleData, _identityData.CompanyId).ConfigureAwait(false),
                     parsed.ProviderUserName,
                     parsed.ProviderUserId,
                     UserStatusId.ACTIVE,
@@ -207,8 +206,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var identity = _identityService.IdentityData;
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.UserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -227,7 +225,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     parsed.FirstName,
                     parsed.LastName,
                     parsed.Email,
-                    await GetUserRoleDatas(parsed.Roles, validRoleData, identity.CompanyId).ConfigureAwait(false),
+                    await GetUserRoleDatas(parsed.Roles, validRoleData, _identityData.CompanyId).ConfigureAwait(false),
                     parsed.Email,
                     "",
                     UserStatusId.ACTIVE,

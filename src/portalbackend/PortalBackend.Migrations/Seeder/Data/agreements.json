@@ -4,120 +4,143 @@
     "agreement_category_id": 1,
     "date_created": "2022-03-24 18:01:33.388000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Terms & Conditions - Active Participant",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": "00000000-0000-0000-0000-000000000002"
+    "document_id": "00000000-0000-0000-0000-000000000002",
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1011",
     "agreement_category_id": 1,
     "date_created": "2022-03-24 18:01:33.388000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Terms & Conditions - App Provider",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": "00000000-0000-0000-0000-000000000003"
+    "document_id": "00000000-0000-0000-0000-000000000003",
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1013",
     "agreement_category_id": 1,
     "date_created": "2022-03-24 18:01:33.388000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Security Regulations - Active Participant",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": "00000000-0000-0000-0000-000000000005"
+    "document_id": "00000000-0000-0000-0000-000000000005",
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1014",
     "agreement_category_id": 4,
     "date_created": "2022-09-18 00:00:00.000000 +00:00",
     "date_last_changed": "2022-09-18 00:00:00.000000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Terms & Conditions - Service Marketplace",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": "00000000-0000-0000-0000-000000000006"
+    "document_id": "00000000-0000-0000-0000-000000000006",
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1015",
     "agreement_category_id": 1,
     "date_created": "2022-09-18 00:00:00.000000 +00:00",
     "date_last_changed": "2022-09-18 00:00:00.000000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Data Sovereignty Guidelines",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": "00000000-0000-0000-0000-000000000007"
+    "document_id": "00000000-0000-0000-0000-000000000007",
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1016",
     "agreement_category_id": 2,
     "date_created": "2022-09-18 00:00:00.000000 +00:00",
     "date_last_changed": "2022-09-18 00:00:00.000000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Marketplace Terms & Conditions",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": "00000000-0000-0000-0000-000000000008"
+    "document_id": "00000000-0000-0000-0000-000000000008",
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1017",
     "agreement_category_id": 4,
     "date_created": "2022-09-18 00:00:00.000000 +00:00",
     "date_last_changed": "2022-09-18 00:00:00.000000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Terms & Conditions Service Provider",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": "00000000-0000-0000-0000-000000000004"
+    "document_id": "00000000-0000-0000-0000-000000000004",
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1018",
     "agreement_category_id": 4,
     "date_created": "2022-09-18 00:00:00.000000 +00:00",
     "date_last_changed": "2022-09-18 00:00:00.000000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Data Sharing Approval - allow CX to submit company data (company name, requester) to process the subscription",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": null
+    "document_id": null,
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1090",
     "agreement_category_id": 1,
     "date_created": "2022-01-01 00:00:00.388000 +00:00",
     "date_last_changed": "2022-01-01 00:00:00.388000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 2,
     "name": "I confirm that my company has successfully received a Catena-X onboarding certificate issued by an official Conformity Assessment Body (CAB). I acknowledge to upload the certificate. For more information visit the association homepage (Link)",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": null
+    "document_id": null,
+    "mandatory": true
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1091",
     "agreement_category_id": 2,
     "date_created": "2022-01-01 00:00:00.388000 +00:00",
     "date_last_changed": "2022-01-01 00:00:00.388000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "I confirm that the application I want to offer has successfully received a Catena-X certificate issued by an official Conformity Assessment Body (CAB). I acknowledge to upload the certificate.",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": null
+    "document_id": null,
+    "mandatory": true
   },
   {
     "id": "311aac58-932b-4622-be8b-34337e48d70d",
     "agreement_category_id": 4,
     "date_created": "2022-09-18 00:00:00.000000 +00:00",
     "date_last_changed": "2022-09-18 00:00:00.000000 +00:00",
-    "agreement_type": null,
+    "agreement_status_id": 1,
     "name": "Terms & Conditions - Onboarding Service Provider",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
-    "document_id": "1cc048fc-34d7-43ec-a205-bcbea6cbe01f"
+    "document_id": "1cc048fc-34d7-43ec-a205-bcbea6cbe01f",
+    "mandatory": true
+  },
+  {
+    "id": "311aac58-932b-4622-be8b-34337e48d70C",
+    "agreement_category_id": 4,
+    "date_created": "2023-12-01 00:00:00.000000 +00:00",
+    "date_last_changed": "2023-12-01 00:00:00.000000 +00:00",
+    "agreement_status_id": 1,
+    "name": "I confirm that the service I want to offer has successfully received a Catena-X certificate issued by an official Conformity Assessment Body (CAB). I acknowledge to upload the certificate.",
+    "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": null,
+    "mandatory": true
   }
 ]

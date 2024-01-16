@@ -93,11 +93,11 @@ public partial class ProvisioningManager : IProvisioningManager
         var attributes = new List<(string, IEnumerable<string>)>();
         if (organisationName != null)
         {
-            attributes.Add(new(_Settings.MappedCompanyAttribute, Enumerable.Repeat<string>(organisationName, 1)));
+            attributes.Add(new(_Settings.MappedCompanyAttribute, Enumerable.Repeat(organisationName, 1)));
         }
         if (businessPartnerNumber != null)
         {
-            attributes.Add(new(_Settings.MappedBpnAttribute, Enumerable.Repeat<string>(businessPartnerNumber, 1)));
+            attributes.Add(new(_Settings.MappedBpnAttribute, Enumerable.Repeat(businessPartnerNumber, 1)));
         }
         return attributes;
     }

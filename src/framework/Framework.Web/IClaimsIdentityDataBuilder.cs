@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +18,23 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
-public record InvitedUserDetail(string? UserId, InvitationStatusId InvitationStatus, string? EmailId);
+public interface IClaimsIdentityDataBuilder : IIdentityData
+{
+    void AddIdentityId(Guid identityId);
+    void AddIdentityTypeId(IdentityTypeId identityTypeId);
+    void AddCompanyId(Guid companyId);
+
+    IClaimsIdentityDataBuilderStatus Status { get; set; }
+}
+
+public enum IClaimsIdentityDataBuilderStatus
+{
+    Initial,
+    Initialized,
+    Complete,
+    Empty
+}

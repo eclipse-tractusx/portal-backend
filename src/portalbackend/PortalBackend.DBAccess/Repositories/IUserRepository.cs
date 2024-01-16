@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,7 +21,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -35,12 +33,12 @@ public interface IUserRepository
     CompanyUser CreateCompanyUser(Guid identityId, string? firstName, string? lastName, string email);
     Identity CreateIdentity(Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId, Action<Identity>? setOptionalFields);
     void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? initialize, Action<CompanyUser> setOptionalParameters);
-    IQueryable<CompanyUser> GetOwnCompanyUserQuery(Guid companyId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<UserStatusId>? statusIds = null);
-    Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
-    IAsyncEnumerable<(string? UserEntityId, Guid CompanyUserId)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId, IEnumerable<UserStatusId> companyUserStatusIds);
+    IQueryable<CompanyUser> GetOwnCompanyUserQuery(Guid companyId, Guid? companyUserId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<UserStatusId>? statusIds = null);
+    Task<(string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
+    IAsyncEnumerable<(Guid CompanyUserId, bool IsFullMatch)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId, IEnumerable<UserStatusId> companyUserStatusIds);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, Guid companyId);
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid companyId);
-    Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId);
+    Task<(IEnumerable<string> AssignedBusinessPartnerNumbers, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId);
     Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(Guid companyUserId, IEnumerable<Guid> userRoleIds);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(Guid companyUserId);
 
@@ -86,7 +84,7 @@ public interface IUserRepository
     /// User account data for deletion of own userId
     /// </summary>
     /// <param name="companyUserId"></param>
-    /// <returns>SharedIdpAlias, CompanyUserId, UserEntityId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
+    /// <returns>SharedIdpAlias, CompanyUserId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
     Task<(string? SharedIdpAlias, CompanyUserAccountData AccountData)> GetSharedIdentityProviderUserAccountDataUntrackedAsync(Guid companyUserId);
 
     /// <summary>
@@ -94,7 +92,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="companyUserIds"></param>
     /// <param name="companyUserId"></param>
-    /// <returns>CompanyUserId, UserEntityId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
+    /// <returns>CompanyUserId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
     IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyId);
 
     /// <summary>
@@ -121,9 +119,8 @@ public interface IUserRepository
     /// <returns>The bpn of the company for the user</returns>
     Task<string?> GetCompanyBpnForIamUserAsync(Guid companyUserId);
 
-    Task<IdentityData?> GetActiveUserDataByUserEntityId(string userEntityId);
     Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify);
     CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName);
     IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId);
-    IAsyncEnumerable<(Guid ServiceAccountId, string ClientClientId)> GetNextServiceAccountsWithoutUserEntityId();
+    void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity> Modify)> identityData);
 }

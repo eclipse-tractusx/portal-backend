@@ -19,12 +19,12 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication.Tests</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication.Tests</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.ServiceAccountSync.Executor.Tests</RootNamespace>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.ServiceAccountSync.Executor.Tests</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,8 +42,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\processes\Processes.Worker\Processes.Worker.csproj" />
+    <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 </Project>

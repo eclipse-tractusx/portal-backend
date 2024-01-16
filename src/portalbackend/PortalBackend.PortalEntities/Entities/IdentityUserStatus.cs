@@ -17,18 +17,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.ServiceACcountSync.Executor;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ServiceAccountSync.Executor.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public static class ServiceAccountSyncProcessCollectionExtensions
+public class IdentityUserStatus
 {
-    public static IServiceCollection AddServiceAccountSyncProcessExecutor(this IServiceCollection services, IConfiguration config) =>
-        services
-            .AddTransient<IProcessTypeExecutor, ServiceAccountSyncProcessTypeExecutor>()
-            .AddProvisioningManager(config);
+    private IdentityUserStatus()
+    {
+        Label = null!;
+        Identities = new HashSet<Identity>();
+    }
+
+    public IdentityUserStatus(UserStatusId userStatusId) : this()
+    {
+        Id = userStatusId;
+        Label = userStatusId.ToString();
+    }
+
+    public UserStatusId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+
+    // Navigation properties
+    public virtual ICollection<Identity> Identities { get; private set; }
 }

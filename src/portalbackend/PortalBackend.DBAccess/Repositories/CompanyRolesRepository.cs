@@ -59,13 +59,17 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 application.Company!.Consents.Select(c => new ConsentData(c.Id, c.ConsentStatusId, c.AgreementId))))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
+    public IAsyncEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementStatusData)> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
         _dbContext.CompanyRoles
             .AsNoTracking()
             .Where(companyRole => companyRole.CompanyRoleRegistrationData!.IsRegistrationRole && companyRoleIds.Contains(companyRole.Id))
-            .Select(companyRole => new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(
+            .Select(companyRole => new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(
                 companyRole.Id,
-                companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
+                companyRole.AgreementAssignedCompanyRoles.Where(x => x.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE)
+                    .Select(agreementAssignedCompanyRole => new AgreementStatusData(
+                        agreementAssignedCompanyRole.AgreementId,
+                        agreementAssignedCompanyRole.Agreement!.AgreementStatusId
+                    ))
             )).AsAsyncEnumerable();
 
     public Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, Guid companyId) =>
@@ -76,10 +80,12 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 company.CompanyApplications.Any(application => application.Id == applicationId))
             .Select(company => new CompanyRoleAgreementConsents(
                 company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE).Select(consent => new AgreementConsentStatus(
-                    consent.AgreementId,
-                    consent.ConsentStatusId
-                )))).SingleOrDefaultAsync();
+                company.Consents
+                    .Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE && consent.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE && consent.Agreement.AgreementAssignedCompanyRoles.Any())
+                    .Select(consent => new AgreementConsentStatus(
+                        consent.AgreementId,
+                        consent.ConsentStatusId
+                    )))).SingleOrDefaultAsync();
 
     public async IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync()
     {
@@ -94,7 +100,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                     ShortName = description.LanguageShortName,
                     Description = description.Description
                 }),
-                Agreements = companyRole.AgreementAssignedCompanyRoles.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
+                Agreements = companyRole.AgreementAssignedCompanyRoles.Where(agreementAssignedCompanyRole => agreementAssignedCompanyRole.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE).Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
             })
             .AsAsyncEnumerable())
         {

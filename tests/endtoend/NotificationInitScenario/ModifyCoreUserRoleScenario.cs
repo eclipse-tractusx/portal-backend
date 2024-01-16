@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using FluentAssertions;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using RestAssured.Response.Logging;
@@ -78,9 +77,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
 
     private async Task GetPortalUserToken()
     {
-        _portalUserToken =
-            await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
-                Secrets.PortalUserPassword);
+        _portalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName, Secrets.PortalUserPassword);
     }
 
     //GET: api/administration/user/owncompany/roles/coreoffers

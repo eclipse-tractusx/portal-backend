@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -32,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers
 
 public class ServiceChangeControllerTest
 {
-    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
     private readonly ServiceChangeController _controller;
     private readonly IServiceChangeBusinessLogic _logic;
@@ -40,9 +39,13 @@ public class ServiceChangeControllerTest
     public ServiceChangeControllerTest()
     {
         _fixture = new Fixture();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         _logic = A.Fake<IServiceChangeBusinessLogic>();
-        this._controller = new ServiceChangeController(_logic);
-        _controller.AddControllerContextWithClaim(_identity.UserEntityId, _identity);
+        _controller = new ServiceChangeController(_logic);
+        _controller.AddControllerContextWithClaim(_identity);
     }
 
     [Fact]
@@ -52,7 +55,7 @@ public class ServiceChangeControllerTest
         var serviceId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.DeactivateService(serviceId).ConfigureAwait(false);
+        var result = await _controller.DeactivateService(serviceId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.DeactivateOfferByServiceIdAsync(serviceId)).MustHaveHappenedOnceExactly();

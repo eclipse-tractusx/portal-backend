@@ -23,7 +23,6 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -120,6 +119,7 @@ public class ServicesController : ControllerBase
     [Route("{serviceId}", Name = nameof(GetServiceDetails))]
     [Authorize(Roles = "view_service_offering")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(ServiceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ServiceDetailResponse> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") =>
@@ -191,6 +191,7 @@ public class ServicesController : ControllerBase
         await _serviceBusinessLogic.StartAutoSetupAsync(data).ConfigureAwait(false);
         return NoContent();
     }
+
     /// <summary>
     /// Retrieves subscription statuses of provided services of the currently logged in user's company.
     /// </summary>
@@ -203,8 +204,8 @@ public class ServicesController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null) =>
-        _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, sorting, statusId, offerId);
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null, [FromQuery] string? companyName = null) =>
+        _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, sorting, statusId, offerId, companyName);
 
     /// <summary>
     /// Retrieve Document Content for Service by ID
@@ -245,6 +246,7 @@ public class ServicesController : ControllerBase
     [HttpGet]
     [Route("provided")]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<AllOfferStatusData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? offerName = null, [FromQuery] ServiceStatusIdFilter? statusId = null) =>
         _serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, sorting, offerName, statusId);

@@ -38,4 +38,7 @@ public enum VerifiedCredentialTypeId
 
     [EnumMember(Value = "Sustainability Framework")]
     SUSTAINABILITY_FRAMEWORK = 5,
+
+    [EnumMember(Value = "frameworkAgreement.quality")]
+    FRAMEWORK_AGREEMENT_QUALITY = 6
 }

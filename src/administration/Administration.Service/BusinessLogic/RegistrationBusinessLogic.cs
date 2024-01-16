@@ -20,7 +20,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
@@ -31,8 +31,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Text.RegularExpressions;
@@ -49,6 +51,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
+    private readonly IProvisioningManager _provisioningManager;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
 
     public RegistrationBusinessLogic(
@@ -58,6 +61,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
+        IProvisioningManager provisioningManager,
         ILogger<RegistrationBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
@@ -66,6 +70,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
+        _provisioningManager = provisioningManager;
         _logger = logger;
     }
 
@@ -419,7 +424,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
 
-        var (companyId, companyName, processId) = result;
+        var (companyId, companyName, processId, idps, companyUserIds) = result;
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -443,6 +448,22 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             },
             null);
 
+        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+        foreach (var (idpId, idpAlias, idpType) in idps)
+        {
+            if (idpType == IdentityProviderTypeId.SHARED)
+            {
+                await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
+            }
+            identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
+            if (idpType == IdentityProviderTypeId.OWN || idpType == IdentityProviderTypeId.SHARED)
+            {
+                await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(false);
+                identityProviderRepository.DeleteIamIdentityProvider(idpAlias);
+                identityProviderRepository.DeleteIdentityProvider(idpId);
+            }
+        }
+
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
         {
             application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
@@ -452,6 +473,16 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             company.CompanyStatusId = CompanyStatusId.REJECTED;
         });
+
+        foreach (var userId in companyUserIds)
+        {
+            var iamUserId = await _provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(false);
+            if (iamUserId != null)
+            {
+                await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
+            }
+        }
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>>(userId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
 
         if (processId != null)
         {

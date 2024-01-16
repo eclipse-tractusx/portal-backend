@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -98,32 +97,44 @@ public class UserRolesRepository : IUserRolesRepository
         }
     }
 
-    public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingAppRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
+    public IAsyncEnumerable<(string UserRoleText, Guid RoleId, bool IsAssigned)> GetAssignedAndMatchingAppRoles(Guid identityId, IEnumerable<string> userRoles, Guid offerId) =>
         _dbContext.UserRoles
             .AsNoTracking()
-            .Where(role =>
-                role.OfferId == offerId &&
-                (userRoles.Contains(role.UserRoleText) ||
-                role.IdentityAssignedRoles.Select(u => u.Identity!).Any(user => user.Id == companyUserId)))
-            .Select(userRole => new UserRoleModificationData(
-                userRole.UserRoleText,
-                userRole.Id,
-                userRole.IdentityAssignedRoles.Select(u => u.Identity!).Any(user => user.Id == companyUserId)
+            .Where(role => role.OfferId == offerId)
+            .Select(role => new
+            {
+                Role = role,
+                IsAssigned = role.IdentityAssignedRoles.Any(iar => iar.IdentityId == identityId)
+            })
+            .Where(x =>
+                userRoles.Contains(x.Role.UserRoleText) ||
+                x.IsAssigned)
+            .Select(x => new ValueTuple<string, Guid, bool>(
+                x.Role.UserRoleText,
+                x.Role.Id,
+                x.IsAssigned
             ))
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingCoreOfferRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
+    public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingCoreOfferRoles(Guid identityId, IEnumerable<string> userRoles, Guid offerId) =>
         _dbContext.UserRoles
             .AsNoTracking()
-            .Where(role =>
-                role.OfferId == offerId &&
-                role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.CompanyAssignedRoles.Any(assigned => assigned.Company!.Identities.Any(user => user.Id == companyUserId))) &&
-                (userRoles.Contains(role.UserRoleText) ||
-                role.IdentityAssignedRoles.Select(u => u.Identity!).Any(user => user.Id == companyUserId)))
-            .Select(userRole => new UserRoleModificationData(
-                userRole.UserRoleText,
-                userRole.Id,
-                userRole.IdentityAssignedRoles.Select(u => u.Identity!).Any(user => user.Id == companyUserId)
+            .Where(role => role.OfferId == offerId)
+            .Select(role => new
+            {
+                Role = role,
+                IsAssigned = role.IdentityAssignedRoles.Any(iar => iar.IdentityId == identityId),
+                IsAssignable = role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.CompanyAssignedRoles.Any(assigned => assigned.Company!.Identities.Any(identity => identity.Id == identityId)))
+            })
+            .Where(x =>
+                userRoles.Contains(x.Role.UserRoleText) ||
+                x.IsAssigned ||
+                x.IsAssignable)
+            .Select(x => new UserRoleModificationData(
+                x.Role.UserRoleText,
+                x.Role.Id,
+                x.IsAssigned,
+                x.IsAssignable
             ))
             .ToAsyncEnumerable();
 
@@ -245,16 +256,14 @@ public class UserRolesRepository : IUserRolesRepository
                 instance.App!.UserRoles.Select(role => new ValueTuple<Guid, string>(role.Id, role.UserRoleText))))
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds) =>
+    public IAsyncEnumerable<(Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .SelectMany(application => application.Company!.Identities)
-            .Where(user => user.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)) &&
-                           user.UserEntityId != null)
-            .Select(user => new ValueTuple<Guid, string, IEnumerable<Guid>>(
+            .Where(user => user.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)))
+            .Select(user => new ValueTuple<Guid, IEnumerable<Guid>>(
                 user.Id,
-                user.UserEntityId!,
                 user.IdentityAssignedRoles.Where(assigned => userRoleIds.Contains(assigned.UserRoleId)).Select(assigned => assigned.UserRoleId)))
             .ToAsyncEnumerable();
 

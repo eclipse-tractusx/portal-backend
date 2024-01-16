@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,25 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class IdentityService : IIdentityService
+public interface IIdentityRepository
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private IdentityData? _identityData;
-
-    public IdentityService(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
-    /// <inheritdoc />
-    public IdentityData IdentityData =>
-        _identityData ??= _httpContextAccessor.HttpContext?.User.GetIdentityData()
-            ?? throw new ConflictException("The identity should be set here");
+    Task<Guid> GetActiveCompanyIdByIdentityId(Guid identityId);
+    Task<(IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByIdentityId(Guid identityId);
+    Task<(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByUserEntityId(string userEntityId);
 }

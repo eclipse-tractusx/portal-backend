@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
+using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
@@ -38,12 +39,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 /// </summary>
 public class ServiceBusinessLogic : IServiceBusinessLogic
 {
+    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly IOfferSetupService _offerSetupService;
     private readonly ServiceSettings _settings;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly ILogger<ServiceBusinessLogic> _logger;
 
     /// <summary>
@@ -69,7 +71,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService = offerService;
         _offerSubscriptionService = offerSubscriptionService;
         _offerSetupService = offerSetupService;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _logger = logger;
         _settings = settings.Value;
     }
@@ -89,7 +91,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang)
     {
-        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, _identityService.IdentityData.CompanyId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, _identityData.CompanyId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
@@ -114,7 +116,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     public async Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId)
     {
         var subscriptionDetailData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, _identityService.IdentityData.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
+            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, _identityData.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (subscriptionDetailData is null)
         {
             throw new NotFoundException($"Subscription {subscriptionId} does not exist");
@@ -136,12 +138,16 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, OfferTypeId.SERVICE, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
 
     /// <inheritdoc/>
-    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
+    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName)
     {
+        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        {
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+        }
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityService.IdentityData.CompanyId, OfferTypeId.SERVICE, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId)(skip, take).ConfigureAwait(false);
+                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityData.CompanyId, OfferTypeId.SERVICE, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId, companyName)(skip, take).ConfigureAwait(false);
 
             return offerCompanySubscriptionResponse == null
                 ? null
@@ -167,7 +173,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         async Task<Pagination.Source<AllOfferStatusData>?> GetCompanyProvidedServiceStatusData(int skip, int take)
         {
             var companyProvidedServiceStatusData = await _portalRepositories.GetInstance<IOfferRepository>()
-                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, _identityService.IdentityData.CompanyId, sorting ?? OfferSorting.DateDesc, offerName)(skip, take).ConfigureAwait(false);
+                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, _identityData.CompanyId, sorting ?? OfferSorting.DateDesc, offerName)(skip, take).ConfigureAwait(false);
 
             return companyProvidedServiceStatusData == null
                 ? null

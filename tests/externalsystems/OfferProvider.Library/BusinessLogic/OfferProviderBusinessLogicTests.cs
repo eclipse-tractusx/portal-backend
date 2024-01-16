@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,16 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
@@ -252,13 +248,16 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var technicalUserId = Guid.NewGuid();
         var technicalUserClientId = "sa1";
+        var technicalUserInternalClientId = Guid.NewGuid().ToString();
         var serviceAccounts = new (Guid, string?)[]
         {
             new(technicalUserId, technicalUserClientId)
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
             .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
-        A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(technicalUserClientId))
+        A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(technicalUserClientId))
+            .Returns(technicalUserInternalClientId);
+        A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(technicalUserInternalClientId))
             .Returns(new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "test123" });
 
         // Act

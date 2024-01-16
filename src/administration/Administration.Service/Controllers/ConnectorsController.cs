@@ -165,7 +165,7 @@ public class ConnectorsController : ControllerBase
     [HttpDelete]
     [Route("{connectorId}")]
     [Authorize(Roles = "delete_connectors")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
@@ -251,6 +251,7 @@ public class ConnectorsController : ControllerBase
     [HttpGet]
     [Route("offerSubscriptions")]
     [Authorize(Roles = "view_connectors")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData([FromQuery] bool? connectorIdSet) =>
         _businessLogic.GetConnectorOfferSubscriptionData(connectorIdSet);

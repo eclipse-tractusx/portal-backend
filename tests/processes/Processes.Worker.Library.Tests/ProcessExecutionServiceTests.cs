@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -33,15 +34,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library.Tests;
 
 public class ProcessExecutionServiceTests
 {
-    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProcessExecutor _processExecutor;
     private readonly IMockLogger<ProcessExecutionService> _mockLogger;
-    private readonly ILogger<ProcessExecutionService> _logger;
     private readonly ProcessExecutionService _service;
     private readonly IFixture _fixture;
-    private readonly ProcessExecutionServiceSettings _settings;
+    private readonly IProcessIdentityDataDetermination _processIdentityDataDetermination;
 
     public ProcessExecutionServiceTests()
     {
@@ -50,30 +49,32 @@ public class ProcessExecutionServiceTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _dateTimeProvider = A.Fake<IDateTimeProvider>();
+        var dateTimeProvider = A.Fake<IDateTimeProvider>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _processExecutor = A.Fake<IProcessExecutor>();
+        _processIdentityDataDetermination = A.Fake<IProcessIdentityDataDetermination>();
 
         _mockLogger = A.Fake<IMockLogger<ProcessExecutionService>>();
-        _logger = new MockLogger<ProcessExecutionService>(_mockLogger);
+        ILogger<ProcessExecutionService> logger = new MockLogger<ProcessExecutionService>(_mockLogger);
 
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>())
             .Returns(_processStepRepository);
 
-        _settings = _fixture.Create<ProcessExecutionServiceSettings>();
+        var settings = _fixture.Create<ProcessExecutionServiceSettings>();
 
-        var options = Options.Create(_settings);
+        var options = Options.Create(settings);
         var serviceProvider = A.Fake<IServiceProvider>();
         A.CallTo(() => serviceProvider.GetService(typeof(IPortalRepositories))).Returns(_portalRepositories);
         A.CallTo(() => serviceProvider.GetService(typeof(IProcessExecutor))).Returns(_processExecutor);
+        A.CallTo(() => serviceProvider.GetService(typeof(IProcessIdentityDataDetermination))).Returns(_processIdentityDataDetermination);
         var serviceScope = A.Fake<IServiceScope>();
         A.CallTo(() => serviceScope.ServiceProvider).Returns(serviceProvider);
         var serviceScopeFactory = A.Fake<IServiceScopeFactory>();
         A.CallTo(() => serviceScopeFactory.CreateScope()).Returns(serviceScope);
         A.CallTo(() => serviceProvider.GetService(typeof(IServiceScopeFactory))).Returns(serviceScopeFactory);
 
-        _service = new ProcessExecutionService(serviceScopeFactory, _dateTimeProvider, options, _logger);
+        _service = new ProcessExecutionService(serviceScopeFactory, dateTimeProvider, options, logger);
     }
 
     [Fact]
@@ -87,6 +88,7 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
+        A.CallTo(() => _processIdentityDataDetermination.GetIdentityData()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustNotHaveHappened();
     }

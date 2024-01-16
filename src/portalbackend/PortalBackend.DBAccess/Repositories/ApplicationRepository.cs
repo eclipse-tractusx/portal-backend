@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -125,7 +124,7 @@ public class ApplicationRepository : IApplicationRepository
                     data.Company.AddressId,
                     data.Company.Address!.Streetname,
                     data.Company.Address.City,
-                    data.Company.Address.Country!.CountryNameDe,
+                    data.Company.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "de").Select(cln => cln.LongName).SingleOrDefault(),
                     data.Company.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),
                     data.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
                 data.Consents.Select(consent =>
@@ -164,6 +163,33 @@ public class ApplicationRepository : IApplicationRepository
                 application.CompanyId == userCompanyId,
                 application.Company.CompanyIdentifiers
                     .Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
+            .SingleOrDefaultAsync();
+
+    public Task<(string CompanyName, string? FirstName, string? LastName, string? Email, IEnumerable<(Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(string? FirstName, string? LastName, string? Email)> InvitedUsers)> Applications)> GetCompanyApplicationsDeclineData(Guid companyUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+        _dbContext.CompanyUsers
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(user =>
+                user.Id == companyUserId &&
+                user.Identity!.UserStatusId == UserStatusId.ACTIVE
+                )
+            .Select(user => new ValueTuple<string, string?, string?, string?, IEnumerable<(Guid, CompanyApplicationStatusId, IEnumerable<(string?, string?, string?)>)>>(
+                user.Identity!.Company!.Name,
+                user.Firstname,
+                user.Lastname,
+                user.Email,
+                user.Identity.Company.CompanyApplications.Where(application => applicationStatusIds.Contains(application.ApplicationStatusId)).Select(application => new ValueTuple<Guid, CompanyApplicationStatusId, IEnumerable<(string?, string?, string?)>>(
+                    application.Id,
+                    application.ApplicationStatusId,
+                    application.Invitations
+                        .Where(invitation => invitation.CompanyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE)
+                        .Select(invitation => new ValueTuple<string?, string?, string?>(
+                            invitation.CompanyUser!.Firstname,
+                            invitation.CompanyUser.Lastname,
+                            invitation.CompanyUser.Email
+                    ))
+                ))
+            ))
             .SingleOrDefaultAsync();
 
     public Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId) =>
@@ -221,7 +247,6 @@ public class ApplicationRepository : IApplicationRepository
             .Where(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE)
             .Select(companyUser => new CompanyInvitedUserData(
                 companyUser!.Id,
-                companyUser.Identity!.UserEntityId,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(companyUserAssignedBusinessPartner => companyUserAssignedBusinessPartner.BusinessPartnerNumber),
                 companyUser.Identity!.IdentityAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
             .AsAsyncEnumerable();
@@ -262,7 +287,7 @@ public class ApplicationRepository : IApplicationRepository
                     companyApplication.Company.Address.Streetadditional,
                     companyApplication.Company.Address.Streetnumber,
                     companyApplication.Company.Address.Zipcode,
-                    companyApplication.Company.Address.Country!.CountryNameDe,
+                    companyApplication.Company.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "de").Select(cln => cln.LongName).SingleOrDefault(),
                     companyApplication.Company.CompanyAssignedRoles.SelectMany(assigned =>
                         assigned.CompanyRole!.AgreementAssignedCompanyRoles.Select(x =>
                             new AgreementsData(
@@ -359,7 +384,7 @@ public class ApplicationRepository : IApplicationRepository
                         ca.Company.BusinessPartnerNumber,
                         ca.Address.Region,
                         ca.Address.Zipcode,
-                        ca.Address.Country!.CountryNameEn,
+                        ca.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "en").Select(cln => cln.LongName).SingleOrDefault(),
                         ca.Address.CountryAlpha2Code),
                 ca.CompanyIdentifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifier!.Label, ci.Value))))
             .SingleOrDefaultAsync();
@@ -426,13 +451,16 @@ public class ApplicationRepository : IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the company id</returns>
-    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(Guid IdentityProviderId, string IamAlias, IdentityProviderTypeId TypeId)> Idps, IEnumerable<Guid> CompanyUserIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
+            .AsSplitQuery()
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(x => new ValueTuple<Guid, string, Guid?>(
+            .Select(x => new ValueTuple<Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId)>, IEnumerable<Guid>>(
                 x.CompanyId,
                 x.Company!.Name,
-                x.Company!.NetworkRegistration!.ProcessId))
+                x.Company.NetworkRegistration!.ProcessId,
+                x.Company.IdentityProviders.Select(idp => new ValueTuple<Guid, string, IdentityProviderTypeId>(idp.Id, idp.IamIdentityProvider!.IamIdpAlias, idp.IdentityProviderTypeId)),
+                x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER && i.UserStatusId != UserStatusId.DELETED).Select(i => i.Id)))
             .SingleOrDefaultAsync();
 
     public Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId) =>

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,12 +20,11 @@
 using Flurl.Http;
 using Flurl.Http.Testing;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.FlurlSetup;
@@ -135,7 +133,7 @@ public class UserManagerTests
     {
         // Arrange
         using var httpTest = new HttpTest();
-        var user = new User { Id = "test123" };
+        var user = new User { Id = "test123", UserName = "test" };
         httpTest.WithAuthorization()
             .WithGetUsersAsync(Enumerable.Repeat(user, 1));
 
@@ -144,6 +142,22 @@ public class UserManagerTests
 
         // Assert
         result.Should().Be("test123");
+    }
+
+    [Fact]
+    public async Task GetUserByUserName_WithDuplicateUsers_Throws()
+    {
+        // Arrange
+        using var httpTest = new HttpTest();
+        var user = new User { Id = "test123", UserName = "test" };
+        httpTest.WithAuthorization()
+            .WithGetUsersAsync(Enumerable.Repeat(user, 2));
+
+        // Act
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(() => _sut.GetUserByUserName("test")).ConfigureAwait(false);
+
+        // Assert
+        result.Message.Should().Be("there should never be multiple users in keycloak having the same username 'test'");
     }
 
     [Fact]

@@ -36,7 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly DocumentSettings _settings;
 
     /// <summary>
@@ -45,7 +45,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IOptions<DocumentSettings> options)
     {
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _settings = options.Value;
     }
 
@@ -53,7 +53,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId)
     {
         var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
-            .GetDocumentDataAndIsCompanyUserAsync(documentId, _identityService.IdentityData.CompanyId)
+            .GetDocumentDataAndIsCompanyUserAsync(documentId, _identityData.CompanyId)
             .ConfigureAwait(false);
         if (documentDetails == default)
         {
@@ -90,7 +90,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     public async Task<bool> DeleteDocumentAsync(Guid documentId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, _identityService.IdentityData.UserId).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, _identityData.IdentityId).ConfigureAwait(false);
 
         if (details.DocumentId == Guid.Empty)
         {

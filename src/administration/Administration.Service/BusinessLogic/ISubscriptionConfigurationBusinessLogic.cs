@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -58,7 +57,6 @@ public interface ISubscriptionConfigurationBusinessLogic
     /// <summary>
     /// Gets the service provider company details
     /// </summary>
-    /// <param name="companyId">Id of the users company</param>
     /// <returns>The detail data</returns>
     Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync();
 
@@ -66,6 +64,5 @@ public interface ISubscriptionConfigurationBusinessLogic
     /// Sets service provider company details
     /// </summary>
     /// <param name="data">Detail data for the service provider</param>
-    /// <param name="companyId">Id of the users company</param>
     Task SetProviderCompanyDetailsAsync(ProviderDetailData data);
 }

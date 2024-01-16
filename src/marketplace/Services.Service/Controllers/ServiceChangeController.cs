@@ -21,6 +21,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
@@ -59,6 +60,7 @@ public class ServiceChangeController : ControllerBase
     [HttpPut]
     [Route("{serviceId:guid}/deactivateService")]
     [Authorize(Roles = "update_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

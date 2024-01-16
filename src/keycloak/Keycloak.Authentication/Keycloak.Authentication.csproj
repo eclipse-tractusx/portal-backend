@@ -1,5 +1,4 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
 - Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
@@ -22,6 +21,7 @@
 
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
   </ItemGroup>
 

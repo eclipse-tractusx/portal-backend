@@ -91,12 +91,10 @@ public class BatchUpdateSeeder : ICustomSeeder
         await SeedTable<Country>(
             "countries",
             x => x.Alpha2Code,
-            x => x.dbEntity.Alpha3Code != x.dataEntity.Alpha3Code || x.dbEntity.CountryNameDe != x.dataEntity.CountryNameDe || x.dbEntity.CountryNameEn != x.dataEntity.CountryNameEn,
+            x => x.dbEntity.Alpha3Code != x.dataEntity.Alpha3Code,
             (dbEntry, entry) =>
             {
                 dbEntry.Alpha3Code = entry.Alpha3Code;
-                dbEntry.CountryNameDe = entry.CountryNameDe;
-                dbEntry.CountryNameEn = entry.CountryNameEn;
             }, cancellationToken).ConfigureAwait(false);
 
         await SeedTable<CompanyIdentifier>("company_identifiers",
@@ -119,12 +117,12 @@ public class BatchUpdateSeeder : ICustomSeeder
 
         await SeedTable<CompanyServiceAccount>("company_service_accounts",
             x => x.Id,
-            x => x.dataEntity.Description != x.dbEntity.Description || x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.ClientId != x.dbEntity.ClientId,
+            x => x.dataEntity.Description != x.dbEntity.Description || x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.ClientClientId != x.dbEntity.ClientClientId,
             (dbEntry, entry) =>
             {
                 dbEntry.Description = entry.Description;
                 dbEntry.Name = entry.Name;
-                dbEntry.ClientId = entry.ClientId;
+                dbEntry.ClientClientId = entry.ClientClientId;
             }, cancellationToken).ConfigureAwait(false);
 
         await SeedTable<Company>("companies",

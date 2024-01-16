@@ -11,7 +11,7 @@
             "commentend<!->": "-->",
             "commentprefix<!->": "-",
             "cx_header_default":[
-                "* Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation",
+                "* Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation",
                 " *",
                 " * See the NOTICE file(s) distributed with this work for additional",
                 " * information regarding copyright ownership.",
@@ -29,7 +29,7 @@
                 " * SPDX-License-Identifier: Apache-2.0"
             ],
             "cx_header_with_#":[
-                "Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation",
+                "Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation",
                 "",
                 " See the NOTICE file(s) distributed with this work for additional",
                 " information regarding copyright ownership.",
@@ -47,7 +47,7 @@
                 " SPDX-License-Identifier: Apache-2.0"
             ],
             "cx_header_with_<!->":[
-                "Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation",
+                "Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation",
                 "-",
                 "- See the NOTICE file(s) distributed with this work for additional",
                 "- information regarding copyright ownership.",

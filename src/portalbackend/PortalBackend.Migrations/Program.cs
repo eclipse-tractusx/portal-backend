@@ -40,7 +40,7 @@ try
         .ConfigureServices((hostContext, services) =>
         {
             services
-                .AddProcessIdentity(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
                 .AddDbAuditing()
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),

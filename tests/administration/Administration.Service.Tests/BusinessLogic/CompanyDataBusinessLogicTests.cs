@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -38,7 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class CompanyDataBusinessLogicTests
 {
-    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
     private readonly IFixture _fixture;
@@ -78,6 +77,7 @@ public class CompanyDataBusinessLogicTests
         _custodianService = A.Fake<ICustodianService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _identityService = A.Fake<IIdentityService>();
+        _identity = A.Fake<IIdentityData>();
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
@@ -87,6 +87,9 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
 
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF } });
@@ -150,7 +153,7 @@ public class CompanyDataBusinessLogicTests
             _fixture.Create<CompanyRoleConsentData>(),
         };
 
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(A<Guid>._))
             .Returns((true, true));
 
@@ -186,7 +189,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         const string languageShortName = "en";
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
 
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(A<Guid>._))
             .Returns((false, false));
@@ -209,7 +212,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var companyId = Guid.NewGuid();
         const string languageShortName = "en";
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
 
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(A<Guid>._))
             .Returns((false, true));
@@ -231,8 +234,8 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         const string languageShortName = "eng";
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = Guid.NewGuid() });
 
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _languageRepository.IsValidLanguageCode(languageShortName))
             .Returns(false);
 
@@ -254,7 +257,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyId = _identity.CompanyId;
-        var companyUserId = _identity.UserId;
+        var companyUserId = _identity.IdentityId;
         var agreementId1 = _fixture.Create<Guid>();
         var agreementId2 = _fixture.Create<Guid>();
         var agreementId3 = _fixture.Create<Guid>();
@@ -289,15 +292,15 @@ public class CompanyDataBusinessLogicTests
                 }),
         };
 
-        var agreementData = new (Guid, CompanyRoleId)[]{
-            new (agreementId1, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId2, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.APP_PROVIDER),
-            new (agreementId4, CompanyRoleId.APP_PROVIDER),
-            new (agreementId5, CompanyRoleId.APP_PROVIDER),
-            new (agreementId6, CompanyRoleId.SERVICE_PROVIDER),
-            new (agreementId7, CompanyRoleId.SERVICE_PROVIDER),
+        var agreementData = new (AgreementStatusData, CompanyRoleId)[]{
+            new (new AgreementStatusData(agreementId1, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId2, AgreementStatusId.INACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId4, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId5, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId6, AgreementStatusId.ACTIVE), CompanyRoleId.SERVICE_PROVIDER),
+            new (new AgreementStatusData(agreementId7, AgreementStatusId.ACTIVE), CompanyRoleId.SERVICE_PROVIDER),
         }.ToAsyncEnumerable();
 
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
@@ -334,9 +337,8 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _consentRepository.AddAttachAndModifyConsents(
                 consentStatusDetails,
                 A<IEnumerable<(Guid, ConsentStatusId)>>.That.Matches(x =>
-                    x.Count() == 7 &&
+                    x.Count() == 6 &&
                     x.Contains(new(agreementId1, ConsentStatusId.ACTIVE)) &&
-                    x.Contains(new(agreementId2, ConsentStatusId.ACTIVE)) &&
                     x.Contains(new(agreementId3, ConsentStatusId.ACTIVE)) &&
                     x.Contains(new(agreementId4, ConsentStatusId.ACTIVE)) &&
                     x.Contains(new(agreementId5, ConsentStatusId.ACTIVE)) &&
@@ -404,13 +406,13 @@ public class CompanyDataBusinessLogicTests
                 }),
         };
 
-        var agreementData = new (Guid, CompanyRoleId)[]{
-            new (agreementId1, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId2, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.APP_PROVIDER),
-            new (agreementId4, CompanyRoleId.APP_PROVIDER),
-            new (agreementId5, CompanyRoleId.APP_PROVIDER),
+        var agreementData = new (AgreementStatusData, CompanyRoleId)[]{
+            new (new AgreementStatusData(agreementId1, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId2, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId4, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId5, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
@@ -462,13 +464,13 @@ public class CompanyDataBusinessLogicTests
                 }),
         };
 
-        var agreementData = new (Guid, CompanyRoleId)[]{
-            new (agreementId1, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId2, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.ACTIVE_PARTICIPANT),
-            new (agreementId3, CompanyRoleId.APP_PROVIDER),
-            new (agreementId4, CompanyRoleId.APP_PROVIDER),
-            new (agreementId5, CompanyRoleId.APP_PROVIDER),
+        var agreementData = new (AgreementStatusData, CompanyRoleId)[]{
+            new (new AgreementStatusData(agreementId1, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId2, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new (new AgreementStatusData(agreementId3, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId4, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
+            new (new AgreementStatusData(agreementId5, AgreementStatusId.ACTIVE), CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
@@ -574,7 +576,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var companyId = Guid.NewGuid();
         var companyAssignedUseCaseData = _fixture.CreateMany<CompanyAssignedUseCaseData>(2).ToAsyncEnumerable();
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _companyRepository.GetCompanyAssigendUseCaseDetailsAsync(A<Guid>._))
             .Returns(companyAssignedUseCaseData);
 
@@ -594,7 +596,7 @@ public class CompanyDataBusinessLogicTests
         var useCaseId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
 
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(A<Guid>._, A<Guid>._))
             .Returns((false, true, true));
 
@@ -615,7 +617,7 @@ public class CompanyDataBusinessLogicTests
         var useCaseId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
 
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(A<Guid>._, A<Guid>._))
             .Returns((true, true, true));
 
@@ -637,7 +639,7 @@ public class CompanyDataBusinessLogicTests
         var useCaseId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
 
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(A<Guid>._, A<Guid>._))
             .Returns((false, false, true));
 
@@ -657,7 +659,7 @@ public class CompanyDataBusinessLogicTests
         var useCaseId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
 
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(A<Guid>._, A<Guid>._))
             .Returns((true, true, true));
 
@@ -677,7 +679,7 @@ public class CompanyDataBusinessLogicTests
         var useCaseId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
 
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(A<Guid>._, A<Guid>._))
             .Returns((true, false, true));
 
@@ -697,7 +699,7 @@ public class CompanyDataBusinessLogicTests
         var useCaseId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
 
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity with { CompanyId = companyId });
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(A<Guid>._, A<Guid>._))
             .Returns((false, true, true));
 
@@ -835,7 +837,7 @@ public class CompanyDataBusinessLogicTests
 
         A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, _traceabilityExternalTypeDetailId))
             .Returns(false);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, A<Guid>._, CompanySsiDetailStatusId.PENDING, _identity.UserId, A<Action<CompanySsiDetail>>._))
+        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, A<Guid>._, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
             .Invokes((Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, Guid docId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid userId, Action<CompanySsiDetail>? setOptionalFields) =>
             {
                 var ssiDetail = new CompanySsiDetail(Guid.NewGuid(), companyId, verifiedCredentialTypeId, companySsiDetailStatusId, docId, userId, DateTimeOffset.UtcNow);
@@ -860,9 +862,9 @@ public class CompanyDataBusinessLogicTests
         documents.Should().ContainSingle();
         var document = documents.Single();
         document.DocumentTypeId.Should().Be(DocumentTypeId.PRESENTATION);
-        document.CompanyUserId.Should().Be(_identity.UserId);
+        document.CompanyUserId.Should().Be(_identity.IdentityId);
         document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, document.Id, CompanySsiDetailStatusId.PENDING, _identity.UserId, A<Action<CompanySsiDetail>>._))
+        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, document.Id, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
             .MustHaveHappenedOnceExactly();
         ssiDetails.Should().ContainSingle();
         var detail = ssiDetails.Single();
@@ -940,7 +942,7 @@ public class CompanyDataBusinessLogicTests
 
         A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, VerifiedCredentialTypeKindId.CERTIFICATE, null))
             .Returns(false);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, A<Guid>._, CompanySsiDetailStatusId.PENDING, _identity.UserId, A<Action<CompanySsiDetail>>._))
+        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, A<Guid>._, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
             .Invokes((Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, Guid docId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid userId, Action<CompanySsiDetail>? setOptionalFields) =>
             {
                 var ssiDetail = new CompanySsiDetail(Guid.NewGuid(), companyId, verifiedCredentialTypeId, companySsiDetailStatusId, docId, userId, DateTimeOffset.UtcNow);
@@ -965,9 +967,9 @@ public class CompanyDataBusinessLogicTests
         documents.Should().ContainSingle();
         var document = documents.Single();
         document.DocumentTypeId.Should().Be(DocumentTypeId.PRESENTATION);
-        document.CompanyUserId.Should().Be(_identity.UserId);
+        document.CompanyUserId.Should().Be(_identity.IdentityId);
         document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, document.Id, CompanySsiDetailStatusId.PENDING, _identity.UserId, A<Action<CompanySsiDetail>>._))
+        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, document.Id, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
             .MustHaveHappenedOnceExactly();
         ssiDetails.Should().ContainSingle();
         var detail = ssiDetails.Single();
@@ -1189,7 +1191,7 @@ public class CompanyDataBusinessLogicTests
         notifications.Should().ContainSingle();
         var notification = notifications.Single();
         notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_APPROVAL);
-        notification.CreatorUserId.Should().Be(_identity.UserId);
+        notification.CreatorUserId.Should().Be(_identity.IdentityId);
 
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.ACTIVE);
         detail.DateLastChanged.Should().Be(now);
@@ -1316,7 +1318,7 @@ public class CompanyDataBusinessLogicTests
         notifications.Should().ContainSingle();
         var notification = notifications.Single();
         notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_APPROVAL);
-        notification.CreatorUserId.Should().Be(_identity.UserId);
+        notification.CreatorUserId.Should().Be(_identity.IdentityId);
 
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.ACTIVE);
         detail.DateLastChanged.Should().Be(now);
@@ -1404,7 +1406,7 @@ public class CompanyDataBusinessLogicTests
         notifications.Should().ContainSingle();
         var notification = notifications.Single();
         notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_REJECTED);
-        notification.CreatorUserId.Should().Be(_identity.UserId);
+        notification.CreatorUserId.Should().Be(_identity.IdentityId);
 
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
         detail.DateLastChanged.Should().Be(now);
@@ -1447,7 +1449,7 @@ public class CompanyDataBusinessLogicTests
         notifications.Should().ContainSingle();
         var notification = notifications.Single();
         notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_REJECTED);
-        notification.CreatorUserId.Should().Be(_identity.UserId);
+        notification.CreatorUserId.Should().Be(_identity.IdentityId);
 
         detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
         detail.DateLastChanged.Should().Be(now);

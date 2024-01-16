@@ -24,15 +24,15 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
 public class UserControllerTest
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private static readonly Guid CompanyUserId = new("05455d3a-fc86-4f5a-a89a-ba964ead163d");
-    private readonly IdentityData _identity = new(IamUserId, CompanyUserId, IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IIdentityData _identity;
     private readonly IUserBusinessLogic _logic;
     private readonly IUserRolesBusinessLogic _rolesLogic;
     private readonly UserController _controller;
@@ -41,11 +41,15 @@ public class UserControllerTest
     public UserControllerTest()
     {
         _fixture = new Fixture();
+        _identity = A.Fake<IIdentityData>();
+        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         _logic = A.Fake<IUserBusinessLogic>();
         _rolesLogic = A.Fake<IUserRolesBusinessLogic>();
         var uploadBusinessLogic = A.Fake<IUserUploadBusinessLogic>();
-        this._controller = new UserController(_logic, uploadBusinessLogic, _rolesLogic);
-        _controller.AddControllerContextWithClaim(IamUserId, _identity);
+        _controller = new UserController(_logic, uploadBusinessLogic, _rolesLogic);
+        _controller.AddControllerContextWithClaim(_identity);
     }
 
     [Fact]

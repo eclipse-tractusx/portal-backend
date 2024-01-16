@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -31,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using System.Collections.Immutable;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -40,29 +40,29 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
     private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly UserSettings _settings;
 
     public UserRolesBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IIdentityService identityService, IOptions<UserSettings> options)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _settings = options.Value;
     }
 
     public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(_identityService.IdentityData.CompanyId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(_identityData.CompanyId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
             .PreSortedGroupBy(x => x.OfferId)
             .Select(x => new OfferRoleInfos(x.Key, x.Select(s => new OfferRoleInfo(s.RoleId, s.RoleText, s.Description))));
 
     public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetAppRolesAsync(appId, _identityService.IdentityData.CompanyId, languageShortName ?? Constants.DefaultLanguage);
+            .GetAppRolesAsync(appId, _identityData.CompanyId, languageShortName ?? Constants.DefaultLanguage);
 
     public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles)
     {
-        var companyId = _identityService.IdentityData.CompanyId;
+        var companyId = _identityData.CompanyId;
         return ModifyUserRolesInternal(
             async () =>
             {
@@ -73,7 +73,6 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
                     : new OfferIamUserData(
                         result.IsValidOffer,
                         result.IamClientIds,
-                        result.IamUserId,
                         result.IsSameCompany,
                         "Portal",
                         result.Firstname,
@@ -85,14 +84,14 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             offerId, companyUserId, roles, companyId,
             data =>
             {
-                var userName = $"{data.firstname} {data.lastname}";
+                var userName = $"{data.Firstname} {data.Lastname}";
                 return (JsonSerializer.Serialize(new
                 {
-                    OfferId = data.offerId,
-                    CoreOfferName = data.offerName,
+                    OfferId = data.OfferId,
+                    CoreOfferName = data.OfferName,
                     Username = string.IsNullOrWhiteSpace(userName) ? "User" : userName,
-                    RemovedRoles = string.Join(",", data.removedRoles),
-                    AddedRoles = string.Join(",", data.addedRoles)
+                    RemovedRoles = string.Join(",", data.RemovedRoles),
+                    AddedRoles = string.Join(",", data.AddedRoles)
                 }, _options), NotificationTypeId.ROLE_UPDATE_CORE_OFFER);
             });
     }
@@ -100,20 +99,20 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
     public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, _identityService.IdentityData.CompanyId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, _identityData.CompanyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
-                .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, companyUserId, roles, _identityService.IdentityData.CompanyId,
+                .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId).Select(x => new UserRoleModificationData(x.UserRoleText, x.RoleId, x.IsAssigned, true)),
+            appId, companyUserId, roles, _identityData.CompanyId,
             data =>
             {
-                var userName = $"{data.firstname} {data.lastname}";
+                var userName = $"{data.Firstname} {data.Lastname}";
                 return (JsonSerializer.Serialize(new
                 {
-                    OfferId = data.offerId,
-                    AppName = data.offerName,
+                    OfferId = data.OfferId,
+                    AppName = data.OfferName,
                     Username = string.IsNullOrWhiteSpace(userName) ? "User" : userName,
-                    RemovedRoles = string.Join(",", data.removedRoles),
-                    AddedRoles = string.Join(",", data.addedRoles)
+                    RemovedRoles = string.Join(",", data.RemovedRoles),
+                    AddedRoles = string.Join(",", data.AddedRoles)
                 }, _options), NotificationTypeId.ROLE_UPDATE_APP_OFFER);
             });
 
@@ -121,21 +120,21 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
     public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, _identityService.IdentityData.CompanyId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, _identityData.CompanyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
-                .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, _identityService.IdentityData.CompanyId, null);
+                .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId).Select(x => new UserRoleModificationData(x.UserRoleText, x.RoleId, x.IsAssigned, true)),
+            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, _identityData.CompanyId, null);
 
     private async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesInternal(
         Func<Task<OfferIamUserData?>> getIamUserData,
         Func<Guid, IEnumerable<string>, Guid, IAsyncEnumerable<UserRoleModificationData>> getUserRoleModificationData,
         Guid offerId, Guid companyUserId, IEnumerable<string> roles, Guid adminCompanyId,
-        Func<(Guid offerId, string offerName, string? firstname, string? lastname, IEnumerable<string> removedRoles, IEnumerable<string> addedRoles), (string content, NotificationTypeId notificationTypeId)>? getNotificationData)
+        Func<(Guid OfferId, string OfferName, string? Firstname, string? Lastname, IEnumerable<string> RemovedRoles, IEnumerable<string> AddedRoles), (string Content, NotificationTypeId NotificationTypeId)>? getNotificationData)
     {
         var result = await getIamUserData().ConfigureAwait(false);
-        if (result == default || string.IsNullOrWhiteSpace(result.IamUserId))
+        if (result == default)
         {
-            throw new NotFoundException($"iamUserId for user {companyUserId} not found");
+            throw new NotFoundException($"user {companyUserId} not found");
         }
 
         if (!result.IsSameCompany)
@@ -154,33 +153,30 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             throw new ConflictException($"offerId {offerId} is not associated with any keycloak-client");
         }
 
-        if (result.IamUserId == null)
-        {
-            throw new ConflictException($"user {companyUserId} is not associated with any iamUser");
-        }
-
         if (string.IsNullOrWhiteSpace(result.OfferName))
         {
             throw new ConflictException("OfferName must be set here.");
         }
 
-        var distinctRoles = roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToList();
-        var existingRoles = await getUserRoleModificationData(companyUserId, distinctRoles, offerId).ToListAsync().ConfigureAwait(false);
-        var nonExistingRoles = distinctRoles.Except(existingRoles.Select(r => r.CompanyUserRoleText));
-        if (nonExistingRoles.Any())
-        {
-            throw new ControllerArgumentException($"Invalid roles {string.Join(",", nonExistingRoles)}", nameof(roles));
-        }
-        var rolesToAdd = existingRoles.Where(role => !role.IsAssignedToUser);
-        var rolesToDelete = existingRoles.Where(x => x.IsAssignedToUser).ExceptBy(distinctRoles, role => role.CompanyUserRoleText);
+        var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {companyUserId} is not associated with any iamUser");
 
-        var rolesNotAdded = rolesToAdd.Any()
-            ? rolesToAdd.Except(await AddRoles(companyUserId, result.IamClientIds, rolesToAdd, result.IamUserId).ConfigureAwait(false))
-            : Enumerable.Empty<UserRoleModificationData>();
+        var distinctRoles = roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToImmutableList();
+        var existingRoles = await getUserRoleModificationData(companyUserId, distinctRoles, offerId).ToListAsync().ConfigureAwait(false);
+        existingRoles.DuplicatesBy(x => x.CompanyUserRoleText).IfAny(
+            duplicateRoles => throw new ConflictException($"roles {string.Join(",", $"{duplicateRoles.Select(role => $"[{role.CompanyUserRoleText}, {role.CompanyUserRoleId}]")}")} are ambigous"));
+
+        distinctRoles.Except(existingRoles.Where(r => r.IsAssignable).Select(r => r.CompanyUserRoleText)).IfAny(
+            nonExistingRoles => throw new ControllerArgumentException($"Invalid roles {string.Join(",", nonExistingRoles)}", nameof(roles)));
+
+        var rolesToAdd = existingRoles.Where(role => !role.IsAssigned && role.IsAssignable);
+        var rolesToDelete = existingRoles.Where(role => role.IsAssigned).ExceptBy(distinctRoles, role => role.CompanyUserRoleText).ToImmutableList();
+
+        var rolesAdded = await AddRoles(companyUserId, result.IamClientIds, rolesToAdd, iamUserId).ConfigureAwait(false);
+        var rolesNotAdded = rolesToAdd.ExceptBy(rolesAdded.Select(role => role.CompanyUserRoleId), role => role.CompanyUserRoleId);
 
         if (rolesToDelete.Any())
         {
-            await DeleteRoles(companyUserId, result.IamClientIds, rolesToDelete, result.IamUserId).ConfigureAwait(false);
+            await DeleteRoles(companyUserId, result.IamClientIds, rolesToDelete, iamUserId).ConfigureAwait(false);
         }
 
         if (getNotificationData != null)
@@ -191,14 +187,14 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
                 result.Firstname,
                 result.Lastname,
                 rolesToDelete.Select(x => x.CompanyUserRoleText),
-                rolesToAdd.Select(x => x.CompanyUserRoleText)
+                rolesAdded.Select(x => x.CompanyUserRoleText)
             );
             var notificationData = getNotificationData(data);
             _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(companyUserId,
-                notificationData.notificationTypeId, false,
+                notificationData.NotificationTypeId, false,
                 notification =>
                 {
-                    notification.Content = notificationData.content;
+                    notification.Content = notificationData.Content;
                 });
         }
 

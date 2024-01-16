@@ -19,7 +19,6 @@
 
 using Castle.Core.Internal;
 using FluentAssertions;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.IdentityModel.Tokens.Jwt;
 using Xunit;
@@ -33,8 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 [Collection("Portal")]
 public class ServiceAccountCUDScenarios : EndToEndTestBase
 {
-    private static readonly string TokenUrl =
-        TestResources.BaseCentralIdpUrl + "/auth/realms/CX-Central/protocol/openid-connect/token";
+    private static readonly string TokenUrl = TestResources.BaseCentralIdpUrl + "/auth/realms/CX-Central/protocol/openid-connect/token";
 
     public ServiceAccountCUDScenarios(ITestOutputHelper output) : base(output)
     {
@@ -43,9 +41,10 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     //Scenario - Create a new service account
     [Theory(DisplayName = "Service Account Creation")]
     [MemberData(nameof(GetDataEntries))]
-    public void ServiceAccount_Creation(string[] permissions)
+    public async Task ServiceAccount_Creation(string[] permissions)
     {
         List<CompanyServiceAccountData>? existingServiceAccounts = null;
+        await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
 
         // get a snapshot of current existing service accounts
         try
@@ -59,8 +58,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
         finally
         {
             //create a new service account
-            var newServiceAccount =
-                AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
+            var newServiceAccount = AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
 
             try
             {
@@ -69,9 +67,8 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
 
                 if (!existingServiceAccounts.IsNullOrEmpty())
                 {
-                    var checkAccountIsNew =
-                        existingServiceAccounts!.Where(t =>
-                            t.ServiceAccountId == newServiceAccount.ServiceAccountId);
+                    var checkAccountIsNew = existingServiceAccounts!
+                        .Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);
                     checkAccountIsNew.Should().BeEmpty();
                 }
 
@@ -101,11 +98,12 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     //Scenario - Create a new service account and update the same
     [Theory(DisplayName = "Service Account Data Update")]
     [MemberData(nameof(GetDataEntries))]
-    public void ServiceAccount_DataUpdate(string[] permissions)
+    public async Task ServiceAccount_DataUpdate(string[] permissions)
     {
+        await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
+
         //create a new service account
-        var newServiceAccount =
-            AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
+        var newServiceAccount = AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
 
         //update the previous created service account details by changing "name" and "description"
         var now = DateTime.Now;
@@ -115,8 +113,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
             newTechUserName, newDescription);
 
         //check if the change of the serviceAccount got successfully saved
-        var updatedServiceAccount =
-            AdministrationEndpointHelper.GetServiceAccountDetailsById(newServiceAccount.ServiceAccountId.ToString());
+        var updatedServiceAccount = AdministrationEndpointHelper.GetServiceAccountDetailsById(newServiceAccount.ServiceAccountId.ToString());
 
         updatedServiceAccount.Name.Should().Be(newTechUserName, "Updated technical user name was not stored correctly.");
         updatedServiceAccount.Description.Should().Be(newDescription, "Updated description of service account was not stored correctly");
@@ -126,8 +123,10 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     //Scenario - Create a new service account and update the credentials
     [Theory(DisplayName = "Service Account credential refresh")]
     [MemberData(nameof(GetDataEntries))]
-    public void ServiceAccount_CredentialRefresh(string[] permissions)
+    public async Task ServiceAccount_CredentialRefresh(string[] permissions)
     {
+        await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
+
         // create a new service account
         var newServiceAccount =
             AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
@@ -151,8 +150,10 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     //Scenario - Create and delete a new service account
     [Theory(DisplayName = "Service Account Deletion")]
     [MemberData(nameof(GetDataEntries))]
-    public void ServiceAccount_Deletion(string[] permissions)
+    public async Task ServiceAccount_Deletion(string[] permissions)
     {
+        await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
+
         // create a new service account
         var newServiceAccount =
             AdministrationEndpointHelper.CreateNewServiceAccount(permissions);

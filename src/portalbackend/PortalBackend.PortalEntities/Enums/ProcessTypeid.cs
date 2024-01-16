@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021,2023 BMW Group AG
  * Copyright (c) 2021,2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -25,5 +24,4 @@ public enum ProcessTypeId
     APPLICATION_CHECKLIST = 1,
     OFFER_SUBSCRIPTION = 3,
     PARTNER_REGISTRATION = 4,
-    SERVICE_ACCOUNT_SYNC = 5
 }

@@ -43,7 +43,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     private static readonly Regex ExternalID = new("^[A-Za-z0-9\\-+_/,.]{6,36}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityService _identityService;
+    private readonly IIdentityData _identityData;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly INetworkRegistrationProcessHelper _processHelper;
     private readonly PartnerRegistrationSettings _settings;
@@ -51,7 +51,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
     public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOptions<PartnerRegistrationSettings> options)
     {
         _portalRepositories = portalRepositories;
-        _identityService = identityService;
+        _identityData = identityService.IdentityData;
         _userProvisioningService = userProvisioningService;
         _processHelper = processHelper;
         _settings = options.Value;
@@ -59,7 +59,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     public async Task HandlePartnerRegistration(PartnerRegistrationData data)
     {
-        var ownerCompanyId = _identityService.IdentityData.CompanyId;
+        var ownerCompanyId = _identityData.CompanyId;
         var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
@@ -184,7 +184,8 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         await data.ValidateDatabaseData(
             bpn => _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(bpn),
             alpha2Code => countryRepository.CheckCountryExistsByAlpha2CodeAsync(alpha2Code),
-            (countryAlpha2Code, uniqueIdentifierIds) => countryRepository.GetCountryAssignedIdentifiers(countryAlpha2Code, uniqueIdentifierIds)).ConfigureAwait(false);
+            (countryAlpha2Code, uniqueIdentifierIds) => countryRepository.GetCountryAssignedIdentifiers(countryAlpha2Code, uniqueIdentifierIds),
+            true).ConfigureAwait(false);
 
         if (!data.CompanyRoles.Any())
         {

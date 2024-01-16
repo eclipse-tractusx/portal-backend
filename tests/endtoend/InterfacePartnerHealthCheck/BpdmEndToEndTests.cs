@@ -19,7 +19,6 @@
 
 using Castle.Core.Internal;
 using FluentAssertions;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using RestAssured.Response.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,10 +32,9 @@ public class BpdmEndToEndTests : EndToEndTestBase
 {
     private static readonly string BaseUrl = TestResources.BpdmUrl;
 
-    private static readonly string TokenUrl =
-        TestResources.BaseCentralIdpUrl + "/auth/realms/CX-Central/protocol/openid-connect/token";
+    private static readonly string TokenUrl = $"{TestResources.BaseCentralIdpUrl}/auth/realms/CX-Central/protocol/openid-connect/token";
 
-    private const string EndPoint = "/api/catena/legal-entities";
+    private const string EndPoint = "/companies/test-company/api/catena/input/legal-entities?page=0&size=10";
     private string? _interfaceHealthCheckTechUserToken;
 
     private static readonly Secrets Secrets = new();

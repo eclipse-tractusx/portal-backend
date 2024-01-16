@@ -19,7 +19,6 @@
 
 using Castle.Core.Internal;
 using FluentAssertions;
-using Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 using RestAssured.Response.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,13 +27,13 @@ using static RestAssured.Dsl;
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 
 [Trait("Category", "PortalHC")]
-[TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.AlphabeticalOrderer",
-    "EndToEnd.Tests")]
+[TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.AlphabeticalOrderer", "EndToEnd.Tests")]
 [Collection("PortalHC")]
 public class BaseDataLoadCheck : EndToEndTestBase
 {
+    private const string EndPoint = "/api/administration";
+
     private static readonly string BaseUrl = TestResources.BasePortalBackendUrl;
-    private static readonly string EndPoint = "/api/administration";
     private static readonly Secrets Secrets = new();
     private static string? PortalUserToken;
     private static readonly string PortalUserCompanyName = TestResources.PortalUserCompanyName;
@@ -54,10 +53,10 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     // GET: /api/administration/staticdata/usecases
     [Fact]
-    public void GetUseCaseData()
+    public async Task GetUseCaseData()
     {
         if (PortalUserToken.IsNullOrEmpty())
-            throw new Exception("Portal user token could not be fetched");
+            await GetAccessToken();
 
         var response = Given()
             .DisableSslCertificateValidation()
@@ -77,10 +76,10 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     //     GET: /api/administration/staticdata/languagetags
     [Fact]
-    public void GetAppLanguageTags()
+    public async Task GetAppLanguageTags()
     {
         if (PortalUserToken.IsNullOrEmpty())
-            throw new Exception("Portal user token could not be fetched");
+            await GetAccessToken();
 
         var response = Given()
             .DisableSslCertificateValidation()
@@ -100,10 +99,10 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     //     GET: /api/administration/staticdata/licenseType
     [Fact]
-    public void GetAllLicenseTypes()
+    public async Task GetAllLicenseTypes()
     {
         if (PortalUserToken.IsNullOrEmpty())
-            throw new Exception("Portal user token could not be fetched");
+            await GetAccessToken();
 
         var response = Given()
             .DisableSslCertificateValidation()
@@ -123,10 +122,10 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     //     GET: api/administration/user/owncompany/users
     [Fact]
-    public void GetCompanyUserData()
+    public async Task GetCompanyUserData()
     {
         if (PortalUserToken.IsNullOrEmpty())
-            throw new Exception("Portal user token could not be fetched");
+            await GetAccessToken();
 
         var response = Given()
             .DisableSslCertificateValidation()
@@ -146,10 +145,10 @@ public class BaseDataLoadCheck : EndToEndTestBase
 
     //     GET: api/administration/companydata/ownCompanyDetails
     [Fact]
-    public void GetOwnCompanyDetails()
+    public async Task GetOwnCompanyDetails()
     {
         if (PortalUserToken.IsNullOrEmpty())
-            throw new Exception("Portal user token could not be fetched");
+            await GetAccessToken();
 
         var response = Given()
             .DisableSslCertificateValidation()

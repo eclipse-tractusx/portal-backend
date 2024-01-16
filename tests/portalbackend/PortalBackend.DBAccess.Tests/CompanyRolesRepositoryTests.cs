@@ -21,6 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -63,6 +64,86 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x.AgreementConsentStatuses.First().AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018") &&
                 x.AgreementConsentStatuses.First().ConsentStatusId == ConsentStatusId.ACTIVE
             );
+    }
+
+    #endregion
+
+    #region GetAgreementAssignedCompanyRoles
+
+    [Fact]
+    public async Task GetAgreementAssignedCompanyRolesUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var roles = new[] { CompanyRoleId.APP_PROVIDER };
+        var agreementStatusData = new[] {
+            new AgreementStatusData(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1011"), AgreementStatusId.ACTIVE)
+        };
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAgreementAssignedCompanyRolesUntrackedAsync(roles).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull()
+            .And.HaveCount(1)
+            .And.Satisfy(
+                x => x.AgreementStatusData.Count() == 1
+                && x.AgreementStatusData.SequenceEqual(agreementStatusData)
+                && x.CompanyRoleId == CompanyRoleId.APP_PROVIDER
+            );
+    }
+
+    #endregion
+
+    #region GetCompanyRoleAgreements
+
+    [Fact]
+    public async Task GetCompanyRoleAgreementsUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var activeAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1010"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1013") };
+        var appAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1011") };
+        var serviceAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") };
+        var onboardingAgreementIds = new[] { new Guid("311aac58-932b-4622-be8b-34337e48d70d") };
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(4).And.Satisfy(
+            x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT && x.AgreementIds.Count() == 2 &&
+                x.AgreementIds.SequenceEqual(activeAgreementIds),
+            x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER && x.AgreementIds.Count() == 1 &&
+                x.AgreementIds.SequenceEqual(appAgreementIds),
+            x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.AgreementIds.Count() == 3 &&
+                x.AgreementIds.SequenceEqual(serviceAgreementIds),
+            x => x.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER && x.AgreementIds.Count() == 1 &&
+                x.AgreementIds.SequenceEqual(onboardingAgreementIds)
+        );
+    }
+
+    #endregion
+
+    #region GetCompanyRoleAgreementConsentStatus
+
+    [Fact]
+    public async Task GetCompanyRoleAgreementConsentStatusUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var applicationId = new Guid("7e279133-2148-48b4-b855-9d7d291ecbb1");
+        var companyId = new Guid("0dcd8209-85e2-4073-b130-ac094fb47106");
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, companyId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CompanyRoleIds.Should().HaveCount(2);
+        result.AgreementConsentStatuses.Should().HaveCount(1).And.Satisfy(
+            x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018")
+                && x.ConsentStatusId == ConsentStatusId.ACTIVE);
     }
 
     #endregion

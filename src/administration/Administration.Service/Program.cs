@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -83,7 +83,9 @@ WebApplicationBuildRunner
 
         builder.Services
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
+            .AddSingleton<IErrorMessageContainer, AdministrationConnectorErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationRegistrationErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, AdministrationServiceAccountErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ProvisioningServiceErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
