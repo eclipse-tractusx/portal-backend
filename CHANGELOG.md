@@ -6,7 +6,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Change
 * Administration Service
-  * added filter and lastEditor data for serviceAccounts to support to retrieve 'Inactive' companyServiceAccounts via the GET /serviceAccounts endpoint
+  * added filters and lastEditor data for serviceAccounts to support the retrieval of 'Inactive' companyServiceAccounts via the GET /serviceAccounts endpoint
   * updated controller connector endpoints by enhancing the error to the new error handling method with extended user information
   * updated controller serviceAccount endpoints by enhancing the error to the new error handling method with extended user information
 * Seeding data generic/release scope updated
@@ -14,13 +14,13 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * adjust existing template urls
   * release new technical user/service account roles 'BPDM Gate read' and 'BPDM Gate read&write'
 * App Service
-  * enhanced GET endpoint for offer subscription with filter by company name
+  * enhanced GET endpoint for offer subscription with a filter to filter by company name
 * Services Service
-  * enhanced GET endpoint for offer subscription with filter by company name
- 
+  * enhanced GET endpoint for offer subscription with a filter to filter by company name
+
 ### Feature
 * Database structure update and impact to endpoints
-  * portal.countries table updated by introducing new structure and help tables for multi language capability
+  * portal.countries table updated by introducing a new structure and help tables for multi language capability
   * new endpoint GET /api/registration/staticdata/countrylist to respond with a list of countries and multi language country long description
 * Registration Service
   * new endpoint GET /api/registration/applications/declinedata to retrieve decline information (companyName, invited users)
@@ -44,8 +44,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * updated dependencies file and file header template
 * updated the Newtonsoft.Json package to fix a high security finding
 
-### BugFixes
-* updated GET /api/Services/{serviceId}/subscription/{subscriptionID}/provider to return clientClientId instead of the serviceAccount name
+### Bugfix
+* updated GET /api/services/{serviceId}/subscription/{subscriptionID}/provider to return clientClientId instead of the serviceAccount name
 * fixed inner exception handling of the new error handling method implementation of 1.7.0 which resulted in a infinity loop
 * updated backend endpoint logic of DELETE POST /api/administration/registration/applications/{applicationId}/decline by setting the idp of the company to 'disabled' inside the IdP (keycloak)
 * disabled the duplicate bpn check for endpoint /api/registration/application/{applicationId}/companyDetailsWithAddress
