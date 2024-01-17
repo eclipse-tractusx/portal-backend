@@ -24,7 +24,7 @@ on:
     tags:
       - 'v*.*.*'
       - '!v*.*.*-RC*'
-      - '!v*.*.*-iam'
+      - '!v*.*.*-iam*'
   workflow_dispatch:
 
 env:
