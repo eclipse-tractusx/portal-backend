@@ -174,6 +174,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
 
+            migrationBuilder.Sql("INSERT INTO portal.use_cases (id, name, shortname) values ('b3948771-3372-4568-9e0e-acca4e674098', 'Behavior Twin', 'BT') ON CONFLICT DO NOTHING");
+
             migrationBuilder.Sql("UPDATE portal.verified_credential_type_assigned_use_cases SET use_case_id = 'b3948771-3372-4568-9e0e-acca4e674098' WHERE verified_credential_type_id = 3 and use_case_id = 'c065a349-f649-47f8-94d5-1a504a855419'");
 
             migrationBuilder.Sql("UPDATE portal.agreements SET agreement_status_id = 2 WHERE id = 'aa0a0000-7fbc-1f2f-817f-bce0502c1090'");
@@ -196,6 +198,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE FROM portal.verified_credential_type_assigned_use_cases WHERE use_case_id = 'c065a349-f649-47f8-94d5-1a504a855419'");
+            migrationBuilder.Sql("DELETE FROM portal.verified_credential_type_assigned_external_types WHERE verified_credential_type_id = 6 and verified_credential_external_type_id = 6");
+            migrationBuilder.Sql("DELETE FROM portal.verified_credential_type_assigned_kinds WHERE verified_credential_type_id = 6 and verified_credential_type_kind_id = 1");
+            migrationBuilder.Sql("DELETE FROM portal.verified_credential_external_type_use_case_detail_versions WHERE verified_credential_external_type_id = 6");
             migrationBuilder.Sql("UPDATE portal.verified_credential_type_assigned_use_cases SET use_case_id = 'c065a349-f649-47f8-94d5-1a504a855419' WHERE verified_credential_type_id = 3 and use_case_id = 'b3948771-3372-4568-9e0e-acca4e674098'");
             migrationBuilder.Sql(@"DROP VIEW IF EXISTS portal.agreement_view");
 
