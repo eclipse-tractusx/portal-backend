@@ -37,12 +37,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "process_step_statuses",
-                columns: new[] { "id", "label" },
-                values: new object[] { 6, "ABORTED" });
-
-            migrationBuilder.InsertData(
-                schema: "portal",
                 table: "process_step_types",
                 columns: new[] { "id", "label" },
                 values: new object[,]
@@ -60,12 +54,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "company_application_statuses",
                 keyColumn: "id",
                 keyValue: 10);
-
-            migrationBuilder.DeleteData(
-                schema: "portal",
-                table: "process_step_statuses",
-                keyColumn: "id",
-                keyValue: 6);
 
             migrationBuilder.DeleteData(
                 schema: "portal",

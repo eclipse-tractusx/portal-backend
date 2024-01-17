@@ -5739,11 +5739,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 5,
                             Label = "DUPLICATE"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "ABORTED"
                         });
                 });
 

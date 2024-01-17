@@ -31,7 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20231215135644_CPLP-3497-AddNewProcessStepToDeclineOsp")]
+    [Migration("20240117095828_CPLP-3497-AddNewProcessStepToDeclineOsp")]
     partial class CPLP3497AddNewProcessStepToDeclineOsp
     {
         /// <inheritdoc />
@@ -2222,10 +2222,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("agreement_link");
 
-                    b.Property<string>("AgreementType")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("agreement_type");
+                    b.Property<int>("AgreementStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("agreement_status_id");
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone")
@@ -2243,6 +2244,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("issuer_company_id");
 
+                    b.Property<bool>("Mandatory")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("mandatory");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -2258,6 +2265,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasIndex("AgreementCategoryId")
                         .HasDatabaseName("ix_agreements_agreement_category_id");
+
+                    b.HasIndex("AgreementStatusId")
+                        .HasDatabaseName("ix_agreements_agreement_status_id");
 
                     b.HasIndex("DocumentId")
                         .HasDatabaseName("ix_agreements_document_id");
@@ -2365,6 +2375,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 4,
                             Label = "SERVICE_CONTRACT"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_agreement_statuses");
+
+                    b.ToTable("agreement_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "ACTIVE"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "INACTIVE"
                         });
                 });
 
@@ -5702,11 +5742,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 5,
                             Label = "DUPLICATE"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "ABORTED"
                         });
                 });
 
@@ -6575,6 +6610,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.AgreementView", b =>
+                {
+                    b.Property<string>("AgreementCompanyRole")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("agreement_company_role");
+
+                    b.Property<Guid>("AgreementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("agreement_id");
+
+                    b.Property<string>("AgreementName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("agreement_name");
+
+                    b.Property<string>("AgreementStatus")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("agreement_status");
+
+                    b.Property<bool>("Mandatory")
+                        .HasColumnType("boolean")
+                        .HasColumnName("mandatory");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("agreement_view", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompaniesLinkedServiceAccount", b =>
                 {
                     b.Property<Guid>("ServiceAccountId")
@@ -6744,6 +6809,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("AgreementCategoryId")
                         .IsRequired()
                         .HasConstraintName("fk_agreements_agreement_categories_agreement_category_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementStatus", null)
+                        .WithMany("Agreements")
+                        .HasForeignKey("AgreementStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_agreements_agreement_statuses_agreement_status_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
                         .WithMany("Agreements")
@@ -8333,6 +8405,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
+                {
+                    b.Navigation("Agreements");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementStatus", b =>
                 {
                     b.Navigation("Agreements");
                 });
