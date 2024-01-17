@@ -79,7 +79,7 @@ public class NotificationRepository : INotificationRepository
             _dbContext.Notifications.AsNoTracking()
                 .Where(notification =>
                     notification.ReceiverUserId == receiverUserId &&
-                    semantic == SearchSemanticTypeId.AND
+                    (semantic == SearchSemanticTypeId.AND
                         ? ((!isRead.HasValue || notification.IsRead == isRead.Value) &&
                            (!typeId.HasValue || notification.NotificationTypeId == typeId.Value) &&
                            (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value) &&
@@ -93,7 +93,7 @@ public class NotificationRepository : INotificationRepository
                            (onlyDueDate && notification.DueDate.HasValue) ||
                            (doneState.HasValue && notification.Done == doneState.Value) ||
                            (searchTypeIds.Any() && searchTypeIds.Contains(notification.NotificationTypeId)) ||
-                           (searchQuery != null && notification.Content != null && EF.Functions.ILike(notification.Content, $"%{searchQuery.EscapeForILike()}%"))))
+                           (searchQuery != null && notification.Content != null && EF.Functions.ILike(notification.Content, $"%{searchQuery.EscapeForILike()}%")))))
                 .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {
