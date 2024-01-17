@@ -26,6 +26,5 @@ public enum ProcessStepStatusId
     DONE = 2,
     SKIPPED = 3,
     FAILED = 4,
-    DUPLICATE = 5,
-    ABORTED = 6
+    DUPLICATE = 5
 }

@@ -255,7 +255,7 @@ public class NetworkRegistrationHandlerTests
         var networkRegistrationId = Guid.NewGuid();
         var iamUserId = _fixture.Create<string>();
         var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId))
+        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId, A<IEnumerable<UserStatusId>>.That.Matches(x => x.Count() == 2 && x.Contains(UserStatusId.ACTIVE) && x.Contains(UserStatusId.PENDING))))
             .Returns(new[]
             {
                 identity.Id,
@@ -290,7 +290,7 @@ public class NetworkRegistrationHandlerTests
         var networkRegistrationId = Guid.NewGuid();
         var iamUserId = _fixture.Create<string>();
         var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId))
+        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId, A<IEnumerable<UserStatusId>>.That.Matches(x => x.Count() == 2 && x.Contains(UserStatusId.ACTIVE) && x.Contains(UserStatusId.PENDING))))
             .Returns(new[]
             {
                 identity.Id,
@@ -325,7 +325,7 @@ public class NetworkRegistrationHandlerTests
         var networkRegistrationId = Guid.NewGuid();
         var iamUserId = _fixture.Create<string>();
         var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId))
+        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId, A<IEnumerable<UserStatusId>>.That.Matches(x => x.Count() == 2 && x.Contains(UserStatusId.ACTIVE) && x.Contains(UserStatusId.PENDING))))
             .Returns(new[]
             {
                 identity.Id,
@@ -361,7 +361,7 @@ public class NetworkRegistrationHandlerTests
         var iamUserId = _fixture.Create<string>();
         var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
         var otherIdentity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId))
+        A.CallTo(() => _userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId, A<IEnumerable<UserStatusId>>.That.Matches(x => x.Count() == 2 && x.Contains(UserStatusId.ACTIVE) && x.Contains(UserStatusId.PENDING))))
             .Returns(new[]
             {
                 identity.Id,

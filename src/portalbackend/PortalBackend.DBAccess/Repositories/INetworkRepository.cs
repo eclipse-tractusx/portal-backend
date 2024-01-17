@@ -32,5 +32,14 @@ public interface INetworkRepository
     Task<(bool Exists, IEnumerable<(Guid CompanyApplicationId, CompanyApplicationStatusId CompanyApplicationStatusId, string? CallbackUrl)> CompanyApplications, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleAgreementIds, Guid? ProcessId)> GetSubmitData(Guid companyId);
     Task<(OspDetails? OspDetails, string ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId);
     Task<string?> GetOspCompanyName(Guid networkRegistrationId);
-    Task<(bool Exists, (Guid CompanyId, CompanyStatusId CompanyStatusId, IEnumerable<(Guid IdentityId, UserStatusId UserStatus)> Identities) CompanyData, IEnumerable<(Guid InvitationId, InvitationStatusId StatusId)> InvitationData, CompanyApplicationTypeId TypeId, CompanyApplicationStatusId StatusId, Guid ProcessId, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps)> GetDeclineDataForApplicationId(Guid applicationId);
+    Task<(
+        bool Exists,
+        bool IsValidTypeId,
+        bool IsValidStatusId,
+        bool IsValidCompany,
+        (
+        (CompanyStatusId CompanyStatusId, IEnumerable<(Guid IdentityId, UserStatusId UserStatus)> Identities) CompanyData,
+        IEnumerable<(Guid InvitationId, InvitationStatusId StatusId)> InvitationData,
+        VerifyProcessData ProcessData
+        )? Data)> GetDeclineDataForApplicationId(Guid applicationId, CompanyApplicationTypeId validTypeId, IEnumerable<CompanyApplicationStatusId> validStatusIds, Guid companyId);
 }

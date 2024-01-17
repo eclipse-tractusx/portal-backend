@@ -462,10 +462,12 @@ public class UserRepository : IUserRepository
                 ))
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<Guid> GetNextIdentitiesForNetworkRegistration(Guid networkRegistrationId) =>
-        _dbContext.NetworkRegistrations
-            .Where(x => x.Id == networkRegistrationId)
-            .SelectMany(x => x.Company!.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER && (i.UserStatusId != UserStatusId.DELETED || i.UserStatusId == UserStatusId.INACTIVE)).Select(i => i.Id))
+    public IAsyncEnumerable<Guid> GetNextIdentitiesForNetworkRegistration(Guid networkRegistrationId, IEnumerable<UserStatusId> validUserStates) =>
+        _dbContext.CompanyUsers
+            .Where(cu =>
+                validUserStates.Any(v => v == cu.Identity!.UserStatusId) &&
+                cu.Identity!.Company!.NetworkRegistration!.Id == networkRegistrationId)
+            .Select(x => x.Id)
             .Take(2)
             .ToAsyncEnumerable();
 }

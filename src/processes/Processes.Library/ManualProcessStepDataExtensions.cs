@@ -34,7 +34,8 @@ public static class VerifyProcessDataExtensions
         this VerifyProcessData? processData,
         ProcessStepTypeId processStepTypeId,
         IPortalRepositories portalRepositories,
-        Func<string> getProcessEntityName)
+        Func<string> getProcessEntityName,
+        bool withEligibleToRunCheck)
     {
         if (processData is null)
         {
@@ -61,7 +62,7 @@ public static class VerifyProcessDataExtensions
             throw new UnexpectedConditionException($"processSteps should never have any other status than TODO here");
         }
 
-        if (!processData.ProcessSteps.Any(step => step.ProcessStepTypeId == processStepTypeId))
+        if (withEligibleToRunCheck && processData.ProcessSteps.All(step => step.ProcessStepTypeId != processStepTypeId))
         {
             throw new ConflictException($"{getProcessEntityName()}, process step {processStepTypeId} is not eligible to run");
         }

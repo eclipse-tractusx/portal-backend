@@ -112,23 +112,57 @@ public class NetworkRepository : INetworkRepository
             .Select(x => x.OnboardingServiceProvider!.Name)
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, (Guid CompanyId, CompanyStatusId CompanyStatusId, IEnumerable<(Guid IdentityId, UserStatusId UserStatus)> Identities) CompanyData, IEnumerable<(Guid InvitationId, InvitationStatusId StatusId)> InvitationData, CompanyApplicationTypeId TypeId, CompanyApplicationStatusId StatusId, Guid ProcessId, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps)> GetDeclineDataForApplicationId(Guid applicationId) =>
-    _context.NetworkRegistrations
-        .Where(ca => ca.CompanyApplication!.Id == applicationId)
-        .Select(ca => new ValueTuple<bool, ValueTuple<Guid, CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>, IEnumerable<ValueTuple<Guid, InvitationStatusId>>, CompanyApplicationTypeId, CompanyApplicationStatusId, Guid, IEnumerable<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>>(
-            true,
-            new ValueTuple<Guid, CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>(
-                ca.CompanyId, ca.Company!.CompanyStatusId,
-                ca.Company!.Identities.Select(i => new ValueTuple<Guid, UserStatusId>(i.Id, i.UserStatusId))),
-            ca.CompanyApplication!.Invitations.Select(x => new ValueTuple<Guid, InvitationStatusId>(
-                x.Id,
-                x.InvitationStatusId)),
-            ca.CompanyApplication.CompanyApplicationTypeId,
-            ca.CompanyApplication.ApplicationStatusId,
-            ca.ProcessId,
-            ca.Process!.ProcessSteps
-                .Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)
-                .Select(x => new ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>(x.Id, x.ProcessStepTypeId, x.ProcessStepStatusId))
-        ))
-        .SingleOrDefaultAsync();
+    public Task<(
+       bool Exists,
+       bool IsValidTypeId,
+       bool IsValidStatusId,
+       bool IsValidCompany,
+       (
+           (CompanyStatusId CompanyStatusId, IEnumerable<(Guid IdentityId, UserStatusId UserStatus)> Identities) CompanyData,
+           IEnumerable<(Guid InvitationId, InvitationStatusId StatusId)> InvitationData,
+           VerifyProcessData ProcessData
+       )? Data)> GetDeclineDataForApplicationId(Guid applicationId, CompanyApplicationTypeId validTypeId, IEnumerable<CompanyApplicationStatusId> validStatusIds, Guid companyId) =>
+   _context.NetworkRegistrations
+       .AsSplitQuery()
+       .Where(registration => registration.CompanyApplication!.Id == applicationId)
+       .Select(registration => new
+       {
+           IsValidType = validTypeId == registration.CompanyApplication!.CompanyApplicationTypeId,
+           IsValidStatus = validStatusIds.Contains(registration.CompanyApplication.ApplicationStatusId),
+           IsValidCompany = registration.CompanyId == companyId,
+           Invitations = registration.CompanyApplication.Invitations,
+           Company = registration.Company,
+           Process = registration.Process
+       })
+       .Select(x => new ValueTuple<
+               bool,
+               bool,
+               bool,
+               bool,
+               ValueTuple<
+                   ValueTuple<CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>,
+                   IEnumerable<ValueTuple<Guid, InvitationStatusId>>,
+                   VerifyProcessData
+               >?>(
+           true,
+           x.IsValidType,
+           x.IsValidStatus,
+           x.IsValidCompany,
+           x.IsValidType && x.IsValidStatus && x.IsValidCompany
+               ? new ValueTuple<
+                   ValueTuple<CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>,
+                   IEnumerable<ValueTuple<Guid, InvitationStatusId>>,
+                   VerifyProcessData>(
+                       new ValueTuple<CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>(
+                           x.Company!.CompanyStatusId,
+                           x.Company.Identities.Select(i => new ValueTuple<Guid, UserStatusId>(i.Id, i.UserStatusId))),
+                       x.Invitations.Select(i => new ValueTuple<Guid, InvitationStatusId>(
+                           i.Id,
+                           i.InvitationStatusId)),
+                       new VerifyProcessData(
+                           x.Process,
+                           x.Process!.ProcessSteps.Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)))
+               : null
+       ))
+       .SingleOrDefaultAsync();
 }

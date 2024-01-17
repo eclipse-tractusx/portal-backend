@@ -33,7 +33,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using System.Collections;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.BusinessLogic;
@@ -47,6 +46,7 @@ public class NetworkBusinessLogicTests
     private static readonly Guid NoIdpCompanyId = Guid.NewGuid();
     private static readonly Guid IdpId = Guid.NewGuid();
     private static readonly Guid NoAliasIdpCompanyId = Guid.NewGuid();
+    private static readonly Guid IdentityCompanyId = Guid.NewGuid();
 
     private readonly IFixture _fixture;
 
@@ -89,7 +89,7 @@ public class NetworkBusinessLogicTests
         _identity = A.Fake<IIdentityData>();
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.CompanyId).Returns(IdentityCompanyId);
         A.CallTo(() => identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
@@ -351,8 +351,13 @@ public class NetworkBusinessLogicTests
         // Arrange
         var notExistingId = Guid.NewGuid();
         var data = _fixture.Create<DeclineOspData>();
-        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(notExistingId))
-            .Returns(new ValueTuple<bool, ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>, IEnumerable<ValueTuple<Guid, InvitationStatusId>>, CompanyApplicationTypeId, CompanyApplicationStatusId, Guid, IEnumerable<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>>());
+        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(notExistingId, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
+            .Returns(new ValueTuple<bool, bool, bool, bool,
+                (
+                    (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
+                    IEnumerable<(Guid, InvitationStatusId)>,
+                    VerifyProcessData
+                )>());
 
         // Act
         async Task Act() => await _sut.DeclineOsp(notExistingId, data).ConfigureAwait(false);
@@ -368,16 +373,18 @@ public class NetworkBusinessLogicTests
         // Arrange
         var applcationId = Guid.NewGuid();
         var data = _fixture.Create<DeclineOspData>();
-        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applcationId))
-            .Returns(new ValueTuple<bool, ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>, IEnumerable<ValueTuple<Guid, InvitationStatusId>>, CompanyApplicationTypeId, CompanyApplicationStatusId, Guid, IEnumerable<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>>(
+        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applcationId, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
+            .Returns(new ValueTuple<bool, bool, bool, bool,
+                (
+                (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
+                IEnumerable<(Guid, InvitationStatusId)>,
+                VerifyProcessData
+                )>(
                 true,
-                new ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>(Guid.NewGuid(), CompanyStatusId.ACTIVE, Enumerable.Empty<(Guid, UserStatusId)>()),
-                Enumerable.Empty<ValueTuple<Guid, InvitationStatusId>>(),
-                CompanyApplicationTypeId.EXTERNAL,
-                CompanyApplicationStatusId.CREATED,
-                Guid.NewGuid(),
-                Enumerable.Empty<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>()
-            ));
+                true,
+                true,
+                false,
+                default));
 
         // Act
         async Task Act() => await _sut.DeclineOsp(applcationId, data).ConfigureAwait(false);
@@ -393,44 +400,18 @@ public class NetworkBusinessLogicTests
         // Arrange
         var applicationId = Guid.NewGuid();
         var data = _fixture.Create<DeclineOspData>();
-        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applicationId))
-            .Returns(new ValueTuple<bool, ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>, IEnumerable<ValueTuple<Guid, InvitationStatusId>>, CompanyApplicationTypeId, CompanyApplicationStatusId, Guid, IEnumerable<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>>(
+        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
+            .Returns(new ValueTuple<bool, bool, bool, bool,
+                (
+                (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
+                IEnumerable<(Guid, InvitationStatusId)>,
+                VerifyProcessData
+                )>(
                 true,
-                new ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>(_identity.CompanyId, CompanyStatusId.ACTIVE, Enumerable.Empty<(Guid, UserStatusId)>()),
-                Enumerable.Empty<ValueTuple<Guid, InvitationStatusId>>(),
-                CompanyApplicationTypeId.INTERNAL,
-                CompanyApplicationStatusId.CREATED,
-                Guid.NewGuid(),
-                Enumerable.Empty<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>()
-            ));
-
-        // Act
-        async Task Act() => await _sut.DeclineOsp(applicationId, data).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Only external registrations can be declined");
-    }
-
-    [Theory]
-    [InlineData(CompanyApplicationStatusId.SUBMITTED)]
-    [InlineData(CompanyApplicationStatusId.CONFIRMED)]
-    [InlineData(CompanyApplicationStatusId.DECLINED)]
-    [InlineData(CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER)]
-    public async Task DeclineOsp_WithInvalidApplicationState_ThrowsConflictException(CompanyApplicationStatusId applicationStatusId)
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var data = _fixture.Create<DeclineOspData>();
-        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applicationId))
-            .Returns(new ValueTuple<bool, ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>, IEnumerable<ValueTuple<Guid, InvitationStatusId>>, CompanyApplicationTypeId, CompanyApplicationStatusId, Guid, IEnumerable<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>>(
+                false,
                 true,
-                new ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>(_identity.CompanyId, CompanyStatusId.ACTIVE, Enumerable.Empty<(Guid, UserStatusId)>()),
-                Enumerable.Empty<ValueTuple<Guid, InvitationStatusId>>(),
-                CompanyApplicationTypeId.INTERNAL,
-                applicationStatusId,
-                Guid.NewGuid(),
-                Enumerable.Empty<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>()
+                true,
+                default
             ));
 
         // Act
@@ -442,28 +423,58 @@ public class NetworkBusinessLogicTests
     }
 
     [Fact]
+    public async Task DeclineOsp_WithInvalidApplicationState_ThrowsConflictException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var data = _fixture.Create<DeclineOspData>();
+        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
+            .Returns(new ValueTuple<bool, bool, bool, bool,
+                (
+                (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
+                IEnumerable<(Guid, InvitationStatusId)>,
+                VerifyProcessData
+                )>(
+                true,
+                true,
+                false,
+                true,
+                default));
+
+        // Act
+        async Task Act() => await _sut.DeclineOsp(applicationId, data).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"The status of the application {applicationId} must be one of the following: CREATED,ADD_COMPANY_DATA,INVITE_USER,SELECT_COMPANY_ROLE,UPLOAD_DOCUMENTS,VERIFY");
+    }
+
+    [Fact]
     public async Task DeclineOsp_WithValid_ExecutesExpected()
     {
         // Arrange
         var application = _fixture.Build<CompanyApplication>().With(x => x.ApplicationStatusId, CompanyApplicationStatusId.CREATED).Create();
-        var company = new Company(_identity.CompanyId, "company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow);
+        var company = new Company(IdentityCompanyId, "company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow);
         var invitation = _fixture.Build<Invitation>().With(x => x.InvitationStatusId, InvitationStatusId.PENDING).Create();
         var identityId = Guid.NewGuid();
-        var processId = Guid.NewGuid();
-        var existingProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.DONE, processId, DateTimeOffset.UtcNow);
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var existingProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
         var data = _fixture.Create<DeclineOspData>();
-        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(application.Id))
-            .Returns(new ValueTuple<bool, ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>, IEnumerable<ValueTuple<Guid, InvitationStatusId>>, CompanyApplicationTypeId, CompanyApplicationStatusId, Guid, IEnumerable<ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>>>(
+        A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(application.Id, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
+            .Returns(new ValueTuple<bool, bool, bool, bool,
+                (
+                (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
+                IEnumerable<(Guid, InvitationStatusId)>,
+                VerifyProcessData
+                )>(true,
                 true,
-                new ValueTuple<Guid, CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>(company.Id, company.CompanyStatusId, Enumerable.Repeat(new ValueTuple<Guid, UserStatusId>(identityId, UserStatusId.ACTIVE), 1)),
-                Enumerable.Repeat(new ValueTuple<Guid, InvitationStatusId>(invitation.Id, invitation.InvitationStatusId), 1),
-                CompanyApplicationTypeId.EXTERNAL,
-                CompanyApplicationStatusId.CREATED,
-                processId,
-                new[]
-                {
-                    new ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>(processId, existingProcessStep.ProcessStepTypeId, existingProcessStep.ProcessStepStatusId)
-                }
+                true,
+                true,
+                new ValueTuple<ValueTuple<CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>, IEnumerable<(Guid, InvitationStatusId)>, VerifyProcessData>(
+                    new(company.CompanyStatusId, Enumerable.Repeat(new ValueTuple<Guid, UserStatusId>(identityId, UserStatusId.ACTIVE), 1)),
+                    Enumerable.Repeat(new ValueTuple<Guid, InvitationStatusId>(invitation.Id, invitation.InvitationStatusId), 1),
+                    new VerifyProcessData(process, Enumerable.Repeat(existingProcessStep, 1))
+                )
             ));
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(application.Id, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> modify) =>
@@ -503,14 +514,14 @@ public class NetworkBusinessLogicTests
         await _sut.DeclineOsp(application.Id, data).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepStatusId.TODO, processId))
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.REMOVE_KEYCLOAK_USERS && x.Single().ProcessStepStatusId == ProcessStepStatusId.TODO && x.Single().ProcessId == process.Id)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER);
         invitation.InvitationStatusId.Should().Be(InvitationStatusId.DECLINED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.REJECTED);
-        existingProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.ABORTED);
+        existingProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
     }
 
     #endregion

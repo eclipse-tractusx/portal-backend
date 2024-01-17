@@ -69,7 +69,7 @@ public class ManualProcessDataExtensionsTests
             .Create();
 
         // Act
-        var result = sut.CreateManualProcessData(stepTypeId, _portalRepositories, _getProcessEntityName);
+        var result = sut.CreateManualProcessData(stepTypeId, _portalRepositories, _getProcessEntityName, true);
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<ManualProcessStepData>().And.Match<ManualProcessStepData>(
@@ -86,7 +86,7 @@ public class ManualProcessDataExtensionsTests
         // Arrange
         var sut = (VerifyProcessData?)null;
 
-        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName);
+        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName, true);
 
         // Act
         var result = Assert.Throws<NotFoundException>(Act);
@@ -103,7 +103,7 @@ public class ManualProcessDataExtensionsTests
             .With(x => x.Process, (Process?)null)
             .Create();
 
-        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName);
+        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName, true);
 
         // Act
         var result = Assert.Throws<ConflictException>(Act);
@@ -122,7 +122,7 @@ public class ManualProcessDataExtensionsTests
             .With(x => x.Process, process)
             .Create();
 
-        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName);
+        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName, true);
 
         // Act
         var result = Assert.Throws<ConflictException>(Act);
@@ -143,7 +143,7 @@ public class ManualProcessDataExtensionsTests
             .With(x => x.ProcessSteps, (IEnumerable<ProcessStep>?)null)
             .Create();
 
-        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName);
+        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName, true);
 
         // Act
         var result = Assert.Throws<UnexpectedConditionException>(Act);
@@ -164,7 +164,7 @@ public class ManualProcessDataExtensionsTests
             .With(x => x.ProcessSteps, processSteps)
             .Create();
 
-        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName);
+        var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName, true);
 
         // Act
         var result = Assert.Throws<UnexpectedConditionException>(Act);
@@ -186,7 +186,7 @@ public class ManualProcessDataExtensionsTests
             .With(x => x.ProcessSteps, processSteps)
             .Create();
 
-        var Act = () => sut.CreateManualProcessData(stepTypeId, _portalRepositories, _getProcessEntityName);
+        var Act = () => sut.CreateManualProcessData(stepTypeId, _portalRepositories, _getProcessEntityName, true);
 
         // Act
         var result = Assert.Throws<ConflictException>(Act);

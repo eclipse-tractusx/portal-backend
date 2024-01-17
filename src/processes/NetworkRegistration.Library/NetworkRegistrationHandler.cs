@@ -174,7 +174,11 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> RemoveKeycloakUser(Guid networkRegistrationId)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var companyUserIds = userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId);
+        var companyUserIds = userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId, new[]
+        {
+            UserStatusId.ACTIVE,
+            UserStatusId.PENDING
+        });
         await using var enumerator = companyUserIds.GetAsyncEnumerator();
         if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
         {

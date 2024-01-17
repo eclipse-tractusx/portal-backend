@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Collections.Immutable;
 
@@ -112,58 +113,52 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     public async Task DeclineOsp(Guid applicationId, DeclineOspData declineData)
     {
+        var companyId = _identityData.CompanyId;
         var validStatus = new[]
         {
             CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.ADD_COMPANY_DATA,
             CompanyApplicationStatusId.INVITE_USER, CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
             CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.VERIFY
         };
-        var companyId = _identityData.CompanyId;
         var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
-        var data = await networkRepository.GetDeclineDataForApplicationId(applicationId).ConfigureAwait(false);
+        var data = await networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, validStatus, companyId).ConfigureAwait(false);
         if (!data.Exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
         }
 
-        if (data.CompanyData.CompanyId != companyId)
+        if (!data.IsValidCompany)
         {
             throw new ForbiddenException($"User is not allowed to decline application {applicationId}");
         }
 
-        if (data.TypeId != CompanyApplicationTypeId.EXTERNAL)
+        if (!data.IsValidTypeId)
         {
             throw new ConflictException("Only external registrations can be declined");
         }
 
-        if (!validStatus.Contains(data.StatusId))
+        if (!data.IsValidStatusId)
         {
             throw new ConflictException($"The status of the application {applicationId} must be one of the following: {string.Join(",", validStatus.Select(x => x.ToString()))}");
         }
 
+        var (companyData, invitationData, processData) = data.Data!.Value;
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, ca => { ca.ApplicationStatusId = CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER; });
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
-            data.CompanyData.CompanyId,
-            c => { c.CompanyStatusId = data.CompanyData.CompanyStatusId; },
+            companyId,
+            c => { c.CompanyStatusId = companyData.CompanyStatusId; },
             c => { c.CompanyStatusId = CompanyStatusId.REJECTED; });
 
-        _portalRepositories.GetInstance<IInvitationRepository>().AttachAndModifyInvitations(data.InvitationData.Select(
+        _portalRepositories.GetInstance<IInvitationRepository>().AttachAndModifyInvitations(invitationData.Select(
             x =>
                 new ValueTuple<Guid, Action<Invitation>?, Action<Invitation>>(
                     x.InvitationId,
                     i => { i.InvitationStatusId = x.StatusId; },
                     i => { i.InvitationStatusId = InvitationStatusId.DECLINED; })));
 
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        processStepRepository.AttachAndModifyProcessSteps(data.ProcessSteps
-            .Select(x =>
-                new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
-                    x.ProcessStepId,
-                    ps => { ps.ProcessStepStatusId = x.ProcessStepStatusId; },
-                    ps => { ps.ProcessStepStatusId = ProcessStepStatusId.ABORTED; })));
-
-        processStepRepository.CreateProcessStep(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepStatusId.TODO, data.ProcessId);
-
+        var context = processData.CreateManualProcessData(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, _portalRepositories, () => $"applicationId {applicationId}", false);
+        context.SkipProcessSteps(context.ProcessSteps.Where(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO).Select(x => x.ProcessStepTypeId));
+        context.ScheduleProcessSteps(Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

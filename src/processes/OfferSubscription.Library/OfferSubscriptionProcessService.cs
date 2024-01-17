@@ -63,7 +63,7 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         var processData = await offerSubscriptionsRepository
             .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(false);
 
-        return processData.CreateManualProcessData(processStepTypeId, _portalRepositories, () => $"offer subscription {offerSubscriptionId}");
+        return processData.CreateManualProcessData(processStepTypeId, _portalRepositories, () => $"offer subscription {offerSubscriptionId}", true);
     }
 
     public void FinalizeProcessSteps(ManualProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
