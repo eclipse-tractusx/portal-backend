@@ -14,7 +14,7 @@
     "id": "1450F1B2-FCE6-473E-865A-62D6DC0F5A5A",
     "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
     "date_created": "2022-08-10 18:01:33.570000 +00:00",
-    "content": null,
+    "content": "{\"offerId\":\"deadbeef-dead-beef-dead-beefdeadbeef\",\"provider\":\"DNS\"}",
     "notification_type_id": 2,
     "is_read": true,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
@@ -64,5 +64,27 @@
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
     "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
     "done": null
+  },
+  {
+    "id": "95cfc685-932b-4f26-90c1-c0c83b3efebf",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058019994",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 1,
+    "is_read": true,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "done": true
+  },
+  {
+    "id": "61ceb049-3a02-45e2-9652-bf73d9491212",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058019994",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 2,
+    "is_read": true,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "done": true
   }
 ]

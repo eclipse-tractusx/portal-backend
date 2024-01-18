@@ -191,7 +191,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application which status should be set.</param>
         /// <param name="status" example="8">The status that should be set</param>
         /// <returns></returns>
-        /// <remarks>Example: Put: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/status</remarks>
+        /// <remarks>Example: Put: /api/registration/application/{applicationId}/status</remarks>
         /// <response code="200">Successfully set the status</response>
         /// <response code="404">CompanyApplication was not found for the given id.</response>
         /// <response code="400">Status must be null.</response>
