@@ -188,158 +188,223 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region GetAllAsDetailsByUserIdUntracked
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 6)]
+    [InlineData(SearchSemanticTypeId.OR, 0)]
+    public async Task GetAllAsDetailsByUserIdUntracked_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNull();
-        results!.Count.Should().Be(6);
-        results.Data.Count().Should().Be(6);
-        results.Data.Should().AllBeOfType<NotificationDetailData>();
+        if (count == 0)
+        {
+            results.Should().BeNull();
+        }
+        else
+        {
+            results.Should().NotBeNull();
+            results!.Count.Should().Be(count);
+            results.Data.Count().Should().Be(count);
+            results.Data.Should().AllBeOfType<NotificationDetailData>();
+        }
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_SortedByDateAsc_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 6)]
+    [InlineData(SearchSemanticTypeId.OR, 0)]
+    public async Task GetAllAsDetailsByUserIdUntracked_SortedByDateAsc_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, NotificationSorting.DateAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.DateAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(6);
-        results.Data.Should().BeInAscendingOrder(detailData => detailData.Created);
+        if (count == 0)
+        {
+            results.Should().BeNull();
+        }
+        else
+        {
+            results.Should().NotBeNull();
+            results!.Count.Should().Be(count);
+            results.Data.Count().Should().Be(count);
+            results.Data.Should().BeInAscendingOrder(detailData => detailData.Created);
+        }
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_SortedByDateDesc_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 6)]
+    [InlineData(SearchSemanticTypeId.OR, 0)]
+    public async Task GetAllAsDetailsByUserIdUntracked_SortedByDateDesc_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, NotificationSorting.DateDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.DateDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(6);
-        results.Data.Should().BeInDescendingOrder(detailData => detailData.Created);
+        if (count == 0)
+        {
+            results.Should().BeNull();
+        }
+        else
+        {
+            results.Should().NotBeNull();
+            results!.Count.Should().Be(count);
+            results.Data.Count().Should().Be(count);
+            results.Data.Should().BeInDescendingOrder(detailData => detailData.Created);
+        }
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_SortedByReadStatusAsc_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 6)]
+    [InlineData(SearchSemanticTypeId.OR, 0)]
+    public async Task GetAllAsDetailsByUserIdUntracked_SortedByReadStatusAsc_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(6);
-        results.Data.Should().BeInAscendingOrder(detailData => detailData.IsRead);
+        if (count == 0)
+        {
+            results.Should().BeNull();
+        }
+        else
+        {
+            results.Should().NotBeNull();
+            results!.Count.Should().Be(count);
+            results.Data.Count().Should().Be(count);
+            results.Data.Should().BeInAscendingOrder(detailData => detailData.IsRead);
+        }
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_SortedByReadStatusDesc_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 6)]
+    [InlineData(SearchSemanticTypeId.OR, 0)]
+    public async Task GetAllAsDetailsByUserIdUntracked_SortedByReadStatusDesc_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, NotificationSorting.ReadStatusDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.ReadStatusDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(6);
-        results.Data.Should().BeInDescendingOrder(detailData => detailData.IsRead);
+        if (count == 0)
+        {
+            results.Should().BeNull();
+        }
+        else
+        {
+            results.Should().NotBeNull();
+            results!.Count.Should().Be(count);
+            results.Data.Count().Should().Be(count);
+            results.Data.Should().BeInDescendingOrder(detailData => detailData.IsRead);
+        }
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_WithUnreadStatus_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 3)]
+    [InlineData(SearchSemanticTypeId.OR, 3)]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithUnreadStatus_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, false, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15)
+            .GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, false, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(3);
+        results!.Data.Count().Should().Be(count);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == false));
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatus_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 3)]
+    [InlineData(SearchSemanticTypeId.OR, 3)]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatus_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, true, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15)
+            .GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, true, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(3);
+        results!.Data.Count().Should().Be(count);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true));
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndInfoType_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 1)]
+    [InlineData(SearchSemanticTypeId.OR, 3)]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndInfoType_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(1);
-        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true && x.TypeId == NotificationTypeId.INFO));
+        results!.Data.Count().Should().Be(count);
+        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x =>
+            searchSemanticTypeId == SearchSemanticTypeId.AND
+            ? (x.IsRead == true && x.TypeId == NotificationTypeId.INFO)
+            : (x.IsRead == true || x.TypeId == NotificationTypeId.INFO)));
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndActionType_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 1)]
+    [InlineData(SearchSemanticTypeId.OR, 3)]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndActionType_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(1);
-        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true && x.TypeId == NotificationTypeId.ACTION));
+        results!.Data.Count().Should().Be(count);
+        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x =>
+            searchSemanticTypeId == SearchSemanticTypeId.AND
+                ? (x.IsRead == true && x.TypeId == NotificationTypeId.ACTION)
+                : (x.IsRead == true || x.TypeId == NotificationTypeId.ACTION)));
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_WithTopic_ReturnsExpectedNotificationDetailData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 4)]
+    [InlineData(SearchSemanticTypeId.OR, 4)]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithTopic_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(4);
+        results!.Data.Count().Should().Be(count);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.NotificationTopic == NotificationTopicId.INFO));
     }
 
@@ -386,15 +451,17 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         await trans.RollbackAsync().ConfigureAwait(false);
     }
 
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_WithSearchParams_ReturnsExpectedData()
+    [Theory]
+    [InlineData(SearchSemanticTypeId.AND, 2)]
+    [InlineData(SearchSemanticTypeId.OR, 3)]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithSearchParams_ReturnsExpectedData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
         var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
         await context.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, null, null, new[]
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, null, null, new[]
         {
             NotificationTypeId.WELCOME_SERVICE_PROVIDER,
             NotificationTypeId.APP_RELEASE_REQUEST
@@ -402,12 +469,22 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Count.Should().Be(2);
-        results.Data.Count().Should().Be(2);
+        results!.Count.Should().Be(count);
+        results.Data.Count().Should().Be(count);
         results.Data.Should().AllBeOfType<NotificationDetailData>();
-        results.Data.Should().Satisfy(
-            x => x.TypeId == NotificationTypeId.WELCOME_SERVICE_PROVIDER,
-            x => x.TypeId == NotificationTypeId.APP_RELEASE_REQUEST);
+        if (searchSemanticTypeId == SearchSemanticTypeId.AND)
+        {
+            results.Data.Should().Satisfy(
+                x => x.TypeId == NotificationTypeId.WELCOME_SERVICE_PROVIDER && x.Content == """{"offerId":"0fc768e5-d4cf-4d3d-a0db-379efedd60f5","provider":"DNS"}""",
+                x => x.TypeId == NotificationTypeId.APP_RELEASE_REQUEST && x.Content == """{"offerId":"0fc768e5-d4cf-4d3d-a0db-379efedd60f5","RequestorCompanyName":"DNS"}""");
+        }
+        else
+        {
+            results.Data.Should().Satisfy(
+                x => x.TypeId == NotificationTypeId.WELCOME_SERVICE_PROVIDER && x.Content == """{"offerId":"0fc768e5-d4cf-4d3d-a0db-379efedd60f5","provider":"DNS"}""",
+                x => x.TypeId == NotificationTypeId.APP_RELEASE_REQUEST && x.Content == """{"offerId":"0fc768e5-d4cf-4d3d-a0db-379efedd60f5","RequestorCompanyName":"DNS"}""",
+                x => x.TypeId == NotificationTypeId.ACTION && x.Content == """{"offerId":"deadbeef-dead-beef-dead-beefdeadbeef","provider":"DNS"}""");
+        }
     }
 
     #endregion
