@@ -74,7 +74,11 @@ public class RegistrationBusinessLogicTest
     private readonly IOptions<RegistrationSettings> _options;
     private readonly IMailingService _mailingService;
     private readonly IStaticDataRepository _staticDataRepository;
-    private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
+
+    private readonly
+        Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>
+        _processLine;
+
     private readonly IIdentityService _identityService;
     private readonly IDateTimeProvider _dateTimeProvider;
 
@@ -126,7 +130,9 @@ public class RegistrationBusinessLogicTest
         _alpha2code = "XY";
         _error = _fixture.Create<TestException>();
 
-        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
+        _processLine =
+            A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception?
+                Error)>>();
 
         SetupRepositories();
 
@@ -174,7 +180,9 @@ public class RegistrationBusinessLogicTest
         var token = _fixture.Create<string>();
         var country = "XY";
 
-        var uniqueIdSeed = _fixture.CreateMany<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId, string Value)>(5).ToImmutableArray();
+        var uniqueIdSeed = _fixture
+            .CreateMany<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId, string Value)>(5)
+            .ToImmutableArray();
         var name = _fixture.Create<string>();
         var shortName = _fixture.Create<string>();
         var region = _fixture.Create<string>();
@@ -183,7 +191,8 @@ public class RegistrationBusinessLogicTest
         var streetNumber = _fixture.Create<string>();
         var zipCode = _fixture.Create<string>();
 
-        var bpdmIdentifiers = uniqueIdSeed.Select(x => ((string TechnicalKey, string Value))(x.BpdmIdentifierId.ToString(), x.Value));
+        var bpdmIdentifiers = uniqueIdSeed.Select(x =>
+            ((string TechnicalKey, string Value))(x.BpdmIdentifierId.ToString(), x.Value));
         var validIdentifiers = uniqueIdSeed.Skip(2).Take(2).Select(x => (x.BpdmIdentifierId, x.UniqueIdentifierId));
 
         var bpdmAddress = _fixture.Build<BpdmLegalEntityAddress>()
@@ -191,10 +200,13 @@ public class RegistrationBusinessLogicTest
             .With(x => x.Bpna, businessPartnerNumber)
             .With(x => x.PhysicalPostalAddress, _fixture.Build<BpdmPhysicalPostalAddress>()
                 .With(x => x.Country, _fixture.Build<BpdmCountry>().With(x => x.TechnicalKey, country).Create())
-                .With(x => x.AdministrativeAreaLevel1, _fixture.Build<BpdmAdministrativeAreaLevel>().With(x => x.RegionCode, region).Create())
+                .With(x => x.AdministrativeAreaLevel1,
+                    _fixture.Build<BpdmAdministrativeAreaLevel>().With(x => x.RegionCode, region).Create())
                 .With(x => x.PostalCode, zipCode)
                 .With(x => x.City, city)
-                .With(x => x.Street, _fixture.Build<BpdmStreet>().With(x => x.Name, streetName).With(x => x.HouseNumber, streetNumber).Create())
+                .With(x => x.Street,
+                    _fixture.Build<BpdmStreet>().With(x => x.Name, streetName).With(x => x.HouseNumber, streetNumber)
+                        .Create())
                 .Create())
             .Create();
         var legalEntity = _fixture.Build<BpdmLegalEntityDto>()
@@ -202,14 +214,17 @@ public class RegistrationBusinessLogicTest
             .With(x => x.LegalName, name)
             .With(x => x.LegalShortName, shortName)
             .With(x => x.Identifiers, bpdmIdentifiers.Select(identifier => _fixture.Build<BpdmIdentifierDto>()
-                    .With(x => x.Type, _fixture.Build<BpdmTechnicalKey>().With(x => x.TechnicalKey, identifier.TechnicalKey).Create())
-                    .With(x => x.Value, identifier.Value)
-                    .Create()))
+                .With(x => x.Type,
+                    _fixture.Build<BpdmTechnicalKey>().With(x => x.TechnicalKey, identifier.TechnicalKey).Create())
+                .With(x => x.Value, identifier.Value)
+                .Create()))
             .With(x => x.LegalEntityAddress, bpdmAddress)
             .Create();
         A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .Returns(legalEntity);
-        A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids => ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
+        A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(
+                A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids =>
+                    ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
             .Returns((true, validIdentifiers));
 
         var sut = new RegistrationBusinessLogic(
@@ -224,18 +239,23 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
 
         // Act
-        var result = await sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut
+            .GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None)
+            .ConfigureAwait(false);
 
         A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids => ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
+        A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(
+                A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids =>
+                    ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
             .MustHaveHappenedOnceExactly();
 
         result.Should().NotBeNull();
         result.BusinessPartnerNumber.Should().Be(businessPartnerNumber);
         result.CountryAlpha2Code.Should().Be(country);
 
-        var expectedUniqueIds = uniqueIdSeed.Skip(2).Take(2).Select(x => new CompanyUniqueIdData(x.UniqueIdentifierId, x.Value));
+        var expectedUniqueIds = uniqueIdSeed.Skip(2).Take(2)
+            .Select(x => new CompanyUniqueIdData(x.UniqueIdentifierId, x.Value));
         result.UniqueIds.Should().HaveSameCount(expectedUniqueIds);
         result.UniqueIds.Should().ContainInOrder(expectedUniqueIds);
 
@@ -264,7 +284,9 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
 
         // Act
-        async Task Act() => await sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber("NotLongEnough", "justatoken", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() =>
+            await sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber("NotLongEnough", "justatoken",
+                CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -296,17 +318,25 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        var resultList = new[]{
+        var resultList = new[]
+        {
             new CompanyApplicationWithStatus(
                 _fixture.Create<Guid>(),
                 CompanyApplicationStatusId.VERIFY,
-                new[]{
-                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.DONE),
-                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE),
-                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE),
-                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.IN_PROGRESS),
-                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.FAILED),
-                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO)
+                new[]
+                {
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION,
+                        ApplicationChecklistEntryStatusId.DONE),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                        ApplicationChecklistEntryStatusId.DONE),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                        ApplicationChecklistEntryStatusId.DONE),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
+                        ApplicationChecklistEntryStatusId.IN_PROGRESS),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+                        ApplicationChecklistEntryStatusId.FAILED),
+                    new ApplicationChecklistData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
+                        ApplicationChecklistEntryStatusId.TO_DO)
                 })
         };
         A.CallTo(() => _userRepository.GetApplicationsWithStatusUntrackedAsync(userCompanyId))
@@ -317,12 +347,18 @@ public class RegistrationBusinessLogicTest
         result.Should().ContainSingle();
         result.Single().ApplicationStatus.Should().Be(CompanyApplicationStatusId.VERIFY);
         result.Single().ApplicationChecklist.Should().NotBeNull().And.HaveCount(6).And.Satisfy(
-            x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
-            x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
-            x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
-            x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.FAILED,
-            x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
+            x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION &&
+                 x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER &&
+                 x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE &&
+                 x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET &&
+                 x.StatusId == ApplicationChecklistEntryStatusId.IN_PROGRESS,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION &&
+                 x.StatusId == ApplicationChecklistEntryStatusId.FAILED,
+            x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                 x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
         );
     }
 
@@ -350,7 +386,8 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
+        A.CallTo(() =>
+                _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
             .Returns(data);
 
         // Act
@@ -378,7 +415,8 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
+        A.CallTo(() =>
+                _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
             .Returns((CompanyApplicationDetailData?)null);
 
         // Act
@@ -405,7 +443,8 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
+        A.CallTo(() =>
+                _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
             .Returns(_fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
 
         // Act
@@ -425,9 +464,15 @@ public class RegistrationBusinessLogicTest
     [InlineData("filled", null, null, null, new UniqueIdentifierId[] { }, new string[] { }, "City")]
     [InlineData("filled", "filled", null, null, new UniqueIdentifierId[] { }, new string[] { }, "StreetName")]
     [InlineData("filled", "filled", "filled", "", new UniqueIdentifierId[] { }, new string[] { }, "CountryAlpha2Code")]
-    [InlineData("filled", "filled", "filled", "XX", new UniqueIdentifierId[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE }, new string[] { "filled", "" }, "UniqueIds")]
-    [InlineData("filled", "filled", "filled", "XX", new UniqueIdentifierId[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.VAT_ID }, new string[] { "filled", "filled" }, "UniqueIds")]
-    public async Task SetCompanyWithAddressAsync_WithMissingData_ThrowsArgumentException(string? name, string? city, string? streetName, string? countryCode, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds, IEnumerable<string> values, string argumentName)
+    [InlineData("filled", "filled", "filled", "XX",
+        new UniqueIdentifierId[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE }, new string[] { "filled", "" },
+        "UniqueIds")]
+    [InlineData("filled", "filled", "filled", "XX",
+        new UniqueIdentifierId[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.VAT_ID },
+        new string[] { "filled", "filled" }, "UniqueIds")]
+    public async Task SetCompanyWithAddressAsync_WithMissingData_ThrowsArgumentException(string? name, string? city,
+        string? streetName, string? countryCode, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds,
+        IEnumerable<string> values, string argumentName)
     {
         //Arrange
         var identityData = A.Fake<IIdentityData>();
@@ -447,7 +492,8 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
 
         var uniqueIdData = uniqueIdentifierIds.Zip(values, (id, value) => new CompanyUniqueIdData(id, value));
-        var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null, null, null, null, null, uniqueIdData);
+        var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null,
+            null, null, null, null, uniqueIdData);
 
         // Act
         async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData).ConfigureAwait(false);
@@ -474,7 +520,8 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null, null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
+        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null,
+            null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
             .ReturnsLazily(() => (CompanyApplicationDetailData?)null);
@@ -498,7 +545,8 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
         A.CallTo(() => identityData.CompanyId).Returns(companyId);
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
-        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null, null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
+        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null,
+            null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
 
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -512,7 +560,8 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
-            .ReturnsLazily(() => _fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
+            .ReturnsLazily(() =>
+                _fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
 
         // Act
         async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
@@ -555,7 +604,9 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'BusinessPartnerNumber')");
+        ex.Message.Should()
+            .Be(
+                "BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'BusinessPartnerNumber')");
     }
 
     [Fact]
@@ -751,7 +802,8 @@ public class RegistrationBusinessLogicTest
         // Assert
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _companyRepository.CreateAddress(companyData.City, companyData.StreetName, companyData.CountryAlpha2Code, A<Action<Address>>._))
+        A.CallTo(() => _companyRepository.CreateAddress(companyData.City, companyData.StreetName,
+                companyData.CountryAlpha2Code, A<Action<Address>>._))
             .MustHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
             .MustHaveHappenedOnceExactly();
@@ -825,7 +877,9 @@ public class RegistrationBusinessLogicTest
                 modify(company);
             });
 
-        A.CallTo(() => _companyRepository.AttachAndModifyAddress(existingData.AddressId!.Value, A<Action<Address>>._, A<Action<Address>>._))
+        A.CallTo(() =>
+                _companyRepository.AttachAndModifyAddress(existingData.AddressId!.Value, A<Action<Address>>._,
+                    A<Action<Address>>._))
             .Invokes((Guid addressId, Action<Address>? initialize, Action<Address> modify) =>
             {
                 address = new Address(addressId, null!, null!, null!, default);
@@ -839,9 +893,12 @@ public class RegistrationBusinessLogicTest
         // Assert
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _companyRepository.AttachAndModifyAddress(A<Guid>._, A<Action<Address>>._, A<Action<Address>>._!))
+        A.CallTo(
+                () => _companyRepository.AttachAndModifyAddress(A<Guid>._, A<Action<Address>>._, A<Action<Address>>._!))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _companyRepository.AttachAndModifyAddress(existingData.AddressId!.Value, A<Action<Address>>._, A<Action<Address>>._!))
+        A.CallTo(() =>
+                _companyRepository.AttachAndModifyAddress(existingData.AddressId!.Value, A<Action<Address>>._,
+                    A<Action<Address>>._!))
             .MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
@@ -877,9 +934,12 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var uniqueIdentifiers = _fixture.CreateMany<UniqueIdentifierId>(4);
 
-        var firstIdData = _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, uniqueIdentifiers.First()).Create();       // shall not modify
-        var secondIdData = _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(1)).Create(); // shall modify
-        var thirdIdData = _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(2)).Create();  // shall create new
+        var firstIdData = _fixture.Build<CompanyUniqueIdData>()
+            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.First()).Create(); // shall not modify
+        var secondIdData = _fixture.Build<CompanyUniqueIdData>()
+            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(1)).Create(); // shall modify
+        var thirdIdData = _fixture.Build<CompanyUniqueIdData>()
+            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(2)).Create(); // shall create new
 
         var companyData = _fixture.Build<CompanyDetailData>()
             .With(x => x.BusinessPartnerNumber, (string?)null)
@@ -889,10 +949,12 @@ public class RegistrationBusinessLogicTest
             .Create();
 
         var existingData = _fixture.Build<CompanyApplicationDetailData>()
-            .With(x => x.UniqueIds, new[] {
-                (firstIdData.UniqueIdentifierId, firstIdData.Value),            // shall be left unmodified
-                (secondIdData.UniqueIdentifierId, _fixture.Create<string>()),   // shall be modified
-                (uniqueIdentifiers.ElementAt(3), _fixture.Create<string>()) })  // shall be deleted
+            .With(x => x.UniqueIds, new[]
+            {
+                (firstIdData.UniqueIdentifierId, firstIdData.Value), // shall be left unmodified
+                (secondIdData.UniqueIdentifierId, _fixture.Create<string>()), // shall be modified
+                (uniqueIdentifiers.ElementAt(3), _fixture.Create<string>())
+            }) // shall be deleted
             .With(x => x.IsUserOfCompany, true)
             .Create();
         var application = _fixture.Build<CompanyApplication>()
@@ -917,13 +979,17 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
             .Returns(existingData);
 
-        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(A<Guid>._, A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._))
-            .Invokes((Guid _, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initial, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modified) =>
+        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(A<Guid>._,
+                A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._))
+            .Invokes((Guid _, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initial,
+                IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modified) =>
             {
                 initialIdentifiers = initial;
                 modifiedIdentifiers = modified;
             });
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+        A.CallTo(() =>
+                _applicationRepository.AttachAndModifyCompanyApplication(applicationId,
+                    A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
             {
                 setOptionalFields.Invoke(application);
@@ -933,15 +999,23 @@ public class RegistrationBusinessLogicTest
         await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(companyId, A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(A<Guid>.That.Not.IsEqualTo(companyId), A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._)).MustNotHaveHappened();
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(companyId,
+                A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(A<Guid>.That.Not.IsEqualTo(companyId),
+                A<IEnumerable<(UniqueIdentifierId, string)>>._, A<IEnumerable<(UniqueIdentifierId, string)>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() =>
+                _applicationRepository.AttachAndModifyCompanyApplication(applicationId,
+                    A<Action<CompanyApplication>>._))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
         initialIdentifiers.Should().NotBeNull();
         modifiedIdentifiers.Should().NotBeNull();
         initialIdentifiers.Should().ContainInOrder(existingData.UniqueIds);
-        modifiedIdentifiers.Should().ContainInOrder((firstIdData.UniqueIdentifierId, firstIdData.Value), (secondIdData.UniqueIdentifierId, secondIdData.Value), (thirdIdData.UniqueIdentifierId, thirdIdData.Value));
+        modifiedIdentifiers.Should().ContainInOrder((firstIdData.UniqueIdentifierId, firstIdData.Value),
+            (secondIdData.UniqueIdentifierId, secondIdData.Value), (thirdIdData.UniqueIdentifierId, thirdIdData.Value));
         application.DateLastChanged.Should().Be(now);
     }
 
@@ -970,7 +1044,8 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>._, A<IEnumerable<UniqueIdentifierId>>._))
+        A.CallTo(() =>
+                _countryRepository.GetCountryAssignedIdentifiers(A<string>._, A<IEnumerable<UniqueIdentifierId>>._))
             .Returns((false, null!));
 
         // Act
@@ -995,7 +1070,9 @@ public class RegistrationBusinessLogicTest
         var companyData = _fixture.Build<CompanyDetailData>()
             .With(x => x.BusinessPartnerNumber, (string?)null)
             .With(x => x.CountryAlpha2Code, _alpha2code)
-            .With(x => x.UniqueIds, identifiers.Select(id => _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, id).Create()))
+            .With(x => x.UniqueIds,
+                identifiers.Select(id =>
+                    _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, id).Create()))
             .Create();
 
         var sut = new RegistrationBusinessLogic(
@@ -1009,7 +1086,8 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(_alpha2code, A<IEnumerable<UniqueIdentifierId>>._))
+        A.CallTo(() =>
+                _countryRepository.GetCountryAssignedIdentifiers(_alpha2code, A<IEnumerable<UniqueIdentifierId>>._))
             .Returns((true, new[] { identifiers.First() }));
 
         // Act
@@ -1017,7 +1095,8 @@ public class RegistrationBusinessLogicTest
 
         //Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be($"invalid uniqueIds for country {_alpha2code}: '{identifiers.ElementAt(1)}' (Parameter 'UniqueIds')");
+        result.Message.Should()
+            .Be($"invalid uniqueIds for country {_alpha2code}: '{identifiers.ElementAt(1)}' (Parameter 'UniqueIds')");
     }
 
     #endregion
@@ -1078,7 +1157,9 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>());
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY).ConfigureAwait(false);
+        async Task Act() =>
+            await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY)
+                .ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1105,20 +1186,33 @@ public class RegistrationBusinessLogicTest
             null!,
             _identityService,
             _dateTimeProvider);
-
+        var existingStatus = CompanyApplicationStatusId.CREATED;
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, CompanyApplicationStatusId.CREATED));
+            .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, existingStatus));
+        var status = CompanyApplicationStatusId.VERIFY;
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, status).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Contain("invalid status update requested");
+        ex.Message.Should().Contain($"invalid status update requested {status}, current status is {existingStatus}, possible values are: {status}");
     }
 
-    [Fact]
-    public async Task SetOwnCompanyApplicationStatusAsync_WithValidData_SavesChanges()
+    [Theory]
+    [InlineData(CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.CREATED, false)]
+    [InlineData(CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.ADD_COMPANY_DATA, true)]
+    [InlineData(CompanyApplicationStatusId.ADD_COMPANY_DATA, CompanyApplicationStatusId.ADD_COMPANY_DATA, false)]
+    [InlineData(CompanyApplicationStatusId.ADD_COMPANY_DATA, CompanyApplicationStatusId.INVITE_USER, true)]
+    [InlineData(CompanyApplicationStatusId.INVITE_USER, CompanyApplicationStatusId.INVITE_USER, false)]
+    [InlineData(CompanyApplicationStatusId.INVITE_USER, CompanyApplicationStatusId.SELECT_COMPANY_ROLE, true)]
+    [InlineData(CompanyApplicationStatusId.SELECT_COMPANY_ROLE, CompanyApplicationStatusId.SELECT_COMPANY_ROLE, false)]
+    [InlineData(CompanyApplicationStatusId.SELECT_COMPANY_ROLE, CompanyApplicationStatusId.UPLOAD_DOCUMENTS, true)]
+    [InlineData(CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.UPLOAD_DOCUMENTS, false)]
+    [InlineData(CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.VERIFY, true)]
+    [InlineData(CompanyApplicationStatusId.VERIFY, CompanyApplicationStatusId.VERIFY, false)]
+    [InlineData(CompanyApplicationStatusId.VERIFY, CompanyApplicationStatusId.SUBMITTED, true)]
+    public async Task SetOwnCompanyApplicationStatusAsync_WithValidData_SavesChanges(CompanyApplicationStatusId currentStatus, CompanyApplicationStatusId expectedStatus, bool shouldUpdate)
     {
         //Arrange
         var now = DateTimeOffset.Now;
@@ -1149,15 +1243,23 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
 
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, CompanyApplicationStatusId.VERIFY));
+            .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, currentStatus));
 
         // Act
-        await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.SUBMITTED).ConfigureAwait(false);
+        await sut.SetOwnCompanyApplicationStatusAsync(applicationId, expectedStatus).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
-        application.DateLastChanged.Should().Be(now);
+        if (shouldUpdate)
+        {
+            A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
+            application.DateLastChanged.Should().Be(now);
+            application.ApplicationStatusId.Should().Be(expectedStatus);
+        }
+        else
+        {
+            A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustNotHaveHappened();
+        }
     }
 
     #endregion

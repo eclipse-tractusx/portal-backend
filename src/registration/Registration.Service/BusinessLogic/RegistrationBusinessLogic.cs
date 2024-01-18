@@ -481,9 +481,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
         }
 
-        ValidateCompanyApplicationStatus(applicationId, status, applicationUserData, applicationRepository, _dateTimeProvider);
+        if (applicationUserData.StatusId != status)
+        {
+            ValidateCompanyApplicationStatus(applicationId, status, applicationUserData, applicationRepository, _dateTimeProvider);
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
 
-        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return 0;
     }
 
     public async Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId)
@@ -820,7 +824,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 x => x.applicationStatus == applicationData.StatusId && x.status == status))
         {
             throw new ArgumentException(
-                $"invalid status update requested {status}, current status is {applicationData.StatusId}, possible values are: {CompanyApplicationStatusId.SUBMITTED}");
+                $"invalid status update requested {status}, current status is {applicationData.StatusId}, possible values are: {string.Join(",", allowedCombination.Where(x => x.applicationStatus == status).Select(x => x.applicationStatus))}");
         }
 
         applicationRepository.AttachAndModifyCompanyApplication(applicationId, a =>
