@@ -6,9 +6,9 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Bugfix
 * Notification Service
-  * fix Get: /api/notification/ endpoint which resulted in a 'Sequence contains more than one element' error
+  * fixed Get: /api/notification/ endpoint which resulted in a 'Sequence contains more than one element' error
 * Registration Service
-  * allow same status as existing status for endpoint Put: /api/registration/application/{applicationId}/status
+  * fixed Put: /api/registration/application/{applicationId}/status endpoint to allow same status as existing status
 
 ## 1.8.0-RC1.1
 
