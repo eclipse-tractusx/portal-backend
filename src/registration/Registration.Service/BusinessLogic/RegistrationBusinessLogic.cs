@@ -480,13 +480,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
         }
-        
+
         if (applicationUserData.StatusId != status)
         {
             ValidateCompanyApplicationStatus(applicationId, status, applicationUserData, applicationRepository, _dateTimeProvider);
             return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
- 
+
         return 0;
     }
 
