@@ -2,6 +2,14 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.8.0-RC2
+
+### Bugfix
+* Notification Service
+  * fix Get: /api/notification/ endpoint which resulted in a 'Sequence contains more than one element' error
+* Registration Service
+  * allow same status as existing status for endpoint Put: /api/registration/application/{applicationId}/status
+
 ## 1.8.0-RC1.1
 
 ### Bugfix
