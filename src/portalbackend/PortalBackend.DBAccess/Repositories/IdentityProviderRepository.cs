@@ -286,7 +286,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                     i.Id,
                     i.CompanyUser!.CompanyUserAssignedIdentityProviders.Any(cuIdp => cuIdp.IdentityProviderId == identityProviderId),
                     new ValueTuple<string?, string?, string?>(i.CompanyUser.Email, i.CompanyUser.Firstname, i.CompanyUser.Lastname),
-                    i.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => ur == u)),
+                    i.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)),
                     i.IdentityAssignedRoles.Select(u => u.UserRoleId))))))
             .ToAsyncEnumerable();
 
@@ -296,7 +296,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             .Where(x =>
                 x.Identity!.Company!.IdentityProviders.Any(idp => idp.Id == identityProviderId && idp.OwnerId != x.Identity!.CompanyId) &&
                 x.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => ur == u)) &&
+                x.Identity!.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)) &&
                 x.Email != null)
             .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
             .ToAsyncEnumerable();
