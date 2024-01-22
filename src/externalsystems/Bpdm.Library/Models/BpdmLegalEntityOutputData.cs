@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
@@ -52,8 +53,72 @@ public record BpdmLegalAddressResponse(
     [property: JsonPropertyName("roles")] IEnumerable<string> Roles
 );
 
+public record BpdmStatus(
+    string OfficialDenotation,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidUntil,
+    string Type
+);
+
 public record BpdmCountry
 (
     string TechnicalKey,
     string Name
+);
+
+public record BpdmProfileClassification(
+    string Value,
+    string Code,
+    string Type
+);
+
+public record BpdmAddressState(
+    string Description,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTo,
+    string Type
+);
+
+public record BpdmAddressIdentifier(
+    string Value,
+    BpdmIdentifierId Type
+);
+
+public record BpdmAddressPhysicalPostalAddress(
+    BpdmGeographicCoordinatesDto? GeographicCoordinates,
+    string? Country,
+    string? PostalCode,
+    string? City,
+    BpdmLegalEntityStreet? Street,
+    string? AdministrativeAreaLevel1,
+    string? AdministrativeAreaLevel2,
+    string? AdministrativeAreaLevel3,
+    string? District,
+    string? CompanyPostalCode,
+    string? IndustrialZone,
+    string? Building,
+    string? Floor,
+    string? Door
+);
+
+public record BpdmLegalEntityStreet(
+    string? NamePrefix,
+    string? AdditionalNamePrefix,
+    string Name,
+    string? NameSuffix,
+    string? AdditionalNameSuffix,
+    string? HouseNumber,
+    string? Milestone,
+    string? Direction
+);
+
+public record BpdmAddressAlternativePostalAddress(
+    BpdmGeographicCoordinatesDto? GeographicCoordinates,
+    string? Country,
+    string? PostalCode,
+    string? City,
+    string? AdministrativeAreaLevel1,
+    string? DeliveryServiceNumber,
+    string? DeliveryServiceType,
+    string? DeliveryServiceQualifier
 );
