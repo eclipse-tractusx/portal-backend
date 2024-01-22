@@ -461,7 +461,10 @@ public class NetworkBusinessLogicTests
         var process = _fixture.Build<Process>()
             .With(x => x.LockExpiryDate, (DateTimeOffset?)null)
             .With(x => x.Version, currentVersion).Create();
-        var existingProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
+        var currentProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.MANUAL_DECLINE_OSP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
+        var removeUsersProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
+        var otherProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
+        var existingProcessSteps = new[] { currentProcessStep, removeUsersProcessStep, otherProcessStep };
         var data = _fixture.Create<DeclineOspData>();
         A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(application.Id, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
             .Returns(new ValueTuple<bool, bool, bool, bool,
@@ -476,7 +479,7 @@ public class NetworkBusinessLogicTests
                 new ValueTuple<ValueTuple<CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>, IEnumerable<(Guid, InvitationStatusId)>, VerifyProcessData>(
                     new(company.CompanyStatusId, Enumerable.Repeat(new ValueTuple<Guid, UserStatusId>(identityId, UserStatusId.ACTIVE), 1)),
                     Enumerable.Repeat(new ValueTuple<Guid, InvitationStatusId>(invitation.Id, invitation.InvitationStatusId), 1),
-                    new VerifyProcessData(process, Enumerable.Repeat(existingProcessStep, 1))
+                    new VerifyProcessData(process, existingProcessSteps)
                 )
             ));
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(application.Id, A<Action<CompanyApplication>>._))
@@ -506,8 +509,9 @@ public class NetworkBusinessLogicTests
             {
                 var initial = processSteps.Select(x =>
                     {
-                        x.Initialize?.Invoke(existingProcessStep);
-                        return (ProcessStep: existingProcessStep, modify: x.Modify);
+                        var existing = existingProcessSteps.Single(s => s.Id == x.ProcessStepId);
+                        x.Initialize?.Invoke(existing);
+                        return (ProcessStep: existing, modify: x.Modify);
                     }
                 ).ToList();
                 initial.ForEach(x => x.modify(x.ProcessStep));
@@ -517,14 +521,16 @@ public class NetworkBusinessLogicTests
         await _sut.DeclineOsp(application.Id, data).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.REMOVE_KEYCLOAK_USERS && x.Single().ProcessStepStatusId == ProcessStepStatusId.TODO && x.Single().ProcessId == process.Id)))
-            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER);
         invitation.InvitationStatusId.Should().Be(InvitationStatusId.DECLINED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.REJECTED);
-        existingProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
+        currentProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        removeUsersProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+        otherProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
         process.Version.Should().NotBe(currentVersion);
     }
 

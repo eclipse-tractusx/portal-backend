@@ -658,7 +658,7 @@ public class NetworkBusinessLogicTests
                 x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
         processSteps.Should().HaveCount(2).And.Satisfy(
             x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER,
-            x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.MANUAL_DECLINE);
+            x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.MANUAL_DECLINE_OSP);
         companyApplications.Should().ContainSingle()
             .Which.Should().Match<CompanyApplication>(x =>
                 x.CompanyId == newCompanyId &&

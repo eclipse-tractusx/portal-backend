@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -143,6 +143,8 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
 
         var (companyData, invitationData, processData) = data.Data!.Value;
+        var context = processData.CreateManualProcessData(ProcessStepTypeId.MANUAL_DECLINE_OSP, _portalRepositories, () => $"applicationId {applicationId}");
+
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, ca => { ca.ApplicationStatusId = CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER; });
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
             companyId,
@@ -156,9 +158,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                     i => { i.InvitationStatusId = x.StatusId; },
                     i => { i.InvitationStatusId = InvitationStatusId.DECLINED; })));
 
-        var context = processData.CreateManualProcessData(ProcessStepTypeId.MANUAL_DECLINE, _portalRepositories, () => $"applicationId {applicationId}");
-        context.SkipProcessSteps(context.ProcessSteps.Where(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO).Select(x => x.ProcessStepTypeId));
-        context.ScheduleProcessSteps(Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1));
+        context.SkipProcessStepsExcept(Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1));
         context.FinalizeProcessStep();
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

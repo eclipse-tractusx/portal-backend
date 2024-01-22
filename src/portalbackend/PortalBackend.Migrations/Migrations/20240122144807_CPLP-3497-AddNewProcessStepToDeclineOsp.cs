@@ -41,7 +41,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
-                    { 208, "MANUAL_DECLINE" },
+                    { 208, "MANUAL_DECLINE_OSP" },
                     { 209, "REMOVE_KEYCLOAK_USERS" },
                     { 210, "RETRIGGER_REMOVE_KEYCLOAK_USERS" }
                 });

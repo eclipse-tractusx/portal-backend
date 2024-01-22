@@ -79,7 +79,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         processStepRepository.CreateProcessStepRange(new[]
         {
             (ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId),
-            (ProcessStepTypeId.MANUAL_DECLINE, ProcessStepStatusId.TODO, processId)
+            (ProcessStepTypeId.MANUAL_DECLINE_OSP, ProcessStepStatusId.TODO, processId)
         });
 
         networkRepository.CreateNetworkRegistration(data.ExternalId, companyId, processId, ownerCompanyId, applicationId);

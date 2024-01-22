@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -87,8 +86,18 @@ public static class ManualProcessStepDataExtensions
         context.PortalRepositories.GetInstance<IProcessStepRepository>()
             .AttachAndModifyProcessSteps(
                 context.ProcessSteps
+                    .Where(step => step.ProcessStepTypeId != context.ProcessStepTypeId)
                     .GroupBy(step => step.ProcessStepTypeId)
-                    .IntersectBy(processStepTypeIds, step => step.Key)
+                    .IntersectBy(processStepTypeIds, group => group.Key)
+                    .SelectMany(group => ModifyStepStatusRange(group, ProcessStepStatusId.SKIPPED)));
+
+    public static void SkipProcessStepsExcept(this ManualProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        context.PortalRepositories.GetInstance<IProcessStepRepository>()
+            .AttachAndModifyProcessSteps(
+                context.ProcessSteps
+                    .Where(step => step.ProcessStepTypeId != context.ProcessStepTypeId)
+                    .GroupBy(step => step.ProcessStepTypeId)
+                    .ExceptBy(processStepTypeIds, group => group.Key)
                     .SelectMany(group => ModifyStepStatusRange(group, ProcessStepStatusId.SKIPPED)));
 
     public static void ScheduleProcessSteps(this ManualProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
