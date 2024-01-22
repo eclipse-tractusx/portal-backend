@@ -479,7 +479,11 @@ public class RegistrationBusinessLogicTest
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.VERIFY_REGISTRATION)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, A<Guid>._))
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
+                A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
+                A<Action<ApplicationChecklistEntry>>._,
+                A<Action<ApplicationChecklistEntry>>._,
+                A<IEnumerable<ProcessStepTypeId>?>.That.Matches(x => x != null && x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED)))
             .MustHaveHappenedOnceExactly();
         if (idpTypeId == IdentityProviderTypeId.SHARED)
         {
