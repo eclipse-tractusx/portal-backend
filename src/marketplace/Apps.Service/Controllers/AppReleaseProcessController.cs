@@ -146,6 +146,7 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "edit_apps")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("consent/{appId}/agreementConsents")]
     [ProducesResponseType(typeof(IEnumerable<ConsentStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
