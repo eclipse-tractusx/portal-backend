@@ -398,35 +398,56 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var roleIds = await _roleBaseMailService.GetRoleData(_settings.DeleteIdpRoles).ConfigureAwait(false);
         var idpLinkedData = identityProviderRepository.GetManagedIdpLinkedData(identityProviderId, roleIds.Distinct());
 
-        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-
-        var identityIds = new List<Guid>();
-        await foreach (var data in idpLinkedData.ConfigureAwait(false))
+        async IAsyncEnumerable<(string Email, IDictionary<string, string> Parameters)> DeleteLinksReturningMaildata()
         {
-            if (!data.HasMoreIdentityProviders)
-            {
-                companyRepository.AttachAndModifyCompany(data.CompanyId,
-                    c => { c.CompanyStatusId = data.CompanyStatusId; },
-                    c => { c.CompanyStatusId = CompanyStatusId.INACTIVE; });
-                userRepository.AttachAndModifyIdentities(data.Identities.Select(x => new ValueTuple<Guid, Action<Identity>>(x.IdentityId, identity => { identity.UserStatusId = UserStatusId.INACTIVE; })));
-            }
-            identityProviderRepository.DeleteCompanyIdentityProvider(data.CompanyId, identityProviderId);
-            userRepository.RemoveCompanyUserAssignedIdentityProviders(data.Identities.Where(x => x.IsLinkedCompanyUser).Select(x => (x.IdentityId, identityProviderId)));
-            userRolesRepository.DeleteCompanyUserAssignedRoles(data.Identities.Where(i => i.IsLinkedCompanyUser).SelectMany(i => i.UserRoleIds.Select(ur => new ValueTuple<Guid, Guid>(i.IdentityId, ur))));
-            identityIds.AddRange(data.Identities.Select(i => i.IdentityId));
+            var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-            foreach (var identity in data.Identities.Where(i => i is { IsInUserRoles: true, Userdata.UserMail: not null }))
+            await foreach (var data in idpLinkedData.ConfigureAwait(false))
             {
-                var userName = string.Join(" ", new[] { identity.Userdata.FirstName, identity.Userdata.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-                var mailParameters = new Dictionary<string, string>
+                if (!data.HasMoreIdentityProviders)
                 {
-                    {"idpAlias", alias ?? identityProviderId.ToString()},
-                    {"ownerCompanyName", ownerCompanyName},
-                    { "username", string.IsNullOrWhiteSpace(userName) ? "User" : userName }
-                };
-                await _mailingService.SendMails(identity.Userdata.UserMail!, mailParameters, Enumerable.Repeat("DeleteManagedIdp", 1)).ConfigureAwait(false);
+                    companyRepository.AttachAndModifyCompany(data.CompanyId,
+                        c => { c.CompanyStatusId = data.CompanyStatusId; },
+                        c => { c.CompanyStatusId = CompanyStatusId.INACTIVE; });
+                    userRepository.AttachAndModifyIdentities(data.Identities.Select(x => new ValueTuple<Guid, Action<Identity>>(x.IdentityId, identity => { identity.UserStatusId = UserStatusId.INACTIVE; })));
+                    userRolesRepository.DeleteCompanyUserAssignedRoles(data.Identities.SelectMany(i => i.UserRoleIds.Select(ur => new ValueTuple<Guid, Guid>(i.IdentityId, ur))));
+                    await DeleteKeycloakUsers(data.Identities.Select(i => i.IdentityId));
+                }
+                identityProviderRepository.DeleteCompanyIdentityProvider(data.CompanyId, identityProviderId);
+                userRepository.RemoveCompanyUserAssignedIdentityProviders(data.Identities.Where(x => x.IsLinkedCompanyUser).Select(x => (x.IdentityId, identityProviderId)));
+
+                foreach (var userData in data.Identities.Where(i => i is { IsInUserRoles: true, Userdata.UserMail: not null }).Select(i => i.Userdata))
+                {
+                    var userName = string.Join(" ", new[] { userData.FirstName, userData.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+                    var mailParameters = new Dictionary<string, string>
+                    {
+                        {"idpAlias", alias ?? identityProviderId.ToString()},
+                        {"ownerCompanyName", ownerCompanyName},
+                        { "username", string.IsNullOrWhiteSpace(userName) ? "User" : userName }
+                    };
+                    yield return (userData.UserMail!, mailParameters);
+                }
+            }
+        }
+
+        var mailTemplates = Enumerable.Repeat("DeleteManagedIdp", 1);
+
+        foreach (var mailData in await DeleteLinksReturningMaildata().ToListAsync().ConfigureAwait(false))
+        {
+            await _mailingService.SendMails(mailData.Email, mailData.Parameters, mailTemplates).ConfigureAwait(false);
+        }
+    }
+
+    private async Task DeleteKeycloakUsers(IEnumerable<Guid> identityIds)
+    {
+        foreach (var identityId in identityIds)
+        {
+            string? userId;
+            if ((userId = await _provisioningManager.GetUserByUserName(identityId.ToString()).ConfigureAwait(false)) != null)
+            {
+                await _provisioningManager.DeleteCentralRealmUserAsync(userId).ConfigureAwait(false);
             }
         }
     }
