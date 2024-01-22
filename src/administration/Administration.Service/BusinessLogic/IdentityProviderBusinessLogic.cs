@@ -411,7 +411,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     companyRepository.AttachAndModifyCompany(data.CompanyId,
                         c => { c.CompanyStatusId = data.CompanyStatusId; },
                         c => { c.CompanyStatusId = CompanyStatusId.INACTIVE; });
-                    userRepository.AttachAndModifyIdentities(data.Identities.Select(x => new ValueTuple<Guid, Action<Identity>>(x.IdentityId, identity => { identity.UserStatusId = UserStatusId.INACTIVE; })));
+                    userRepository.AttachAndModifyIdentities(data.Identities.Select(x => new ValueTuple<Guid, Action<Identity>?, Action<Identity>>(x.IdentityId, null, identity => { identity.UserStatusId = UserStatusId.INACTIVE; })));
                     userRolesRepository.DeleteCompanyUserAssignedRoles(data.Identities.SelectMany(i => i.UserRoleIds.Select(ur => new ValueTuple<Guid, Guid>(i.IdentityId, ur))));
                     await DeleteKeycloakUsers(data.Identities.Select(i => i.IdentityId));
                 }

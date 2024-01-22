@@ -446,16 +446,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.SkipProcessSteps(context, new[] { ProcessStepTypeId.VERIFY_REGISTRATION });
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
-            context,
-            null,
-            entry =>
-            {
-                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                entry.Comment = comment;
-            },
-            null);
-
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         foreach (var (idpId, idpAlias, idpType, linkedUserIds) in idps)
@@ -495,10 +485,17 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         userRepository.AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>?, Action<Identity>>(userId, null, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
 
-        if (networkRegistrationProcessId != null)
-        {
-            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStep(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, networkRegistrationProcessId.Value);
-        }
+        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            context,
+            null,
+            entry =>
+            {
+                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
+                entry.Comment = comment;
+            },
+            networkRegistrationProcessId == null
+                ? null
+                : new[] { ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await PostRegistrationCancelEmailAsync(applicationId, companyName, comment).ConfigureAwait(false);
