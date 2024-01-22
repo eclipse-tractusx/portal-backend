@@ -860,13 +860,18 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(company.Id, identityProviderId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails("test@example.org", A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == "DeleteManagedIdp")))
             .MustHaveHappenedOnceExactly();
         company.CompanyStatusId.Should().Be(multipleIdps ? CompanyStatusId.ACTIVE : CompanyStatusId.INACTIVE);
-        if (!multipleIdps)
+        if (multipleIdps)
+        {
+            identity.UserStatusId.Should().Be(UserStatusId.ACTIVE);
+            A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
+        }
+        else
         {
             identity.UserStatusId.Should().Be(UserStatusId.INACTIVE);
+            A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappenedOnceExactly();
         }
     }
 
