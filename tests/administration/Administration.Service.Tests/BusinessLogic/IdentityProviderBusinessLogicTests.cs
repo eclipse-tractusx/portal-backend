@@ -818,6 +818,8 @@ public class IdentityProviderBusinessLogicTests
         var role2 = Guid.NewGuid();
         var company = _fixture.Build<Company>().With(x => x.CompanyStatusId, CompanyStatusId.ACTIVE).Create();
         var identity = _fixture.Build<Identity>().With(x => x.UserStatusId, UserStatusId.ACTIVE).Create();
+        var userRoleIds = _fixture.CreateMany<Guid>(3);
+        var keycloakUserId = _fixture.Create<string>();
         A.CallTo(() => _identity.CompanyId).Returns(company.Id);
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
@@ -832,10 +834,11 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "test", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.MANAGED, Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<string>>(company.Id, Enumerable.Empty<string>()), 1), false, string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(false);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(identity.Id.ToString())).Returns((string?)keycloakUserId);
         A.CallTo(() => _roleBaseMailService.GetRoleData(_options.Value.DeleteIdpRoles)).Returns(new List<Guid> { role1, role2 });
         A.CallTo(() => _identityProviderRepository.GetManagedIdpLinkedData(identityProviderId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2 && x.Contains(role1) && x.Contains(role2)))).Returns(
             new ValueTuple<Guid, CompanyStatusId, bool, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser, (string? UserMail, string? FirstName, string? LastName) Userdata, bool IsInUserRoles, IEnumerable<Guid> UserRoleIds)>>[] {
-                new (company.Id, CompanyStatusId.ACTIVE, multipleIdps, Enumerable.Repeat((identity.Id, true, new ValueTuple<string?, string?, string?>("test@example.org", "Test", "User"), true, _fixture.CreateMany<Guid>(5)), 1))
+                new (company.Id, CompanyStatusId.ACTIVE, multipleIdps, Enumerable.Repeat((identity.Id, true, new ValueTuple<string?, string?, string?>("test@example.org", "Test", "User"), true, userRoleIds), 1))
             }.ToAsyncEnumerable());
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(company.Id, A<Action<Company>>._, A<Action<Company>>._))
             .Invokes((Guid _, Action<Company>? initialize, Action<Company> modify) =>
@@ -867,11 +870,13 @@ public class IdentityProviderBusinessLogicTests
         {
             identity.UserStatusId.Should().Be(UserStatusId.ACTIVE);
             A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
+            A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustNotHaveHappened();
         }
         else
         {
             identity.UserStatusId.Should().Be(UserStatusId.INACTIVE);
-            A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>.That.Matches(x => x.Count() == userRoleIds.Count() && x.All(x => x.Item1 == identity.Id) && userRoleIds.All(r => x.Any(x => x.Item2 == r))))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(keycloakUserId)).MustHaveHappenedOnceExactly();
         }
     }
 
