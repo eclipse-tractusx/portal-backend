@@ -156,9 +156,11 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                     i => { i.InvitationStatusId = x.StatusId; },
                     i => { i.InvitationStatusId = InvitationStatusId.DECLINED; })));
 
-        var context = processData.CreateManualProcessData(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, _portalRepositories, () => $"applicationId {applicationId}", false);
+        var context = processData.CreateManualProcessData(ProcessStepTypeId.MANUAL_DECLINE, _portalRepositories, () => $"applicationId {applicationId}");
         context.SkipProcessSteps(context.ProcessSteps.Where(x => x.ProcessStepStatusId == ProcessStepStatusId.TODO).Select(x => x.ProcessStepTypeId));
         context.ScheduleProcessSteps(Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1));
+        context.FinalizeProcessStep();
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

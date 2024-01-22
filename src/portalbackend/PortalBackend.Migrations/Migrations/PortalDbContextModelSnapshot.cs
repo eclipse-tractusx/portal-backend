@@ -5958,11 +5958,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 208,
-                            Label = "REMOVE_KEYCLOAK_USERS"
+                            Label = "MANUAL_DECLINE"
                         },
                         new
                         {
                             Id = 209,
+                            Label = "REMOVE_KEYCLOAK_USERS"
+                        },
+                        new
+                        {
+                            Id = 210,
                             Label = "RETRIGGER_REMOVE_KEYCLOAK_USERS"
                         });
                 });

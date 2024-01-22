@@ -54,7 +54,7 @@ public class NetworkRegistrationProcessHelper : INetworkRegistrationProcessHelpe
             throw new NotFoundException($"external registration {externalId} does not exist");
         }
 
-        var context = processData.CreateManualProcessData(stepToTrigger, _portalRepositories, () => $"externalId {externalId}", true);
+        var context = processData.CreateManualProcessData(stepToTrigger, _portalRepositories, () => $"externalId {externalId}");
 
         context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
         context.FinalizeProcessStep();

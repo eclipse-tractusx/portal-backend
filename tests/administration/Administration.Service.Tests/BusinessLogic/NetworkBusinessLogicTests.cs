@@ -617,10 +617,10 @@ public class NetworkBusinessLogicTests
                 processes.Add(process);
                 return process;
             });
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
-            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+                processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
             });
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._, A<Action<CompanyApplication>>._))
             .ReturnsLazily((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
@@ -656,10 +656,9 @@ public class NetworkBusinessLogicTests
         processes.Should().ContainSingle()
             .Which.Should().Match<Process>(x =>
                 x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
-        processSteps.Should().ContainSingle()
-            .Which.Should().Match<ProcessStep>(x =>
-                x.ProcessStepStatusId == ProcessStepStatusId.TODO &&
-                x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER);
+        processSteps.Should().HaveCount(2).And.Satisfy(
+            x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER,
+            x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.MANUAL_DECLINE);
         companyApplications.Should().ContainSingle()
             .Which.Should().Match<CompanyApplication>(x =>
                 x.CompanyId == newCompanyId &&

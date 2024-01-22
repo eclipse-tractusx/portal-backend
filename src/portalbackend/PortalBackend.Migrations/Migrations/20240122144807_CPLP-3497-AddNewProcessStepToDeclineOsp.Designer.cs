@@ -31,7 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240117095828_CPLP-3497-AddNewProcessStepToDeclineOsp")]
+    [Migration("20240122144807_CPLP-3497-AddNewProcessStepToDeclineOsp")]
     partial class CPLP3497AddNewProcessStepToDeclineOsp
     {
         /// <inheritdoc />
@@ -5961,11 +5961,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 208,
-                            Label = "REMOVE_KEYCLOAK_USERS"
+                            Label = "MANUAL_DECLINE"
                         },
                         new
                         {
                             Id = 209,
+                            Label = "REMOVE_KEYCLOAK_USERS"
+                        },
+                        new
+                        {
+                            Id = 210,
                             Label = "RETRIGGER_REMOVE_KEYCLOAK_USERS"
                         });
                 });

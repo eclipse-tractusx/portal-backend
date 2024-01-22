@@ -457,7 +457,10 @@ public class NetworkBusinessLogicTests
         var company = new Company(IdentityCompanyId, "company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow);
         var invitation = _fixture.Build<Invitation>().With(x => x.InvitationStatusId, InvitationStatusId.PENDING).Create();
         var identityId = Guid.NewGuid();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var currentVersion = Guid.NewGuid();
+        var process = _fixture.Build<Process>()
+            .With(x => x.LockExpiryDate, (DateTimeOffset?)null)
+            .With(x => x.Version, currentVersion).Create();
         var existingProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
         var data = _fixture.Create<DeclineOspData>();
         A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(application.Id, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
@@ -522,6 +525,7 @@ public class NetworkBusinessLogicTests
         invitation.InvitationStatusId.Should().Be(InvitationStatusId.DECLINED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.REJECTED);
         existingProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
+        process.Version.Should().NotBe(currentVersion);
     }
 
     #endregion
