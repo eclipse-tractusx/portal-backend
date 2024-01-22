@@ -48,4 +48,17 @@ public class InvitationRepository : IInvitationRepository
         _dbContext.Invitations
             .Where(invitation => invitation.CompanyUserId == companyUserId)
             .SingleOrDefaultAsync();
+
+    public void AttachAndModifyInvitations(IEnumerable<(Guid InvitationId, Action<Invitation>? Initialize, Action<Invitation> Modify)> invitations)
+    {
+        var initial = invitations.Select(x =>
+            {
+                var invitation = new Invitation(x.InvitationId, Guid.Empty, Guid.Empty, default, default);
+                x.Initialize?.Invoke(invitation);
+                return (Invitation: invitation, modify: x.Modify);
+            }
+        ).ToList();
+        _dbContext.AttachRange(initial.Select(x => x.Invitation));
+        initial.ForEach(x => x.modify(x.Invitation));
+    }
 }

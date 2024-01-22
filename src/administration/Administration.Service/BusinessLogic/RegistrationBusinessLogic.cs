@@ -432,7 +432,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
 
-        var (companyId, companyName, processId, idps, companyUserIds) = result;
+        var (companyId, companyName, networkRegistrationProcessId, idps, companyUserIds) = result;
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -445,16 +445,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .ConfigureAwait(false);
 
         _checklistService.SkipProcessSteps(context, new[] { ProcessStepTypeId.VERIFY_REGISTRATION });
-
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
-            context,
-            null,
-            entry =>
-            {
-                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                entry.Comment = comment;
-            },
-            null);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
@@ -493,12 +483,19 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
             }
         }
+        userRepository.AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>?, Action<Identity>>(userId, null, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
 
-        userRepository.AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>>(userId, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
-        if (processId != null)
-        {
-            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStep(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepStatusId.TODO, processId.Value);
-        }
+        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            context,
+            null,
+            entry =>
+            {
+                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
+                entry.Comment = comment;
+            },
+            networkRegistrationProcessId == null
+                ? null
+                : new[] { ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await PostRegistrationCancelEmailAsync(applicationId, companyName, comment).ConfigureAwait(false);

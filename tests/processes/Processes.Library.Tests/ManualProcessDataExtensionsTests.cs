@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -248,7 +247,7 @@ public class ManualProcessDataExtensionsTests
     {
         // Arrange
         var process = _fixture.Create<Process>();
-        var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
+        var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(4).ToImmutableArray();
         var before = DateTimeOffset.UtcNow.AddDays(-1);
         var processSteps0 = new ProcessStep[]
             {
@@ -268,18 +267,27 @@ public class ManualProcessDataExtensionsTests
                 new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before)
             };
+        var processSteps3 = new ProcessStep[]
+            {
+                new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before)
+            };
 
         var processSteps = new[]
             {
                 processSteps0[0],
                 processSteps1[0],
                 processSteps2[0],
+                processSteps3[0],
                 processSteps0[1],
                 processSteps1[1],
                 processSteps2[1],
+                processSteps3[1],
                 processSteps0[2],
                 processSteps1[2],
                 processSteps2[2],
+                processSteps3[2],
             };
 
         var modifiedProcessSteps = new List<ProcessStep>();
@@ -297,13 +305,14 @@ public class ManualProcessDataExtensionsTests
             });
 
         var sut = _fixture.Build<ManualProcessStepData>()
+            .With(x => x.ProcessStepTypeId, stepTypeIds[3])
             .With(x => x.Process, process)
             .With(x => x.PortalRepositories, _portalRepositories)
             .With(x => x.ProcessSteps, processSteps)
             .Create();
 
         // Act
-        sut.SkipProcessSteps(new ProcessStepTypeId[] { stepTypeIds[1], stepTypeIds[2] });
+        sut.SkipProcessSteps(new ProcessStepTypeId[] { stepTypeIds[1], stepTypeIds[2], stepTypeIds[3] });
 
         // Assert
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)>>._))
@@ -316,6 +325,93 @@ public class ManualProcessDataExtensionsTests
             x => processSteps2.Any(step => step.Id == x.Id) && x.ProcessStepStatusId == ProcessStepStatusId.SKIPPED && x.DateLastChanged != before,
             x => processSteps2.Any(step => step.Id == x.Id) && x.ProcessStepStatusId == ProcessStepStatusId.DUPLICATE && x.DateLastChanged != before,
             x => processSteps2.Any(step => step.Id == x.Id) && x.ProcessStepStatusId == ProcessStepStatusId.DUPLICATE && x.DateLastChanged != before
+        );
+    }
+
+    #endregion
+
+    #region SkipProcessStepsExcept
+
+    [Fact]
+    public void SkipProcessStepsExcept_ReturnsExpected()
+    {
+        // Arrange
+        var process = _fixture.Create<Process>();
+        var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(4).ToImmutableArray();
+        var before = DateTimeOffset.UtcNow.AddDays(-1);
+        var processSteps0 = new ProcessStep[]
+            {
+                new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before)
+            };
+        var processSteps1 = new ProcessStep[]
+            {
+                new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before)
+            };
+        var processSteps2 = new ProcessStep[]
+            {
+                new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before)
+            };
+        var processSteps3 = new ProcessStep[]
+            {
+                new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before),
+                new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before)
+            };
+
+        var processSteps = new[]
+            {
+                processSteps0[0],
+                processSteps1[0],
+                processSteps2[0],
+                processSteps3[0],
+                processSteps0[1],
+                processSteps1[1],
+                processSteps2[1],
+                processSteps3[1],
+                processSteps0[2],
+                processSteps1[2],
+                processSteps2[2],
+                processSteps3[2],
+            };
+
+        var modifiedProcessSteps = new List<ProcessStep>();
+
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)>>._))
+            .Invokes((IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)> processStepIdInitializeModify) =>
+            {
+                foreach (var (stepId, initialize, modify) in processStepIdInitializeModify)
+                {
+                    var step = new ProcessStep(stepId, default, default, Guid.Empty, default);
+                    initialize?.Invoke(step);
+                    modify(step);
+                    modifiedProcessSteps.Add(step);
+                }
+            });
+
+        var sut = _fixture.Build<ManualProcessStepData>()
+            .With(x => x.ProcessStepTypeId, stepTypeIds[3])
+            .With(x => x.Process, process)
+            .With(x => x.PortalRepositories, _portalRepositories)
+            .With(x => x.ProcessSteps, processSteps)
+            .Create();
+
+        // Act
+        sut.SkipProcessStepsExcept(new ProcessStepTypeId[] { stepTypeIds[1], stepTypeIds[2] });
+
+        // Assert
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)>>._))
+            .MustHaveHappenedOnceExactly();
+
+        modifiedProcessSteps.Should().HaveCount(3).And.Satisfy(
+            x => processSteps0.Any(step => step.Id == x.Id) && x.ProcessStepStatusId == ProcessStepStatusId.SKIPPED && x.DateLastChanged != before,
+            x => processSteps0.Any(step => step.Id == x.Id) && x.ProcessStepStatusId == ProcessStepStatusId.DUPLICATE && x.DateLastChanged != before,
+            x => processSteps0.Any(step => step.Id == x.Id) && x.ProcessStepStatusId == ProcessStepStatusId.DUPLICATE && x.DateLastChanged != before
         );
     }
 

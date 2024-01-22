@@ -39,7 +39,8 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
         ProcessStepTypeId.SYNCHRONIZE_USER,
         ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,
         ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
-        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED);
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED,
+        ProcessStepTypeId.REMOVE_KEYCLOAK_USERS);
 
     private Guid _networkRegistrationId;
 
@@ -93,6 +94,8 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
                 ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, cancellationToken)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, cancellationToken)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.REMOVE_KEYCLOAK_USERS => await _networkRegistrationHandler.RemoveKeycloakUser(_networkRegistrationId)
                     .ConfigureAwait(false),
                 _ => (null, ProcessStepStatusId.TODO, false, null)
             };

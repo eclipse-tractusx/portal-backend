@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,7 +19,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum CompanyApplicationStatusId : int
+public enum CompanyApplicationStatusId
 {
     CREATED = 1,
     ADD_COMPANY_DATA = 2,
@@ -30,5 +29,6 @@ public enum CompanyApplicationStatusId : int
     VERIFY = 6,
     SUBMITTED = 7,
     CONFIRMED = 8,
-    DECLINED = 9
+    DECLINED = 9,
+    CANCELLED_BY_CUSTOMER = 10
 }

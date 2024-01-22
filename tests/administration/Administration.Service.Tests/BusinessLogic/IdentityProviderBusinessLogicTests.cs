@@ -846,10 +846,11 @@ public class IdentityProviderBusinessLogicTests
                 initialize?.Invoke(company);
                 modify(company);
             });
-        A.CallTo(() => _userRepository.AttachAndModifyIdentities(A<IEnumerable<ValueTuple<Guid, Action<Identity>>>>._))
-            .Invokes((IEnumerable<(Guid IdentityId, Action<Identity> Modify)> identityData) =>
+        A.CallTo(() => _userRepository.AttachAndModifyIdentities(A<IEnumerable<ValueTuple<Guid, Action<Identity>?, Action<Identity>>>>._))
+            .Invokes((IEnumerable<(Guid IdentityId, Action<Identity>? Initialize, Action<Identity> Modify)> identityData) =>
             {
-                var initial = identityData.Select(x => (Identity: identity, x.Modify)).ToList();
+                var initial = identityData.Select(x => (Identity: identity, x.Initialize, x.Modify)).ToList();
+                initial.ForEach(x => x.Initialize?.Invoke(x.Identity));
                 initial.ForEach(x => x.Modify(x.Identity));
             });
 
