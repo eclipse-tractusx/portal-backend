@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
@@ -41,6 +42,7 @@ WebApplicationBuildRunner
     {
         builder.Services
             .AddMailingAndTemplateManager(builder.Configuration)
+            .AddMailingService()
             .AddPortalRepositories(builder.Configuration)
             .AddProvisioningManager(builder.Configuration);
 

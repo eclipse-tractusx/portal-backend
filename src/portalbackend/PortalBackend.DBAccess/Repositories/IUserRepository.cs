@@ -121,6 +121,7 @@ public interface IUserRepository
 
     Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify);
     CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName);
+    void RemoveCompanyUserAssignedIdentityProviders(IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)> companyUserIdentityProviderIds);
     IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId);
     void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity> Modify)> identityData);
 }
