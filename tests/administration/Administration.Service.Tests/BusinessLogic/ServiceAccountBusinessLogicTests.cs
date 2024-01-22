@@ -390,9 +390,9 @@ public class ServiceAccountBusinessLogicTests
     #region GetOwnCompanyServiceAccountsDataAsync
 
     [Theory]
-    [InlineData(UserStatusId.ACTIVE, true)]
-    [InlineData(UserStatusId.INACTIVE, false)]
-    public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData(UserStatusId userStatusId, bool isUserStatusActive)
+    [InlineData(UserStatusId.ACTIVE, false)]
+    [InlineData(UserStatusId.INACTIVE, true)]
+    public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData(UserStatusId userStatusId, bool isUserInactive)
     {
         // Arrange
         var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
@@ -403,7 +403,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserStatusActive).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
