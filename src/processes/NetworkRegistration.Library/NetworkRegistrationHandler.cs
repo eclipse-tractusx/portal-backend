@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -168,5 +169,49 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             };
             await _mailingService.SendMails(receiver, mailParameters, MailTemplates).ConfigureAwait(false);
         }
+    }
+
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> RemoveKeycloakUser(Guid networkRegistrationId)
+    {
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        var companyUserIds = userRepository.GetNextIdentitiesForNetworkRegistration(networkRegistrationId, new[]
+        {
+            UserStatusId.ACTIVE,
+            UserStatusId.PENDING
+        });
+        await using var enumerator = companyUserIds.GetAsyncEnumerator();
+        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+        {
+            return (null, ProcessStepStatusId.DONE, false, "no users found to remove from keycloak");
+        }
+
+        var companyUserId = enumerator.Current;
+        string? iamUserId;
+        IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
+        try
+        {
+            iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString())
+                .ConfigureAwait(false);
+            if (iamUserId == null)
+            {
+                throw new KeycloakEntityNotFoundException($"no user found for user {companyUserId}");
+            }
+        }
+        catch (KeycloakEntityNotFoundException) // we will ignore a not found exception and proceed with the next identity
+        {
+            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, null, x => { x.UserStatusId = UserStatusId.INACTIVE; });
+            nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
+                ? Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1) // in case there are further company users eligible for remove reschedule the same stepTypeId
+                : null;
+            return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"no user found for company user id {companyUserId}");
+        }
+
+        await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, null, x => { x.UserStatusId = UserStatusId.INACTIVE; });
+
+        nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
+            ? Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1) // in case there are further company users eligible for remove reschedule the same stepTypeId
+            : null;
+        return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"deleted user {iamUserId} for company user {companyUserId}");
     }
 }

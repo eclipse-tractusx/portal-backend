@@ -76,7 +76,11 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             }).Id;
 
         var processId = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION).Id;
-        processStepRepository.CreateProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId);
+        processStepRepository.CreateProcessStepRange(new[]
+        {
+            (ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId),
+            (ProcessStepTypeId.MANUAL_DECLINE_OSP, ProcessStepStatusId.TODO, processId)
+        });
 
         networkRepository.CreateNetworkRegistration(data.ExternalId, companyId, processId, ownerCompanyId, applicationId);
 

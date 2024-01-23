@@ -451,15 +451,15 @@ public class ApplicationRepository : IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the company id</returns>
-    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(Guid IdentityProviderId, string IamAlias, IdentityProviderTypeId TypeId)> Idps, IEnumerable<Guid> CompanyUserIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(Guid IdentityProviderId, string IamAlias, IdentityProviderTypeId TypeId, IEnumerable<Guid> LinkedCompanyUserIds)> Idps, IEnumerable<Guid> CompanyUserIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .AsSplitQuery()
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(x => new ValueTuple<Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId)>, IEnumerable<Guid>>(
+            .Select(x => new ValueTuple<Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId, IEnumerable<Guid>)>, IEnumerable<Guid>>(
                 x.CompanyId,
                 x.Company!.Name,
                 x.Company.NetworkRegistration!.ProcessId,
-                x.Company.IdentityProviders.Select(idp => new ValueTuple<Guid, string, IdentityProviderTypeId>(idp.Id, idp.IamIdentityProvider!.IamIdpAlias, idp.IdentityProviderTypeId)),
+                x.Company.IdentityProviders.Select(idp => new ValueTuple<Guid, string, IdentityProviderTypeId, IEnumerable<Guid>>(idp.Id, idp.IamIdentityProvider!.IamIdpAlias, idp.IdentityProviderTypeId, idp.CompanyUserAssignedIdentityProviders.Select(assigned => assigned.CompanyUserId))),
                 x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER && i.UserStatusId != UserStatusId.DELETED).Select(i => i.Id)))
             .SingleOrDefaultAsync();
 

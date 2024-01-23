@@ -46,6 +46,9 @@ public class InvitationSettings
 
     [Required(AllowEmptyStrings = false)]
     public string PasswordResendAddress { get; set; }
+
+    [Required(AllowEmptyStrings = false)]
+    public string CloseApplicationAddress { get; set; } = null!;
 }
 
 public static class InvitationSettingsExtension

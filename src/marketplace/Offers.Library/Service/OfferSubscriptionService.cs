@@ -87,7 +87,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, _identityData.IdentityId, content, serviceManagerRoles).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        await _roleBaseMailService.RoleBaseSendMail(
+        await _roleBaseMailService.RoleBaseSendMailForCompany(
             notificationRecipients,
             new[]
             {

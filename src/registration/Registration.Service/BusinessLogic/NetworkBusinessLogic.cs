@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,9 +21,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Collections.Immutable;
 
@@ -105,6 +107,59 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                 ca.ChecklistProcessId = processId;
             });
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public async Task DeclineOsp(Guid applicationId, DeclineOspData declineData)
+    {
+        var companyId = _identityData.CompanyId;
+        var validStatus = new[]
+        {
+            CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.ADD_COMPANY_DATA,
+            CompanyApplicationStatusId.INVITE_USER, CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
+            CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.VERIFY
+        };
+        var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
+        var data = await networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, validStatus, companyId).ConfigureAwait(false);
+        if (!data.Exists)
+        {
+            throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
+        }
+
+        if (!data.IsValidCompany)
+        {
+            throw new ForbiddenException($"User is not allowed to decline application {applicationId}");
+        }
+
+        if (!data.IsValidTypeId)
+        {
+            throw new ConflictException("Only external registrations can be declined");
+        }
+
+        if (!data.IsValidStatusId)
+        {
+            throw new ConflictException($"The status of the application {applicationId} must be one of the following: {string.Join(",", validStatus.Select(x => x.ToString()))}");
+        }
+
+        var (companyData, invitationData, processData) = data.Data!.Value;
+        var context = processData.CreateManualProcessData(ProcessStepTypeId.MANUAL_DECLINE_OSP, _portalRepositories, () => $"applicationId {applicationId}");
+
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, ca => { ca.ApplicationStatusId = CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER; });
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
+            companyId,
+            c => { c.CompanyStatusId = companyData.CompanyStatusId; },
+            c => { c.CompanyStatusId = CompanyStatusId.REJECTED; });
+
+        _portalRepositories.GetInstance<IInvitationRepository>().AttachAndModifyInvitations(invitationData.Select(
+            x =>
+                new ValueTuple<Guid, Action<Invitation>?, Action<Invitation>>(
+                    x.InvitationId,
+                    i => { i.InvitationStatusId = x.StatusId; },
+                    i => { i.InvitationStatusId = InvitationStatusId.DECLINED; })));
+
+        context.SkipProcessStepsExcept(Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1));
+        context.FinalizeProcessStep();
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
