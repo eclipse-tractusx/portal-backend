@@ -100,7 +100,7 @@ public class ClearinghouseServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("call to external system clearinghouse-post failed with statuscode");
+        ex.Message.Should().Be("call to external system clearinghouse-post failed with statuscode 400");
         ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -122,8 +122,28 @@ public class ClearinghouseServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("call to external system clearinghouse-post failed");
+        ex.Message.Should().Be("call to external system clearinghouse-post failed");
         ex.InnerException.Should().Be(error);
+    }
+
+    [Fact]
+    public async Task TriggerCompanyDataPost_WitErrorContent_LogsContent()
+    {
+        // Arrange
+        var data = _fixture.Create<ClearinghouseTransferData>();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new StringContent("{ \"message\": \"Framework test!\" }"));
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+
+        // Act
+        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Be("call to external system clearinghouse-post failed with statuscode 400 - Message: { \"message\": \"Framework test!\" }");
     }
 
     #endregion

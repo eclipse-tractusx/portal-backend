@@ -42,7 +42,10 @@ public class ClearinghouseService : IClearinghouseService
     {
         var httpClient = await _tokenService.GetAuthorizedClient<ClearinghouseService>(_settings, cancellationToken).ConfigureAwait(false);
 
+        async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
+            (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false)));
+
         await httpClient.PostAsJsonAsync("/api/v1/validation", data, cancellationToken)
-            .CatchingIntoServiceExceptionFor("clearinghouse-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+            .CatchingIntoServiceExceptionFor("clearinghouse-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
     }
 }

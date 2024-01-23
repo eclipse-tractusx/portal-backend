@@ -26,4 +26,5 @@ public interface IIdentityRepository
     Task<Guid> GetActiveCompanyIdByIdentityId(Guid identityId);
     Task<(IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByIdentityId(Guid identityId);
     Task<(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByUserEntityId(string userEntityId);
+    IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdentityIdsWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, IEnumerable<Guid> identityIds);
 }

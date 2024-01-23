@@ -24,4 +24,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Libr
 public interface INetworkRegistrationHandler
 {
     Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> SynchronizeUser(Guid networkRegistrationId);
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> RemoveKeycloakUser(Guid networkRegistrationId);
 }
