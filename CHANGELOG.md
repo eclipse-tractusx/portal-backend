@@ -2,6 +2,30 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.8.0-RC3
+
+### Change
+- External Interface Details
+  - BPDM interface refactored - bpdm push process was updated to support the new interface spec of the bpdm gate service
+  - Clearinghouse interface updated - possible generated clearinghouse service error content is getting saved inside the application comment level 
+- Email Template "cx_admin_invitation" enahnced by added the section and link of the decline url (portal-frontend implementation)
+
+### Feature
+- Onbaording Service Provider Function
+  - enabled deactivation of managed idps (administration service ) via the existing idp status update endpoint
+  - enabled deletion of managed idps (administration service) via the existing idp status update endpoint
+  - added new endpoint to enable customer to decline their own company application which was created by an osp
+
+### Technical Support
+- Release workflow updated by adding additional image tag of type semver
+- Upgraded packages with security vulnerabilities security findings
+
+### Bugfix
+- Endpoint authorization on valid companyId added for
+  - POST: /api/apps/appreleaseprocess/consent/{appId}/agreementConsents
+  - POST: /api/services/servicerelease/consent/{serviceId}/agreementConsents
+- Adjusted endpoint GET: api/administration/serviceaccount/owncompany/serviceaccounts to filter for active service accounts by default if no parameter is submitted
+
 ## 1.8.0-RC2
 
 ### Bugfix
