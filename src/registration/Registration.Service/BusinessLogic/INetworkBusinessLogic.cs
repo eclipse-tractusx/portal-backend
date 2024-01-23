@@ -24,4 +24,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 public interface INetworkBusinessLogic
 {
     Task Submit(PartnerSubmitData submitData);
+    Task DeclineOsp(Guid applicationId, DeclineOspData declineData);
 }

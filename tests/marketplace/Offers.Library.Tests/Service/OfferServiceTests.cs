@@ -885,7 +885,7 @@ public class OfferServiceTests
             A.CallTo(() => _offerSetupService.ActivateSingleInstanceAppAsync(offer.Id))
                 .MustNotHaveHappened();
         }
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForCompany(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(recipients),
             A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
             userNameParameter,
@@ -1221,7 +1221,7 @@ public class OfferServiceTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMail(
+        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForCompany(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(recipients),
             A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
             userNameParameter,

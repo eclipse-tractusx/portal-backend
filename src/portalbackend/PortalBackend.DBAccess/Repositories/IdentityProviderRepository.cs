@@ -128,18 +128,25 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                     ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool IsOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId, bool queryAliase) =>
+    public Task<(bool IsOwner, string? Alias, IdentityProviderCategoryId IdentityProviderCategory, IdentityProviderTypeId IdentityProviderTypeId, IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>? CompanyIdAliase, bool CompanyUsersLinked, string IdpOwnerName)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, Guid companyId, bool queryAliase) =>
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>
-                new ValueTuple<bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?>(
+                new ValueTuple<bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>?, bool, string>(
                     identityProvider.OwnerId == companyId,
                     identityProvider.IamIdentityProvider!.IamIdpAlias,
                     identityProvider.IdentityProviderCategoryId,
                     identityProvider.IdentityProviderTypeId,
                     queryAliase
-                        ? identityProvider.Companies.Select(c => new ValueTuple<Guid, IEnumerable<string>>(c.Id, c.IdentityProviders.Where(i => i.IamIdentityProvider != null).Select(i => i.IamIdentityProvider!.IamIdpAlias)))
-                        : null
+                        ? identityProvider.Companies
+                            .Select(c => new ValueTuple<Guid, IEnumerable<string>>(
+                                c.Id,
+                                c.IdentityProviders
+                                    .Where(i => i.IamIdentityProvider != null)
+                                    .Select(i => i.IamIdentityProvider!.IamIdpAlias)))
+                        : null,
+                    identityProvider.CompanyUserAssignedIdentityProviders.Any(),
+                    identityProvider.Owner!.Name
                 ))
             .SingleOrDefaultAsync();
 
@@ -257,4 +264,40 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                         s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
                         s.IdentityProvider.IdentityProviderTypeId == IdentityProviderTypeId.SHARED)))
                 .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<Guid> GetIdpLinkedCompanyUserIds(Guid identityProviderId, Guid companyId) =>
+        _context.CompanyUserAssignedIdentityProviders
+            .Where(x =>
+                x.IdentityProviderId == identityProviderId &&
+                x.CompanyUser!.Identity!.CompanyId == companyId)
+            .Select(x => x.CompanyUserId)
+            .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, bool HasMoreIdentityProviders, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser, (string? UserMail, string? FirstName, string? LastName) Userdata, bool IsInUserRoles, IEnumerable<Guid> UserRoleIds)> Identities)> GetManagedIdpLinkedData(Guid identityProviderId, IEnumerable<Guid> userRoleIds) =>
+        _context.IdentityProviders
+            .AsSplitQuery()
+            .Where(x => x.Id == identityProviderId)
+            .SelectMany(x => x.Companies.Select(c => new ValueTuple<Guid, CompanyStatusId, bool, IEnumerable<(Guid, bool, ValueTuple<string?, string?, string?>, bool, IEnumerable<Guid>)>>(
+                c.Id,
+                c.CompanyStatusId,
+                c.IdentityProviders.Any(idp => idp.Id != identityProviderId),
+                c.Identities
+                    .Select(i => new ValueTuple<Guid, bool, ValueTuple<string?, string?, string?>, bool, IEnumerable<Guid>>(
+                    i.Id,
+                    i.CompanyUser!.CompanyUserAssignedIdentityProviders.Any(cuIdp => cuIdp.IdentityProviderId == identityProviderId),
+                    new ValueTuple<string?, string?, string?>(i.CompanyUser.Email, i.CompanyUser.Firstname, i.CompanyUser.Lastname),
+                    i.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)),
+                    i.IdentityAssignedRoles.Select(u => u.UserRoleId))))))
+            .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdpWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, Guid identityProviderId) =>
+        _context.CompanyUsers
+            .Where(x =>
+                x.Identity!.Company!.IdentityProviders.Any(idp => idp.Id == identityProviderId && idp.OwnerId != x.Identity!.CompanyId) &&
+                x.Identity!.UserStatusId == UserStatusId.ACTIVE &&
+                x.Identity!.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)) &&
+                x.Email != null)
+            .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
+            .ToAsyncEnumerable();
 }

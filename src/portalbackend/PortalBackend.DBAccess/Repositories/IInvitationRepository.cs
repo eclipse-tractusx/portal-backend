@@ -26,4 +26,5 @@ public interface IInvitationRepository
 {
     public IAsyncEnumerable<(InvitationStatusId InvitationStatus, string? EmailId, IEnumerable<string> Roles)> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
     Task<Invitation?> GetInvitationStatusAsync(Guid companyUserId);
+    void AttachAndModifyInvitations(IEnumerable<(Guid InvitationId, Action<Invitation>? Initialize, Action<Invitation> Modify)> invitations);
 }

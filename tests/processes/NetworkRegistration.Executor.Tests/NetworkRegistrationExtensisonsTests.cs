@@ -26,6 +26,7 @@ public class NetworkRegistrationExtensisonsTests
 {
     [Theory]
     [InlineData(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER)]
+    [InlineData(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS)]
     [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED)]
     [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED)]
     [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED)]

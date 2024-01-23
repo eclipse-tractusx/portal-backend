@@ -522,7 +522,7 @@ public class OfferService : IOfferService
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        await _roleBaseMailService.RoleBaseSendMail(
+        await _roleBaseMailService.RoleBaseSendMailForCompany(
             notificationRecipients,
             new[]
             {
@@ -597,7 +597,7 @@ public class OfferService : IOfferService
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        await _roleBaseMailService.RoleBaseSendMail(
+        await _roleBaseMailService.RoleBaseSendMailForCompany(
             notificationRecipients,
             new[]
             {

@@ -49,7 +49,7 @@ public class NetworkController : ControllerBase
     /// </summary>
     /// <param name="data">The agreements for the companyRoles</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/registration/network/partnerRegistration/submit
+    /// Example: POST: api/registration/network/partnerRegistration/submit
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">No registration found for the externalId.</response>
     [HttpPost]
@@ -63,5 +63,24 @@ public class NetworkController : ControllerBase
     {
         await _logic.Submit(data).ConfigureAwait(false);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Declines the osp registration
+    /// </summary>
+    /// <param name="applicationId">Id of the company application</param>
+    /// <param name="declineData">Data with the information to decline</param>
+    /// Example: POST: api/registration/network/{externalId}/decline
+    /// <response code="200">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Roles = "decline_partner_registration")]
+    [Route("decline")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<OkResult> DeclineOsp([FromRoute] Guid applicationId, [FromBody] DeclineOspData declineData)
+    {
+        await _logic.DeclineOsp(applicationId, declineData).ConfigureAwait(false);
+        return this.Ok();
     }
 }

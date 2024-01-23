@@ -144,6 +144,7 @@ public class ServiceReleaseController : ControllerBase
     [Route("consent/{serviceId}/agreementConsents")]
     [Authorize(Roles = "add_service_offering")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IEnumerable<ConsentStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]

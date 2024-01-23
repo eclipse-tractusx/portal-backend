@@ -147,6 +147,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
         /// Email template for the welcome email of an osp registered company
         /// </summary>
         [Path("osp_welcome_email.html")]
-        OspWelcomeMail
+        OspWelcomeMail,
+
+        /// <summary>
+        /// Email template for the welcome email of an osp registered company
+        /// </summary>
+        [Path("deactivate_managed_idp.html")]
+        DeactivateManagedIdp,
+
+        /// <summary>
+        /// Email template for the welcome email of an osp registered company
+        /// </summary>
+        [Path("delete_managed_idp.html")]
+        DeleteManagedIdp
     }
 }

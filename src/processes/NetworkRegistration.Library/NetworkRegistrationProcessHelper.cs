@@ -43,6 +43,7 @@ public class NetworkRegistrationProcessHelper : INetworkRegistrationProcessHelpe
             ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED => ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED,
             ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED => ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
             ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED => ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,
+            ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS => ProcessStepTypeId.REMOVE_KEYCLOAK_USERS,
             _ => throw new ConflictException($"Step {stepToTrigger} is not retriggerable")
         };
 

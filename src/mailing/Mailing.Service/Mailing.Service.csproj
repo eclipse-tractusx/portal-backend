@@ -18,16 +18,18 @@
 - SPDX-License-Identifier: Apache-2.0
 -->
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Mailing.Service</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Mailing.Service</RootNamespace>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\Mailing.SendMail\Mailing.SendMail.csproj" />
   </ItemGroup>
-  <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Mailing.Service</AssemblyName>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
 </Project>
