@@ -7,18 +7,18 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Change
 - External Interface Details
   - BPDM interface refactored - bpdm push process was updated to support the new interface spec of the bpdm gate service
-  - Clearinghouse interface updated - possible generated clearinghouse service error content is getting saved inside the application comment level 
-- Email Template "cx_admin_invitation" enahnced by added the section and link of the decline url (portal-frontend implementation)
+  - Clearinghouse interface updated - possible generated clearinghouse service error content is getting saved inside the application comment level
+- Email Template "cx_admin_invitation" enhanced by adding the section and link of the decline url (portal-frontend implementation)
 
 ### Feature
-- Onbaording Service Provider Function
-  - enabled deactivation of managed idps (administration service ) via the existing idp status update endpoint
-  - enabled deletion of managed idps (administration service) via the existing idp status update endpoint
+- Onboarding Service Provider Function
+  - enabled deactivation of managed idps (administration service) via the existing idp status update endpoint
+  - enabled deletion of managed idps (administration service) via the existing idp delete endpoint
   - added new endpoint to enable customer to decline their own company application which was created by an osp
 
 ### Technical Support
 - Release workflow updated by adding additional image tag of type semver
-- Upgraded packages with security vulnerabilities security findings
+- Upgraded external packages with security vulnerabilities
 
 ### Bugfix
 - Endpoint authorization on valid companyId added for
