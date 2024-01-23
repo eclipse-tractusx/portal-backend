@@ -44,7 +44,7 @@ public class JwtBearerConfigurationHealthCheckTests
     public async Task CheckHealthAsync_Success_ReturnsExpected()
     {
         // Arrange
-        var config = _fixture.Create<OpenIdConnectConfiguration>();
+        var config = OpenIdConnectConfiguration.Create("{\"authorization_endpoint\": \"https://login.example.org/\",\n  \"token_endpoint\": \"https://login.example.org/oauth2/v2.0/token\",\n  \"token_endpoint_auth_methods_supported\": [\n    \"client_secret_post\",\n    \"private_key_jwt\"\n  ],\n  \"jwks_uri\": \"https://login.example.org/discovery/v2.0/keys\",\n  \"userinfo_endpoint\": \"https://graph.example.org/oidc/userinfo\",\n  \"subject_types_supported\": [\n      \"pairwise\"\n  ] }");
 
         var jsonOptions = new JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
 
