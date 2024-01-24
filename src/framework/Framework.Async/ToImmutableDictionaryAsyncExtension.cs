@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,20 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Collections.Immutable;
 
-public record CompanyUserIdentityProviderProcessTransferData(
-    Guid CompanyUserId,
-    string? FirstName,
-    string? LastName,
-    string? Email,
-    string CompanyName,
-    string? Bpn,
-    IEnumerable<ProviderLinkTransferData> ProviderLinkData
-);
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
-public record ProviderLinkTransferData(
-    string UserName,
-    string? Alias,
-    string ProviderUserId
-);
+public static class ToImmutableDictionaryAsyncExtension
+{
+    public static async Task<IImmutableDictionary<K, V>> ToImmutableDictionaryAsync<K, V>(this IEnumerable<K> keys, Func<K, Task<V>> selector) where K : notnull
+    {
+        var builder = ImmutableDictionary.CreateBuilder<K, V>();
+        builder.AddRange(
+            await Task.WhenAll(
+                keys.Select(async key => new KeyValuePair<K, V>(
+                    key,
+                    await selector(key).ConfigureAwait(false)))).ConfigureAwait(false));
+        return builder.ToImmutableDictionary();
+    }
+}

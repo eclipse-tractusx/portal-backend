@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -31,7 +32,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System.Collections.Concurrent;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -224,9 +224,8 @@ public class UserBusinessLogic : IUserBusinessLogic
         return result.CompanyUserId;
     }
 
-    public async Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(int page, int size, GetOwnCompanyUsersFilter filter)
+    public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(int page, int size, GetOwnCompanyUsersFilter filter)
     {
-        var aliasDisplayNameMapping = new ConcurrentDictionary<string, string>();
         async Task<Pagination.Source<CompanyUserData>?> GetCompanyUserData(int skip, int take)
         {
             var companyData = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserData(
@@ -239,29 +238,39 @@ public class UserBusinessLogic : IUserBusinessLogic
                 filter.Email,
                 _settings.CompanyUserStatusIds
             )(page, size).ConfigureAwait(false);
-            return companyData == null
-                ? null
-                : new Pagination.Source<CompanyUserData>(
-                    companyData.Count,
-                    await Task.WhenAll(companyData.Data.Select(async d => new CompanyUserData(
-                        d.CompanyUserId,
-                        d.UserStatusId,
-                        d.FirstName,
-                        d.LastName,
-                        d.Email,
-                        d.Roles,
-                        await Task.WhenAll(d.IdpUserIds.Select(async x =>
-                            new IdpUserId(
-                                await GetAliasForDisplayNameMapping(aliasDisplayNameMapping, x.Alias ?? throw new ConflictException("Alias must not be null")).ConfigureAwait(false),
-                                x.Alias,
-                                x.UserId))).ConfigureAwait(false)))).ConfigureAwait(false));
+
+            if (companyData == null)
+                return null;
+
+            var displayNames = await companyData.Data
+                .SelectMany(x => x.IdpUserIds)
+                .Select(x => x.Alias ?? throw new ConflictException("Alias must not be null"))
+                .Distinct()
+                .ToImmutableDictionaryAsync(GetDisplayName).ConfigureAwait(false);
+
+            return new Pagination.Source<CompanyUserData>(
+                companyData.Count,
+                companyData.Data.Select(d => new CompanyUserData(
+                    d.CompanyUserId,
+                    d.UserStatusId,
+                    d.FirstName,
+                    d.LastName,
+                    d.Email,
+                    d.Roles,
+                    d.IdpUserIds.Select(x =>
+                        new IdpUserId(
+                            displayNames[x.Alias!],
+                            x.Alias!,
+                            x.UserId)))));
         }
-        return await Pagination.CreateResponseAsync(
+        return Pagination.CreateResponseAsync(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
-            GetCompanyUserData).ConfigureAwait(false);
+            GetCompanyUserData);
     }
+
+    private async Task<string> GetDisplayName(string alias) => await _provisioningManager.GetIdentityProviderDisplayName(alias).ConfigureAwait(false) ?? throw new ConflictException($"Display Name should not be null for alias: {alias}");
 
     [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
     public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
@@ -292,7 +301,6 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new NotFoundException($"no company-user data found for user {userId} in company {companyId}");
         }
 
-        var aliasDisplayNameMapping = new ConcurrentDictionary<string, string>();
         return new CompanyUserDetailData(
             details.CompanyUserId,
             details.CreatedAt,
@@ -302,20 +310,9 @@ public class UserBusinessLogic : IUserBusinessLogic
             details.AssignedRoles,
             await Task.WhenAll(details.IdpUserIds.Select(async x =>
                 new IdpUserId(
-                    await GetAliasForDisplayNameMapping(aliasDisplayNameMapping, x.Alias ?? throw new ConflictException("Alias must not be null")).ConfigureAwait(false),
+                    await GetDisplayName(x.Alias ?? throw new ConflictException("Alias must not be null")).ConfigureAwait(false),
                     x.Alias,
                     x.UserId))).ConfigureAwait(false));
-    }
-
-    private async Task<string> GetAliasForDisplayNameMapping(ConcurrentDictionary<string, string> aliasDisplayNameMapping, string alias)
-    {
-        if (!aliasDisplayNameMapping.TryGetValue(alias, out var displayName))
-        {
-            displayName = await _provisioningManager.GetIdentityProviderDisplayName(alias).ConfigureAwait(false) ?? throw new ConflictException($"Display Name should not be null for alias: {alias}");
-            aliasDisplayNameMapping.TryAdd(alias, displayName);
-        }
-
-        return displayName;
     }
 
     public async Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers)
@@ -357,7 +354,6 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new NotFoundException($"no company-user data found for user {userId}");
         }
 
-        var aliasDisplayNameMapping = new ConcurrentDictionary<string, string>();
         return new CompanyOwnUserDetails(
             details.CompanyUserId,
             details.CreatedAt,
@@ -368,7 +364,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             details.AdminDetails,
             await Task.WhenAll(details.IdpUserIds.Select(async x =>
                 new IdpUserId(
-                    await GetAliasForDisplayNameMapping(aliasDisplayNameMapping, x.Alias ?? throw new ConflictException("Alias must not be null")).ConfigureAwait(false),
+                    await GetDisplayName(x.Alias ?? throw new ConflictException("Alias must not be null")).ConfigureAwait(false),
                     x.Alias,
                     x.UserId))).ConfigureAwait(false));
     }

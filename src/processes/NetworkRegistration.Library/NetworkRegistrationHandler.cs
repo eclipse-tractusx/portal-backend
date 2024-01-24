@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -29,7 +30,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System.Collections.Concurrent;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 
@@ -104,7 +104,15 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                     continue;
                 }
 
-                await _userProvisioningService.HandleCentralKeycloakCreation(new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyUserId, cu.CompanyName, cu.Bpn, null, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)), userRepository, userRoleRepository).ConfigureAwait(false);
+                await _userProvisioningService.HandleCentralKeycloakCreation(
+                    new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true),
+                    cu.CompanyUserId,
+                    cu.CompanyName,
+                    cu.Bpn,
+                    null,
+                    cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)),
+                    userRepository,
+                    userRoleRepository).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -112,25 +120,21 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             }
         }
 
-        var aliasDisplayNameMapping = new ConcurrentDictionary<string, string>();
-        async Task<string> GetAliasForDisplayNameMapping(string alias)
-        {
-            if (!aliasDisplayNameMapping.TryGetValue(alias, out var displayName))
-            {
-                displayName = await _provisioningManager.GetIdentityProviderDisplayName(alias).ConfigureAwait(false) ?? throw new ConflictException($"Display Name should not be null for alias: {alias}");
-                aliasDisplayNameMapping.TryAdd(alias, displayName);
-            }
+        var displayNames = await companyAssignedIdentityProviders
+            .SelectMany(assigned => assigned.ProviderLinkData)
+            .Select(data => data.Alias!)
+            .Distinct()
+            .ToImmutableDictionaryAsync(async alias =>
+                await _provisioningManager.GetIdentityProviderDisplayName(alias).ConfigureAwait(false) ?? throw new ConflictException($"Display Name should not be null for alias: {alias}")).ConfigureAwait(false);
 
-            return displayName;
-        }
-
-        var userData = await Task.WhenAll(companyAssignedIdentityProviders.Select(async userData => new UserMailInformation(
+        var userData = companyAssignedIdentityProviders.Select(userData => new UserMailInformation(
             userData.Email ?? throw new UnexpectedConditionException("userData.Email should never be null here"),
             userData.FirstName,
             userData.LastName,
-            await Task.WhenAll(userData.ProviderLinkData.Select(async pld => await GetAliasForDisplayNameMapping(pld.Alias!).ConfigureAwait(false))))))
-            .ConfigureAwait(false);
+            userData.ProviderLinkData.Select(data => displayNames[data.Alias!])));
+
         await SendMails(userData, ospName).ConfigureAwait(false);
+
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             null,
             ProcessStepStatusId.DONE,

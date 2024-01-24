@@ -88,8 +88,8 @@ public record CompanyUserAssignedRoleDetails(
     [property: JsonPropertyName("roles")] IEnumerable<string> UserRoles);
 
 public record IdpUserId(
-    [property: JsonPropertyName("idpDisplayName")] string? IdpDisplayName,
-    [property: JsonPropertyName("idpAlias")] string? IdpAlias,
+    [property: JsonPropertyName("idpDisplayName")] string IdpDisplayName,
+    [property: JsonPropertyName("idpAlias")] string IdpAlias,
     [property: JsonPropertyName("userId")] string UserId);
 
 public record CompanyOwnUserTransferDetails(
