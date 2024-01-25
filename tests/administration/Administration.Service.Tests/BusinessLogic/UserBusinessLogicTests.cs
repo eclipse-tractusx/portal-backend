@@ -1488,7 +1488,7 @@ public class UserBusinessLogicTests
     public async Task GetOwnUserDetails_ReturnsExpected()
     {
         // Arrange
-        var companyOwnUserDetails = _fixture.Create<CompanyOwnUserDetails>();
+        var companyOwnUserDetails = _fixture.Create<CompanyOwnUserTransferDetails>();
         var userId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
         var userRoleIds = new[] { _fixture.Create<Guid>(), _fixture.Create<Guid>() };
@@ -1508,7 +1508,10 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>
             .That.IsSameSequenceAs(_options.Value.UserAdminRoles))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(userId, A<IEnumerable<Guid>>.That.IsSameSequenceAs(userRoleIds))).MustHaveHappenedOnceExactly();
-        result.Should().Be(companyOwnUserDetails);
+        result.CompanyName.Should().Be(companyOwnUserDetails.CompanyName);
+        result.CreatedAt.Should().Be(companyOwnUserDetails.CreatedAt);
+        result.CompanyUserId.Should().Be(companyOwnUserDetails.CompanyUserId);
+        result.BusinessPartnerNumbers.Should().BeSameAs(companyOwnUserDetails.BusinessPartnerNumbers);
     }
 
     [Fact]
@@ -1520,7 +1523,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.IdentityId).Returns(userId);
         A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(userId, A<IEnumerable<Guid>>._))
-            .Returns((CompanyOwnUserDetails)default!);
+            .Returns((CompanyOwnUserTransferDetails)default!);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
 
         // Act

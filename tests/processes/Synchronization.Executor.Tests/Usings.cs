@@ -17,20 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public record CompanyUserIdentityProviderProcessTransferData(
-    Guid CompanyUserId,
-    string? FirstName,
-    string? LastName,
-    string? Email,
-    string CompanyName,
-    string? Bpn,
-    IEnumerable<ProviderLinkTransferData> ProviderLinkData
-);
-
-public record ProviderLinkTransferData(
-    string UserName,
-    string? Alias,
-    string ProviderUserId
-);
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;
