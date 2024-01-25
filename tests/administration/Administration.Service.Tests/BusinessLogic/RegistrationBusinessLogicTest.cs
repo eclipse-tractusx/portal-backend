@@ -264,7 +264,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.ParamName.Should().Be("bpn");
-        ex.Message.Should().Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'bpn')");
+        ex.Message.Should().Be("BPN must contain exactly 16 characters long. (Parameter 'bpn')");
     }
 
     [Fact]
