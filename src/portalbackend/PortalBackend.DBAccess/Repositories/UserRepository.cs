@@ -100,8 +100,6 @@ public class UserRepository : IUserRepository
     }
 
     public Func<int, int, Task<Pagination.Source<CompanyUserTransferData>?>> GetOwnCompanyUserData(
-        int skip,
-        int take,
         Guid companyId,
         Guid? companyUserId = null,
         string? firstName = null,

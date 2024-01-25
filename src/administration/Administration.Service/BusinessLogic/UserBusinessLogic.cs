@@ -229,15 +229,13 @@ public class UserBusinessLogic : IUserBusinessLogic
         async Task<Pagination.Source<CompanyUserData>?> GetCompanyUserData(int skip, int take)
         {
             var companyData = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserData(
-                page,
-                size,
                 _identityData.CompanyId,
                 filter.CompanyUserId,
                 filter.FirstName,
                 filter.LastName,
                 filter.Email,
                 _settings.CompanyUserStatusIds
-            )(page, size).ConfigureAwait(false);
+            )(skip, take).ConfigureAwait(false);
 
             if (companyData == null)
                 return null;
