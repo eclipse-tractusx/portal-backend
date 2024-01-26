@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -39,7 +40,8 @@ public class BpdmService : IBpdmService
         Converters =
         {
             new JsonStringEnumConverter(allowIntegerValues: false),
-        }
+        },
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     public BpdmService(ITokenService tokenService, IOptions<BpdmServiceSettings> options)
@@ -111,8 +113,18 @@ public class BpdmService : IBpdmService
             )
         };
 
-        await httpClient.PutAsJsonAsync("/companies/test-company/api/catena/input/legal-entities", requestData, Options, cancellationToken)
+        await httpClient.PutAsJsonAsync("/companies/test-company/api/catena/input/business-partners", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+        return true;
+    }
+
+    public async Task<bool> SetSharingStateToReady(string externalId, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
+
+        var content = new { externalIds = Enumerable.Repeat(externalId, 1) };
+        await httpClient.PutAsJsonAsync("/companies/test-company/api/catena/sharing-state/ready", content, Options, cancellationToken)
+            .CatchingIntoServiceExceptionFor("bpdm-put-sharing-state-ready", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }
 
@@ -121,7 +133,7 @@ public class BpdmService : IBpdmService
         var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
 
         var data = Enumerable.Repeat(externalId, 1);
-        var result = await httpClient.PostAsJsonAsync("/companies/test-company/api/catena/output/legal-entities/search", data, Options, cancellationToken)
+        var result = await httpClient.PostAsJsonAsync("/companies/test-company/api/catena/output/business-partners/search", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-search-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         try
         {
@@ -145,7 +157,7 @@ public class BpdmService : IBpdmService
     {
         var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        var url = $"/companies/test-company/api/catena/sharing-state?externalIds={applicationId}&businessPartnerType={BpdmSharingStateBusinessPartnerType.LEGAL_ENTITY}";
+        var url = $"/companies/test-company/api/catena/sharing-state?externalIds={applicationId}";
         var result = await httpClient.GetAsync(url, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-sharing-state", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         try

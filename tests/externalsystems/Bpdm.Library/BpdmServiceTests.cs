@@ -105,6 +105,52 @@ public class BpdmServiceTests
 
     #endregion
 
+    #region Trigger SetSharingStateToReady
+
+    [Fact]
+    public async Task SetSharingStateToReady_WithValidData_DoesNotThrowException()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid().ToString();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._))
+            .Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        var result = await sut.SetSharingStateToReady(externalId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SetSharingStateToReady_WithInvalidData_ThrowsServiceException()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid().ToString();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        async Task Act() => await sut.SetSharingStateToReady(externalId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Be("call to external system bpdm-put-sharing-state-ready failed with statuscode 400");
+    }
+
+    #endregion
+
     #region FetchInputLegalEntity
 
     [Fact]
@@ -192,7 +238,7 @@ public class BpdmServiceTests
         // Assert
         result.Should().NotBeNull();
         result.ExternalId.Should().Be(externalId);
-        result.Bpn.Should().Be("BPNL00000007QGTF");
+        result.LegalEntity?.Bpnl.Should().Be("BPNL00000007QGTF");
     }
 
     [Fact]
