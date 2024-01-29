@@ -19,6 +19,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -44,13 +45,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web
         private readonly IServiceAccountRepository _serviceAccountRepository;
         private readonly IClaimsIdentityDataBuilder _identityDataBuilder;
         private readonly ILogger<MandatoryIdentityClaimHandler> _logger;
+        private readonly string? _clientIdClaim;
 
-        public MandatoryIdentityClaimHandler(IClaimsIdentityDataBuilder claimsIdentityDataBuilder, IPortalRepositories portalRepositories, ILogger<MandatoryIdentityClaimHandler> logger)
+        public MandatoryIdentityClaimHandler(IClaimsIdentityDataBuilder claimsIdentityDataBuilder, IPortalRepositories portalRepositories, IOptions<IdentityClaimHandlerSettings> options, ILogger<MandatoryIdentityClaimHandler> logger)
         {
             _identityDataBuilder = claimsIdentityDataBuilder;
             _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
             _serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
             _logger = logger;
+            _clientIdClaim = options.Value.ClientIdClaim;
         }
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MandatoryIdentityClaimRequirement requirement)
@@ -93,7 +96,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web
             }
 
             (Guid IdentityId, Guid CompanyId) serviceAccountData;
-            var clientId = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.ClientId)?.Value;
+            var clientIdClaim = string.IsNullOrWhiteSpace(_clientIdClaim) ? PortalClaimTypes.ClientId : _clientIdClaim;
+            var clientId = principal.Claims.SingleOrDefault(x => x.Type == clientIdClaim)?.Value;
             if (!string.IsNullOrWhiteSpace(clientId) && (serviceAccountData = await _serviceAccountRepository.GetServiceAccountDataByClientId(clientId).ConfigureAwait(false)) != default)
             {
                 _identityDataBuilder.AddIdentityId(serviceAccountData.IdentityId);

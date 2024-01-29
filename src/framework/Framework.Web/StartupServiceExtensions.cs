@@ -69,7 +69,9 @@ public static class StartupServiceExtensions
                 };
             }
         });
-        services.AddTransient<IAuthorizationHandler, MandatoryIdentityClaimHandler>();
+        services
+            .AddClientIdClaimConfiguration(configuration)
+            .AddTransient<IAuthorizationHandler, MandatoryIdentityClaimHandler>();
         services.AddAuthorization(options =>
         {
             options.AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidIdentity)));

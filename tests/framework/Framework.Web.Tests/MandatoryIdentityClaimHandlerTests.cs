@@ -19,6 +19,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -113,7 +114,7 @@ public class MandatoryIdentityClaimHandlerTests
                 : new[] { new ClaimsIdentity(new[] { new Claim(claim, value) }) });
 
         var context = new AuthorizationHandlerContext(Enumerable.Repeat(new MandatoryIdentityClaimRequirement(policyType), 1), principal, null);
-        var sut = new MandatoryIdentityClaimHandler(_claimsIdentityDataBuilder, _portalRepositories, _logger);
+        var sut = new MandatoryIdentityClaimHandler(_claimsIdentityDataBuilder, _portalRepositories, Options.Create(new IdentityClaimHandlerSettings { ClientIdClaim = "clientId" }), _logger);
 
         // Act
         await sut.HandleAsync(context).ConfigureAwait(false);
