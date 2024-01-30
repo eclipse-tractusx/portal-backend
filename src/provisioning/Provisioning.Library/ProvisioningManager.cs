@@ -72,7 +72,7 @@ public partial class ProvisioningManager : IProvisioningManager
 
     public async ValueTask DeleteSharedIdpRealmAsync(string alias)
     {
-        var sharedKeycloak = _Factory.CreateKeycloakClient("shared");
+        var sharedKeycloak = _Factory.CreateKeycloakClient("shareddelete");
         await sharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(false);
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
