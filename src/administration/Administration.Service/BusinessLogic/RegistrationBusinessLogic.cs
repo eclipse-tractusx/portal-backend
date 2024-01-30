@@ -93,6 +93,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
+        if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
+        {
+            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+        }
 
         return new CompanyWithAddressData(
             companyWithAddress.CompanyId,
