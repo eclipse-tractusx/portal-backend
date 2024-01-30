@@ -170,6 +170,7 @@ public class IdentityProviderController : ControllerBase
     /// </summary>
     /// <param name="identityProviderId">Id of the identity provider</param>
     /// <param name="details">possible changes for the identity provider</param>
+    /// <param name="cancellationToken">the CancellationToken for this request (provided by the Controller)</param>
     /// <returns>Returns details of the identity provider</returns>
     /// <remarks>
     /// Example: PUT: api/administration/identityprovider/owncompany/identityproviders/6CFEEF93-CB37-405B-B65A-02BEEB81629F
@@ -190,8 +191,8 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
-        _businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details);
+    public ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details, CancellationToken cancellationToken) =>
+        _businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details, cancellationToken);
 
     /// <summary>
     /// Deletes the identity provider with the given id

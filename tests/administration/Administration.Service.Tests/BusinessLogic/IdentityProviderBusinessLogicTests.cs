@@ -1489,7 +1489,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(default((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1517,7 +1517,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(default((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1545,7 +1545,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((false, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1574,7 +1574,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1604,7 +1604,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1630,6 +1630,7 @@ public class IdentityProviderBusinessLogicTests
             _mailingService,
             _options,
             _logger);
+        var cancellationToken = CancellationToken.None;
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, "http://old"));
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
@@ -1646,10 +1647,10 @@ public class IdentityProviderBusinessLogicTests
             });
 
         // Act
-        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, cancellationToken).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataOIDCAsync(A<IdentityProviderEditableConfigOidc>.That.Matches(x => x.Secret == "test" && x.Alias == "cl1" && x.MetadataUrl == "http://new")))
+        A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataOIDCAsync(A<IdentityProviderEditableConfigOidc>.That.Matches(x => x.Secret == "test" && x.Alias == "cl1" && x.MetadataUrl == "http://new"), cancellationToken))
             .MustHaveHappenedOnceExactly();
         result.Mappers.Should().HaveCount(3);
         result.DisplayName.Should().Be("dis-oidc");
@@ -1686,7 +1687,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1716,7 +1717,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1750,7 +1751,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(A<IdentityProviderEditableConfigSaml>.That.Matches(x => x.singleSignOnServiceUrl == "https://sso.com" && x.alias == "cl1")))
@@ -1782,7 +1783,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1812,7 +1813,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1846,7 +1847,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateSharedIdentityProviderAsync("cl1", "dis-shared"))
