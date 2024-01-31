@@ -186,6 +186,35 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
+    public async Task TestExecuteInvitationWrongPatternOrganisationNameThrows()
+    {
+        SetupFakes();
+
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.organisationName, "*Catena")
+            .WithNamePattern(x => x.firstName)
+            .WithNamePattern(x => x.lastName)
+            .WithEmailPattern(x => x.email)
+            .Create();
+
+        var sut = new InvitationBusinessLogic(
+            _provisioningManager,
+            _userProvisioningService,
+            _portalRepositories,
+            _mailingService,
+            _options);
+
+        Task Act() => sut.ExecuteInvitation(invitationData);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name (Parameter 'organisationName')");
+
+        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task TestExecuteInvitationCreateUserErrorThrows()
     {
         SetupFakes();
