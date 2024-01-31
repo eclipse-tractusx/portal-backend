@@ -42,8 +42,6 @@ FROM base AS final
 ENV COMPlus_EnableDiagnostics=0
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENV ASPNETCORE_URLS http://+:8080
-EXPOSE 8080
 RUN chown -R 1000:3000 /app
 USER 1000:3000
 ENTRYPOINT ["dotnet", "Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.dll"]

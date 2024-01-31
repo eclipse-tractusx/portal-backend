@@ -31,7 +31,6 @@ FROM base AS final
 ENV COMPlus_EnableDiagnostics=0
 WORKDIR /app
 COPY --from=publish /app/publish .
-
 RUN chown -R 1000:3000 /app
 USER 1000:3000
 ENTRYPOINT ["dotnet", "Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.dll"]
