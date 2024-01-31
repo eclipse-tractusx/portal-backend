@@ -33,6 +33,7 @@ WORKDIR /src/provisioning/Provisioning.Migrations
 RUN dotnet publish "Provisioning.Migrations.csproj" -c Release -o /migrations/publish
 
 FROM base AS final
+ENV COMPlus_EnableDiagnostics=0
 WORKDIR /migrations
 COPY --from=publish /migrations/publish .
 ENV ASPNETCORE_URLS http://+:8080

@@ -35,6 +35,7 @@ WORKDIR /src/keycloak/Keycloak.Seeding
 RUN dotnet publish "Keycloak.Seeding.csproj" -c Release -o /app/publish
 
 FROM base AS final
+ENV COMPlus_EnableDiagnostics=0
 WORKDIR /app
 COPY --from=publish /app/publish .
 RUN chown -R 1000:3000 /app

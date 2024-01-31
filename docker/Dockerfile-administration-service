@@ -27,10 +27,10 @@ WORKDIR /src/administration/Administration.Service
 RUN dotnet publish "Administration.Service.csproj" -c Release -o /app/publish
 
 FROM base AS final
+ENV COMPlus_EnableDiagnostics=0
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS http://+:8080
-ENV COMPlus_EnableDiagnostics=0
 EXPOSE 8080
 RUN chown -R 1000:3000 /app
 USER 1000:3000
