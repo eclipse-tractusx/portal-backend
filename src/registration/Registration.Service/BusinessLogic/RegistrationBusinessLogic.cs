@@ -88,7 +88,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 digits or letters.", nameof(businessPartnerNumber));
         }
-        return GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(businessPartnerNumber, token, cancellationToken);
+        return GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(businessPartnerNumber.ToUpper(), token, cancellationToken);
     }
 
     private async Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(string businessPartnerNumber, string token, CancellationToken cancellationToken)
@@ -376,7 +376,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             modifyData.CompanyId,
             c =>
             {
-                c.BusinessPartnerNumber = initialData.BusinessPartnerNumber;
+                c.BusinessPartnerNumber = initialData.BusinessPartnerNumber?.ToUpper();
                 c.Name = initialData.Name;
                 c.Shortname = initialData.ShortName;
                 c.CompanyStatusId = initialData.CompanyStatusId;
@@ -384,7 +384,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             },
             c =>
             {
-                c.BusinessPartnerNumber = modifyData.BusinessPartnerNumber;
+                c.BusinessPartnerNumber = modifyData.BusinessPartnerNumber?.ToUpper();
                 c.Name = modifyData.Name;
                 c.Shortname = modifyData.ShortName;
                 c.CompanyStatusId = CompanyStatusId.PENDING;

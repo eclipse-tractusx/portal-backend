@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Collections.Immutable;
 
-public static class ValidationExpressions
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+
+public static class ToImmutableDictionaryAsyncExtension
 {
-    public const string Name = @"^.+$"; // TODO: should be @"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$";
-    public const string Bpn = @"^(BPNL|bpnl)[\w|\d]{12}$";
-    public const string Company = @"^\d*?[A-Za-zÀ-ÿ]\d?([A-Za-z0-9À-ÿ-_+=.,:;!?'\x22&#@()]\s?){2,40}$";
+    public static async Task<IImmutableDictionary<K, V>> ToImmutableDictionaryAsync<K, V>(this IEnumerable<K> keys, Func<K, Task<V>> selector) where K : notnull
+    {
+        var builder = ImmutableDictionary.CreateBuilder<K, V>();
+        builder.AddRange(
+            await Task.WhenAll(
+                keys.Select(async key => new KeyValuePair<K, V>(
+                    key,
+                    await selector(key).ConfigureAwait(false)))).ConfigureAwait(false));
+        return builder.ToImmutableDictionary();
+    }
 }

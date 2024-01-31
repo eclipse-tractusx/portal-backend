@@ -998,31 +998,31 @@ public class ConnectorsBusinessLogicTests
         //Arrange
         var bpns = new[]
         {
-            "BPNL00000002CRHL",
+            "bpnL00000002CRHL",
             "BPNL00000003CRHL",
             "BPNL00000004CRHL",
             "BPNL00000003CRHK"
         };
-        A.CallTo(() => _connectorsRepository.GetConnectorEndPointDataAsync(bpns))
+        A.CallTo(() => _connectorsRepository.GetConnectorEndPointDataAsync(A<IEnumerable<string>>._))
             .Returns(new[] {
+                (BusinessPartnerNumber: "BPNL00000002CRHL", ConnectorEndPoint: "www.googlr5.com"),
                 (BusinessPartnerNumber: "BPNL00000003CRHL", ConnectorEndPoint: "www.googlr0.com"),
                 (BusinessPartnerNumber: "BPNL00000003CRHL", ConnectorEndPoint: "www.googlr1.com"),
                 (BusinessPartnerNumber: "BPNL00000004CRHL", ConnectorEndPoint: "www.googlr2.com"),
                 (BusinessPartnerNumber: "BPNL00000004CRHL", ConnectorEndPoint: "www.googlr3.com"),
-                (BusinessPartnerNumber: "BPNL00000004CRHL", ConnectorEndPoint: "www.googlr4.com"),
-                (BusinessPartnerNumber: "BPNL00000002CRHL", ConnectorEndPoint: "www.googlr5.com")
+                (BusinessPartnerNumber: "BPNL00000004CRHL", ConnectorEndPoint: "www.googlr4.com")
             }.ToAsyncEnumerable());
 
         //Act
         var result = await _logic.GetCompanyConnectorEndPointAsync(bpns).ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _connectorsRepository.GetConnectorEndPointDataAsync(bpns)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.GetConnectorEndPointDataAsync(A<IEnumerable<string>>.That.IsSameSequenceAs(bpns.Select(x => x.ToUpper())))).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(3).And.Satisfy(
-            x => x.Bpn == "BPNL00000002CRHL" && x.ConnectorEndpoint.Count() == 1 && x.ConnectorEndpoint.Contains("www.googlr5.com"),
-            x => x.Bpn == "BPNL00000003CRHL" && x.ConnectorEndpoint.Count() == 2 && x.ConnectorEndpoint.Contains("www.googlr0.com") && x.ConnectorEndpoint.Contains("www.googlr1.com"),
-            x => x.Bpn == "BPNL00000004CRHL" && x.ConnectorEndpoint.Count() == 3 && x.ConnectorEndpoint.Contains("www.googlr2.com") && x.ConnectorEndpoint.Contains("www.googlr3.com") && x.ConnectorEndpoint.Contains("www.googlr4.com")
-        );
+        x => x.Bpn == "BPNL00000002CRHL" && x.ConnectorEndpoint.Count() == 1 && x.ConnectorEndpoint.Contains("www.googlr5.com"),
+        x => x.Bpn == "BPNL00000003CRHL" && x.ConnectorEndpoint.Count() == 2 && x.ConnectorEndpoint.Contains("www.googlr0.com") && x.ConnectorEndpoint.Contains("www.googlr1.com"),
+        x => x.Bpn == "BPNL00000004CRHL" && x.ConnectorEndpoint.Count() == 3 && x.ConnectorEndpoint.Contains("www.googlr2.com") && x.ConnectorEndpoint.Contains("www.googlr3.com") && x.ConnectorEndpoint.Contains("www.googlr4.com")
+);
     }
 
     [Fact]

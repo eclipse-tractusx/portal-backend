@@ -43,7 +43,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
-    private static readonly Regex BpnRegex = new(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
@@ -91,6 +93,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
+        if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
+        {
+            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+        }
 
         return new CompanyWithAddressData(
             companyWithAddress.CompanyId,
@@ -123,6 +129,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
     {
+        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        {
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", "companyName");
+        }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
                 companyName?.Length >= 3 ? companyName : null,
@@ -161,6 +171,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null)
     {
+        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        {
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", "companyName");
+        }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 
         return Pagination.CreateResponseAsync(
@@ -215,7 +229,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task UpdateCompanyBpnInternal(Guid applicationId, string bpn)
     {
         var result = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
+            .GetBpnForIamUserUntrackedAsync(applicationId, bpn.ToUpper()).ToListAsync().ConfigureAwait(false);
         if (!result.Exists(item => item.IsApplicationCompany))
         {
             throw new NotFoundException($"application {applicationId} not found");
@@ -262,7 +276,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .ConfigureAwait(false);
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
-            c => { c.BusinessPartnerNumber = bpn; });
+            c => { c.BusinessPartnerNumber = bpn.ToUpper(); });
 
         var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.FAILED, null);
 
@@ -290,7 +304,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
             throw new NotFoundException($"No companyApplication for BPN {data.BusinessPartnerNumber} is not in status SUBMITTED");

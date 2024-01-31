@@ -41,6 +41,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 {
     private static readonly Regex Name = new(ValidationExpressions.Name, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex ExternalID = new("^[A-Za-z0-9\\-+_/,.]{6,36}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityData _identityData;
@@ -59,6 +60,10 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
     public async Task HandlePartnerRegistration(PartnerRegistrationData data)
     {
+        if (!string.IsNullOrEmpty(data.Name) && !Company.IsMatch(data.Name))
+        {
+            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+        }
         var ownerCompanyId = _identityData.CompanyId;
         var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
