@@ -18,11 +18,11 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.DependencyInjection;
@@ -104,7 +104,15 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                     continue;
                 }
 
-                await _userProvisioningService.HandleCentralKeycloakCreation(new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyUserId, cu.CompanyName, cu.Bpn, null, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)), userRepository, userRoleRepository).ConfigureAwait(false);
+                await _userProvisioningService.HandleCentralKeycloakCreation(
+                    new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true),
+                    cu.CompanyUserId,
+                    cu.CompanyName,
+                    cu.Bpn,
+                    null,
+                    cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)),
+                    userRepository,
+                    userRoleRepository).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -112,7 +120,21 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             }
         }
 
-        await SendMails(GetUserMailInformation(companyAssignedIdentityProviders), ospName).ConfigureAwait(false);
+        var displayNames = await companyAssignedIdentityProviders
+            .SelectMany(assigned => assigned.ProviderLinkData)
+            .Select(data => data.Alias!)
+            .Distinct()
+            .ToImmutableDictionaryAsync(async alias =>
+                await _provisioningManager.GetIdentityProviderDisplayName(alias).ConfigureAwait(false) ?? throw new ConflictException($"Display Name should not be null for alias: {alias}")).ConfigureAwait(false);
+
+        var userData = companyAssignedIdentityProviders.Select(userData => new UserMailInformation(
+            userData.Email ?? throw new UnexpectedConditionException("userData.Email should never be null here"),
+            userData.FirstName,
+            userData.LastName,
+            userData.ProviderLinkData.Select(data => displayNames[data.Alias!])));
+
+        await SendMails(userData, ospName).ConfigureAwait(false);
+
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             null,
             ProcessStepStatusId.DONE,
@@ -120,41 +142,9 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             null);
     }
 
-    private async IAsyncEnumerable<UserMailInformation> GetUserMailInformation(IEnumerable<CompanyUserIdentityProviderProcessData> companyUserIdentityProviderProcessData)
+    private async Task SendMails(IEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
     {
-        var mapping = new Dictionary<string, string>();
-
-        async Task<string> GetDisplayName(string idpAlias)
-        {
-            if (!mapping.TryGetValue(idpAlias, out var displayName))
-            {
-                displayName = await _provisioningManager.GetIdentityProviderDisplayName(idpAlias).ConfigureAwait(false);
-                if (string.IsNullOrWhiteSpace(displayName))
-                {
-                    throw new ConflictException($"DisplayName for idpAlias {idpAlias} couldn't be determined");
-                }
-                mapping.Add(idpAlias, displayName);
-            }
-            return displayName;
-        }
-
-        foreach (var userData in companyUserIdentityProviderProcessData)
-        {
-            yield return new UserMailInformation(
-                userData.Email ?? throw new UnexpectedConditionException("userData.Email should never be null here"),
-                userData.FirstName,
-                userData.LastName,
-                await Task.WhenAll(
-                    userData.ProviderLinkData.Select(pld =>
-                        GetDisplayName(pld.Alias ?? throw new UnexpectedConditionException("providerLinkData.Alias should never be null here")))).ConfigureAwait(false));
-        }
-    }
-
-    private static readonly IEnumerable<string> MailTemplates = Enumerable.Repeat("OspWelcomeMail", 1);
-
-    private async Task SendMails(IAsyncEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
-    {
-        await foreach (var (receiver, firstName, lastName, displayNames) in companyUserWithRoleIdForCompany)
+        foreach (var (receiver, firstName, lastName, displayNames) in companyUserWithRoleIdForCompany)
         {
             var userName = string.Join(" ", firstName, lastName);
             var mailParameters = new Dictionary<string, string>
@@ -167,7 +157,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 { "url", _settings.BasePortalAddress },
                 { "idpAlias", string.Join(",", displayNames) }
             };
-            await _mailingService.SendMails(receiver, mailParameters, MailTemplates).ConfigureAwait(false);
+            await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("OspWelcomeMail", 1)).ConfigureAwait(false);
         }
     }
 

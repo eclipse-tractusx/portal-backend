@@ -343,7 +343,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
 
         return _portalRepositories.GetInstance<IConnectorsRepository>()
-            .GetConnectorEndPointDataAsync(bpns)
+            .GetConnectorEndPointDataAsync(bpns.Select(x => x.ToUpper()))
             .PreSortedGroupBy(data => data.BusinessPartnerNumber)
             .Select(group =>
                 new ConnectorEndPointData(

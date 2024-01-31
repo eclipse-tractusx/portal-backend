@@ -422,7 +422,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().ContainSingle()
-            .Which.Should().Match<CompanyUserIdentityProviderProcessData>(x =>
+            .Which.Should().Match<CompanyUserIdentityProviderProcessTransferData>(x =>
                 x.ProviderLinkData.Single().UserName == "drstrange" &&
                 x.Email == "test@email.com" &&
                 x.Bpn == "BPNL00000003AYRE");

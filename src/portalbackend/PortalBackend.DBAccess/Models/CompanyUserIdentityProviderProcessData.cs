@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,17 +19,17 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyUserIdentityProviderProcessData(
+public record CompanyUserIdentityProviderProcessTransferData(
     Guid CompanyUserId,
     string? FirstName,
     string? LastName,
     string? Email,
     string CompanyName,
     string? Bpn,
-    IEnumerable<ProviderLinkData> ProviderLinkData
+    IEnumerable<ProviderLinkTransferData> ProviderLinkData
 );
 
-public record ProviderLinkData(
+public record ProviderLinkTransferData(
     string UserName,
     string? Alias,
     string ProviderUserId

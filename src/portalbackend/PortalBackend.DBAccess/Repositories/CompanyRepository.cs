@@ -112,7 +112,7 @@ public class CompanyRepository : ICompanyRepository
         _context.Companies
             .AsNoTracking()
             .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE &&
-                (bpnIds == null || bpnIds.Contains(company.BusinessPartnerNumber) &&
+                (bpnIds == null || bpnIds.Select(x => x.ToUpper()).Contains(company.BusinessPartnerNumber) &&
                 company.BusinessPartnerNumber != null))
             .Select(company => company.BusinessPartnerNumber)
             .AsAsyncEnumerable();

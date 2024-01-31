@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,11 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-
-public static class ValidationExpressions
-{
-    public const string Name = @"^.+$"; // TODO: should be @"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$";
-    public const string Bpn = @"^(BPNL|bpnl)[\w|\d]{12}$";
-    public const string Company = @"^\d*?[A-Za-zÀ-ÿ]\d?([A-Za-z0-9À-ÿ-_+=.,:;!?'\x22&#@()]\s?){2,40}$";
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

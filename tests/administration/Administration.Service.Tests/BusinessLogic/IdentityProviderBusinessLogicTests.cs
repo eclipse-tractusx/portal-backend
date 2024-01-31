@@ -69,6 +69,9 @@ public class IdentityProviderBusinessLogicTests
     private readonly Guid _identityProviderId;
     private readonly IRoleBaseMailService _roleBaseMailService;
     private readonly IMailingService _mailingService;
+    private readonly Guid _existingUserId;
+    private readonly string _userProviderId;
+    private readonly string _username;
 
     public IdentityProviderBusinessLogicTests()
     {
@@ -97,8 +100,11 @@ public class IdentityProviderBusinessLogicTests
         _sharedIdentityProviderId = _fixture.Create<Guid>();
         _sharedIdpAlias = _fixture.Create<string>();
         _otherIdentityProviderId = _fixture.Create<Guid>();
+        _existingUserId = _fixture.Create<Guid>();
         _otherIdpAlias = _fixture.Create<string>();
         _encoding = _fixture.Create<Encoding>();
+        _userProviderId = _fixture.Create<string>();
+        _username = _fixture.Create<string>();
 
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
@@ -138,7 +144,7 @@ public class IdentityProviderBusinessLogicTests
     #region UploadOwnCompanyUsersIdentityProviderLinkDataAsync
 
     [Fact]
-    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncAllUnchangedSuccess()
+    public async Task UploadOwnCompanyUsersIdentityProviderLinkDataAsync_AllUnchanged_Success()
     {
         const int numUsers = 5;
 
@@ -170,12 +176,15 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<Action<CompanyUserAssignedIdentityProvider>>._, A<Action<CompanyUserAssignedIdentityProvider>>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._)).MustNotHaveHappened();
+
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
-    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncWrongContentTypeThrows()
+    public async Task UploadOwnCompanyUsersIdentityProviderLinkDataAsync_WrongContentType_ThrowsUnsupportedMediaTypeException()
     {
         const int numUsers = 1;
 
@@ -204,7 +213,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncEmailChangedSuccess()
+    public async Task UploadOwnCompanyUsersIdentityProviderLinkDataAsync_EmailChanged_Success()
     {
         const int numUsers = 5;
 
@@ -261,6 +270,8 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<Action<CompanyUserAssignedIdentityProvider>>._, A<Action<CompanyUserAssignedIdentityProvider>>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._)).MustHaveHappenedOnceExactly();
 
         changedEmailResult.Should().NotBeNull();
@@ -269,7 +280,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncSharedIdpLinkChangedError()
+    public async Task UploadOwnCompanyUsersIdentityProviderLinkDataAsync_SharedIdpLinkChanged_Error()
     {
         const int numUsers = 5;
 
@@ -318,7 +329,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncOtherIdpLinkChangedSuccess()
+    public async Task UploadOwnCompanyUsersIdentityProviderLinkDataAsync_OtherIdpLinkChanged_Success()
     {
         const int numUsers = 5;
 
@@ -360,6 +371,56 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.AttachAndModifyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<Action<CompanyUserAssignedIdentityProvider>>._, A<Action<CompanyUserAssignedIdentityProvider>>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UploadOwnCompanyUsersIdentityProviderLinkDataAsync_WithExistingUserIdpInformation_UpdatesInformation()
+    {
+        const int numUsers = 5;
+
+        var unchanged = _fixture.Build<TestUserData>().With(x => x.CompanyUserId, _existingUserId).Create();
+        var changed = unchanged with { OtherIdpUserName = _fixture.Create<string>(), CompanyUserId = _existingUserId };
+
+        var users = new[] {
+            _fixture.Create<TestUserData>(),
+            _fixture.Create<TestUserData>(),
+            unchanged,
+            _fixture.Create<TestUserData>(),
+            _fixture.Create<TestUserData>()
+        };
+
+        var lines = new[] { HeaderLine() }.Concat(users.Select((user, index) => NextLine(index == 2 ? changed : user)));
+
+        SetupFakes(users, lines);
+
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _roleBaseMailService,
+            _mailingService,
+            _options,
+            _logger);
+
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None).ConfigureAwait(false);
+
+        result.Updated.Should().Be(1);
+        result.Unchanged.Should().Be(numUsers - 1);
+        result.Error.Should().Be(0);
+        result.Total.Should().Be(numUsers);
+        result.Errors.Should().HaveCount(0);
+
+        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<Action<CompanyUserAssignedIdentityProvider>>._, A<Action<CompanyUserAssignedIdentityProvider>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -409,6 +470,8 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AddCompanyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._, A<Action<CompanyUserAssignedIdentityProvider>>._, A<Action<CompanyUserAssignedIdentityProvider>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -602,7 +665,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_companyId, A<IEnumerable<CompanyRoleId>>.That.IsSameSequenceAs(companyRoleIds))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.CreateOwnIdpAsync("test-company", "test", protocol)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-
+        A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<Guid>._, A<string>._)).MustHaveHappenedOnceExactly();
         idps.Should().ContainSingle().Which.Should().Match<IdentityProvider>(x =>
             x.Id == _identityProviderId &&
             x.OwnerId == expectedOwner &&
@@ -2626,6 +2689,10 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._)).ReturnsLazily((string userName) =>
             userData.SingleOrDefault(x => x.CompanyUserId == Guid.Parse(userName))?.IamUserId);
 
+        A.CallTo(() => _userRepository.GetCompanyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._)).ReturnsLazily(
+            (Guid companyUserId, Guid _) => _existingUserId == companyUserId ?
+                new ValueTuple<bool, string, string>(true, _userProviderId, _username) :
+                new ValueTuple<bool, string, string>());
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.Not.IsEqualTo(_companyId))).Returns(
             Enumerable.Empty<(Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId)>().ToAsyncEnumerable());
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.IsEqualTo(_companyId))).Returns(
