@@ -252,10 +252,19 @@ public class AppReleaseBusinessLogicTest
     [Fact]
     public async Task AddAppAsync_WithSalesManagerValidData_ReturnsExpected()
     {
-        // Arrange
-        var data = _fixture.Build<AppRequestModel>()
-            .With(x => x.SalesManagerId, _companyUser.Id)
-            .Create();
+        var data = new AppRequestModel(
+            "Titlebfd7fa50-cb36-4940-96f7-0442bbc41b70",
+            "ProviderXYZ",
+            _companyUser.Id,
+            Enumerable.Repeat(Guid.NewGuid(), 1),
+            Enumerable.Repeat(new LocalizedDescription("en", "ProviderXyz", "XYZ"), 1),
+            Enumerable.Repeat("en", 1),
+            "Price90b6fed6-799a-4238-bee2-5cd84bc3f167",
+            Enumerable.Repeat(PrivacyPolicyId.COMPANY_DATA, 1),
+            "ProviderUri5ef769cd-9be3-4d3f-8a3e-c886793a732b",
+            "ContactNumber13081a1d-24fc-4f32-8163-f77a8a7fb724",
+            "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a"
+        );
 
         Offer? created = null;
         var offerId = Guid.NewGuid();
@@ -313,9 +322,19 @@ public class AppReleaseBusinessLogicTest
     public async Task AddAppAsync_WithNullSalesMangerValidData_ReturnsExpected()
     {
         // Arrange
-        var data = _fixture.Build<AppRequestModel>()
-            .With(x => x.SalesManagerId, (Guid?)null)
-            .Create();
+        var data = new AppRequestModel(
+            "Titlebfd7fa50-cb36-4940-96f7-0442bbc41b70",
+            "ProviderXYZ",
+            null,
+            Enumerable.Repeat(Guid.NewGuid(), 1),
+            Enumerable.Repeat(new LocalizedDescription("en", "ProviderXyz", "XYZ"), 1),
+            Enumerable.Repeat("en", 1),
+            "Price90b6fed6-799a-4238-bee2-5cd84bc3f167",
+            Enumerable.Repeat(PrivacyPolicyId.COMPANY_DATA, 1),
+            "ProviderUri5ef769cd-9be3-4d3f-8a3e-c886793a732b",
+            "ContactNumber13081a1d-24fc-4f32-8163-f77a8a7fb724",
+            "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a"
+        );
 
         Offer? created = null;
         var offerId = Guid.NewGuid();
@@ -414,9 +433,19 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = _fixture.Build<AppRequestModel>()
-            .With(x => x.SupportedLanguageCodes, new[] { "de", "en", "invalid" })
-            .Create();
+        var data = new AppRequestModel(
+        "Titlebfd7fa50-cb36-4940-96f7-0442bbc41b70",
+        "ProviderXYZ",
+        _companyUser.Id,
+        Enumerable.Repeat(Guid.NewGuid(), 1),
+        Enumerable.Repeat(new LocalizedDescription("en", "ProviderXyz", "XYZ"), 1),
+        new[] { "de", "en", "invalid" },
+        "Price90b6fed6-799a-4238-bee2-5cd84bc3f167",
+        Enumerable.Repeat(PrivacyPolicyId.COMPANY_DATA, 1),
+        "ProviderUri5ef769cd-9be3-4d3f-8a3e-c886793a732b",
+        "ContactNumber13081a1d-24fc-4f32-8163-f77a8a7fb724",
+        "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a"
+    );
 
         // Act
         async Task Act() => await _sut.UpdateAppReleaseAsync(_existingAppId, data).ConfigureAwait(false);
@@ -431,9 +460,19 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = _fixture.Build<AppRequestModel>()
-            .With(x => x.SupportedLanguageCodes, new[] { "de", "en" })
-            .Create();
+        var data = new AppRequestModel(
+        "Titlebfd7fa50-cb36-4940-96f7-0442bbc41b70",
+        "ProviderXYZ",
+        _companyUser.Id,
+        Enumerable.Repeat(Guid.NewGuid(), 1),
+        Enumerable.Repeat(new LocalizedDescription("en", "ProviderXyz", "XYZ"), 1),
+        new[] { "de", "en" },
+        "Price90b6fed6-799a-4238-bee2-5cd84bc3f167",
+        Enumerable.Repeat(PrivacyPolicyId.COMPANY_DATA, 1),
+        "ProviderUri5ef769cd-9be3-4d3f-8a3e-c886793a732b",
+        "ContactNumber13081a1d-24fc-4f32-8163-f77a8a7fb724",
+        "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a"
+    );
 
         Offer? initial = null;
         Offer? modified = null;
