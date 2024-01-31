@@ -2,6 +2,46 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.8.0-RC4
+
+### Change
+- updated response body of the GET: /api/administration/user/owncompany/users endpoint by changing the "role" section to an array to include role client information  ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+- pattern harmonization of 'company name' insert endpoints
+  - POST: api/administration/invitation
+  - POST: api/administration/registration/network/partnerRegistration
+  - POST: api/registration/application/{applicationId}/companyDetailsWithAddress
+  - PUT: /api/apps/appreleaseprocess/{appID}
+  - POST: /api/apps/appreleaseprocess/createapp
+- pattern harmonization of 'company name' search endpoints
+  - GET: api/administration/registration/applicationsWithStatus
+  - GET: api/administration/registration/applications
+- adjusted business logic of post/put BPN endpoints to allow the post/put of lowercase BPNs and ensure the transition to all upercase by the backend logic (connector controller, registration controller, user controller)
+
+### Feature
+- Administration Service
+  - API endpoints for user account creation backend logic updated to set the providerID (unique username on the IdP which holds the user identity) is getting stored inside the portal db
+    - POST: /api/administration/identityprovider/owncompany/usersfile
+    - POST: /api/administration/registration/network/{externalId}/partnerRegistration
+    - POST: /api/administration/invitation
+    - POST: /api/administration/user/owncompany/users
+    - POST: /api/administration/user/owncompany/identityprovider/{identityProviderId}/users
+    - POST: /api/administration/user/owncompany/identityprovider/{identityProviderId}/usersfile
+    - POST: /api/administration/user/owncompany/usersfile
+    - POST: /api/registration/application/{applicationId}/inviteNewUser
+  - added additional user identity provider attributes (such as idpDisplayName and providerID) for all GET user account data
+    - GET: /api/administration/user/owncompany/users?page=0&size=5
+    - GET: /api/administration/user/owncompany/users/{userId}
+    - GET: /api/administration/user/ownUser
+
+### Technical Support
+- fixed sonar cloud finding to use correct pagination params
+
+### Bugfix
+- changed claimTypes static class of clientId claim to client_id
+
+### Known Knowns
+n/a
+
 ## 1.8.0-RC3
 
 ### Change
