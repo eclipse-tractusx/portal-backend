@@ -22,15 +22,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum CompanyCertificateTypeId
 {
-    AEO = 1,
+    AEO_CTPAT_Security_Declaration = 1,
     ISO_9001 = 2,
     IATF_16949 = 3,
-    ISO_14001 = 4,
-    ISO_45001 = 5,
-    ISO = 6,
-    ISO_50001 = 7,
-    IEC_17025 = 8,
-    ISO_15504 = 9,
+    ISO_14001_EMAS_or_national_certification = 4,
+    ISO_45001_OHSAS_18001_or_national_certification = 5,
+    ISO_IEC_27001 = 6,
+    ISO_50001_or_national_certification = 7,
+    ISO_IEC_17025 = 8,
+    ISO_15504_SPICE = 9,
     B_BBEE_Certificate_of_South_Africa = 10,
     IATF = 11,
     TISAX = 12

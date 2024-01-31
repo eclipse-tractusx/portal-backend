@@ -104,6 +104,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
     public virtual DbSet<CompanyApplicationType> CompanyApplicationTypes { get; set; } = default!;
+    public virtual DbSet<CompanyCertificate> CompanyCertificates { get; set; } = default!;
+    public virtual DbSet<CompanyCertificateStatus> CompanyCertificateStatuses { get; set; } = default!;
+    public virtual DbSet<CompanyCertificateType> CompanyCertificateTypes { get; set; } = default!;
+    public virtual DbSet<CompanyCertificateTypeDescription> CompanyCertificateTypeDescriptions { get; set; } = default!;
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompanyIdentifier> CompanyIdentifiers { get; set; } = default!;
