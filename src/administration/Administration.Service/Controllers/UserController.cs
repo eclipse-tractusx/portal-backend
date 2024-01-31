@@ -196,9 +196,9 @@ public class UserController : ControllerBase
     [Authorize(Roles = "view_user_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users/{companyUserId}", Name = nameof(GetOwnCompanyUserDetails))]
-    [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyUserDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<CompanyUserDetails> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
+    public Task<CompanyUserDetailData> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
         _logic.GetOwnCompanyUserDetailsAsync(companyUserId);
 
     /// <summary>
@@ -249,7 +249,7 @@ public class UserController : ControllerBase
     /// <param name="companyUserId" example="ac1cf001-7fbc-1f2f-817f-bce0575a0011">Id of the user to add the business partner numbers to.</param>
     /// <param name="businessPartnerNumbers">the business partner numbers that should be added.</param>
     /// <returns></returns>
-    /// <remarks>Example: POST: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/businessPartnerNumbers</remarks>
+    /// <remarks>Example: POST: api/administration/user/owncompany/users/{companyUserId}/businessPartnerNumbers</remarks>
     /// <response code="200">The business partner numbers have been added successfully.</response>
     /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
     /// <response code="404">User not found.</response>
@@ -269,7 +269,7 @@ public class UserController : ControllerBase
     /// <param name="companyUserId" example="ac1cf001-7fbc-1f2f-817f-bce0575a0011">Id of the user to add the business partner numbers to.</param>
     /// <param name="businessPartnerNumber" example="CAXSDUMMYCATENAZZ">the business partner number that should be added.</param>
     /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/businessPartnerNumbers/CAXSDUMMYCATENAZZ</remarks>
+    /// <remarks>Example: PUT: api/administration/user/owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}</remarks>
     /// <response code="200">The business partner number have been added successfully.</response>
     /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
     /// <response code="404">User is not existing.</response>

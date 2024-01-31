@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 public static class PortalClaimTypes
 {
     public const string Sub = "sub";
-    public const string ClientId = "clientId";
+    public const string ClientId = "client_id";
     public const string PreferredUserName = "preferred_username";
     public const string ResourceAccess = "resource_access";
 }

@@ -380,7 +380,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
 
         identityProviderRepository.DeleteIdentityProvider(identityProviderId);
-
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -743,7 +742,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var companyId = _identityData.CompanyId;
-        var (sharedIdpAlias, existingAliase) = await GetCompanyAliasDataAsync(companyId).ConfigureAwait(false);
+        var (sharedIdp, existingAliase) = await GetCompanyAliasDataAsync(companyId).ConfigureAwait(false);
 
         using var stream = document.OpenReadStream();
 
@@ -755,8 +754,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             {
                 numIdps = ParseCSVFirstLineReturningNumIdps(line);
             },
-            line => ParseCSVLine(line, numIdps, existingAliase),
-            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, companyId, sharedIdpAlias, cancellationToken),
+            line => ParseCSVLine(line, numIdps, existingAliase.Select(x => x.Alias)),
+            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, companyId, sharedIdp, existingAliase, cancellationToken),
             cancellationToken
         ).ConfigureAwait(false);
 
@@ -782,7 +781,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks)> userProfileLinkDatas,
         IUserRepository userRepository,
         Guid companyId,
-        string? sharedIdpAlias,
+        (Guid IdentityProviderId, string Alias) sharedIdp,
+        IEnumerable<(Guid IdentityProviderId, string Alias)> existingIdps,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var (companyUserId, profile, identityProviderLinks) in userProfileLinkDatas)
@@ -799,12 +799,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
                 foreach (var identityProviderLink in identityProviderLinks)
                 {
-                    updated |= await UpdateIdentityProviderLinksAsync(iamUserId, companyUserId, identityProviderLink, existingLinks, sharedIdpAlias).ConfigureAwait(false);
+                    updated |= await UpdateIdentityProviderLinksAsync(iamUserId, companyUserId, identityProviderLink, existingLinks, sharedIdp, existingIdps).ConfigureAwait(false);
                 }
 
                 if (existingProfile != profile)
                 {
-                    await UpdateUserProfileAsync(userRepository, iamUserId, companyUserId, profile, existingLinks, sharedIdpAlias).ConfigureAwait(false);
+                    await UpdateUserProfileAsync(userRepository, iamUserId, companyUserId, profile, existingLinks, sharedIdp).ConfigureAwait(false);
                     updated = true;
                 }
                 success = updated;
@@ -821,15 +821,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<(string? SharedIdpAlias, IEnumerable<string> ValidAliase)> GetCompanyAliasDataAsync(Guid companyId)
+    private async ValueTask<((Guid IdentityProviderId, string Alias) SharedIdp, IEnumerable<(Guid IdentityProviderId, string Alias)> ValidAliase)> GetCompanyAliasDataAsync(Guid companyId)
     {
         var identityProviderCategoryData = await _portalRepositories.GetInstance<IIdentityProviderRepository>()
                 .GetCompanyIdentityProviderCategoryDataUntracked(companyId)
                 .Where(data => data.Alias != null)
-                .Select(data => (data.TypeId, Alias: data.Alias!))
+                .Select(data => (data.IdentityProviderId, data.TypeId, Alias: data.Alias!))
                 .ToListAsync().ConfigureAwait(false);
-        var sharedIdpAlias = identityProviderCategoryData.SingleOrDefault(data => data.TypeId == IdentityProviderTypeId.SHARED).Alias;
-        var validAliase = identityProviderCategoryData.Select(data => data.Alias).ToList();
+        var sharedIdpAlias = identityProviderCategoryData.Where(data => data.TypeId == IdentityProviderTypeId.SHARED).Select(data => (data.IdentityProviderId, data.Alias)).SingleOrDefault();
+        var validAliase = identityProviderCategoryData.Select(data => (data.IdentityProviderId, data.Alias)).ToList();
         return (sharedIdpAlias, validAliase);
     }
 
@@ -851,7 +851,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         );
     }
 
-    private async ValueTask<bool> UpdateIdentityProviderLinksAsync(string iamUserId, Guid companyUserId, IdentityProviderLink identityProviderLink, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias)
+    private async ValueTask<bool> UpdateIdentityProviderLinksAsync(
+        string iamUserId,
+        Guid companyUserId,
+        IdentityProviderLink identityProviderLink,
+        IEnumerable<IdentityProviderLink> existingLinks,
+        (Guid IdentityProviderId, string Alias) sharedIdp,
+        IEnumerable<(Guid IdentityProviderId, string Alias)> existingIdps)
     {
         var (alias, userId, userName) = identityProviderLink;
 
@@ -863,7 +869,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             return false;
         }
 
-        if (alias == sharedIdpAlias)
+        if (alias == sharedIdp.Alias)
         {
             throw new ControllerArgumentException($"unexpected update of shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{userId}', providerUserName: '{userName}'");
         }
@@ -873,23 +879,49 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(iamUserId, alias).ConfigureAwait(false);
         }
         await _provisioningManager.AddProviderUserLinkToCentralUserAsync(iamUserId, identityProviderLink).ConfigureAwait(false);
+        await InsertUpdateCompanyUserAssignedIdentityProvider(companyUserId, existingIdps.Single(x => x.Alias == alias).IdentityProviderId, identityProviderLink).ConfigureAwait(false);
         return true;
     }
 
-    private async ValueTask UpdateUserProfileAsync(IUserRepository userRepository, string iamUserId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias)
+    private async Task InsertUpdateCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, IdentityProviderLink providerLink)
+    {
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        var data = await userRepository.GetCompanyUserAssignedIdentityProvider(companyUserId, identityProviderId).ConfigureAwait(false);
+        if (data == default)
+        {
+            userRepository.AddCompanyUserAssignedIdentityProvider(companyUserId, identityProviderId, providerLink.UserId, providerLink.UserName);
+        }
+        else
+        {
+            userRepository.AttachAndModifyUserAssignedIdentityProvider(companyUserId, identityProviderId,
+                uaip =>
+                {
+                    uaip.ProviderId = data.ProviderId;
+                    uaip.UserName = data.Username;
+                },
+                uaip =>
+                {
+                    uaip.ProviderId = providerLink.UserId;
+                    uaip.UserName = providerLink.UserName;
+                });
+        }
+    }
+
+    private async ValueTask UpdateUserProfileAsync(IUserRepository userRepository, string iamUserId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, (Guid IdentityProviderId, string Alias) sharedIdp)
     {
         var (firstName, lastName, email) = (profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "");
 
         await _provisioningManager.UpdateCentralUserAsync(iamUserId, firstName, lastName, email).ConfigureAwait(false);
 
-        if (sharedIdpAlias != null)
+        if (sharedIdp != default)
         {
-            var sharedIdpLink = existingLinks.FirstOrDefault(link => link.Alias == sharedIdpAlias);
+            var sharedIdpLink = existingLinks.FirstOrDefault(link => link.Alias == sharedIdp.Alias);
             if (sharedIdpLink != default)
             {
-                await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, firstName, lastName, email).ConfigureAwait(false);
+                await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdp.Alias, sharedIdpLink.UserId, firstName, lastName, email).ConfigureAwait(false);
             }
         }
+
         userRepository.AttachAndModifyCompanyUser(companyUserId, null, companyUser =>
             {
                 companyUser.Firstname = profile.FirstName;

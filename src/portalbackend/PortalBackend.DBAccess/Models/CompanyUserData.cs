@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,30 +22,38 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class CompanyUserData
-{
-    public CompanyUserData(Guid companyUserId, UserStatusId userStatusId, IEnumerable<string> roles)
-    {
-        CompanyUserId = companyUserId;
-        UserStatusId = userStatusId;
-        Roles = roles;
-    }
+public record CompanyUserData(
+    [property: JsonPropertyName("companyUserId")]
+    Guid CompanyUserId,
+    [property: JsonPropertyName("status")]
+    UserStatusId UserStatusId,
+    [property: JsonPropertyName("firstName")]
+    string? FirstName,
+    [property: JsonPropertyName("lastName")]
+    string? LastName,
+    [property: JsonPropertyName("email")]
+    string? Email,
+    [property: JsonPropertyName("roles")]
+    IEnumerable<UserRoleData> Roles,
+    [property: JsonPropertyName("idpUserIds")]
+    IEnumerable<IdpUserId> IdpUserIds
+);
 
-    [JsonPropertyName("companyUserId")]
-    public Guid CompanyUserId { get; set; }
-
-    [JsonPropertyName("status")]
-    public UserStatusId UserStatusId { get; set; }
-
-    [JsonPropertyName("firstName")]
-    public string? FirstName { get; set; }
-
-    [JsonPropertyName("lastName")]
-    public string? LastName { get; set; }
-
-    [JsonPropertyName("email")]
-    public string? Email { get; set; }
-
-    [JsonPropertyName("roles")]
-    public IEnumerable<string> Roles { get; set; }
-}
+public record CompanyUserTransferData(
+    [property: JsonPropertyName("companyUserId")]
+    Guid CompanyUserId,
+    [property: JsonPropertyName("status")]
+    UserStatusId UserStatusId,
+    [property: JsonPropertyName("dateCreated")]
+    DateTimeOffset DateCreated,
+    [property: JsonPropertyName("firstName")]
+    string? FirstName,
+    [property: JsonPropertyName("lastName")]
+    string? LastName,
+    [property: JsonPropertyName("email")]
+    string? Email,
+    [property: JsonPropertyName("roles")]
+    IEnumerable<UserRoleData> Roles,
+    [property: JsonPropertyName("idpUserIds")]
+    IEnumerable<IdpUserTransferId> IdpUserIds
+);
