@@ -38,7 +38,7 @@ public class Document : IAuditableV1, IBaseEntity
         Consents = new HashSet<Consent>();
         Offers = new HashSet<Offer>();
         Companies = new HashSet<Company>();
-        DocumentCompanyCertificate=new HashSet<CompanyCertificate>();
+        DocumentCompanyCertificate = new HashSet<CompanyCertificate>();
     }
 
     public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, MediaTypeId mediaTypeId, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId)

@@ -46,7 +46,7 @@ public class Company : IBaseEntity
         OwnedIdentityProviders = new HashSet<IdentityProvider>();
         ProvidedApplications = new HashSet<CompanyApplication>();
         OnboardedNetworkRegistrations = new HashSet<NetworkRegistration>();
-        CompanyCertificates=new HashSet<CompanyCertificate>();
+        CompanyCertificates = new HashSet<CompanyCertificate>();
     }
 
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
@@ -101,5 +101,4 @@ public class Company : IBaseEntity
     public virtual ICollection<CompanyApplication> ProvidedApplications { get; private set; }
     public virtual ICollection<NetworkRegistration> OnboardedNetworkRegistrations { get; private set; }
     public virtual ICollection<CompanyCertificate> CompanyCertificates { get; private set; }
-
 }
