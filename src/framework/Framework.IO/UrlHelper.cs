@@ -19,11 +19,10 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
-
 using System.Collections.Immutable;
 using System.Web;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 
 public static class UrlHelper
 {
