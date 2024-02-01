@@ -32,9 +32,9 @@ public class CompanyCertificateTypeDescription
         Description = null!;
     }
 
-    public CompanyCertificateTypeDescription(CompanyCertificateTypeId companyCertificateTypeId, string shortName, string description)
+    public CompanyCertificateTypeDescription(CompanyCertificateTypeId id, string shortName, string description)
     {
-        Id = companyCertificateTypeId;
+        Id = id;
         ShortName = shortName;
         Description = description;
     }

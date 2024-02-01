@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -622,6 +623,43 @@ public class PortalDbContext : DbContext
                     .Cast<CompanyApplicationTypeId>()
                     .Select(e => new CompanyApplicationType(e))
             );
+
+        modelBuilder.Entity<CompanyCertificate>(entity =>
+   {
+       entity.HasOne(d => d.Company)
+           .WithMany(p => p.CompanyCertificates)
+           .HasForeignKey(d => d.CompanyId)
+           .OnDelete(DeleteBehavior.ClientSetNull);
+
+       entity.HasOne(d => d.Document)
+           .WithMany(p => p.DocumentCompanyCertificate)
+           .HasForeignKey(d => d.DocumentId)
+           .OnDelete(DeleteBehavior.ClientSetNull);
+   });
+
+        modelBuilder.Entity<CompanyCertificateStatus>()
+       .HasData(
+           Enum.GetValues(typeof(CompanyCertificateStatusId))
+               .Cast<CompanyCertificateStatusId>()
+               .Select(e => new CompanyCertificateStatus(e))
+       );
+
+        modelBuilder.Entity<CompanyCertificateType>()
+            .HasData(
+                Enum.GetValues(typeof(CompanyCertificateTypeId))
+                    .Cast<CompanyCertificateTypeId>()
+                    .Select(e => new CompanyCertificateType(e, CompanyCertificateStatusId.ACTIVE))
+            );
+
+        modelBuilder.Entity<CompanyCertificateTypeDescription>(entity =>
+         {
+             entity.HasKey(x => new { x.Id, x.ShortName });
+
+             entity.HasOne(e => e.Language)
+                 .WithMany(e => e.CompanyCertificateTypeDescriptions)
+                .HasForeignKey(e => e.ShortName);
+
+         });
 
         modelBuilder.Entity<ApplicationChecklistEntry>(entity =>
         {

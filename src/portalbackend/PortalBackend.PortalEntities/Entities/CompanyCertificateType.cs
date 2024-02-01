@@ -36,6 +36,7 @@ public class CompanyCertificateType
         Label = companyCertificateTypeId.ToString();
         Status = companyCertificateStatusId;
     }
+
     public CompanyCertificateTypeId Id { get; private set; }
 
     [MaxLength(255)]
