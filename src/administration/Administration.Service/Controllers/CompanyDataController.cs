@@ -269,6 +269,29 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
+    /// Creates the Company Certificate request
+    /// </summary>
+    /// <param name="data">The type and document</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>The id of the created Company certificate request</returns>
+    /// <remarks>Example: POST: api/administration/companydata/companyCertificate</remarks>
+    /// <response code="204">Successfully created the Company certificate request.</response>
+    /// <response code="400">   
+    /// </response>
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    [Authorize(Roles = "upload_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Route("companyCertificate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<NoContentResult> CreateCompanyCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)
+    {
+        await _logic.CreateSsiCertificate(data, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Gets all outstanding, existing and inactive credentials
     /// </summary>
     /// <remarks>Example: Get: /api/administration/companydata/credentials/</remarks>

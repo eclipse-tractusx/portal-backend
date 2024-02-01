@@ -53,4 +53,5 @@ public interface ICompanyDataBusinessLogic
     Task RejectCredential(Guid credentialId);
 
     IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes();
+   // Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken);
 }
