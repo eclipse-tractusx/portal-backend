@@ -33,10 +33,9 @@ WORKDIR /src/provisioning/Provisioning.Migrations
 RUN dotnet publish "Provisioning.Migrations.csproj" -c Release -o /migrations/publish
 
 FROM base AS final
+ENV COMPlus_EnableDiagnostics=0
 WORKDIR /migrations
 COPY --from=publish /migrations/publish .
-ENV ASPNETCORE_URLS http://+:8080
-EXPOSE 8080
 RUN chown -R 1000:3000 /migrations
 USER 1000:3000
 ENTRYPOINT ["dotnet", "Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations.dll"]
