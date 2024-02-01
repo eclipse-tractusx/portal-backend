@@ -49,17 +49,14 @@
     <ProjectReference Include="..\..\processes\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
     <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <None Remove="appsettings.json" />
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-
     <None Remove="Seeder\Data" />
     <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="../../../LICENSE">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -71,5 +68,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
 </Project>
