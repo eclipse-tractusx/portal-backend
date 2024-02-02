@@ -29,7 +29,7 @@
     </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Token" Version="1.0.0-beta.13" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Token" Version="1.0.0-beta.14" />
   </ItemGroup>
 
     <ItemGroup>

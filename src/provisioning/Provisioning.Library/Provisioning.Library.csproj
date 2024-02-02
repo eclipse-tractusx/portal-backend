@@ -38,9 +38,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling" Version="1.0.0-beta.13" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling" Version="1.0.0-beta.14" />
     <PackageReference Include="PasswordGenerator" Version="2.1.0" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.13" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.14" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 

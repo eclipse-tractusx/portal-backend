@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,8 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-    public static IServiceCollection AddDefaultServices<TProgram, TClaimsTransformation>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName)
-        where TClaimsTransformation : class, IClaimsTransformation
+    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName)
     {
         services.AddCors(options => options.SetupCors(configuration));
 
@@ -69,7 +67,7 @@ public static class StartupServiceExtensions
         });
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-        services.AddTransient<IClaimsTransformation, TClaimsTransformation>()
+        services
             .AddOptions<JwtBearerOptions>()
             .Bind(configuration.GetSection("JwtBearerOptions"))
             .ValidateOnStart();

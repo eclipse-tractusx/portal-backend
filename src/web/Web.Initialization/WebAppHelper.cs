@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -37,10 +37,11 @@ public static class WebAppHelper
 {
     public static void BuildAndRunWebApplication<TProgram>(string[] args, string path, string version, Action<WebApplicationBuilder> configureBuilder) =>
         WebApplicationBuildRunner
-            .BuildAndRunWebApplication<TProgram, KeycloakClaimsTransformation>(args, path, version, ".Portal",
+            .BuildAndRunWebApplication<TProgram>(args, path, version, ".Portal",
                 builder =>
                 {
                     configureBuilder.Invoke(builder);
+                    builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
                     builder.Services.AddTransient<IAuthorizationHandler, MandatoryIdentityClaimHandler>();
                     builder.Services.AddAuthorization(options =>
                     {

@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using System.Configuration;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;

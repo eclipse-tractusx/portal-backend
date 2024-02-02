@@ -34,10 +34,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider" Version="1.0.0-beta.13" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling" Version="1.0.0-beta.13" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess" Version="1.0.0-beta.13" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.13" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider" Version="1.0.0-beta.14" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling" Version="1.0.0-beta.14" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess" Version="1.0.0-beta.14" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.14" />
   </ItemGroup>
   <ItemGroup>
     <SonarQubeSetting Include="sonar.coverage.exclusions">

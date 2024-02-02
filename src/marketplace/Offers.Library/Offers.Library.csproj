@@ -39,8 +39,8 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions" Version="1.0.0-beta.13" />
-      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.IO" Version="1.0.0-beta.13" />
+      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions" Version="1.0.0-beta.14" />
+      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.IO" Version="1.0.0-beta.14" />
       <PackageReference Include="System.Net.Http" Version="4.3.4" />
     </ItemGroup>
 

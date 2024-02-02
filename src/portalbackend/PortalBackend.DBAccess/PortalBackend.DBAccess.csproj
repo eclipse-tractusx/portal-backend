@@ -33,8 +33,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.10" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.13" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding" Version="1.0.0-beta.13" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.14" />
+    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding" Version="1.0.0-beta.14" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 

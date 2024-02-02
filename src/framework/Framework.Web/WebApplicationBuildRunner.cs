@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Flurl.Util;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -30,13 +29,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class WebApplicationBuildRunner
 {
-    public static void BuildAndRunWebApplication<TProgram, TClaimsTransformation>(
+    public static void BuildAndRunWebApplication<TProgram>(
         string[] args,
         string path,
         string version,
         string cookieName,
         Action<WebApplicationBuilder>? configureBuilder,
-        Action<WebApplication, IHostEnvironment>? configureApp) where TClaimsTransformation : class, IClaimsTransformation
+        Action<WebApplication, IHostEnvironment>? configureApp)
     {
         LoggingExtensions.EnsureInitialized();
         Log.Information("Starting the application");
@@ -58,7 +57,7 @@ public static class WebApplicationBuildRunner
                 }
             });
             builder.Services
-                .AddDefaultServices<TProgram, TClaimsTransformation>(builder.Configuration, version, cookieName);
+                .AddDefaultServices<TProgram>(builder.Configuration, version, cookieName);
 
             configureBuilder?.Invoke(builder);
 

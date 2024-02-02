@@ -25,7 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
 #nullable disable
 
-namespace Org.Eclipse.TractusX.Provisioning.Migrations.Migrations
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
     [DbContext(typeof(ProvisioningDbContext))]
     partial class ProvisioningDbContextModelSnapshot : ModelSnapshot
