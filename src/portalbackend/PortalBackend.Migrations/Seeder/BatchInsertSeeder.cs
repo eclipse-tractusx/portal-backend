@@ -81,7 +81,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<CompanyRoleDescription>("company_role_descriptions", x => new { x.CompanyRoleId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyUserAssignedAppFavourite>("company_user_assigned_app_favourites", x => new { x.CompanyUserId, x.AppId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyUserAssignedBusinessPartner>("company_user_assigned_business_partners", x => new { x.CompanyUserId, x.BusinessPartnerNumber }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<CompanyCertificateTypeDescription>("company_certificate_type_description", x => new { x.Id, x.ShortName, x.Description }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<CompanyCertificateTypeDescription>("company_certificate_type_descriptions", x => new { x.Id, x.ShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<IdentityAssignedRole>("identity_assigned_roles", x => new { x.IdentityId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<ConsentAssignedOffer>("consent_assigned_offers", x => new { x.OfferId, x.ConsentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<ConsentAssignedOfferSubscription>("consent_assigned_offer_subscriptions", x => new { x.OfferSubscriptionId, x.ConsentId }, cancellationToken).ConfigureAwait(false);

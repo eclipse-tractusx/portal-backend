@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -32,7 +31,7 @@ public class CompanyCertificateTypeDescription
         Description = null!;
     }
 
-    public CompanyCertificateTypeDescription(CompanyCertificateTypeId id, string shortName, string description)
+    public CompanyCertificateTypeDescription(CompanyCertificateTypeId id, string shortName, string description) : this()
     {
         Id = id;
         ShortName = shortName;
@@ -43,7 +42,7 @@ public class CompanyCertificateTypeDescription
     [StringLength(2, MinimumLength = 2)]
     public string ShortName { get; private set; }
 
-    public string Description { get; private set; }
+    public string Description { get; set; }
 
     // Navigation Properties
     public virtual Language? Language { get; private set; }

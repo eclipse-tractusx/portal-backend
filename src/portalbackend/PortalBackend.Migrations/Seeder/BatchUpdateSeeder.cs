@@ -88,6 +88,15 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Description = entry.Description;
             }, cancellationToken).ConfigureAwait(false);
 
+        await SeedTable<CompanyCertificateTypeDescription>(
+            "company_certificate_type_descriptions",
+            x => new { x.Id, x.ShortName },
+            x => x.dbEntity.Description != x.dataEntity.Description,
+            (dbEntry, entry) =>
+            {
+                dbEntry.Description = entry.Description;
+            }, cancellationToken).ConfigureAwait(false);
+
         await SeedTable<Country>(
             "countries",
             x => x.Alpha2Code,
