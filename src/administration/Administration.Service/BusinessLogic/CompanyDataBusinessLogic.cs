@@ -365,38 +365,35 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     /// <inheritdoc />
-    // public async Task CreateCompanyCertificate(CertificateCreationData data, CancellationToken cancellationToken)
-    // {
+    public async Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken)
+    {
 
-    //     var documentContentType = data.Document.ContentType.ParseMediaTypeId();
-    //     documentContentType.CheckDocumentContentType(_settings.SsiCertificateMediaTypes);
+        var documentContentType = data.Document.ContentType.ParseMediaTypeId();
+        documentContentType.CheckDocumentContentType(_settings.SsiCertificateMediaTypes);
 
-    //     var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
-    //     if (!await companyCertificateRepository.CheckSsiCertificateType(data.CertificateType.Id).ConfigureAwait(false))
-    //     {
-    //         throw new ControllerArgumentException($"{data.CertificateType.Id} is not assigned to a certificate");
-    //     }
-    //     await HandleCompanyCertificateCreationAsync(data.CertificateType.Id, null, data.Document, documentContentType, companyCertificateRepository, data.ExpiryDate, cancellationToken).ConfigureAwait(false);
-    // }
-    // /// <inheritdoc />
-    // private async Task HandleCompanyCertificateCreationAsync(CompanyCertificateTypeId companyCertificateTypeId, Guid? verifiedCompanyCertificateId, IFormFile document, MediaTypeId mediaTypeId,
-    // ICompanyCertificateRepository companyCertificateRepository, DateTimeOffset? expiryDate, CancellationToken cancellationToken)
-    // {
-    //     var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
-    //     var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
-    //         hash, mediaTypeId, DocumentTypeId.Company_Certificate, x =>
-    //         {
-    //             x.CompanyUserId = _identityData.IdentityId;
-    //             x.DocumentStatusId = DocumentStatusId.PENDING;
-    //         });
+        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
+        if (!await companyCertificateRepository.CheckCompanyCertificateType(data.CertificateTypeId).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"{data.CertificateTypeId} is not assigned to a certificate");
+        }
+        await HandleCompanyCertificateCreationAsync(data.CertificateTypeId, data.Document, documentContentType, companyCertificateRepository, data.ExpiryDate, cancellationToken).ConfigureAwait(false);
+    }
+    /// <inheritdoc />
+    private async Task HandleCompanyCertificateCreationAsync(CompanyCertificateTypeId companyCertificateTypeId, IFormFile document, MediaTypeId mediaTypeId,
+    ICompanyCertificateRepository companyCertificateRepository, DateTimeOffset? expiryDate, CancellationToken cancellationToken)
+    {
+        var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
+            hash, mediaTypeId, DocumentTypeId.Company_Certificate, x =>
+            {
+                x.CompanyUserId = _identityData.IdentityId;
+                x.DocumentStatusId = DocumentStatusId.PENDING;
+            });
 
-    //     // companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, doc.Id, expiryDate ,n=>
-    //     // {
-           
-    //     // });
+        var companyCertificate = companyCertificateRepository.CreateCompanyCertificateData(_identityData.CompanyId, companyCertificateTypeId, doc.Id, expiryDate);
 
-    //     await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    // }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
     /// <inheritdoc />
     public async Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken)
     {
