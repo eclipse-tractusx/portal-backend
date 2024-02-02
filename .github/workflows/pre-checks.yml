@@ -91,8 +91,9 @@ jobs:
           script_output=$(./scripts/check_package_versions.sh)
 
           if [ -z "$script_output" ]; then
-            echo "Expected version updates were made. Please see https://github.com/eclipse-tractusx/portal-backend/blob/main/src/framework/README.md for further information"
+            echo "Expected version updates were made"
           else
             echo "the following packages need a version update: $script_output"
+            echo "Please see https://github.com/eclipse-tractusx/portal-backend/blob/main/src/framework/README.md for further information"
             exit 1
           fi

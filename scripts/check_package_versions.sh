@@ -20,8 +20,8 @@
 #!/bin/bash
 
 # Get GitHub context from environment variables
-baseBranch=$BASE_NAME
-currentBranch=$HEAD_NAME
+baseBranch=release/v1.8.0-RC5
+currentBranch=feature/CPLP-3400-framework-nuget
 
 # Initialize a global arrays to store data
 version_update_needed=()
@@ -32,13 +32,18 @@ changed_versions=($(git diff --name-only $baseBranch..$currentBranch | grep 'Dir
 check_version_update(){
   local project="$1"
   local props_file="src/framework/"$project"/Directory.Build.props"
-  if [[ " ${changed_versions[@]} " =~ " $props_file " ]]; then
-    if ! git diff $baseBranch..$currentBranch -- "$props_file" | grep -qE '^\+[[:space:]]*<VersionPrefix>[0-9]+\.[0-9]+\.[0-9]+</VersionPrefix>' ||
-      (! git diff $baseBranch..$currentBranch -- "$props_file" | grep -qE '^\+[[:space:]]*<VersionSuffix></VersionSuffix>' && git diff $baseBranch..$currentBranch -- "$props_file" | grep -qE '^\+[[:space:]]*<VersionSuffix>[^<]*</VersionSuffix>'); then
-        version_update_needed+=($project)
-    fi
+  if ! git diff --diff-filter=D --quiet "$baseBranch..$currentBranch" -- "$props_file" ||
+   ! [ -s "$props_file" ]; then
+    break;
   else
-    version_update_needed+=($project)
+    if [[ " ${changed_versions[@]} " =~ " $props_file " ]]; then
+      if ! git diff $baseBranch..$currentBranch -- "$props_file" | grep -qE '^\+[[:space:]]*<VersionPrefix>[0-9]+\.[0-9]+\.[0-9]+</VersionPrefix>' &&
+        (! git diff $baseBranch..$currentBranch -- "$props_file" | grep -qE '^\+[[:space:]]*<VersionSuffix></VersionSuffix>' && git diff $baseBranch..$currentBranch -- "$props_file" | grep -qE '^\+[[:space:]]*<VersionSuffix>[^<]*</VersionSuffix>'); then
+          version_update_needed+=($project)
+      fi
+    else
+      version_update_needed+=($project)
+    fi
   fi
 }
 
