@@ -28,11 +28,8 @@
         <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library</RootNamespace>
     </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Token" Version="1.0.0-beta.14" />
-  </ItemGroup>
-
     <ItemGroup>
+        <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
         <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
         <ProjectReference Include="..\..\processes\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj" />
     </ItemGroup>

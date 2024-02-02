@@ -28,13 +28,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Library\Keycloak.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling" Version="1.0.0-beta.14" />
   </ItemGroup>
 
 </Project>

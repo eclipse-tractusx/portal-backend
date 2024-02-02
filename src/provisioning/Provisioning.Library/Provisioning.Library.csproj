@@ -29,6 +29,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
     <ProjectReference Include="..\Provisioning.DBAccess\Provisioning.DBAccess.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
@@ -38,9 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling" Version="1.0.0-beta.14" />
     <PackageReference Include="PasswordGenerator" Version="2.1.0" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.14" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 

@@ -34,7 +34,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
     <PackageReference Include="AutoFixture" Version="4.18.0" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.14" />
     <PackageReference Include="xunit" Version="2.5.0" />
     <PackageReference Include="Xunit.Extensions.AssemblyFixture" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
@@ -47,6 +46,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\framework\Framework.Async\Framework.Async.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />

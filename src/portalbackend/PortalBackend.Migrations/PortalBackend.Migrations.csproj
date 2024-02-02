@@ -40,11 +40,12 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Logging" Version="1.0.0-beta.14" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding" Version="1.0.0-beta.14" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\..\processes\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
     <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>

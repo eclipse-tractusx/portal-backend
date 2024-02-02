@@ -39,17 +39,17 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider" Version="1.0.0-beta.14" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Models" Version="1.0.0-beta.14" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.IO" Version="1.0.0-beta.14" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.14" />
-    <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Token" Version="1.0.0-beta.14" />
     <PackageReference Include="PasswordGenerator" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\externalsystems\Bpdm.Library\Bpdm.Library.csproj" />
     <ProjectReference Include="..\..\externalsystems\OnboardingServiceProvider.Library\OnboardingServiceProvider.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />

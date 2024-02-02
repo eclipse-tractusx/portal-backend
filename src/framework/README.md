@@ -2,7 +2,7 @@
 
 All projects within the framework directory are built and provided as NuGet packages.
 
-Please do not add direct references to other projects to include the framework logic. Instead, always add the specific reference as a NuGet package to your project.
+Please do not add direct references to any framework project which is not in the framework directory
 
 ## Package Configuration
 
@@ -30,3 +30,7 @@ You can link one framework package to another by adding a project reference. Her
 ```
 
 When linking a NuGet package in this manner, the referencing package will use the current version of the linked package. For example, if the current version of the package `Framework.ErrorHandling.Library` is 1.1.0 and you reference it in `Framework.ErrorHandling.Library.Web` using the example above, `Framework.ErrorHandling.Library.Web` will reference this specific version when building the NuGet package.
+
+## Build
+
+Please make sure to update the version as soon as a package was updated with the [update_framework_versions](./../../scripts/update_framework_versions.sh) script.

@@ -43,12 +43,12 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="7.0.0" />
-      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Logging" Version="1.0.0-beta.14" />
       <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
       <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
       <ProjectReference Include="..\..\processes\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
     </ItemGroup>

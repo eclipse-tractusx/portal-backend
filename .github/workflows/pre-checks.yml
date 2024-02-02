@@ -76,40 +76,22 @@ jobs:
         run: dotnet test src --filter FullyQualifiedName\!~Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests --no-restore --verbosity normal
 
   checkFramework:
-    name: Build, check and test nuget packages
+    name: Check nuget packages
     needs: changes
     if: ${{ needs.changes.outputs.framework == 'true' }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: ['7.0']
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}
-      - name: Install dotnet-format
-        run: dotnet tool install -g dotnet-format
-      - name: Install dependencies nuget packages
-        run: dotnet restore src/framework
-      - name: Build nuget packages
-        run: dotnet build src/framework --configuration Release --no-restore
-      - name: Check Format nuget packages
-        run: dotnet format src/framework --verify-no-changes --no-restore
-      - name: Test nuget packages
-        run: dotnet test src/framework --no-restore --verbosity normal
       - name: Check Package Versions
         shell: bash
         run: |
           script_output=$(./scripts/check_package_versions.sh)
 
           if [ -z "$script_output" ]; then
-            echo "Expected version updates were made"
+            echo "Expected version updates were made. Please see https://github.com/eclipse-tractusx/portal-backend/blob/main/src/framework/README.md for further information"
           else
             echo "the following packages need a version update: $script_output"
             exit 1

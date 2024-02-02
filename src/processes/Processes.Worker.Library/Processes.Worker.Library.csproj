@@ -29,10 +29,10 @@
   
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
-      <PackageReference Include="Org.Eclipse.TractusX.Portal.Backend.Framework.Async" Version="1.0.0-beta.14" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
       <ProjectReference Include="..\..\processes\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     </ItemGroup>
