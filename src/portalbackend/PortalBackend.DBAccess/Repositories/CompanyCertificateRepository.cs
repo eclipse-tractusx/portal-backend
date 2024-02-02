@@ -40,16 +40,17 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
         _context = portalDbContext;
     }
 
-    public Task<bool> CheckSsiCertificateType(CompanyCertificateTypeId CertificateTypeId) =>
+    public Task<bool> CheckCompanyCertificateType(CompanyCertificateTypeId CertificateTypeId) =>
      _context.CompanyCertificateTypes
             .AnyAsync(x =>
                 x.Id == CertificateTypeId);
 
     /// <inheritdoc />
-    public CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset expiryDate)
+    public CompanyCertificate CreateCompanyCertificateData(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset? expiryDate, Action<CompanyCertificate>? setOptionalFields)
     {
-        var detail = new CompanyCertificate(Guid.NewGuid(), DateTimeOffset.UtcNow, expiryDate, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
-        return _context.CompanyCertificates.Add(detail).Entity;
+        var companyCertificate = new CompanyCertificate(Guid.NewGuid(), DateTimeOffset.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
+        setOptionalFields?.Invoke(companyCertificate);
+        return _context.CompanyCertificates.Add(companyCertificate).Entity;
     }
 
 }

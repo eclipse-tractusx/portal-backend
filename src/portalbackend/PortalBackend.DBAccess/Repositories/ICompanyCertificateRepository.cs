@@ -32,7 +32,7 @@ public interface ICompanyCertificateRepository
     /// </summary>
     /// <param name="CertificateTypeId">Id of the credentialTypeId</param>
     /// <returns><c>true</c> if the tpye is a certificate, otherwise <c>false</c></returns>
-    Task<bool> CheckSsiCertificateType(CompanyCertificateTypeId CertificateTypeId);
+    Task<bool> CheckCompanyCertificateType(CompanyCertificateTypeId CertificateTypeId);
 
     /// <summary>
     /// Creates the company certificate data
@@ -43,5 +43,5 @@ public interface ICompanyCertificateRepository
     /// <param name="expiryDate">expiry date</param>
     /// <param name="companyCertificateStatusId">company certificate status id</param>   
     /// <returns>The created entity</returns>
-    CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset expiryDate);
+    CompanyCertificate CreateCompanyCertificateData(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset? expiryDate, Action<CompanyCertificate>? setOptionalFields = null);
 }

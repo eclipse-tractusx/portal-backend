@@ -23,17 +23,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
+
 public record CompanyCertificateCreationData
-{
-    CompanyCertificateType CertificateType;
-    DateTimeOffset? ExpiryDate;
-    IFormFile Document;
-
-};
-
-public record CertificateCreationData
 (
-    CompanyCertificateType CertificateType,
+    CompanyCertificateTypeId CertificateTypeId,
     IFormFile Document,
     DateTimeOffset? ExpiryDate
 );
