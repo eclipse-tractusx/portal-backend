@@ -323,6 +323,7 @@ public class RegistrationBusinessLogicTest
             new CompanyApplicationWithStatus(
                 _fixture.Create<Guid>(),
                 CompanyApplicationStatusId.VERIFY,
+                CompanyApplicationTypeId.INTERNAL,
                 new[]
                 {
                     new ApplicationChecklistData(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION,
