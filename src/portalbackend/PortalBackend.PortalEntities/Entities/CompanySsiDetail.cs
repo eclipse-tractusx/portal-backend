@@ -25,7 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanySsiDetail20231115))]
+[AuditEntityV1(typeof(AuditCompanySsiDetail20240104))]
 public class CompanySsiDetail : IAuditableV1, IBaseEntity
 {
     private CompanySsiDetail() { }
@@ -47,10 +47,12 @@ public class CompanySsiDetail : IAuditableV1, IBaseEntity
     public VerifiedCredentialTypeId VerifiedCredentialTypeId { get; set; }
     public CompanySsiDetailStatusId CompanySsiDetailStatusId { get; set; }
     public Guid DocumentId { get; set; }
-    public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; set; }
     public Guid CreatorUserId { get; set; }
     public DateTimeOffset? ExpiryDate { get; set; }
-    public Guid? VerifiedCredentialExternalTypeUseCaseDetailId { get; set; }
+    public Guid? VerifiedCredentialExternalTypeDetailVersionId { get; set; }
+
+    public ExpiryCheckTypeId? ExpiryCheckTypeId { get; set; }
 
     [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
@@ -62,8 +64,9 @@ public class CompanySsiDetail : IAuditableV1, IBaseEntity
     public virtual Identity? LastEditor { get; private set; }
     public virtual Company? Company { get; set; }
     public virtual VerifiedCredentialType? VerifiedCredentialType { get; set; }
+    public virtual ExpiryCheckType? ExpiryCheckType { get; set; }
     public virtual CompanySsiDetailStatus? CompanySsiDetailStatus { get; set; }
     public virtual Document? Document { get; set; }
-    public virtual VerifiedCredentialExternalTypeUseCaseDetailVersion? VerifiedCredentialExternalTypeUseCaseDetailVersion { get; set; }
+    public virtual VerifiedCredentialExternalTypeDetailVersion? VerifiedCredentialExternalTypeDetailVersion { get; set; }
     public virtual CompanyUser? CreatorUser { get; set; }
 }

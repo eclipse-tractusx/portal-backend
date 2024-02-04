@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,12 +17,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Credential.App.DependencyInjection;
 
-public record SsiCertificateData
-(
-    VerifiedCredentialTypeId CredentialType,
-    IEnumerable<CompanySsiDetailData> SsiDetailData
-);
+/// <summary>
+/// Settings for the ExpiryCheckService
+/// </summary>
+public class ExpiryCheckServiceSettings
+{
+    /// <summary>
+    /// Vcs which are older than the given value will be deleted when expired
+    /// </summary>
+    [Required]
+    public int ExpiredVcsToDeleteInMonth { get; init; }
+
+    /// <summary>
+    /// Vcs which are older than the given value will be deleted when declined
+    /// </summary>
+    [Required]
+    public int InactiveVcsToDeleteInWeeks { get; init; }
+}

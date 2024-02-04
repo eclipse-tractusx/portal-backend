@@ -191,14 +191,12 @@ public class CompanyDataController : ControllerBase
     /// <returns>All SSI certifications of the own company</returns>
     /// <remarks>Example: Get: api/administration/companydata/certificates</remarks>
     /// <response code="200">Returns a collection of certificates.</response>
-    /// <response code="409">There should only be one pending or active SSI detail be assigned</response>
     [HttpGet]
     [Authorize(Roles = "view_certificates")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("certificates")]
     [ProducesResponseType(typeof(IEnumerable<SsiCertificateTransferData>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task<IEnumerable<SsiCertificateData>> GetSsiCertificationData() =>
+    public Task<IEnumerable<CertificateParticipationData>> GetSsiCertificationData() =>
         _logic.GetSsiCertificatesAsync();
 
     /// <summary>

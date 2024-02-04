@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,26 +17,33 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class VerifiedCredentialExternalTypeUseCaseDetailVersion : IBaseEntity
+public class ExpiryCheckType
 {
-    public VerifiedCredentialExternalTypeUseCaseDetailVersion()
+    private ExpiryCheckType()
     {
-        Version = null!;
+        Label = null!;
         CompanySsiDetails = new HashSet<CompanySsiDetail>();
     }
 
-    public Guid Id { get; set; }
-    public VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId { get; set; }
-    public string Version { get; set; }
-    public string? Template { get; set; }
-    public DateTimeOffset ValidFrom { get; set; }
-    public DateTimeOffset? Expiry { get; set; }
+    public ExpiryCheckType(ExpiryCheckTypeId expiryCheckId)
+        : this()
+    {
+        Id = expiryCheckId;
+        Label = expiryCheckId.ToString();
+        CompanySsiDetails = new HashSet<CompanySsiDetail>();
+    }
 
-    public virtual VerifiedCredentialExternalType? VerifiedCredentialExternalType { get; private set; }
+    public ExpiryCheckTypeId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+
+    // Navigation properties
+
     public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

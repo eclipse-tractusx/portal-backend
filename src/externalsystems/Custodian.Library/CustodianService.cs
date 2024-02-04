@@ -119,31 +119,24 @@ public class CustodianService : ICustodianService
     }
 
     /// <inheritdoc />
-    public async Task TriggerFrameworkAsync(string bpn, UseCaseDetailData useCaseDetailData, CancellationToken cancellationToken)
+    public async Task TriggerFrameworkAsync(CustodianFrameworkRequest requestData, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        var requestBody = new CustodianFrameworkRequest
-        (
-            bpn,
-            useCaseDetailData.VerifiedCredentialExternalTypeId,
-            useCaseDetailData.Template,
-            useCaseDetailData.Version
-        );
-
-        await httpClient.PostAsJsonAsync("/api/credentials/issuer/framework", requestBody, Options, cancellationToken)
+        await httpClient.PostAsJsonAsync("/api/credentials/issuer/framework", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-framework-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task TriggerDismantlerAsync(string bpn, VerifiedCredentialTypeId credentialTypeId, CancellationToken cancellationToken)
+    public async Task TriggerDismantlerAsync(string bpn, VerifiedCredentialTypeId credentialTypeId, DateTimeOffset expiryDate, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
 
         var requestBody = new CustodianDismantlerRequest
         (
             bpn,
-            credentialTypeId
+            credentialTypeId,
+            expiryDate
         );
 
         await httpClient.PostAsJsonAsync("/api/credentials/issuer/dismantler", requestBody, Options, cancellationToken)

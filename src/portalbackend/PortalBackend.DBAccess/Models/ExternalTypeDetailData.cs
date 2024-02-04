@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record ExternalTypeDetailData(
     Guid Id,
     VerifiedCredentialExternalTypeId VerifiedCredentialExternalTypeId,
-    string Version,
+    string? Version,
     string? Template,
     DateTimeOffset? ValidFrom,
     DateTimeOffset? Expiry

@@ -80,6 +80,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyApplication20231115> AuditCompanyApplication20231115 { get; set; } = default!;
     public virtual DbSet<AuditCompanySsiDetail20230621> AuditCompanySsiDetail20230621 { get; set; } = default!;
     public virtual DbSet<AuditCompanySsiDetail20231115> AuditCompanySsiDetail20231115 { get; set; } = default!;
+    public virtual DbSet<AuditCompanySsiDetail20240104> AuditCompanySsiDetail20240104 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20230522> AuditCompanyUser20230523 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230405> AuditConnector20230405 { get; set; } = default!;
@@ -134,6 +135,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
     public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;
+    public virtual DbSet<ExpiryCheckType> ExpiryCheckTypes { get; set; } = default!;
     public virtual DbSet<IamClient> IamClients { get; set; } = default!;
     public virtual DbSet<IamIdentityProvider> IamIdentityProviders { get; set; } = default!;
     public virtual DbSet<Identity> Identities { get; set; } = default!;
@@ -184,7 +186,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialExternalType> VerifiedCredentialExternalTypes { get; set; } = default!;
-    public virtual DbSet<VerifiedCredentialExternalTypeUseCaseDetailVersion> VerifiedCredentialExternalTypeUseCaseDetailVersions { get; set; } = default!;
+    public virtual DbSet<VerifiedCredentialExternalTypeDetailVersion> VerifiedCredentialExternalTypeDetailVersions { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialType> VerifiedCredentialTypes { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeAssignedExternalType> VerifiedCredentialTypeAssignedExternalTypes { get; set; } = default!;
     public virtual DbSet<VerifiedCredentialTypeKind> VerifiedCredentialTypeKinds { get; set; } = default!;
@@ -1320,9 +1322,9 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(t => t.CompanySsiDetailStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(c => c.VerifiedCredentialExternalTypeUseCaseDetailVersion)
+            entity.HasOne(c => c.VerifiedCredentialExternalTypeDetailVersion)
                 .WithMany(c => c.CompanySsiDetails)
-                .HasForeignKey(t => t.VerifiedCredentialExternalTypeUseCaseDetailId)
+                .HasForeignKey(t => t.VerifiedCredentialExternalTypeDetailVersionId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(c => c.CreatorUser)
@@ -1335,7 +1337,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<CompanySsiDetail>(t => t.DocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<CompanySsiDetail, AuditCompanySsiDetail20231115>();
+            entity.HasAuditV1Triggers<CompanySsiDetail, AuditCompanySsiDetail20240104>();
         });
 
         modelBuilder.Entity<VerifiedCredentialTypeAssignedUseCase>(entity =>
@@ -1384,16 +1386,23 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<VerifiedCredentialExternalTypeUseCaseDetailVersion>(entity =>
+        modelBuilder.Entity<VerifiedCredentialExternalTypeDetailVersion>(entity =>
         {
             entity.HasOne(d => d.VerifiedCredentialExternalType)
-                .WithMany(x => x.VerifiedCredentialExternalTypeUseCaseDetailVersions)
+                .WithMany(x => x.VerifiedCredentialExternalTypeDetailVersions)
                 .HasForeignKey(d => d.VerifiedCredentialExternalTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasIndex(e => new { e.VerifiedCredentialExternalTypeId, e.Version })
                 .IsUnique();
         });
+
+        modelBuilder.Entity<ExpiryCheckType>()
+            .HasData(
+                Enum.GetValues(typeof(ExpiryCheckTypeId))
+                    .Cast<ExpiryCheckTypeId>()
+                    .Select(e => new ExpiryCheckType(e))
+            );
 
         modelBuilder.Entity<CompaniesLinkedServiceAccount>()
             .ToView("company_linked_service_accounts", "portal")

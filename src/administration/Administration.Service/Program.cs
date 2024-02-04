@@ -88,6 +88,7 @@ WebApplicationBuildRunner
             .AddSingleton<IErrorMessageContainer, AdministrationConnectorErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationRegistrationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationServiceAccountErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, CompanyDataErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ProvisioningServiceErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);

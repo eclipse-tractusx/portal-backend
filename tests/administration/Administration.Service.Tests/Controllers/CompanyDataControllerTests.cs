@@ -187,7 +187,7 @@ public class CompanyDataControllerTests
     {
         // Arrange
         A.CallTo(() => _logic.GetSsiCertificatesAsync())
-            .Returns(_fixture.CreateMany<SsiCertificateData>(5));
+            .Returns(_fixture.CreateMany<CertificateParticipationData>(5));
 
         // Act
         var result = await _controller.GetSsiCertificationData().ConfigureAwait(false);
@@ -216,7 +216,7 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
+        var data = new SsiCertificateCreationData(null, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
 
         // Act
         await _controller.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);

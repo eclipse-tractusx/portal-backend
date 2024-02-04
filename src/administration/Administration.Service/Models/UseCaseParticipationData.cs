@@ -31,6 +31,12 @@ public record UseCaseParticipationData
     IEnumerable<CompanySsiExternalTypeDetailData> VerifiedCredentials
 );
 
+public record CertificateParticipationData
+(
+    VerifiedCredentialTypeId CredentialType,
+    IEnumerable<CompanySsiExternalTypeDetailData> VerifiedCredentials
+);
+
 public record CompanySsiExternalTypeDetailData
 (
     ExternalTypeDetailData ExternalDetailData,

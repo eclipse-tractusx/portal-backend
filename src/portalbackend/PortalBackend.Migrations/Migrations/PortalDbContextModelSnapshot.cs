@@ -535,6 +535,79 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("audit_company_ssi_detail20231115", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanySsiDetail20240104", b =>
+                {
+                    b.Property<Guid>("AuditV1Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_v1id");
+
+                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_v1date_last_changed");
+
+                    b.Property<Guid?>("AuditV1LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_v1last_editor_id");
+
+                    b.Property<int>("AuditV1OperationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("audit_v1operation_id");
+
+                    b.Property<Guid?>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<int?>("CompanySsiDetailStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_ssi_detail_status_id");
+
+                    b.Property<Guid?>("CreatorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("creator_user_id");
+
+                    b.Property<DateTimeOffset?>("DateCreated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_created");
+
+                    b.Property<DateTimeOffset?>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.Property<int?>("ExpiryCheckTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("expiry_check_type_id");
+
+                    b.Property<DateTimeOffset?>("ExpiryDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expiry_date");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.Property<Guid?>("VerifiedCredentialExternalTypeDetailVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("verified_credential_external_type_detail_version_id");
+
+                    b.Property<int?>("VerifiedCredentialTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("verified_credential_type_id");
+
+                    b.HasKey("AuditV1Id")
+                        .HasName("pk_audit_company_ssi_detail20240104");
+
+                    b.ToTable("audit_company_ssi_detail20240104", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser20221005", b =>
                 {
                     b.Property<Guid>("AuditV1Id")
@@ -3386,6 +3459,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("document_id");
 
+                    b.Property<int?>("ExpiryCheckTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("expiry_check_type_id");
+
                     b.Property<DateTimeOffset?>("ExpiryDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiry_date");
@@ -3394,9 +3471,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("last_editor_id");
 
-                    b.Property<Guid?>("VerifiedCredentialExternalTypeUseCaseDetailId")
+                    b.Property<Guid?>("VerifiedCredentialExternalTypeDetailVersionId")
                         .HasColumnType("uuid")
-                        .HasColumnName("verified_credential_external_type_use_case_detail_id");
+                        .HasColumnName("verified_credential_external_type_detail_version_id");
 
                     b.Property<int>("VerifiedCredentialTypeId")
                         .HasColumnType("integer")
@@ -3418,11 +3495,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsUnique()
                         .HasDatabaseName("ix_company_ssi_details_document_id");
 
+                    b.HasIndex("ExpiryCheckTypeId")
+                        .HasDatabaseName("ix_company_ssi_details_expiry_check_type_id");
+
                     b.HasIndex("LastEditorId")
                         .HasDatabaseName("ix_company_ssi_details_last_editor_id");
 
-                    b.HasIndex("VerifiedCredentialExternalTypeUseCaseDetailId")
-                        .HasDatabaseName("ix_company_ssi_details_verified_credential_external_type_use_c");
+                    b.HasIndex("VerifiedCredentialExternalTypeDetailVersionId")
+                        .HasDatabaseName("ix_company_ssi_details_verified_credential_external_type_detai");
 
                     b.HasIndex("VerifiedCredentialTypeId")
                         .HasDatabaseName("ix_company_ssi_details_verified_credential_type_id");
@@ -3435,8 +3515,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
 
                     b
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_ssi_detail20231115\" (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"verified_credential_type_id\", \r\n  NEW.\"company_ssi_detail_status_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"creator_user_id\", \r\n  NEW.\"expiry_date\", \r\n  NEW.\"verified_credential_external_type_use_case_detail_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL AFTER INSERT\r\nON \"portal\".\"company_ssi_details\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL\"();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_ssi_detail20231115\" (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"verified_credential_type_id\", \r\n  NEW.\"company_ssi_detail_status_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"creator_user_id\", \r\n  NEW.\"expiry_date\", \r\n  NEW.\"verified_credential_external_type_use_case_detail_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL AFTER UPDATE\r\nON \"portal\".\"company_ssi_details\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL\"();");
+                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_ssi_detail20240104\" (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_detail_version_id\", \"expiry_check_type_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"verified_credential_type_id\", \r\n  NEW.\"company_ssi_detail_status_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"creator_user_id\", \r\n  NEW.\"expiry_date\", \r\n  NEW.\"verified_credential_external_type_detail_version_id\", \r\n  NEW.\"expiry_check_type_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL AFTER INSERT\r\nON \"portal\".\"company_ssi_details\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL\"();")
+                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_ssi_detail20240104\" (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_detail_version_id\", \"expiry_check_type_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"verified_credential_type_id\", \r\n  NEW.\"company_ssi_detail_status_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"creator_user_id\", \r\n  NEW.\"expiry_date\", \r\n  NEW.\"verified_credential_external_type_detail_version_id\", \r\n  NEW.\"expiry_check_type_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL AFTER UPDATE\r\nON \"portal\".\"company_ssi_details\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL\"();");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetailStatus", b =>
@@ -4244,6 +4324,41 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 14,
                             Label = "PRESENTATION"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ExpiryCheckType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_expiry_check_types");
+
+                    b.ToTable("expiry_check_types", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "ONE_MONTH"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "TWO_WEEKS"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "ONE_DAY"
                         });
                 });
 
@@ -5080,6 +5195,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 25,
                             Label = "CREDENTIAL_REJECTED"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Label = "CREDENTIAL_EXPIRY"
                         });
                 });
 
@@ -6422,14 +6542,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeDetailVersion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset?>("Expiry")
+                    b.Property<DateTimeOffset>("Expiry")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiry");
 
@@ -6446,18 +6566,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnName("verified_credential_external_type_id");
 
                     b.Property<string>("Version")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("version");
 
                     b.HasKey("Id")
-                        .HasName("pk_verified_credential_external_type_use_case_detail_versions");
+                        .HasName("pk_verified_credential_external_type_detail_versions");
 
                     b.HasIndex("VerifiedCredentialExternalTypeId", "Version")
                         .IsUnique()
-                        .HasDatabaseName("ix_verified_credential_external_type_use_case_detail_versions_");
+                        .HasDatabaseName("ix_verified_credential_external_type_detail_versions_verified_");
 
-                    b.ToTable("verified_credential_external_type_use_case_detail_versions", "portal");
+                    b.ToTable("verified_credential_external_type_detail_versions", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", b =>
@@ -7308,15 +7427,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_ssi_details_documents_document_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ExpiryCheckType", "ExpiryCheckType")
+                        .WithMany("CompanySsiDetails")
+                        .HasForeignKey("ExpiryCheckTypeId")
+                        .HasConstraintName("fk_company_ssi_details_expiry_check_types_expiry_check_type_id");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
                         .WithMany()
                         .HasForeignKey("LastEditorId")
                         .HasConstraintName("fk_company_ssi_details_identities_last_editor_id");
 
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", "VerifiedCredentialExternalTypeUseCaseDetailVersion")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeDetailVersion", "VerifiedCredentialExternalTypeDetailVersion")
                         .WithMany("CompanySsiDetails")
-                        .HasForeignKey("VerifiedCredentialExternalTypeUseCaseDetailId")
-                        .HasConstraintName("fk_company_ssi_details_verified_credential_external_type_use_c");
+                        .HasForeignKey("VerifiedCredentialExternalTypeDetailVersionId")
+                        .HasConstraintName("fk_company_ssi_details_verified_credential_external_type_detai");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", "VerifiedCredentialType")
                         .WithMany("CompanySsiDetails")
@@ -7332,9 +7456,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("Document");
 
+                    b.Navigation("ExpiryCheckType");
+
                     b.Navigation("LastEditor");
 
-                    b.Navigation("VerifiedCredentialExternalTypeUseCaseDetailVersion");
+                    b.Navigation("VerifiedCredentialExternalTypeDetailVersion");
 
                     b.Navigation("VerifiedCredentialType");
                 });
@@ -8305,13 +8431,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeDetailVersion", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", "VerifiedCredentialExternalType")
-                        .WithMany("VerifiedCredentialExternalTypeUseCaseDetailVersions")
+                        .WithMany("VerifiedCredentialExternalTypeDetailVersions")
                         .HasForeignKey("VerifiedCredentialExternalTypeId")
                         .IsRequired()
-                        .HasConstraintName("fk_verified_credential_external_type_use_case_detail_versions_");
+                        .HasConstraintName("fk_verified_credential_external_type_detail_versions_verified_");
 
                     b.Navigation("VerifiedCredentialExternalType");
                 });
@@ -8612,6 +8738,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Documents");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ExpiryCheckType", b =>
+                {
+                    b.Navigation("CompanySsiDetails");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamClient", b =>
                 {
                     b.Navigation("AppInstances");
@@ -8833,12 +8964,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", b =>
                 {
-                    b.Navigation("VerifiedCredentialExternalTypeUseCaseDetailVersions");
+                    b.Navigation("VerifiedCredentialExternalTypeDetailVersions");
 
                     b.Navigation("VerifiedCredentialTypeAssignedExternalTypes");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeDetailVersion", b =>
                 {
                     b.Navigation("CompanySsiDetails");
                 });
