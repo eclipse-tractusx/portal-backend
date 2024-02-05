@@ -282,6 +282,7 @@ public class CompanyDataController : ControllerBase
     [Consumes("multipart/form-data")]
     [Authorize(Roles = "upload_certificates")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("companyCertificate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

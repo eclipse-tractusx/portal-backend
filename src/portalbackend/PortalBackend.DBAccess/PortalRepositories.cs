@@ -60,6 +60,7 @@ public class PortalRepositories : IPortalRepositories
         { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
         { typeof(IUserRepository), context => new UserRepository(context) },
         { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
+        { typeof(ICompanyCertificateRepository), context => new CompanyCertificateRepository(context) },
     }.ToImmutableDictionary();
 
     public PortalRepositories(PortalDbContext portalDbContext)

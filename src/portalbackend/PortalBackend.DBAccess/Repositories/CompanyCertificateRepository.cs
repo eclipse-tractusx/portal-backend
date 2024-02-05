@@ -40,10 +40,10 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
         _context = portalDbContext;
     }
 
-    public Task<bool> CheckCompanyCertificateType(CompanyCertificateTypeId CertificateTypeId) =>
+    public Task<bool> CheckCompanyCertificateType(CompanyCertificateTypeId certificateTypeId) =>
      _context.CompanyCertificateTypes
             .AnyAsync(x =>
-                x.Id == CertificateTypeId);
+                x.Id == certificateTypeId);
 
     /// <inheritdoc />
     public CompanyCertificate CreateCompanyCertificateData(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset? expiryDate, Action<CompanyCertificate>? setOptionalFields)
