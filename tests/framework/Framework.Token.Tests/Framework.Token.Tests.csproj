@@ -41,8 +41,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\tests\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.Token\Framework.Token.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
-    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
   </ItemGroup>
 </Project>

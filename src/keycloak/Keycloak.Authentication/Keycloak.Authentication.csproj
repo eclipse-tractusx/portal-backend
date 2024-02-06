@@ -1,5 +1,5 @@
 <!--
-- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+- Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -31,14 +31,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.15" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.2.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.2.0" />
     <PackageReference Include="System.Json" Version="4.7.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+    <ProjectReference Include="..\..\web\Web.Identity\Web.Identity.csproj" />
   </ItemGroup>
 
 </Project>

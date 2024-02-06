@@ -25,8 +25,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>

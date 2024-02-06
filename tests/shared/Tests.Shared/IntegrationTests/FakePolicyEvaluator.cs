@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;

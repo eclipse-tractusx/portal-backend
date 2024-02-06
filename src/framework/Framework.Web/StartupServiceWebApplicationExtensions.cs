@@ -20,43 +20,22 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Serilog;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceWebApplicationExtensions
 {
-    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, IHostEnvironment environment)
+    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version)
     {
         app.UseSerilogRequestLogging();
-
-        if (environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-            var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>()?.Values
-                .Where(config => config.ConnectionString.StartsWith("https://"))
-                .Select(config => config.ConnectionString)
-                .Distinct();
-            if (urlsToTrust != null)
-            {
-                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
-            }
-        }
-
-        var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
-
-        FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(), environment.IsDevelopment());
 
         if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null &&
             app.Configuration.GetValue<bool>("SwaggerEnabled"))
         {
+            var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
             app.UseSwagger(c =>
                 c.RouteTemplate = $"/api/{apiPath}/swagger/{{documentName}}/swagger.{{json|yaml}}");
             app.UseSwaggerUI(c =>

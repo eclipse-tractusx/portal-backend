@@ -38,16 +38,15 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\framework\Framework.ProcessIdentity\Framework.ProcessIdentity.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
       <ProjectReference Include="..\OfferSubscription.Executor\OfferSubscription.Executor.csproj" />
       <ProjectReference Include="..\NetworkRegistration.Executor\NetworkRegistration.Executor.csproj" />
+      <ProjectReference Include="..\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
       <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
       <ProjectReference Include="..\ApplicationChecklist.Executor\ApplicationChecklist.Executor.csproj" />
     </ItemGroup>

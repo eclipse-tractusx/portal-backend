@@ -24,7 +24,6 @@ on:
     paths:
       # service and transitive paths
       - 'src/maintenance/Maintenance.App/**'
-      - 'src/framework/**'
       - 'src/portalbackend/PortalBackend.PortalEntities/**'
       # workflow file
       - '.github/workflows/maintenance-service.yml'

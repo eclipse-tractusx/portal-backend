@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
-
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Collections.Immutable;
 using System.Web;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 
 public static class UrlHelper
 {

@@ -24,11 +24,12 @@ on:
     paths:
       # service and transitive paths
       - 'src/marketplace/Apps.Service/**'
-      - 'src/framework/**'
+      - 'src/marketplace/Offers.Library/**'
       - 'src/keycloak/**'
       - 'src/mailing/**'
       - 'src/notifications/**'
       - 'src/portalbackend/**'
+      - 'src/web/**'
       # workflow file
       - '.github/workflows/marketplace-app-service.yml'
       # dockerfile
