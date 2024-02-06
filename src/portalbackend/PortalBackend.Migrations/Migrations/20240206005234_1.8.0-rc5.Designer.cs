@@ -28,7 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240206002539_1.8.0-rc5")]
+    [Migration("20240206005234_1.8.0-rc5")]
     partial class _180rc5
     {
         /// <inheritdoc />
@@ -4522,6 +4522,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("identity_provider_id");
 
+                    b.Property<string>("MetadataUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("metadata_url");
+
                     b.HasKey("IamIdpAlias")
                         .HasName("pk_iam_identity_providers");
 
@@ -7553,7 +7557,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("LanguageShortName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_role_descriptions_languages_language_temp_id1");
+                        .HasConstraintName("fk_company_role_descriptions_languages_language_temp_id2");
 
                     b.Navigation("CompanyRole");
 
@@ -7935,7 +7939,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("CountryLongNames")
                         .HasForeignKey("ShortName")
                         .IsRequired()
-                        .HasConstraintName("fk_country_long_names_languages_language_temp_id2");
+                        .HasConstraintName("fk_country_long_names_languages_language_temp_id3");
 
                     b.Navigation("Country");
 

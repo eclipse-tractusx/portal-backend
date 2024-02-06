@@ -31,6 +31,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "fk_company_role_descriptions_languages_language_temp_id1",
+                schema: "portal",
+                table: "company_role_descriptions");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_country_long_names_languages_language_temp_id2",
+                schema: "portal",
+                table: "country_long_names");
+
+            migrationBuilder.AddColumn<string>(
+                name: "metadata_url",
+                schema: "portal",
+                table: "iam_identity_providers",
+                type: "text",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "company_certificate_statuses",
                 schema: "portal",
@@ -243,11 +260,40 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "company_certificates",
                 column: "document_id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_company_role_descriptions_languages_language_temp_id2",
+                schema: "portal",
+                table: "company_role_descriptions",
+                column: "language_short_name",
+                principalSchema: "portal",
+                principalTable: "languages",
+                principalColumn: "short_name",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_country_long_names_languages_language_temp_id3",
+                schema: "portal",
+                table: "country_long_names",
+                column: "short_name",
+                principalSchema: "portal",
+                principalTable: "languages",
+                principalColumn: "short_name");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "fk_company_role_descriptions_languages_language_temp_id2",
+                schema: "portal",
+                table: "company_role_descriptions");
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_country_long_names_languages_language_temp_id3",
+                schema: "portal",
+                table: "country_long_names");
+
             migrationBuilder.DropTable(
                 name: "company_certificate_type_assigned_statuses",
                 schema: "portal");
@@ -271,6 +317,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.DropTable(
                 name: "company_certificate_types",
                 schema: "portal");
+
+            migrationBuilder.DropColumn(
+                name: "metadata_url",
+                schema: "portal",
+                table: "iam_identity_providers");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_company_role_descriptions_languages_language_temp_id1",
+                schema: "portal",
+                table: "company_role_descriptions",
+                column: "language_short_name",
+                principalSchema: "portal",
+                principalTable: "languages",
+                principalColumn: "short_name",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_country_long_names_languages_language_temp_id2",
+                schema: "portal",
+                table: "country_long_names",
+                column: "short_name",
+                principalSchema: "portal",
+                principalTable: "languages",
+                principalColumn: "short_name");
         }
     }
 }
