@@ -1,5 +1,5 @@
 ###############################################################
-# Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -28,11 +28,6 @@ on:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 
-env:
-  # variables needed for scripts/check_package_versions.sh
-  BASE_NAME: "${{ github.event.pull_request.base.ref }}"
-  HEAD_NAME: "${{ github.event.pull_request.head.ref }}"
-        
 jobs:
   
   changes:
@@ -88,12 +83,13 @@ jobs:
       - name: Check Package Versions
         shell: bash
         run: |
-          script_output=$(./scripts/check_package_versions.sh)
+          script_output=$(./scripts/nuget_version_check.sh origin/${{ github.event.pull_request.base.ref }})
 
           if [ -z "$script_output" ]; then
             echo "Expected version updates were made"
           else
-            echo "the following packages need a version update: $script_output"
+            echo "the following packages need a version update:"
+            echo "$script_output"
             echo "Please see https://github.com/eclipse-tractusx/portal-backend/blob/main/src/framework/README.md for further information"
             exit 1
           fi

@@ -21,7 +21,7 @@
 
 # Get branch names
 if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 <branchRange>"
+  echo "Usage: $0 <baseBranch|branchRange>"
   exit 1
 fi
 
@@ -30,18 +30,19 @@ branchRange="$1"
 
 # Initialize a global arrays to store data
 version_update_needed=()
-first_version=""
-unmatching_package=()
 
 check_version_update(){
   local project="$1"
   local props_file=$project"Directory.Build.props"
 
+  # check if the code (.cs) unchanged
   if ! git diff --name-only $branchRange -- "$project" | grep -qE '\.cs$' ||
+    # check if build.props file has been deleted
     ! [ -z $(git diff --name-only --diff-filter=D $branchRange -- "$props_file") ]; then
     return
   fi
 
+  # check if build.props file is unchanged
   if [ -z $(git diff --name-only $branchRange -- "$props_file") ]; then
     version_update_needed+=($project)
     return
