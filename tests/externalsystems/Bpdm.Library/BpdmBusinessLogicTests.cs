@@ -514,9 +514,9 @@ public class BpdmBusinessLogicTests
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithStateCreated.ToString()), A<CancellationToken>._))
             .ThrowsAsync(new ServiceException("not found", System.Net.HttpStatusCode.NotFound));
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithoutZipCode.ToString()), A<CancellationToken>._))
-            .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.Bpn, (string?)null).Create());
+            .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.LegalEntity, (BpdmLegelEntityData?)null).Create());
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithBpn.ToString()), A<CancellationToken>._))
-            .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.Bpn, "CAXSDUMMYCATENAZZ").Create());
+            .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.LegalEntity, new BpdmLegelEntityData("CAXSDUMMYCATENAZZ", null, null, null, Enumerable.Empty<BpdmProfileClassification>())).Create());
         A.CallTo(() => _bpdmService.GetSharingState(A<Guid>.That.Matches(x => x == IdWithBpn || x == IdWithStateCreated || x == IdWithoutZipCode || x == IdWithoutSharingProcessStarted), A<CancellationToken>._))
             .Returns(_fixture.Build<BpdmSharingState>()
                 .With(x => x.SharingStateType, BpdmSharingStateType.Success)

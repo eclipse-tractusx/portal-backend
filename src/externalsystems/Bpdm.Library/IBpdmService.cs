@@ -34,6 +34,14 @@ public interface IBpdmService
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
     Task<bool> PutInputLegalEntity(BpdmTransferData data, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the sharing state for the external id to ready 
+    /// </summary>
+    /// <param name="externalId">The external id</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>bool if successful</returns>
+    Task<bool> SetSharingStateToReady(string externalId, CancellationToken cancellationToken);
     Task<BpdmLegalEntityOutputData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken);
     Task<BpdmSharingState> GetSharingState(Guid applicationId, CancellationToken cancellationToken);
 }
