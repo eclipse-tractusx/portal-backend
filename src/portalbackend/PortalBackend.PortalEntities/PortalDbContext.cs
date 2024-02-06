@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -107,6 +107,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyCertificate> CompanyCertificates { get; set; } = default!;
     public virtual DbSet<CompanyCertificateStatus> CompanyCertificateStatuses { get; set; } = default!;
     public virtual DbSet<CompanyCertificateType> CompanyCertificateTypes { get; set; } = default!;
+    public virtual DbSet<CompanyCertificateTypeStatus> CompanyCertificateTypeStatuses { get; set; } = default!;
+    public virtual DbSet<CompanyCertificateTypeAssignedStatus> CompanyCertificateTypeAssignedStatuses { get; set; } = default!;
     public virtual DbSet<CompanyCertificateTypeDescription> CompanyCertificateTypeDescriptions { get; set; } = default!;
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
@@ -624,41 +626,60 @@ public class PortalDbContext : DbContext
             );
 
         modelBuilder.Entity<CompanyCertificate>(entity =>
-   {
-       entity.HasOne(d => d.Company)
-           .WithMany(p => p.CompanyCertificates)
-           .HasForeignKey(d => d.CompanyId)
-           .OnDelete(DeleteBehavior.ClientSetNull);
+        {
+            entity.HasOne(d => d.Company)
+                .WithMany(p => p.CompanyCertificates)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
-       entity.HasOne(d => d.Document)
-           .WithMany(p => p.DocumentCompanyCertificate)
-           .HasForeignKey(d => d.DocumentId)
-           .OnDelete(DeleteBehavior.ClientSetNull);
-   });
+            entity.HasOne(d => d.Document)
+                .WithMany(p => p.CompanyCertificates)
+                .HasForeignKey(d => d.DocumentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
 
         modelBuilder.Entity<CompanyCertificateStatus>()
-       .HasData(
-           Enum.GetValues(typeof(CompanyCertificateStatusId))
-               .Cast<CompanyCertificateStatusId>()
-               .Select(e => new CompanyCertificateStatus(e))
-       );
+            .HasData(
+                Enum.GetValues(typeof(CompanyCertificateStatusId))
+                    .Cast<CompanyCertificateStatusId>()
+                    .Select(e => new CompanyCertificateStatus(e))
+            );
 
         modelBuilder.Entity<CompanyCertificateType>()
             .HasData(
                 Enum.GetValues(typeof(CompanyCertificateTypeId))
                     .Cast<CompanyCertificateTypeId>()
-                    .Select(e => new CompanyCertificateType(e, CompanyCertificateStatusId.ACTIVE))
+                    .Select(e => new CompanyCertificateType(e))
             );
 
+        modelBuilder.Entity<CompanyCertificateTypeAssignedStatus>(entity =>
+        {
+            entity.HasOne(e => e.CompanyCertificateType)
+                .WithOne(d => d.CompanyCertificateTypeAssignedStatus)
+                .HasForeignKey<CompanyCertificateTypeAssignedStatus>(e => e.CompanyCertificateTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(e => e.CompanyCertificateTypeStatus)
+                .WithMany(d => d.CompanyCertificateTypeAssignedStatuses)
+                .HasForeignKey(e => e.CompanyCertificateTypeStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<CompanyCertificateTypeDescription>(entity =>
-         {
-             entity.HasKey(x => new { x.Id, x.ShortName });
+        {
+            entity.HasKey(x => new { x.CompanyCertificateTypeId, x.LanguageShortName });
 
-             entity.HasOne(e => e.Language)
-                 .WithMany(e => e.CompanyCertificateTypeDescriptions)
-                .HasForeignKey(e => e.ShortName);
+            entity.HasOne(e => e.Language)
+                .WithMany(e => e.CompanyCertificateTypeDescriptions)
+                .HasForeignKey(e => e.LanguageShortName);
+        });
 
-         });
+        modelBuilder.Entity<CompanyCertificateTypeStatus>()
+            .HasData(
+                Enum.GetValues(typeof(CompanyCertificateTypeStatusId))
+                    .Cast<CompanyCertificateTypeStatusId>()
+                    .Select(e => new CompanyCertificateTypeStatus(e))
+            );
 
         modelBuilder.Entity<ApplicationChecklistEntry>(entity =>
         {

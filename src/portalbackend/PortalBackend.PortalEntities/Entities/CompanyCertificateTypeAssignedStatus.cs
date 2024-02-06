@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,36 +17,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-public class CompanyCertificateTypeDescription
+public class CompanyCertificateTypeAssignedStatus
 {
-    private CompanyCertificateTypeDescription()
-    {
-        LanguageShortName = null!;
-        Description = null!;
-    }
-
-    public CompanyCertificateTypeDescription(CompanyCertificateTypeId companyCertificateTypeId, string languageShortName, string description) : this()
+    public CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateTypeStatusId companyCertificateTypeStatusId)
     {
         CompanyCertificateTypeId = companyCertificateTypeId;
-        LanguageShortName = languageShortName;
-        Description = description;
+        CompanyCertificateTypeStatusId = companyCertificateTypeStatusId;
     }
 
+    [Key]
     public CompanyCertificateTypeId CompanyCertificateTypeId { get; private set; }
-
-    [StringLength(2, MinimumLength = 2)]
-    public string LanguageShortName { get; private set; }
-
-    public string Description { get; set; }
+    public CompanyCertificateTypeStatusId CompanyCertificateTypeStatusId { get; set; }
 
     // Navigation Properties
-    public virtual Language? Language { get; private set; }
 
     public virtual CompanyCertificateType? CompanyCertificateType { get; private set; }
+    public virtual CompanyCertificateTypeStatus? CompanyCertificateTypeStatus { get; set; }
 }

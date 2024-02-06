@@ -38,7 +38,7 @@ public class Document : IAuditableV1, IBaseEntity
         Consents = new HashSet<Consent>();
         Offers = new HashSet<Offer>();
         Companies = new HashSet<Company>();
-        DocumentCompanyCertificate = new HashSet<CompanyCertificate>();
+        CompanyCertificates = new HashSet<CompanyCertificate>();
     }
 
     public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, MediaTypeId mediaTypeId, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId)
@@ -96,5 +96,5 @@ public class Document : IAuditableV1, IBaseEntity
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
-    public virtual ICollection<CompanyCertificate> DocumentCompanyCertificate { get; private set; }
+    public virtual ICollection<CompanyCertificate> CompanyCertificates { get; private set; }
 }

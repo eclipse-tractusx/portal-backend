@@ -1,122 +1,122 @@
 [
     {
-        "id": 1,
-        "short_name": "de",
+        "company_certificate_type_id": 1,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 1,
-        "short_name": "en",
+        "company_certificate_type_id": 1,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 2,
-        "short_name": "de",
+        "company_certificate_type_id": 2,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 2,
-        "short_name": "en",
+        "company_certificate_type_id": 2,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 3,
-        "short_name": "de",
+        "company_certificate_type_id": 3,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 3,
-        "short_name": "en",
+        "company_certificate_type_id": 3,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 4,
-        "short_name": "de",
+        "company_certificate_type_id": 4,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 4,
-        "short_name": "en",
+        "company_certificate_type_id": 4,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 5,
-        "short_name": "de",
+        "company_certificate_type_id": 5,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 5,
-        "short_name": "en",
+        "company_certificate_type_id": 5,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 6,
-        "short_name": "de",
+        "company_certificate_type_id": 6,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 6,
-        "short_name": "en",
+        "company_certificate_type_id": 6,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 7,
-        "short_name": "de",
+        "company_certificate_type_id": 7,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 7,
-        "short_name": "en",
+        "company_certificate_type_id": 7,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 8,
-        "short_name": "de",
+        "company_certificate_type_id": 8,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 8,
-        "short_name": "en",
+        "company_certificate_type_id": 8,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 9,
-        "short_name": "de",
+        "company_certificate_type_id": 9,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 9,
-        "short_name": "en",
+        "company_certificate_type_id": 9,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 10,
-        "short_name": "de",
+        "company_certificate_type_id": 10,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 10,
-        "short_name": "en",
+        "company_certificate_type_id": 10,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 11,
-        "short_name": "de",
+        "company_certificate_type_id": 11,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 11,
-        "short_name": "en",
+        "company_certificate_type_id": 11,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     },
     {
-        "id": 12,
-        "short_name": "de",
+        "company_certificate_type_id": 12,
+        "language_short_name": "de",
         "description": "Description will get added asap"
     },
     {
-        "id": 12,
-        "short_name": "en",
+        "company_certificate_type_id": 12,
+        "language_short_name": "en",
         "description": "Description will get added asap"
     }
 ]

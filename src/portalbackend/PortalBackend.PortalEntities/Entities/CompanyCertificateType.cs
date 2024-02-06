@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -27,13 +27,13 @@ public class CompanyCertificateType
     private CompanyCertificateType()
     {
         Label = null!;
+        CompanyCertificates = new HashSet<CompanyCertificate>();
     }
 
-    public CompanyCertificateType(CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId)
+    public CompanyCertificateType(CompanyCertificateTypeId companyCertificateTypeId) : this()
     {
         Id = companyCertificateTypeId;
         Label = companyCertificateTypeId.ToString();
-        Status = companyCertificateStatusId;
     }
 
     public CompanyCertificateTypeId Id { get; private set; }
@@ -41,5 +41,8 @@ public class CompanyCertificateType
     [MaxLength(255)]
     public string Label { get; private set; }
 
-    public CompanyCertificateStatusId Status { get; private set; }
+    // Navigation Properties
+
+    public virtual CompanyCertificateTypeAssignedStatus? CompanyCertificateTypeAssignedStatus { get; set; }
+    public virtual ICollection<CompanyCertificate> CompanyCertificates { get; private set; }
 }

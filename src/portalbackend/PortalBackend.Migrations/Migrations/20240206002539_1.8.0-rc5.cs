@@ -26,21 +26,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class CPLP3642companycertificates : Migration
+    public partial class _180rc5 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "fk_company_role_descriptions_languages_language_temp_id1",
-                schema: "portal",
-                table: "company_role_descriptions");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_country_long_names_languages_language_temp_id2",
-                schema: "portal",
-                table: "country_long_names");
-
             migrationBuilder.CreateTable(
                 name: "company_certificate_statuses",
                 schema: "portal",
@@ -55,13 +45,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
+                name: "company_certificate_type_statuses",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_company_certificate_type_statuses", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "company_certificate_types",
                 schema: "portal",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false),
-                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    status = table.Column<int>(type: "integer", nullable: false)
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -69,27 +71,52 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "company_certificate_type_descriptions",
+                name: "company_certificate_type_assigned_statuses",
                 schema: "portal",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false),
-                    short_name = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
-                    description = table.Column<string>(type: "text", nullable: false),
-                    company_certificate_type_id = table.Column<int>(type: "integer", nullable: true)
+                    company_certificate_type_id = table.Column<int>(type: "integer", nullable: false),
+                    company_certificate_type_status_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_certificate_type_descriptions", x => new { x.id, x.short_name });
+                    table.PrimaryKey("pk_company_certificate_type_assigned_statuses", x => x.company_certificate_type_id);
                     table.ForeignKey(
-                        name: "fk_company_certificate_type_descriptions_company_certificate_t",
+                        name: "fk_company_certificate_type_assigned_statuses_company_certific",
                         column: x => x.company_certificate_type_id,
                         principalSchema: "portal",
                         principalTable: "company_certificate_types",
                         principalColumn: "id");
                     table.ForeignKey(
+                        name: "fk_company_certificate_type_assigned_statuses_company_certific1",
+                        column: x => x.company_certificate_type_status_id,
+                        principalSchema: "portal",
+                        principalTable: "company_certificate_type_statuses",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "company_certificate_type_descriptions",
+                schema: "portal",
+                columns: table => new
+                {
+                    company_certificate_type_id = table.Column<int>(type: "integer", nullable: false),
+                    language_short_name = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
+                    description = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_company_certificate_type_descriptions", x => new { x.company_certificate_type_id, x.language_short_name });
+                    table.ForeignKey(
+                        name: "fk_company_certificate_type_descriptions_company_certificate_t",
+                        column: x => x.company_certificate_type_id,
+                        principalSchema: "portal",
+                        principalTable: "company_certificate_types",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "fk_company_certificate_type_descriptions_languages_language_te",
-                        column: x => x.short_name,
+                        column: x => x.language_short_name,
                         principalSchema: "portal",
                         principalTable: "languages",
                         principalColumn: "short_name",
@@ -153,35 +180,45 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "company_certificate_types",
-                columns: new[] { "id", "label", "status" },
+                table: "company_certificate_type_statuses",
+                columns: new[] { "id", "label" },
                 values: new object[,]
                 {
-                    { 1, "AEO_CTPAT_Security_Declaration", 2 },
-                    { 2, "ISO_9001", 2 },
-                    { 3, "IATF_16949", 2 },
-                    { 4, "ISO_14001_EMAS_or_national_certification", 2 },
-                    { 5, "ISO_45001_OHSAS_18001_or_national_certification", 2 },
-                    { 6, "ISO_IEC_27001", 2 },
-                    { 7, "ISO_50001_or_national_certification", 2 },
-                    { 8, "ISO_IEC_17025", 2 },
-                    { 9, "ISO_15504_SPICE", 2 },
-                    { 10, "B_BBEE_Certificate_of_South_Africa", 2 },
-                    { 11, "IATF", 2 },
-                    { 12, "TISAX", 2 }
+                    { 1, "ACTIVE" },
+                    { 2, "INACTVIE" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "company_certificate_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "AEO_CTPAT_Security_Declaration" },
+                    { 2, "ISO_9001" },
+                    { 3, "IATF_16949" },
+                    { 4, "ISO_14001_EMAS_or_national_certification" },
+                    { 5, "ISO_45001_OHSAS_18001_or_national_certification" },
+                    { 6, "ISO_IEC_27001" },
+                    { 7, "ISO_50001_or_national_certification" },
+                    { 8, "ISO_IEC_17025" },
+                    { 9, "ISO_15504_SPICE" },
+                    { 10, "B_BBEE_Certificate_of_South_Africa" },
+                    { 11, "IATF" },
+                    { 12, "TISAX" }
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_company_certificate_type_descriptions_company_certificate_t",
+                name: "ix_company_certificate_type_assigned_statuses_company_certific",
                 schema: "portal",
-                table: "company_certificate_type_descriptions",
-                column: "company_certificate_type_id");
+                table: "company_certificate_type_assigned_statuses",
+                column: "company_certificate_type_status_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_company_certificate_type_descriptions_short_name",
+                name: "ix_company_certificate_type_descriptions_language_short_name",
                 schema: "portal",
                 table: "company_certificate_type_descriptions",
-                column: "short_name");
+                column: "language_short_name");
 
             migrationBuilder.CreateIndex(
                 name: "ix_company_certificates_company_certificate_status_id",
@@ -206,39 +243,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "company_certificates",
                 column: "document_id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_role_descriptions_languages_language_temp_id2",
-                schema: "portal",
-                table: "company_role_descriptions",
-                column: "language_short_name",
-                principalSchema: "portal",
-                principalTable: "languages",
-                principalColumn: "short_name",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_country_long_names_languages_language_temp_id3",
-                schema: "portal",
-                table: "country_long_names",
-                column: "short_name",
-                principalSchema: "portal",
-                principalTable: "languages",
-                principalColumn: "short_name");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "fk_company_role_descriptions_languages_language_temp_id2",
-                schema: "portal",
-                table: "company_role_descriptions");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_country_long_names_languages_language_temp_id3",
-                schema: "portal",
-                table: "country_long_names");
+            migrationBuilder.DropTable(
+                name: "company_certificate_type_assigned_statuses",
+                schema: "portal");
 
             migrationBuilder.DropTable(
                 name: "company_certificate_type_descriptions",
@@ -249,31 +261,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
+                name: "company_certificate_type_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
                 name: "company_certificate_statuses",
                 schema: "portal");
 
             migrationBuilder.DropTable(
                 name: "company_certificate_types",
                 schema: "portal");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_role_descriptions_languages_language_temp_id1",
-                schema: "portal",
-                table: "company_role_descriptions",
-                column: "language_short_name",
-                principalSchema: "portal",
-                principalTable: "languages",
-                principalColumn: "short_name",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_country_long_names_languages_language_temp_id2",
-                schema: "portal",
-                table: "country_long_names",
-                column: "short_name",
-                principalSchema: "portal",
-                principalTable: "languages",
-                principalColumn: "short_name");
         }
     }
 }

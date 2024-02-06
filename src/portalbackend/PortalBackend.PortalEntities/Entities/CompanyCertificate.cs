@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,31 +19,26 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection.Metadata;
 using Document = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
 public class CompanyCertificate
 {
+    private CompanyCertificate() { }
 
-    private CompanyCertificate()
+    public CompanyCertificate(Guid id, DateTimeOffset validFrom, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid comapnyId, Guid documentId) : this()
     {
-
-    }
-    public CompanyCertificate(Guid guid, DateTimeOffset dateTimeOffset, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid comapnyId, Guid documentId)
-    {
-        Id = guid;
-        ValidFrom = dateTimeOffset;
+        Id = id;
+        ValidFrom = validFrom;
         CompanyCertificateTypeId = companyCertificateTypeId;
         CompanyCertificateStatusId = companyCertificateStatusId;
         CompanyId = comapnyId;
         DocumentId = documentId;
-
     }
-    public Guid Id { get; set; }
-    public DateTimeOffset ValidFrom { get; set; }
+
+    public Guid Id { get; private set; }
+    public DateTimeOffset ValidFrom { get; private set; }
     public DateTimeOffset? ValidTill { get; set; }
     public CompanyCertificateTypeId CompanyCertificateTypeId { get; private set; }
     public CompanyCertificateStatusId CompanyCertificateStatusId { get; set; }

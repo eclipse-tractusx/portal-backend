@@ -28,8 +28,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240202130130_CPLP-3642-company-certificates")]
-    partial class CPLP3642companycertificates
+    [Migration("20240206002539_1.8.0-rc5")]
+    partial class _180rc5
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2237,10 +2237,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
-
                     b.HasKey("Id")
                         .HasName("pk_company_certificate_types");
 
@@ -2250,107 +2246,137 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 1,
-                            Label = "AEO_CTPAT_Security_Declaration",
-                            Status = 2
+                            Label = "AEO_CTPAT_Security_Declaration"
                         },
                         new
                         {
                             Id = 2,
-                            Label = "ISO_9001",
-                            Status = 2
+                            Label = "ISO_9001"
                         },
                         new
                         {
                             Id = 3,
-                            Label = "IATF_16949",
-                            Status = 2
+                            Label = "IATF_16949"
                         },
                         new
                         {
                             Id = 4,
-                            Label = "ISO_14001_EMAS_or_national_certification",
-                            Status = 2
+                            Label = "ISO_14001_EMAS_or_national_certification"
                         },
                         new
                         {
                             Id = 5,
-                            Label = "ISO_45001_OHSAS_18001_or_national_certification",
-                            Status = 2
+                            Label = "ISO_45001_OHSAS_18001_or_national_certification"
                         },
                         new
                         {
                             Id = 6,
-                            Label = "ISO_IEC_27001",
-                            Status = 2
+                            Label = "ISO_IEC_27001"
                         },
                         new
                         {
                             Id = 7,
-                            Label = "ISO_50001_or_national_certification",
-                            Status = 2
+                            Label = "ISO_50001_or_national_certification"
                         },
                         new
                         {
                             Id = 8,
-                            Label = "ISO_IEC_17025",
-                            Status = 2
+                            Label = "ISO_IEC_17025"
                         },
                         new
                         {
                             Id = 9,
-                            Label = "ISO_15504_SPICE",
-                            Status = 2
+                            Label = "ISO_15504_SPICE"
                         },
                         new
                         {
                             Id = 10,
-                            Label = "B_BBEE_Certificate_of_South_Africa",
-                            Status = 2
+                            Label = "B_BBEE_Certificate_of_South_Africa"
                         },
                         new
                         {
                             Id = 11,
-                            Label = "IATF",
-                            Status = 2
+                            Label = "IATF"
                         },
                         new
                         {
                             Id = 12,
-                            Label = "TISAX",
-                            Status = 2
+                            Label = "TISAX"
                         });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeAssignedStatus", b =>
+                {
+                    b.Property<int>("CompanyCertificateTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_type_id");
+
+                    b.Property<int>("CompanyCertificateTypeStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_type_status_id");
+
+                    b.HasKey("CompanyCertificateTypeId")
+                        .HasName("pk_company_certificate_type_assigned_statuses");
+
+                    b.HasIndex("CompanyCertificateTypeStatusId")
+                        .HasDatabaseName("ix_company_certificate_type_assigned_statuses_company_certific");
+
+                    b.ToTable("company_certificate_type_assigned_statuses", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeDescription", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("ShortName")
-                        .HasMaxLength(2)
-                        .HasColumnType("character(2)")
-                        .HasColumnName("short_name");
-
-                    b.Property<int?>("CompanyCertificateTypeId")
+                    b.Property<int>("CompanyCertificateTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("company_certificate_type_id");
+
+                    b.Property<string>("LanguageShortName")
+                        .HasMaxLength(2)
+                        .HasColumnType("character(2)")
+                        .HasColumnName("language_short_name");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.HasKey("Id", "ShortName")
+                    b.HasKey("CompanyCertificateTypeId", "LanguageShortName")
                         .HasName("pk_company_certificate_type_descriptions");
 
-                    b.HasIndex("CompanyCertificateTypeId")
-                        .HasDatabaseName("ix_company_certificate_type_descriptions_company_certificate_t");
-
-                    b.HasIndex("ShortName")
-                        .HasDatabaseName("ix_company_certificate_type_descriptions_short_name");
+                    b.HasIndex("LanguageShortName")
+                        .HasDatabaseName("ix_company_certificate_type_descriptions_language_short_name");
 
                     b.ToTable("company_certificate_type_descriptions", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_certificate_type_statuses");
+
+                    b.ToTable("company_certificate_type_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "ACTIVE"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "INACTVIE"
+                        });
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
@@ -7014,7 +7040,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_company_certificates_company_certificate_statuses_company_c");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", "CompanyCertificateType")
-                        .WithMany()
+                        .WithMany("CompanyCertificates")
                         .HasForeignKey("CompanyCertificateTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -7027,7 +7053,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_company_certificates_companies_company_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
-                        .WithMany("DocumentCompanyCertificate")
+                        .WithMany("CompanyCertificates")
                         .HasForeignKey("DocumentId")
                         .IsRequired()
                         .HasConstraintName("fk_company_certificates_documents_document_id");
@@ -7041,16 +7067,37 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Document");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeAssignedStatus", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", "CompanyCertificateType")
+                        .WithOne("CompanyCertificateTypeAssignedStatus")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeAssignedStatus", "CompanyCertificateTypeId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificate_type_assigned_statuses_company_certific");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeStatus", "CompanyCertificateTypeStatus")
+                        .WithMany("CompanyCertificateTypeAssignedStatuses")
+                        .HasForeignKey("CompanyCertificateTypeStatusId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificate_type_assigned_statuses_company_certific1");
+
+                    b.Navigation("CompanyCertificateType");
+
+                    b.Navigation("CompanyCertificateTypeStatus");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeDescription", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", "CompanyCertificateType")
                         .WithMany()
                         .HasForeignKey("CompanyCertificateTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("fk_company_certificate_type_descriptions_company_certificate_t");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany("CompanyCertificateTypeDescriptions")
-                        .HasForeignKey("ShortName")
+                        .HasForeignKey("LanguageShortName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_company_certificate_type_descriptions_languages_language_te");
@@ -7506,7 +7553,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("LanguageShortName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_role_descriptions_languages_language_temp_id2");
+                        .HasConstraintName("fk_company_role_descriptions_languages_language_temp_id1");
 
                     b.Navigation("CompanyRole");
 
@@ -7888,7 +7935,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("CountryLongNames")
                         .HasForeignKey("ShortName")
                         .IsRequired()
-                        .HasConstraintName("fk_country_long_names_languages_language_temp_id3");
+                        .HasConstraintName("fk_country_long_names_languages_language_temp_id2");
 
                     b.Navigation("Country");
 
@@ -8658,6 +8705,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyServiceAccount");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", b =>
+                {
+                    b.Navigation("CompanyCertificateTypeAssignedStatus");
+
+                    b.Navigation("CompanyCertificates");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeStatus", b =>
+                {
+                    b.Navigation("CompanyCertificateTypeAssignedStatuses");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
                     b.Navigation("Companies");
@@ -8868,13 +8927,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("Companies");
 
+                    b.Navigation("CompanyCertificates");
+
                     b.Navigation("CompanySsiDetail");
 
                     b.Navigation("Connector");
 
                     b.Navigation("Consents");
-
-                    b.Navigation("DocumentCompanyCertificate");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentStatus", b =>

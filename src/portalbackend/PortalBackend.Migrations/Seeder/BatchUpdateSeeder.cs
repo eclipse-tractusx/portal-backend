@@ -88,9 +88,18 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Description = entry.Description;
             }, cancellationToken).ConfigureAwait(false);
 
+        await SeedTable<CompanyCertificateTypeAssignedStatus>(
+            "company_certificate_type_assigned_statuses",
+            x => new { x.CompanyCertificateTypeId, x.CompanyCertificateTypeStatusId },
+            x => x.dbEntity.CompanyCertificateTypeStatusId != x.dataEntity.CompanyCertificateTypeStatusId,
+            (dbEntry, entry) =>
+            {
+                dbEntry.CompanyCertificateTypeStatusId = entry.CompanyCertificateTypeStatusId;
+            }, cancellationToken).ConfigureAwait(false);
+
         await SeedTable<CompanyCertificateTypeDescription>(
             "company_certificate_type_descriptions",
-            x => new { x.Id, x.ShortName },
+            x => new { x.CompanyCertificateTypeId, x.LanguageShortName },
             x => x.dbEntity.Description != x.dataEntity.Description,
             (dbEntry, entry) =>
             {
