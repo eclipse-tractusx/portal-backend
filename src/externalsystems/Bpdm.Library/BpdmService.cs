@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -68,7 +67,7 @@ public class BpdmService : IBpdmService
                         x.BpdmIdentifierId,                    // Type
                         x.Value,                               // Value
                         null)),                                // IssuingBody
-                Enumerable.Empty<BpdmState>(),                // Status
+                Enumerable.Empty<BpdmState>(),                 // Status
                 Enumerable.Empty<string>(),                    // Roles
                 new BpdmLegalEntity(
                     null,
