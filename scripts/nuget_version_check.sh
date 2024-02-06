@@ -48,27 +48,57 @@ check_version_update(){
     return
   fi
 
-  # version prefix change is mandatory
-  if ! git diff $branchRange -- "$props_file" | grep -qE '^\+[[:space:]]*<VersionPrefix>[0-9]+\.[0-9]+\.[0-9]+</VersionPrefix>' ||
-    # version suffix update not permitted
-    git diff $branchRange -- "$props_file" | grep -qE '^\+[[:space:]]*<VersionSuffix>[^<]*</VersionSuffix>'; then
-      version_update_needed+=($project)
-      return
+  suffix_before=$(git diff $branchRange -- "$props_file" | grep -E '^-.*<VersionSuffix>' | sed -E 's/^-.*<VersionSuffix>([^<]*)<\/VersionSuffix>/\1/')
+  suffix_after=$(git diff $branchRange -- "$props_file" | grep -E '^\+.*<VersionSuffix>' | sed -E 's/^\+.*<VersionSuffix>([^<]*)<\/VersionSuffix>/\1/')
+
+  version_before=$(git diff $branchRange -- "$props_file" | grep -E '^-.*<VersionPrefix>' | sed -E 's/^-.*<VersionPrefix>([^<]*)<\/VersionPrefix>/\1/')
+  version_after=$(git diff $branchRange -- "$props_file" | grep -E '^\+.*<VersionPrefix>' | sed -E 's/^\+.*<VersionPrefix>([^<]*)<\/VersionPrefix>/\1/')
+
+  if [ -z $version_after ] &&
+     [ -z $suffix_after ] && 
+     [ -z $suffix_before ]; then
+    version_update_needed+=($project)
+    return
   fi
 
-  version_before=$(git diff $branchRange -- "$props_file" | grep -E '^-.*<VersionPrefix>' | sed -E 's/^-.*<VersionPrefix>([^<]+)<\/VersionPrefix>/\1/')
-  version_after=$(git diff $branchRange -- "$props_file" | grep -E '^\+.*<VersionPrefix>' | sed -E 's/^\+.*<VersionPrefix>([^<]+)<\/VersionPrefix>/\1/')
-  
+  if [ -z $version_before ]; then
+    version_before="0.0.0"
+  fi
+
+  if [ -z $version_after ]; then
+    version_after=$version_before
+  fi
+
   IFS='.' read -r major_before minor_before patch_before <<< "$version_before"
   IFS='.' read -r major_after minor_after patch_after <<< "$version_after"
 
   if [ -n "$major_before" ] && [ -n "$major_after" ] &&
     [ -n "$minor_before" ] && [ -n "$minor_after" ] &&
-    [ -n "$patch_before" ] && [ -n "$patch_after" ] &&
-    ( [ "$major_after" -gt "$major_before" ] ||
-      [ "$major_before" -eq "$major_after" -a "$minor_after" -gt "$minor_before" ] ||
-      [ "$major_before" -eq "$major_after" -a "$minor_before" -eq "$minor_after" -a "$patch_after" -gt "$patch_before" ] ); then
-    return;
+    [ -n "$patch_before" ] && [ -n "$patch_after" ]; then
+
+    # example
+    # 1.0.0.rc1 -> 1.0.0.rc1 OK
+    # 1.0.0.rc1 -> 1.0.0.rc2 OK
+    # 1.0.0.rc1 -> 1.0.0 OK
+    if [ -n "$suffix_before" ] &&
+      [ "$major_after" -eq "$major_before" -a "$minor_after" -eq "$minor_before" -a "$patch_after" -eq "$patch_before" ]; then
+      return
+    fi
+
+    # example
+    # 1.0.0 -> 1.1.0.rc1 OK
+    # 1.0.0.rc1 -> 1.1.0.rc2 OK
+    # 1.0.0 -> 2.0.0 OK
+    # 1.0.0 -> 1.1.0 OK
+    # 1.0.0 -> 1.0.1 OK
+    # 1.0.0 -> 1.0.0.rc1 NOT OK
+    # 1.0.0 -> 0.9.0 NOT OK
+    if [ "$major_after" -gt "$major_before" ] ||
+        [ "$major_after" -eq "$major_before" -a "$minor_after" -gt "$minor_before" ] ||
+        [ "$major_after" -eq "$major_before" -a "$minor_after" -eq "$minor_before" -a "$patch_after" -gt "$patch_before" ]; then
+      return;
+    fi
+
   fi
 
   version_update_needed+=($project)
