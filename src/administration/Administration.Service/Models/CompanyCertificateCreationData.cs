@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record CompanyCertificateCreationData
 (
-    CompanyCertificateTypeId CertificateTypeId,
+    CompanyCertificateTypeId CertificateType,
     IFormFile Document,
     DateTimeOffset? ExpiryDate
 );

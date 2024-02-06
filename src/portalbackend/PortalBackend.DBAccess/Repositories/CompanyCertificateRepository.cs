@@ -45,6 +45,11 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
             .AnyAsync(x =>
                 x.Id == certificateTypeId);
 
+    public Task<bool> CheckCompanyCertificateId(Guid id) =>
+    _context.CompanyCertificates
+            .AnyAsync(x =>
+                x.Id == id);
+
     /// <inheritdoc />
     public CompanyCertificate CreateCompanyCertificateData(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset? expiryDate, Action<CompanyCertificate>? setOptionalFields)
     {

@@ -35,6 +35,13 @@ public interface ICompanyCertificateRepository
     Task<bool> CheckCompanyCertificateType(CompanyCertificateTypeId CertificateTypeId);
 
     /// <summary>
+    /// Checks whether the given CertificateId exist or not<see cref="CompanyCertificate"/> Certificate
+    /// </summary>
+    /// <param name="Id">Id of the credentialTypeId</param>
+    /// <returns><c>true</c> if the tpye is a certificate, otherwise <c>false</c></returns>
+    Task<bool> CheckCompanyCertificateId(Guid Id);
+
+    /// <summary>
     /// Creates the company certificate data
     /// </summary>
     /// <param name="companyId">Id of the company</param>

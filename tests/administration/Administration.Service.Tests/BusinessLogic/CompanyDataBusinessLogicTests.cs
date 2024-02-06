@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
@@ -49,6 +50,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IDocumentRepository _documentRepository;
     private readonly ILanguageRepository _languageRepository;
     private readonly ICompanySsiDetailsRepository _companySsiDetailsRepository;
+    private readonly ICompanyCertificateRepository _companyCertificateRepository;
     private readonly IMailingService _mailingService;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -72,6 +74,7 @@ public class CompanyDataBusinessLogicTests
         _languageRepository = A.Fake<ILanguageRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
         _companySsiDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
+        _companyCertificateRepository = A.Fake<ICompanyCertificateRepository>();
 
         _mailingService = A.Fake<IMailingService>();
         _custodianService = A.Fake<ICustodianService>();
@@ -86,6 +89,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
 
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
@@ -982,6 +986,73 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region CompanyCertificate
+
+    [Fact]
+    public async Task CreateCompanyCertificate_WithInvalidDocumentContentType_ThrowsUnsupportedMediaTypeException()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PNG.MapToMediaType());
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, DateTime.UtcNow);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(new Guid("1268a76a-ca19-4dd8-b932-01f24071d560"), data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
+        ex.Message.Should().Be($"Document type not supported. File must match contentTypes :{MediaTypeId.PDF.MapToMediaType()}");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificate_WithValidCall_CreatesExpected()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var expiryDate = DateTime.UtcNow;
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, expiryDate);
+        var documentId = Guid.NewGuid();
+        var documents = new List<Document>();
+        var companyCertificates = new List<CompanyCertificate>();
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateId(Guid.NewGuid()))
+            .Returns(false);
+        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificateData(_identity.CompanyId, CompanyCertificateTypeId.IATF, A<Guid>._, expiryDate, A<Action<CompanyCertificate>>._))
+            .Invokes((Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset? expiryDate, Action<CompanyCertificate>? setOptionalFields) =>
+            {
+                var companyCertificateData = new CompanyCertificate(Guid.NewGuid(), DateTime.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
+                setOptionalFields?.Invoke(companyCertificateData);
+                companyCertificates.Add(companyCertificateData);
+            });
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<Action<Document>>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
+            {
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
+                setupOptionalFields?.Invoke(document);
+                documents.Add(document);
+            })
+            .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
+
+        // Act
+        await _sut.CreateCompanyCertificate(Guid.NewGuid(), data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<Action<Document>>._))
+            .MustHaveHappenedOnceExactly();
+        documents.Should().ContainSingle();
+        var document = documents.Single();
+        document.DocumentTypeId.Should().Be(DocumentTypeId.COMPANY_CERTIFICATE);
+        document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
+        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificateData(_identity.CompanyId, CompanyCertificateTypeId.IATF, document.Id, expiryDate, A<Action<CompanyCertificate>>._))
+            .MustHaveHappenedOnceExactly();
+        companyCertificates.Should().ContainSingle();
+        var detail = companyCertificates.Single();
+        detail.CompanyCertificateStatusId.Should().Be(CompanyCertificateStatusId.ACTIVE);
+        detail.DocumentId.Should().Be(document.Id);
+        detail.CompanyCertificateTypeId.Should().Be(CompanyCertificateTypeId.IATF);
+    }
+    #endregion
+
     #region GetCredentials
 
     [Fact]
@@ -1491,6 +1562,14 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE))
             .Returns(true);
         A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(A<VerifiedCredentialTypeId>.That.Matches(x => x != VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)))
+            .Returns(false);
+    }
+
+    private void SetupCreateCompanyCertificate()
+    {
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+            .Returns(true);
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(A<CompanyCertificateTypeId>.That.Matches(x => x != CompanyCertificateTypeId.IATF)))
             .Returns(false);
     }
 
