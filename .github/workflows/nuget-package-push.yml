@@ -20,12 +20,6 @@
 name: Push Nuget Packages and Tag
 
 on:
-  push:
-      paths:
-        - 'src/framework/**'
-      branches:
-        - 'dev'
-        - 'release/v*.*.*-RC*'
   workflow_dispatch:
     
 jobs:
@@ -44,15 +38,28 @@ jobs:
         dotnet-version: ${{ matrix.dotnet-version }}
 
     - name: Install dependencies
-      run: dotnet restore src/framework
+      run: dotnet restore src
 
     - name: Build
-      run: dotnet build src/framework --configuration Release --no-restore
+      run: dotnet build src --configuration Release --no-restore
+
+    - name: Check Package Suffix Versions
+      shell: bash
+      run: |
+        script_output=$(./scripts/no_suffix_check.sh)
+
+        if [ -z "$script_output" ]; then
+          echo "No version suffixes set"
+        else
+          echo "the following packages have a suffix version set, please remove them:"
+          echo "$script_output"
+          exit 1
+        fi
 
     - name: Push nuget packages
       shell: bash
       run: |
-        bash ./scripts/pack_and_push_packages.sh ${{ secrets.NUGET_API_KEY }}
+        bash ./scripts/pack_and_push_packages.sh --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     - name: Get new version
       id: nugetPackageVersion

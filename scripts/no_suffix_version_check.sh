@@ -1,5 +1,5 @@
 ###############################################################
-# Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -19,4 +19,11 @@
 
 #!/bin/bash
 
-. ./scripts/pack_and_push_packages.sh --source "local" --skip-duplicate
+for dir in ./src/framework/*/; do
+  if [ -d "$dir" ]; then
+    local props_file=$dir"Directory.Build.props"
+    if ! grep -qE "<VersionSuffix><\/VersionSuffix>" $props_file; then
+      echo $dir
+    fi
+  fi
+done
