@@ -20,28 +20,22 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-public class VerifiedCredentialTypeKind
+public class CompanyCertificateTypeAssignedStatus
 {
-    private VerifiedCredentialTypeKind()
+    public CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateTypeStatusId companyCertificateTypeStatusId)
     {
-        Label = null!;
-        VerifiedCredentialTypeAssignedKinds = new HashSet<VerifiedCredentialTypeAssignedKind>();
+        CompanyCertificateTypeId = companyCertificateTypeId;
+        CompanyCertificateTypeStatusId = companyCertificateTypeStatusId;
     }
 
-    public VerifiedCredentialTypeKind(VerifiedCredentialTypeKindId verifiedCredentialTypeKindId)
-        : this()
-    {
-        Id = verifiedCredentialTypeKindId;
-        Label = verifiedCredentialTypeKindId.ToString();
-    }
-
-    public VerifiedCredentialTypeKindId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
+    [Key]
+    public CompanyCertificateTypeId CompanyCertificateTypeId { get; private set; }
+    public CompanyCertificateTypeStatusId CompanyCertificateTypeStatusId { get; set; }
 
     // Navigation Properties
-    public virtual ICollection<VerifiedCredentialTypeAssignedKind> VerifiedCredentialTypeAssignedKinds { get; private set; }
+
+    public virtual CompanyCertificateType? CompanyCertificateType { get; private set; }
+    public virtual CompanyCertificateTypeStatus? CompanyCertificateTypeStatus { get; set; }
 }

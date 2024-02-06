@@ -20,21 +20,19 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum DocumentTypeId
+public enum CompanyCertificateTypeId
 {
-    CX_FRAME_CONTRACT = 1,
-    COMMERCIAL_REGISTER_EXTRACT = 2,
-    APP_CONTRACT = 3,
-    CONFORMITY_APPROVAL_REGISTRATION = 4,
-    ADDITIONAL_DETAILS = 5,
-    APP_LEADIMAGE = 6,
-    APP_IMAGE = 7,
-    SELF_DESCRIPTION = 8,
-    APP_TECHNICAL_INFORMATION = 9,
-    CONFORMITY_APPROVAL_CONNECTOR = 10,
-    CONFORMITY_APPROVAL_BUSINESS_APPS = 11,
-    CONFORMITY_APPROVAL_SERVICES = 12,
-    SERVICE_LEADIMAGE = 13,
-    PRESENTATION = 14,
-    COMPANY_CERTIFICATE = 15,
+    AEO_CTPAT_Security_Declaration = 1,
+    ISO_9001 = 2,
+    IATF_16949 = 3,
+    ISO_14001_EMAS_or_national_certification = 4,
+    ISO_45001_OHSAS_18001_or_national_certification = 5,
+    ISO_IEC_27001 = 6,
+    ISO_50001_or_national_certification = 7,
+    ISO_IEC_17025 = 8,
+    ISO_15504_SPICE = 9,
+    B_BBEE_Certificate_of_South_Africa = 10,
+    IATF = 11,
+    TISAX = 12
+
 }

@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,31 +17,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-public class IamIdentityProvider
+public class CompanyCertificateTypeStatus
 {
-    private IamIdentityProvider()
+    private CompanyCertificateTypeStatus()
     {
-        IamIdpAlias = null!;
+        Label = null!;
     }
 
-    public IamIdentityProvider(string iamIdpAlias, Guid identityProviderId)
+    public CompanyCertificateTypeStatus(CompanyCertificateTypeStatusId companyCertificateTypeStatusId)
     {
-        IamIdpAlias = iamIdpAlias;
-        IdentityProviderId = identityProviderId;
+        Id = companyCertificateTypeStatusId;
+        Label = companyCertificateTypeStatusId.ToString();
     }
 
-    public Guid IdentityProviderId { get; private set; }
+    public CompanyCertificateTypeStatusId Id { get; private set; }
 
-    [Key]
     [MaxLength(255)]
-    public string IamIdpAlias { get; private set; }
+    public string Label { get; private set; }
 
-    public string? MetadataUrl { get; set; }
+    // Navigation Properties
 
-    // Navigation properties
-    public virtual IdentityProvider? IdentityProvider { get; private set; }
+    public virtual ICollection<CompanyCertificateTypeAssignedStatus>? CompanyCertificateTypeAssignedStatuses { get; private set; }
 }

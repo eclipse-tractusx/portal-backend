@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,23 +17,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-public enum DocumentTypeId
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+
+public class CompanyCertificateStatus
 {
-    CX_FRAME_CONTRACT = 1,
-    COMMERCIAL_REGISTER_EXTRACT = 2,
-    APP_CONTRACT = 3,
-    CONFORMITY_APPROVAL_REGISTRATION = 4,
-    ADDITIONAL_DETAILS = 5,
-    APP_LEADIMAGE = 6,
-    APP_IMAGE = 7,
-    SELF_DESCRIPTION = 8,
-    APP_TECHNICAL_INFORMATION = 9,
-    CONFORMITY_APPROVAL_CONNECTOR = 10,
-    CONFORMITY_APPROVAL_BUSINESS_APPS = 11,
-    CONFORMITY_APPROVAL_SERVICES = 12,
-    SERVICE_LEADIMAGE = 13,
-    PRESENTATION = 14,
-    COMPANY_CERTIFICATE = 15,
+    private CompanyCertificateStatus()
+    {
+        Label = null!;
+    }
+
+    public CompanyCertificateStatus(CompanyCertificateStatusId certificateStatusId) : this()
+    {
+        Id = certificateStatusId;
+        Label = certificateStatusId.ToString();
+    }
+
+    public CompanyCertificateStatusId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
 }

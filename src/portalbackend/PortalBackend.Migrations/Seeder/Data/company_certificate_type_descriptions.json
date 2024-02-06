@@ -1,0 +1,122 @@
+[
+    {
+        "company_certificate_type_id": 1,
+        "language_short_name": "de",
+        "description": "Internationales Gütesiegel, das von der Zollbehörde an Unternehmen verliehen wird, die in der internationalen Lieferkette tätig sind."
+    },
+    {
+        "company_certificate_type_id": 1,
+        "language_short_name": "en",
+        "description": "International seal of quality awarded by customs authorities to companies active in the international supply chain."
+    },
+    {
+        "company_certificate_type_id": 2,
+        "language_short_name": "de",
+        "description": "Internationaler Standard, der Anforderungen an ein Qualitätsmanagementsystem (QMS) festlegt."
+    },
+    {
+        "company_certificate_type_id": 2,
+        "language_short_name": "en",
+        "description": "International standard that specifies requirements for a quality management system (QMS)."
+    },
+    {
+        "company_certificate_type_id": 3,
+        "language_short_name": "de",
+        "description": "Zeigt, dass Ihr Unternehmen umfangreiche Anforderungen zur Schaffung eines kontinuierlichen Verbesserungsprozesses mit Schwerpunkt auf Fehlervermeidung und Reduzierung von Abweichungen und Verschwendung in der Lieferkette erfüllt hat."
+    },
+    {
+        "company_certificate_type_id": 3,
+        "language_short_name": "en",
+        "description": "Demonstrates that your company has met extensive requirements to create a process of continuous improvement with an emphasis on defect prevention and reduction of variation and waste in the supply chain."
+    },
+    {
+        "company_certificate_type_id": 4,
+        "language_short_name": "de",
+        "description": "Stellt Anforderungen mit Anwendungshinweisen bereit, die sich auf Umweltmanagementsysteme beziehen."
+    },
+    {
+        "company_certificate_type_id": 4,
+        "language_short_name": "en",
+        "description": "Provides requirements with guidance for use that relate to environmental management systems."
+    },
+    {
+        "company_certificate_type_id": 5,
+        "language_short_name": "de",
+        "description": "Internationaler Standard für Gesundheit und Sicherheit am Arbeitsplatz, herausgegeben zum Schutz von Mitarbeitern und Besuchern vor arbeitsbedingten Unfällen und Krankheiten."
+    },
+    {
+        "company_certificate_type_id": 5,
+        "language_short_name": "en",
+        "description": "International standard for occupational health and safety, issued to protect employees and visitors from work-related accidents and diseases."
+    },
+    {
+        "company_certificate_type_id": 6,
+        "language_short_name": "de",
+        "description": "Internationaler Standard für Informationssicherheit. Es legt die Vorgaben für ein wirksames ISMS (Informationssicherheitsmanagementsystem) fest."
+    },
+    {
+        "company_certificate_type_id": 6,
+        "language_short_name": "en",
+        "description": "International standard for information security. It sets out the specification for an effective ISMS (information security management system)."
+    },
+    {
+        "company_certificate_type_id": 7,
+        "language_short_name": "de",
+        "description": "Freiwilliger Standard – erleichtert die Integration des Energiemanagements in die Gesamtbemühungen zur Verbesserung des Qualitäts- und Umweltmanagements."
+    },
+    {
+        "company_certificate_type_id": 7,
+        "language_short_name": "en",
+        "description": "Voluntary standard - ease integration of energy management into overall efforts to improve quality and environmental management."
+    },
+    {
+        "company_certificate_type_id": 8,
+        "language_short_name": "de",
+        "description": "Internationale Norm, die Anforderungen an Qualität und Kompetenz in Prüf- und Kalibrierlaboratorien festlegt."
+    },
+    {
+        "company_certificate_type_id": 8,
+        "language_short_name": "en",
+        "description": "International standard specifying requirements for quality and competence in testing and calibration laboratories."
+    },
+    {
+        "company_certificate_type_id": 9,
+        "language_short_name": "de",
+        "description": "Internationaler Standard zur Bewertung von Geschäftsprozessen durch entsprechende Assessments."
+    },
+    {
+        "company_certificate_type_id": 9,
+        "language_short_name": "en",
+        "description": "International standard for the evaluation of business processes through corresponding assessments."
+    },
+    {
+        "company_certificate_type_id": 10,
+        "language_short_name": "de",
+        "description": "Zertifikat zur Bestätigung der Unternehmensleistung im Hinblick auf die wirtschaftliche Stärkung der Schwarzen in Südafrika."
+    },
+    {
+        "company_certificate_type_id": 10,
+        "language_short_name": "en",
+        "description": "Certificate verifying business' performance with regards to black economic empowerment in South Africa."
+    },
+    {
+        "company_certificate_type_id": 11,
+        "language_short_name": "de",
+        "description": "Eine verbindliche Branchenanforderung, die Qualitätsmanagementsysteme für die Automobilindustrie weltweit anpasst."
+    },
+    {
+        "company_certificate_type_id": 11,
+        "language_short_name": "en",
+        "description": "A mandatory industry requirement which aligns automotive quality management systems throughout the world."
+    },
+    {
+        "company_certificate_type_id": 12,
+        "language_short_name": "de",
+        "description": "TISAX ist ein Bewertungs- und Austauschmechanismus für die Informationssicherheit von Unternehmen und ermöglicht die Anerkennung von Bewertungsergebnissen unter den Teilnehmern."
+    },
+    {
+        "company_certificate_type_id": 12,
+        "language_short_name": "en",
+        "description": "TISAX is an assessment and exchange mechanism for the information security of enterprises and allows recognition of assessment results among the participants."
+    }
+]
