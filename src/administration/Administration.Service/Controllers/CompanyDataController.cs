@@ -287,9 +287,9 @@ public class CompanyDataController : ControllerBase
     [Route("companyCertificate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<NoContentResult> CreateCompanyCertificate([FromForm] CompanyCertificateCreationData data, CancellationToken cancellationToken)
+    public async Task<NoContentResult> CreateCompanyCertificate([FromRoute] Guid certificateId, [FromForm] CompanyCertificateCreationData data, CancellationToken cancellationToken)
     {
-        await _logic.CreateCompanyCertificate(data, cancellationToken).ConfigureAwait(false);
+        await _logic.CreateCompanyCertificate(certificateId, data, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 

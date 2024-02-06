@@ -365,18 +365,23 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     /// <inheritdoc />
-    public async Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken)
+    public async Task CreateCompanyCertificate(Guid certificateId, CompanyCertificateCreationData data, CancellationToken cancellationToken)
     {
 
         var documentContentType = data.Document.ContentType.ParseMediaTypeId();
         documentContentType.CheckDocumentContentType(_settings.CompanyCertificateMediaTypes);
 
         var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
-        if (!await companyCertificateRepository.CheckCompanyCertificateType(data.CertificateTypeId).ConfigureAwait(false))
+        if (await companyCertificateRepository.CheckCompanyCertificateId(certificateId).ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"{data.CertificateTypeId} is not assigned to a certificate");
+            throw new ControllerArgumentException($"{certificateId} already exists");
         }
-        await HandleCompanyCertificateCreationAsync(data.CertificateTypeId, data.Document, documentContentType, companyCertificateRepository, data.ExpiryDate, cancellationToken).ConfigureAwait(false);
+
+        if (!await companyCertificateRepository.CheckCompanyCertificateType(data.CertificateType).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"{data.CertificateType} is not assigned to a certificate");
+        }
+        await HandleCompanyCertificateCreationAsync(data.CertificateType, data.Document, documentContentType, companyCertificateRepository, data.ExpiryDate, cancellationToken).ConfigureAwait(false);
     }
     /// <inheritdoc />
     private async Task HandleCompanyCertificateCreationAsync(CompanyCertificateTypeId companyCertificateTypeId, IFormFile document, MediaTypeId mediaTypeId,
@@ -384,7 +389,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     {
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
         var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
-            hash, mediaTypeId, DocumentTypeId.Company_Certificate, x =>
+            hash, mediaTypeId, DocumentTypeId.COMPANY_CERTIFICATE, x =>
             {
                 x.CompanyUserId = _identityData.IdentityId;
                 x.DocumentStatusId = DocumentStatusId.PENDING;
