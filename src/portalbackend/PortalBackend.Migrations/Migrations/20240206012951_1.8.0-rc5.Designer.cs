@@ -28,7 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240206005234_1.8.0-rc5")]
+    [Migration("20240206012951_1.8.0-rc5")]
     partial class _180rc5
     {
         /// <inheritdoc />
@@ -4485,6 +4485,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 14,
                             Label = "PRESENTATION"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Label = "COMPANY_CERTIFICATE"
                         });
                 });
 

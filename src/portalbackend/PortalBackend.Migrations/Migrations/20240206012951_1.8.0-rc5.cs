@@ -225,6 +225,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 12, "TISAX" }
                 });
 
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "document_types",
+                columns: new[] { "id", "label" },
+                values: new object[] { 15, "COMPANY_CERTIFICATE" });
+
             migrationBuilder.CreateIndex(
                 name: "ix_company_certificate_type_assigned_statuses_company_certific",
                 schema: "portal",
@@ -317,6 +323,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.DropTable(
                 name: "company_certificate_types",
                 schema: "portal");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 15);
 
             migrationBuilder.DropColumn(
                 name: "metadata_url",

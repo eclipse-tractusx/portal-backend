@@ -27,13 +27,13 @@ public class CompanyCertificate
 {
     private CompanyCertificate() { }
 
-    public CompanyCertificate(Guid id, DateTimeOffset validFrom, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid comapnyId, Guid documentId) : this()
+    public CompanyCertificate(Guid id, DateTimeOffset validFrom, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid companyId, Guid documentId) : this()
     {
         Id = id;
         ValidFrom = validFrom;
         CompanyCertificateTypeId = companyCertificateTypeId;
         CompanyCertificateStatusId = companyCertificateStatusId;
-        CompanyId = comapnyId;
+        CompanyId = companyId;
         DocumentId = documentId;
     }
 

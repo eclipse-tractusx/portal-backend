@@ -4482,6 +4482,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 14,
                             Label = "PRESENTATION"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Label = "COMPANY_CERTIFICATE"
                         });
                 });
 
