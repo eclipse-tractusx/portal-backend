@@ -31,8 +31,8 @@ COPY src/framework/Framework.Models/ src/framework/Framework.Models/
 COPY src/framework/Framework.Logging/ src/framework/Framework.Logging/
 COPY src/framework/Framework.Seeding/ src/framework/Framework.Seeding/
 COPY src/framework/Framework.ErrorHandling/ src/framework/Framework.ErrorHandling/
-COPY src/framework/Framework.DateTimeProvider/ src/framework/Framework.DateTimeProvider/
-COPY src/processes/Processes.ProcessIdentity/ src/processes/Processes.ProcessIdentity/
+COPY src/web/Web.Identity/ src/web/Web.Identity/
+COPY /src/framework/Framework.DateTimeProvider /src/framework/Framework.DateTimeProvider
 RUN dotnet restore "src/maintenance/Maintenance.App/Maintenance.App.csproj"
 WORKDIR /src/maintenance/Maintenance.App
 RUN dotnet publish "Maintenance.App.csproj" -c Release -o /app/publish
