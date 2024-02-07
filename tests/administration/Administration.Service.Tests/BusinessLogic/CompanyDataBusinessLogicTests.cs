@@ -1019,7 +1019,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, CompanyCertificateTypeId.IATF, A<Guid>._, A<Action<CompanyCertificate>>._))
             .Invokes((Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields) =>
             {
-                var companyCertificateData = new CompanyCertificate(Guid.NewGuid(), DateTime.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
+                var companyCertificateData = new CompanyCertificate(Guid.NewGuid(), DateTime.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId, expiryDate);
                 setOptionalFields?.Invoke(companyCertificateData);
                 companyCertificates.Add(companyCertificateData);
             });

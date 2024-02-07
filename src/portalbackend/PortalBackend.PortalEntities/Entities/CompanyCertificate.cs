@@ -28,7 +28,7 @@ public class CompanyCertificate : IBaseEntity
 {
     private CompanyCertificate() { }
 
-    public CompanyCertificate(Guid id, DateTimeOffset validFrom, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid companyId, Guid documentId) : this()
+    public CompanyCertificate(Guid id, DateTimeOffset validFrom, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid companyId, Guid documentId, DateTimeOffset? validTill) : this()
     {
         Id = id;
         ValidFrom = validFrom;
@@ -36,6 +36,7 @@ public class CompanyCertificate : IBaseEntity
         CompanyCertificateStatusId = companyCertificateStatusId;
         CompanyId = companyId;
         DocumentId = documentId;
+        ValidTill = validTill;
     }
 
     public Guid Id { get; private set; }

@@ -395,7 +395,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 x.DocumentStatusId = DocumentStatusId.PENDING;
             });
 
-        var companyCertificate = companyCertificateRepository.CreateCompanyCertificateData(_identityData.CompanyId, companyCertificateTypeId, doc.Id, expiryDate);
+        var companyCertificate = companyCertificateRepository.CreateCompanyCertificateData(_identityData.CompanyId, companyCertificateTypeId, doc.Id, (!expiryDate.HasValue) ? expiryDate : expiryDate.Value.UtcDateTime);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
