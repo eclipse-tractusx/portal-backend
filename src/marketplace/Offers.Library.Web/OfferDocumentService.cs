@@ -94,9 +94,9 @@ public class OfferDocumentService : IOfferDocumentService
             throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of {offerTypeId} {id}");
         }
 
-        var documentData = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
+        var (content, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
 
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentData.Content, documentData.Hash, mediaTypeId, documentTypeId, x =>
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, content, hash, mediaTypeId, documentTypeId, x =>
         {
             x.CompanyUserId = _identityData.IdentityId;
         });

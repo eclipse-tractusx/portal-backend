@@ -22,10 +22,10 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 using System.Net.Http.Json;
@@ -61,7 +61,7 @@ public class CustodianServiceTests
             ClientId = "CatenaX",
             ClientSecret = "pass@Secret",
             GrantType = "cred",
-            TokenAddress = "https://key.cloak.com"
+            KeycloakTokenAddress = "https://key.cloak.com"
         });
         _tokenService = A.Fake<ITokenService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();

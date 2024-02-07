@@ -1,5 +1,6 @@
 <!--
-- Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+- Copyright (c) 2021, 2023 BMW Group AG
+- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -18,23 +19,21 @@
 -->
 
 <Project Sdk="Microsoft.NET.Sdk">
-  
-    <PropertyGroup>
-      <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library</AssemblyName>
-      <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library</RootNamespace>
-      <TargetFramework>net7.0</TargetFramework>
-      <ImplicitUsings>enable</ImplicitUsings>
-      <Nullable>enable</Nullable>
-    </PropertyGroup>
-  
-    <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
-    </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
-      <ProjectReference Include="..\..\processes\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.ProcessIdentity\Framework.ProcessIdentity.csproj" />
     </ItemGroup>
+
+    <PropertyGroup>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library</AssemblyName>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library</RootNamespace>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
 </Project>

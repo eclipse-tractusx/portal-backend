@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,13 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 
@@ -31,14 +35,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName)
+    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version)
     {
         services.AddCors(options => options.SetupCors(configuration));
 
         services.AddDistributedMemoryCache();
         services.AddSession(options =>
         {
-            options.Cookie.Name = cookieName;
+            options.Cookie.Name = ".Portal";
             options.IdleTimeout = TimeSpan.FromMinutes(10);
         });
 
@@ -65,9 +69,18 @@ public static class StartupServiceExtensions
                 };
             }
         });
+        services.AddTransient<IAuthorizationHandler, MandatoryIdentityClaimHandler>();
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidIdentity)));
+            options.AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidCompany)));
+            options.AddPolicy(PolicyTypes.CompanyUser, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.CompanyUser)));
+            options.AddPolicy(PolicyTypes.ServiceAccount, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ServiceAccount)));
+        });
+
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-        services
+        services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
             .AddOptions<JwtBearerOptions>()
             .Bind(configuration.GetSection("JwtBearerOptions"))
             .ValidateOnStart();
@@ -76,9 +89,10 @@ public static class StartupServiceExtensions
             .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new[] { "keycloak" });
 
         services.AddHttpContextAccessor();
+        services.AddClaimsIdentityService();
 
         services.AddDateTimeProvider();
-        services.AutoRegister();
+        services.AddPublicInfos();
         return services;
     }
 }

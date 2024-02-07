@@ -33,7 +33,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.13">
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
@@ -43,14 +43,14 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="7.0.0" />
-      <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
       <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.ProcessIdentity\Framework.ProcessIdentity.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
-      <ProjectReference Include="..\..\processes\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     </ItemGroup>
 
     <ItemGroup>

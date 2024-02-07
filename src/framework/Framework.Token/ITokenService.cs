@@ -18,9 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
 public interface ITokenService
 {
-    Task<System.Net.Http.HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken);
+    Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken);
 }

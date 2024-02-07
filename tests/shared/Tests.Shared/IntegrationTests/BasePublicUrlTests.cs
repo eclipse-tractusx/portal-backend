@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.PublicInfos;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
-using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos;
 using System.Linq.Expressions;
 using System.Net;
 using Xunit;

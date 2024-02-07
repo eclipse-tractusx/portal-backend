@@ -19,8 +19,8 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;

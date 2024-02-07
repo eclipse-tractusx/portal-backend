@@ -20,9 +20,9 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 

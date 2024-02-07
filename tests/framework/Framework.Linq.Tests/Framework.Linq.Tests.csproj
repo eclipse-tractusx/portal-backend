@@ -44,6 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\framework\Framework.Linq\Framework.Linq.csproj" />
-    <ProjectReference Include="..\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 </Project>

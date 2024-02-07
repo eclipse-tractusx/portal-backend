@@ -20,7 +20,9 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 
@@ -37,8 +39,10 @@ public static class OfferProviderServiceCollectionExtension
             .ValidateOnStart();
         services.AddTransient<LoggingHandler<OfferProviderService>>();
 
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<OfferProviderSettings>>();
         return services
-            .AddCustomHttpClientWithAuthentication<OfferProviderService>(null)
+            .AddCustomHttpClientWithAuthentication<OfferProviderService>(null, settings.Value.KeycloakTokenAddress)
             .AddTransient<IOfferProviderService, OfferProviderService>()
             .AddTransient<IOfferProviderBusinessLogic, OfferProviderBusinessLogic>();
     }

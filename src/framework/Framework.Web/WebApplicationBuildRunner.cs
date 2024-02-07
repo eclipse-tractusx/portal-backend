@@ -21,7 +21,6 @@
 using Flurl.Util;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Serilog;
 
@@ -33,9 +32,7 @@ public static class WebApplicationBuildRunner
         string[] args,
         string path,
         string version,
-        string cookieName,
-        Action<WebApplicationBuilder>? configureBuilder,
-        Action<WebApplication, IHostEnvironment>? configureApp)
+        Action<WebApplicationBuilder> configureBuilder)
     {
         LoggingExtensions.EnsureInitialized();
         Log.Information("Starting the application");
@@ -57,17 +54,15 @@ public static class WebApplicationBuildRunner
                 }
             });
             builder.Services
-                .AddDefaultServices<TProgram>(builder.Configuration, version, cookieName);
+                .AddDefaultServices<TProgram>(builder.Configuration, version);
 
-            configureBuilder?.Invoke(builder);
+            configureBuilder(builder);
 
-            var app = builder.Build().CreateApp<TProgram>(path, version);
-            configureApp?.Invoke(app, builder.Environment);
-            app.Run();
+            builder.Build().CreateApp<TProgram>(path, version, builder.Environment).Run();
         }
         catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
         {
-            Log.Fatal(ex, "Start failed due to unhandled exception");
+            Log.Fatal("Unhandled exception {Exception}", ex);
         }
         finally
         {

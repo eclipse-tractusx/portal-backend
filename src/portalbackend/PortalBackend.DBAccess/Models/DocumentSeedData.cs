@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record DocumentSeedData(
     [property: JsonPropertyName("id")] Guid Id,
-    [property: JsonPropertyName("date_created"), JsonConverter(typeof(JsonDateTimeOffsetConverter))] DateTimeOffset DateCreated,
+    [property: JsonPropertyName("date_created"), Newtonsoft.Json.JsonConverter(typeof(JsonDateTimeOffsetConverter))] DateTimeOffset DateCreated,
     [property: JsonPropertyName("document_name")] string DocumentName,
     [property: JsonPropertyName("document_type_id")] int DocumentTypeId,
     [property: JsonPropertyName("company_user_id")] Guid? CompanyUserId,

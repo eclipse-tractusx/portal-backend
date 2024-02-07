@@ -50,8 +50,8 @@
     <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
-    <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
-    <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.Service\Mailing.Service.csproj" />
     <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
@@ -62,10 +62,6 @@
     <ProjectReference Include="..\..\processes\OfferSubscription.Library\OfferSubscription.Library.csproj" />
     <ProjectReference Include="..\..\provisioning\Provisioning.DBAccess\Provisioning.DBAccess.csproj" />
     <ProjectReference Include="..\..\registration\Registration.Common\Registration.Common.csproj" />
-    <ProjectReference Include="..\..\externalsystems\Bpdm.Library\Bpdm.Library.csproj" />
-    <ProjectReference Include="..\..\web\Web.Identity\Web.Identity.csproj" />
-    <ProjectReference Include="..\..\web\Web.Initialization\Web.Initialization.csproj" />
-    <ProjectReference Include="..\..\web\Web.PublicInfos\Web.PublicInfos.csproj" />
   </ItemGroup>
 
   <ItemGroup>

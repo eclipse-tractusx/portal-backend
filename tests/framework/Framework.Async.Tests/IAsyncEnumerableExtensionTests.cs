@@ -18,14 +18,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async.Tests;
 
 public class AwaitAllIAsyncEnumerableExtensionTests
 {
-    private readonly IFixture _fixture = new Fixture();
+    private readonly IFixture _fixture;
+
+    public AwaitAllIAsyncEnumerableExtensionTests()
+    {
+        _fixture = new Fixture();
+    }
 
     #region AwaitAll
 

@@ -21,8 +21,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations</AssemblyName>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations</RootNamespace>
+    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations</AssemblyName>
+    <RootNamespace>Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -44,6 +44,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
   </ItemGroup>
 
@@ -51,6 +52,7 @@
     <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\Provisioning.ProvisioningEntities\Provisioning.ProvisioningEntities.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
   </ItemGroup>
 
   <ItemGroup>

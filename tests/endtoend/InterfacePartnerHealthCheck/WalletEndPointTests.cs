@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Castle.Core.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using RestAssured.Response.Logging;
 using Xunit;
 using Xunit.Abstractions;

@@ -25,10 +25,10 @@ on:
       # service and transitive paths
       - 'src/marketplace/Services.Service/**'
       - 'src/marketplace/Offers.Library/**'
+      - 'src/framework/**'
       - 'src/keycloak/**'
       - 'src/notifications/**'
       - 'src/portalbackend/**'
-      - 'src/web/**'
       # workflow file
       - '.github/workflows/services-service.yml'
       # dockerfile

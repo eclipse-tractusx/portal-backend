@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using System.Net.Http.Json;
@@ -42,7 +43,7 @@ public class OnboardingServiceProviderService : IOnboardingServiceProviderServic
     {
         var settings = new KeyVaultAuthSettings
         {
-            TokenAddress = ospDetails.AuthUrl,
+            KeycloakTokenAddress = ospDetails.AuthUrl,
             ClientId = ospDetails.ClientId,
             ClientSecret = ospDetails.ClientSecret
         };

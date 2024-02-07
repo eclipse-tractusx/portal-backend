@@ -21,8 +21,8 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
@@ -51,7 +51,7 @@ public class BpdmServiceTests
             ClientId = "CatenaX",
             ClientSecret = "pass@Secret",
             GrantType = "cred",
-            TokenAddress = "https://key.cloak.com",
+            KeycloakTokenAddress = "https://key.cloak.com",
         });
         _tokenService = A.Fake<ITokenService>();
     }

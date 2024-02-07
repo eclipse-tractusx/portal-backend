@@ -25,12 +25,12 @@ on:
       # service and transitive paths
       - 'src/administration/**'
       - 'src/externalsystems/**'
+      - 'src/framework/**'
       - 'src/keycloak/**'
       - 'src/mailing/**'
       - 'src/notifications/**'
       - 'src/portalbackend/**'
       - 'src/provisioning/**'
-      - 'src/web/**'
       # workflow file
       - '.github/workflows/administration-service.yml'
       # dockerfile

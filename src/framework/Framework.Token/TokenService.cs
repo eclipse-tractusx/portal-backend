@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
@@ -42,8 +43,7 @@ public class TokenService : ITokenService
             settings.ClientId,
             settings.GrantType,
             settings.ClientSecret,
-            settings.Scope,
-            settings.TokenAddress);
+            settings.Scope);
 
         var token = await this.GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
 
@@ -64,7 +64,7 @@ public class TokenService : ITokenService
             {"scope", settings.Scope}
         };
         var content = new FormUrlEncodedContent(formParameters);
-        var response = await _httpClientFactory.CreateClient(settings.HttpClientName).PostAsync(settings.TokenUrl, content, cancellationToken)
+        var response = await _httpClientFactory.CreateClient(settings.HttpClientName).PostAsync("", content, cancellationToken)
             .CatchingIntoServiceExceptionFor("token-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);

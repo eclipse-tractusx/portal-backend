@@ -1,4 +1,5 @@
 <!--
+- Copyright (c) 2021, 2023 BMW Group AG
 - Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
@@ -25,57 +26,17 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
-
-  <!-- nuget specific config-->
-  <PropertyGroup>
-    <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Models</PackageId>
-    <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Models</Title>
-    <Authors>TractusX</Authors>
-    <Copyright>All content is the property of the respective authors or their employers. For more information regarding authorship of content, please consult the listed source code repository logs.</Copyright>
-    <Description>
-      The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks.
-      This package simplifies various aspects of your application, including database interactions, asynchronous programming, file I/O, LINQ operations, logging, and database seeding.
-    </Description>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>https://github.com/eclipse-tractusx/portal-backend</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/eclipse-tractusx/portal-backend</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-
-    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="./README.md" Pack="true" PackagePath="" />
-    <None Include="../../../LICENSE" Pack="true" PackagePath="" />
-    <None Include="../../../NOTICE.md" Pack="true" PackagePath="" />
-    <None Include="../../../DEPENDENCIES" Pack="true" PackagePath="" />
-    <None Include="../../../CONTRIBUTING.md" Pack="true" PackagePath="" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\Framework.Linq\Framework.Linq.csproj" />
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
 
 </Project>

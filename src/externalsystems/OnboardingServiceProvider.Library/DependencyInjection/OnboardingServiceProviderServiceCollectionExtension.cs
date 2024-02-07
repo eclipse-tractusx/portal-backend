@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
@@ -37,7 +38,7 @@ public static class OnboardingServiceProviderServiceCollectionExtension
         services.AddTransient<LoggingHandler<OnboardingServiceProviderService>>();
         _ = services.BuildServiceProvider();
         return services
-            .AddCustomHttpClientWithAuthentication<OnboardingServiceProviderService>(null)
+            .AddCustomHttpClientWithAuthentication<OnboardingServiceProviderService>(null, null)
             .AddTransient<IOnboardingServiceProviderBusinessLogic, OnboardingServiceProviderBusinessLogic>()
             .AddTransient<IOnboardingServiceProviderService, OnboardingServiceProviderService>();
     }

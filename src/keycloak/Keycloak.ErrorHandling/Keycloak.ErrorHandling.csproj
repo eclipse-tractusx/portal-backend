@@ -22,7 +22,6 @@
 
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling</AssemblyName>
-    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -31,11 +30,10 @@
   <ItemGroup>
     <PackageReference Include="Flurl.Http.Signed" Version="3.2.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
   </ItemGroup>
 
 </Project>

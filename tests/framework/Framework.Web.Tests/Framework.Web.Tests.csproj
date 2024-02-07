@@ -19,7 +19,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssmblyNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</AssmblyNamespace>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</RootNamespace>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -30,7 +30,6 @@
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.18.0" />
     <PackageReference Include="FakeItEasy" Version="7.4.0" />
     <PackageReference Include="FluentAssertions" Version="6.11.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.13" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
     <PackageReference Include="xunit" Version="2.5.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
@@ -43,6 +42,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.Web\Framework.Web.csproj" />
   </ItemGroup>
 </Project>

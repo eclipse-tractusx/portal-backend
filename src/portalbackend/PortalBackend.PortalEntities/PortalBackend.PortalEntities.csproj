@@ -41,11 +41,11 @@
       <Value>**/AuditEntities/*.cs</Value>
     </SonarQubeSetting>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.DBAccess\Framework.DBAccess.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
   </ItemGroup>
-
 </Project>
