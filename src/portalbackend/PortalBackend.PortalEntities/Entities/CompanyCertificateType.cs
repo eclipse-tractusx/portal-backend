@@ -45,4 +45,5 @@ public class CompanyCertificateType
 
     public virtual CompanyCertificateTypeAssignedStatus? CompanyCertificateTypeAssignedStatus { get; set; }
     public virtual ICollection<CompanyCertificate> CompanyCertificates { get; private set; }
+    public virtual ICollection<CompanyCertificateTypeDescription> CompanyCertificateTypeDescriptions { get; private set; }
 }

@@ -46,6 +46,12 @@ public interface IStaticDataRepository
     IAsyncEnumerable<CountryLongNameData> GetAllCountries();
 
     /// <summary>
+    /// Get all Certificate Types
+    /// </summary>
+    /// <returns>AsyncEnumerable of the result Company Certificates with Long Description</returns>
+    IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes();
+
+    /// <summary>
     /// Retrieve Unique Identifier Data for Country Alpha2Code
     /// </summary>
     /// <param name="alpha2Code"></param>

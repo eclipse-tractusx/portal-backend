@@ -104,4 +104,19 @@ public class StaticDataController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<OperatorBpnData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OperatorBpnData> GetOperatorBpns() =>
         _logic.GetOperatorBpns();
+
+    /// <summary>
+    /// Retrieve all certificate types 
+    /// </summary>
+    /// <returns>AsyncEnumerable of certificate types</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/staticdata/certificateTypes    
+    /// </remarks>
+    /// <response code="200">Returns a list of all of the Language i.e german and english</response>
+    [HttpGet]
+    [Authorize(Roles = "view_certificates")]
+    [Route("certificateTypes")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<CompanyCertificateTypeData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes() =>
+        _logic.GetCertificateTypes();
 }

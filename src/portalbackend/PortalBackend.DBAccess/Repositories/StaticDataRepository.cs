@@ -101,4 +101,17 @@ public class StaticDataRepository : IStaticDataRepository
         _dbContext.LicenseTypes.AsNoTracking()
             .Select(licenseType => new LicenseTypeData((int)licenseType.Id, licenseType.Label))
             .AsAsyncEnumerable();
+
+    ///<inheritdoc />        
+    public IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes() =>
+        _dbContext.CompanyCertificateTypes.AsNoTracking()
+             .Select(certificate => new CompanyCertificateTypeData
+                (
+                    certificate.Id.ToString(),
+                    certificate.Label,
+                    certificate.CompanyCertificateTypeDescriptions
+                    .Where(y => y.CompanyCertificateTypeId == certificate.Id)
+                    .Select(x => new CertificateTypeDescription(x.LanguageShortName, x.Description))
+                ))
+            .AsAsyncEnumerable();
 }
