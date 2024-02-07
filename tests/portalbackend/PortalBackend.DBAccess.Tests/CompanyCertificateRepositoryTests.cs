@@ -30,8 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class CompanyCertificateRepositoryTests
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
-    private readonly Guid _userId = new("ac1cf001-7fbc-1f2f-817f-bce058020006");
 
     public CompanyCertificateRepositoryTests(TestDbFixture testDbFixture)
     {

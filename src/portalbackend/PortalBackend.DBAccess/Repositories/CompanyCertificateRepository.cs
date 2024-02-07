@@ -57,5 +57,4 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
         setOptionalFields?.Invoke(companyCertificate);
         return _context.CompanyCertificates.Add(companyCertificate).Entity;
     }
-
 }
