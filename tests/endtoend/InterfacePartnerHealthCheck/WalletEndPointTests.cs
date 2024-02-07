@@ -47,7 +47,7 @@ public class WalletEndpointTests : EndToEndTestBase
     [Fact]
     public void WalletCreationInterface_CreateAndDuplicationCheck()
     {
-        Bpn = $"TestAutomation_{DateTime.Now:s}";
+        Bpn = $"BPNLTEST{DateTime.Now:DDhhmmss}";
         InterfaceHealthCheckTechUserToken = TechTokenRetriever.GetToken(TokenUrl, Secrets.InterfaceHealthCheckTechClientId, Secrets.InterfaceHealthCheckTechClientSecret);
         if (InterfaceHealthCheckTechUserToken.IsNullOrEmpty())
             throw new Exception("Could not fetch token for interface partner health check");
