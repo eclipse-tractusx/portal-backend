@@ -37,4 +37,4 @@ WORKDIR /migrations
 COPY --from=publish /migrations/publish .
 RUN chown -R 1000:3000 /migrations
 USER 1000:3000
-ENTRYPOINT ["dotnet", "Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.dll"]
+ENTRYPOINT ["dotnet", "Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations.dll"]
