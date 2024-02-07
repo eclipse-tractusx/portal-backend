@@ -8942,8 +8942,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Connector");
 
                     b.Navigation("Consents");
-
-                    b.Navigation("DocumentCompanyCertificate");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentStatus", b =>
