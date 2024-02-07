@@ -25,6 +25,7 @@ on:
       # service and transitive paths
       - 'src/marketplace/Apps.Service/**'
       - 'src/marketplace/Offers.Library/**'
+      - 'src/framework/**'
       - 'src/keycloak/**'
       - 'src/mailing/**'
       - 'src/notifications/**'

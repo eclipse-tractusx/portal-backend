@@ -23,6 +23,7 @@ on:
   push:
     paths:
       # service and transitive paths
+      - 'src/framework/**'
       - 'src/processes/Processes.ProcessIdentity/**'
       - 'src/processes/Processes.Worker/**'
       - 'src/processes/ApplicationChecklist.Library/**'

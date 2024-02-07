@@ -24,6 +24,7 @@ on:
     paths:
       # service and transitive paths
       - 'src/notifications/**'
+      - 'src/framework/**'
       - 'src/keycloak/**'
       - 'src/portalbackend/**'
       - 'src/web/**'
