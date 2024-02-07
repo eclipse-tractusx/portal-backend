@@ -23,6 +23,7 @@ on:
   push:
     paths:
       # service and transitive paths
+      - 'src/framework/**'
       - 'src/marketplace/Services.Service/**'
       - 'src/marketplace/Offers.Library/**'
       - 'src/keycloak/**'

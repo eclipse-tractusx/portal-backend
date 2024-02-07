@@ -25,6 +25,7 @@ on:
       # service and transitive paths
       - 'src/administration/**'
       - 'src/externalsystems/**'
+      - 'src/framework/**'
       - 'src/keycloak/**'
       - 'src/mailing/**'
       - 'src/notifications/**'
