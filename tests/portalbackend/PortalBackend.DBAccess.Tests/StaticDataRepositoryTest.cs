@@ -156,6 +156,23 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetCertificateTypes
+
+    [Fact]
+    public async Task GetCertificateTypes_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        results.Should().HaveCount(12);
+    }
+
+    #endregion
+
     #region setup
 
     private async Task<StaticDataRepository> CreateSut()
