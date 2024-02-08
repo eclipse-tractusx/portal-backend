@@ -31,6 +31,7 @@ on:
       - 'src/notifications/**'
       - 'src/portalbackend/**'
       - 'src/provisioning/**'
+      - 'src/web/**'
       # workflow file
       - '.github/workflows/administration-service.yml'
       # dockerfile

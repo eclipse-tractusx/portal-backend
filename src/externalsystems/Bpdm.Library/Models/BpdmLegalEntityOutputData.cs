@@ -29,28 +29,30 @@ public record PageOutputResponseBpdmLegalEntityData(
 
 public record BpdmLegalEntityOutputData(
     [property: JsonPropertyName("externalId")] string? ExternalId,
-    [property: JsonPropertyName("bpnl")] string? Bpn,
-    [property: JsonPropertyName("legalShortName")] string? LegalShortName,
-    [property: JsonPropertyName("legalForm")] string? LegalForm,
+    [property: JsonPropertyName("nameParts")] IEnumerable<string> NameParts,
     [property: JsonPropertyName("identifiers")] IEnumerable<BpdmIdentifier> Identifiers,
     [property: JsonPropertyName("states")] IEnumerable<BpdmStatus> States,
-    [property: JsonPropertyName("classifications")] IEnumerable<BpdmProfileClassification> Classifications,
-    [property: JsonPropertyName("legalNameParts")] IEnumerable<string> LegalNameParts,
     [property: JsonPropertyName("roles")] IEnumerable<string> Roles,
-    [property: JsonPropertyName("legalAddress")] BpdmLegalAddressResponse LegalAddress
+    [property: JsonPropertyName("isOwnCompanyData")] bool IsOwnCompanyData,
+    [property: JsonPropertyName("legalEntity")] BpdmLegelEntityData? LegalEntity,
+    [property: JsonPropertyName("site")] BpdmSite? Site,
+    [property: JsonPropertyName("address")] BpdmLegalAddressResponse Address
+);
+
+public record BpdmLegelEntityData(
+    [property: JsonPropertyName("legalEntityBpn")] string? Bpnl,
+    [property: JsonPropertyName("legalName")] string? LegalName,
+    [property: JsonPropertyName("shortName")] string? ShortName,
+    [property: JsonPropertyName("legalForm")] string? LegalForm,
+    [property: JsonPropertyName("classifications")] IEnumerable<BpdmProfileClassification> Classifications
 );
 
 public record BpdmLegalAddressResponse(
-    [property: JsonPropertyName("externalId")] string ExternalId,
-    [property: JsonPropertyName("legalEntityExternalId")] string LegalEntityExternalId,
-    [property: JsonPropertyName("siteExternalId")] string SiteExternalId,
-    [property: JsonPropertyName("bpna")] string Bpn,
-    [property: JsonPropertyName("nameParts")] IEnumerable<string> NameParts,
-    [property: JsonPropertyName("states")] IEnumerable<BpdmAddressState> States,
-    [property: JsonPropertyName("identifiers")] IEnumerable<BpdmAddressIdentifier> Identifiers,
+    [property: JsonPropertyName("addressBpn")] string? Bpna,
+    [property: JsonPropertyName("name")] string? Name,
+    [property: JsonPropertyName("addressType")] string? AddressType,
     [property: JsonPropertyName("physicalPostalAddress")] BpdmAddressPhysicalPostalAddress? PhysicalPostalAddress,
-    [property: JsonPropertyName("alternativePostalAddress")] BpdmAddressAlternativePostalAddress? AlternativePostalAddress,
-    [property: JsonPropertyName("roles")] IEnumerable<string> Roles
+    [property: JsonPropertyName("alternativePostalAddress")] BpdmAddressAlternativePostalAddress? AlternativePostalAddress
 );
 
 public record BpdmStatus(

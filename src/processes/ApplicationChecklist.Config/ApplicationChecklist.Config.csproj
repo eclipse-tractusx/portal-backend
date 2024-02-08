@@ -36,7 +36,6 @@
       <ProjectReference Include="..\..\externalsystems\SdFactory.Library\SdFactory.Library.csproj" />
       <ProjectReference Include="..\..\externalsystems\Clearinghouse.Library\Clearinghouse.Library.csproj" />
       <ProjectReference Include="..\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
     </ItemGroup>
 
 </Project>

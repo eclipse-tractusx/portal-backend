@@ -1,0 +1,38 @@
+<!--
+- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+-
+- See the NOTICE file(s) distributed with this work for additional
+- information regarding copyright ownership.
+-
+- This program and the accompanying materials are made available under the
+- terms of the Apache License, Version 2.0 which is available at
+- https://www.apache.org/licenses/LICENSE-2.0.
+-
+- Unless required by applicable law or agreed to in writing, software
+- distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+- WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+- License for the specific language governing permissions and limitations
+- under the License.
+-
+- SPDX-License-Identifier: Apache-2.0
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Web.Initialization</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Web.Initialization</RootNamespace>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
+    <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
+    <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
+    <ProjectReference Include="..\Web.Identity\Web.Identity.csproj" />
+    <ProjectReference Include="..\Web.PublicInfos\Web.PublicInfos.csproj" />
+  </ItemGroup>
+
+</Project>

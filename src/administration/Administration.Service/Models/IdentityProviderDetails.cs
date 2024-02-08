@@ -25,19 +25,19 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record IdentityProviderDetails(Guid identityProviderId, string? alias, IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId IdentityProviderTypeId, string? displayName, string? redirectUrl, bool? enabled, IEnumerable<IdentityProviderMapperModel>? mappers)
+public record IdentityProviderDetails(Guid IdentityProviderId, string? Alias, IdentityProviderCategoryId IdentityProviderCategoryId, IdentityProviderTypeId IdentityProviderTypeId, string? DisplayName, string? RedirectUrl, bool? Enabled, IEnumerable<IdentityProviderMapperModel>? Mappers)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IdentityProviderDetailsOidc? oidc { get; init; } = null;
+    public IdentityProviderDetailsOidc? Oidc { get; init; } = null;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IdentityProviderDetailsSaml? saml { get; init; } = null;
+    public IdentityProviderDetailsSaml? Saml { get; init; } = null;
 }
 
-public record IdentityProviderDetailsOidc(string authorizationUrl, string clientId, IamIdentityProviderClientAuthMethod clientAuthMethod)
+public record IdentityProviderDetailsOidc(string? MetadataUrl, string AuthorizationUrl, string TokenUrl, string? LogoutUrl, string ClientId, bool HasClientSecret, IamIdentityProviderClientAuthMethod ClientAuthMethod)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IamIdentityProviderSignatureAlgorithm? signatureAlgorithm { get; init; } = null;
+    public IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm { get; init; } = null;
 }
 
-public record IdentityProviderDetailsSaml(string serviceProviderEntityId, string singleSignOnServiceUrl);
+public record IdentityProviderDetailsSaml(string ServiceProviderEntityId, string SingleSignOnServiceUrl);

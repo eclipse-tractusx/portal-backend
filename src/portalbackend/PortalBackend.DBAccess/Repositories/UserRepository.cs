@@ -48,6 +48,7 @@ public class UserRepository : IUserRepository
             .Select(companyApplication => new CompanyApplicationWithStatus(
                     companyApplication.Id,
                     companyApplication.ApplicationStatusId,
+                    companyApplication.CompanyApplicationTypeId,
                     companyApplication.ApplicationChecklistEntries.Select(ace =>
                         new ApplicationChecklistData(ace.ApplicationChecklistEntryTypeId, ace.ApplicationChecklistEntryStatusId))))
             .AsAsyncEnumerable();
