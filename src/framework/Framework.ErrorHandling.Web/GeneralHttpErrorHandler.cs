@@ -19,7 +19,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Serilog.Context;
 using System.Collections.Immutable;
 using System.Net;
@@ -85,6 +85,7 @@ public class GeneralHttpErrorHandler
             statusCode = HttpStatusCode.BadRequest;
             messageFunc = _ => (argumentException.ParamName, Enumerable.Repeat(argumentException.Message, 1));
         }
+
         else if (error is ControllerArgumentException caException)
         {
             statusCode = HttpStatusCode.BadRequest;

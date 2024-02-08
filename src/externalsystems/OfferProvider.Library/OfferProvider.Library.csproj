@@ -29,9 +29,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\framework\Framework.HttpClient\Framework.HttpClient.csproj" />
-        <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
-        <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
         <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
         <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
         <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />

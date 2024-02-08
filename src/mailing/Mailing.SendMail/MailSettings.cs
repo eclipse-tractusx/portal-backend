@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MimeKit;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
@@ -33,13 +34,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
         public int SmtpPort { get; set; } = 0;
         public string? HttpProxy { get; set; }
         public int HttpProxyPort { get; set; }
+        public string SenderEmail { get; set; } = null!;
 
         public bool Validate()
         {
             var validation = new ConfigurationValidation<MailSettings>()
                 .NotNullOrWhiteSpace(SmtpHost, () => nameof(SmtpHost))
                 .NotNullOrWhiteSpace(SmtpUser, () => nameof(SmtpUser))
-                .NotNullOrWhiteSpace(SmtpPassword, () => nameof(SmtpPassword));
+                .NotNullOrWhiteSpace(SmtpPassword, () => nameof(SmtpPassword))
+                .NotNullOrWhiteSpace(SenderEmail, () => nameof(SenderEmail));
+
             if (HttpProxy != null)
             {
                 validation.NotNullOrWhiteSpace(HttpProxy, () => nameof(HttpProxy));
@@ -48,7 +52,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
         }
     }
 
-    public static class MailSettingsExtention
+    public static class MailSettingsExtension
     {
         public static IServiceCollection ConfigureMailSettings(
             this IServiceCollection services,

@@ -23,7 +23,7 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine-amd64 AS publish
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY /src/framework/Framework.Async /src/framework/Framework.Async
-COPY /src/framework/Framework.ErrorHandling.Library /src/framework/Framework.ErrorHandling.Library
+COPY /src/framework/Framework.ErrorHandling /src/framework/Framework.ErrorHandling
 COPY /src/framework/Framework.Linq /src/framework/Framework.Linq
 COPY /src/framework/Framework.Logging /src/framework/Framework.Logging
 COPY /src/framework/Framework.Models /src/framework/Framework.Models
@@ -35,6 +35,7 @@ WORKDIR /src/keycloak/Keycloak.Seeding
 RUN dotnet publish "Keycloak.Seeding.csproj" -c Release -o /app/publish
 
 FROM base AS final
+ENV COMPlus_EnableDiagnostics=0
 WORKDIR /app
 COPY --from=publish /app/publish .
 RUN chown -R 1000:3000 /app

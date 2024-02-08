@@ -1,5 +1,4 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
 - Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
@@ -49,7 +48,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
-      <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+      <ProjectReference Include="..\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
     </ItemGroup>
 
 
