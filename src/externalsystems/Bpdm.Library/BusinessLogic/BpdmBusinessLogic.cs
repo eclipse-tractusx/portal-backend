@@ -87,6 +87,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
             data.Identifiers);
 
         await _bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(false);
+        await _bpdmService.SetSharingStateToReady(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(false);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -132,7 +133,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         var legalEntity = await _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), cancellationToken)
             .ConfigureAwait(false);
 
-        if (string.IsNullOrEmpty(legalEntity.Bpn))
+        if (string.IsNullOrEmpty(legalEntity.LegalEntity?.Bpnl))
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null);
         }
@@ -148,7 +149,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
             },
             company =>
             {
-                company.BusinessPartnerNumber = legalEntity.Bpn;
+                company.BusinessPartnerNumber = legalEntity.LegalEntity?.Bpnl;
             });
 
         var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED;

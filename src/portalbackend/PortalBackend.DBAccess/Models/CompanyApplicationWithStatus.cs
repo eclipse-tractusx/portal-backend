@@ -26,8 +26,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
     (
         Guid ApplicationId,
         CompanyApplicationStatusId ApplicationStatus,
+        CompanyApplicationTypeId ApplicationType,
         IEnumerable<ApplicationChecklistData> ApplicationChecklist
     );
+
     public record ApplicationChecklistData(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId);
 
     public record CompanyApplicationDeclineData(

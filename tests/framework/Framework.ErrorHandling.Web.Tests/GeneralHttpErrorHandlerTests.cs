@@ -23,27 +23,25 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xunit;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web.Tests;
 
 public class GeneralHttpErrorHandlerTests
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
-    private readonly IFixture _fixture;
 
     public GeneralHttpErrorHandlerTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
     }
 
     [Fact]

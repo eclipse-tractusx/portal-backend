@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,7 +21,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
@@ -53,7 +51,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
 
         var app = WebApplication.Create();
 
-        var result = Assert.Throws<ConfigurationException>(() => app.MapDefaultHealthChecks(settings));
+        var result = Assert.Throws<Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ConfigurationException>(() => app.MapDefaultHealthChecks(settings));
         result.Message.Should().Be("HealthChecks mapping /foo, /foo contains ambiguous pathes");
     }
 

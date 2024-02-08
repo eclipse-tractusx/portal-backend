@@ -23,8 +23,8 @@ on:
   push:
     paths:
       # service and transitive paths
-      - 'src/maintenance/Maintenance.App/**'
       - 'src/framework/**'
+      - 'src/maintenance/Maintenance.App/**'
       - 'src/portalbackend/PortalBackend.PortalEntities/**'
       # workflow file
       - '.github/workflows/maintenance-service.yml'

@@ -115,7 +115,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync
+    #region GetOwnCompanyIdentityProviderStatusUpdateData
 
     [Theory]
     [InlineData("38f56465-ce26-4f25-9745-1791620dc198", "ac861325-bc54-4583-bcdc-9e9f2a38ff84", true, "Idp-123", true, true, "Bayerische Motorenwerke AG", new[] { "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "0dcd8209-85e2-4073-b130-ac094fb47106" })]
@@ -123,21 +123,21 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("38f56465-ce26-4f25-9745-1791620dc199", "ac861325-bc54-4583-bcdc-9e9f2a38ff84", true, "Test-Alias", false, false, "CX-Test-Access", new[] { "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
     [InlineData("38f56465-ce26-4f25-9745-1791620dc199", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88", true, "Test-Alias", true, false, "CX-Test-Access", new[] { "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
     [InlineData("38f56465-ce26-4f25-9745-1791620dc200", "41fd2ab8-71cd-4546-9bef-a388d91b2542", true, "Test-Alias2", false, false, "Catena-X", new[] { "41fd2ab8-71cd-4546-9bef-a388d91b2542", "41fd2ab8-7123-4546-9bef-a388d91b2999", "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "0dcd8209-85e2-4073-b130-ac094fb47106", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
-    [InlineData("38f56465-ce26-4f25-9745-1791620dc200", "41fd2ab8-71cd-4546-9bef-a388d91b2542", false, "Test-Alias2", false, false, "Catena-X", null)]
-    public async Task GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync_WithValidOwner_ReturnsExpected(Guid identityProviderId, Guid companyId, bool query, string alias, bool isOwner, bool companyUsersLinked, string ownerCompanyName, IEnumerable<string>? companyIds)
+    [InlineData("38f56465-ce26-4f25-9745-1791620dc200", "41fd2ab8-71cd-4546-9bef-a388d91b2542", false, "Test-Alias2", false, false, "Catena-X", new[] { "41fd2ab8-71cd-4546-9bef-a388d91b2542", "41fd2ab8-7123-4546-9bef-a388d91b2999", "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "0dcd8209-85e2-4073-b130-ac094fb47106", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
+    public async Task GetOwnCompanyIdentityProviderStatusUpdateData_WithValidOwner_ReturnsExpected(Guid identityProviderId, Guid companyId, bool queryAliase, string alias, bool isOwner, bool companyUsersLinked, string ownerCompanyName, IEnumerable<string>? companyIds)
     {
         var sut = await CreateSut().ConfigureAwait(false);
 
-        var result = await sut.GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, companyId, query).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, companyId, queryAliase).ConfigureAwait(false);
 
         // Assert
-        result.Alias.Should().Be(alias);
+        result.IdentityProviderData.Alias.Should().Be(alias);
         result.IsOwner.Should().Be(isOwner);
         result.CompanyUsersLinked.Should().Be(companyUsersLinked);
         result.IdpOwnerName.Should().Be(ownerCompanyName);
-        if (query)
+        companyIds.Should().NotBeNull();
+        if (queryAliase)
         {
-            companyIds.Should().NotBeNull();
             if (alias == "Test-Alias2")
             {
                 result.CompanyIdAliase.Should().HaveCount(5).And.Satisfy(
@@ -156,8 +156,61 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         }
         else
         {
-            companyIds.Should().BeNull();
             result.CompanyIdAliase.Should().BeNull();
+        }
+    }
+
+    #endregion
+
+    #region GetOwnCompanyIdentityProviderUpdateData
+
+    [Theory]
+    [InlineData("38f56465-ce26-4f25-9745-1791620dc200", "41fd2ab8-71cd-4546-9bef-a388d91b2542", "Test-Alias2", false)]
+    public async Task GetOwnCompanyIdentityProviderUpdateData_WithValidOwner_ReturnsExpected(Guid identityProviderId, Guid companyId, string alias, bool isOwner)
+    {
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        var result = await sut.GetOwnCompanyIdentityProviderUpdateData(identityProviderId, companyId).ConfigureAwait(false);
+
+        // Assert
+        result.Alias.Should().Be(alias);
+        result.IsOwner.Should().Be(isOwner);
+    }
+
+    #endregion
+
+    #region GetOwnCompanyIdentityProviderUpdateDataForDelete
+
+    [Theory]
+    [InlineData("38f56465-ce26-4f25-9745-1791620dc198", "ac861325-bc54-4583-bcdc-9e9f2a38ff84", "Idp-123", true, "Bayerische Motorenwerke AG", new[] { "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "0dcd8209-85e2-4073-b130-ac094fb47106" })]
+    [InlineData("38f56465-ce26-4f25-9745-1791620dc198", "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "Idp-123", false, "Bayerische Motorenwerke AG", new[] { "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "0dcd8209-85e2-4073-b130-ac094fb47106" })]
+    [InlineData("38f56465-ce26-4f25-9745-1791620dc199", "ac861325-bc54-4583-bcdc-9e9f2a38ff84", "Test-Alias", false, "CX-Test-Access", new[] { "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
+    [InlineData("38f56465-ce26-4f25-9745-1791620dc199", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88", "Test-Alias", true, "CX-Test-Access", new[] { "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
+    [InlineData("38f56465-ce26-4f25-9745-1791620dc200", "41fd2ab8-71cd-4546-9bef-a388d91b2542", "Test-Alias2", false, "Catena-X", new[] { "41fd2ab8-71cd-4546-9bef-a388d91b2542", "41fd2ab8-7123-4546-9bef-a388d91b2999", "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "0dcd8209-85e2-4073-b130-ac094fb47106", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
+    public async Task GetOwnCompanyIdentityProviderUpdateDataForDelete_WithValidOwner_ReturnsExpected(Guid identityProviderId, Guid companyId, string alias, bool isOwner, string ownerCompanyName, IEnumerable<string>? companyIds)
+    {
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        var result = await sut.GetOwnCompanyIdentityProviderUpdateDataForDelete(identityProviderId, companyId).ConfigureAwait(false);
+
+        // Assert
+        result.Alias.Should().Be(alias);
+        result.IsOwner.Should().Be(isOwner);
+        result.IdpOwnerName.Should().Be(ownerCompanyName);
+        if (alias == "Test-Alias2")
+        {
+            result.CompanyIdAliase.Should().HaveCount(5).And.Satisfy(
+                x => x.CompanyId == new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542") && x.Aliase.SequenceEqual(new[] { "Test-Alias2" }),
+                x => x.CompanyId == new Guid("41fd2ab8-7123-4546-9bef-a388d91b2999") && x.Aliase.SequenceEqual(new[] { "Test-Alias2" }),
+                x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd") && x.Aliase.Order().SequenceEqual(new[] { "Idp-123", "Test-Alias2" }),
+                x => x.CompanyId == new Guid("0dcd8209-85e2-4073-b130-ac094fb47106") && x.Aliase.Order().SequenceEqual(new[] { "Idp-123", "Test-Alias2" }),
+                x => x.CompanyId == new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88") && x.Aliase.Order().SequenceEqual(new[] { "Test-Alias", "Test-Alias2" })
+            );
+        }
+        else
+        {
+            result.CompanyIdAliase.Should().Match<IEnumerable<(Guid CompanyId, IEnumerable<string> Aliase)>>(cida => cida.Select(x => x.CompanyId).Order().SequenceEqual(companyIds!.Select(i => new Guid(i)).Order()) &&
+                cida.Select(x => x.Aliase).All(a => a.Order().SequenceEqual(new[] { alias, "Test-Alias2" })));
         }
     }
 

@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -46,6 +45,7 @@ public class Company : IBaseEntity
         OwnedIdentityProviders = new HashSet<IdentityProvider>();
         ProvidedApplications = new HashSet<CompanyApplication>();
         OnboardedNetworkRegistrations = new HashSet<NetworkRegistration>();
+        CompanyCertificates = new HashSet<CompanyCertificate>();
     }
 
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
@@ -99,4 +99,5 @@ public class Company : IBaseEntity
     public virtual ICollection<IdentityProvider> OwnedIdentityProviders { get; private set; }
     public virtual ICollection<CompanyApplication> ProvidedApplications { get; private set; }
     public virtual ICollection<NetworkRegistration> OnboardedNetworkRegistrations { get; private set; }
+    public virtual ICollection<CompanyCertificate> CompanyCertificates { get; private set; }
 }

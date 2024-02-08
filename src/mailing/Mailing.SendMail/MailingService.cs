@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -26,11 +27,13 @@ public class MailingService : IMailingService
 {
     private readonly ITemplateManager _templateManager;
     private readonly ISendMail _sendMail;
+    private readonly MailSettings _settings;
 
-    public MailingService(ITemplateManager templateManager, ISendMail sendMail)
+    public MailingService(ITemplateManager templateManager, ISendMail sendMail, IOptions<MailSettings> options)
     {
         _templateManager = templateManager;
         _sendMail = sendMail;
+        _settings = options.Value;
     }
 
     public async Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates)
@@ -38,7 +41,7 @@ public class MailingService : IMailingService
         foreach (var temp in templates)
         {
             var email = await _templateManager.ApplyTemplateAsync(temp, parameters).ConfigureAwait(false);
-            await _sendMail.Send("Notifications@catena-x.net", recipient, email.Subject, email.Body, email.isHtml).ConfigureAwait(false);
+            await _sendMail.Send(_settings.SenderEmail, recipient, email.Subject, email.Body, email.isHtml).ConfigureAwait(false);
         }
     }
 }

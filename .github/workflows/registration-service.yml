@@ -23,12 +23,13 @@ on:
   push:
     paths:
       # service and transitive paths
-      - 'src/registration/**'
       - 'src/framework/**'
+      - 'src/registration/**'
       - 'src/keycloak/**'
       - 'src/mailing/**'
       - 'src/portalbackend/**'
       - 'src/provisioning/**'
+      - 'src/web/**'
       # workflow file
       - '.github/workflows/registration-service.yml'
       # dockerfile

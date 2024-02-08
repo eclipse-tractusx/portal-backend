@@ -18,19 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests;
 
 public class HasNextEnumeratorExtensionsTests
 {
-    private readonly IFixture _fixture;
-
-    public HasNextEnumeratorExtensionsTests()
-    {
-        _fixture = new Fixture();
-    }
+    private readonly IFixture _fixture = new Fixture();
 
     [Fact]
     public void HasNextEnumerator_ReturnsExpected()

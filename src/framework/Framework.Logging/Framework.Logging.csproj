@@ -1,6 +1,5 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
-- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+- Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -26,18 +25,53 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+      <IsPackable>true</IsPackable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-      <PackageReference Include="Serilog" Version="3.0.1" />
-      <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
-      <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
-      <PackageReference Include="Serilog.Enrichers.Sensitive" Version="1.7.3" />
-      <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-      <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
-      <PackageReference Include="Serilog.Settings.Configuration" Version="7.0.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-    </ItemGroup>
+  <!-- nuget specific config-->
+  <PropertyGroup>
+    <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.Logging</PackageId>
+    <Title>Org.Eclipse.TractusX.Portal.Backend.Framework.Logging</Title>
+    <Authors>Eclipse Tractus-X</Authors>
+    <Copyright>All content is the property of the respective authors or their employers. For more information regarding authorship of content, please consult the listed source code repository logs.</Copyright>
+    <Description>
+      The Catena-X Portal Backend Framework library is a versatile .NET library that provides a set of powerful tools and utilities for common development tasks.
+      This package simplifies various aspects of your application, including database interactions, asynchronous programming, file I/O, LINQ operations, logging, and database seeding.
+    </Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/eclipse-tractusx/portal-backend</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/eclipse-tractusx/portal-backend</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="./README.md" Pack="true" PackagePath="" />
+    <None Include="../../../LICENSE" Pack="true" PackagePath="" />
+    <None Include="../../../NOTICE.md" Pack="true" PackagePath="" />
+    <None Include="../../../DEPENDENCIES" Pack="true" PackagePath="" />
+    <None Include="../../../CONTRIBUTING.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+    <PackageReference Include="Serilog.Enrichers.Sensitive" Version="1.7.3" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="7.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+  </ItemGroup>
 
 </Project>
