@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -25,10 +26,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// Model for CompanyCertificateTypeData
 /// </summary>]
 /// <param name="companyCertificateId">CompanyCertificate Type Id</param>
-/// <param name="name">CompanyCertificate Type Name</param>
 /// <param name="description">description</param>
 /// <returns></returns>
-public record CompanyCertificateTypeData(int companyCertificateId, string name, IEnumerable<CertificateTypeDescription> description);
+public record CompanyCertificateTypeData(CompanyCertificateTypeId companyCertificateId, IEnumerable<CertificateTypeDescription> description);
 
 /// <summary>
 /// Model for CertificateTypeDescription
