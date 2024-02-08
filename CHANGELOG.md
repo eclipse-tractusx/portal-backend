@@ -5,6 +5,32 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ## 1.8.0-RC4
 
 ### Change
+* Registration Service
+  * adjust endpoint GET: /api/registration/applications to additionally response the registrationType
+
+### Feature
+* Mailing
+  * make the sender email configurable
+* IdentityProvider
+  * add more metadata to identityProvider details
+
+### Technical Support
+* Nuget Packages
+  * Provide Framework Packages as Nuget Packages
+* add new keycloak user to delete idps
+* Bpdm Push
+  * ignore nullable values
+  * set the sharing state to ready
+* Company Certificates
+  * add database structure for company certificates
+  * add seeding for company certificates
+
+### Known Knowns
+n/a
+
+## 1.8.0-RC4
+
+### Change
 * updated response body of the GET: /api/administration/user/owncompany/users endpoint by changing the "role" section to an array to include role client information  ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 * pattern harmonization of 'company name' insert endpoints
   * POST: api/administration/invitation
