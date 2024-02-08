@@ -107,7 +107,7 @@ public class StaticDataRepository : IStaticDataRepository
         _dbContext.CompanyCertificateTypes.AsNoTracking()
              .Select(certificate => new CompanyCertificateTypeData
                 (
-                    certificate.Id.ToString(),
+                    (int)certificate.Id,
                     certificate.Label,
                     certificate.CompanyCertificateTypeDescriptions
                     .Where(y => y.CompanyCertificateTypeId == certificate.Id)

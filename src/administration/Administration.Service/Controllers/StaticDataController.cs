@@ -116,7 +116,7 @@ public class StaticDataController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_certificates")]
     [Route("certificateTypes")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<CompanyCertificateTypeData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<CompanyCertificateTypeData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes() =>
         _logic.GetCertificateTypes();
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="name">CompanyCertificate Type Name</param>
 /// <param name="description">description</param>
 /// <returns></returns>
-public record CompanyCertificateTypeData(string companyCertificateId, string name, IEnumerable<CertificateTypeDescription> description);
+public record CompanyCertificateTypeData(int companyCertificateId, string name, IEnumerable<CertificateTypeDescription> description);
 
 /// <summary>
 /// Model for CertificateTypeDescription
