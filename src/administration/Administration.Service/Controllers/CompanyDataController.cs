@@ -22,8 +22,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
@@ -35,7 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// Creates a new instance of <see cref="CompanyDataController"/>
 /// </summary>
 [ApiController]
-[Route("api/administration/companydata")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH", "companydata")]
 [Produces("application/json")]
 [Consumes("application/json")]
 public class CompanyDataController : ControllerBase

@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
 public record ErrorResponse(
     string Type,

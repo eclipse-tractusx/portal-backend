@@ -246,6 +246,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Token.Tests", "..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Web.Tests", "..\tests\framework\Framework.Web.Tests\Framework.Web.Tests.csproj", "{7A6C6A10-DC2E-4A16-8758-1115473F3D94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.ErrorHandling.Controller", "framework\Framework.ErrorHandling.Controller\Framework.ErrorHandling.Controller.csproj", "{AD0C9BAD-E68F-40CF-86B4-31AC61856658}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1564,6 +1566,18 @@ Global
 		{7A6C6A10-DC2E-4A16-8758-1115473F3D94}.Release|x64.Build.0 = Release|Any CPU
 		{7A6C6A10-DC2E-4A16-8758-1115473F3D94}.Release|x86.ActiveCfg = Release|Any CPU
 		{7A6C6A10-DC2E-4A16-8758-1115473F3D94}.Release|x86.Build.0 = Release|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Debug|x64.Build.0 = Debug|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Release|x64.ActiveCfg = Release|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Release|x64.Build.0 = Release|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1680,5 +1694,6 @@ Global
 		{B733F449-AE22-4B00-9F33-816B2F809EF1} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{562DF697-262E-44DB-B6B5-40395E00D87C} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{7A6C6A10-DC2E-4A16-8758-1115473F3D94} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
+		{AD0C9BAD-E68F-40CF-86B4-31AC61856658} = {B42CFF96-B8DB-48A6-A9CA-72BFB5F0117B}
 	EndGlobalSection
 EndGlobal

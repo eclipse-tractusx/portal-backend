@@ -37,7 +37,7 @@ public class PublicUrlServiceProviderTests : BasePublicUrlTests<ServicesControll
     public async Task OpenInformationController_WithServiceProvider_ReturnsCorrectAmount()
     {
         await OpenInformationController_ReturnsCorrectAmount(1,
-            x => x.HttpMethods == "GET" && x.Url == "api/services/{serviceid}/subscription/{subscriptionid}/provider")
+            x => x.HttpMethods == "GET" && x.Url == "api/test/{serviceid}/subscription/{subscriptionid}/provider")
             .ConfigureAwait(false);
     }
 }

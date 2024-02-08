@@ -20,6 +20,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -28,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// Controller providing actions for displaying, filtering and updating static data for app.
 /// </summary>
 [ApiController]
-[Route("api/administration/staticdata")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH", "staticdata")]
 [Produces("application/json")]
 [Consumes("application/json")]
 public class StaticDataController : ControllerBase
