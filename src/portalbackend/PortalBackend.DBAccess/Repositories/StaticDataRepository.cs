@@ -109,7 +109,7 @@ public class StaticDataRepository : IStaticDataRepository
                 (
                     certificate.Id,
                     certificate.CompanyCertificateTypeDescriptions
-                    .Where(y => y.CompanyCertificateTypeId == certificate.Id)
+                    .Where(y => y.CompanyCertificateType.CompanyCertificateTypeAssignedStatus.CompanyCertificateTypeStatusId == CompanyCertificateTypeStatusId.ACTIVE)
                     .Select(x => new CertificateTypeDescription(x.LanguageShortName, x.Description))
                 ))
             .AsAsyncEnumerable();
