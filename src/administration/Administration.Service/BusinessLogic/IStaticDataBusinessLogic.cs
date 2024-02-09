@@ -50,4 +50,10 @@ public interface IStaticDataBusinessLogic
     /// </summary>
     /// <returns>A list of bpns</returns>
     IAsyncEnumerable<OperatorBpnData> GetOperatorBpns();
+
+    /// <summary>
+    /// Get all company certificates
+    /// </summary>
+    /// <returns>A list of company certificates</returns>
+    IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes();
 }

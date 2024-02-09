@@ -72,7 +72,7 @@ public class InvitationBusinessLogicTests
         _mailingService = A.Fake<IMailingService>();
         _options = A.Fake<IOptions<InvitationSettings>>();
 
-        _companyName = _fixture.Create<string>();
+        _companyName = "testCompany";
         _idpName = _fixture.Create<string>();
         _companyId = _fixture.Create<Guid>();
         _identityProviderId = _fixture.Create<Guid>();

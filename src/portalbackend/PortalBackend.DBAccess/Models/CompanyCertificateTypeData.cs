@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,30 +18,24 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class CompanyCertificateStatus
-{
-    private CompanyCertificateStatus()
-    {
-        Label = null!;
-        CompanyCertificates = new HashSet<CompanyCertificate>();
-    }
+/// <summary>
+/// Model for CompanyCertificateTypeData
+/// </summary>]
+/// <param name="CompanyCertificateTypeId">CompanyCertificate Type Id</param>
+/// <param name="Description">description</param>
+/// <returns></returns>
+public record CompanyCertificateTypeData(
+    [property: JsonPropertyName("certificateType")] CompanyCertificateTypeId CompanyCertificateTypeId,
+    IEnumerable<CertificateTypeDescription> Description);
 
-    public CompanyCertificateStatus(CompanyCertificateStatusId certificateStatusId) : this()
-    {
-        Id = certificateStatusId;
-        Label = certificateStatusId.ToString();
-    }
-
-    public CompanyCertificateStatusId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
-
-    // Navigation Properties
-
-    public virtual ICollection<CompanyCertificate> CompanyCertificates { get; private set; }
-}
+/// <summary>
+/// Model for CertificateTypeDescription
+/// </summary>
+/// <param name="LanguageShortName">language</param>
+/// <param name="Description">long Description</param>
+/// <returns></returns>
+public record CertificateTypeDescription(string LanguageShortName, string Description);
