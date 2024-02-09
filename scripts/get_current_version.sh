@@ -19,12 +19,12 @@
 
 #!/bin/bash
 
-file="src/framework/Framework.Async/Directory.Build.props"
+file="./src/framework/Framework.Async/Directory.Build.props"
 # Get the version prefix
-version_prefix=$(grep -oP '<VersionPrefix>\K[^<]+' $file)
+version_prefix=$(grep '<VersionPrefix>' "$file" | sed -n 's/.*<VersionPrefix>\(.*\)<\/VersionPrefix>.*/\1/p' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '\n')
 
 # Get the version suffix
-version_suffix=$(grep -oP '<VersionSuffix>\K[^<]+' $file)
+version_suffix=$(grep '<VersionSuffix>' "$file" | sed -n 's/.*<VersionSuffix>\(.*\)<\/VersionSuffix>.*/\1/p' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '\n')
 
 # Combine the prefix and suffix if the suffix is not empty
 if [ -n "$version_suffix" ]; then

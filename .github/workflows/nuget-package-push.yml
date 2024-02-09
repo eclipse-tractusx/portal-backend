@@ -46,7 +46,7 @@ jobs:
     - name: Check Package Suffix Versions
       shell: bash
       run: |
-        script_output=$(./scripts/no_suffix_check.sh)
+        script_output=$(./scripts/no_suffix_version_check.sh)
 
         if [ -z "$script_output" ]; then
           echo "No version suffixes set"
