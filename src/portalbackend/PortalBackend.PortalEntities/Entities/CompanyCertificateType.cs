@@ -28,6 +28,7 @@ public class CompanyCertificateType
     {
         Label = null!;
         CompanyCertificates = new HashSet<CompanyCertificate>();
+        CompanyCertificateTypeDescriptions = new HashSet<CompanyCertificateTypeDescription>();
     }
 
     public CompanyCertificateType(CompanyCertificateTypeId companyCertificateTypeId) : this()

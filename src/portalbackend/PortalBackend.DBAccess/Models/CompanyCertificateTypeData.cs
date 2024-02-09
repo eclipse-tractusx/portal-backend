@@ -17,18 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// Model for CompanyCertificateTypeData
 /// </summary>]
-/// <param name="companyCertificateId">CompanyCertificate Type Id</param>
-/// <param name="description">description</param>
+/// <param name="CompanyCertificateTypeId">CompanyCertificate Type Id</param>
+/// <param name="Description">description</param>
 /// <returns></returns>
-public record CompanyCertificateTypeData(CompanyCertificateTypeId companyCertificateId, IEnumerable<CertificateTypeDescription> description);
+public record CompanyCertificateTypeData(
+    [property: JsonPropertyName("certificateType")] CompanyCertificateTypeId CompanyCertificateTypeId,
+    IEnumerable<CertificateTypeDescription> Description);
 
 /// <summary>
 /// Model for CertificateTypeDescription

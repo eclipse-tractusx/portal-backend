@@ -27,6 +27,7 @@ public class CompanyCertificateTypeStatus
     private CompanyCertificateTypeStatus()
     {
         Label = null!;
+        CompanyCertificateTypeAssignedStatuses = new HashSet<CompanyCertificateTypeAssignedStatus>();
     }
 
     public CompanyCertificateTypeStatus(CompanyCertificateTypeStatusId companyCertificateTypeStatusId)

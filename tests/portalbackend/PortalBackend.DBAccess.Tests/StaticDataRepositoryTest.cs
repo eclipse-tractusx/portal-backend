@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -171,6 +172,33 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         results.Should().HaveCount(12);
     }
 
+    [Fact]
+    public async Task GetCertificateTypes_WithInactiveCertificateType_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (context, sut) = await CreateSutWithContext().ConfigureAwait(false);
+        var active = new CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId.ISO_15504_SPICE, CompanyCertificateTypeStatusId.ACTIVE);
+        var inactive = new CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId.ISO_15504_SPICE, CompanyCertificateTypeStatusId.INACTVIE);
+        context.Remove(active);
+        context.Add(inactive);
+        await context.SaveChangesAsync().ConfigureAwait(false);
+
+        try
+        {
+            // Act
+            var results = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+
+            // Assert
+            results.Should().HaveCount(11);
+        }
+        finally
+        {
+            context.Remove(inactive);
+            context.Add(active);
+            await context.SaveChangesAsync().ConfigureAwait(false);
+        }
+    }
+
     #endregion
 
     #region setup
@@ -180,6 +208,13 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new StaticDataRepository(context);
         return sut;
+    }
+
+    private async Task<(PortalDbContext, StaticDataRepository)> CreateSutWithContext()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new StaticDataRepository(context);
+        return (context, sut);
     }
 
     #endregion

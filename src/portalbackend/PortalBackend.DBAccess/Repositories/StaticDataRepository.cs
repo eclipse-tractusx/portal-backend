@@ -105,12 +105,12 @@ public class StaticDataRepository : IStaticDataRepository
     ///<inheritdoc />        
     public IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes() =>
         _dbContext.CompanyCertificateTypes.AsNoTracking()
-             .Select(certificate => new CompanyCertificateTypeData
+            .Where(type => type.CompanyCertificateTypeAssignedStatus!.CompanyCertificateTypeStatusId == CompanyCertificateTypeStatusId.ACTIVE)
+            .Select(type => new CompanyCertificateTypeData
                 (
-                    certificate.Id,
-                    certificate.CompanyCertificateTypeDescriptions
-                    .Where(y => y.CompanyCertificateType.CompanyCertificateTypeAssignedStatus.CompanyCertificateTypeStatusId == CompanyCertificateTypeStatusId.ACTIVE)
-                    .Select(x => new CertificateTypeDescription(x.LanguageShortName, x.Description))
+                    type.Id,
+                    type.CompanyCertificateTypeDescriptions
+                        .Select(x => new CertificateTypeDescription(x.LanguageShortName, x.Description))
                 ))
             .AsAsyncEnumerable();
 }

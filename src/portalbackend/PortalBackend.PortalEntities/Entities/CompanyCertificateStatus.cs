@@ -27,6 +27,7 @@ public class CompanyCertificateStatus
     private CompanyCertificateStatus()
     {
         Label = null!;
+        CompanyCertificates = new HashSet<CompanyCertificate>();
     }
 
     public CompanyCertificateStatus(CompanyCertificateStatusId certificateStatusId) : this()
@@ -39,4 +40,8 @@ public class CompanyCertificateStatus
 
     [MaxLength(255)]
     public string Label { get; private set; }
+
+    // Navigation Properties
+
+    public virtual ICollection<CompanyCertificate> CompanyCertificates { get; private set; }
 }
