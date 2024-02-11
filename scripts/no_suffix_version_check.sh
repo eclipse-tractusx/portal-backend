@@ -21,7 +21,7 @@
 
 for dir in ./src/framework/*/; do
   if [ -d "$dir" ]; then
-    local props_file=$dir"Directory.Build.props"
+    props_file=$dir"Directory.Build.props"
     if ! grep -qE "<VersionSuffix><\/VersionSuffix>" $props_file; then
       echo $dir
     fi
