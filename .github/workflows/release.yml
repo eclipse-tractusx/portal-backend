@@ -25,6 +25,7 @@ on:
       - 'v*.*.*'
       - '!v*.*.*-RC*'
       - '!v*.*.*-iam*'
+      - '!v*.*.*-framework*'
   workflow_dispatch:
 
 env:
