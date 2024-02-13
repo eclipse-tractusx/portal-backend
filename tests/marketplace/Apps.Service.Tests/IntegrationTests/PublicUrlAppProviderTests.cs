@@ -37,8 +37,8 @@ public class PublicUrlAppProviderTests : BasePublicUrlTests<AppsController, AppP
     public async Task OpenInformationController_WithAppProvider_ReturnsCorrectAmount()
     {
         await OpenInformationController_ReturnsCorrectAmount(2,
-            x => x.HttpMethods == "POST" && x.Url == "api/apps/start-autosetup",
-            x => x.HttpMethods == "GET" && x.Url == "api/apps/{appid}/subscription/{subscriptionid}/provider")
+            x => x.HttpMethods == "POST" && x.Url == "api/test/start-autosetup",
+            x => x.HttpMethods == "GET" && x.Url == "api/test/{appid}/subscription/{subscriptionid}/provider")
             .ConfigureAwait(false);
     }
 }

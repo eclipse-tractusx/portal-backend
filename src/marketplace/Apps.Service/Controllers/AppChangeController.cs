@@ -22,7 +22,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
@@ -32,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 /// <summary>
 /// Controller providing actions for updating applications.
 /// </summary>
-[Route("api/apps/[controller]")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH", "[controller]")]
 [ApiController]
 [Produces("application/json")]
 [Consumes("application/json")]

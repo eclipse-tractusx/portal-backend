@@ -21,6 +21,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos;
 
@@ -30,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// Creates a new instance of <see cref="PartnerNetworkController"/>
 /// </summary>
 [ApiController]
-[Route("api/administration/[controller]")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH", "[controller]")]
 [Produces("application/json")]
 [Consumes("application/json")]
 public class PartnerNetworkController : ControllerBase

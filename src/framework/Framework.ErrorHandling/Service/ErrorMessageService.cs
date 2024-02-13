@@ -40,4 +40,13 @@ public sealed class ErrorMessageService : IErrorMessageService
 
         return message;
     }
+
+    public IEnumerable<IErrorMessageService.ErrorMessageType> GetAllMessageTexts() =>
+        _messageContainers.Select(container =>
+            new IErrorMessageService.ErrorMessageType(
+                container.Key.Name,
+                container.Value.Select(message =>
+                    new IErrorMessageService.ErrorMessageCode(
+                        Enum.GetName(container.Key, message.Key) ?? throw new UnexpectedConditionException($"{message.Key} is not a valid value for enum type {container.Key}"),
+                        message.Value))));
 }
