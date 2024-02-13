@@ -618,7 +618,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(_identityData.CompanyId);
 
     /// <inheritdoc />    
-    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesBpnOthers(string businessPartnerNumber)
+    public async Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificatesBpnOthers(string businessPartnerNumber)
     {
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
@@ -629,7 +629,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         var companyId = await companyCertificateRepository.GetCompanyId(businessPartnerNumber).ConfigureAwait(false);
 
-        await companyCertificateRepository.GetCompanyCertificateData(companyId.Id);
+        return await companyCertificateRepository.GetCompanyCertificateData(companyId.Id);
     }
 
     public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType) =>

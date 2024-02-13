@@ -58,7 +58,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
      _context.Companies.Where(x => x.BusinessPartnerNumber == businessPartnerNumber).SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificateData(Guid companyId) =>
+    public async Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificateData(Guid companyId) =>
         _context.CompanyCertificates
         .Where(x => x.CompanyId == companyId)
         .Select(ccb => new CompanyCertificateBpnData(
@@ -67,7 +67,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
             ccb.DocumentId,
             ccb.ValidFrom,
             ccb.ValidTill))
-        .AsAsyncEnumerable();
+        .AsEnumerable();
 
     public Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType, Guid companyId) =>
           (skip, take) => Pagination.CreateSourceQueryAsync(

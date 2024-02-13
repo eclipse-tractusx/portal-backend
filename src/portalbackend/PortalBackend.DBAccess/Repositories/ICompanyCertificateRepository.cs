@@ -57,7 +57,7 @@ public interface ICompanyCertificateRepository
     /// </summary>
     /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the CompanyCertificateBpnData Details</returns>
-    IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificateData(Guid companyId);
+    Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificateData(Guid companyId);
 
     /// <summary>
     /// Gets all company certificate data from the persistence storage as pagination 

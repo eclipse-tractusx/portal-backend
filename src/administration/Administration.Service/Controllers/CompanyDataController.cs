@@ -388,14 +388,11 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
-    /// Gets the companyrole and ConsentAgreement Details
+    /// Gets the companyCertificates Details
     /// </summary>
-    /// <returns>the Companyrole and ConsentAgreement details</returns>
-    /// <remarks>Example: GET: api/administration/companydata/companyRolesAndConsents</remarks>
-    /// <response code="200">Returns the Companyrole and Consent details.</response>
-    /// <response code="400">languageShortName is not valid</response>
-    /// <response code="404">CompanyId does not exist in company</response>
-    /// <response code="409">No Companyrole or Incorrect Status</response>
+    /// <returns>the companyCertificates details</returns>
+    /// <remarks>Example: GET: api/administration/companydata/businessPartnerNumber}/companyCertificates</remarks>
+    /// <response code="200">Returns the companyCertificates details.</response>   
     [HttpGet]
     [Authorize(Roles = "view_certificates")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
@@ -404,6 +401,6 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesBpn([FromQuery] string businessPartnerNumber) =>
-        _logic.GetCompanyCertificatesBpnOthers(businessPartnerNumber);
+    public async IEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesBpn([FromQuery] string businessPartnerNumber) =>
+        await _logic.GetCompanyCertificatesBpnOthers(businessPartnerNumber);
 }
