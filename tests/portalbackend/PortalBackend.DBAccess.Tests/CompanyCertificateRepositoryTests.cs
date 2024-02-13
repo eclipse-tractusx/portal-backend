@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -61,24 +60,7 @@ public class CompanyCertificateRepositoryTests
         result.Should().Be(exists);
     }
 
-    #endregion
-
-    #region CheckCompanyCertificateId
-
-    [Fact]
-    public async Task CheckCompanyCertificateId_WithNoExistingData_ReturnsFalse()
-    {
-        // Arrange
-        var sut = await CreateSut();
-
-        // Act
-        var result = await sut.CheckCompanyCertificateId(new Guid("1268a76a-ca19-4dd8-b932-01f24071d560")).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
+    #endregion   
 
     #region CreateCertificate
     [Fact]
@@ -88,7 +70,10 @@ public class CompanyCertificateRepositoryTests
         var (sut, context) = await CreateSutWithContext();
 
         // Act
-        sut.CreateCompanyCertificateData(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), CompanyCertificateTypeId.IATF, new Guid("00000000-0000-0000-0000-000000000001"), DateTime.UtcNow, null);
+        sut.CreateCompanyCertificate(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), CompanyCertificateTypeId.IATF, new Guid("00000000-0000-0000-0000-000000000001"), x =>
+        {
+            x.ValidTill = DateTime.UtcNow;
+        });
 
         // Assert
         context.ChangeTracker.HasChanges().Should().BeTrue();

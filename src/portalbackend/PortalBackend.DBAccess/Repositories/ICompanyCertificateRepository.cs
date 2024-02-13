@@ -35,13 +35,6 @@ public interface ICompanyCertificateRepository
     Task<bool> CheckCompanyCertificateType(CompanyCertificateTypeId CertificateTypeId);
 
     /// <summary>
-    /// Checks whether the given CertificateId exist or not<see cref="CompanyCertificate"/> Certificate
-    /// </summary>
-    /// <param name="Id">Id of the credentialTypeId</param>
-    /// <returns><c>true</c> if the tpye is a certificate, otherwise <c>false</c></returns>
-    Task<bool> CheckCompanyCertificateId(Guid Id);
-
-    /// <summary>
     /// Creates the company certificate data
     /// </summary>
     /// <param name="companyId">Id of the company</param>
@@ -50,5 +43,5 @@ public interface ICompanyCertificateRepository
     /// <param name="expiryDate">expiry date</param>
     /// <param name="companyCertificateStatusId">company certificate status id</param>   
     /// <returns>The created entity</returns>
-    CompanyCertificate CreateCompanyCertificateData(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset? expiryDate, Action<CompanyCertificate>? setOptionalFields = null);
+    CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null);
 }

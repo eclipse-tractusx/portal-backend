@@ -996,7 +996,7 @@ public class CompanyDataBusinessLogicTests
         var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, DateTime.UtcNow);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyCertificate(new Guid("1268a76a-ca19-4dd8-b932-01f24071d560"), data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
@@ -1015,12 +1015,10 @@ public class CompanyDataBusinessLogicTests
         var documents = new List<Document>();
         var companyCertificates = new List<CompanyCertificate>();
 
-        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateId(Guid.NewGuid()))
-            .Returns(false);
-        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificateData(_identity.CompanyId, CompanyCertificateTypeId.IATF, A<Guid>._, expiryDate, A<Action<CompanyCertificate>>._))
-            .Invokes((Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, DateTimeOffset? expiryDate, Action<CompanyCertificate>? setOptionalFields) =>
+        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, CompanyCertificateTypeId.IATF, A<Guid>._, A<Action<CompanyCertificate>>._))
+            .Invokes((Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields) =>
             {
-                var companyCertificateData = new CompanyCertificate(Guid.NewGuid(), DateTime.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId, expiryDate);
+                var companyCertificateData = new CompanyCertificate(Guid.NewGuid(), DateTime.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
                 setOptionalFields?.Invoke(companyCertificateData);
                 companyCertificates.Add(companyCertificateData);
             });
@@ -1034,7 +1032,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
 
         // Act
-        await _sut.CreateCompanyCertificate(Guid.NewGuid(), data, CancellationToken.None).ConfigureAwait(false);
+        await _sut.CreateCompanyCertificate(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<Action<Document>>._))
@@ -1043,13 +1041,32 @@ public class CompanyDataBusinessLogicTests
         var document = documents.Single();
         document.DocumentTypeId.Should().Be(DocumentTypeId.COMPANY_CERTIFICATE);
         document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
-        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificateData(_identity.CompanyId, CompanyCertificateTypeId.IATF, document.Id, expiryDate, A<Action<CompanyCertificate>>._))
+        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, CompanyCertificateTypeId.IATF, document.Id, A<Action<CompanyCertificate>>._))
             .MustHaveHappenedOnceExactly();
         companyCertificates.Should().ContainSingle();
         var detail = companyCertificates.Single();
         detail.CompanyCertificateStatusId.Should().Be(CompanyCertificateStatusId.ACTIVE);
         detail.DocumentId.Should().Be(document.Id);
         detail.CompanyCertificateTypeId.Should().Be(CompanyCertificateTypeId.IATF);
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, DateTime.UtcNow);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"{CompanyCertificateTypeId.IATF} is not assigned to a certificate");
     }
     #endregion
 
