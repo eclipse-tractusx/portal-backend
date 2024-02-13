@@ -10,6 +10,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("UPDATE company_certificates SET company_certificate_type_status_id = 1 where company_certificate_type_status_id = 2");
+
             migrationBuilder.DeleteData(
                 schema: "portal",
                 table: "company_certificate_statuses",
