@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,9 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -30,9 +27,9 @@ public interface ICompanyCertificateRepository
     /// <summary>
     /// Checks whether the given CertificateType is a <see cref="CompanyCertificateTypeId"/> Certificate
     /// </summary>
-    /// <param name="CertificateTypeId">Id of the credentialTypeId</param>
+    /// <param name="certificateTypeId">Id of the credentialTypeId</param>
     /// <returns><c>true</c> if the tpye is a certificate, otherwise <c>false</c></returns>
-    Task<bool> CheckCompanyCertificateType(CompanyCertificateTypeId CertificateTypeId);
+    Task<bool> CheckCompanyCertificateType(CompanyCertificateTypeId certificateTypeId);
 
     /// <summary>
     /// Creates the company certificate data
@@ -40,8 +37,7 @@ public interface ICompanyCertificateRepository
     /// <param name="companyId">Id of the company</param>
     /// <param name="companyCertificateTypeId">Id of the company certificate types</param>
     /// <param name="docId">id of the document</param>
-    /// <param name="expiryDate">expiry date</param>
-    /// <param name="companyCertificateStatusId">company certificate status id</param>   
+    /// <param name="setOptionalFields">Action to set optional fields</param>   
     /// <returns>The created entity</returns>
     CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null);
 }
