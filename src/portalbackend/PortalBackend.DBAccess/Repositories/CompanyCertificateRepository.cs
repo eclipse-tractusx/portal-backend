@@ -44,15 +44,10 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 x.CompanyCertificateTypeAssignedStatus!.CompanyCertificateTypeStatusId == CompanyCertificateTypeStatusId.ACTIVE &&
                 x.Id == certificateTypeId);
 
-    public Task<bool> CheckCompanyCertificateId(Guid id) =>
-    _context.CompanyCertificates
-            .AnyAsync(x =>
-                x.Id == id);
-
     /// <inheritdoc />
     public CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields)
     {
-        var companyCertificate = new CompanyCertificate(Guid.NewGuid(), DateTimeOffset.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId, expiryDate);
+        var companyCertificate = new CompanyCertificate(Guid.NewGuid(), DateTimeOffset.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
         setOptionalFields?.Invoke(companyCertificate);
         return _context.CompanyCertificates.Add(companyCertificate).Entity;
     }
