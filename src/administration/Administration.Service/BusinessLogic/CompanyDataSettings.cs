@@ -30,6 +30,7 @@ public class CompanyDataSettings
     {
         UseCaseParticipationMediaTypes = null!;
         SsiCertificateMediaTypes = null!;
+        CompanyCertificateMediaTypes = null!;
     }
 
     /// <summary>
@@ -47,6 +48,14 @@ public class CompanyDataSettings
     [EnumEnumeration]
     [DistinctValues]
     public IEnumerable<MediaTypeId> SsiCertificateMediaTypes { get; set; }
+
+    /// <summary>
+    /// The media types that are allowed for the uploaded document for company certificate
+    /// </summary>
+    [Required]
+    [EnumEnumeration]
+    [DistinctValues]
+    public IEnumerable<MediaTypeId> CompanyCertificateMediaTypes { get; set; }
 
     /// <summary>
     /// The maximum page size

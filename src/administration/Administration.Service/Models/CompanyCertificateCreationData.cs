@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,10 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum CompanyCertificateStatusId
-{
-    ACTIVE = 1,
-    INACTVIE = 2
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+
+public record CompanyCertificateCreationData
+(
+    CompanyCertificateTypeId CertificateType,
+    IFormFile Document,
+    DateTimeOffset? ExpiryDate
+);

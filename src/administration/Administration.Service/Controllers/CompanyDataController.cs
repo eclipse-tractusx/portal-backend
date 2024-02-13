@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -266,6 +265,31 @@ public class CompanyDataController : ControllerBase
     public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)
     {
         await _logic.CreateSsiCertificate(data, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Creates the Company Certificate request
+    /// </summary>
+    /// <param name="data">The type and document</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>The id of the created Company certificate request</returns>
+    /// <remarks>Example: POST: api/administration/companydata/companyCertificate</remarks>
+    /// <response code="204">Successfully created the Company certificate request.</response>
+    /// <response code="400">   
+    /// </response>
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    [Authorize(Roles = "upload_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [RequestFormLimits(ValueLengthLimit = 2000000, MultipartBodyLengthLimit = 2000000)]
+    [Route("companyCertificate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<NoContentResult> CreateCompanyCertificate([FromForm] CompanyCertificateCreationData data, CancellationToken cancellationToken)
+    {
+        await _logic.CreateCompanyCertificate(data, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 
