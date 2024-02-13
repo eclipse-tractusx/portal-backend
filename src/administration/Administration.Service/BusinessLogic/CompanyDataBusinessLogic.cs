@@ -380,9 +380,12 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         await HandleCompanyCertificateCreationAsync(data.CertificateType, data.Document, documentContentType, companyCertificateRepository, data.ExpiryDate, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    private async Task HandleCompanyCertificateCreationAsync(CompanyCertificateTypeId companyCertificateTypeId, IFormFile document, MediaTypeId mediaTypeId,
-    ICompanyCertificateRepository companyCertificateRepository, DateTimeOffset? expiryDate, CancellationToken cancellationToken)
+    private async Task HandleCompanyCertificateCreationAsync(CompanyCertificateTypeId companyCertificateTypeId,
+        IFormFile document,
+        MediaTypeId mediaTypeId,
+        ICompanyCertificateRepository companyCertificateRepository,
+        DateTimeOffset? expiryDate,
+        CancellationToken cancellationToken)
     {
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
         var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
@@ -392,10 +395,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 x.DocumentStatusId = DocumentStatusId.PENDING;
             });
 
-        var companyCertificate = companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, doc.Id, x =>
-       {
-           x.ValidTill = expiryDate;
-       });
+        companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, doc.Id,
+            x =>
+            {
+                x.ValidTill = expiryDate?.ToUniversalTime();
+            });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
