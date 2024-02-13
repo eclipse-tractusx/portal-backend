@@ -252,7 +252,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (identityProviderCategory, alias, identityProviderTypeId, companyUsersLinked, ownerCompanyName, metadataUrl);
     }
 
-    public async ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProviderAsync(Guid identityProviderId, IdentityProviderEditableDetails details)
+    public async ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProviderAsync(Guid identityProviderId, IdentityProviderEditableDetails details, CancellationToken cancellationToken)
     {
         var (category, alias, typeId, metadataUrl) = await ValidateUpdateOwnCompanyIdentityProviderArguments(identityProviderId, details).ConfigureAwait(false);
 
@@ -262,7 +262,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 await UpdateIdentityProviderShared(alias, details).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId, null).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
-                await UpdateIdentityProviderOidc(alias, metadataUrl, details).ConfigureAwait(false);
+                await UpdateIdentityProviderOidc(alias, metadataUrl, details, cancellationToken).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId, details.Oidc?.MetadataUrl).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 await UpdateIdentityProviderSaml(alias, details).ConfigureAwait(false);
@@ -294,7 +294,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (identityProviderCategory, alias, identityProviderTypeId, metadataUrl);
     }
 
-    private async ValueTask UpdateIdentityProviderOidc(string alias, string? metadataUrl, IdentityProviderEditableDetails details)
+    private async ValueTask UpdateIdentityProviderOidc(string alias, string? metadataUrl, IdentityProviderEditableDetails details, CancellationToken cancellationToken)
     {
         if (details.Oidc == null)
         {
@@ -312,7 +312,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 details.Oidc.ClientAuthMethod,
                 details.Oidc.ClientId,
                 details.Oidc.Secret,
-                details.Oidc.SignatureAlgorithm))
+                details.Oidc.SignatureAlgorithm), cancellationToken)
             .ConfigureAwait(false);
         _portalRepositories.GetInstance<IIdentityProviderRepository>()
             .AttachAndModifyIamIdentityProvider(
