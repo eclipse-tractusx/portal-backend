@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -51,6 +52,22 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
         setOptionalFields?.Invoke(companyCertificate);
         return _context.CompanyCertificates.Add(companyCertificate).Entity;
     }
+
+    /// <inheritdoc />
+    public Task<Company?> GetCompanyId(string businessPartnerNumber) =>
+     _context.Companies.Where(x => x.BusinessPartnerNumber == businessPartnerNumber).SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificateData(Guid companyId) =>
+        _context.CompanyCertificates
+        .Where(x => x.CompanyId == companyId)
+        .Select(ccb => new CompanyCertificateBpnData(
+            ccb.CompanyCertificateTypeId,
+            ccb.CompanyCertificateStatusId,
+            ccb.DocumentId,
+            ccb.ValidFrom,
+            ccb.ValidTill))
+        .AsAsyncEnumerable();
 
     public Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType, Guid companyId) =>
           (skip, take) => Pagination.CreateSourceQueryAsync(

@@ -396,14 +396,14 @@ public class CompanyDataController : ControllerBase
     /// <response code="400">languageShortName is not valid</response>
     /// <response code="404">CompanyId does not exist in company</response>
     /// <response code="409">No Companyrole or Incorrect Status</response>
-    // [HttpGet]
-    // [Authorize(Roles = "view_certificates")]
-    // [Authorize(Policy = PolicyTypes.ValidCompany)]
-    // [Route("{businessPartnerNumber}/companyCertificates")]
-    // [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
-    // [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    // [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    // [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    // public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesBpn([FromQuery] string businessPartnerNumber) =>
-    //     _logic.GetCompanyCertificatesBpnOthers(businessPartnerNumber);
+    [HttpGet]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("{businessPartnerNumber}/companyCertificates")]
+    [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesBpn([FromQuery] string businessPartnerNumber) =>
+        _logic.GetCompanyCertificatesBpnOthers(businessPartnerNumber);
 }

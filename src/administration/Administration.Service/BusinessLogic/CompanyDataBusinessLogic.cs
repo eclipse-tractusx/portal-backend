@@ -617,6 +617,21 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
         _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(_identityData.CompanyId);
 
+    /// <inheritdoc />    
+    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesBpnOthers(string businessPartnerNumber)
+    {
+        if (string.IsNullOrWhiteSpace(businessPartnerNumber))
+        {
+            throw new ControllerArgumentException("{businessPartnerNumber} must not be empty", "businessPartnerNumber");
+        }
+
+        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
+
+        var companyId = await companyCertificateRepository.GetCompanyId(businessPartnerNumber).ConfigureAwait(false);
+
+        await companyCertificateRepository.GetCompanyCertificateData(companyId.Id);
+    }
+
     public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType) =>
             Pagination.CreateResponseAsync(
             page,

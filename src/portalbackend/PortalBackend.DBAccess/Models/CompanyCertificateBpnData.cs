@@ -20,15 +20,12 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Reflection.Metadata;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyCertificateBpnData
-{
-    CompanyCertificateTypeId companyCertificateType;
-    CompanyCertificateStatusId companyCertificateStatus;
-    Document documentId;
-    DateTimeOffset validFrom;
-
-    DateTimeOffset validTill;
-
-}
+public record CompanyCertificateBpnData(
+    CompanyCertificateTypeId companyCertificateType,
+    CompanyCertificateStatusId companyCertificateStatus,
+    Guid documentId,
+    DateTimeOffset validFrom,
+    DateTimeOffset? validTill
+);
