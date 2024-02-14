@@ -2,6 +2,23 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.8.0-RC5
+
+### Feature
+* Certfiicate Management (Administration Service)
+  * released static data endpoint to retrieve supported certificate types - GET /api/administration/staticdata/certificateTypes
+  * released endpoint for posting company certificates - POST /api/administration/companydata/companyCertificate
+* Others (Common for all services)
+  * support endpoint released returning all error-types, error-codes and error-messages that a service makes use of has been added
+
+### Technical Support
+* Adjusted the nuget push script
+* Updated release workflow to not run release workflow when a new framework version is getting published
+
+### Bugfix
+* IdentityProvider Configuration - added cancellationtoken to UpdateOwnCompanyIdentityProvider
+* Added ValidCompany Attribute to endpoint POST: api/registration/network/{externalId}/decline to initialise the companyId of the current user correctly
+
 ## 1.8.0-RC4
 
 ### Change
