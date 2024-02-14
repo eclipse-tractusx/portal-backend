@@ -405,45 +405,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken)
-    {
-        var documentContentType = data.Document.ContentType.ParseMediaTypeId();
-        documentContentType.CheckDocumentContentType(_settings.CompanyCertificateMediaTypes);
-
-        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
-        if (!await companyCertificateRepository.CheckCompanyCertificateType(data.CertificateType).ConfigureAwait(false))
-        {
-            throw new ControllerArgumentException($"{data.CertificateType} is not assigned to a certificate");
-        }
-
-        await HandleCompanyCertificateCreationAsync(data.CertificateType, data.Document, documentContentType, companyCertificateRepository, data.ExpiryDate, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task HandleCompanyCertificateCreationAsync(CompanyCertificateTypeId companyCertificateTypeId,
-        IFormFile document,
-        MediaTypeId mediaTypeId,
-        ICompanyCertificateRepository companyCertificateRepository,
-        DateTimeOffset? expiryDate,
-        CancellationToken cancellationToken)
-    {
-        var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
-            hash, mediaTypeId, DocumentTypeId.COMPANY_CERTIFICATE, x =>
-            {
-                x.CompanyUserId = _identityData.IdentityId;
-                x.DocumentStatusId = DocumentStatusId.PENDING;
-            });
-
-        companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, doc.Id,
-            x =>
-            {
-                x.ValidTill = expiryDate?.ToUniversalTime();
-            });
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
     public Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, VerifiedCredentialTypeId? credentialTypeId, string? companyName, CompanySsiDetailSorting? sorting)
     {
         var query = _portalRepositories
