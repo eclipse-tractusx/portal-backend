@@ -56,6 +56,7 @@ public class NetworkController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "submit_registration")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("partnerRegistration/submit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
