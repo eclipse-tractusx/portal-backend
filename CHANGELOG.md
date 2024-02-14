@@ -17,7 +17,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Bugfix
 * IdentityProvider Configuration - added cancellationtoken to UpdateOwnCompanyIdentityProvider
-* Added ValidCompany Attribute to endpoint POST: api/registration/network/{externalId}/decline to initialise the companyId of the current user correctly
+* Added ValidCompany Attribute to endpoint POST api/registration/network/{externalId}/decline to initialise the companyId of the current user correctly
+* External Registration submission endpoint POST /api/registration/Network/partnerRegistration/submit fixed
 
 ## 1.8.0-RC4
 
