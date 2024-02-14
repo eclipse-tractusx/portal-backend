@@ -622,12 +622,16 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     {
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
-            throw new ControllerArgumentException("{businessPartnerNumber} must not be empty", "businessPartnerNumber");
+            throw new ControllerArgumentException("businessPartnerNumber must not be empty");
         }
 
         var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
 
         var companyId = await companyCertificateRepository.GetCompanyId(businessPartnerNumber).ConfigureAwait(false);
+        if (companyId == null)
+        {
+            throw new ControllerArgumentException($"company does not exist for {businessPartnerNumber}");
+        }
 
         return await companyCertificateRepository.GetCompanyCertificateData(companyId.Id);
     }

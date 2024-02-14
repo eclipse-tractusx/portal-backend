@@ -60,7 +60,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
     /// <inheritdoc />
     public async Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificateData(Guid companyId) =>
         _context.CompanyCertificates
-        .Where(x => x.CompanyId == companyId)
+        .Where(x => x.CompanyId == companyId && x.CompanyCertificateStatusId == CompanyCertificateStatusId.ACTIVE)
         .Select(ccb => new CompanyCertificateBpnData(
             ccb.CompanyCertificateTypeId,
             ccb.CompanyCertificateStatusId,

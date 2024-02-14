@@ -294,6 +294,23 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
+    /// Gets the companyCertificates Details
+    /// </summary>
+    /// <returns>the companyCertificates details</returns>
+    /// <remarks>Example: GET: api/administration/companydata/businessPartnerNumber}/companyCertificates</remarks>
+    /// <response code="200">Returns the companyCertificates details.</response>   
+    [HttpGet]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("company/{businessPartnerNumber}/companyCertificates")]
+    [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificatesBpn(string businessPartnerNumber) =>
+           _logic.GetCompanyCertificatesBpnOthers(businessPartnerNumber);
+
+    /// <summary>
     /// Retrieves all company certificates with respect userId.
     /// </summary>
     /// <param name="page" example="0">Optional the page of company certificate.</param>
@@ -386,21 +403,4 @@ public class CompanyDataController : ControllerBase
         await _logic.RejectCredential(credentialId).ConfigureAwait(false);
         return NoContent();
     }
-
-    /// <summary>
-    /// Gets the companyCertificates Details
-    /// </summary>
-    /// <returns>the companyCertificates details</returns>
-    /// <remarks>Example: GET: api/administration/companydata/businessPartnerNumber}/companyCertificates</remarks>
-    /// <response code="200">Returns the companyCertificates details.</response>   
-    [HttpGet]
-    [Authorize(Roles = "view_certificates")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("{businessPartnerNumber}/companyCertificates")]
-    [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async IEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesBpn([FromQuery] string businessPartnerNumber) =>
-        await _logic.GetCompanyCertificatesBpnOthers(businessPartnerNumber);
 }

@@ -1071,6 +1071,82 @@ public class CompanyDataBusinessLogicTests
     }
     #endregion
 
+    #region GetCompanyCertificateWithBpnNumber
+
+    [Fact]
+    public async Task GetCompanyCertificateWithNullOrEmptyBpn_ReturnsExpected()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificatesBpnOthers(string.Empty).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().StartWith("businessPartnerNumber must not be empty");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateWithNoCompanyId_ReturnsExpected()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        var businessPartnerNumber = "BPNL07800HZ01644";
+        Company company = null;
+
+        A.CallTo(() => _companyCertificateRepository.GetCompanyId(businessPartnerNumber))
+            .Returns(company);
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificatesBpnOthers(businessPartnerNumber).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().StartWith($"company does not exist for {businessPartnerNumber}");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateWithBpnNumber_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        var data = _fixture.Build<CompanyCertificateBpnData>()
+            .With(x => x.companyCertificateStatus, CompanyCertificateStatusId.ACTIVE)
+            .With(x => x.companyCertificateType, CompanyCertificateTypeId.ISO_9001)
+            .With(x => x.documentId, Guid.NewGuid())
+            .With(x => x.validFrom, DateTime.UtcNow)
+            .With(x => x.validTill, DateTime.UtcNow)
+            .CreateMany(5).AsEnumerable();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyId("BPNL07800HZ01643"))
+            .Returns(new Company(companyId, "test", CompanyStatusId.ACTIVE, DateTime.UtcNow));
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateData(companyId))
+           .Returns(data);
+
+        // Act
+        var result = await _sut.GetCompanyCertificatesBpnOthers("BPNL07800HZ01643").ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateWithBpnNumber_WithEmptyResult_ReturnsExpected()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyId("BPNL07800HZ01643"))
+            .Returns(new Company(companyId, "test", CompanyStatusId.ACTIVE, DateTime.UtcNow));
+
+        // Act
+        var result = await _sut.GetCompanyCertificatesBpnOthers("BPNL07800HZ01643").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region GetCredentials
 
     [Fact]

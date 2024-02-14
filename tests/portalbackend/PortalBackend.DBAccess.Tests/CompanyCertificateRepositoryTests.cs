@@ -21,6 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -80,6 +81,7 @@ public class CompanyCertificateRepositoryTests
             .Which.Entity.Should().BeOfType<CompanyCertificate>()
             .Which.CompanyCertificateStatusId.Should().Be(CompanyCertificateStatusId.ACTIVE);
     }
+
     #endregion
 
     #region GetAllCertificateData
@@ -103,6 +105,7 @@ public class CompanyCertificateRepositoryTests
         {
             companyCertificateDetail.Data.Select(data => data.companyCertificateType).Should().BeInAscendingOrder();
         }
+
         if (sorting == CertificateSorting.CertificateTypeDesc)
         {
             companyCertificateDetail.Data.Select(data => data.companyCertificateType).Should().BeInDescendingOrder();
@@ -136,7 +139,53 @@ public class CompanyCertificateRepositoryTests
 
     #endregion
 
+    #region GetCompanyCertificatesBpn
+
+    [Fact]
+    public async Task GetCompanyId_WithExistingData()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyId("BPNL07800HZ01643").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<Company>();
+        result.Id.Should().Be("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd");
+    }
+
+    [Fact]
+    public async Task GetCompanyId_WithNoExistingData()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyId("BPNL07800HZ01644").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateData_NoResults_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyCertificateData(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region Setup
+
     private async Task<CompanyCertificateRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
