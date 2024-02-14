@@ -78,7 +78,7 @@ public class NetworkRepository : INetworkRepository
                         ca.OnboardingServiceProvider!.OnboardingServiceProviderDetail!.CallbackUrl)),
                 x.CompanyAssignedRoles.Select(assigned => new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(
                         assigned.CompanyRoleId,
-                        assigned.CompanyRole!.AgreementAssignedCompanyRoles.Select(a => a.AgreementId))),
+                        assigned.CompanyRole!.AgreementAssignedCompanyRoles.Where(a => a.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE).Select(a => a.AgreementId))),
                 x.NetworkRegistration!.ProcessId
                 ))
             .SingleOrDefaultAsync();

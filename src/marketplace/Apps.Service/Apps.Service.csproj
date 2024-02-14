@@ -47,6 +47,7 @@
     <ProjectReference Include="..\..\web\Web.PublicInfos\Web.PublicInfos.csproj" />
     <ProjectReference Include="..\Offers.Library.Web\Offers.Library.Web.csproj" />
     <ProjectReference Include="..\Offers.Library\Offers.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Controller\Framework.ErrorHandling.Controller.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="../../../LICENSE">

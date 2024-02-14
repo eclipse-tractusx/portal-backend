@@ -98,4 +98,20 @@ public class StaticDataControllerTest
         A.CallTo(() => _logic.GetOperatorBpns()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5).And.AllBeOfType<OperatorBpnData>();
     }
+
+    [Fact]
+    public async Task GetCertificateTypes_ReturnsExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<CompanyCertificateTypeData>(5).ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetCertificateTypes())
+            .Returns(data);
+
+        //Act
+        var result = await _controller.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _logic.GetCertificateTypes()).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5).And.AllBeOfType<CompanyCertificateTypeData>();
+    }
 }

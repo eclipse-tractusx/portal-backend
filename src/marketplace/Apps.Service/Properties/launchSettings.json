@@ -15,6 +15,7 @@
       "launchUrl": "api/apps/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "MVC_ROUTING_BASEPATH": "api/apps",
         "Cors__AllowedOrigins__0": "http://localhost:3000"
       },
       "applicationUrl": "https://localhost:5001;http://localhost:5000",

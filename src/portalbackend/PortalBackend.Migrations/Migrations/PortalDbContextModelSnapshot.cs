@@ -35,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder
                 .HasDefaultSchema("portal")
                 .UseCollation("en_US.utf8")
-                .HasAnnotation("ProductVersion", "7.0.10")
+                .HasAnnotation("ProductVersion", "7.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -2208,16 +2208,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 1,
-                            Label = "IN_REVIEW"
-                        },
-                        new
-                        {
-                            Id = 2,
                             Label = "ACTIVE"
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 2,
                             Label = "INACTVIE"
                         });
                 });
@@ -7039,7 +7034,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificate", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateStatus", "CompanyCertificateStatus")
-                        .WithMany()
+                        .WithMany("CompanyCertificates")
                         .HasForeignKey("CompanyCertificateStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -7095,7 +7090,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeDescription", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", "CompanyCertificateType")
-                        .WithMany()
+                        .WithMany("CompanyCertificateTypeDescriptions")
                         .HasForeignKey("CompanyCertificateTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -8711,9 +8706,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyServiceAccount");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateStatus", b =>
+                {
+                    b.Navigation("CompanyCertificates");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", b =>
                 {
                     b.Navigation("CompanyCertificateTypeAssignedStatus");
+
+                    b.Navigation("CompanyCertificateTypeDescriptions");
 
                     b.Navigation("CompanyCertificates");
                 });

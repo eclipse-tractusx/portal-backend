@@ -222,7 +222,7 @@ public partial class ProvisioningManager : IProvisioningManager
         await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
     }
 
-    public ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
+    public ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc, CancellationToken cancellationToken)
     {
         if (identityProviderConfigOidc.Secret == null)
         {
@@ -247,13 +247,13 @@ public partial class ProvisioningManager : IProvisioningManager
                     break;
             }
         }
-        return UpdateCentralIdentityProviderDataOIDCInternalAsync(identityProviderConfigOidc);
+        return UpdateCentralIdentityProviderDataOIDCInternalAsync(identityProviderConfigOidc, cancellationToken);
     }
 
-    private async ValueTask UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
+    private async ValueTask UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc, CancellationToken cancellationToken)
     {
         var (alias, displayName, metadataUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
-        var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
+        var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false), metadataUrl, cancellationToken).ConfigureAwait(false);
         identityProvider.DisplayName = displayName;
         identityProvider.Config.ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
         identityProvider.Config.ClientId = clientId;

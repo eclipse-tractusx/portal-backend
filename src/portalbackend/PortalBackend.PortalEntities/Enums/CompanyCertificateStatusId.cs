@@ -21,7 +21,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum CompanyCertificateStatusId
 {
-    IN_REVIEW = 1,
-    ACTIVE = 2,
-    INACTVIE = 3
+    ACTIVE = 1,
+    INACTVIE = 2
 }

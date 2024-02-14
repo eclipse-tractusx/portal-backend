@@ -22,8 +22,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -35,7 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating applications and user assigned favourites.
 /// </summary>
-[Route("api/[controller]")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH")]
 [ApiController]
 [Produces("application/json")]
 [Consumes("application/json")]

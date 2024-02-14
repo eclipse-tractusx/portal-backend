@@ -21,7 +21,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -34,7 +35,7 @@ using System.Net;
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
 {
     [ApiController]
-    [Route("api/registration")]
+    [EnvironmentRoute("MVC_ROUTING_BASEPATH")]
     [Produces("application/json")]
     [Consumes("application/json")]
     public class RegistrationController : ControllerBase

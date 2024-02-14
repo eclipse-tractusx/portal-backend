@@ -36,14 +36,14 @@ public class PublicUrlAppProviderTests : BasePublicUrlTests<CompanyDataControlle
     public async Task OpenInformationController_WithAppProvider_ReturnsCorrectAmount()
     {
         await OpenInformationController_ReturnsCorrectAmount(8,
-            x => x.HttpMethods == "GET" && x.Url == "api/administration/connectors/managed",
-            x => x.HttpMethods == "POST" && x.Url == "api/administration/connectors/managed",
-            x => x.HttpMethods == "POST" && x.Url == "api/administration/connectors/discovery",
-            x => x.HttpMethods == "GET" && x.Url == "api/administration/documents/selfdescription/{documentid}",
-            x => x.HttpMethods == "GET" && x.Url == "api/administration/partnernetwork/membercompanies",
-            x => x.HttpMethods == "GET" && x.Url == "api/administration/subscriptionconfiguration/owncompany",
-            x => x.HttpMethods == "GET" && x.Url == "api/administration/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}",
-            x => x.HttpMethods == "POST" && x.Url == "api/administration/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}/retrigger-provider-callback")
+            x => x.HttpMethods == "GET" && x.Url == "api/test/connectors/managed",
+            x => x.HttpMethods == "POST" && x.Url == "api/test/connectors/managed",
+            x => x.HttpMethods == "POST" && x.Url == "api/test/connectors/discovery",
+            x => x.HttpMethods == "GET" && x.Url == "api/test/documents/selfdescription/{documentid}",
+            x => x.HttpMethods == "GET" && x.Url == "api/test/partnernetwork/membercompanies",
+            x => x.HttpMethods == "GET" && x.Url == "api/test/subscriptionconfiguration/owncompany",
+            x => x.HttpMethods == "GET" && x.Url == "api/test/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}",
+            x => x.HttpMethods == "POST" && x.Url == "api/test/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}/retrigger-provider-callback")
             .ConfigureAwait(false);
     }
 }
