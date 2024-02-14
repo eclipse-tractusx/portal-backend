@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -7034,7 +7034,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificate", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateStatus", "CompanyCertificateStatus")
-                        .WithMany()
+                        .WithMany("CompanyCertificates")
                         .HasForeignKey("CompanyCertificateStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -7090,7 +7090,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeDescription", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", "CompanyCertificateType")
-                        .WithMany()
+                        .WithMany("CompanyCertificateTypeDescriptions")
                         .HasForeignKey("CompanyCertificateTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -8706,9 +8706,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyServiceAccount");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateStatus", b =>
+                {
+                    b.Navigation("CompanyCertificates");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", b =>
                 {
                     b.Navigation("CompanyCertificateTypeAssignedStatus");
+
+                    b.Navigation("CompanyCertificateTypeDescriptions");
 
                     b.Navigation("CompanyCertificates");
                 });
