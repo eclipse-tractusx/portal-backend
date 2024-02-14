@@ -60,7 +60,7 @@ public interface IProvisioningManager
     ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled);
     ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled);
     ValueTask UpdateSharedIdentityProviderAsync(string alias, string displayName);
-    ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc);
+    ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc, CancellationToken cancellationToken);
     ValueTask<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias);
     ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
     Task DeleteCentralIdentityProviderAsync(string alias);

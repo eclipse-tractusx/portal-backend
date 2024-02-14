@@ -55,6 +55,8 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
         var projectDir = Directory.GetCurrentDirectory();
         var configPath = Path.Combine(projectDir, "appsettings.IntegrationTests.json");
 
+        Environment.SetEnvironmentVariable("MVC_ROUTING_BASEPATH", "/api/test");
+
         builder.ConfigureAppConfiguration((_, conf) =>
         {
             conf.AddJsonFile(configPath, true);

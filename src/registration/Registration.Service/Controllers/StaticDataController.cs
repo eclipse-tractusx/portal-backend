@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -25,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
 {
 
     [ApiController]
-    [Route("api/registration/[controller]")]
+    [EnvironmentRoute("MVC_ROUTING_BASEPATH", "[controller]")]
     [Produces("application/json")]
     [Consumes("application/json")]
     public class StaticDataController : ControllerBase

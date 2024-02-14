@@ -20,7 +20,8 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
@@ -28,7 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
 
 [ApiController]
-[Route("api/registration/[controller]")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH", "[controller]")]
 [Produces("application/json")]
 [Consumes("application/json")]
 public class NetworkController : ControllerBase
@@ -55,6 +56,7 @@ public class NetworkController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "submit_registration")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("partnerRegistration/submit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

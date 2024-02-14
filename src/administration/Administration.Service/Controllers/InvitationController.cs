@@ -22,7 +22,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -31,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// Controller providing actions execute invitation
 /// </summary>
 [ApiController]
-[Route("api/administration/invitation")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH", "invitation")]
 [Produces("application/json")]
 [Consumes("application/json")]
 public class InvitationController : ControllerBase

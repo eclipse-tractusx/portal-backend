@@ -55,4 +55,8 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
     /// <inheritdoc />
     public IAsyncEnumerable<OperatorBpnData> GetOperatorBpns() =>
         _portalRepositories.GetInstance<ICompanyRepository>().GetOperatorBpns();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes() =>
+        _portalRepositories.GetInstance<IStaticDataRepository>().GetCertificateTypes();
 }

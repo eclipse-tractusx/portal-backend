@@ -66,6 +66,7 @@
     <ProjectReference Include="..\..\web\Web.Identity\Web.Identity.csproj" />
     <ProjectReference Include="..\..\web\Web.Initialization\Web.Initialization.csproj" />
     <ProjectReference Include="..\..\web\Web.PublicInfos\Web.PublicInfos.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Controller\Framework.ErrorHandling.Controller.csproj" />
   </ItemGroup>
 
   <ItemGroup>
