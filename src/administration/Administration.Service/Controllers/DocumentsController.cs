@@ -21,7 +21,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
@@ -32,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating connectors for documents.
 /// </summary>
-[Route("api/administration/[controller]")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH", "[controller]")]
 [ApiController]
 [Consumes("application/json")]
 public class DocumentsController : ControllerBase

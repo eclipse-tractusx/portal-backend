@@ -41,7 +41,7 @@ public partial class KeycloakClient
             .ReceiveJson<IDictionary<string, object>>()
             .ConfigureAwait(false);
 
-    public async Task<IDictionary<string, object>> ImportIdentityProviderFromUrlAsync(string realm, string url) =>
+    public async Task<IDictionary<string, object>> ImportIdentityProviderFromUrlAsync(string realm, string url, CancellationToken cancellationToken = default) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
@@ -50,7 +50,7 @@ public partial class KeycloakClient
             {
                 ["fromUrl"] = url,
                 ["providerId"] = "oidc"
-            })
+            }, cancellationToken)
             .ReceiveJson<IDictionary<string, object>>()
             .ConfigureAwait(false);
 

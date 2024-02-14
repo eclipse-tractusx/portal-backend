@@ -23,6 +23,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.Endp
 public static class Paths
 {
     public static readonly string Base = "/api/";
-    public static readonly string Notification = $"{Base}notification";
-    public static readonly string Connectors = $"{Base}administration/connectors";
+    public static readonly string Notification = $"{Base}test";
+    public static readonly string Connectors = $"{Base}test/connectors";
 }

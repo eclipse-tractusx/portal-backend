@@ -22,7 +22,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
@@ -32,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating identityProviders for companies.
 /// </summary>
-[Route("api/administration/identityprovider")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH", "identityprovider")]
 [ApiController]
 public class IdentityProviderController : ControllerBase
 {
@@ -170,6 +171,7 @@ public class IdentityProviderController : ControllerBase
     /// </summary>
     /// <param name="identityProviderId">Id of the identity provider</param>
     /// <param name="details">possible changes for the identity provider</param>
+    /// <param name="cancellationToken">the CancellationToken for this request (provided by the Controller)</param>
     /// <returns>Returns details of the identity provider</returns>
     /// <remarks>
     /// Example: PUT: api/administration/identityprovider/owncompany/identityproviders/6CFEEF93-CB37-405B-B65A-02BEEB81629F
@@ -190,8 +192,8 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
-        _businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details);
+    public ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details, CancellationToken cancellationToken) =>
+        _businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details, cancellationToken);
 
     /// <summary>
     /// Deletes the identity provider with the given id

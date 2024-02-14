@@ -34,7 +34,7 @@ public class IdentityProviderControllerTests
     {
         _fixture = new Fixture();
         _logic = A.Fake<IIdentityProviderBusinessLogic>();
-        this._controller = new IdentityProviderController(_logic);
+        _controller = new IdentityProviderController(_logic);
     }
 
     [Fact]
@@ -43,15 +43,16 @@ public class IdentityProviderControllerTests
         //Arrange
         var id = Guid.NewGuid();
         var data = _fixture.Create<IdentityProviderDetails>();
-        A.CallTo(() => _logic.UpdateOwnCompanyIdentityProviderAsync(A<Guid>._, A<IdentityProviderEditableDetails>._))
+        A.CallTo(() => _logic.UpdateOwnCompanyIdentityProviderAsync(A<Guid>._, A<IdentityProviderEditableDetails>._, A<CancellationToken>._))
             .Returns(data);
+        var cancellationToken = CancellationToken.None;
 
         //Act
-        var result = await this._controller.UpdateOwnCompanyIdentityProvider(id, new IdentityProviderEditableDetails("test")).ConfigureAwait(false);
+        var result = await this._controller.UpdateOwnCompanyIdentityProvider(id, new IdentityProviderEditableDetails("test"), cancellationToken).ConfigureAwait(false);
 
         //Assert
         result.Should().Be(data);
-        A.CallTo(() => _logic.UpdateOwnCompanyIdentityProviderAsync(id, A<IdentityProviderEditableDetails>.That.Matches(x => x.DisplayName == "test"))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateOwnCompanyIdentityProviderAsync(id, A<IdentityProviderEditableDetails>.That.Matches(x => x.DisplayName == "test"), cancellationToken)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

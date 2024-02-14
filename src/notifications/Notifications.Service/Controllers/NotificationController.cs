@@ -20,8 +20,9 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -34,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Controllers;
 ///     Controller providing actions for creating, displaying and updating notifications.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[EnvironmentRoute("MVC_ROUTING_BASEPATH")]
 [Consumes("application/json")]
 [Produces("application/json")]
 public class NotificationController : ControllerBase

@@ -82,9 +82,9 @@ public partial class ProvisioningManager
         await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
     }
 
-    private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url)
+    private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url, CancellationToken cancellationToken)
     {
-        var metadata = await _CentralIdp.ImportIdentityProviderFromUrlAsync(_Settings.CentralRealm, url).ConfigureAwait(false);
+        var metadata = await _CentralIdp.ImportIdentityProviderFromUrlAsync(_Settings.CentralRealm, url, cancellationToken).ConfigureAwait(false);
         if (!metadata.Any())
         {
             throw new ServiceException("failed to import identityprovider metadata", HttpStatusCode.NotFound);

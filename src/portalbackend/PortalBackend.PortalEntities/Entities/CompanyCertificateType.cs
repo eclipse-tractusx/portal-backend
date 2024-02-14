@@ -28,6 +28,7 @@ public class CompanyCertificateType
     {
         Label = null!;
         CompanyCertificates = new HashSet<CompanyCertificate>();
+        CompanyCertificateTypeDescriptions = new HashSet<CompanyCertificateTypeDescription>();
     }
 
     public CompanyCertificateType(CompanyCertificateTypeId companyCertificateTypeId) : this()
@@ -45,4 +46,5 @@ public class CompanyCertificateType
 
     public virtual CompanyCertificateTypeAssignedStatus? CompanyCertificateTypeAssignedStatus { get; set; }
     public virtual ICollection<CompanyCertificate> CompanyCertificates { get; private set; }
+    public virtual ICollection<CompanyCertificateTypeDescription> CompanyCertificateTypeDescriptions { get; private set; }
 }

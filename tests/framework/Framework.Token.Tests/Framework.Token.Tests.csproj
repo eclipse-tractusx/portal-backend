@@ -43,6 +43,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\tests\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.Token\Framework.Token.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
   </ItemGroup>
 </Project>

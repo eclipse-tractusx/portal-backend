@@ -37,8 +37,8 @@ public class PublicUrlActiveParticipantTests : BasePublicUrlTests<CompanyDataCon
     public async Task OpenInformationController_WithActiveParticipant_ReturnsCorrectAmount()
     {
         await OpenInformationController_ReturnsCorrectAmount(2,
-            x => x.HttpMethods == "POST" && x.Url == "api/administration/connectors/discovery",
-            x => x.HttpMethods == "GET" && x.Url == "api/administration/partnernetwork/membercompanies")
+            x => x.HttpMethods == "POST" && x.Url == "api/test/connectors/discovery",
+            x => x.HttpMethods == "GET" && x.Url == "api/test/partnernetwork/membercompanies")
             .ConfigureAwait(false);
     }
 }

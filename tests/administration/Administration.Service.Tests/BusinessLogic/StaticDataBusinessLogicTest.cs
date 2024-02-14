@@ -119,6 +119,26 @@ public class StaticDataBusinessLogicTest
     }
 
     [Fact]
+    public async Task GetCertificateTypes_ReturnsExpectedResult()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<CompanyCertificateTypeData>(12).ToImmutableArray();
+
+        A.CallTo(() => _staticDataRepository.GetCertificateTypes())
+            .Returns(data.ToAsyncEnumerable());
+
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+
+        // Act
+        var result = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _staticDataRepository.GetCertificateTypes())
+            .MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(12).And.ContainInOrder(data);
+    }
+
+    [Fact]
     public async Task GetOperatorBpns_ReturnsExpectedResult()
     {
         // Arrange
