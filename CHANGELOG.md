@@ -5,7 +5,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ## 1.8.0-RC5
 
 ### Feature
-* Certfiicate Management (Administration Service)
+* Certificate Management (Administration Service)
   * released static data endpoint to retrieve supported certificate types - GET /api/administration/staticdata/certificateTypes
   * released endpoint for posting company certificates - POST /api/administration/companydata/companyCertificate
 * Others (Common for all services)
