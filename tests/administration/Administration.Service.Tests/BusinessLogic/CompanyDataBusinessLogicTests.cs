@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -1564,6 +1565,41 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region GetAllCompanyCertificates
+
+    [Fact]
+    public async Task GetAllCompanyCertificatesAsync_WithDefaultRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        SetupPagination();
+        var sut = _fixture.Create<CompanyDataBusinessLogic>();
+        var certificateTypeStatus = new CertificateTypeStatusFilter(0, 0);
+
+        // Act
+        var result = await sut.GetAllCompanyCertificateAsync(0, 5, null, certificateTypeStatus);
+
+        // Assert
+        result.Content.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GetAllCompanyCertificatesAsync_WithSmallSize_GetsExpectedEntries()
+    {
+        // Arrange
+        const int expectedCount = 3;
+        SetupPagination(expectedCount);
+        var sut = _fixture.Create<CompanyDataBusinessLogic>();
+        var certificateTypeStatus = new CertificateTypeStatusFilter(0, 0);
+
+        // Act
+        var result = await sut.GetAllCompanyCertificateAsync(0, expectedCount, null, certificateTypeStatus);
+
+        // Assert
+        result.Content.Should().HaveCount(expectedCount);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupCreateUseCaseParticipation()
@@ -1588,6 +1624,17 @@ public class CompanyDataBusinessLogicTests
             .Returns(true);
         A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(A<CompanyCertificateTypeId>.That.Matches(x => x != CompanyCertificateTypeId.IATF)))
             .Returns(false);
+    }
+
+    private void SetupPagination(int count = 5)
+    {
+        var companyCertificateDetailData = _fixture.CreateMany<CompanyCertificateData>(count);
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<CompanyCertificateData>(companyCertificateDetailData.Count(), companyCertificateDetailData.Skip(skip).Take(take)));
+
+        A.CallTo(() => _companyCertificateRepository.GetActiveCompanyCertificatePaginationSource(A<CertificateSorting?>._, A<CertificateTypeStatusFilter?>._, A<Guid>._))
+            .Returns(paginationResult);
+
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
     }
 
     #endregion

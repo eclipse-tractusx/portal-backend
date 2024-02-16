@@ -17,11 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -81,6 +80,62 @@ public class CompanyCertificateRepositoryTests
             .Which.Entity.Should().BeOfType<CompanyCertificate>()
             .Which.CompanyCertificateStatusId.Should().Be(CompanyCertificateStatusId.ACTIVE);
     }
+    #endregion
+
+    #region GetAllCertificateData
+
+    [Theory]
+    [InlineData(CertificateSorting.CertificateTypeAsc)]
+    [InlineData(CertificateSorting.CertificateTypeDesc)]
+    public async Task GetAllCertificates_ReturnsExpectedResult(CertificateSorting sorting)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        var certificateTypeStatus = new CertificateTypeStatusFilter(0, 0);
+
+        // Act
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(sorting, certificateTypeStatus, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(0, 15).ConfigureAwait(false);
+
+        // Assert
+        companyCertificateDetail.Should().NotBeNull();
+        companyCertificateDetail!.Count.Should().Be(6);
+        companyCertificateDetail.Data.Should().HaveCount(6);
+        if (sorting == CertificateSorting.CertificateTypeAsc)
+        {
+            companyCertificateDetail.Data.Select(data => data.companyCertificateType).Should().BeInAscendingOrder();
+        }
+        if (sorting == CertificateSorting.CertificateTypeDesc)
+        {
+            companyCertificateDetail.Data.Select(data => data.companyCertificateType).Should().BeInDescendingOrder();
+        }
+    }
+
+    [Theory]
+    [InlineData(CompanyCertificateStatusId.ACTIVE, CompanyCertificateTypeId.AEO_CTPAT_Security_Declaration, 0, 2, 1, 1)]
+    [InlineData(CompanyCertificateStatusId.ACTIVE, CompanyCertificateTypeId.ISO_9001, 0, 2, 1, 1)]
+    [InlineData(CompanyCertificateStatusId.INACTVIE, CompanyCertificateTypeId.IATF, 0, 2, 0, 0)]
+    public async Task GetAllCertificates_WithExistingCompanyCertificateAndCertificateType_ReturnsExpectedResult(CompanyCertificateStatusId companyCertificateStatusId, CompanyCertificateTypeId companyCertificateTypeId, int page, int size, int count, int numData)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        var certificateTypeStatus = new CertificateTypeStatusFilter(companyCertificateStatusId, companyCertificateTypeId);
+
+        // Act
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(null, certificateTypeStatus, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(page, size).ConfigureAwait(false);
+
+        // Assert
+        if (count == 0)
+        {
+            companyCertificateDetail.Should().BeNull();
+        }
+        else
+        {
+            companyCertificateDetail.Should().NotBeNull();
+            companyCertificateDetail!.Count.Should().Be(count);
+            companyCertificateDetail.Data.Should().HaveCount(numData);
+        }
+    }
+
     #endregion
 
     #region Setup

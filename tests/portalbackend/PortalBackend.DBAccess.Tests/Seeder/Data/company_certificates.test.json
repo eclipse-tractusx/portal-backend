@@ -1,0 +1,75 @@
+[
+    {
+        "id": "9f5b9934-4014-4099-91e9-7b1aee696c05",
+        "valid_from": "2023-06-01 00:00:00.000000 +00:00",
+        "valid_till": "2024-03-23 00:00:00.000000 +00:00",
+        "company_certificate_type_id":1,
+        "company_certificate_status_id":1,
+        "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",       
+        "document_id": "5adbdf90-c6ef-47a5-b596-2f00a731c39b"        
+      },
+      {
+        "id": "9f5b9934-4014-4099-91e9-7b1aee696c06",
+        "valid_from": "2023-06-05 00:00:00.000000 +00:00",
+        "valid_till": "2024-03-15 00:00:00.000000 +00:00",
+        "company_certificate_type_id":2,
+        "company_certificate_status_id":1,
+        "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",       
+        "document_id": "e020787d-1e04-4c0b-9c06-bd1cd44724b1"       
+      },
+      {
+        "id": "9f5b9934-4014-4099-91e9-7b1aee696c07",
+        "valid_from": "2023-06-08 00:00:00.000000 +00:00",
+        "valid_till": "2024-03-25 00:00:00.000000 +00:00",
+        "company_certificate_type_id":3,
+        "company_certificate_status_id":1,
+        "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",       
+        "document_id": "5adbdf90-c6ef-47a5-b596-2f00a731c39a"       
+      },
+      {
+        "id": "9f5b9934-4014-4099-91e9-7b1aee696c08",
+        "valid_from": "2023-06-14 00:00:00.000000 +00:00",
+        "valid_till": "2024-04-09 00:00:00.000000 +00:00",
+        "company_certificate_type_id":4,
+        "company_certificate_status_id":1,
+        "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",       
+        "document_id": "3291cae8-3c7b-4862-8cec-93ea0dc8c61e"       
+      },
+      {
+        "id": "9f5b9934-4014-4099-91e9-7b1aee696c09",
+        "valid_from": "2023-06-13 00:00:00.000000 +00:00",
+        "valid_till": "2024-04-22 00:00:00.000000 +00:00",
+        "company_certificate_type_id":5,
+        "company_certificate_status_id":1,
+        "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",       
+        "document_id": "e020787d-1e04-4c0b-9c06-bd1cd44724b2"      
+      },
+      {
+        "id": "9f5b9934-4014-4099-91e9-7b1aee696c10",
+        "valid_from": "2023-06-11 00:00:00.000000 +00:00",
+        "valid_till": "2024-04-23 00:00:00.000000 +00:00",
+        "company_certificate_type_id":6,
+        "company_certificate_status_id":1,
+        "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",       
+        "document_id": "9685f744-9d90-4102-a949-fcd0bb86f954"      
+      },
+      {
+        "id": "9f5b9934-4014-4099-91e9-7b1aee696c11",
+        "valid_from": "2023-06-11 00:00:00.000000 +00:00",
+        "valid_till": "2024-04-25 00:00:00.000000 +00:00",
+        "company_certificate_type_id":1,
+        "company_certificate_status_id":2,
+        "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",       
+        "document_id": "88793f9f-c5a4-4621-847b-3d47cd839283"     
+      },
+      {
+        "id": "9f5b9934-4014-4099-91e9-7b1aee696c12",
+        "valid_from": "2023-06-07 00:00:00.000000 +00:00",
+        "valid_till": "2024-04-26 00:00:00.000000 +00:00",
+        "company_certificate_type_id":2,
+        "company_certificate_status_id":2,
+        "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",       
+        "document_id": "88793f9f-c5a4-4621-847b-3d47cd839283"     
+      }
+
+]
