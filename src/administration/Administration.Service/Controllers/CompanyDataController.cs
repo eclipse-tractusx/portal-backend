@@ -294,6 +294,26 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
+    /// Retrieves all company certificates with respect userId.
+    /// </summary>
+    /// <param name="page" example="0">Optional the page of company certificate.</param>
+    /// <param name="size" example="15">Amount of company certificate, default is 15.</param>
+    /// <param name="sorting" example="CertificateTypeAsc">Optional Sorting of the pagination</param>
+    /// <param name="certificateTypeStatus" example="">Optional filter for company certificate type ids</param>
+    /// <returns>Collection of all active company certificates.</returns>
+    /// <remarks>Example: GET /api/administration/companydata/companyCertificates</remarks>
+    /// <response code="200">Returns the list of all active company certificates.</response>
+    [HttpGet]
+    [Route("companyCertificates")]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(Pagination.Response<ServiceOverviewData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] CertificateSorting? sorting = null, [FromQuery] CertificateTypeStatusFilter? certificateTypeStatus = null) =>
+        _logic.GetAllCompanyCertificateAsync(page, size, sorting, certificateTypeStatus);
+
+    /// <summary>
     /// Gets all outstanding, existing and inactive credentials
     /// </summary>
     /// <remarks>Example: Get: /api/administration/companydata/credentials/</remarks>

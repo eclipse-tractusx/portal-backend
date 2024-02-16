@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -40,4 +42,10 @@ public interface ICompanyCertificateRepository
     /// <param name="setOptionalFields">Action to set optional fields</param>   
     /// <returns>The created entity</returns>
     CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null);
+
+    /// <summary>
+    /// Gets all company certificate data from the persistence storage as pagination 
+    /// </summary>
+    /// <returns>Returns an Pagination</returns>
+    Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CertificateTypeStatusFilter? certificateTypeStatus, Guid companyId);
 }

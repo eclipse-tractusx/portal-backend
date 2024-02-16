@@ -55,4 +55,6 @@ public interface ICompanyDataBusinessLogic
     IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes();
 
     Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken);
+
+    Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificateAsync(int page, int size, CertificateSorting? sorting, CertificateTypeStatusFilter? certificateTypeStatus);
 }

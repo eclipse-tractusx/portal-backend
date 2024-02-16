@@ -18,10 +18,9 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -52,4 +51,33 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
         setOptionalFields?.Invoke(companyCertificate);
         return _context.CompanyCertificates.Add(companyCertificate).Entity;
     }
+
+    public Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CertificateTypeStatusFilter? certificateTypeStatus, Guid companyId) =>
+          (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.CompanyCertificates
+                .AsNoTracking()
+                .Where(x =>
+                    x.CompanyId == companyId &&
+                    x.CompanyCertificateStatusId == CompanyCertificateStatusId.ACTIVE &&
+                    (certificateTypeStatus.CertificateStatus == 0 || x.CompanyCertificateStatusId == certificateTypeStatus.CertificateStatus) &&
+                    (certificateTypeStatus.CertificateType == 0 || x.CompanyCertificateTypeId == certificateTypeStatus.CertificateType))
+                .GroupBy(x => x.CompanyId),
+            sorting switch
+            {
+                CertificateSorting.CertificateTypeAsc => (IEnumerable<CompanyCertificate> cc) => cc.OrderBy(cc => cc.CompanyCertificateTypeId),
+                CertificateSorting.CertificateTypeDesc => (IEnumerable<CompanyCertificate> cc) => cc.OrderByDescending(cc => cc.CompanyCertificateTypeId),
+                CertificateSorting.ExpiryDateAsc => (IEnumerable<CompanyCertificate> cc) => cc.OrderBy(cc => cc.ValidTill),
+                CertificateSorting.ExpiryDateDesc => (IEnumerable<CompanyCertificate> cc) => cc.OrderByDescending(cc => cc.ValidTill),
+                _ => null
+            },
+            companyCertificate => new CompanyCertificateData(
+                companyCertificate.CompanyCertificateTypeId,
+                companyCertificate.CompanyCertificateStatusId,
+                companyCertificate.DocumentId,
+                companyCertificate.ValidFrom,
+                companyCertificate.ValidTill
+                ))
+        .SingleOrDefaultAsync();
 }
