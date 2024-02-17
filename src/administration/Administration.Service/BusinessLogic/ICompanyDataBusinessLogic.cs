@@ -53,7 +53,7 @@ public interface ICompanyDataBusinessLogic
     Task RejectCredential(Guid credentialId);
 
     IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes();
-    Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificatesBpnOthers(string businessPartnerNumber);
+    IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber);
     Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken);
 
     Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType);

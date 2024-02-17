@@ -17,7 +17,9 @@
 -
 - SPDX-License-Identifier: Apache-2.0
 -->
+
 <Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Administration.Service</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Administration.Service</RootNamespace>
@@ -30,6 +32,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10">
       <PrivateAssets>all</PrivateAssets>
@@ -38,6 +41,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="PasswordGenerator" Version="2.1.0" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\externalsystems\Bpdm.Library\Bpdm.Library.csproj" />
     <ProjectReference Include="..\..\externalsystems\OnboardingServiceProvider.Library\OnboardingServiceProvider.Library.csproj" />
@@ -64,6 +68,7 @@
     <ProjectReference Include="..\..\web\Web.PublicInfos\Web.PublicInfos.csproj" />
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Controller\Framework.ErrorHandling.Controller.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <Content Include="../../../LICENSE">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -75,9 +80,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
   <ItemGroup>
     <SonarQubeSetting Include="sonar.coverage.exclusions">
       <Value>Program.cs</Value>
     </SonarQubeSetting>
   </ItemGroup>
+
 </Project>

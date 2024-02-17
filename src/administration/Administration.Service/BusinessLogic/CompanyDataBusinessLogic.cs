@@ -579,7 +579,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(_identityData.CompanyId);
 
     /// <inheritdoc />    
-    public async Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificatesBpnOthers(string businessPartnerNumber)
+    public async IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber)
     {
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
@@ -588,13 +588,16 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
 
-        var companyId = await companyCertificateRepository.GetCompanyId(businessPartnerNumber).ConfigureAwait(false);
-        if (companyId == null)
+        var companyId = await companyCertificateRepository.GetCompanyIdByBpn(businessPartnerNumber).ConfigureAwait(false);
+        if (companyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"company does not exist for {businessPartnerNumber}");
         }
 
-        return await companyCertificateRepository.GetCompanyCertificateData(companyId.Id);
+        await foreach (var data in companyCertificateRepository.GetCompanyCertificateData(companyId))
+        {
+            yield return data;
+        }
     }
 
     public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType) =>

@@ -54,11 +54,14 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
     }
 
     /// <inheritdoc />
-    public Task<Company?> GetCompanyId(string businessPartnerNumber) =>
-     _context.Companies.Where(x => x.BusinessPartnerNumber == businessPartnerNumber).SingleOrDefaultAsync();
+    public Task<Guid> GetCompanyIdByBpn(string businessPartnerNumber) =>
+     _context.Companies
+         .Where(x => x.BusinessPartnerNumber == businessPartnerNumber)
+         .Select(x => x.Id)
+         .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public async Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificateData(Guid companyId) =>
+    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificateData(Guid companyId) =>
         _context.CompanyCertificates
         .Where(x => x.CompanyId == companyId && x.CompanyCertificateStatusId == CompanyCertificateStatusId.ACTIVE)
         .Select(ccb => new CompanyCertificateBpnData(
@@ -67,7 +70,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
             ccb.DocumentId,
             ccb.ValidFrom,
             ccb.ValidTill))
-        .AsEnumerable();
+        .ToAsyncEnumerable();
 
     public Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType, Guid companyId) =>
           (skip, take) => Pagination.CreateSourceQueryAsync(
@@ -77,7 +80,6 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 .AsNoTracking()
                 .Where(x =>
                     x.CompanyId == companyId &&
-                    x.CompanyCertificateStatusId == CompanyCertificateStatusId.ACTIVE &&
                     (certificateStatus == null || x.CompanyCertificateStatusId == certificateStatus) &&
                     (certificateType == null || x.CompanyCertificateTypeId == certificateType))
                 .GroupBy(x => x.CompanyId),

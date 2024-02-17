@@ -99,8 +99,8 @@ public class CompanyCertificateRepositoryTests
 
         // Assert
         companyCertificateDetail.Should().NotBeNull();
-        companyCertificateDetail!.Count.Should().Be(6);
-        companyCertificateDetail.Data.Should().HaveCount(6);
+        companyCertificateDetail!.Count.Should().Be(8);
+        companyCertificateDetail.Data.Should().HaveCount(8);
         if (sorting == CertificateSorting.CertificateTypeAsc)
         {
             companyCertificateDetail.Data.Select(data => data.companyCertificateType).Should().BeInAscendingOrder();
@@ -148,12 +148,11 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyId("BPNL07800HZ01643").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01643").ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().BeOfType<Company>();
-        result.Id.Should().Be("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd");
+        result.Should().NotBe(Guid.Empty);
+        result.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
     }
 
     [Fact]
@@ -163,10 +162,10 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyId("BPNL07800HZ01644").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01644").ConfigureAwait(false);
 
         // Assert
-        result.Should().BeNull();
+        result.Should().Be(Guid.Empty);
     }
 
     [Fact]
@@ -176,7 +175,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyCertificateData(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateData(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().BeEmpty();

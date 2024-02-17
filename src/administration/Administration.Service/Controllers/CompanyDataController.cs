@@ -303,12 +303,12 @@ public class CompanyDataController : ControllerBase
     [Authorize(Roles = "view_certificates")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("company/{businessPartnerNumber}/companyCertificates")]
-    [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<CompanyCertificateBpnData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificatesBpn(string businessPartnerNumber) =>
-           _logic.GetCompanyCertificatesBpnOthers(businessPartnerNumber);
+    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber) =>
+           _logic.GetCompanyCertificatesByBpn(businessPartnerNumber);
 
     /// <summary>
     /// Retrieves all company certificates with respect userId.

@@ -50,14 +50,14 @@ public interface ICompanyCertificateRepository
     /// </summary>
     /// <param name="businessPartnerNumber">bpn Id</param>
     /// <returns>company entity</returns>
-    Task<Company?> GetCompanyId(string businessPartnerNumber);
+    Task<Guid> GetCompanyIdByBpn(string businessPartnerNumber);
 
     /// <summary>
     /// Gets company certificate details
     /// </summary>
     /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the CompanyCertificateBpnData Details</returns>
-    Task<IEnumerable<CompanyCertificateBpnData>> GetCompanyCertificateData(Guid companyId);
+    IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificateData(Guid companyId);
 
     /// <summary>
     /// Gets all company certificate data from the persistence storage as pagination 

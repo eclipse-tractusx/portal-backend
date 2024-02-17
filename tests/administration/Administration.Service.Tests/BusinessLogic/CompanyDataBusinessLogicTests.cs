@@ -1076,11 +1076,8 @@ public class CompanyDataBusinessLogicTests
     [Fact]
     public async Task GetCompanyCertificateWithNullOrEmptyBpn_ReturnsExpected()
     {
-        // Arrange
-        var companyId = Guid.NewGuid();
-
         // Act
-        async Task Act() => await _sut.GetCompanyCertificatesBpnOthers(string.Empty).ConfigureAwait(false);
+        async Task Act() => await _sut.GetCompanyCertificatesByBpn(string.Empty).ToListAsync().ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -1091,15 +1088,14 @@ public class CompanyDataBusinessLogicTests
     public async Task GetCompanyCertificateWithNoCompanyId_ReturnsExpected()
     {
         // Arrange
-        var companyId = Guid.NewGuid();
+        var companyId = Guid.Empty;
         var businessPartnerNumber = "BPNL07800HZ01644";
-        Company company = null;
 
-        A.CallTo(() => _companyCertificateRepository.GetCompanyId(businessPartnerNumber))
-            .Returns(company);
+        A.CallTo(() => _companyCertificateRepository.GetCompanyIdByBpn(businessPartnerNumber))
+            .Returns(companyId);
 
         // Act
-        async Task Act() => await _sut.GetCompanyCertificatesBpnOthers(businessPartnerNumber).ConfigureAwait(false);
+        async Task Act() => await _sut.GetCompanyCertificatesByBpn(businessPartnerNumber).ToListAsync().ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -1112,19 +1108,19 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var companyId = Guid.NewGuid();
         var data = _fixture.Build<CompanyCertificateBpnData>()
-            .With(x => x.companyCertificateStatus, CompanyCertificateStatusId.ACTIVE)
-            .With(x => x.companyCertificateType, CompanyCertificateTypeId.ISO_9001)
-            .With(x => x.documentId, Guid.NewGuid())
-            .With(x => x.validFrom, DateTime.UtcNow)
-            .With(x => x.validTill, DateTime.UtcNow)
-            .CreateMany(5).AsEnumerable();
-        A.CallTo(() => _companyCertificateRepository.GetCompanyId("BPNL07800HZ01643"))
-            .Returns(new Company(companyId, "test", CompanyStatusId.ACTIVE, DateTime.UtcNow));
+            .With(x => x.CompanyCertificateStatus, CompanyCertificateStatusId.ACTIVE)
+            .With(x => x.CompanyCertificateType, CompanyCertificateTypeId.ISO_9001)
+            .With(x => x.DocumentId, Guid.NewGuid())
+            .With(x => x.ValidFrom, DateTime.UtcNow)
+            .With(x => x.ValidTill, DateTime.UtcNow)
+            .CreateMany(5).ToAsyncEnumerable();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyIdByBpn("BPNL07800HZ01643"))
+            .Returns(companyId);
         A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateData(companyId))
            .Returns(data);
 
         // Act
-        var result = await _sut.GetCompanyCertificatesBpnOthers("BPNL07800HZ01643").ConfigureAwait(false);
+        var result = await _sut.GetCompanyCertificatesByBpn("BPNL07800HZ01643").ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);
@@ -1135,11 +1131,11 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _companyCertificateRepository.GetCompanyId("BPNL07800HZ01643"))
-            .Returns(new Company(companyId, "test", CompanyStatusId.ACTIVE, DateTime.UtcNow));
+        A.CallTo(() => _companyCertificateRepository.GetCompanyIdByBpn("BPNL07800HZ01643"))
+            .Returns(companyId);
 
         // Act
-        var result = await _sut.GetCompanyCertificatesBpnOthers("BPNL07800HZ01643").ConfigureAwait(false);
+        var result = await _sut.GetCompanyCertificatesByBpn("BPNL07800HZ01643").ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().BeEmpty();

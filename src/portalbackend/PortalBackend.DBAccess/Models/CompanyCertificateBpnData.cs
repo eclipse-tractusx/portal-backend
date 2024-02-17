@@ -23,9 +23,9 @@ using System.Reflection.Metadata;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyCertificateBpnData(
-    CompanyCertificateTypeId companyCertificateType,
-    CompanyCertificateStatusId companyCertificateStatus,
-    Guid documentId,
-    DateTimeOffset validFrom,
-    DateTimeOffset? validTill
+    CompanyCertificateTypeId CompanyCertificateType,
+    CompanyCertificateStatusId CompanyCertificateStatus,
+    Guid DocumentId,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset? ValidTill
 );
