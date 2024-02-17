@@ -91,10 +91,9 @@ public class CompanyCertificateRepositoryTests
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        var certificateTypeStatus = new CertificateTypeStatusFilter(0, 0);
 
         // Act
-        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(sorting, certificateTypeStatus, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(0, 15).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(sorting, null, null, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(0, 15).ConfigureAwait(false);
 
         // Assert
         companyCertificateDetail.Should().NotBeNull();
@@ -118,10 +117,9 @@ public class CompanyCertificateRepositoryTests
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        var certificateTypeStatus = new CertificateTypeStatusFilter(companyCertificateStatusId, companyCertificateTypeId);
 
         // Act
-        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(null, certificateTypeStatus, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(page, size).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(null, companyCertificateStatusId, companyCertificateTypeId, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(page, size).ConfigureAwait(false);
 
         // Assert
         if (count == 0)

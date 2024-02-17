@@ -1573,10 +1573,9 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         SetupPagination();
         var sut = _fixture.Create<CompanyDataBusinessLogic>();
-        var certificateTypeStatus = new CertificateTypeStatusFilter(0, 0);
 
         // Act
-        var result = await sut.GetAllCompanyCertificateAsync(0, 5, null, certificateTypeStatus);
+        var result = await sut.GetAllCompanyCertificatesAsync(0, 5, null, null, null);
 
         // Assert
         result.Content.Should().HaveCount(3);
@@ -1589,10 +1588,9 @@ public class CompanyDataBusinessLogicTests
         const int expectedCount = 3;
         SetupPagination(expectedCount);
         var sut = _fixture.Create<CompanyDataBusinessLogic>();
-        var certificateTypeStatus = new CertificateTypeStatusFilter(0, 0);
 
         // Act
-        var result = await sut.GetAllCompanyCertificateAsync(0, expectedCount, null, certificateTypeStatus);
+        var result = await sut.GetAllCompanyCertificatesAsync(0, expectedCount, null, null, null);
 
         // Assert
         result.Content.Should().HaveCount(expectedCount);
@@ -1631,7 +1629,7 @@ public class CompanyDataBusinessLogicTests
         var companyCertificateDetailData = _fixture.CreateMany<CompanyCertificateData>(count);
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<CompanyCertificateData>(companyCertificateDetailData.Count(), companyCertificateDetailData.Skip(skip).Take(take)));
 
-        A.CallTo(() => _companyCertificateRepository.GetActiveCompanyCertificatePaginationSource(A<CertificateSorting?>._, A<CertificateTypeStatusFilter?>._, A<Guid>._))
+        A.CallTo(() => _companyCertificateRepository.GetActiveCompanyCertificatePaginationSource(A<CertificateSorting?>._, A<CompanyCertificateStatusId?>._, A<CompanyCertificateTypeId?>._, A<Guid>._))
             .Returns(paginationResult);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);

@@ -47,5 +47,5 @@ public interface ICompanyCertificateRepository
     /// Gets all company certificate data from the persistence storage as pagination 
     /// </summary>
     /// <returns>Returns an Pagination</returns>
-    Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CertificateTypeStatusFilter? certificateTypeStatus, Guid companyId);
+    Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType, Guid companyId);
 }

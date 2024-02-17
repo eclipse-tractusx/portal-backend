@@ -299,7 +299,8 @@ public class CompanyDataController : ControllerBase
     /// <param name="page" example="0">Optional the page of company certificate.</param>
     /// <param name="size" example="15">Amount of company certificate, default is 15.</param>
     /// <param name="sorting" example="CertificateTypeAsc">Optional Sorting of the pagination</param>
-    /// <param name="certificateTypeStatus" example="">Optional filter for company certificate type ids</param>
+    /// <param name="certificateStatus" example="">Optional filter for company certificate status</param>
+    /// <param name="certificateType" example="">Optional filter for company certificate type</param>
     /// <returns>Collection of all active company certificates.</returns>
     /// <remarks>Example: GET /api/administration/companydata/companyCertificates</remarks>
     /// <response code="200">Returns the list of all active company certificates.</response>
@@ -310,8 +311,8 @@ public class CompanyDataController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<ServiceOverviewData>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] CertificateSorting? sorting = null, [FromQuery] CertificateTypeStatusFilter? certificateTypeStatus = null) =>
-        _logic.GetAllCompanyCertificateAsync(page, size, sorting, certificateTypeStatus);
+    public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] CertificateSorting? sorting = null, [FromQuery] CompanyCertificateStatusId? certificateStatus = null, [FromQuery] CompanyCertificateTypeId? certificateType = null) =>
+        _logic.GetAllCompanyCertificatesAsync(page, size, sorting, certificateStatus, certificateType);
 
     /// <summary>
     /// Gets all outstanding, existing and inactive credentials
