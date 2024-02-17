@@ -577,4 +577,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     /// <inheritdoc />
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
         _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(_identityData.CompanyId);
+
+    public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType) =>
+            Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.MaxPageSize,
+            _portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
 }
