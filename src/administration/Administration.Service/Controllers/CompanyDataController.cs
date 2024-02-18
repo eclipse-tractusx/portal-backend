@@ -294,6 +294,23 @@ public class CompanyDataController : ControllerBase
     }
 
     /// <summary>
+    /// Gets the companyCertificates Details
+    /// </summary>
+    /// <returns>the companyCertificates details</returns>
+    /// <remarks>Example: GET: api/administration/companydata/businessPartnerNumber}/companyCertificates</remarks>
+    /// <response code="200">Returns the companyCertificates details.</response>   
+    [HttpGet]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("company/{businessPartnerNumber}/companyCertificates")]
+    [ProducesResponseType(typeof(IEnumerable<CompanyCertificateBpnData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber) =>
+           _logic.GetCompanyCertificatesByBpn(businessPartnerNumber);
+
+    /// <summary>
     /// Retrieves all company certificates with respect userId.
     /// </summary>
     /// <param name="page" example="0">Optional the page of company certificate.</param>

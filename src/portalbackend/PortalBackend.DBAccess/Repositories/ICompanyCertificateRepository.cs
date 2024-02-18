@@ -19,7 +19,9 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -42,6 +44,20 @@ public interface ICompanyCertificateRepository
     /// <param name="setOptionalFields">Action to set optional fields</param>   
     /// <returns>The created entity</returns>
     CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null);
+
+    /// <summary>
+    /// Get companyId against businessPartnerNumber
+    /// </summary>
+    /// <param name="businessPartnerNumber">bpn Id</param>
+    /// <returns>company entity</returns>
+    Task<Guid> GetCompanyIdByBpn(string businessPartnerNumber);
+
+    /// <summary>
+    /// Gets company certificate details
+    /// </summary>
+    /// <param name="companyId">Id of the company</param>
+    /// <returns>Returns the CompanyCertificateBpnData Details</returns>
+    IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificateData(Guid companyId);
 
     /// <summary>
     /// Gets all company certificate data from the persistence storage as pagination 
