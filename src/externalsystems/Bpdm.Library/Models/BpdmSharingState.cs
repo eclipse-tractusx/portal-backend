@@ -30,7 +30,8 @@ public record BpdmSharingState(
     string? SharingErrorCode,
     string? SharingErrorMessage,
     string? Bpn,
-    DateTimeOffset? SharingProcessStarted
+    DateTimeOffset? SharingProcessStarted,
+    Guid? TaskId
 );
 
 public enum BpdmSharingStateType
@@ -38,12 +39,14 @@ public enum BpdmSharingStateType
     Pending = 1,
     Success = 2,
     Error = 3,
-    Initial = 4
+    Initial = 4,
+    Ready = 5,
 }
 
 public enum BpdmSharingStateBusinessPartnerType
 {
     LEGAL_ENTITY = 1,
     SITE = 2,
-    ADDRESS = 3
+    ADDRESS = 3,
+    GENERIC = 4
 }
