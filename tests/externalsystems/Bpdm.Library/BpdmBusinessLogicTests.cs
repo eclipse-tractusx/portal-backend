@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -48,6 +49,7 @@ public class BpdmBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IBpdmService _bpdmService;
     private readonly BpdmBusinessLogic _logic;
+    private readonly IPortalRepositories _portalRepositories;
 
     public BpdmBusinessLogicTests()
     {
@@ -56,15 +58,16 @@ public class BpdmBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        var portalRepository = A.Fake<IPortalRepositories>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _bpdmService = A.Fake<IBpdmService>();
+        var options = A.Fake<IOptions<BpdmServiceSettings>>();
 
-        A.CallTo(() => portalRepository.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
-        A.CallTo(() => portalRepository.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
 
-        _logic = new BpdmBusinessLogic(portalRepository, _bpdmService);
+        _logic = new BpdmBusinessLogic(_portalRepositories, _bpdmService, options);
     }
 
     #endregion
@@ -395,10 +398,16 @@ public class BpdmBusinessLogicTests
         result.Modified.Should().BeFalse();
     }
 
-    [Fact]
-    public async Task HandlePullLegalEntity_WithValidData_ReturnsExpected()
+    [Theory]
+    [InlineData(true, ProcessStepTypeId.CREATE_DIM_WALLET)]
+    [InlineData(false, ProcessStepTypeId.CREATE_IDENTITY_WALLET)]
+    public async Task HandlePullLegalEntity_WithValidData_ReturnsExpected(bool useDimWallet, ProcessStepTypeId processStepTypeId)
     {
         // Arrange
+        var options = Options.Create(new BpdmServiceSettings
+        {
+            UseDimWallet = useDimWallet
+        });
         var company = new Company(Guid.NewGuid(), "Test Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
         {
             BusinessPartnerNumber = "1"
@@ -414,14 +423,15 @@ public class BpdmBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForHandlePullLegalEntity(company);
+        var logic = new BpdmBusinessLogic(_portalRepositories, _bpdmService, options);
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);
         checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        result.ScheduleStepTypeIds.Should().ContainSingle().And.Subject.Single().Should().Be(ProcessStepTypeId.CREATE_IDENTITY_WALLET);
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Subject.Single().Should().Be(processStepTypeId);
         result.SkipStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL);
         result.Modified.Should().BeTrue();
     }

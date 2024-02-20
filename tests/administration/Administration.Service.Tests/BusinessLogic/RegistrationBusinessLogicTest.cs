@@ -23,6 +23,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -36,7 +38,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -71,13 +75,13 @@ public class RegistrationBusinessLogicTest
     private readonly IMailingService _mailingService;
     private readonly IDocumentRepository _documentRepository;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IDimBusinessLogic _dimBusinessLogic;
+    private readonly IOptions<RegistrationSettings> _options;
 
     public RegistrationBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
@@ -87,13 +91,14 @@ public class RegistrationBusinessLogicTest
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
 
-        var options = A.Fake<IOptions<RegistrationSettings>>();
+        _options = A.Fake<IOptions<RegistrationSettings>>();
         var settings = A.Fake<RegistrationSettings>();
         settings.ApplicationsMaxPageSize = 15;
-        A.CallTo(() => options.Value).Returns(settings);
+        A.CallTo(() => _options.Value).Returns(settings);
 
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
+        _dimBusinessLogic = A.Fake<IDimBusinessLogic>();
         _checklistService = A.Fake<IApplicationChecklistService>();
         _mailingService = A.Fake<IMailingService>();
         _provisioningManager = A.Fake<IProvisioningManager>();
@@ -107,7 +112,7 @@ public class RegistrationBusinessLogicTest
 
         var logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _provisioningManager, logger);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _provisioningManager, logger);
     }
 
     #region GetCompanyApplicationDetailsAsync
@@ -322,21 +327,28 @@ public class RegistrationBusinessLogicTest
         ex.Message.Should().Be($"BusinessPartnerNumber of company {CompanyId} has already been set.");
     }
 
-    [Fact]
-    public async Task UpdateCompanyBpnAsync_WithValidData_CallsExpected()
+    [Theory]
+    [InlineData(true, ProcessStepTypeId.CREATE_DIM_WALLET)]
+    [InlineData(false, ProcessStepTypeId.CREATE_IDENTITY_WALLET)]
+    public async Task UpdateCompanyBpnAsync_WithUseDimWalletFalse_CallsExpected(bool useDimWallet, ProcessStepTypeId expectedProcessStepTypeId)
     {
         // Arrange
+        var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
+        A.CallTo(() => _options.Value).Returns(new RegistrationSettings { UseDimWallet = useDimWallet });
         var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForUpdateCompanyBpn(entry);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, null!, _checklistService, null!, null!, _dimBusinessLogic, _provisioningManager, null!);
 
         // Act
-        await _logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn).ConfigureAwait(false);
+        await logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, null, A<Action<Company>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, null, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == expectedProcessStepTypeId)))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -395,15 +407,19 @@ public class RegistrationBusinessLogicTest
 
     #region SetRegistrationVerification
 
-    [Fact]
-    public async Task SetRegistrationVerification_WithApproval_CallsExpected()
+    [Theory]
+    [InlineData(true, ProcessStepTypeId.CREATE_DIM_WALLET)]
+    [InlineData(false, ProcessStepTypeId.CREATE_IDENTITY_WALLET)]
+    public async Task SetRegistrationVerification_WithApproval_CallsExpected(bool useDimWallet, ProcessStepTypeId expectedTypeId)
     {
         // Arrange
+        var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, null!, _checklistService, null!, null!, _dimBusinessLogic, null!, null!);
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForApproveRegistrationVerification(entry);
 
         // Act
-        await _logic.ApproveRegistrationVerification(IdWithBpn).ConfigureAwait(false);
+        await logic.ApproveRegistrationVerification(IdWithBpn).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -414,7 +430,7 @@ public class RegistrationBusinessLogicTest
             A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
             null,
             A<Action<ApplicationChecklistEntry>>._,
-            A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.CREATE_IDENTITY_WALLET) == 1)))
+            A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == expectedTypeId) == 1)))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -634,6 +650,8 @@ public class RegistrationBusinessLogicTest
     [Theory]
     [InlineData(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO)]
     [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET, ProcessStepTypeId.CREATE_IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET, ProcessStepTypeId.CREATE_DIM_WALLET, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT, ProcessStepTypeId.VALIDATE_DID_DOCUMENT, ApplicationChecklistEntryStatusId.TO_DO)]
     [InlineData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP, ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO)]
     [InlineData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ApplicationChecklistEntryStatusId.TO_DO)]
     [InlineData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL, ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ApplicationChecklistEntryStatusId.IN_PROGRESS)]
@@ -813,6 +831,25 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Document {documentId} does not exist");
+    }
+
+    #endregion
+
+    #region ProcessDimResponseAsync
+
+    [Fact]
+    public async Task ProcessDimResponseAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var data = new DimWalletData($"did:web:test123:{BusinessPartnerNumber}", _fixture.Create<JsonDocument>(), new AuthenticationDetail("https://example.org", "test123", "test123"));
+
+        // Act
+        await _logic.ProcessDimResponseAsync(BusinessPartnerNumber, data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _dimBusinessLogic.ProcessDimResponse(BusinessPartnerNumber, data, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     #endregion

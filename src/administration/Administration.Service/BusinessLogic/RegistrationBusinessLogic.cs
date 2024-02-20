@@ -23,6 +23,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -52,6 +54,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
+    private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IProvisioningManager _provisioningManager;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
 
@@ -62,6 +65,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
+        IDimBusinessLogic dimBusinessLogic,
         IProvisioningManager provisioningManager,
         ILogger<RegistrationBusinessLogic> logger)
     {
@@ -71,6 +75,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
+        _dimBusinessLogic = dimBusinessLogic;
         _provisioningManager = provisioningManager;
         _logger = logger;
     }
@@ -294,10 +299,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
-                : new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET });
+                : new[] { CreateWalletStep() });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    private ProcessStepTypeId CreateWalletStep() => _settings.UseDimWallet ? ProcessStepTypeId.CREATE_DIM_WALLET : ProcessStepTypeId.CREATE_IDENTITY_WALLET;
 
     /// <inheritdoc />
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken)
@@ -315,6 +322,15 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         await _clearinghouseBusinessLogic.ProcessEndClearinghouse(result.Single(), data, cancellationToken).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task ProcessDimResponseAsync(string bpn, DimWalletData data, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Process Dim called with the following data {Data}", data);
+
+        await _dimBusinessLogic.ProcessDimResponse(bpn, data, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -418,7 +434,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 new[] { ApplicationChecklistEntryStatusId.TO_DO },
                 ProcessStepTypeId.VERIFY_REGISTRATION,
                 new[] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER },
-                new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET })
+                new[] { CreateWalletStep() })
             .ConfigureAwait(false);
 
         var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null);
@@ -431,7 +447,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
             },
             businessPartnerSuccess
-                ? new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET }
+                ? new[] { CreateWalletStep() }
                 : null);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

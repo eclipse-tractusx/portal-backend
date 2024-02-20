@@ -20,6 +20,8 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -28,9 +30,12 @@ public class StaticDataControllerTest
     private readonly IStaticDataBusinessLogic _logic;
     private readonly StaticDataController _controller;
     private readonly Fixture _fixture;
+
     public StaticDataControllerTest()
     {
         _fixture = new Fixture();
+        _fixture.ConfigureFixture();
+
         _logic = A.Fake<IStaticDataBusinessLogic>();
         _controller = new StaticDataController(_logic);
     }
@@ -113,5 +118,21 @@ public class StaticDataControllerTest
         // Assert 
         A.CallTo(() => _logic.GetCertificateTypes()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5).And.AllBeOfType<CompanyCertificateTypeData>();
+    }
+
+    [Fact]
+    public async Task GetDidDocument_ReturnsExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.Create<JsonDocument>();
+        A.CallTo(() => _logic.GetDidDocument("bpn"))
+            .Returns(data);
+
+        //Act
+        var result = await _controller.GetDidDocument("bpn").ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _logic.GetDidDocument("bpn")).MustHaveHappenedOnceExactly();
+        result.Should().Be(data);
     }
 }

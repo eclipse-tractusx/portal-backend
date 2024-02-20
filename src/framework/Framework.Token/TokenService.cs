@@ -71,4 +71,41 @@ public class TokenService : ITokenService
         var responseObject = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return responseObject?.AccessToken;
     }
+
+    public async Task<HttpClient> GetBasicAuthorizedClient<T>(BasicAuthSettings settings, CancellationToken cancellationToken)
+    {
+        var tokenParameters = new GetBasicTokenSettings(
+            $"{typeof(T).Name}Auth",
+            settings.ClientId,
+            settings.ClientSecret,
+            settings.TokenAddress,
+            settings.GrantType);
+
+        var token = await GetBasicTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
+
+        var httpClient = _httpClientFactory.CreateClient(typeof(T).Name);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return httpClient;
+    }
+
+    private async Task<string?> GetBasicTokenAsync(GetBasicTokenSettings settings, CancellationToken cancellationToken)
+    {
+        var formParameters = new Dictionary<string, string>
+        {
+            { "grant_type", settings.GrantType }
+        };
+        var content = new FormUrlEncodedContent(formParameters);
+        var authClient = _httpClientFactory.CreateClient(settings.HttpClientName);
+        var authenticationString = $"{settings.ClientId}:{settings.ClientSecret}";
+        var base64String = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(authenticationString));
+
+        authClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64String);
+
+        var response = await authClient.PostAsync(settings.TokenAddress, content, cancellationToken)
+            .CatchingIntoServiceExceptionFor("token-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var responseObject = await JsonSerializer.DeserializeAsync<BasicAuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return responseObject?.AccessToken;
+    }
 }

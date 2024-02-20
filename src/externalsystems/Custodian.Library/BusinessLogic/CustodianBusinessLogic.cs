@@ -66,6 +66,7 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
                 true,
                 null);
         }
+
         if (context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE && context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.DONE)
         {
             var message = await CreateWalletInternal(context.ApplicationId, cancellationToken).ConfigureAwait(false);
@@ -82,6 +83,7 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
                 true,
                 null);
         }
+
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null);
     }
 
@@ -92,8 +94,8 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
         {
             throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
-        var (companyId, companyName, businessPartnerNumber) = result;
 
+        var (companyId, companyName, businessPartnerNumber) = result;
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");

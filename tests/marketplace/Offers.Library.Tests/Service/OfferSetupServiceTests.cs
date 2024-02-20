@@ -81,9 +81,8 @@ public class OfferSetupServiceTests
     public OfferSetupServiceTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
+
         _portalRepositories = A.Fake<IPortalRepositories>();
         _appSubscriptionDetailRepository = A.Fake<IAppSubscriptionDetailRepository>();
         _appInstanceRepository = A.Fake<IAppInstanceRepository>();
@@ -1175,16 +1174,13 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _companyUserId, default);
-        var subscriptionProcessData = new List<OfferSubscriptionProcessData>
-        {
-            new(offerSubscription.Id, "https://www.test.de")
-        };
+        var offerSubscriptionProcessDataId = Guid.NewGuid();
         var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, Guid.NewGuid(), DateTimeOffset.Now);
 
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>()));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), new[] { Guid.NewGuid() }, offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>()));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
@@ -1194,11 +1190,6 @@ public class OfferSetupServiceTests
             .Invokes((Guid _, Action<OfferSubscription> setOptionalParameter) =>
             {
                 setOptionalParameter.Invoke(offerSubscription);
-            });
-        A.CallTo(() => _offerSubscriptionsRepository.RemoveOfferSubscriptionProcessData(offerSubscription.Id))
-            .Invokes((Guid id) =>
-            {
-                subscriptionProcessData.Remove(subscriptionProcessData.Single(x => x.OfferSubscriptionId == id));
             });
         var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
         var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "ServiceManagerRoles" }), 1);
@@ -1216,6 +1207,8 @@ public class OfferSetupServiceTests
         result.processMessage.Should().BeNull();
 
         A.CallTo(() => _provisioningManager.EnableClient(A<string>._)).MustNotHaveHappened();
+
+        A.CallTo(() => _offerSubscriptionsRepository.RemoveOfferSubscriptionProcessData(offerSubscriptionProcessDataId)).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _companyId, A<string>._, offerSubscription.Id.ToString(), null))
             .MustHaveHappenedOnceExactly();
@@ -1240,10 +1233,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _companyUserId, default);
-        var subscriptionProcessData = new List<OfferSubscriptionProcessData>
-        {
-            new(offerSubscription.Id, "https://www.test.de")
-        };
+        var offerSubscriptionProcessDataId = Guid.NewGuid();
         var processStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, Guid.NewGuid(), DateTimeOffset.Now);
 
         var clientClientId = _fixture.Create<string>();
@@ -1252,7 +1242,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), new[] { Guid.NewGuid() }, offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
@@ -1262,11 +1252,6 @@ public class OfferSetupServiceTests
             .Invokes((Guid _, Action<OfferSubscription> setOptionalParameter) =>
             {
                 setOptionalParameter.Invoke(offerSubscription);
-            });
-        A.CallTo(() => _offerSubscriptionsRepository.RemoveOfferSubscriptionProcessData(offerSubscription.Id))
-            .Invokes((Guid id) =>
-            {
-                subscriptionProcessData.Remove(subscriptionProcessData.Single(x => x.OfferSubscriptionId == id));
             });
         var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
         var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "ServiceManagerRoles" }), 1);
@@ -1286,6 +1271,8 @@ public class OfferSetupServiceTests
         A.CallTo(() => _provisioningManager.EnableClient(clientClientId)).MustHaveHappenedOnceExactly().Then(
             A.CallTo(() => _provisioningManager.EnableClient(A<string>.That.Matches(x => serviceAccountClientIds.Contains(x)))).MustHaveHappened(serviceAccountClientIds.Length, Times.Exactly)
         );
+
+        A.CallTo(() => _offerSubscriptionsRepository.RemoveOfferSubscriptionProcessData(offerSubscriptionProcessDataId)).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _companyId, A<string>._, offerSubscription.Id.ToString(), null))
             .MustHaveHappenedOnceExactly();

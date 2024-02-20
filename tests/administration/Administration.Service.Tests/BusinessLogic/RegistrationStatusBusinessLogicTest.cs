@@ -109,7 +109,7 @@ public class RegistrationStatusBusinessLogicTest
     {
         //Arrange
         A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns<(bool, OspDetails?)>(default);
+            .Returns<(bool, Guid?, OspDetails?)>(default);
 
         //Act
         async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https//auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);
@@ -125,7 +125,7 @@ public class RegistrationStatusBusinessLogicTest
     {
         //Arrange
         A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns((true, null));
+            .Returns((true, null, null));
 
         //Act
         await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https://auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);
@@ -143,17 +143,18 @@ public class RegistrationStatusBusinessLogicTest
     public async Task SetCallbackAddress_WithOspData_UpdatesEntry()
     {
         //Arrange
+        var onboardingServiceProviderDetailId = Guid.NewGuid();
         OnboardingServiceProviderDetail? initial = null;
         OnboardingServiceProviderDetail? updated = null;
         var oldsecret = _fixture.CreateMany<byte>(32).ToArray();
         var clientSecret = _fixture.Create<string>();
         A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns((true, new OspDetails("https://test-old.de", "https://auth.url", "test", oldsecret, null, 0)));
+            .Returns((true, onboardingServiceProviderDetailId, new OspDetails("https://test-old.de", "https://auth.url", "test", oldsecret, null, 0)));
         A.CallTo(() => _companyRepository.AttachAndModifyOnboardingServiceProvider(A<Guid>._, A<Action<OnboardingServiceProviderDetail>>._, A<Action<OnboardingServiceProviderDetail>>._))
-            .Invokes((Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields) =>
+            .Invokes((Guid onboardingServiceProviderDetailId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields) =>
             {
-                initial = new OnboardingServiceProviderDetail(companyId, null!, null!, null!, null!, null, default);
-                updated = new OnboardingServiceProviderDetail(companyId, null!, null!, null!, null!, null, default);
+                initial = new OnboardingServiceProviderDetail(onboardingServiceProviderDetailId, Guid.Empty, null!, null!, null!, null!, null, default);
+                updated = new OnboardingServiceProviderDetail(onboardingServiceProviderDetailId, Guid.Empty, null!, null!, null!, null!, null, default);
                 initialize?.Invoke(initial);
                 setOptionalFields.Invoke(updated);
             });
@@ -165,12 +166,12 @@ public class RegistrationStatusBusinessLogicTest
 
         //Assert
         initial.Should().NotBeNull().And.Match<OnboardingServiceProviderDetail>(x =>
-            x.CompanyId == _identity.CompanyId &&
+            x.Id == onboardingServiceProviderDetailId &&
             x.CallbackUrl == "https://test-old.de" &&
             x.ClientSecret.SequenceEqual(oldsecret) &&
             x.EncryptionMode == 0);
         updated.Should().NotBeNull().And.Match<OnboardingServiceProviderDetail>(x =>
-            x.CompanyId == _identity.CompanyId &&
+            x.Id == onboardingServiceProviderDetailId &&
             x.CallbackUrl == "https://test-new.de" &&
             x.EncryptionMode == 1);
         A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))

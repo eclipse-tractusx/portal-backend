@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
@@ -37,6 +38,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
     private readonly ICustodianBusinessLogic _custodianBusinessLogic;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
+    private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IApplicationActivationService _applicationActivationService;
     private readonly IApplicationChecklistService _checklistService;
 
@@ -48,6 +50,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
         ICustodianBusinessLogic custodianBusinessLogic,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
+        IDimBusinessLogic dimBusinessLogic,
         IApplicationActivationService applicationActivationService,
         IApplicationChecklistService checklistService)
     {
@@ -55,6 +58,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
         _custodianBusinessLogic = custodianBusinessLogic;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
+        _dimBusinessLogic = dimBusinessLogic;
         _applicationActivationService = applicationActivationService;
         _checklistService = checklistService;
 
@@ -63,6 +67,8 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
             (ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, new (ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, true, (context, cancellationToken) => _bpdmBusinessLogic.PushLegalEntity(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH))),
             (ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, new (ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, false, (context, cancellationToken) => _bpdmBusinessLogic.HandlePullLegalEntity(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL))),
             (ProcessStepTypeId.CREATE_IDENTITY_WALLET, new (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, true, (context, cancellationToken) => _custodianBusinessLogic.CreateIdentityWalletAsync(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET))),
+            (ProcessStepTypeId.CREATE_DIM_WALLET, new (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, true, (context, cancellationToken) => _dimBusinessLogic.CreateDimWalletAsync(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET))),
+            (ProcessStepTypeId.VALIDATE_DID_DOCUMENT, new (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, true, (context, cancellationToken) => _dimBusinessLogic.ValidateDidDocument(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT))),
             (ProcessStepTypeId.START_CLEARING_HOUSE, new (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, true, (context, cancellationToken) => _clearinghouseBusinessLogic.HandleClearinghouse(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE))),
             (ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, new (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, true, (context, cancellationToken) => _clearinghouseBusinessLogic.HandleClearinghouse(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE))),
             (ProcessStepTypeId.START_SELF_DESCRIPTION_LP, new (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, true, (context, cancellationToken) => _sdFactoryBusinessLogic.StartSelfDescriptionRegistration(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP))),
@@ -77,6 +83,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
         {
             throw new ConflictException($"no execution defined for processStep {stepTypeId}");
         }
+
         return execution;
     }
 

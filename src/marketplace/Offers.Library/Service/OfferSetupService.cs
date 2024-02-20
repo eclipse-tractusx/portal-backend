@@ -590,9 +590,9 @@ public class OfferSetupService : IOfferSetupService
 
         offerSubscriptionRepository.AttachAndModifyOfferSubscription(offerSubscriptionId, subscription => { subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE; });
 
-        if (offerDetails.HasOfferSubscriptionProcessData)
+        if (offerDetails.OfferSubscriptionProcessDataId.HasValue)
         {
-            offerSubscriptionRepository.RemoveOfferSubscriptionProcessData(offerSubscriptionId);
+            offerSubscriptionRepository.RemoveOfferSubscriptionProcessData(offerDetails.OfferSubscriptionProcessDataId.Value);
         }
 
         var notificationContent = JsonSerializer.Serialize(new

@@ -109,7 +109,6 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<VerifiedCredentialTypeAssignedUseCase>("verified_credential_type_assigned_use_cases", x => new { x.VerifiedCredentialTypeId, x.UseCaseId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<VerifiedCredentialTypeAssignedExternalType>("verified_credential_type_assigned_external_types", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialExternalTypeId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyUserAssignedIdentityProvider>("company_user_assigned_identity_providers", e => new { e.CompanyUserId, e.IdentityProviderId }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<OnboardingServiceProviderDetail>("onboarding_service_provider_details", x => x.CompanyId, cancellationToken).ConfigureAwait(false);
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
@@ -148,6 +147,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<CompanySsiDetail>("company_ssi_details", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<CompanyCertificate>("company_certificates", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<OnboardingServiceProviderDetail>("onboarding_service_provider_details", cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity

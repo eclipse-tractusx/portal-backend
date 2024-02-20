@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -50,7 +49,7 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
     {
         var companyId = _identityData.CompanyId;
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var (hasCompanyRole, ospDetails) = await companyRepository
+        var (hasCompanyRole, ospDetailId, ospDetails) = await companyRepository
             .GetCallbackEditData(companyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER)
             .ConfigureAwait(false);
 
@@ -62,9 +61,9 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncrptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncrptionConfigIndex} is not configured");
         var (secret, initializationVector) = CryptoHelper.Encrypt(requestData.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
-        if (ospDetails != null)
+        if (ospDetailId.HasValue && ospDetails != null)
         {
-            companyRepository.AttachAndModifyOnboardingServiceProvider(companyId, osp =>
+            companyRepository.AttachAndModifyOnboardingServiceProvider(ospDetailId.Value, osp =>
                 {
                     osp.CallbackUrl = ospDetails.CallbackUrl;
                     osp.AuthUrl = ospDetails.AuthUrl;

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,6 +21,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using System.Text.Json;
 
 #nullable disable
 
@@ -3868,6 +3869,60 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_user_assigned_identity_providers", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyWalletData", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthenticationServiceUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("authentication_service_url");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("client_id");
+
+                    b.Property<byte[]>("ClientSecret")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("client_secret");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<string>("Did")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("did");
+
+                    b.Property<JsonDocument>("DidDocument")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("did_document");
+
+                    b.Property<int>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
+
+                    b.Property<byte[]>("InitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_wallet_datas");
+
+                    b.HasIndex("CompanyId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_company_wallet_datas_company_id");
+
+                    b.ToTable("company_wallet_datas", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5681,6 +5736,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscriptionProcessData", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
                     b.Property<Guid>("OfferSubscriptionId")
                         .HasColumnType("uuid")
                         .HasColumnName("offer_subscription_id");
@@ -5690,8 +5750,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("offer_url");
 
-                    b.HasKey("OfferSubscriptionId")
+                    b.HasKey("Id")
                         .HasName("pk_offer_subscriptions_process_datas");
+
+                    b.HasIndex("OfferSubscriptionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_offer_subscriptions_process_datas_offer_subscription_id");
 
                     b.ToTable("offer_subscriptions_process_datas", "portal");
                 });
@@ -5786,9 +5850,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OnboardingServiceProviderDetail", b =>
                 {
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("company_id");
+                        .HasColumnName("id");
 
                     b.Property<string>("AuthUrl")
                         .IsRequired()
@@ -5810,6 +5875,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("bytea")
                         .HasColumnName("client_secret");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
                     b.Property<int>("EncryptionMode")
                         .HasColumnType("integer")
                         .HasColumnName("encryption_mode");
@@ -5818,8 +5887,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("bytea")
                         .HasColumnName("initialization_vector");
 
-                    b.HasKey("CompanyId")
+                    b.HasKey("Id")
                         .HasName("pk_onboarding_service_provider_details");
+
+                    b.HasIndex("CompanyId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_onboarding_service_provider_details_company_id");
 
                     b.ToTable("onboarding_service_provider_details", "portal");
                 });
@@ -6101,6 +6174,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 19,
                             Label = "DECLINE_APPLICATION"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Label = "CREATE_DIM_WALLET"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Label = "AWAIT_DIM_RESPONSE"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Label = "RETRIGGER_CREATE_DIM_WALLET"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Label = "VALIDATE_DID_DOCUMENT"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Label = "RETRIGGER_VALIDATE_DID_DOCUMENT"
                         },
                         new
                         {
@@ -7735,6 +7833,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IdentityProvider");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyWalletData", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
+                        .WithOne("CompanyWalletData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyWalletData", "CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_wallet_datas_companies_company_id");
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
@@ -8796,6 +8906,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyIdentifiers");
 
                     b.Navigation("CompanySsiDetails");
+
+                    b.Navigation("CompanyWalletData");
 
                     b.Navigation("Consents");
 
