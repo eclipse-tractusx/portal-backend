@@ -607,6 +607,25 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             _settings.MaxPageSize,
             _portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
 
+    /// <inheritdoc />
+    public async Task<(byte[] Content, string FileName, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId)
+    {
+        var documentDetails = await _portalRepositories.GetInstance<ICompanyCertificateRepository>()
+            .GetCompanyCertificateDocumentDataAsync(documentId)
+            .ConfigureAwait(false);
+        if (documentDetails == default)
+        {
+            throw new NotFoundException($"Document {documentId} does not exist");
+        }
+
+        if (documentDetails.Content == null)
+        {
+            throw new UnexpectedConditionException("documentContent should never be null here");
+        }
+
+        return (documentDetails.Content, documentDetails.FileName, documentDetails.MediaTypeId.MapToMediaType());
+    }
+
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
     {
         var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();

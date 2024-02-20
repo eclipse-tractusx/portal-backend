@@ -43,6 +43,7 @@ public class CompanyDataBusinessLogicTests
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
     private static readonly Guid ValidDocumentId = Guid.NewGuid();
+    private static readonly Guid ValidDocumentId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IConsentRepository _consentRepository;
