@@ -183,6 +183,38 @@ public class CompanyCertificateRepositoryTests
 
     #endregion
 
+    #region GetCompanyCertificateDocumentContentFile
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentContentFile_WithValidData_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751f")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("AdditionalServiceDetails2.pdf");
+        result.MediaTypeId.Should().Be(MediaTypeId.PDF);
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentContentFile_WithNotExistingDocument_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyCertificateDocumentDataAsync(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
     #region DeleteCertificate
 
     [Fact]

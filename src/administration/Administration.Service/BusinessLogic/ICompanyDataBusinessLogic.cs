@@ -58,6 +58,8 @@ public interface ICompanyDataBusinessLogic
 
     Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken);
 
+    Task<(byte[] Content, string FileName, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId);
+
     Task<int> DeleteCompanyCertificateAsync(Guid documentId);
 
     Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType);

@@ -42,6 +42,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IIdentityData _identity;
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
+    private static readonly Guid ValidDocumentId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IConsentRepository _consentRepository;
@@ -1670,6 +1671,26 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region GetCompanyCertificateDocuments
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetDocument();
+        var sut = _fixture.Create<CompanyDataBusinessLogic>();
+
+        // Act
+        var result = await sut.GetCompanyCertificateDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
+    }
+
+    #endregion
+
     #region DeleteCompanyCertificates
 
     [Fact]
@@ -1777,5 +1798,11 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
     }
 
+    private void SetupFakesForGetDocument()
+    {
+        var content = new byte[7];
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(ValidDocumentId))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>(content, "test.pdf", MediaTypeId.PDF));
+    }
     #endregion
 }
