@@ -353,7 +353,7 @@ public class CompanyDataController : ControllerBase
     public async Task<ActionResult> GetCompanyCertificateDocumentContentFileAsync([FromRoute] Guid documentId)
     {
         var (fileName, content, mediaType) = await _logic.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(false);
-        return File(fileName, content, mediaType);
+        return File(content, mediaType, fileName);
     }
 
     /// <summary>

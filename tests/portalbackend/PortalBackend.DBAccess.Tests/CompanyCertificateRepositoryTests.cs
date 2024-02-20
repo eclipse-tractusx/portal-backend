@@ -192,7 +192,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751f")).ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751f"), DocumentTypeId.COMPANY_CERTIFICATE).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -207,7 +207,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyCertificateDocumentDataAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateDocumentDataAsync(Guid.NewGuid(), DocumentTypeId.COMPANY_CERTIFICATE).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);

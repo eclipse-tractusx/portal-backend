@@ -58,7 +58,7 @@ public interface ICompanyDataBusinessLogic
 
     Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken);
 
-    Task<(byte[] Content, string FileName, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId);
+    Task<(string FileName, byte[] Content, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId);
 
     Task<int> DeleteCompanyCertificateAsync(Guid documentId);
 

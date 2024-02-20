@@ -647,21 +647,17 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<(byte[] Content, string FileName, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId)
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId)
     {
         var documentDetails = await _portalRepositories.GetInstance<ICompanyCertificateRepository>()
-            .GetCompanyCertificateDocumentDataAsync(documentId)
+            .GetCompanyCertificateDocumentDataAsync(documentId, DocumentTypeId.COMPANY_CERTIFICATE)
             .ConfigureAwait(false);
-        if (documentDetails == default)
+
+        if (!documentDetails.IsExist)
         {
-            throw new NotFoundException($"Document {documentId} does not exist");
+            throw new NotFoundException($"Company certificate document {documentId} does not exist");
         }
 
-        if (documentDetails.Content == null)
-        {
-            throw new UnexpectedConditionException("documentContent should never be null here");
-        }
-
-        return (documentDetails.Content, documentDetails.FileName, documentDetails.MediaTypeId.MapToMediaType());
+        return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
     }
 }

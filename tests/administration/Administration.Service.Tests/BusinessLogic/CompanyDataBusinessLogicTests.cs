@@ -56,7 +56,6 @@ public class CompanyDataBusinessLogicTests
     private readonly IMailingService _mailingService;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
-
     private readonly CompanyDataBusinessLogic _sut;
     private readonly IIdentityService _identityService;
 
@@ -1678,15 +1677,29 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         SetupFakesForGetDocument();
-        var sut = _fixture.Create<CompanyDataBusinessLogic>();
 
         // Act
-        var result = await sut.GetCompanyCertificateDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        var result = await _sut.GetCompanyCertificateDocumentAsync(ValidDocumentId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.FileName.Should().Be("test.pdf");
         result.MediaType.Should().Be("application/pdf");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        SetupFakesForGetDocument();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Company certificate document {documentId} does not exist");
     }
 
     #endregion
@@ -1801,8 +1814,8 @@ public class CompanyDataBusinessLogicTests
     private void SetupFakesForGetDocument()
     {
         var content = new byte[7];
-        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(ValidDocumentId))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>(content, "test.pdf", MediaTypeId.PDF));
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(ValidDocumentId, DocumentTypeId.COMPANY_CERTIFICATE))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
     }
     #endregion
 }
