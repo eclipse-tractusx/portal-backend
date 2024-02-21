@@ -1670,6 +1670,40 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region GetCompanyCertificateDocumentByCompanyId
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentByCompanyIdAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetDocumentByCompanyId();
+
+        // Act
+        var result = await _sut.GetCompanyCertificateDocumentByCompanyIdAsync(ValidDocumentId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentByCompanyIdAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        SetupFakesForGetDocumentByCompanyId();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificateDocumentByCompanyIdAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Company certificate document {documentId} does not exist");
+    }
+
+    #endregion
+
     #region GetCompanyCertificateDocuments
 
     [Fact]
@@ -1826,13 +1860,12 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
     }
 
-    private void SetupFakesForGetDocument()
+    private void SetupFakesForGetDocumentByCompanyId()
     {
         var content = new byte[7];
-        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(_validDocumentId, DocumentTypeId.COMPANY_CERTIFICATE))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test.pdf", MediaTypeId.PDF, true, true));
-        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751d"), DocumentTypeId.COMPANY_CERTIFICATE))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test1.pdf", MediaTypeId.PDF, true, false));
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentByCompanyIdDataAsync(ValidDocumentId, _identity.IdentityId, DocumentTypeId.COMPANY_CERTIFICATE))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
     }
+
     #endregion
 }
