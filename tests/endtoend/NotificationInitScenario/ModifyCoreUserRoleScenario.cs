@@ -191,6 +191,14 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
         {
             throw new Exception($"Could not get company user details from {endpoint} should not be null.");
         }
+        if (companyUserDetails.FirstName is null)
+        {
+            throw new Exception($"Company user details from {endpoint} should not return firstName null");
+        }
+        if (companyUserDetails.LastName is null)
+        {
+            throw new Exception($"Company user details from {endpoint} should not return lastName null");
+        }
         _username = companyUserDetails.FirstName + " " + companyUserDetails.LastName;
         return companyUserDetails.CompanyUserId.ToString();
     }
