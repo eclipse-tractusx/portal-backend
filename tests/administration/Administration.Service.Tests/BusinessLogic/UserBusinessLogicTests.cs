@@ -1512,6 +1512,9 @@ public class UserBusinessLogicTests
         result.CreatedAt.Should().Be(companyOwnUserDetails.CreatedAt);
         result.CompanyUserId.Should().Be(companyOwnUserDetails.CompanyUserId);
         result.BusinessPartnerNumbers.Should().BeSameAs(companyOwnUserDetails.BusinessPartnerNumbers);
+        result.FirstName.Should().Be(companyOwnUserDetails.FirstName);
+        result.LastName.Should().Be(companyOwnUserDetails.LastName);
+        result.Email.Should().Be(companyOwnUserDetails.Email);
     }
 
     [Fact]
@@ -1532,6 +1535,57 @@ public class UserBusinessLogicTests
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"no company-user data found for user {userId}");
+    }
+
+    #endregion
+
+    #region GetOwnCompanyUserDetailsAsync
+
+    [Fact]
+    public async Task GetOwnCompanyUserDetailsAsync_ReturnsExpected()
+    {
+        // Arrange
+        var companyOwnUserDetails = _fixture.Create<CompanyUserDetailTransferData>();
+        var userId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
+
+        A.CallTo(() => _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(A<Guid>._, A<Guid>._))
+            .Returns(companyOwnUserDetails);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
+
+        // Act
+        var result = await sut.GetOwnCompanyUserDetailsAsync(userId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(userId, companyId)).MustHaveHappenedOnceExactly();
+        result.CompanyName.Should().Be(companyOwnUserDetails.CompanyName);
+        result.CreatedAt.Should().Be(companyOwnUserDetails.CreatedAt);
+        result.CompanyUserId.Should().Be(companyOwnUserDetails.CompanyUserId);
+        result.BusinessPartnerNumbers.Should().BeSameAs(companyOwnUserDetails.BusinessPartnerNumbers);
+        result.FirstName.Should().Be(companyOwnUserDetails.FirstName);
+        result.LastName.Should().Be(companyOwnUserDetails.LastName);
+        result.Email.Should().Be(companyOwnUserDetails.Email);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyUserDetailsAsync_ThrowsNotFoundException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _identity.CompanyId).Returns(companyId);
+        A.CallTo(() => _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(A<Guid>._, A<Guid>._))
+            .Returns((CompanyUserDetailTransferData)default!);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, _options);
+
+        // Act
+        async Task Act() => await sut.GetOwnCompanyUserDetailsAsync(userId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"no company-user data found for user {userId} in company {companyId}");
+        A.CallTo(() => _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(userId, companyId)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

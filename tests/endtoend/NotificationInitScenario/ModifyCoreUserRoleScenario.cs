@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using RestAssured.Response.Logging;
