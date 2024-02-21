@@ -2,6 +2,20 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.8.0-RC6
+
+### Feature
+* Certificate Management (Administration Service)
+  * released new endpoint to fetch own company certificate data incl sorting and filters - GET /api/administration/companydata/companyCertificates
+  * released new endpoint to fetch other company certificate data using businesspartner number via the new endpoint GET /api/administration/companydata/{businessPartnerNumber}/companyCertificates
+
+### Bugfix
+* fixed endpoint GET /api/administration/user/owncompany/users/{userid} missing assignments of firstname, lastname and email were added to busineslogic and setters were removed from company-user related record-definitions
+* fixed bpdm interface connection
+  * switch from Put to Post for the sharing-state/ready call
+  * add BpdmSharingStateBusinessPartnerType 'GENERIC'
+  * add BpdmSharingStateType 'Ready'
+
 ## 1.8.0-RC5
 
 ### Feature
