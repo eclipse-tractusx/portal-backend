@@ -169,6 +169,7 @@ public class UserRepository : IUserRepository
     public Task<CompanyUserDetailTransferData?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
+            .AsSplitQuery()
             .Where(companyUser =>
                 companyUser.Id == companyUserId &&
                 companyUser.Identity!.UserStatusId == UserStatusId.ACTIVE &&
@@ -186,12 +187,10 @@ public class UserRepository : IUserRepository
                         offer.Id,
                         offer.UserRoles.Where(role => companyUser.Identity!.IdentityAssignedRoles.Select(x => x.UserRole).Contains(role)).Select(x => x.UserRoleText)
                     )),
-                companyUser.CompanyUserAssignedIdentityProviders.Select(cuidp => new IdpUserTransferId(cuidp.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, cuidp.ProviderId)))
-            {
-                FirstName = companyUser.Firstname,
-                LastName = companyUser.Lastname,
-                Email = companyUser.Email
-            })
+                companyUser.CompanyUserAssignedIdentityProviders.Select(cuidp => new IdpUserTransferId(cuidp.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, cuidp.ProviderId)),
+                companyUser.Firstname,
+                companyUser.Lastname,
+                companyUser.Email))
             .SingleOrDefaultAsync();
 
     public Task<(IEnumerable<string> AssignedBusinessPartnerNumbers, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId) =>
@@ -229,12 +228,10 @@ public class UserRepository : IUserRepository
                     .Select(admin => new CompanyUserAdminDetails(
                         admin.Id,
                         admin.Email)),
-                companyUser.CompanyUserAssignedIdentityProviders.Select(cuidp => new IdpUserTransferId(cuidp.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, cuidp.ProviderId)))
-            {
-                FirstName = companyUser.Firstname,
-                LastName = companyUser.Lastname,
-                Email = companyUser.Email
-            })
+                companyUser.CompanyUserAssignedIdentityProviders.Select(cuidp => new IdpUserTransferId(cuidp.IdentityProvider!.IamIdentityProvider!.IamIdpAlias, cuidp.ProviderId)),
+                companyUser.Firstname,
+                companyUser.Lastname,
+                companyUser.Email))
             .SingleOrDefaultAsync();
 
     public Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(Guid companyUserId) =>
