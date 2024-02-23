@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -125,7 +124,7 @@ public class ServiceAccountController : ControllerBase
     /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     /// <response code="409">Undefined client for service account.</response>
     [HttpPut]
-    [Authorize(Roles = "add_tech_user_management")] // TODO check whether we also want an edit role
+    [Authorize(Roles = "add_tech_user_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]

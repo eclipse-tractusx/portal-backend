@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -25,7 +24,7 @@ using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
-public class FlurlErrorHandler
+public static class FlurlErrorHandler
 {
     public static void ConfigureErrorHandler(ILogger logger, bool isDevelopment)
     {
@@ -39,11 +38,11 @@ public class FlurlErrorHandler
                 var requestBody = call.RequestBody == null ? "\n" : call.RequestBody.ToString() + "\n\n";
                 var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
                 var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
-                logger.LogError(call.Exception, request + requestBody + response + responseContent);
+                logger.LogError(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);
             }
             else
             {
-                logger.LogError(call.Exception, message);
+                logger.LogError(call.Exception, "{Message}", message);
             }
 
             if (call.HttpResponseMessage != null)
