@@ -587,32 +587,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         };
     }
 
-    public async ValueTask<UserIdentityProviderLinkData> CreateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, UserIdentityProviderLinkData identityProviderLinkData)
-    {
-        var companyId = _identityData.CompanyId;
-        var (iamUserId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderLinkData.identityProviderId, companyId).ConfigureAwait(false);
-
-        try
-        {
-            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(
-                iamUserId,
-                new IdentityProviderLink(
-                    alias,
-                    identityProviderLinkData.userId,
-                    identityProviderLinkData.userName))
-                .ConfigureAwait(false);
-        }
-        catch (KeycloakEntityConflictException ce)
-        {
-            throw new ConflictException($"identityProviderLink for identityProvider {identityProviderLinkData.identityProviderId} already exists for user {companyUserId}", ce);
-        }
-
-        return new UserIdentityProviderLinkData(
-            identityProviderLinkData.identityProviderId,
-            identityProviderLinkData.userId,
-            identityProviderLinkData.userName);
-    }
-
     public async ValueTask<UserIdentityProviderLinkData> CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData)
     {
         var companyId = _identityData.CompanyId;
