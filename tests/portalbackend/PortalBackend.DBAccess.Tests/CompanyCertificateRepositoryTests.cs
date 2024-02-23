@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -81,9 +81,110 @@ public class CompanyCertificateRepositoryTests
             .Which.Entity.Should().BeOfType<CompanyCertificate>()
             .Which.CompanyCertificateStatusId.Should().Be(CompanyCertificateStatusId.ACTIVE);
     }
+
+    #endregion
+
+    #region GetAllCertificateData
+
+    [Theory]
+    [InlineData(CertificateSorting.CertificateTypeAsc)]
+    [InlineData(CertificateSorting.CertificateTypeDesc)]
+    public async Task GetAllCertificates_ReturnsExpectedResult(CertificateSorting sorting)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(sorting, null, null, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(0, 15).ConfigureAwait(false);
+
+        // Assert
+        companyCertificateDetail.Should().NotBeNull();
+        companyCertificateDetail!.Count.Should().Be(8);
+        companyCertificateDetail.Data.Should().HaveCount(8);
+        if (sorting == CertificateSorting.CertificateTypeAsc)
+        {
+            companyCertificateDetail.Data.Select(data => data.companyCertificateType).Should().BeInAscendingOrder();
+        }
+
+        if (sorting == CertificateSorting.CertificateTypeDesc)
+        {
+            companyCertificateDetail.Data.Select(data => data.companyCertificateType).Should().BeInDescendingOrder();
+        }
+    }
+
+    [Theory]
+    [InlineData(CompanyCertificateStatusId.ACTIVE, CompanyCertificateTypeId.AEO_CTPAT_Security_Declaration, 0, 2, 1, 1)]
+    [InlineData(CompanyCertificateStatusId.ACTIVE, CompanyCertificateTypeId.ISO_9001, 0, 2, 1, 1)]
+    [InlineData(CompanyCertificateStatusId.INACTVIE, CompanyCertificateTypeId.IATF, 0, 2, 0, 0)]
+    public async Task GetAllCertificates_WithExistingCompanyCertificateAndCertificateType_ReturnsExpectedResult(CompanyCertificateStatusId companyCertificateStatusId, CompanyCertificateTypeId companyCertificateTypeId, int page, int size, int count, int numData)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(null, companyCertificateStatusId, companyCertificateTypeId, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(page, size).ConfigureAwait(false);
+
+        // Assert
+        if (count == 0)
+        {
+            companyCertificateDetail.Should().BeNull();
+        }
+        else
+        {
+            companyCertificateDetail.Should().NotBeNull();
+            companyCertificateDetail!.Count.Should().Be(count);
+            companyCertificateDetail.Data.Should().HaveCount(numData);
+        }
+    }
+
+    #endregion
+
+    #region GetCompanyCertificatesBpn
+
+    [Fact]
+    public async Task GetCompanyId_WithExistingData()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01643").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(Guid.Empty);
+        result.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
+    }
+
+    [Fact]
+    public async Task GetCompanyId_WithNoExistingData()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01644").ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(Guid.Empty);
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateData_NoResults_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyCertificateData(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
     #endregion
 
     #region Setup
+
     private async Task<CompanyCertificateRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

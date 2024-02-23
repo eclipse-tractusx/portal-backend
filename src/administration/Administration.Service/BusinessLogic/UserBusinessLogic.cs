@@ -312,7 +312,10 @@ public class UserBusinessLogic : IUserBusinessLogic
                 new IdpUserId(
                     await GetDisplayName(x.Alias ?? throw new ConflictException("Alias must not be null")).ConfigureAwait(false),
                     x.Alias,
-                    x.UserId))).ConfigureAwait(false));
+                    x.UserId))).ConfigureAwait(false),
+            details.FirstName,
+            details.LastName,
+            details.Email);
     }
 
     public async Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers)
@@ -366,7 +369,10 @@ public class UserBusinessLogic : IUserBusinessLogic
                 new IdpUserId(
                     await GetDisplayName(x.Alias ?? throw new ConflictException("Alias must not be null")).ConfigureAwait(false),
                     x.Alias,
-                    x.UserId))).ConfigureAwait(false));
+                    x.UserId))).ConfigureAwait(false),
+            details.FirstName,
+            details.LastName,
+            details.Email);
     }
 
     public async Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails)
@@ -419,12 +425,10 @@ public class UserBusinessLogic : IUserBusinessLogic
             userData.BusinessPartnerNumbers,
             companyUser.CompanyName,
             companyUser.UserStatusId,
-            userData.AssignedRoles)
-        {
-            FirstName = companyUser.Firstname,
-            LastName = companyUser.Lastname,
-            Email = companyUser.Email
-        };
+            userData.AssignedRoles,
+            companyUser.Firstname,
+            companyUser.Lastname,
+            companyUser.Email);
     }
 
     public async Task<int> DeleteOwnUserAsync(Guid companyUserId)

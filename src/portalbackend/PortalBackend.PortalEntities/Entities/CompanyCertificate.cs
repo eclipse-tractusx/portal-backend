@@ -17,13 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Document = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-public class CompanyCertificate
+public class CompanyCertificate : IBaseEntity
 {
     private CompanyCertificate() { }
 
