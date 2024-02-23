@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -1070,6 +1071,78 @@ public class CompanyDataBusinessLogicTests
     }
     #endregion
 
+    #region GetCompanyCertificateWithBpnNumber
+
+    [Fact]
+    public async Task GetCompanyCertificateWithNullOrEmptyBpn_ReturnsExpected()
+    {
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificatesByBpn(string.Empty).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().StartWith("businessPartnerNumber must not be empty");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateWithNoCompanyId_ReturnsExpected()
+    {
+        // Arrange
+        var companyId = Guid.Empty;
+        var businessPartnerNumber = "BPNL07800HZ01644";
+
+        A.CallTo(() => _companyCertificateRepository.GetCompanyIdByBpn(businessPartnerNumber))
+            .Returns(companyId);
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificatesByBpn(businessPartnerNumber).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().StartWith($"company does not exist for {businessPartnerNumber}");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateWithBpnNumber_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        var data = _fixture.Build<CompanyCertificateBpnData>()
+            .With(x => x.CompanyCertificateStatus, CompanyCertificateStatusId.ACTIVE)
+            .With(x => x.CompanyCertificateType, CompanyCertificateTypeId.ISO_9001)
+            .With(x => x.DocumentId, Guid.NewGuid())
+            .With(x => x.ValidFrom, DateTime.UtcNow)
+            .With(x => x.ValidTill, DateTime.UtcNow)
+            .CreateMany(5).ToAsyncEnumerable();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyIdByBpn("BPNL07800HZ01643"))
+            .Returns(companyId);
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateData(companyId))
+           .Returns(data);
+
+        // Act
+        var result = await _sut.GetCompanyCertificatesByBpn("BPNL07800HZ01643").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateWithBpnNumber_WithEmptyResult_ReturnsExpected()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyIdByBpn("BPNL07800HZ01643"))
+            .Returns(companyId);
+
+        // Act
+        var result = await _sut.GetCompanyCertificatesByBpn("BPNL07800HZ01643").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region GetCredentials
 
     [Fact]
@@ -1564,6 +1637,39 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region GetAllCompanyCertificates
+
+    [Fact]
+    public async Task GetAllCompanyCertificatesAsync_WithDefaultRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        SetupPagination();
+        var sut = _fixture.Create<CompanyDataBusinessLogic>();
+
+        // Act
+        var result = await sut.GetAllCompanyCertificatesAsync(0, 5, null, null, null);
+
+        // Assert
+        result.Content.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GetAllCompanyCertificatesAsync_WithSmallSize_GetsExpectedEntries()
+    {
+        // Arrange
+        const int expectedCount = 3;
+        SetupPagination(expectedCount);
+        var sut = _fixture.Create<CompanyDataBusinessLogic>();
+
+        // Act
+        var result = await sut.GetAllCompanyCertificatesAsync(0, expectedCount, null, null, null);
+
+        // Assert
+        result.Content.Should().HaveCount(expectedCount);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupCreateUseCaseParticipation()
@@ -1588,6 +1694,17 @@ public class CompanyDataBusinessLogicTests
             .Returns(true);
         A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(A<CompanyCertificateTypeId>.That.Matches(x => x != CompanyCertificateTypeId.IATF)))
             .Returns(false);
+    }
+
+    private void SetupPagination(int count = 5)
+    {
+        var companyCertificateDetailData = _fixture.CreateMany<CompanyCertificateData>(count);
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<CompanyCertificateData>(companyCertificateDetailData.Count(), companyCertificateDetailData.Skip(skip).Take(take)));
+
+        A.CallTo(() => _companyCertificateRepository.GetActiveCompanyCertificatePaginationSource(A<CertificateSorting?>._, A<CompanyCertificateStatusId?>._, A<CompanyCertificateTypeId?>._, A<Guid>._))
+            .Returns(paginationResult);
+
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
     }
 
     #endregion

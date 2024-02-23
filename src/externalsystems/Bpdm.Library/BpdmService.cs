@@ -122,7 +122,7 @@ public class BpdmService : IBpdmService
         var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
 
         var content = new { externalIds = Enumerable.Repeat(externalId, 1) };
-        await httpClient.PutAsJsonAsync("/companies/test-company/api/catena/sharing-state/ready", content, Options, cancellationToken)
+        await httpClient.PostAsJsonAsync("/companies/test-company/api/catena/sharing-state/ready", content, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-sharing-state-ready", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }

@@ -71,4 +71,4 @@ jobs:
     - name: Create git tag
       uses: rickstaa/action-create-tag@v1
       with:
-        tag: v${{ steps.nugetPackageVersion.outputs.version }}
+        tag: ${{ steps.nugetPackageVersion.outputs.version }}

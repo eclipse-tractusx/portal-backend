@@ -17,36 +17,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
-public record BpdmPaginationSharingStateOutput(
-    IEnumerable<BpdmSharingState>? Content
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+
+public record CompanyUserTransferData(
+    [property: JsonPropertyName("companyUserId")]
+    Guid CompanyUserId,
+    [property: JsonPropertyName("status")]
+    UserStatusId UserStatusId,
+    [property: JsonPropertyName("dateCreated")]
+    DateTimeOffset DateCreated,
+    [property: JsonPropertyName("firstName")]
+    string? FirstName,
+    [property: JsonPropertyName("lastName")]
+    string? LastName,
+    [property: JsonPropertyName("email")]
+    string? Email,
+    [property: JsonPropertyName("roles")]
+    IEnumerable<UserRoleData> Roles,
+    [property: JsonPropertyName("idpUserIds")]
+    IEnumerable<IdpUserTransferId> IdpUserIds
 );
-
-public record BpdmSharingState(
-    BpdmSharingStateBusinessPartnerType? BusinessPartnerType,
-    Guid ExternalId,
-    BpdmSharingStateType? SharingStateType,
-    string? SharingErrorCode,
-    string? SharingErrorMessage,
-    string? Bpn,
-    DateTimeOffset? SharingProcessStarted,
-    Guid? TaskId
-);
-
-public enum BpdmSharingStateType
-{
-    Pending = 1,
-    Success = 2,
-    Error = 3,
-    Initial = 4,
-    Ready = 5,
-}
-
-public enum BpdmSharingStateBusinessPartnerType
-{
-    LEGAL_ENTITY = 1,
-    SITE = 2,
-    ADDRESS = 3,
-    GENERIC = 4
-}
