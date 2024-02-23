@@ -76,7 +76,7 @@ public partial class ProvisioningManager
             try
             {
                 await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
-                assigned = roles.Select(role => role.Name);
+                assigned = roles.Select(role => role.Name ?? throw new KeycloakInvalidResponseException("name of role is null"));
             }
             catch (Exception)
             {

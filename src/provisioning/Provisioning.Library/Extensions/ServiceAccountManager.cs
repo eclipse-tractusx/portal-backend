@@ -70,7 +70,7 @@ public partial class ProvisioningManager
         var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync("master", internalClientId).ConfigureAwait(false);
         var roleCreateRealm = await sharedIdp.GetRoleByNameAsync("master", "create-realm").ConfigureAwait(false);
 
-        await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUser.Id, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
+        await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUser.Id ?? throw new KeycloakInvalidResponseException("id of serviceAccountUser is null"), Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
 
         var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
         return new ValueTuple<string, string>(clientId, credentials.Value);
