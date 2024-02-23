@@ -116,15 +116,6 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
                 }, _options), NotificationTypeId.ROLE_UPDATE_APP_OFFER);
             });
 
-    [Obsolete("to be replaced by endpoint UserRolesBusinessLogic.ModifyAppUserRolesAsync. Remove as soon frontend is adjusted")]
-    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo) =>
-        ModifyUserRolesInternal(
-            () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, _identityData.CompanyId),
-            (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
-                .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId).Select(x => new UserRoleModificationData(x.UserRoleText, x.RoleId, x.IsAssigned, true)),
-            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, _identityData.CompanyId, null);
-
     private async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesInternal(
         Func<Task<OfferIamUserData?>> getIamUserData,
         Func<Guid, IEnumerable<string>, Guid, IAsyncEnumerable<UserRoleModificationData>> getUserRoleModificationData,

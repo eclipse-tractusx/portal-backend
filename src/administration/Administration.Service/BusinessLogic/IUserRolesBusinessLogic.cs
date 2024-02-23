@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -45,13 +44,4 @@ public interface IUserRolesBusinessLogic
     /// <param name="roles"></param>
     /// <returns>messages</returns>
     Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles);
-
-    /// <summary>
-    /// Update Role to User
-    /// </summary>
-    /// <param name="appId">app Id</param>
-    /// <param name="userRoleInfo">User and Role Information like CompanyUser Id and Role Name</param>
-    /// <returns>messages</returns>
-    [Obsolete("to be replaced by endpoint UserRolesBusinessLogic.ModifyAppUserRolesAsync. Remove as soon frontend is adjusted")]
-    Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo);
 }

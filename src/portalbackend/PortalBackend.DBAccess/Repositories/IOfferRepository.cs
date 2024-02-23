@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -30,13 +29,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IOfferRepository
 {
-    /// <summary>
-    /// Checks if an app with the given id exists in the persistence layer. 
-    /// </summary>
-    /// <param name="appId">Id of the app.</param>
-    /// <returns><c>true</c> if an app exists on the persistence layer with the given id, <c>false</c> if not.</returns>
-    public Task<bool> CheckAppExistsById(Guid appId);
-
     /// <summary>
     /// Retrieves app provider company details by app id.
     /// </summary>
@@ -136,15 +128,6 @@ public interface IOfferRepository
     /// <param name="sorting"></param>
     /// <param name="offerName"></param>
     Func<int, int, Task<Pagination.Source<AllOfferData>?>> GetProvidedOffersData(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, Guid userCompanyId, OfferSorting sorting, string? offerName);
-
-    /// <summary>
-    /// Gets the client roles for a specific app
-    /// </summary>
-    /// <param name="appId">id of the app to get the client roles for</param>
-    /// <param name="languageShortName">The language short names</param>
-    /// <returns>Returns an asyncEnumerable from ClientRoles</returns>
-    [Obsolete("only referenced by code that is marked as obsolte")]
-    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string languageShortName);
 
     /// Get Offer Release data by Offer Id
     /// </summary>

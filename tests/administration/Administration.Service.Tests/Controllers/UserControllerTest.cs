@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,7 +20,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -30,7 +28,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class UserControllerTest
 {
-    private static readonly Guid CompanyUserId = new("05455d3a-fc86-4f5a-a89a-ba964ead163d");
     private readonly IIdentityData _identity;
     private readonly IUserBusinessLogic _logic;
     private readonly IUserRolesBusinessLogic _rolesLogic;
@@ -52,23 +49,6 @@ public class UserControllerTest
     }
 
     [Fact]
-    public async Task ModifyUserRolesAsync_WithValidData_ReturnsExpectedResult()
-    {
-        //Arrange
-        var appId = new Guid("8d4bfde6-978f-4d82-86ce-8d90d52fbf3f");
-        var userRoleInfo = new UserRoleInfo(CompanyUserId, new[] { "Company Admin" });
-        A.CallTo(() => _rolesLogic.ModifyUserRoleAsync(A<Guid>._, A<UserRoleInfo>._))
-                  .Returns(Enumerable.Empty<UserRoleWithId>());
-
-        //Act
-        var result = await this._controller.ModifyUserRolesAsync(appId, userRoleInfo).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _rolesLogic.ModifyUserRoleAsync(A<Guid>.That.Matches(x => x == appId), A<UserRoleInfo>.That.Matches(x => x.CompanyUserId == CompanyUserId && x.Roles.Count() == 1))).MustHaveHappenedOnceExactly();
-        result.Should().BeEmpty();
-    }
-
-    [Fact]
     public async Task GetOwnUserDetails_ReturnsExpectedResult()
     {
         // Arrange
@@ -77,7 +57,7 @@ public class UserControllerTest
             .Returns(data);
 
         // Act
-        var result = await this._controller.GetOwnUserDetails().ConfigureAwait(false);
+        var result = await _controller.GetOwnUserDetails().ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.GetOwnUserDetails()).MustHaveHappenedOnceExactly();

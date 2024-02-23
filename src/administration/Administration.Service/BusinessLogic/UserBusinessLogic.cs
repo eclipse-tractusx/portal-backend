@@ -272,26 +272,6 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     private async Task<string> GetDisplayName(string alias) => await _provisioningManager.GetIdentityProviderDisplayName(alias).ConfigureAwait(false) ?? throw new ConflictException($"Display Name should not be null for alias: {alias}");
 
-    [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
-    public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
-    {
-        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        if (!await appRepository.CheckAppExistsById(appId).ConfigureAwait(false))
-        {
-            throw new NotFoundException($"app {appId} does not found");
-        }
-
-        if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName))
-        {
-            throw new ArgumentException($"language {languageShortName} does not exist");
-        }
-
-        await foreach (var roles in appRepository.GetClientRolesAsync(appId, languageShortName ?? Constants.DefaultLanguage).ConfigureAwait(false))
-        {
-            yield return new ClientRoles(roles.RoleId, roles.Role, roles.Description);
-        }
-    }
-
     public async Task<CompanyUserDetailData> GetOwnCompanyUserDetailsAsync(Guid userId)
     {
         var companyId = _identityData.CompanyId;

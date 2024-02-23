@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -42,10 +41,6 @@ public class OfferRepository : IOfferRepository
     {
         this._context = portalDbContext;
     }
-
-    /// <inheritdoc />
-    public Task<bool> CheckAppExistsById(Guid appId) =>
-        _context.Offers.AnyAsync(x => x.Id == appId && x.OfferTypeId == OfferTypeId.APP);
 
     ///<inheritdoc/>
     public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId) =>
@@ -230,18 +225,6 @@ public class OfferRepository : IOfferRepository
                 offer.DateLastChanged
                 ))
             .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    [Obsolete("only referenced by code that is marked as obsolte")]
-    public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string languageShortName) =>
-        _context.Offers
-            .Where(app => app.Id == appId)
-            .SelectMany(app => app.UserRoles)
-            .Select(roles => new ClientRoles(
-                roles.Id,
-                roles.UserRoleText,
-                roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
-            )).AsAsyncEnumerable();
 
     /// <inheritdoc />
     public Func<int, int, Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId, string languageShortName) =>

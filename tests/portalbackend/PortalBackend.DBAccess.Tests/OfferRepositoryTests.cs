@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -49,36 +48,6 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
-
-    #region CheckAppExistsById
-
-    [Fact]
-    public async Task CheckAppExistsById_WithExistingEntry_ReturnsTrue()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.CheckAppExistsById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007")).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CheckAppExistsById_WithNonExistingEntry_ReturnsFalse()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.CheckAppExistsById(Guid.NewGuid()).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
 
     #region GetOfferProviderDetailsAsync
 
