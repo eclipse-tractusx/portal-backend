@@ -17,10 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record CompanyUserData(
     [property: JsonPropertyName("companyUserId")]
@@ -37,23 +38,4 @@ public record CompanyUserData(
     IEnumerable<UserRoleData> Roles,
     [property: JsonPropertyName("idpUserIds")]
     IEnumerable<IdpUserId> IdpUserIds
-);
-
-public record CompanyUserTransferData(
-    [property: JsonPropertyName("companyUserId")]
-    Guid CompanyUserId,
-    [property: JsonPropertyName("status")]
-    UserStatusId UserStatusId,
-    [property: JsonPropertyName("dateCreated")]
-    DateTimeOffset DateCreated,
-    [property: JsonPropertyName("firstName")]
-    string? FirstName,
-    [property: JsonPropertyName("lastName")]
-    string? LastName,
-    [property: JsonPropertyName("email")]
-    string? Email,
-    [property: JsonPropertyName("roles")]
-    IEnumerable<UserRoleData> Roles,
-    [property: JsonPropertyName("idpUserIds")]
-    IEnumerable<IdpUserTransferId> IdpUserIds
 );

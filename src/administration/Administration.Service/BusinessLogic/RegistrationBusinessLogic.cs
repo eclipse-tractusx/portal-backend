@@ -497,6 +497,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
             }
         }
+
+        var emailData = await _portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).ToListAsync(cancellationToken).ConfigureAwait(false);
         userRepository.AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>?, Action<Identity>>(userId, null, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
@@ -512,17 +514,17 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 : new[] { ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await PostRegistrationCancelEmailAsync(applicationId, companyName, comment).ConfigureAwait(false);
+        await PostRegistrationCancelEmailAsync(emailData, companyName, comment).ConfigureAwait(false);
     }
 
-    private async Task PostRegistrationCancelEmailAsync(Guid applicationId, string companyName, string comment)
+    private async Task PostRegistrationCancelEmailAsync(ICollection<EmailData> emailData, string companyName, string comment)
     {
         if (string.IsNullOrWhiteSpace(comment))
         {
             throw new ConflictException("No comment set.");
         }
 
-        await foreach (var user in _portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
+        foreach (var user in emailData)
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
 

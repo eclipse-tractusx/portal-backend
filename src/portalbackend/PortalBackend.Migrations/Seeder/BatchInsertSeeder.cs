@@ -147,6 +147,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<TechnicalUserProfile>("technical_user_profiles", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<CompanySsiDetail>("company_ssi_details", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<CompanyCertificate>("company_certificates", cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity

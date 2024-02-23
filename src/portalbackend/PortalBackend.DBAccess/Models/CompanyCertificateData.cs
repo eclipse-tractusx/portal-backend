@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,36 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public record BpdmPaginationSharingStateOutput(
-    IEnumerable<BpdmSharingState>? Content
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+
+public record CompanyCertificateData(
+    CompanyCertificateTypeId companyCertificateType,
+    CompanyCertificateStatusId companyCertificateStatus,
+    Guid documentId,
+    DateTimeOffset validFrom,
+    DateTimeOffset? validTill
 );
-
-public record BpdmSharingState(
-    BpdmSharingStateBusinessPartnerType? BusinessPartnerType,
-    Guid ExternalId,
-    BpdmSharingStateType? SharingStateType,
-    string? SharingErrorCode,
-    string? SharingErrorMessage,
-    string? Bpn,
-    DateTimeOffset? SharingProcessStarted,
-    Guid? TaskId
-);
-
-public enum BpdmSharingStateType
-{
-    Pending = 1,
-    Success = 2,
-    Error = 3,
-    Initial = 4,
-    Ready = 5,
-}
-
-public enum BpdmSharingStateBusinessPartnerType
-{
-    LEGAL_ENTITY = 1,
-    SITE = 2,
-    ADDRESS = 3,
-    GENERIC = 4
-}
