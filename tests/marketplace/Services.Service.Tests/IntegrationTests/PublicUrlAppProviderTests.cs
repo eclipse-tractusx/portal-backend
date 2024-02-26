@@ -37,6 +37,6 @@ public class PublicUrlAppProviderTests : BasePublicUrlTests<ServicesController, 
     public async Task OpenInformationController_WithAppProvider_ReturnsCorrectAmount()
     {
         await OpenInformationController_ReturnsCorrectAmount(0)
-            .ConfigureAwait(false);
+;
     }
 }

@@ -71,7 +71,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        var result = await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
+        var result = await sut.GetSeedData(ValidDocumentId);
 
         // Assert
         result.Should().NotBeNull();
@@ -121,7 +121,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        var result = await sut.GetDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        var result = await sut.GetDocumentAsync(ValidDocumentId);
 
         // Assert
         result.Should().NotBeNull();
@@ -176,7 +176,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        var result = await sut.GetSelfDescriptionDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        var result = await sut.GetSelfDescriptionDocumentAsync(ValidDocumentId);
 
         // Assert
         result.Should().NotBeNull();
@@ -214,7 +214,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         //Act
-        var result = await sut.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await sut.GetFrameDocumentAsync(documentId);
 
         // Assert
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappenedOnceExactly();
@@ -236,7 +236,7 @@ public class DocumentsBusinessLogicTests
         var Act = () => sut.GetFrameDocumentAsync(documentId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"document {documentId} does not exist.");
     }
 
@@ -253,7 +253,7 @@ public class DocumentsBusinessLogicTests
         var Act = () => sut.GetFrameDocumentAsync(documentId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"document {documentId} does not exist.");
     }
 

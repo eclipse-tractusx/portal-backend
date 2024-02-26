@@ -51,7 +51,7 @@ public class ClientRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         var result = sut.CreateClient("test");
@@ -74,7 +74,7 @@ public class ClientRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveClient_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         sut.RemoveClient(new Guid("f032a035-d035-11ec-9d64-0242ac120002"));

@@ -50,7 +50,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyOfferSubscription_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
 
         var offerSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
         var modifiedName = "Modified Name";
@@ -83,13 +83,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferSubscriptionStateForCompanyAsync_WithExistingData_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
         var result = await sut.CheckPendingOrActiveSubscriptionExists(
             new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"),
             new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            OfferTypeId.SERVICE).ConfigureAwait(false);
+            OfferTypeId.SERVICE);
 
         // Assert
         result.Should().BeTrue();
@@ -99,13 +99,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferSubscriptionStateForCompanyAsync_WithWrongType_ReturnsDefault()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
         var result = await sut.CheckPendingOrActiveSubscriptionExists(
             new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"),
             new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            OfferTypeId.SERVICE).ConfigureAwait(false);
+            OfferTypeId.SERVICE);
 
         // Assert
         result.Should().BeFalse();
@@ -119,10 +119,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetAllBusinessAppDataForUserIdAsync_WithValidUser_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020006")).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020006")).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -153,10 +153,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, offerTypeId, sorting, offerSubscriptionStatusIds, offerId, null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, offerTypeId, sorting, offerSubscriptionStatusIds, offerId, null)(0, 15);
 
         // Assert
         if (count > 0)
@@ -179,10 +179,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_WithCompanyFilter_ReturnsExpected()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, OfferTypeId.SERVICE, SubscriptionStatusSorting.CompanyNameAsc, new[] { OfferSubscriptionStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING }, null, "catena")(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, OfferTypeId.SERVICE, SubscriptionStatusSorting.CompanyNameAsc, new[] { OfferSubscriptionStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING }, null, "catena")(0, 15);
 
         // Assert
         results.Should().NotBeNull();
@@ -199,10 +199,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferDetailsAndCheckUser_WithValidUserAndSubscriptionId_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferDetailsAndCheckProviderCompany(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferDetailsAndCheckProviderCompany(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -222,10 +222,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferDetailsAndCheckUser_WithSubscriptionForOfferWithoutAppInstanceSetup_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferDetailsAndCheckProviderCompany(new Guid("e80b5f5c-3a16-480b-b82e-1cc06a71fddc"), new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetOfferDetailsAndCheckProviderCompany(new Guid("e80b5f5c-3a16-480b-b82e-1cc06a71fddc"), new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBeNull();
@@ -249,10 +249,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetSubscriptionDetailForProviderAsync_ReturnsExpected()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetSubscriptionDetailsForProviderAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailsForProviderAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") });
 
         // Assert
         result.Exists.Should().BeTrue();
@@ -269,10 +269,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetSubscriptionDetailForProviderAsync_WithNotExistingId_ReturnsExpected()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetSubscriptionDetailsForProviderAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new List<Guid>()).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailsForProviderAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), _userCompanyId, OfferTypeId.SERVICE, new List<Guid>());
 
         // Assert
         result.Exists.Should().BeFalse();

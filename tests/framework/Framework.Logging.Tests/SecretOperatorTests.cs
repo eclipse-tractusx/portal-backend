@@ -29,7 +29,7 @@ public class SecretOperatorTests
     [InlineData("foobarpassword=1234&deadbeef", "foobarpassword=****&deadbeef", true)]
     [InlineData("foobarSecret=1234&deadbeefPassword=5678&", "foobarSecret=****&deadbeefPassword=****&", true)]
     [InlineData("foobarpasssword=1234&deadbeef", null, false)]
-    public void Mask_ReturnsExpected(string input, string matchResult, bool match)
+    public void Mask_ReturnsExpected(string input, string? matchResult, bool match)
     {
         //Arrange
         var sut = new SecretOperator();

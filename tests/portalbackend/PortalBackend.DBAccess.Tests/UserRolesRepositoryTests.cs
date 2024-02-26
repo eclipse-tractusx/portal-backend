@@ -50,10 +50,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCoreOfferRolesAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetCoreOfferRolesAsync(_validCompanyId, "en", ClientId).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetCoreOfferRolesAsync(_validCompanyId, "en", ClientId).ToListAsync();
 
         // Assert
         data.Should().HaveCount(11);
@@ -73,10 +73,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         };
 
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserWithUserRolesForApplicationId(ApplicationWithBpn, userRoleIds).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetUserWithUserRolesForApplicationId(ApplicationWithBpn, userRoleIds).ToListAsync();
 
         // Assert
         data.Should().HaveCount(2);
@@ -91,10 +91,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUserRolesByClientId_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserRolesByClientId(Enumerable.Repeat("Cl1-CX-Registration", 1)).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetUserRolesByClientId(Enumerable.Repeat("Cl1-CX-Registration", 1)).ToListAsync();
 
         // Assert
         data.Should().HaveCount(1);
@@ -111,10 +111,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetRolesForClient_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetRolesForClient("Cl1-CX-Registration").ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetRolesForClient("Cl1-CX-Registration").ToListAsync();
 
         // Assert
         data.Should().HaveCount(3);
@@ -128,10 +128,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceAccountRolesAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync();
 
         // Assert
         data.Should().HaveCount(11);
@@ -151,10 +151,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
             {
                 "Company Admin"
             })};
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync();
 
         // Assert
         data.Should().HaveCount(1);
@@ -172,10 +172,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
             {
                 "Company Admin"
             })};
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync();
 
         // Assert
         data.Should().BeEmpty();

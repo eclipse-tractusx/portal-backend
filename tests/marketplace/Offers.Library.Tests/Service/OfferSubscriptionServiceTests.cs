@@ -157,7 +157,7 @@ public class OfferSubscriptionServiceTests
         };
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -219,7 +219,7 @@ public class OfferSubscriptionServiceTests
         };
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -255,7 +255,7 @@ public class OfferSubscriptionServiceTests
             });
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferIdWithoutProviderEmail, _validConsentData, offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferIdWithoutProviderEmail, _validConsentData, offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -274,7 +274,7 @@ public class OfferSubscriptionServiceTests
             .Returns(false);
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Assert
         A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _companyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -298,7 +298,7 @@ public class OfferSubscriptionServiceTests
         var Act = () => _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _companyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();

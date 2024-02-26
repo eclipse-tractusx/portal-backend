@@ -23,16 +23,17 @@
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Tests.Shared</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Tests.Shared</RootNamespace>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NoWarn>xUnit1030</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Flurl.Http.Signed" Version="3.2.4" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Testcontainers" Version="3.4.0" />
-    <PackageReference Include="Testcontainers.PostgreSql" Version="3.4.0" />
+    <PackageReference Include="Testcontainers" Version="3.7.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="3.7.0" />
   </ItemGroup>
 
   <ItemGroup>

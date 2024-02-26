@@ -78,7 +78,7 @@ public class KeycloakClaimsTransformationTests
         var sut = new KeycloakClaimsTransformation(options);
 
         // Act
-        var result = await sut.TransformAsync(principal).ConfigureAwait(false);
+        var result = await sut.TransformAsync(principal);
 
         // Assert
         result.Identities.Should().Contain(x =>

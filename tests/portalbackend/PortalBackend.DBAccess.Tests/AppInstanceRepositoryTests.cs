@@ -51,7 +51,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var clientId = new Guid("f032a046-d035-11ec-9d64-0242ac120002");
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         sut.CreateAppInstance(new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2"), clientId);
@@ -74,7 +74,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveAppInstance_Success()
     {
         var appInstanceId = new Guid("b161d570-f6ff-45b4-a077-243f72487af6");
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         sut.RemoveAppInstance(appInstanceId);
 
@@ -97,9 +97,9 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckInstanceExistsForOffer_WithExistingAppInstance_ReturnsTrue()
     {
         var offerId = new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007");
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.CheckInstanceExistsForOffer(offerId).ConfigureAwait(false);
+        var result = await sut.CheckInstanceExistsForOffer(offerId);
 
         result.Should().BeTrue();
     }
@@ -107,9 +107,9 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task CheckInstanceExistsForOffer_WithoutExisting_ReturnsFalse()
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.CheckInstanceExistsForOffer(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.CheckInstanceExistsForOffer(Guid.NewGuid());
 
         result.Should().BeFalse();
     }
@@ -122,9 +122,9 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAssignedServiceAccounts_WithExistingAppInstance_ReturnsExpected()
     {
         var instanceId = new Guid("ab25c218-9ab3-4f1a-b6f4-6394fbc33c5a");
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetAssignedServiceAccounts(instanceId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAssignedServiceAccounts(instanceId).ToListAsync();
 
         result.Should().HaveCount(1)
             .And.ContainSingle().Which.Should().Be(new Guid("7e85a0b8-0001-ab67-10d1-0ef508201006"));
@@ -133,9 +133,9 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetAssignedServiceAccounts_WithoutExisting_ReturnsEmpty()
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetAssignedServiceAccounts(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAssignedServiceAccounts(Guid.NewGuid()).ToListAsync();
 
         result.Should().BeEmpty();
     }
@@ -149,9 +149,9 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("ab25c218-9ab3-4f1a-b6f4-6394fbc33c5a", true)]
     public async Task CheckInstanceHasAssignedSubscriptions_WithExistingAppInstance_ReturnsExpected(Guid instanceId, bool expected)
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.CheckInstanceHasAssignedSubscriptions(instanceId).ConfigureAwait(false);
+        var result = await sut.CheckInstanceHasAssignedSubscriptions(instanceId);
 
         result.Should().Be(expected);
     }
@@ -166,7 +166,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var appInstanceId = new Guid("ab25c218-9ab3-4f1a-b6f4-6394fbc33c5a");
         var serviceAccountId = new Guid("7e85a0b8-0001-ab67-10d1-0ef508201006");
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         sut.RemoveAppInstanceAssignedServiceAccounts(appInstanceId, Enumerable.Repeat(serviceAccountId, 1));
 

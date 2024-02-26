@@ -170,7 +170,7 @@ public class AppReleaseBusinessLogicTest
                 setOptionalParameters(existingOffer);
             });
         // Act
-        var result = await _sut.AddAppUserRoleAsync(appId, appUserRoles).ConfigureAwait(false);
+        var result = await _sut.AddAppUserRoleAsync(appId, appUserRoles);
 
         // Assert
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._)).MustHaveHappened();
@@ -228,7 +228,7 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await _sut.AddAppAsync(data).ConfigureAwait(false);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.ParamName.Should().Be("SupportedLanguageCodes");
     }
 
@@ -244,7 +244,7 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await _sut.AddAppAsync(data).ConfigureAwait(false);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.ParamName.Should().Be("UseCaseIds");
     }
 
@@ -285,7 +285,7 @@ public class AppReleaseBusinessLogicTest
         });
 
         // Act
-        await _sut.AddAppAsync(data).ConfigureAwait(false);
+        await _sut.AddAppAsync(data);
 
         // Assert
         A.CallTo(() => _offerService.ValidateSalesManager(_companyUser.Id, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
@@ -348,7 +348,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         // Act
-        await _sut.AddAppAsync(data).ConfigureAwait(false);
+        await _sut.AddAppAsync(data);
 
         // Assert
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<IEnumerable<UserRoleConfig>>._)).MustNotHaveHappened();
@@ -393,7 +393,7 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await _sut.UpdateAppReleaseAsync(_notExistingAppId, data).ConfigureAwait(false);
 
         // Assert
-        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act);
         error.Message.Should().Be($"App {_notExistingAppId} does not exists");
     }
 
@@ -408,7 +408,7 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await _sut.UpdateAppReleaseAsync(_activeAppId, data).ConfigureAwait(false);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ConflictException>(Act);
         error.Message.Should().Be("Apps in State ACTIVE can't be updated");
     }
 
@@ -423,7 +423,7 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await _sut.UpdateAppReleaseAsync(_differentCompanyAppId, data).ConfigureAwait(false);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ForbiddenException>(Act);
         error.Message.Should().Be($"Company {_identity.CompanyId} is not the app provider.");
     }
 
@@ -450,7 +450,7 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await _sut.UpdateAppReleaseAsync(_existingAppId, data).ConfigureAwait(false);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.ParamName.Should().Be("SupportedLanguageCodes");
     }
 
@@ -485,7 +485,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         // Act
-        await _sut.UpdateAppReleaseAsync(_existingAppId, data).ConfigureAwait(false);
+        await _sut.UpdateAppReleaseAsync(_existingAppId, data);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
@@ -537,7 +537,7 @@ public class AppReleaseBusinessLogicTest
         };
 
         // Act
-        await _sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, CancellationToken.None).ConfigureAwait(false);
+        await _sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _offerDocumentService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, OfferTypeId.APP, _settings.UploadAppDocumentTypeIds, OfferStatusId.CREATED, CancellationToken.None)).MustHaveHappenedOnceExactly();
@@ -551,7 +551,7 @@ public class AppReleaseBusinessLogicTest
     public async Task SubmitAppReleaseRequestAsync_CallsOfferService()
     {
         // Act
-        await _sut.SubmitAppReleaseRequestAsync(_existingAppId).ConfigureAwait(false);
+        await _sut.SubmitAppReleaseRequestAsync(_existingAppId);
 
         // Assert
         A.CallTo(() =>
@@ -574,7 +574,7 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>()).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("AppId must not be empty");
     }
 
@@ -585,7 +585,7 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Create<OfferAgreementConsent>();
 
         // Act
-        await _sut.SubmitOfferConsentAsync(_existingAppId, data).ConfigureAwait(false);
+        await _sut.SubmitOfferConsentAsync(_existingAppId, data);
 
         // Assert
         A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(_existingAppId, data, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -605,7 +605,7 @@ public class AppReleaseBusinessLogicTest
             .Returns(data);
 
         // Act
-        var result = await _sut.GetAppDetailsForStatusAsync(appId).ConfigureAwait(false);
+        var result = await _sut.GetAppDetailsForStatusAsync(appId);
 
         // Assert
         A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP))
@@ -644,7 +644,7 @@ public class AppReleaseBusinessLogicTest
         var Act = () => _sut.GetAppDetailsForStatusAsync(appId);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP))
@@ -674,7 +674,7 @@ public class AppReleaseBusinessLogicTest
             .Returns(paginationResult);
 
         // Act
-        var result = await _sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null).ConfigureAwait(false);
+        var result = await _sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null);
 
         // Assert
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>
@@ -702,7 +702,7 @@ public class AppReleaseBusinessLogicTest
             .Returns(paginationResult);
 
         // Act
-        var result = await _sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, OfferStatusIdFilter.InReview).ConfigureAwait(false);
+        var result = await _sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, OfferStatusIdFilter.InReview);
 
         // Assert
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>
@@ -725,7 +725,7 @@ public class AppReleaseBusinessLogicTest
         var data = new OfferDeclineRequest("Just a test");
 
         // Act
-        await _sut.DeclineAppRequestAsync(appId, data).ConfigureAwait(false);
+        await _sut.DeclineAppRequestAsync(appId, data);
 
         // Assert
         A.CallTo(() => _offerService.DeclineOfferAsync(appId, data,
@@ -747,7 +747,7 @@ public class AppReleaseBusinessLogicTest
         var documentId = _fixture.Create<Guid>();
 
         // Act
-        await _sut.DeleteAppDocumentsAsync(documentId).ConfigureAwait(false);
+        await _sut.DeleteAppDocumentsAsync(documentId);
 
         // Assert
         A.CallTo(() => _offerService.DeleteDocumentsAsync(documentId, A<IEnumerable<DocumentTypeId>>._, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -769,7 +769,7 @@ public class AppReleaseBusinessLogicTest
             .Returns((true, true, true, true, appDeleteData));
 
         //Act
-        await _sut.DeleteAppAsync(appId).ConfigureAwait(false);
+        await _sut.DeleteAppAsync(appId);
 
         // Assert 
         A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, _identity.CompanyId, OfferStatusId.CREATED))
@@ -842,7 +842,7 @@ public class AppReleaseBusinessLogicTest
         var offerId = Guid.NewGuid();
 
         // Act
-        await _sut.ApproveAppRequestAsync(offerId).ConfigureAwait(false);
+        await _sut.ApproveAppRequestAsync(offerId);
 
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(offerId, OfferTypeId.APP,
                 A<IEnumerable<NotificationTypeId>>._,
@@ -977,7 +977,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         //Act
-        await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        await _sut.SetInstanceType(appId, data);
 
         // Assert
         instanceSetupData.Should().NotBeNull();
@@ -1012,7 +1012,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         //Act
-        await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        await _sut.SetInstanceType(appId, data);
 
         // Assert
         instanceSetupData.InstanceUrl.Should().Be("https://new-url.de");
@@ -1041,7 +1041,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         //Act
-        await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        await _sut.SetInstanceType(appId, data);
 
         // Assert
         instanceSetupData.InstanceUrl.Should().Be(data.InstanceUrl);
@@ -1074,7 +1074,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         //Act
-        await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        await _sut.SetInstanceType(appId, data);
 
         // Assert
         instanceSetupData.InstanceUrl.Should().Be(data.InstanceUrl);
@@ -1107,7 +1107,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         //Act
-        await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        await _sut.SetInstanceType(appId, data);
 
         // Assert
         instanceSetupData.InstanceUrl.Should().BeNull();
@@ -1132,7 +1132,7 @@ public class AppReleaseBusinessLogicTest
             .Returns(data);
 
         // Act
-        var result = await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+        var result = await _sut.GetInReviewAppDetailsByIdAsync(appId);
 
         // Assert
         result.Should().NotBeNull();
@@ -1180,7 +1180,7 @@ public class AppReleaseBusinessLogicTest
         // Act
         await sut
             .UpdateTechnicalUserProfiles(appId, data)
-            .ConfigureAwait(false);
+;
 
         A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP,
                 A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), clientProfile))
@@ -1202,7 +1202,7 @@ public class AppReleaseBusinessLogicTest
 
         // Act
         var result = await sut.GetTechnicalUserProfilesForOffer(appId)
-            .ConfigureAwait(false);
+;
 
         result.Should().HaveCount(5);
     }

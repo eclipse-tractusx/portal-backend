@@ -48,7 +48,7 @@ public class IdentityProviderControllerTests
         var cancellationToken = CancellationToken.None;
 
         //Act
-        var result = await this._controller.UpdateOwnCompanyIdentityProvider(id, new IdentityProviderEditableDetails("test"), cancellationToken).ConfigureAwait(false);
+        var result = await this._controller.UpdateOwnCompanyIdentityProvider(id, new IdentityProviderEditableDetails("test"), cancellationToken);
 
         //Assert
         result.Should().Be(data);
@@ -62,7 +62,7 @@ public class IdentityProviderControllerTests
         var id = Guid.NewGuid();
 
         //Act
-        await this._controller.DeleteOwnCompanyIdentityProvider(id).ConfigureAwait(false);
+        await this._controller.DeleteOwnCompanyIdentityProvider(id);
 
         //Assert
         A.CallTo(() => _logic.DeleteCompanyIdentityProviderAsync(id)).MustHaveHappenedOnceExactly();
@@ -75,7 +75,7 @@ public class IdentityProviderControllerTests
         var id = Guid.NewGuid();
 
         //Act
-        await this._controller.GetOwnIdentityProviderWithConnectedCompanies(id).ConfigureAwait(false);
+        await this._controller.GetOwnIdentityProviderWithConnectedCompanies(id);
 
         //Assert
         A.CallTo(() => _logic.GetOwnIdentityProviderWithConnectedCompanies(id)).MustHaveHappenedOnceExactly();

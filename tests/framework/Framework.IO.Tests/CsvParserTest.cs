@@ -200,7 +200,7 @@ public class CsvParserTest
             null,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _parseLine(A<string>.Ignored)).MustNotHaveHappened();
         A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).MustHaveHappenedOnceExactly();
@@ -216,7 +216,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _validateHeaderLine(A<string>.Ignored)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _parseLine(A<string>.Ignored)).MustNotHaveHappened();
@@ -233,7 +233,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _validateHeaderLine(A<string>.Ignored)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _parseLine(A<string>.Ignored)).MustHaveHappened(4, Times.Exactly);
@@ -271,7 +271,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _validateHeaderLine(A<string>.Ignored)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _parseLine(A<string>.Ignored)).MustHaveHappened(4, Times.Exactly);
@@ -297,7 +297,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).MustHaveHappenedOnceExactly();
         result.Processed.Should().Be(3);
@@ -321,7 +321,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).MustHaveHappenedOnceExactly();
         result.Processed.Should().Be(2);

@@ -94,7 +94,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp,
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappened();
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappened();
@@ -115,7 +115,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasDataSharedIdp,
             userCreationInfoIdp,
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappened();
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappened();
@@ -136,7 +136,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         result.Should().HaveCount(_numUsers);
         result.Select(r => r.UserName).Should().ContainInOrder(userCreationInfoIdp.Select(u => u.UserName));
@@ -168,7 +168,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         result.Should().HaveCount(_numUsers);
         result.Where((r, index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
@@ -201,7 +201,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
@@ -234,7 +234,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustHaveHappened();
 
@@ -271,7 +271,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustHaveHappenedOnceExactly();
 
@@ -295,7 +295,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         result.Should().HaveCount(_numUsers);
         result.Where((r, index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
@@ -341,7 +341,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
@@ -380,7 +380,7 @@ public class UserProvisioningServiceCreateUsersTests
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
+        ).ToListAsync();
 
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(existingUserId)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
@@ -406,7 +406,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-        var result = await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetRoleDatas(clientRoles).ToListAsync();
 
         result.Should().HaveSameCount(clientRoles.SelectMany(r => r.UserRoleNames));
     }
@@ -426,7 +426,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         async Task Act() => await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
 
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().StartWith("invalid roles: clientId:");
     }
 
@@ -443,7 +443,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-        var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles, companyId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles, companyId);
 
         result.Should().HaveSameCount(roles);
     }
@@ -465,7 +465,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, companyId).ConfigureAwait(false);
 
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().StartWith("invalid roles: clientId:");
     }
 

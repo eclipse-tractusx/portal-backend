@@ -38,6 +38,6 @@ public class PublicUrlActiveParticipantTests : BasePublicUrlTests<ServicesContro
     public async Task OpenInformationController_WithActiveParticipant_ReturnsCorrectAmount()
     {
         await OpenInformationController_ReturnsCorrectAmount(0)
-            .ConfigureAwait(false);
+;
     }
 }

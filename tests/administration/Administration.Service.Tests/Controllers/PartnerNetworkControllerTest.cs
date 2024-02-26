@@ -41,7 +41,9 @@ public class PartnerNetworkControllerTest
     }
 
     [Theory]
+#pragma warning disable xUnit1012
     [InlineData(null)]
+#pragma warning restore xUnit1012
     [InlineData("BPNL00000003LLHB", "CAXLBOSCHZZ")]
     public async Task GetAllMemberCompaniesBPN_Test(params string[]? bpnIds)
     {

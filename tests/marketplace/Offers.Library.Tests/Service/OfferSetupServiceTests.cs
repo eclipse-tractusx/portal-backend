@@ -185,7 +185,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, offerTypeId, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
+        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, offerTypeId, "https://base-address.com", serviceManagerRoles);
 
         // Assert
         result.Should().NotBeNull();
@@ -323,7 +323,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _identity.CompanyId).Returns(_companyUserWithoutMailCompanyId);
 
         // Act
-        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.SERVICE, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
+        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.SERVICE, "https://base-address.com", serviceManagerRoles);
 
         // Assert
         result.Should().NotBeNull();
@@ -424,7 +424,7 @@ public class OfferSetupServiceTests
             .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) }.AsFakeIEnumerable(out var enumerator));
 
         // Act
-        var result = await _sut.ActivateSingleInstanceAppAsync(_validOfferId).ConfigureAwait(false);
+        var result = await _sut.ActivateSingleInstanceAppAsync(_validOfferId);
 
         // Assert
         result.Should().NotBeNull();
@@ -511,7 +511,7 @@ public class OfferSetupServiceTests
             .Returns(new AppInstance(appInstanceId, _existingServiceId, clientId));
 
         // Act
-        await _sut.SetupSingleInstance(offerId, "https://base-address.com").ConfigureAwait(false);
+        await _sut.SetupSingleInstance(offerId, "https://base-address.com");
 
         // Assert
         appInstances.Should().ContainSingle();
@@ -546,7 +546,7 @@ public class OfferSetupServiceTests
         const string url = "https://test.de";
 
         // Act
-        await _sut.UpdateSingleInstance("test", url).ConfigureAwait(false);
+        await _sut.UpdateSingleInstance("test", url);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient("test", url, $"{url}/*"))
@@ -571,7 +571,7 @@ public class OfferSetupServiceTests
             .Returns(new[] { serviceAccountId }.ToAsyncEnumerable());
 
         // Act
-        await _sut.DeleteSingleInstance(appInstanceId, clientId, clientClientId).ConfigureAwait(false);
+        await _sut.DeleteSingleInstance(appInstanceId, clientId, clientClientId);
 
         // Assert
         A.CallTo(() => _appInstanceRepository.CheckInstanceHasAssignedSubscriptions(appInstanceId)).MustHaveHappenedOnceExactly();
@@ -595,7 +595,7 @@ public class OfferSetupServiceTests
             .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
 
         // Act
-        await _sut.DeleteSingleInstance(appInstanceId, clientId, clientClientId).ConfigureAwait(false);
+        await _sut.DeleteSingleInstance(appInstanceId, clientId, clientClientId);
 
         // Assert
         A.CallTo(() => _appInstanceRepository.CheckInstanceHasAssignedSubscriptions(appInstanceId)).MustHaveHappenedOnceExactly();
@@ -619,7 +619,7 @@ public class OfferSetupServiceTests
         var Act = () => _sut.DeleteSingleInstance(appInstanceId, clientId, clientClientId);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(A<string>._)).MustNotHaveHappened();
@@ -812,7 +812,7 @@ public class OfferSetupServiceTests
                 _portalRepositories));
 
         // Act
-        await _sut.StartAutoSetupAsync(data, offerTypeId).ConfigureAwait(false);
+        await _sut.StartAutoSetupAsync(data, offerTypeId);
 
         // Assert
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscriptionProcessData(offerSubscriptionId, "https://www.test.de"))
@@ -943,7 +943,7 @@ public class OfferSetupServiceTests
             .Returns(manualProcessStepData);
 
         // Act
-        await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId);
 
         // Assert
         detail.AppSubscriptionUrl.Should().Be("https://www.test.de");
@@ -1018,7 +1018,7 @@ public class OfferSetupServiceTests
             });
 
         // Act
-        var result = await _sut.CreateClient(offerSubscriptionId).ConfigureAwait(false);
+        var result = await _sut.CreateClient(offerSubscriptionId);
 
         // Assert
         detail.AppSubscriptionUrl.Should().Be("https://www.test.de");
@@ -1105,7 +1105,7 @@ public class OfferSetupServiceTests
         var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
 
         // Act
-        var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles).ConfigureAwait(false);
+        var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles);
 
         // Assert
         result.nextStepTypeIds.Should().ContainSingle().And
@@ -1134,7 +1134,7 @@ public class OfferSetupServiceTests
             .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
         // Act
-        await _sut.TriggerActivateSubscription(offerSubscription.Id).ConfigureAwait(false);
+        await _sut.TriggerActivateSubscription(offerSubscription.Id);
 
         // Assert
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION })))
@@ -1191,7 +1191,7 @@ public class OfferSetupServiceTests
         var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "ServiceManagerRoles" }), 1);
 
         // Act
-        var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/").ConfigureAwait(false);
+        var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/");
 
         // Assert
         var notificationTypeId = NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION;
@@ -1253,7 +1253,7 @@ public class OfferSetupServiceTests
         var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "ServiceManagerRoles" }), 1);
 
         // Act
-        var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/").ConfigureAwait(false);
+        var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/");
 
         // Assert
         var notificationTypeId = NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION;
@@ -1325,7 +1325,7 @@ public class OfferSetupServiceTests
             .Returns(true);
 
         // Act
-        await _sut.TriggerActivateSubscription(offerSubscriptionId).ConfigureAwait(false);
+        await _sut.TriggerActivateSubscription(offerSubscriptionId);
 
         // Assert
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(A<ManualProcessStepData>._, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION })))

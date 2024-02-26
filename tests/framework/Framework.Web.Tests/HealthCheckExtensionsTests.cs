@@ -77,7 +77,7 @@ public class HealthCheckExtensionsTests
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().ContainSingle().Which.Should().Match<HealthInfo>(x => x.Key == name && x.Description == description && x.Status == "Healthy" && x.Error == null);
@@ -109,7 +109,7 @@ public class HealthCheckExtensionsTests
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Unhealthy");
         response.Info.Should().ContainSingle().Which.Should().Match<HealthInfo>(x => x.Key == name && x.Description == description && x.Status == "Unhealthy" && x.Error == error.Message);
@@ -138,7 +138,7 @@ public class HealthCheckExtensionsTests
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().BeEmpty();
@@ -167,7 +167,7 @@ public class HealthCheckExtensionsTests
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().BeEmpty();

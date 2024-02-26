@@ -55,7 +55,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOwnCompanyAppUsersPaginationSourceAsync_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
@@ -63,7 +63,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
-            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
+            new CompanyUserFilter(null, null, null, null, null))(0, 15);
 
         // Assert
         result.Should().NotBeNull();
@@ -74,7 +74,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOwnCompanyAppUsersPaginationSourceAsync_Inactive_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
@@ -82,7 +82,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.INACTIVE },
-            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
+            new CompanyUserFilter(null, null, null, null, null))(0, 15);
 
         // Assert
         result.Should().NotBeNull();
@@ -93,7 +93,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOwnCompanyAppUsersPaginationSourceAsync_Active_Inactive_Deleted_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
@@ -101,7 +101,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.DELETED },
-            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
+            new CompanyUserFilter(null, null, null, null, null))(0, 15);
 
         // Assert
         result.Should().NotBeNull();

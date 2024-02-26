@@ -156,7 +156,7 @@ public class BPNAccessTest
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -180,7 +180,7 @@ public class BPNAccessTest
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -202,7 +202,7 @@ public class BPNAccessTest
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -226,7 +226,7 @@ public class BPNAccessTest
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -250,7 +250,7 @@ public class BPNAccessTest
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Message.Should().Be($"call to external system bpn-fetch-legal-entity failed with statuscode {(int)HttpStatusCode.BadRequest}");

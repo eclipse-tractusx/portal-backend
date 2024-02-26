@@ -54,7 +54,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckCompanyCertificateType(typeId).ConfigureAwait(false);
+        var result = await sut.CheckCompanyCertificateType(typeId);
 
         // Assert
         result.Should().Be(exists);
@@ -92,10 +92,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetAllCertificates_ReturnsExpectedResult(CertificateSorting sorting)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(sorting, null, null, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(0, 15).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(sorting, null, null, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(0, 15);
 
         // Assert
         companyCertificateDetail.Should().NotBeNull();
@@ -119,10 +119,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetAllCertificates_WithExistingCompanyCertificateAndCertificateType_ReturnsExpectedResult(CompanyCertificateStatusId companyCertificateStatusId, CompanyCertificateTypeId companyCertificateTypeId, int page, int size, int count, int numData)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(null, companyCertificateStatusId, companyCertificateTypeId, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(page, size).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(null, companyCertificateStatusId, companyCertificateTypeId, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(page, size);
 
         // Assert
         if (count == 0)
@@ -148,7 +148,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01643").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01643");
 
         // Assert
         result.Should().NotBe(Guid.Empty);
@@ -162,7 +162,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01644").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01644");
 
         // Assert
         result.Should().Be(Guid.Empty);
@@ -175,7 +175,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyCertificateData(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateData(Guid.NewGuid()).ToListAsync();
 
         // Assert
         result.Should().BeEmpty();

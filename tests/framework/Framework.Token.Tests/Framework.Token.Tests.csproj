@@ -20,18 +20,19 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <NoWarn>xUnit1030</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.18.0" />
-    <PackageReference Include="FakeItEasy" Version="7.4.0" />
-    <PackageReference Include="FluentAssertions" Version="6.11.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
-    <PackageReference Include="xunit" Version="2.5.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
+    <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.18.1" />
+    <PackageReference Include="FakeItEasy" Version="8.1.0" />
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="xunit" Version="2.7.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -44,5 +45,6 @@
     <ProjectReference Include="..\..\..\tests\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.Token\Framework.Token.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
+    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 </Project>

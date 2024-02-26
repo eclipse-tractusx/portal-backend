@@ -316,7 +316,7 @@ public class NetworkBusinessLogicTests
             .Returns(new[] { ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepTypeId.DECLINE_APPLICATION });
 
         // Act
-        await _sut.Submit(data).ConfigureAwait(false);
+        await _sut.Submit(data);
 
         // Assert
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
@@ -490,7 +490,7 @@ public class NetworkBusinessLogicTests
             });
 
         // Act
-        await _sut.DeclineOsp(application.Id, data).ConfigureAwait(false);
+        await _sut.DeclineOsp(application.Id, data);
 
         // Assert
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))

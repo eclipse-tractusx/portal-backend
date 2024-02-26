@@ -52,13 +52,13 @@ public class AuthFlow
 
     private async Task<List<CentralidpCompany>> StartCentralIdp()
     {
-        var queryParams = new Dictionary<string, object>
+        var queryParams = new KeyValuePair<string, object>[]
         {
-            { "client_id", "Cl2-CX-Portal" },
-            { "redirect_uri", _basePortalUrl },
-            { "response_mode", "fragment" },
-            { "response_type", "code" },
-            { "scope", "openid" },
+            new("client_id", "Cl2-CX-Portal"),
+            new("redirect_uri", _basePortalUrl),
+            new("response_mode", "fragment"),
+            new("response_type", "code"),
+            new("scope", "openid"),
         };
         var response = Given()
             .DisableSslCertificateValidation()

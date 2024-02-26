@@ -99,7 +99,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
 
         // Act
-        var result = await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos).ConfigureAwait(false);
+        var result = await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos);
 
         // Assert
         result.Should().NotBeNull();
@@ -195,7 +195,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId);
 
         // Assert
         result.Should().NotBeNull();
@@ -247,7 +247,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId).ConfigureAwait(false);
+        var result = await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId);
 
         // Assert
         result.Should().NotBeNull();
@@ -300,7 +300,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data);
 
         // Assert
         result.Should().NotBeNull();
@@ -402,7 +402,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive);
 
         // Assert
         result.Should().NotBeNull();
@@ -481,7 +481,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId).ConfigureAwait(false);
+        await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId);
 
         // Assert
         if (withClient)
@@ -518,7 +518,7 @@ public class ServiceAccountBusinessLogicTests
         IServiceAccountBusinessLogic sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
 
         // Assert
         A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<string>._)).MustHaveHappenedOnceExactly();

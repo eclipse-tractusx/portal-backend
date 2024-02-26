@@ -25,9 +25,6 @@ public class UnexpectedConditionException : DetailException
     public UnexpectedConditionException() : base() { }
     public UnexpectedConditionException(string message) : base(message) { }
     public UnexpectedConditionException(string message, Exception inner) : base(message, inner) { }
-    protected UnexpectedConditionException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
     protected UnexpectedConditionException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
 

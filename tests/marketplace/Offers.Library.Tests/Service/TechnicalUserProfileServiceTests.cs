@@ -87,7 +87,7 @@ public class TechnicalUserProfileServiceTests
             .Returns((false, Enumerable.Empty<IEnumerable<UserRoleData>>(), OfferName));
 
         // Act
-        var result = await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP);
 
         // Assert
         result.Should().BeEmpty();
@@ -104,7 +104,7 @@ public class TechnicalUserProfileServiceTests
             .Returns((false, serviceProfiles, OfferName));
 
         // Act
-        var result = await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP);
 
         // Assert
         result.Should().HaveCount(1);
@@ -133,7 +133,7 @@ public class TechnicalUserProfileServiceTests
             .Returns((false, Enumerable.Empty<IEnumerable<UserRoleData>>(), OfferName));
 
         // Act
-        var result = await _sut.GetTechnicalUserProfilesForOfferSubscription(_offerSubscriptionId).ConfigureAwait(false);
+        var result = await _sut.GetTechnicalUserProfilesForOfferSubscription(_offerSubscriptionId);
 
         // Assert
         result.Should().BeEmpty();
@@ -150,7 +150,7 @@ public class TechnicalUserProfileServiceTests
             .Returns((false, serviceProfiles, OfferName));
 
         // Act
-        var result = await _sut.GetTechnicalUserProfilesForOfferSubscription(_offerSubscriptionId).ConfigureAwait(false);
+        var result = await _sut.GetTechnicalUserProfilesForOfferSubscription(_offerSubscriptionId);
 
         // Assert
         result.Should().HaveCount(1);

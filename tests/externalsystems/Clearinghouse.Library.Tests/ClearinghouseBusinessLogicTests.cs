@@ -197,7 +197,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForHandleStartClearingHouse();
 
         // Act
-        var result = await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry.Should().NotBeNull();
@@ -227,7 +227,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForProcessClearinghouseResponse(entry);
 
         // Act
-        await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.START_SELF_DESCRIPTION_LP) == 1))).MustHaveHappenedOnceExactly();
@@ -248,7 +248,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForProcessClearinghouseResponse(entry);
 
         // Act
-        await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE) == 1))).MustHaveHappenedOnceExactly();

@@ -38,12 +38,12 @@ public class Secrets
             .AddEnvironmentVariables()
             .Build();
 
-        TempMailApiKey = configuration["TEMPMAIL_APIKEY"];
-        InterfaceHealthCheckTechClientId = configuration["INTERFACE_HEALTH_CHECK_TECH_CLIENT_ID"];
-        InterfaceHealthCheckTechClientSecret = configuration["INTERFACE_HEALTH_CHECK_TECH_CLIENT_SECRET"];
-        ClearingHouseClientId = configuration["CLEARING_HOUSE_CLIENT_ID"];
-        ClearingHouseClientSecret = configuration["CLEARING_HOUSE_CLIENT_SECRET"];
-        PortalUserName = configuration["PORTAL_USER_NAME"];
-        PortalUserPassword = configuration["PORTAL_USER_PASSWORD"];
+        TempMailApiKey = configuration["TEMPMAIL_APIKEY"] ?? throw new ArgumentNullException(nameof(TempMailApiKey));
+        InterfaceHealthCheckTechClientId = configuration["INTERFACE_HEALTH_CHECK_TECH_CLIENT_ID"] ?? throw new ArgumentNullException(nameof(InterfaceHealthCheckTechClientId));
+        InterfaceHealthCheckTechClientSecret = configuration["INTERFACE_HEALTH_CHECK_TECH_CLIENT_SECRET"] ?? throw new ArgumentNullException(nameof(InterfaceHealthCheckTechClientSecret));
+        ClearingHouseClientId = configuration["CLEARING_HOUSE_CLIENT_ID"] ?? throw new ArgumentNullException(nameof(ClearingHouseClientId));
+        ClearingHouseClientSecret = configuration["CLEARING_HOUSE_CLIENT_SECRET"] ?? throw new ArgumentNullException(nameof(ClearingHouseClientSecret));
+        PortalUserName = configuration["PORTAL_USER_NAME"] ?? throw new ArgumentNullException(nameof(PortalUserName));
+        PortalUserPassword = configuration["PORTAL_USER_PASSWORD"] ?? throw new ArgumentNullException(nameof(PortalUserPassword));
     }
 }

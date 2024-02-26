@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -579,15 +580,4 @@ public class UserUploadBusinessLogicTests
             creationInfo.RoleDatas.Select(d => d.UserRoleText).SequenceEqual(other.RoleDatas.Select(d => d.UserRoleText));
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }

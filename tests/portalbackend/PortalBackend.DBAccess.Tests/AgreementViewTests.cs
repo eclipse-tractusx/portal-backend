@@ -44,10 +44,10 @@ public class AgreementViewTests : IAssemblyFixture<TestDbFixture>
     public async Task AgreementView_GetAll_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateContext().ConfigureAwait(false);
+        var sut = await CreateContext();
 
         // Act
-        var result = await sut.AgreementView.ToListAsync().ConfigureAwait(false);
+        var result = await sut.AgreementView.ToListAsync();
         result.Should().HaveCount(8);
     }
 
@@ -56,10 +56,10 @@ public class AgreementViewTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var agreementId = new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094");
-        var sut = await CreateContext().ConfigureAwait(false);
+        var sut = await CreateContext();
 
         // Act
-        var result = await sut.AgreementView.SingleOrDefaultAsync(x => x.AgreementId == agreementId).ConfigureAwait(false);
+        var result = await sut.AgreementView.SingleOrDefaultAsync(x => x.AgreementId == agreementId);
         result.Should().NotBeNull();
         result!.AgreementCompanyRole.Should().Be("SERVICE_PROVIDER");
         result.AgreementName.Should().Be("Terms & Conditions - Consultant");

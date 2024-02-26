@@ -55,7 +55,7 @@ public class PartnerNetworkBusinessLogicTests
         var uppercaseIds = bpnIds.Select(x => x.ToUpper());
 
         // Act
-        var result = await _sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync();
 
         // Assert
         result.Should().NotBeNull().And.HaveCount(2);

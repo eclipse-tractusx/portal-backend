@@ -49,7 +49,7 @@ public class StaticDataControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetUseCases().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetUseCases().ToListAsync();
 
         // Assert 
         A.CallTo(() => _logic.GetAllUseCase()).MustHaveHappenedOnceExactly();
@@ -65,7 +65,7 @@ public class StaticDataControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetLanguages().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetLanguages().ToListAsync();
 
         // Assert 
         A.CallTo(() => _logic.GetAllLanguage()).MustHaveHappenedOnceExactly();
@@ -81,7 +81,7 @@ public class StaticDataControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetLicenseTypes().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetLicenseTypes().ToListAsync();
 
         // Assert 
         A.CallTo(() => _logic.GetAllLicenseType()).MustHaveHappenedOnceExactly();
@@ -97,7 +97,7 @@ public class StaticDataControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetOperatorBpns().ToListAsync();
 
         // Assert 
         A.CallTo(() => _logic.GetOperatorBpns()).MustHaveHappenedOnceExactly();
@@ -113,7 +113,7 @@ public class StaticDataControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetCertificateTypes().ToListAsync();
 
         // Assert 
         A.CallTo(() => _logic.GetCertificateTypes()).MustHaveHappenedOnceExactly();

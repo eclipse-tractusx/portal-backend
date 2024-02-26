@@ -75,7 +75,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.PutInputLegalEntity(data, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.PutInputLegalEntity(data, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
@@ -121,7 +121,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.SetSharingStateToReady(externalId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.SetSharingStateToReady(externalId, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
@@ -232,7 +232,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.FetchInputLegalEntity(externalId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.FetchInputLegalEntity(externalId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -260,7 +260,7 @@ public class BpdmServiceTests
         async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be("Access to external system bpdm did not return a valid legal entity response");
         ex.IsRecoverable.Should().BeTrue();
     }
@@ -285,7 +285,7 @@ public class BpdmServiceTests
         async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().StartWith("Access to external system bpdm did not return a valid json response");
         ex.IsRecoverable.Should().BeFalse();
     }
@@ -306,7 +306,7 @@ public class BpdmServiceTests
         var Act = () => sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -368,7 +368,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -401,7 +401,7 @@ public class BpdmServiceTests
         async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be("Access to sharing state did not return a valid legal entity response");
         ex.IsRecoverable.Should().BeTrue();
     }
@@ -427,7 +427,7 @@ public class BpdmServiceTests
         async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().StartWith("Access to sharing state did not return a valid json response");
         ex.IsRecoverable.Should().BeFalse();
     }
@@ -449,7 +449,7 @@ public class BpdmServiceTests
         var Act = () => sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

@@ -56,10 +56,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetOfferProfileData_Service_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.SERVICE, _validCompanyId).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.SERVICE, _validCompanyId);
 
         // Assert
         result.Should().NotBeNull();
@@ -72,10 +72,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetOfferProfileData_App_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferProfileData(_validAppId, OfferTypeId.APP, _validCompanyId).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(_validAppId, OfferTypeId.APP, _validCompanyId);
 
         // Assert
         result.Should().NotBeNull();
@@ -88,10 +88,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetOfferProfileData_WithUnknownUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.SERVICE, Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.SERVICE, Guid.NewGuid());
 
         // Assert
         result.Should().NotBeNull();
@@ -104,10 +104,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetOfferProfileData_IncorrectOfferId_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.APP, _validCompanyId).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.APP, _validCompanyId);
 
         // Assert
         result.Should().BeNull();
@@ -117,10 +117,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetOfferProfileData_WithoutExistingProfile_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferProfileData(Guid.NewGuid(), OfferTypeId.SERVICE, _validCompanyId).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(Guid.NewGuid(), OfferTypeId.SERVICE, _validCompanyId);
 
         // Assert
         result.Should().BeNull();
@@ -135,7 +135,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     {
         // Arrange
         var profileId = Guid.NewGuid();
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         var result = sut.CreateTechnicalUserProfile(profileId, _validServiceId);
@@ -159,7 +159,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task CreateDeleteTechnicalUserProfileAssignedRoles_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         var profileRoleIds = _fixture.CreateMany<(Guid ProfileId, Guid RoleId)>(10).ToImmutableArray();
 
@@ -195,7 +195,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task RemoveTechnicalUserProfiles_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         var profileIds = _fixture.CreateMany<Guid>(3).ToImmutableArray();
 
@@ -224,7 +224,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task RemoveTechnicalUserProfilesForOffer_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         sut.RemoveTechnicalUserProfilesForOffer(_validServiceId);
@@ -249,10 +249,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetTechnicalUserProfileInformation_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBeNull();
@@ -264,10 +264,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetTechnicalUserProfileInformation_WithUnknownUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, Guid.NewGuid(), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, Guid.NewGuid(), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBeNull();
@@ -278,10 +278,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetTechnicalUserProfileInformation_WithoutExistingProfile_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(Guid.NewGuid(), _validCompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfileInformation(Guid.NewGuid(), _validCompanyId, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(default);
@@ -291,10 +291,10 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetTechnicalUserProfileInformation_WithWrongType_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.APP);
 
         // Assert
         result.Should().Be(default);
