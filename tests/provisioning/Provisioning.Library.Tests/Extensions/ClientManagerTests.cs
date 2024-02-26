@@ -111,7 +111,7 @@ public class ClientManagerTests
             .WithGetClientSecretAsync(clientId, new Credentials { Value = "super-secret" });
 
         // Act
-        await _sut.UpdateClient(clientId, $"{url}/*", url).ConfigureAwait(false);
+        await _sut.UpdateClient(clientId, $"{url}/*", url);
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{clientClientId}")
@@ -153,7 +153,7 @@ public class ClientManagerTests
             .WithGetClientSecretAsync(clientId, new Credentials { Value = "super-secret" });
 
         // Act
-        await _sut.EnableClient(clientId).ConfigureAwait(false);
+        await _sut.EnableClient(clientId);
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{clientClientId}")

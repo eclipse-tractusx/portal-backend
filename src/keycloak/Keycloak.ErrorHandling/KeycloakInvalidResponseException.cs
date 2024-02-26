@@ -25,7 +25,4 @@ public class KeycloakInvalidResponseException : Exception
     public KeycloakInvalidResponseException() { }
     public KeycloakInvalidResponseException(string message) : base(message) { }
     public KeycloakInvalidResponseException(string message, Exception inner) : base(message, inner) { }
-    protected KeycloakInvalidResponseException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }

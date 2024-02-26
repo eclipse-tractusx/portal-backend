@@ -116,7 +116,7 @@ public class NetworkRegistrationProcessHelperTests
                 });
 
         // Act
-        await _sut.TriggerProcessStep(externalId.ToString(), processStepTypeId).ConfigureAwait(false);
+        await _sut.TriggerProcessStep(externalId.ToString(), processStepTypeId);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

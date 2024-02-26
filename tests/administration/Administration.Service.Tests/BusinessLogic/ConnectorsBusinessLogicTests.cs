@@ -140,7 +140,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -178,7 +178,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -236,7 +236,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -255,7 +255,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -272,7 +272,7 @@ public class ConnectorsBusinessLogicTests
         SetupTechnicalIdentity();
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -448,7 +448,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((connectorId, null));
 
         // Act
-        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
@@ -536,7 +536,7 @@ public class ConnectorsBusinessLogicTests
                 modify.Invoke(identity);
             });
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         connector.StatusId.Should().Be(ConnectorStatusId.INACTIVE);
@@ -582,7 +582,7 @@ public class ConnectorsBusinessLogicTests
                 setOptionalFields.Invoke(connector);
             });
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         connector.StatusId.Should().Be(ConnectorStatusId.INACTIVE);
@@ -607,7 +607,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -631,7 +631,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -652,7 +652,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -859,7 +859,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de")).ConfigureAwait(false);
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"));
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -979,7 +979,7 @@ public class ConnectorsBusinessLogicTests
             });
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1013,7 +1013,7 @@ public class ConnectorsBusinessLogicTests
             }.ToAsyncEnumerable());
 
         //Act
-        var result = await _logic.GetCompanyConnectorEndPointAsync(bpns).ToListAsync().ConfigureAwait(false);
+        var result = await _logic.GetCompanyConnectorEndPointAsync(bpns).ToListAsync();
 
         //Assert
         A.CallTo(() => _connectorsRepository.GetConnectorEndPointDataAsync(A<IEnumerable<string>>.That.IsSameSequenceAs(bpns.Select(x => x.ToUpper())))).MustHaveHappenedOnceExactly();
@@ -1079,7 +1079,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data.ToAsyncEnumerable());
 
         // Act
-        var result = await _logic.GetConnectorOfferSubscriptionData(null).ToListAsync().ConfigureAwait(false);
+        var result = await _logic.GetConnectorOfferSubscriptionData(null).ToListAsync();
 
         // Assert
         result.Should().HaveCount(data.Count());
@@ -1134,7 +1134,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((connectorData, true));
 
         // Act
-        var result = await _logic.GetCompanyConnectorData(connectorId).ConfigureAwait(false);
+        var result = await _logic.GetCompanyConnectorData(connectorId);
 
         // Assert
         result.Name.Should().Be("Test Connector");

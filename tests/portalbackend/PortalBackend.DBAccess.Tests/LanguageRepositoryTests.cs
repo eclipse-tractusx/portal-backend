@@ -47,10 +47,10 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetLanguageAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.IsValidLanguageCode("de").ConfigureAwait(false);
+        var result = await sut.IsValidLanguageCode("de");
 
         // Assert
         result.Should().BeTrue();
@@ -60,10 +60,10 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetLanguageAsync_WithNotExistingLanguage_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.IsValidLanguageCode("notExisting").ConfigureAwait(false);
+        var result = await sut.IsValidLanguageCode("notExisting");
 
         // Assert
         result.Should().BeFalse();
@@ -77,7 +77,7 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetLanguageCodesUntrackedAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var languageCodes = await sut.GetLanguageCodesUntrackedAsync(new[]
@@ -85,7 +85,7 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
             "de",
             "en",
             "notExisting"
-        }).ToListAsync().ConfigureAwait(false);
+        }).ToListAsync();
 
         // Assert
         languageCodes.Should().HaveCount(2);

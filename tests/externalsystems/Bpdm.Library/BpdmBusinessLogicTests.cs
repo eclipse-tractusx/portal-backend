@@ -301,7 +301,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity();
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry.Should().BeNull();

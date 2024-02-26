@@ -44,6 +44,6 @@ public class PublicUrlServiceProviderTests : BasePublicUrlTests<CompanyDataContr
             x => x.HttpMethods == "GET" && x.Url == "api/test/subscriptionconfiguration/owncompany",
             x => x.HttpMethods == "GET" && x.Url == "api/test/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}",
             x => x.HttpMethods == "POST" && x.Url == "api/test/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}/retrigger-provider-callback")
-            .ConfigureAwait(false);
+;
     }
 }

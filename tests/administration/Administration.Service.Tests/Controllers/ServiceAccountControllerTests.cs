@@ -67,7 +67,7 @@ public class ServiceAccountControllerTests
             .Returns(responseData);
 
         // Act
-        var result = await _controller.ExecuteCompanyUserCreation(data).ConfigureAwait(false);
+        var result = await _controller.ExecuteCompanyUserCreation(data);
 
         // Assert
         A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data)).MustHaveHappenedOnceExactly();
@@ -88,7 +88,7 @@ public class ServiceAccountControllerTests
             .Returns(data.ToAsyncEnumerable());
 
         // Act
-        var result = await _controller.GetServiceAccountRolesAsync().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetServiceAccountRolesAsync().ToListAsync();
 
         // Assert
         A.CallTo(() => _logic.GetServiceAccountRolesAsync(null)).MustHaveHappenedOnceExactly();
@@ -104,7 +104,7 @@ public class ServiceAccountControllerTests
         var serviceAcountId = _fixture.Create<Guid>();
 
         // Act
-        await _controller.GetServiceAccountDetails(serviceAcountId).ConfigureAwait(false);
+        await _controller.GetServiceAccountDetails(serviceAcountId);
 
         // Assert
         A.CallTo(() => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAcountId)).MustHaveHappenedOnceExactly();
@@ -120,7 +120,7 @@ public class ServiceAccountControllerTests
                   .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetServiceAccountsData(0, 15, null, null, true).ConfigureAwait(false);
+        var result = await this._controller.GetServiceAccountsData(0, 15, null, null, true);
 
         //Assert
         A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, true)).MustHaveHappenedOnceExactly();

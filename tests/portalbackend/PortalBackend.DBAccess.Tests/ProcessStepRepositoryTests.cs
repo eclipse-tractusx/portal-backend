@@ -50,7 +50,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateProcess_CreatesSuccessfully()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
         var changeTracker = dbContext.ChangeTracker;
 
         // Act
@@ -81,7 +81,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var processId = Guid.NewGuid();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
         var changeTracker = dbContext.ChangeTracker;
 
         // Act
@@ -112,7 +112,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyProcessStep_WithExistingProcessStep_UpdatesStatus()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyProcessStep(new Guid("48f35f84-8d98-4fbd-ba80-8cbce5eeadb5"),
@@ -147,7 +147,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var stepData = _fixture.CreateMany<(Guid ProcessStepId, ProcessStep InitialStep, ProcessStep ModifiedStep)>(5).ToImmutableArray();
 
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
@@ -185,7 +185,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var stepData = _fixture.CreateMany<(Guid ProcessStepId, ProcessStep InitialStep)>(5).ToImmutableArray();
 
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
@@ -221,7 +221,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var stepData = _fixture.CreateMany<(Guid ProcessStepId, ProcessStep InitialStep)>(5).ToImmutableArray();
 
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
@@ -267,10 +267,10 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
             ProcessStepTypeId.ACTIVATE_APPLICATION,
         };
 
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds, DateTimeOffset.Parse("2023-03-02 00:00:00.000000 +00:00")).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds, DateTimeOffset.Parse("2023-03-02 00:00:00.000000 +00:00")).ToListAsync();
         result.Should().HaveCount(1)
             .And.Satisfy(
                 x => x.Id == new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe") && x.ProcessTypeId == ProcessTypeId.APPLICATION_CHECKLIST && x.LockExpiryDate == DateTimeOffset.Parse("2023-03-01 00:00:00.000000 +00:00")
@@ -292,10 +292,10 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
             ProcessStepTypeId.ACTIVATE_APPLICATION,
         };
 
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds, DateTimeOffset.Parse("2023-02-28 00:00:00.000000 +00:00")).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds, DateTimeOffset.Parse("2023-02-28 00:00:00.000000 +00:00")).ToListAsync();
         result.Should().BeEmpty();
     }
 
@@ -308,10 +308,10 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var processId = new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe");
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetProcessStepData(processId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetProcessStepData(processId).ToListAsync();
         result.Should().HaveCount(1)
             .And.Satisfy(
                 x => x.ProcessStepId == new Guid("2d03703e-8f10-4e8e-a194-f04d0ae15c35") && x.ProcessStepTypeId == ProcessStepTypeId.START_CLEARING_HOUSE

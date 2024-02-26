@@ -58,7 +58,7 @@ public class SubscriptionConfigurationControllerTests
             .Returns(list.ToAsyncEnumerable());
 
         //Act
-        var result = await this._controller.GetProcessStepsForSubscription(OfferSubscriptionId).ToListAsync().ConfigureAwait(false);
+        var result = await this._controller.GetProcessStepsForSubscription(OfferSubscriptionId).ToListAsync();
 
         //Assert
         result.Should().HaveCount(5);
@@ -68,7 +68,7 @@ public class SubscriptionConfigurationControllerTests
     public async Task RetriggerProvider_WithValidData_ReturnsNoContent()
     {
         //Act
-        var result = await this._controller.RetriggerProvider(OfferSubscriptionId).ConfigureAwait(false);
+        var result = await this._controller.RetriggerProvider(OfferSubscriptionId);
 
         //Assert
         A.CallTo(() => _logic.RetriggerProvider(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
@@ -79,7 +79,7 @@ public class SubscriptionConfigurationControllerTests
     public async Task RetriggerCreateClient_WithValidData_ReturnsNoContent()
     {
         //Act
-        var result = await this._controller.RetriggerCreateClient(OfferSubscriptionId).ConfigureAwait(false);
+        var result = await this._controller.RetriggerCreateClient(OfferSubscriptionId);
 
         //Assert
         A.CallTo(() => _logic.RetriggerCreateClient(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
@@ -90,7 +90,7 @@ public class SubscriptionConfigurationControllerTests
     public async Task RetriggerCreateTechnicalUser_WithValidData_ReturnsNoContent()
     {
         //Act
-        var result = await this._controller.RetriggerCreateTechnicalUser(OfferSubscriptionId).ConfigureAwait(false);
+        var result = await this._controller.RetriggerCreateTechnicalUser(OfferSubscriptionId);
 
         //Assert
         A.CallTo(() => _logic.RetriggerCreateTechnicalUser(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
@@ -101,7 +101,7 @@ public class SubscriptionConfigurationControllerTests
     public async Task RetriggerProviderCallback_WithValidData_ReturnsNoContent()
     {
         //Act
-        var result = await this._controller.RetriggerProviderCallback(OfferSubscriptionId).ConfigureAwait(false);
+        var result = await this._controller.RetriggerProviderCallback(OfferSubscriptionId);
 
         //Assert
         A.CallTo(() => _logic.RetriggerProviderCallback(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
@@ -114,7 +114,7 @@ public class SubscriptionConfigurationControllerTests
         //Arrange
         var data = new ProviderDetailData("https://this-is-a-test.de", null);
         //Act
-        var result = await this._controller.SetProviderCompanyDetail(data).ConfigureAwait(false);
+        var result = await this._controller.SetProviderCompanyDetail(data);
 
         //Assert
         A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data)).MustHaveHappenedOnceExactly();
@@ -131,7 +131,7 @@ public class SubscriptionConfigurationControllerTests
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetServiceProviderCompanyDetail().ConfigureAwait(false);
+        var result = await this._controller.GetServiceProviderCompanyDetail();
 
         //Assert
         A.CallTo(() => _logic.GetProviderCompanyDetailsAsync()).MustHaveHappenedOnceExactly();

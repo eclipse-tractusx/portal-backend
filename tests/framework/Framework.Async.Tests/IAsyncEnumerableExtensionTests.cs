@@ -34,7 +34,7 @@ public class AwaitAllIAsyncEnumerableExtensionTests
     {
         var sut = _fixture.CreateMany<Guid>(10).AsFakeIAsyncEnumerable(out var asyncEnumerator);
 
-        await sut.AwaitAll().ConfigureAwait(false);
+        await sut.AwaitAll();
 
         A.CallTo(() => asyncEnumerator.MoveNextAsync()).MustHaveHappened(11, Times.Exactly);
         A.CallTo(() => asyncEnumerator.Current).MustNotHaveHappened();

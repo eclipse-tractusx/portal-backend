@@ -42,9 +42,9 @@ public class InvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetInvitedUserDetailsUntrackedAsync_WithValid_ReturnsExpected()
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetInvitedUserDetailsUntrackedAsync(_applicationId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetInvitedUserDetailsUntrackedAsync(_applicationId).ToListAsync();
 
         result.Should().HaveCount(2)
             .And.Satisfy(

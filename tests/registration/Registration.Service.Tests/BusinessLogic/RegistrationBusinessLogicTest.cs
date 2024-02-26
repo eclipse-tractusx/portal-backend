@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -239,7 +240,7 @@ public class RegistrationBusinessLogicTest
         // Act
         var result = await sut
             .GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None)
-            .ConfigureAwait(false);
+;
 
         A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
@@ -342,7 +343,7 @@ public class RegistrationBusinessLogicTest
             .Returns(resultList.ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetAllApplicationsForUserWithStatus().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllApplicationsForUserWithStatus().ToListAsync();
         result.Should().ContainSingle();
         result.Single().ApplicationStatus.Should().Be(CompanyApplicationStatusId.VERIFY);
         result.Single().ApplicationChecklist.Should().NotBeNull().And.HaveCount(6).And.Satisfy(
@@ -389,7 +390,7 @@ public class RegistrationBusinessLogicTest
             .Returns(data);
 
         // Act
-        var result = await sut.GetCompanyDetailData(applicationId).ConfigureAwait(false);
+        var result = await sut.GetCompanyDetailData(applicationId);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
@@ -655,7 +656,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
@@ -716,7 +717,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
@@ -797,7 +798,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
@@ -888,7 +889,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
@@ -996,7 +997,7 @@ public class RegistrationBusinessLogicTest
             });
 
         // Act
-        await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(companyId,
@@ -1052,7 +1053,7 @@ public class RegistrationBusinessLogicTest
         var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData);
 
         //Assert
-        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         result.Message.Should().Be($"{_alpha2code} is not a valid country-code (Parameter 'UniqueIds')");
     }
 
@@ -1094,7 +1095,7 @@ public class RegistrationBusinessLogicTest
         var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData);
 
         //Assert
-        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         result.Message.Should()
             .Be($"invalid uniqueIds for country {_alpha2code}: '{identifiers.ElementAt(1)}' (Parameter 'UniqueIds')");
     }
@@ -1128,7 +1129,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, 0).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("status must not be null");
     }
 
@@ -1162,7 +1163,7 @@ public class RegistrationBusinessLogicTest
                 .ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"CompanyApplication {applicationId} not found");
     }
 
@@ -1196,7 +1197,7 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, status).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
         ex.Message.Should().Contain($"invalid status update requested {status}, current status is {existingStatus}, possible values are: {status}");
     }
 
@@ -1247,7 +1248,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, currentStatus));
 
         // Act
-        await sut.SetOwnCompanyApplicationStatusAsync(applicationId, expectedStatus).ConfigureAwait(false);
+        await sut.SetOwnCompanyApplicationStatusAsync(applicationId, expectedStatus);
 
         // Assert
         if (shouldUpdate)
@@ -1288,7 +1289,7 @@ public class RegistrationBusinessLogicTest
             _mailingProcessCreation);
 
         // Act
-        var result = await sut.GetCompanyRoles().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyRoles().ToListAsync();
 
         // Assert
         result.Should().NotBeEmpty();
@@ -1545,7 +1546,7 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider,
             _mailingProcessCreation);
 
-        await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo).ConfigureAwait(false);
+        await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo);
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustHaveHappened();
@@ -1580,7 +1581,7 @@ public class RegistrationBusinessLogicTest
 
         Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo);
 
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().Be("email must not be empty");
 
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1610,7 +1611,7 @@ public class RegistrationBusinessLogicTest
 
         Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo);
 
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().Be($"user with email {userCreationInfo.eMail} does already exist");
 
         A.CallTo(() => _userRepository.IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, _identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -1645,7 +1646,7 @@ public class RegistrationBusinessLogicTest
 
         Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo);
 
-        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<TestException>(Act);
         error.Message.Should().Be(_error.Message);
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
@@ -1682,7 +1683,7 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider,
             _mailingProcessCreation);
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT);
 
         // Assert
         result.Should().NotBeNull();
@@ -1715,7 +1716,7 @@ public class RegistrationBusinessLogicTest
         Task Act() => sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT);
 
         // Act
-        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         error.Message.Should().Be($"application {applicationId} not found");
@@ -1746,7 +1747,7 @@ public class RegistrationBusinessLogicTest
         Task Act() => sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT);
 
         // Act
-        var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ForbiddenException>(Act);
 
         // Assert
         error.Message.Should().Be($"The user is not associated with application {applicationId}");
@@ -1939,7 +1940,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        await sut.SubmitRoleConsentAsync(applicationId, consents).ConfigureAwait(false);
+        await sut.SubmitRoleConsentAsync(applicationId, consents);
 
         // Arrange
         A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._)).MustHaveHappened(2, Times.Exactly);
@@ -2588,7 +2589,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var result = await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+;
 
         // Assert
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.IdentityId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
@@ -2639,7 +2640,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var result = await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+;
 
         // Assert
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.IdentityId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
@@ -2677,7 +2678,7 @@ public class RegistrationBusinessLogicTest
             _mailingProcessCreation);
 
         // Act
-        var result = await sut.GetCompanyIdentifiers(_fixture.Create<string>()).ConfigureAwait(false);
+        var result = await sut.GetCompanyIdentifiers(_fixture.Create<string>());
 
         // Assert
         result.Should().NotBeNull();
@@ -2713,7 +2714,7 @@ public class RegistrationBusinessLogicTest
         var Act = () => sut.GetCompanyIdentifiers(countryCode);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"invalid country code {countryCode}");
     }
 
@@ -2732,7 +2733,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var result = await sut.GetRegistrationDataAsync(_existingApplicationId).ConfigureAwait(false);
+        var result = await sut.GetRegistrationDataAsync(_existingApplicationId);
 
         // Assert
         result.Should().NotBeNull();
@@ -2780,7 +2781,7 @@ public class RegistrationBusinessLogicTest
         var Act = () => sut.GetRegistrationDataAsync(applicationId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"application {applicationId} does not exist");
     }
 
@@ -2799,7 +2800,7 @@ public class RegistrationBusinessLogicTest
         var Act = () => sut.GetRegistrationDataAsync(applicationId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
         result.Message.Should().Be($"The users company is not assigned with CompanyApplication {applicationId}");
     }
 
@@ -2818,7 +2819,7 @@ public class RegistrationBusinessLogicTest
         var Act = () => sut.GetRegistrationDataAsync(applicationId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         result.Message.Should().Be($"registrationData should never be null for application {applicationId}");
     }
 
@@ -2835,7 +2836,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         //Act
-        var result = await sut.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await sut.GetRegistrationDocumentAsync(documentId);
 
         // Assert
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappenedOnceExactly();
@@ -2857,7 +2858,7 @@ public class RegistrationBusinessLogicTest
         var Act = () => sut.GetRegistrationDocumentAsync(documentId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"document {documentId} does not exist.");
     }
 
@@ -2874,7 +2875,7 @@ public class RegistrationBusinessLogicTest
         var Act = () => sut.GetRegistrationDocumentAsync(documentId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"document {documentId} does not exist.");
     }
 
@@ -2893,7 +2894,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var result = await sut.GetDocumentContentAsync(documentId).ConfigureAwait(false);
+        var result = await sut.GetDocumentContentAsync(documentId);
 
         // Assert
         result.Should().NotBeNull();
@@ -2965,7 +2966,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var result = await sut.SetInvitationStatusAsync().ConfigureAwait(false);
+        var result = await sut.SetInvitationStatusAsync();
 
         // Assert
         result.Should().Be(retval);
@@ -2987,7 +2988,7 @@ public class RegistrationBusinessLogicTest
         var Act = sut.SetInvitationStatusAsync;
 
         // Assert
-        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
         result.Message.Should().Be("user is not associated with invitation");
     }
 
@@ -3038,7 +3039,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var result = await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await sut.DeleteRegistrationDocumentAsync(documentId);
 
         // Assert
         A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identity.CompanyId, settings.ApplicationStatusIds)).MustHaveHappenedOnceExactly();
@@ -3079,7 +3080,7 @@ public class RegistrationBusinessLogicTest
         var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         result.Message.Should().Be($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", settings.DocumentTypeIds)}");
     }
 
@@ -3096,7 +3097,7 @@ public class RegistrationBusinessLogicTest
         var Act = async () => await sut.DeleteRegistrationDocumentAsync(_fixture.Create<Guid>()).ConfigureAwait(false);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be("Document does not exist.");
     }
 
@@ -3127,7 +3128,7 @@ public class RegistrationBusinessLogicTest
         var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         result.Message.Should().Be("Document deletion is not allowed. Application is already closed.");
     }
 
@@ -3158,7 +3159,7 @@ public class RegistrationBusinessLogicTest
         var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
         result.Message.Should().Be("User is not allowed to delete this document");
     }
 
@@ -3189,7 +3190,7 @@ public class RegistrationBusinessLogicTest
         var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         result.Message.Should().Be("Document deletion is not allowed. The document is locked.");
     }
 
@@ -3203,7 +3204,7 @@ public class RegistrationBusinessLogicTest
         var Act = async () => await sut.DeleteRegistrationDocumentAsync(default).ConfigureAwait(false);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         result.Message.Should().Be("documentId must not be empty");
     }
 
@@ -3319,7 +3320,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(options, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
 
         // Act
-        var result = await sut.GetApplicationsDeclineData().ConfigureAwait(false);
+        var result = await sut.GetApplicationsDeclineData();
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsDeclineData(_identity.IdentityId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CREATED })))
@@ -3335,15 +3336,4 @@ public class RegistrationBusinessLogicTest
     }
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }

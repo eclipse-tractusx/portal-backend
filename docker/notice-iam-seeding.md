@@ -13,7 +13,7 @@ __Portal IAM Seeding job__
 
 __Used base images__
 
-- Dockerfile: [mcr.microsoft.com/dotnet/runtime:7.0-alpine](https://github.com/dotnet/dotnet-docker/blob/main/src/runtime/7.0/alpine3.19/amd64/Dockerfile)
+- Dockerfile: [mcr.microsoft.com/dotnet/aspnet:8.0-alpine](https://github.com/dotnet/dotnet-docker/blob/main/src/aspnet/8.0/alpine3.19/amd64/Dockerfile)
 - GitHub project: [https://github.com/dotnet/dotnet-docker](https://github.com/dotnet/dotnet-docker)
 - DockerHub: [https://hub.docker.com/_/microsoft-dotnet-runtime](https://hub.docker.com/_/microsoft-dotnet-runtime)
 

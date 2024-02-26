@@ -64,14 +64,6 @@ public class KeycloakSettings
 [Serializable]
 public sealed class KeycloakSettingsMap : Dictionary<string, KeycloakSettings>
 {
-    public KeycloakSettingsMap()
-    {
-    }
-
-    private KeycloakSettingsMap(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
-
     public bool Validate()
     {
         if (!Values.Any())

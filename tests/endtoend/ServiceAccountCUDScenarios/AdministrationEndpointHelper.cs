@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -41,7 +40,7 @@ public static class AdministrationEndpointHelper
     public static async Task<bool> GetOperatorToken()
     {
         PortalUserToken = await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName, Secrets.PortalUserPassword);
-        return !PortalUserToken.IsNullOrEmpty();
+        return !string.IsNullOrEmpty(PortalUserToken);
     }
 
     //GET: api/administration/serviceaccount/owncompany/serviceaccounts

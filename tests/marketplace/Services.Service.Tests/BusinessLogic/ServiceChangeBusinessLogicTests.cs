@@ -54,7 +54,7 @@ public class ServiceChangeBusinessLogicTests
         // Arrange
         var serviceId = _fixture.Create<Guid>();
         // Act
-        await _sut.DeactivateOfferByServiceIdAsync(serviceId).ConfigureAwait(false);
+        await _sut.DeactivateOfferByServiceIdAsync(serviceId);
 
         // Assert
         A.CallTo(() => _offerService.DeactivateOfferIdAsync(serviceId, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();

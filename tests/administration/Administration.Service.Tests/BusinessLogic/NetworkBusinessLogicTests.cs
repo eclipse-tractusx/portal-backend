@@ -384,7 +384,7 @@ public class NetworkBusinessLogicTests
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Contain("Errors occured while saving the users: ");
     }
 
@@ -412,7 +412,7 @@ public class NetworkBusinessLogicTests
         async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Contain($"identityProvider {IdpId} has no alias");
     }
 
@@ -509,7 +509,7 @@ public class NetworkBusinessLogicTests
             });
 
         // Act
-        await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        await _sut.HandlePartnerRegistration(data);
 
         // Assert
         addresses.Should().ContainSingle()
@@ -642,7 +642,7 @@ public class NetworkBusinessLogicTests
             });
 
         // Act
-        await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        await _sut.HandlePartnerRegistration(data);
 
         // Assert
         addresses.Should().ContainSingle()
@@ -692,7 +692,7 @@ public class NetworkBusinessLogicTests
         const ProcessStepTypeId ProcessStepId = ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER;
 
         // Act
-        await _sut.RetriggerProcessStep(externalId, ProcessStepId).ConfigureAwait(false);
+        await _sut.RetriggerProcessStep(externalId, ProcessStepId);
 
         // Assert
         A.CallTo(() => _networkRegistrationProcessHelper.TriggerProcessStep(externalId, ProcessStepId)).MustHaveHappenedOnceExactly();

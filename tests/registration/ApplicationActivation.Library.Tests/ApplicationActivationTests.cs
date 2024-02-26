@@ -139,7 +139,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustNotHaveHappened();
@@ -242,7 +242,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -324,7 +324,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -457,7 +457,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(IdWithTypeExternal)).MustHaveHappenedOnceExactly();

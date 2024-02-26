@@ -51,7 +51,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateService_ReturnsExpectedAppCount()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
 
         // Act
         var results = sut.CreateOffer("Catena X", OfferTypeId.SERVICE, service =>
@@ -78,10 +78,10 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceDetailByIdUntrackedAsync_WithNotExistingService_ReturnsDefault()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.GetOfferDetailByIdUntrackedAsync(Guid.NewGuid(), "en", new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var results = await sut.GetOfferDetailByIdUntrackedAsync(Guid.NewGuid(), "en", new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), OfferTypeId.SERVICE);
 
         // Assert
         (results == default).Should().BeTrue();
@@ -91,10 +91,10 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceDetailByIdUntrackedAsync_ReturnsServiceDetailData()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferDetailByIdUntrackedAsync(_offerId, "en", new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetOfferDetailByIdUntrackedAsync(_offerId, "en", new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBeNull();
@@ -111,10 +111,10 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferProviderDetailsAsync_WithExistingOffer_ReturnsOfferProviderDetails()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferProviderDetailsAsync(_offerId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetOfferProviderDetailsAsync(_offerId, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBeNull();
@@ -124,10 +124,10 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferProviderDetailsAsync_WithNotExistingOffer_ReturnsNull()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid(), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid(), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().BeNull();

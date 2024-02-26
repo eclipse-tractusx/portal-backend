@@ -111,7 +111,7 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, false, true).ConfigureAwait(false);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, false, true);
 
         // Assert
         result.userRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");
@@ -144,7 +144,7 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, true, true).ConfigureAwait(false);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, true, true);
 
         // Assert
         result.userRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");

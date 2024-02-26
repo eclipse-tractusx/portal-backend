@@ -76,7 +76,7 @@ public class ClearinghouseServiceTests
             .Returns(httpClient);
 
         // Act
-        await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
+        await _sut.TriggerCompanyDataPost(data, CancellationToken.None);
 
         // Assert
         true.Should().BeTrue(); // One Assert is needed - just checking for no exception

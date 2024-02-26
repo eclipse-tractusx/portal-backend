@@ -86,7 +86,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
         async Task Act() => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {processId} does not exist or is not associated with an offer subscription");
@@ -96,7 +96,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     public async Task InitializeProcess_ValidProcessId_ReturnsExpected()
     {
         // Arrange
-        var result = await _executor.InitializeProcess(_processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var result = await _executor.InitializeProcess(_processId, _fixture.CreateMany<ProcessStepTypeId>());
         ;
 
         // Assert
@@ -118,7 +118,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
         var Act = async () => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be("offerSubscriptionId should never be empty here");
@@ -128,7 +128,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     public async Task ExecuteProcessStep_WithUnrecoverableServiceException_Throws()
     {
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -142,7 +142,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .ThrowsAsync(new ServiceException("test"));
 
         // Act
-        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -154,7 +154,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     public async Task ExecuteProcessStep_WithConflictException_Throws()
     {
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -168,7 +168,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .ThrowsAsync(new ConflictException("test"));
 
         // Act
-        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -180,7 +180,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     public async Task ExecuteProcessStep_WithRecoverableServiceException_Throws()
     {
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -194,7 +194,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .ThrowsAsync(new ServiceException("test", true));
 
         // Act
-        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -210,7 +210,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     public async Task ExecuteProcessStep_ValidSubscription_ReturnsExpected(ProcessStepTypeId processStepTypeId, ProcessStepTypeId? expectedResult)
     {
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(_processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(_processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -221,7 +221,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
         // Act
-        var result = await _executor.ExecuteProcessStep(processStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var result = await _executor.ExecuteProcessStep(processStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -257,7 +257,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     public async Task IsLockRequested_ReturnsExpected()
     {
         // Act
-        var result = await _executor.IsLockRequested(_fixture.Create<ProcessStepTypeId>()).ConfigureAwait(false);
+        var result = await _executor.IsLockRequested(_fixture.Create<ProcessStepTypeId>());
 
         // Assert
         result.Should().BeFalse();

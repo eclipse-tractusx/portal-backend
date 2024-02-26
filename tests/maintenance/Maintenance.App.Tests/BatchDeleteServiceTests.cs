@@ -38,7 +38,9 @@ public class BatchDeleteServiceTests : IAssemblyFixture<TestDbFixture>
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly IFixture _fixture;
 
+#pragma warning disable xUnit1041
     public BatchDeleteServiceTests(TestDbFixture testDbFixture)
+#pragma warning restore xUnit1041
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -52,10 +54,10 @@ public class BatchDeleteServiceTests : IAssemblyFixture<TestDbFixture>
     public async Task ExecuteAsync_WithOldDocumentsAndAssigned_Removes()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        await sut.StartAsync(CancellationToken.None).ConfigureAwait(false);
+        await sut.StartAsync(CancellationToken.None);
 
         // Assert
         true.Should().BeTrue();

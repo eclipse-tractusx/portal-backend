@@ -23,7 +23,7 @@
     <PropertyGroup>
       <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Services.Service</AssemblyName>
       <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Services.Service</RootNamespace>
-      <TargetFramework>net7.0</TargetFramework>
+      <TargetFramework>net8.0</TargetFramework>
       <Nullable>enable</Nullable>
       <ImplicitUsings>enable</ImplicitUsings>
       <UserSecretsId>9e7888a2-da8b-44ec-8f8b-bd9b4d374726</UserSecretsId>

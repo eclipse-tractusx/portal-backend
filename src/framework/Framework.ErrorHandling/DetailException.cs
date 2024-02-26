@@ -34,9 +34,6 @@ public abstract class DetailException : Exception
     protected DetailException() : base() { }
     protected DetailException(string message) : base(message) { }
     protected DetailException(string message, Exception inner) : base(message, inner) { }
-    protected DetailException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
     protected DetailException(
         Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters, Exception? inner) : base(Enum.GetName(errorType, errorCode), inner)

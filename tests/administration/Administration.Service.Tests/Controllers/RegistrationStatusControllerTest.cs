@@ -46,7 +46,7 @@ public class RegistrationStatusControllerTest
                   .Returns(new OnboardingServiceProviderCallbackResponseData("https://callback-url.com", "https//auth.url", "test"));
 
         //Act
-        var result = await this._controller.GetCallbackAddress().ConfigureAwait(false);
+        var result = await this._controller.GetCallbackAddress();
 
         //Assert
         result.CallbackUrl.Should().Be("https://callback-url.com");
@@ -56,7 +56,7 @@ public class RegistrationStatusControllerTest
     public async Task GetCompanyWithAddressAsync_ReturnsExpectedResult()
     {
         //Act
-        var result = await this._controller.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://callback-url.com", "https//auth.url", "test", "test123")).ConfigureAwait(false);
+        var result = await this._controller.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://callback-url.com", "https//auth.url", "test", "test123"));
 
         //Assert
         A.CallTo(() => _logic.SetCallbackAddress(A<OnboardingServiceProviderCallbackRequestData>._)).MustHaveHappenedOnceExactly();

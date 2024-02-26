@@ -62,7 +62,7 @@ public class AsyncEnumerableStringStreamTest
         var sut = new AsyncEnumerableStringStream(_data.ToAsyncEnumerable(), _encoding);
 
         using var result = new MemoryStream();
-        await sut.CopyToAsync(result).ConfigureAwait(false);
+        await sut.CopyToAsync(result);
 
         result.ToArray().SequenceEqual(expected.ToArray()).Should().BeTrue();
     }

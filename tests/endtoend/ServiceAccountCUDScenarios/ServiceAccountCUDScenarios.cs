@@ -17,8 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.IdentityModel.Tokens.Jwt;
 using Xunit;
@@ -44,7 +44,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     public async Task ServiceAccount_Creation(string[] permissions)
     {
         List<CompanyServiceAccountData>? existingServiceAccounts = null;
-        await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
+        await AdministrationEndpointHelper.GetOperatorToken();
 
         // get a snapshot of current existing service accounts
         try
@@ -101,7 +101,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     [MemberData(nameof(GetDataEntries))]
     public async Task ServiceAccount_DataUpdate(string[] permissions)
     {
-        await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
+        await AdministrationEndpointHelper.GetOperatorToken();
 
         //create a new service account
         var newServiceAccount = await AdministrationEndpointHelper.CreateNewServiceAccount(permissions).ConfigureAwait(false);
@@ -127,7 +127,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     [MemberData(nameof(GetDataEntries))]
     public async Task ServiceAccount_CredentialRefresh(string[] permissions)
     {
-        await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
+        await AdministrationEndpointHelper.GetOperatorToken();
 
         // create a new service account
         var newServiceAccount =
@@ -155,7 +155,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
     [MemberData(nameof(GetDataEntries))]
     public async Task ServiceAccount_Deletion(string[] permissions)
     {
-        await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
+        await AdministrationEndpointHelper.GetOperatorToken();
 
         // create a new service account
         var newServiceAccount =

@@ -223,7 +223,7 @@ public class NetworkRegistrationHandlerTests
             .Returns("DisplayName for Idp2");
 
         // Act
-        var result = await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         A.CallTo(() => _userProvisioningService.HandleCentralKeycloakCreation(A<UserCreationRoleDataIdpInfo>._, user1.CompanyUserId, A<string>._, A<string>._, null, A<IEnumerable<IdentityProviderLink>>._, A<IUserRepository>._, A<IUserRolesRepository>._))
@@ -273,7 +273,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -308,7 +308,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -343,7 +343,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -380,7 +380,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();

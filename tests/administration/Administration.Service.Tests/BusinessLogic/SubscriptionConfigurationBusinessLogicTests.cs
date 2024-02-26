@@ -85,7 +85,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns(list.ToAsyncEnumerable());
 
         // Act
-        var result = await _sut.GetProcessStepsForSubscription(OfferSubscriptionId).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetProcessStepsForSubscription(OfferSubscriptionId).ToListAsync();
 
         // Assert
         result.Should().NotBeNull();
@@ -194,7 +194,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns((Guid.Empty, null!));
 
         // Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
@@ -229,7 +229,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             });
 
         //Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, null)).MustNotHaveHappened();
@@ -310,7 +310,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         SetupProviderCompanyDetails();
 
         //Act
-        var result = await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
+        var result = await _sut.GetProviderCompanyDetailsAsync();
 
         //Assert
         result.Should().NotBeNull();

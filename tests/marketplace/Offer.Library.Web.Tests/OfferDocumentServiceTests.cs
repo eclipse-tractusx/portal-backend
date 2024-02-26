@@ -101,7 +101,7 @@ public class OfferDocumentServiceTests
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
+        await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>>._, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>?>._)).MustHaveHappenedOnceExactly();
@@ -128,7 +128,7 @@ public class OfferDocumentServiceTests
         async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"{offerTypeId} {id} does not exist");
     }
 
@@ -147,7 +147,7 @@ public class OfferDocumentServiceTests
         async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"{offerTypeId} id should not be null");
     }
 
@@ -167,7 +167,7 @@ public class OfferDocumentServiceTests
         async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"File name should not be null");
     }
 
@@ -187,7 +187,7 @@ public class OfferDocumentServiceTests
         async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
         ex.Message.Should().Be($"Document type {documentTypeId}, mediaType 'image/svg+xml' is not supported. File with contentType :{string.Join(",", uploadDocumentTypeIdSettings.Where(x => x.DocumentTypeId == documentTypeId).Select(x => x.MediaTypes).First())} are allowed.");
     }
 
@@ -207,7 +207,7 @@ public class OfferDocumentServiceTests
         async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
         ex.Message.Should().Be($"Document type {documentTypeId}, mediaType 'foo/bar' is not supported. File with contentType :{string.Join(",", uploadDocumentTypeIdSettings.Where(x => x.DocumentTypeId == documentTypeId).Select(x => x.MediaTypes).First())} are allowed.");
     }
 
@@ -227,7 +227,7 @@ public class OfferDocumentServiceTests
         async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"documentType must be either: {string.Join(",", uploadDocumentTypeIdSettings.Select(x => x.DocumentTypeId))}");
     }
 
@@ -252,7 +252,7 @@ public class OfferDocumentServiceTests
         async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"offerStatus is in Incorrect State");
     }
 

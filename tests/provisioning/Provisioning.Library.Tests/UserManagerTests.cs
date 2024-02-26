@@ -107,7 +107,7 @@ public class UserManagerTests
             .WithGetUsersAsync(Enumerable.Empty<User>());
 
         // Act
-        var result = await _sut.GetUserByUserName("test").ConfigureAwait(false);
+        var result = await _sut.GetUserByUserName("test");
 
         // Assert
         result.Should().BeNull();
@@ -122,7 +122,7 @@ public class UserManagerTests
             .WithGetUsersAsync(_fixture.CreateMany<User>(2));
 
         // Act
-        var result = await _sut.GetUserByUserName("test").ConfigureAwait(false);
+        var result = await _sut.GetUserByUserName("test");
 
         // Assert
         result.Should().BeNull();
@@ -138,7 +138,7 @@ public class UserManagerTests
             .WithGetUsersAsync(Enumerable.Repeat(user, 1));
 
         // Act
-        var result = await _sut.GetUserByUserName("test").ConfigureAwait(false);
+        var result = await _sut.GetUserByUserName("test");
 
         // Assert
         result.Should().Be("test123");
@@ -154,7 +154,7 @@ public class UserManagerTests
             .WithGetUsersAsync(Enumerable.Repeat(user, 2));
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(() => _sut.GetUserByUserName("test")).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(() => _sut.GetUserByUserName("test"));
 
         // Assert
         result.Message.Should().Be("there should never be multiple users in keycloak having the same username 'test'");
@@ -169,7 +169,7 @@ public class UserManagerTests
             .WithGetUsersFailing(HttpStatusCode.NotFound);
 
         // Act
-        var result = await _sut.GetUserByUserName("test").ConfigureAwait(false);
+        var result = await _sut.GetUserByUserName("test");
 
         // Assert
         result.Should().BeNull();

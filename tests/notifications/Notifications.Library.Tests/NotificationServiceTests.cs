@@ -93,7 +93,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync();
 
         // Assert
         _notifications.Should().HaveCount(1)
@@ -126,7 +126,7 @@ public class NotificationServiceTests
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION)
         };
 
-        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync();
 
         // Assert
         _notifications.Should().HaveCount(5)
@@ -159,7 +159,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync();
 
         // Assert
         _notifications.Should().HaveCount(3)
@@ -223,7 +223,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content).ConfigureAwait(false);
+        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content);
 
         // Assert
         _notifications.Should().HaveCount(1)
@@ -254,7 +254,7 @@ public class NotificationServiceTests
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION)
         };
 
-        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content).ConfigureAwait(false);
+        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content);
 
         // Assert
         _notifications.Should().HaveCount(5)
@@ -285,7 +285,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content).ConfigureAwait(false);
+        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content);
 
         // Assert
         _notifications.Should().HaveCount(3)
@@ -353,7 +353,7 @@ public class NotificationServiceTests
             });
 
         // Act
-        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId, userIds).ConfigureAwait(false);
+        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId, userIds);
 
         // Assert
         A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(
@@ -398,7 +398,7 @@ public class NotificationServiceTests
             });
 
         // Act
-        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId).ConfigureAwait(false);
+        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId);
 
         // Assert
         A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(
@@ -457,7 +457,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync();
 
         // Assert
         _notifications.Should().HaveCount(3)
@@ -484,7 +484,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        var userIds = await _sut.CreateNotificationsWithExistenceCheck(userRoles, CxAdminUserId, content, Guid.NewGuid(), "appId", new("5cf74ef8-e0b7-4984-a872-474828beb5d2")).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotificationsWithExistenceCheck(userRoles, CxAdminUserId, content, Guid.NewGuid(), "appId", new("5cf74ef8-e0b7-4984-a872-474828beb5d2")).ToListAsync();
 
         // Assert
         _notifications.Should().HaveCount(3)
@@ -518,7 +518,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        var userIds = await _sut.CreateNotificationsWithExistenceCheck(userRoles, CxAdminUserId, content, Guid.NewGuid(), "appId", new("5cf74ef8-e0b7-4984-a872-474828beb5d2")).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotificationsWithExistenceCheck(userRoles, CxAdminUserId, content, Guid.NewGuid(), "appId", new("5cf74ef8-e0b7-4984-a872-474828beb5d2")).ToListAsync();
 
         // Assert
         _notifications.Should().BeEmpty();

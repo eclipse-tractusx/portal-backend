@@ -37,6 +37,6 @@ public class PublicUrlActiveParticipantTests : BasePublicUrlTests<AppsController
     [SuppressMessage("SonarLint", "S2699", Justification = "Ignored because the assert is done in OpenInformationController_ReturnsCorrectAmount")]
     public async Task OpenInformationController_WithActiveParticipant_ReturnsCorrectAmount()
     {
-        await OpenInformationController_ReturnsCorrectAmount(0).ConfigureAwait(false);
+        await OpenInformationController_ReturnsCorrectAmount(0);
     }
 }

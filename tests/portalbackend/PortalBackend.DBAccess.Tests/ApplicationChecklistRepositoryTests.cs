@@ -60,7 +60,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
             new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
             new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO),
         };
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         sut.CreateChecklistForApplication(ApplicationId, checklistEntries);
@@ -87,7 +87,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task AttachAndModifyApplicationChecklist_UpdatesEntry()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyApplicationChecklist(ApplicationWithExistingChecklistId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
@@ -125,10 +125,10 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     {
         // Arrange
         var processId = new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe");
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetChecklistData(processId).ConfigureAwait(false);
+        var result = await sut.GetChecklistData(processId);
 
         // Assert
         result.Should().NotBeNull()
@@ -153,7 +153,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
             ( ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE, null ),
             ( ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE, null),
         };
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetChecklistProcessStepData(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9f"),
@@ -169,7 +169,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
             {
                 ProcessStepTypeId.START_CLEARING_HOUSE,
             }
-            ).ConfigureAwait(false);
+            );
 
         // Assert
         result.Should().NotBeNull();
@@ -192,7 +192,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task GetChecklistProcessStepData_WithNotExisting_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetChecklistProcessStepData(Guid.NewGuid(),
@@ -208,7 +208,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
             {
                 ProcessStepTypeId.START_CLEARING_HOUSE,
             }
-        ).ConfigureAwait(false);
+        );
 
         // Assert
         result.Should().BeNull();

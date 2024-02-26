@@ -64,7 +64,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllUseCase().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllUseCase().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetAllUseCase())
@@ -89,7 +89,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllLicenseType().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllLicenseType().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
@@ -111,7 +111,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllLanguage().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetAllLanguage())
@@ -131,7 +131,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCertificateTypes().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetCertificateTypes())
@@ -151,7 +151,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOperatorBpns().ToListAsync();
 
         // Assert
         A.CallTo(() => _companyRepository.GetOperatorBpns())
