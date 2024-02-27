@@ -99,4 +99,31 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 companyCertificate.ValidTill
                 ))
         .SingleOrDefaultAsync();
+
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid CompanyCertificateId, bool IsSameCompany)> GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyUserId) =>
+            _context.Documents
+            .AsNoTracking()
+            .Where(x => x.Id == documentId)
+            .Select(document => ((Guid DocumentId, DocumentStatusId DocumentStatusId, Guid CompanyCertificateId, bool IsSameCompany))
+                new(document.Id,
+                    document.DocumentStatusId,
+                    document.CompanyCertificates.Select(x => x.Id).SingleOrDefault(),
+                    document.CompanyUserId == companyUserId))
+            .SingleOrDefaultAsync();
+
+    public void AttachAndModifyCompanyCertificateDetails(Guid id, Action<CompanyCertificate>? initialize, Action<CompanyCertificate> updateFields)
+    {
+        var entity = new CompanyCertificate(id, default, default, default, default, default);
+        initialize?.Invoke(entity);
+        _context.Attach(entity);
+        updateFields.Invoke(entity);
+    }
+
+    public void AttachAndModifyCompanyCertificateDocumentDetails(Guid id, Action<Document>? initialize, Action<Document> updateFields)
+    {
+        var entity = new Document(id, null!, null!, null!, default, default, default, default);
+        initialize?.Invoke(entity);
+        _context.Attach(entity);
+        updateFields.Invoke(entity);
+    }
 }

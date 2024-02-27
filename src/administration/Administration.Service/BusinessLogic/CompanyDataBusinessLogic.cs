@@ -606,4 +606,36 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             size,
             _settings.MaxPageSize,
             _portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
+
+    public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
+    {
+        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
+
+        var details = await companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identityData.IdentityId).ConfigureAwait(false);
+
+        if (details.DocumentId == Guid.Empty)
+        {
+            throw new NotFoundException("Document is not existing");
+        }
+
+        if (!details.IsSameCompany)
+        {
+            throw new ForbiddenException("User is not allowed to delete this document");
+        }
+
+        companyCertificateRepository.AttachAndModifyCompanyCertificateDocumentDetails(documentId, null,
+            c =>
+            {
+                c.DocumentStatusId = DocumentStatusId.INACTIVE;
+                c.DateLastChanged = _dateTimeProvider.OffsetNow;
+            });
+
+        companyCertificateRepository.AttachAndModifyCompanyCertificateDetails(details.CompanyCertificateId, null,
+        c =>
+        {
+            c.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTVIE;
+        });
+
+        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }
