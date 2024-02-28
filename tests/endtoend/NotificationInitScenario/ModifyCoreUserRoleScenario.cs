@@ -51,13 +51,13 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
     public async Task Scenario_HappyPath_AssignAndUnassignCoreUserRoles()
     {
         await GetPortalUserToken();
-        _companyUserId = GetCompanyUserId();
+        _companyUserId = await GetCompanyUserId().ConfigureAwait(false);
 
         _portalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
             Secrets.PortalUserPassword);
 
-        var assignedRoles = GetUserAssignedRoles();
-        var roleToModify = GetRandomRoleToModify(assignedRoles);
+        var assignedRoles = await GetUserAssignedRoles().ConfigureAwait(false);
+        var roleToModify = await GetRandomRoleToModify(assignedRoles).ConfigureAwait(false);
 
         ModifyCoreUserRoles_AssignRole(assignedRoles, roleToModify);
         var notificationAddContent = GetNotificationCreated(NotificationTypeId.ROLE_UPDATE_CORE_OFFER);
@@ -82,11 +82,11 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
     }
 
     //GET: api/administration/user/owncompany/roles/coreoffers
-    private string GetRandomRoleToModify(List<string> assignedRoles)
+    private async Task<string> GetRandomRoleToModify(List<string> assignedRoles)
     {
         var newRoles = new List<string>();
 
-        var existingRoles = GetCoreOfferRolesNames();
+        var existingRoles = await GetCoreOfferRolesNames().ConfigureAwait(false);
         foreach (var t in existingRoles)
         {
             newRoles.AddRange(from t1 in assignedRoles where t != t1 select t);
@@ -95,7 +95,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
         return newRoles.ElementAt(new Random().Next(0, newRoles.Count - 1));
     }
 
-    private List<string> GetCoreOfferRolesNames()
+    private async Task<List<string>> GetCoreOfferRolesNames()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -111,7 +111,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
             .Extract()
             .Response();
 
-        var data = DataHandleHelper.DeserializeData<List<OfferRoleInfos>>(response.Content.ReadAsStringAsync().Result);
+        var data = DataHandleHelper.DeserializeData<List<OfferRoleInfos>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         if (data == null)
             throw new Exception("Cannot fetch core user roles");
         var roleNames = new List<string>();
@@ -168,7 +168,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
     }
 
     //GET: api/administration/user/ownUser
-    private string GetCompanyUserId()
+    private async Task<string> GetCompanyUserId()
     {
         var endpoint = $"{AdminEndPoint}/user/ownUser";
         var response = Given()
@@ -185,7 +185,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
             .Extract()
             .Response();
 
-        var data = response.Content.ReadAsStringAsync().Result;
+        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var companyUserDetails = DataHandleHelper.DeserializeData<CompanyUserDetails>(data);
         if (companyUserDetails is null)
         {
@@ -204,7 +204,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
     }
 
     //GET: api/administration/user/owncompany/users/{_companyUserId}
-    private List<string> GetUserAssignedRoles()
+    private async Task<List<string>> GetUserAssignedRoles()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -219,7 +219,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
             .And()
             .Extract()
             .Response();
-        var data = response.Content.ReadAsStringAsync().Result;
+        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var assignedRoles = DataHandleHelper.DeserializeData<CompanyUserDetails>(data)?.AssignedRoles.First().UserRoles
             .ToList();
         return assignedRoles ?? new List<string>();
@@ -252,6 +252,5 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
         }
         data.First().TypeId.Should().Be(notificationTypeId);
         return DataHandleHelper.DeserializeData<NotificationContent>(content);
-
     }
 }

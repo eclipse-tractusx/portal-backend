@@ -108,13 +108,13 @@ public class CompanyRepository : ICompanyRepository
                 company!.CompanyAssignedRoles.SelectMany(car => car.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == technicalUserClientId)).Select(ur => ur.Id)).Distinct()))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds) =>
+    public IAsyncEnumerable<string> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds) =>
         _context.Companies
             .AsNoTracking()
             .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE &&
-                (bpnIds == null || bpnIds.Select(x => x.ToUpper()).Contains(company.BusinessPartnerNumber) &&
+                (bpnIds == null || bpnIds.Contains(company.BusinessPartnerNumber) &&
                 company.BusinessPartnerNumber != null))
-            .Select(company => company.BusinessPartnerNumber)
+            .Select(company => company.BusinessPartnerNumber!)
             .AsAsyncEnumerable();
 
     public Task<CompanyAddressDetailData?> GetCompanyDetailsAsync(Guid companyId) =>

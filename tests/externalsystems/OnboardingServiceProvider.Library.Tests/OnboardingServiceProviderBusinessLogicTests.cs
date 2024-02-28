@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -66,7 +65,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns(((OspDetails?, string, string?, Guid, IEnumerable<string>))default);
+            .Returns<(OspDetails?, string, string?, Guid, IEnumerable<string>)>(default);
 
         // Act
         var Act = () => _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None);

@@ -314,7 +314,7 @@ public class OfferRepository : IOfferRepository
                 OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
                 OfferSorting.NameAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.Name),
                 OfferSorting.NameDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.Name),
-                _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+                _ => null
             },
             offer => new InReviewAppData(
                 offer.Id,
@@ -580,7 +580,7 @@ public class OfferRepository : IOfferRepository
             initial => initial.LanguageCode,
             modify => modify.LanguageCode,
             languageCode => new OfferDescription(offerId, languageCode, null!, null!),
-            (initial, modified) => (initial.LongDescription == modified.LongDescription && initial.ShortDescription == modified.ShortDescription),
+            (initial, modified) => initial.LongDescription == modified.LongDescription && initial.ShortDescription == modified.ShortDescription,
             (entity, initial) =>
                 {
                     entity.DescriptionLong = initial.LongDescription;
@@ -705,7 +705,7 @@ public class OfferRepository : IOfferRepository
             {
                 OfferSorting.DateAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.DateCreated),
                 OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
-                _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+                _ => null
             },
             offer => new AllOfferStatusData(
                 offer.Id,
@@ -731,7 +731,7 @@ public class OfferRepository : IOfferRepository
                 OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
                 OfferSorting.NameAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.Name),
                 OfferSorting.NameDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.Name),
-                _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+                _ => null
             },
             offer => new InReviewServiceData(
                 offer.Id,

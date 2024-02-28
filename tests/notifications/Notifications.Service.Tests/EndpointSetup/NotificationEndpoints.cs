@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.Endpoint
 using System.Text;
 using System.Text.Json;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.EnpointSetup;
+namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.EndpointSetup;
 
 public class NotificationEndpoints
 {
@@ -33,44 +32,44 @@ public class NotificationEndpoints
 
     public NotificationEndpoints(HttpClient client)
     {
-        this._client = client;
+        _client = client;
     }
 
     public async Task<HttpResponseMessage> CreateNotification(Guid companyUserId, NotificationCreationData data)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{Path}/{companyUserId}");
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{Path}/{companyUserId}");
         request.Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
-        return await this._client.SendAsync(request);
+        return await _client.SendAsync(request);
     }
 
     public async Task<HttpResponseMessage> GetNotification(Guid notificationId)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}/{notificationId}");
-        return await this._client.SendAsync(request);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}/{notificationId}");
+        return await _client.SendAsync(request);
     }
 
     public async Task<HttpResponseMessage> GetNotifications(Guid applicationId)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}/application/{applicationId}/companyDetailsWithAddress");
-        return await this._client.SendAsync(request);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}/application/{applicationId}/companyDetailsWithAddress");
+        return await _client.SendAsync(request);
     }
 
     public async Task<HttpResponseMessage> NotificationCount(bool? isRead)
     {
         var countParam = isRead.HasValue ? $"?isRead={isRead.Value}" : string.Empty;
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}/count{countParam}");
-        return await this._client.SendAsync(request);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}/count{countParam}");
+        return await _client.SendAsync(request);
     }
 
     public async Task<HttpResponseMessage> SetNotificationToRead(Guid notificationId)
     {
-        var request = new HttpRequestMessage(HttpMethod.Put, $"{Path}/{notificationId}/read");
-        return await this._client.SendAsync(request);
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"{Path}/{notificationId}/read");
+        return await _client.SendAsync(request);
     }
 
     public async Task<HttpResponseMessage> DeleteNotification(Guid notificationId)
     {
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"{Path}/{notificationId}");
-        return await this._client.SendAsync(request);
+        using var request = new HttpRequestMessage(HttpMethod.Delete, $"{Path}/{notificationId}");
+        return await _client.SendAsync(request);
     }
 }

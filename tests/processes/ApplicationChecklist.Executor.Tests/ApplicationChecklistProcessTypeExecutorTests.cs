@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -514,7 +513,6 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         // Arrange execute
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
-        var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = _fixture.Create<TestException>();
 
         A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -580,7 +578,6 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         // Arrange execute
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
-        var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = new ServiceException(_fixture.Create<string>(), true);
 
         A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -767,8 +764,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .ReturnsLazily((ProcessStepTypeId stepTypeId) =>
                 stepTypeId switch
                 {
-                    _ when stepTypeId == _firstStepTypeId => _firstExecution,
-                    _ when stepTypeId == _secondStepTypeId => _secondExecution,
+                    var id when id == _firstStepTypeId => _firstExecution,
+                    var id when id == _secondStepTypeId => _secondExecution,
                     _ => throw new ConflictException($"no execution defined for processStep {stepTypeId}"),
                 }
             );

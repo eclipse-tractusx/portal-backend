@@ -114,11 +114,12 @@ public class BPNAccessTest
             }
         }";
 
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        }, requestMessage => request = requestMessage);
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage, requestMessage => request = requestMessage);
 
         var businessPartnerNumber = _fixture.Create<string>();
         var sut = _fixture.Create<BpnAccess>();
@@ -143,11 +144,12 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
@@ -166,11 +168,12 @@ public class BPNAccessTest
     {
         //Arrange
         const string json = "";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
@@ -188,10 +191,11 @@ public class BPNAccessTest
     public async Task FetchLegalEntityByBpn_NoContentResponse_Throws()
     {
         //Arrange
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
@@ -210,11 +214,12 @@ public class BPNAccessTest
     {
         //Arrange
         const string json = "{\"some\": [{\"other\": \"json\"}]}";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
@@ -233,11 +238,12 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.BadRequest,
             Content = new StringContent(json)
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 

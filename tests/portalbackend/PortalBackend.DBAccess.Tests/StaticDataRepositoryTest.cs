@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -90,9 +89,11 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.IsValidCountry.Should().Be(validCountry);
         if (result.IsValidCountry)
         {
-            var expectedIds = (IEnumerable<(BpdmIdentifierId BpdmId, UniqueIdentifierId UniqueId)>)expectedBpdmIds!.Zip(expectedUniqueIds!);
-            result.Identifiers.Should().NotBeNull();
-            result.Identifiers.Should().HaveSameCount(expectedIds);
+            expectedBpdmIds.Should().NotBeNull();
+            expectedUniqueIds.Should().NotBeNull();
+            var expectedIds = expectedBpdmIds!.Zip(expectedUniqueIds!);
+            result.Identifiers.Should().NotBeNull()
+                .And.HaveSameCount(expectedIds);
             result.Identifiers.OrderBy(item => item).Should().ContainInOrder(expectedIds?.OrderBy(item => item));
         }
         else

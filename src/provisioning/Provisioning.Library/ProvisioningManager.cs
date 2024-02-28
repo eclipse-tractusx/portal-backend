@@ -232,7 +232,7 @@ public partial class ProvisioningManager : IProvisioningManager
                 case IamIdentityProviderClientAuthMethod.SECRET_BASIC:
                 case IamIdentityProviderClientAuthMethod.SECRET_POST:
                 case IamIdentityProviderClientAuthMethod.SECRET_JWT:
-                    throw new ArgumentException($"secret must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod.ToString()}");
+                    throw new ArgumentException($"secret must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod}");
                 default:
                     break;
             }
@@ -243,7 +243,7 @@ public partial class ProvisioningManager : IProvisioningManager
             {
                 case IamIdentityProviderClientAuthMethod.SECRET_JWT:
                 case IamIdentityProviderClientAuthMethod.JWT:
-                    throw new ArgumentException($"signatureAlgorithm must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod.ToString()}");
+                    throw new ArgumentException($"signatureAlgorithm must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod}");
                 default:
                     break;
             }

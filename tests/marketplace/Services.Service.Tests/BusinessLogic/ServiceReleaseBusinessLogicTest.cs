@@ -162,10 +162,10 @@ public class ServiceReleaseBusinessLogicTest
         //Arrange
         var data = _fixture.Build<ServiceDetailsData>()
                            .With(x => x.OfferStatusId, OfferStatusId.IN_REVIEW)
-                           .With(x => x.Title, (string?)null)
-                           .With(x => x.ProviderUri, (string?)null)
-                           .With(x => x.ContactEmail, (string?)null)
-                           .With(x => x.ContactNumber, (string?)null)
+                           .With(x => x.Title, default(string?))
+                           .With(x => x.ProviderUri, default(string?))
+                           .With(x => x.ContactEmail, default(string?))
+                           .With(x => x.ContactNumber, default(string?))
                            .Create();
         var serviceId = _fixture.Create<Guid>();
 
@@ -191,7 +191,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         var invalidServiceId = Guid.NewGuid();
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(invalidServiceId))
-           .Returns((ServiceDetailsData?)null);
+           .Returns<ServiceDetailsData?>(null);
 
         // Act
         async Task Act() => await _sut.GetServiceDetailsByIdAsync(invalidServiceId).ConfigureAwait(false);
@@ -254,7 +254,7 @@ public class ServiceReleaseBusinessLogicTest
         var data = _fixture.Build<OfferProviderResponse>()
             .With(x => x.Title, "test title")
             .With(x => x.ContactEmail, "info@test.de")
-            .With(x => x.UseCase, (IEnumerable<AppUseCaseData>?)null)
+            .With(x => x.UseCase, default(IEnumerable<AppUseCaseData>?))
             .With(x => x.ServiceTypeIds, new[] { ServiceTypeId.DATASPACE_SERVICE, ServiceTypeId.CONSULTANCY_SERVICE })
             .Create();
 
@@ -574,7 +574,7 @@ public class ServiceReleaseBusinessLogicTest
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(offerId, OfferTypeId.SERVICE,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
-            A<ValueTuple<string, string>>.That.Matches(x => x.Item1 == _options.Value.OfferSubscriptionAddress && x.Item2 == _options.Value.OfferDetailAddress),
+            A<(string, string)>.That.Matches(x => x.Item1 == _options.Value.OfferSubscriptionAddress && x.Item2 == _options.Value.OfferDetailAddress),
             A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -624,11 +624,11 @@ public class ServiceReleaseBusinessLogicTest
     private void SetupUpdateService()
     {
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .Returns((ServiceUpdateData?)null);
+            .Returns<ServiceUpdateData?>(null);
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .Returns(new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), ((Guid, string, bool))default, Array.Empty<LocalizedDescription>(), null));
+            .Returns(new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), default, Array.Empty<LocalizedDescription>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .Returns(new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), ((Guid, string, bool))default, Array.Empty<LocalizedDescription>(), null));
+            .Returns(new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), default, Array.Empty<LocalizedDescription>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
             .Returns(new ServiceUpdateData(OfferStatusId.CREATED, true, new[] { (ServiceTypeId.DATASPACE_SERVICE, false) }, (Guid.NewGuid(), "123", false), Array.Empty<LocalizedDescription>(), Guid.NewGuid()));
     }

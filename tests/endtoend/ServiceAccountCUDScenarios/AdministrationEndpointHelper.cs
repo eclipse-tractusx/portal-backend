@@ -45,7 +45,7 @@ public static class AdministrationEndpointHelper
     }
 
     //GET: api/administration/serviceaccount/owncompany/serviceaccounts
-    public static List<CompanyServiceAccountData> GetServiceAccounts()
+    public static async Task<List<CompanyServiceAccountData>> GetServiceAccounts()
     {
         var serviceAccounts = new List<CompanyServiceAccountData>();
 
@@ -80,9 +80,8 @@ public static class AdministrationEndpointHelper
                 .StatusCode(200)
                 .Extract()
                 .Response();
-            var data = DataHandleHelper.DeserializeData<Pagination.Response<CompanyServiceAccountData>>(response.Content
-                .ReadAsStringAsync()
-                .Result);
+            var data = DataHandleHelper.DeserializeData<Pagination.Response<CompanyServiceAccountData>>(await response.Content
+                .ReadAsStringAsync().ConfigureAwait(false));
             if (data != null)
                 serviceAccounts.AddRange(data.Content);
         }
@@ -91,13 +90,13 @@ public static class AdministrationEndpointHelper
     }
 
     //POST: api/administration/serviceaccount/owncompany/serviceaccounts - create a new service account
-    public static ServiceAccountDetails CreateNewServiceAccount(string[] permissions)
+    public static async Task<ServiceAccountDetails> CreateNewServiceAccount(string[] permissions)
     {
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
         const string Description = "This is a new technical user created via test automation e2e tests";
-        var allServiceAccountsRoles = GetAllServiceAccountRoles();
+        var allServiceAccountsRoles = await GetAllServiceAccountRoles().ConfigureAwait(false);
         var userRoleIds = new List<Guid>();
 
         foreach (var p in permissions)
@@ -121,7 +120,7 @@ public static class AdministrationEndpointHelper
             .Extract()
             .Response();
 
-        var serviceAccountDetails = DataHandleHelper.DeserializeData<ServiceAccountDetails>(response.Content.ReadAsStringAsync().Result);
+        var serviceAccountDetails = DataHandleHelper.DeserializeData<ServiceAccountDetails>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         if (serviceAccountDetails is null)
         {
             throw new Exception($"Could not create service account with {endpoint}, response was null/empty.");
@@ -130,7 +129,7 @@ public static class AdministrationEndpointHelper
     }
 
     //DELETE: api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}
-    public static bool DeleteServiceAccount(string serviceAccountId)
+    public static async Task<bool> DeleteServiceAccount(string serviceAccountId)
     {
         var data = Given()
             .DisableSslCertificateValidation()
@@ -144,14 +143,14 @@ public static class AdministrationEndpointHelper
             .StatusCode(200)
             .Extract()
             .Response();
-        return !data.Content.ReadAsStringAsync().Result.Equals("0");
+        return !(await data.Content.ReadAsStringAsync().ConfigureAwait(false)).Equals("0");
     }
 
     //PUT: api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId} - update the previous created service account details by changing "name" and "description"
-    public static void UpdateServiceAccountDetailsById(string serviceAccountId, string newName,
+    public static async Task UpdateServiceAccountDetailsById(string serviceAccountId, string newName,
         string newDescription)
     {
-        var serviceAccountDetails = GetServiceAccountDetailsById(serviceAccountId);
+        var serviceAccountDetails = await GetServiceAccountDetailsById(serviceAccountId).ConfigureAwait(false);
         var updateServiceAccountEditableDetails =
             new ServiceAccountEditableDetails(serviceAccountDetails.ServiceAccountId, newName, newDescription,
                 serviceAccountDetails.IamClientAuthMethod);
@@ -169,7 +168,7 @@ public static class AdministrationEndpointHelper
     }
 
     //POST: api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}/resetCredentials - reset service account credentials
-    public static ServiceAccountDetails ResetServiceAccountCredentialsById(string serviceAccountId)
+    public static async Task<ServiceAccountDetails> ResetServiceAccountCredentialsById(string serviceAccountId)
     {
         var endpoint = $"{EndPoint}/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}/resetCredentials";
         var response = Given()
@@ -185,7 +184,7 @@ public static class AdministrationEndpointHelper
             .Extract()
             .Response();
 
-        var resetServiceAccountCredentialsById = DataHandleHelper.DeserializeData<ServiceAccountDetails>(response.Content.ReadAsStringAsync().Result);
+        var resetServiceAccountCredentialsById = DataHandleHelper.DeserializeData<ServiceAccountDetails>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         if (resetServiceAccountCredentialsById is null)
         {
             throw new Exception($"Could not reset service account credentials by id with {endpoint}, response was null/empty.");
@@ -194,7 +193,7 @@ public static class AdministrationEndpointHelper
     }
 
     //GET: api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}
-    public static ServiceAccountDetails GetServiceAccountDetailsById(string serviceAccountId)
+    public static async Task<ServiceAccountDetails> GetServiceAccountDetailsById(string serviceAccountId)
     {
         var endpoint = $"{EndPoint}/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}";
         var response = Given()
@@ -209,12 +208,11 @@ public static class AdministrationEndpointHelper
             .StatusCode(200)
             .Extract()
             .Response();
-        return DataHandleHelper.DeserializeData<ServiceAccountDetails>(response.Content.ReadAsStringAsync()
-            .Result) ?? throw new Exception($"Could not get service account details by id from {endpoint}, response was null/empty.");
+        return DataHandleHelper.DeserializeData<ServiceAccountDetails>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)) ?? throw new Exception($"Could not get service account details by id from {endpoint}, response was null/empty.");
     }
 
     //GET: api/administration/serviceaccount/user/roles
-    private static List<UserRoleWithDescription> GetAllServiceAccountRoles()
+    private static async Task<List<UserRoleWithDescription>> GetAllServiceAccountRoles()
     {
         var endpoint = $"{EndPoint}/serviceaccount/user/roles";
         var response = Given()
@@ -229,8 +227,7 @@ public static class AdministrationEndpointHelper
             .StatusCode(200)
             .Extract()
             .Response();
-        var userRoleWithDescriptions = DataHandleHelper.DeserializeData<List<UserRoleWithDescription>>(response.Content.ReadAsStringAsync()
-            .Result);
+        var userRoleWithDescriptions = DataHandleHelper.DeserializeData<List<UserRoleWithDescription>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         if (userRoleWithDescriptions is null)
         {
             throw new Exception($"Could not get service account roles from {endpoint}, response was null/empty.");

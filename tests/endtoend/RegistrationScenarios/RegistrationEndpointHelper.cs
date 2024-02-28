@@ -65,7 +65,7 @@ public static class RegistrationEndpointHelper
                 .Extract()
                 .Response();
 
-        var bpdmLegalEntityDatas = DataHandleHelper.DeserializeData<BpdmPaginationContent>(data.Content.ReadAsStringAsync().Result);
+        var bpdmLegalEntityDatas = DataHandleHelper.DeserializeData<BpdmPaginationContent>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
         if (bpdmLegalEntityDatas is null)
         {
             throw new Exception($"Could not get bpn from {endpoint} should not be null.");
@@ -75,7 +75,7 @@ public static class RegistrationEndpointHelper
     }
 
     //GET /api/registration/legalEntityAddress/{bpn}
-    public static CompanyDetailData GetCompanyBpdmDetailData(string bpn)
+    public static async Task<CompanyDetailData> GetCompanyBpdmDetailData(string bpn)
     {
         // Given
         var endpoint = $"{EndPoint}/legalEntityAddress/{bpn}";
@@ -91,7 +91,7 @@ public static class RegistrationEndpointHelper
             .And()
             .Extract()
             .Response();
-        var bpdmDetailData = DataHandleHelper.DeserializeData<CompanyDetailData>(data.Content.ReadAsStringAsync().Result);
+        var bpdmDetailData = DataHandleHelper.DeserializeData<CompanyDetailData>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
         if (bpdmDetailData is null)
         {
             throw new Exception($"Could not get bpdm detail data from {endpoint} should not be null.");
@@ -100,7 +100,7 @@ public static class RegistrationEndpointHelper
         return bpdmDetailData;
     }
 
-    public static CompanyDetailData GetCompanyDetailData()
+    public static async Task<CompanyDetailData> GetCompanyDetailData()
     {
         // Given
         var response = Given()
@@ -116,7 +116,7 @@ public static class RegistrationEndpointHelper
             .StatusCode(200)
             .Extract()
             .Response();
-        var data = response.Content.ReadAsStringAsync().Result;
+        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var companyDetailData = DataHandleHelper.DeserializeData<CompanyDetailData>(data);
         if (companyDetailData is null)
         {
@@ -126,18 +126,16 @@ public static class RegistrationEndpointHelper
         return companyDetailData;
     }
 
-    private static CompanyRoleAgreementConsents GetCompanyRolesAndConsentsForSelectedRoles(
+    private static async Task<CompanyRoleAgreementConsents> GetCompanyRolesAndConsentsForSelectedRoles(
         List<CompanyRoleId> companyRoleIds)
     {
-        var companyRoleAgreementData = GetCompanyRoleAgreementData();
+        var companyRoleAgreementData = await GetCompanyRoleAgreementData().ConfigureAwait(false);
         var selectedCompanyRoleIds = new List<CompanyRoleId>();
 
         var agreementConsentStatusList = new List<AgreementConsentStatus>();
 
-        foreach (var roleData in companyRoleAgreementData.CompanyRoleData)
+        foreach (var roleData in companyRoleAgreementData.CompanyRoleData.IntersectBy(companyRoleIds, x => x.CompanyRoleId))
         {
-            if (!companyRoleIds.Contains(roleData.CompanyRoleId))
-                continue;
             selectedCompanyRoleIds.Add(roleData.CompanyRoleId);
             agreementConsentStatusList.AddRange(
                 roleData.AgreementIds.Select(id => new AgreementConsentStatus(id, ConsentStatusId.ACTIVE)));
@@ -146,7 +144,7 @@ public static class RegistrationEndpointHelper
         return new CompanyRoleAgreementConsents(selectedCompanyRoleIds, agreementConsentStatusList);
     }
 
-    private static void SetApplicationStatus(string applicationStatus)
+    private static async Task SetApplicationStatus(string applicationStatus)
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -163,11 +161,11 @@ public static class RegistrationEndpointHelper
             .Extract()
             .Response();
 
-        var status = DataHandleHelper.DeserializeData<int>(response.Content.ReadAsStringAsync().Result);
+        var status = DataHandleHelper.DeserializeData<int>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         status.Should().Be(1);
     }
 
-    private static string GetApplicationStatus()
+    private static async Task<string> GetApplicationStatus()
     {
         var endpoint = $"{EndPoint}/application/{_applicationId}/status";
         var data = Given()
@@ -183,7 +181,7 @@ public static class RegistrationEndpointHelper
             .StatusCode(200)
             .Extract()
             .Response();
-        var applicationStatus = DataHandleHelper.DeserializeData<string>(data.Content.ReadAsStringAsync().Result);
+        var applicationStatus = DataHandleHelper.DeserializeData<string>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
         if (applicationStatus is null)
         {
             throw new Exception($"Could not get application status from {endpoint}, response was null/empty.");
@@ -191,7 +189,7 @@ public static class RegistrationEndpointHelper
         return applicationStatus;
     }
 
-    private static List<InvitedUser> GetInvitedUsers()
+    private static async Task<List<InvitedUser>> GetInvitedUsers()
     {
         var data = Given()
             .DisableSslCertificateValidation()
@@ -206,7 +204,7 @@ public static class RegistrationEndpointHelper
             .Extract()
             .Response();
 
-        var invitedUsers = DataHandleHelper.DeserializeData<List<InvitedUser>>(data.Content.ReadAsStringAsync().Result);
+        var invitedUsers = DataHandleHelper.DeserializeData<List<InvitedUser>>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
         return invitedUsers ?? new List<InvitedUser>();
     }
 
@@ -218,14 +216,14 @@ public static class RegistrationEndpointHelper
         var tempMailApiRequests = new TempMailApiRequests();
         try
         {
-            var devUser = devMailApiRequests.GenerateRandomEmailAddress();
+            var devUser = await devMailApiRequests.GenerateRandomEmailAddress().ConfigureAwait(false);
             emailAddress = devUser.Result.Name + "@developermail.com";
         }
         catch (Exception)
         {
             try
             {
-                emailAddress = "apitestuser" + tempMailApiRequests.GetDomain();
+                emailAddress = "apitestuser" + await tempMailApiRequests.GetDomain().ConfigureAwait(false);
             }
             catch (Exception)
             {
@@ -234,14 +232,14 @@ public static class RegistrationEndpointHelper
         }
         finally
         {
-            Thread.Sleep(20000);
+            await Task.Delay(20000).ConfigureAwait(false);
             await ExecuteInvitation(emailAddress, userCompanyName);
 
-            Thread.Sleep(60000);
+            await Task.Delay(60000).ConfigureAwait(false);
 
             var currentPassword = emailAddress.Contains("developermail.com")
-                ? devMailApiRequests.FetchPassword()
-                : tempMailApiRequests.FetchPassword();
+                ? await devMailApiRequests.FetchPassword().ConfigureAwait(false)
+                : await tempMailApiRequests.FetchPassword().ConfigureAwait(false);
 
             if (currentPassword is null)
             {
@@ -258,15 +256,15 @@ public static class RegistrationEndpointHelper
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
 
-    public static CompanyDetailData SetCompanyDetailData(CompanyDetailData? testCompanyDetailData)
+    public static async Task<CompanyDetailData> SetCompanyDetailData(CompanyDetailData? testCompanyDetailData)
     {
         if (testCompanyDetailData is null)
             throw new Exception("Company detail data expected but not provided");
-        var applicationStatus = GetApplicationStatus();
+        var applicationStatus = await GetApplicationStatus().ConfigureAwait(false);
         if (applicationStatus != CompanyApplicationStatusId.CREATED.ToString())
             throw new Exception("Application status is not fitting to the pre-requisite");
-        SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
-        var companyDetailData = GetCompanyDetailData();
+        await SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString()).ConfigureAwait(false);
+        var companyDetailData = await GetCompanyDetailData().ConfigureAwait(false);
 
         var newCompanyDetailData = testCompanyDetailData with
         {
@@ -288,19 +286,19 @@ public static class RegistrationEndpointHelper
             .Then()
             .Log(ResponseLogLevel.OnError)
             .StatusCode(200);
-        var storedCompanyDetailData = GetCompanyDetailData();
+        var storedCompanyDetailData = await GetCompanyDetailData().ConfigureAwait(false);
         if (!VerifyCompanyDetailDataStorage(storedCompanyDetailData, newCompanyDetailData))
             throw new Exception($"Company detail data was not stored correctly");
         return storedCompanyDetailData;
     }
 
-    public static void UpdateCompanyDetailData(CompanyDetailData updateCompanyDetailData)
+    public static async Task UpdateCompanyDetailData(CompanyDetailData updateCompanyDetailData)
     {
-        var actualStatus = GetApplicationStatus();
+        var actualStatus = await GetApplicationStatus().ConfigureAwait(false);
         if (actualStatus != CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString() &&
             actualStatus != CompanyApplicationStatusId.SUBMITTED.ToString())
         {
-            var companyDetailData = GetCompanyDetailData();
+            var companyDetailData = await GetCompanyDetailData().ConfigureAwait(false);
 
             var newCompanyDetailData = updateCompanyDetailData with { CompanyId = companyDetailData.CompanyId };
             var body = DataHandleHelper.SerializeData(newCompanyDetailData);
@@ -317,7 +315,7 @@ public static class RegistrationEndpointHelper
                 .Then()
                 .Log(ResponseLogLevel.OnError)
                 .StatusCode(200);
-            var storedCompanyDetailData = GetCompanyDetailData();
+            var storedCompanyDetailData = await GetCompanyDetailData().ConfigureAwait(false);
             if (!VerifyCompanyDetailDataStorage(storedCompanyDetailData, newCompanyDetailData))
                 throw new Exception($"Company detail data was not updated correctly");
         }
@@ -329,16 +327,16 @@ public static class RegistrationEndpointHelper
 
     // POST /api/registration/application/{applicationId}/companyRoleAgreementConsents
 
-    public static string SubmitCompanyRoleConsentToAgreements(List<CompanyRoleId> companyRoles)
+    public static async Task<string> SubmitCompanyRoleConsentToAgreements(List<CompanyRoleId> companyRoles)
     {
-        if (GetApplicationStatus() != CompanyApplicationStatusId.INVITE_USER.ToString())
+        if ((await GetApplicationStatus().ConfigureAwait(false)) != CompanyApplicationStatusId.INVITE_USER.ToString())
             throw new Exception("Application status is not fitting to the pre-requisite");
         if (companyRoles.IsNullOrEmpty())
             throw new Exception("No company roles were found");
-        var companyRoleAgreementConsents = GetCompanyRolesAndConsentsForSelectedRoles(companyRoles);
+        var companyRoleAgreementConsents = await GetCompanyRolesAndConsentsForSelectedRoles(companyRoles).ConfigureAwait(false);
         var body = DataHandleHelper.SerializeData(companyRoleAgreementConsents);
 
-        SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
+        await SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString()).ConfigureAwait(false);
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
@@ -354,17 +352,17 @@ public static class RegistrationEndpointHelper
             .Extract()
             .Response();
 
-        var result = DataHandleHelper.DeserializeData<int>(response.Content.ReadAsStringAsync().Result).ToString();
+        var result = DataHandleHelper.DeserializeData<int>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)).ToString();
         return result;
     }
 
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
-    public static void UploadDocument_WithEmptyTitle(string? documentTypeId, string? documentName)
+    public static async Task UploadDocument_WithEmptyTitle(string? documentTypeId, string? documentName)
     {
         if (documentTypeId is null || documentName is null)
             throw new Exception("No document type id or name provided but expected");
-        if (GetApplicationStatus() != CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
+        if ((await GetApplicationStatus().ConfigureAwait(false)) != CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
             throw new Exception($"Application status is not fitting to the pre-requisite");
         var response = Given()
             .DisableSslCertificateValidation()
@@ -383,16 +381,16 @@ public static class RegistrationEndpointHelper
 
         if (response.StatusCode == HttpStatusCode.NoContent)
         {
-            SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
+            await SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString()).ConfigureAwait(false);
         }
     }
 
     // POST /api/registration/application/{applicationId}/submitRegistration
 
     //[Fact]
-    public static bool SubmitRegistration()
+    public static async Task<bool> SubmitRegistration()
     {
-        if (GetApplicationStatus() != CompanyApplicationStatusId.VERIFY.ToString())
+        if ((await GetApplicationStatus().ConfigureAwait(false)) != CompanyApplicationStatusId.VERIFY.ToString())
             throw new Exception($"Application status is not fitting to the pre-requisite");
         var data = Given()
             .DisableSslCertificateValidation()
@@ -410,13 +408,13 @@ public static class RegistrationEndpointHelper
             .Extract()
             .Response();
 
-        var status = DataHandleHelper.DeserializeData<bool>(data.Content.ReadAsStringAsync().Result);
+        var status = DataHandleHelper.DeserializeData<bool>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
         return status;
     }
 
     // GET: api/administration/registration/applications?companyName={companyName}
 
-    public static CompanyApplicationDetails? GetApplicationDetails(string userCompanyName)
+    public static async Task<CompanyApplicationDetails?> GetApplicationDetails(string userCompanyName)
     {
         var endpoint = $"{AdminEndPoint}/registration/applications?companyName={userCompanyName}&page=0&size=4&companyApplicationStatus=Closed";
         var response = Given()
@@ -432,9 +430,8 @@ public static class RegistrationEndpointHelper
             .Extract()
             .Response();
 
-        var data = DataHandleHelper.DeserializeData<Pagination.Response<CompanyApplicationDetails>>(response.Content
-            .ReadAsStringAsync()
-            .Result);
+        var data = DataHandleHelper.DeserializeData<Pagination.Response<CompanyApplicationDetails>>(await response.Content
+            .ReadAsStringAsync().ConfigureAwait(false));
         if (data is null)
         {
             throw new Exception($"Could not application details of first application from {endpoint}, response was null/empty.");
@@ -443,7 +440,7 @@ public static class RegistrationEndpointHelper
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
-    public static CompanyDetailData? GetCompanyWithAddress()
+    public static async Task<CompanyDetailData?> GetCompanyWithAddress()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -458,19 +455,19 @@ public static class RegistrationEndpointHelper
             .Extract()
             .Response();
 
-        var data = DataHandleHelper.DeserializeData<CompanyDetailData>(response.Content.ReadAsStringAsync().Result);
+        var data = DataHandleHelper.DeserializeData<CompanyDetailData>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         return data;
     }
 
-    public static void InviteNewUser()
+    public static async Task InviteNewUser()
     {
         var devMailApiRequests = new DevMailApiRequests();
-        var devUser = devMailApiRequests.GenerateRandomEmailAddress();
+        var devUser = await devMailApiRequests.GenerateRandomEmailAddress().ConfigureAwait(false);
         var emailAddress = devUser.Result.Name + "@developermail.com";
         var userCreationInfoWithMessage = new UserCreationInfoWithMessage("testuser2", emailAddress, "myFirstName",
             "myLastName", new[] { "Company Admin" }, "testMessage");
 
-        Thread.Sleep(20000);
+        await Task.Delay(20000).ConfigureAwait(false);
 
         Given()
             .DisableSslCertificateValidation()
@@ -485,16 +482,16 @@ public static class RegistrationEndpointHelper
             .Log(ResponseLogLevel.OnError)
             .StatusCode(200);
 
-        var invitedUsers = GetInvitedUsers();
+        var invitedUsers = await GetInvitedUsers().ConfigureAwait(false);
         invitedUsers.Count.Should().Be(2, "No invited users were found.");
 
         var newInvitedUser = invitedUsers.Find(u => u.EmailId!.Equals(userCreationInfoWithMessage.eMail));
         newInvitedUser?.InvitationStatus.Should().Be(InvitationStatusId.CREATED);
         newInvitedUser?.InvitedUserRoles.Should().BeEquivalentTo(userCreationInfoWithMessage.Roles);
 
-        Thread.Sleep(20000);
+        await Task.Delay(20000).ConfigureAwait(false);
 
-        var messageData = devMailApiRequests.FetchPassword();
+        var messageData = await devMailApiRequests.FetchPassword().ConfigureAwait(false);
         messageData.Should().NotBeNullOrEmpty();
     }
 
@@ -537,7 +534,7 @@ public static class RegistrationEndpointHelper
         _userCompanyToken =
             await new AuthFlow(userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, currentPassword,
                 newPassword);
-        _applicationId = GetFirstApplicationId();
+        _applicationId = await GetFirstApplicationId().ConfigureAwait(false);
 
         return (_userCompanyToken, _applicationId);
     }
@@ -556,7 +553,7 @@ public static class RegistrationEndpointHelper
                storedData.ZipCode == postedData.ZipCode;
     }
 
-    private static string GetFirstApplicationId()
+    private static async Task<string> GetFirstApplicationId()
     {
         var endpoint = $"{EndPoint}/applications";
         var data = Given()
@@ -573,7 +570,7 @@ public static class RegistrationEndpointHelper
             .Response();
 
         var applicationIds =
-            DataHandleHelper.DeserializeData<List<CompanyApplicationWithStatus>>(data.Content.ReadAsStringAsync().Result);
+            DataHandleHelper.DeserializeData<List<CompanyApplicationWithStatus>>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
         if (applicationIds.IsNullOrEmpty())
         {
             throw new Exception($"Could not get first application id from {endpoint}, response was null/empty.");
@@ -582,7 +579,7 @@ public static class RegistrationEndpointHelper
         return _applicationId;
     }
 
-    private static CompanyRoleAgreementData GetCompanyRoleAgreementData()
+    private static async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementData()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -599,7 +596,7 @@ public static class RegistrationEndpointHelper
             .And()
             .Extract()
             .Response();
-        var data = response.Content.ReadAsStringAsync().Result;
+        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var companyRoleAgreementData = DataHandleHelper.DeserializeData<CompanyRoleAgreementData>(data);
         if (companyRoleAgreementData is null)
         {

@@ -132,16 +132,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         );
     }
 
-    private static IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> ParseBpdmIdentifierDtos(IEnumerable<BpdmIdentifierDto> bpdmIdentifierDtos)
-    {
-        foreach (var identifier in bpdmIdentifierDtos)
-        {
-            if (Enum.TryParse<BpdmIdentifierId>(identifier.Type.TechnicalKey, out var bpdmIdentifierId))
-            {
-                yield return (bpdmIdentifierId, identifier.Value);
-            }
-        }
-    }
+    private static IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> ParseBpdmIdentifierDtos(IEnumerable<BpdmIdentifierDto> bpdmIdentifierDtos) =>
+        bpdmIdentifierDtos
+            .Select(dto => (Valid: Enum.TryParse<BpdmIdentifierId>(dto.Type.TechnicalKey, out var bpdmIdentifierId), IdentifierId: bpdmIdentifierId, dto.Value))
+            .Where(x => x.Valid)
+            .Select(x => (x.IdentifierId, x.Value));
 
     public async Task UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, CancellationToken cancellationToken)
     {

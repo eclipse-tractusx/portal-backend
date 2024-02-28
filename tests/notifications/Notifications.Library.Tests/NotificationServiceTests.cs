@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -404,7 +403,7 @@ public class NotificationServiceTests
         // Assert
         A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(
                 A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { UserRoleId }),
-                (IEnumerable<Guid>?)null,
+                default(IEnumerable<Guid>?),
                 A<IEnumerable<NotificationTypeId>>.That.IsSameSequenceAs(new[] { NotificationTypeId.APP_RELEASE_REQUEST }),
                 appId))
             .MustHaveHappenedOnceExactly();

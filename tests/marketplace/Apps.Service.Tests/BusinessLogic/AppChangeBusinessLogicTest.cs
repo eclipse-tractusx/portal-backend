@@ -144,7 +144,6 @@ public class AppChangeBusinessLogicTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        var companyId = _fixture.Create<Guid>();
         var appName = _fixture.Create<string>();
         var appAssignedRoleDesc = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(role, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
         var clientIds = new[] { "client" };
@@ -244,7 +243,7 @@ public class AppChangeBusinessLogicTest
         var clientIds = new[] { "client" };
         A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP))
             .Returns((true, appName, Guid.NewGuid(), clientIds));
-        var existingOffer = _fixture.Create<Offer>();
+
         //Act
         async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc).ConfigureAwait(false);
 
@@ -287,10 +286,9 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, true, offerDescription));
 
         // Act
         var result = await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
@@ -307,7 +305,7 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
+            .Returns<(bool, bool, IEnumerable<LocalizedDescription>?)>(default);
 
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
@@ -323,10 +321,9 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
-        var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((false, true, offerDescription));
 
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
@@ -342,10 +339,9 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, false, offerDescription));
 
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
@@ -360,9 +356,8 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>?)null);
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, true, default(IEnumerable<LocalizedDescription>?)));
 
         // Act
         var Act = () => _sut.GetAppUpdateDescriptionByIdAsync(appId);
@@ -386,10 +381,9 @@ public class AppChangeBusinessLogicTest
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)updateDescriptionData);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, true, updateDescriptionData));
         var existingOffer = _fixture.Create<Offer>();
         existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._))
@@ -416,10 +410,9 @@ public class AppChangeBusinessLogicTest
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, true, default(IEnumerable<LocalizedDescription>?)));
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
@@ -439,10 +432,9 @@ public class AppChangeBusinessLogicTest
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, false, default(IEnumerable<LocalizedDescription>?)));
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
@@ -462,10 +454,9 @@ public class AppChangeBusinessLogicTest
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((false, true, default(IEnumerable<LocalizedDescription>?)));
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
@@ -487,7 +478,7 @@ public class AppChangeBusinessLogicTest
             };
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-             .Returns(((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
+            .Returns<(bool, bool, IEnumerable<LocalizedDescription>?)>(default);
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
@@ -616,7 +607,7 @@ public class AppChangeBusinessLogicTest
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
 
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
-            .Returns(default((bool, bool, IEnumerable<DocumentStatusData>)));
+            .Returns<(bool, bool, IEnumerable<DocumentStatusData>)>(default);
 
         // Act
         async Task Act() => await _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None);
@@ -858,7 +849,7 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _identity.CompanyId))
-            .Returns((OfferUpdateUrlData?)null);
+            .Returns<OfferUpdateUrlData?>(null);
 
         // Act
         async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
@@ -1022,7 +1013,6 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var documentStatusData = new DocumentStatusData(documentId, DocumentStatusId.PENDING);
 
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
             .Returns((true, true, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
@@ -1065,7 +1055,7 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
-            .Returns(((bool, bool, DocumentTypeId, DocumentStatusId))default);
+            .Returns<(bool, bool, DocumentTypeId, DocumentStatusId)>(default);
 
         // Act
         async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
@@ -1084,7 +1074,6 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var documentStatusData = _fixture.Create<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
             .Returns((false, true, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
 
@@ -1105,7 +1094,6 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var documentStatusData = _fixture.Create<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
             .Returns((true, true, DocumentTypeId.CX_FRAME_CONTRACT, DocumentStatusId.LOCKED));
 
@@ -1126,7 +1114,6 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var documentStatusData = _fixture.Create<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
             .Returns((true, false, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
 

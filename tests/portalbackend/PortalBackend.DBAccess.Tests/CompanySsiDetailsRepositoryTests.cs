@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -380,7 +379,6 @@ public class CompanySsiDetailsRepositoryTests
     public async Task CreateCredentialDetails_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var now = DateTimeOffset.UtcNow;
         var (sut, context) = await CreateSutWithContext();
 
         // Act
@@ -402,7 +400,6 @@ public class CompanySsiDetailsRepositoryTests
     public async Task CreateCredentialDetails_WithNoChanges_ReturnsExpected()
     {
         // Arrange
-        var now = DateTimeOffset.UtcNow;
         var (sut, context) = await CreateSutWithContext();
 
         // Act

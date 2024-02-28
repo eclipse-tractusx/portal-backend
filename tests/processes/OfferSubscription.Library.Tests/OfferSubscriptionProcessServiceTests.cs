@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -71,7 +70,7 @@ public class OfferSubscriptionProcessServiceTests
         IEnumerable<ProcessStep>? processSteps = null;
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
-            .Returns(new ValueTuple<bool, bool>(true, false));
+            .Returns((true, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .ReturnsLazily((Guid id, IEnumerable<ProcessStepTypeId> processStepTypes) =>
             {
@@ -106,9 +105,9 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
-            .Returns(new ValueTuple<bool, bool>(false, false));
+            .Returns((false, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((VerifyProcessData?)null);
+            .Returns<VerifyProcessData?>(null);
 
         var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
@@ -131,7 +130,7 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
-            .Returns(new ValueTuple<bool, bool>(true, true));
+            .Returns((true, true));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyProcessData(process, null));
 
@@ -154,7 +153,7 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
-            .Returns(new ValueTuple<bool, bool>(true, false));
+            .Returns((true, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyProcessData(null, null));
 
@@ -179,7 +178,7 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
-            .Returns(new ValueTuple<bool, bool>(true, false));
+            .Returns((true, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyProcessData(process, null));
 
@@ -203,7 +202,7 @@ public class OfferSubscriptionProcessServiceTests
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
-            .Returns(new ValueTuple<bool, bool>(true, false));
+            .Returns((true, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyProcessData(process, null));
 
@@ -228,7 +227,7 @@ public class OfferSubscriptionProcessServiceTests
         var processSteps = new ProcessStep[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.SKIPPED, process.Id, DateTimeOffset.UtcNow) };
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
-            .Returns(new ValueTuple<bool, bool>(true, false));
+            .Returns((true, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyProcessData(process, processSteps));
 
@@ -253,7 +252,7 @@ public class OfferSubscriptionProcessServiceTests
         var processSteps = _fixture.CreateMany<ProcessStepTypeId>(5).Where(typeId => typeId != processStepTypeId).Select(typeId => new ProcessStep(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
-            .Returns(new ValueTuple<bool, bool>(true, false));
+            .Returns((true, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyProcessData(process, processSteps));
 

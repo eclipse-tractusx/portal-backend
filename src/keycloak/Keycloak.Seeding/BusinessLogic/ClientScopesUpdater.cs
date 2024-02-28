@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -155,7 +154,7 @@ public class ClientScopesUpdater : IClientScopesUpdater
             Description = clientScope.Description,
             Protocol = clientScope.Protocol,
             Attributes = clientScope.Attributes == null ? null : CreateClientScopeAttributes(clientScope.Attributes),
-            ProtocolMappers = includeProtocolMappers ? clientScope?.ProtocolMappers?.Select(x => ProtocolMappersUpdater.CreateProtocolMapper(x.Id, x)) : null
+            ProtocolMappers = includeProtocolMappers ? clientScope.ProtocolMappers?.Select(x => ProtocolMappersUpdater.CreateProtocolMapper(x.Id, x)) : null
         };
 
     private static bool CompareClientScope(ClientScope scope, ClientScopeModel update) =>

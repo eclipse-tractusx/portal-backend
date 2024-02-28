@@ -143,7 +143,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns(((IEnumerable<(Guid, string?)>, string, string?, OfferSubscriptionStatusId))default);
+            .Returns<(IEnumerable<(Guid, string?)>, string?, string?, OfferSubscriptionStatusId)>(default);
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -303,7 +303,7 @@ public class OfferProviderBusinessLogicTests
             ));
 
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderInformation(A<Guid>.That.Not.Matches(x => x == _subscriptionId || x == _singleInstanceSubscriptionId)))
-            .Returns((TriggerProviderInformation?)null);
+            .Returns<TriggerProviderInformation?>(null);
 
         var userRoleId = Guid.NewGuid();
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))

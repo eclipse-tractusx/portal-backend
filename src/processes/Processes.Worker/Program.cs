@@ -71,7 +71,7 @@ try
         .Build();
     Log.Information("Building worker completed");
 
-    var tokenSource = new CancellationTokenSource();
+    using var tokenSource = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>
     {
         Log.Information("Canceling...");

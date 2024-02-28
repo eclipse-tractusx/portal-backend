@@ -86,7 +86,7 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
-            .Returns((string?)null);
+            .Returns<string?>(null);
 
         // Act
         async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
@@ -175,8 +175,8 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
-        A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1")).Returns((string?)null);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns<string?>(null);
+        A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1")).Returns<string?>(null);
 
         // Act
         async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
@@ -213,8 +213,8 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(user3.CompanyUserId.ToString())).Returns((string?)null);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns<string?>(null);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user3.CompanyUserId.ToString())).Returns<string?>(null);
         A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1"))
             .Returns("DisplayName for Idp1");
         A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp2"))
@@ -297,7 +297,7 @@ public class NetworkRegistrationHandlerTests
                 identity.Id,
             }.ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._))
-            .Returns((string?)null);
+            .Returns<string?>(null);
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
             .Invokes((Guid _, Action<Identity>? initialize, Action<Identity> setOptionalFields) =>
             {

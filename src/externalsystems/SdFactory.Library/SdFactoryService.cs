@@ -63,7 +63,7 @@ public class SdFactoryService : ISdFactoryService
             _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
-        await httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken)
+        await httpClient.PostAsJsonAsync(default(string?), requestModel, cancellationToken)
             .CatchingIntoServiceExceptionFor("sd-factory-connector-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 
@@ -82,7 +82,7 @@ public class SdFactoryService : ISdFactoryService
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
 
-        await httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken)
+        await httpClient.PostAsJsonAsync(default(string?), requestModel, cancellationToken)
             .CatchingIntoServiceExceptionFor("sd-factory-selfdescription-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 }

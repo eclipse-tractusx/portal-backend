@@ -191,8 +191,7 @@ public class RegistrationBusinessLogicTest
         var streetNumber = _fixture.Create<string>();
         var zipCode = _fixture.Create<string>();
 
-        var bpdmIdentifiers = uniqueIdSeed.Select(x =>
-            ((string TechnicalKey, string Value))(x.BpdmIdentifierId.ToString(), x.Value));
+        var bpdmIdentifiers = uniqueIdSeed.Select(x => (TechnicalKey: x.BpdmIdentifierId.ToString(), x.Value));
         var validIdentifiers = uniqueIdSeed.Skip(2).Take(2).Select(x => (x.BpdmIdentifierId, x.UniqueIdentifierId));
 
         var bpdmAddress = _fixture.Build<BpdmLegalEntityAddress>()
@@ -223,7 +222,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .Returns(legalEntity);
         A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(
-                A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids =>
+                A<IEnumerable<BpdmIdentifierId>>.That.Matches(ids =>
                     ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
             .Returns((true, validIdentifiers));
 
@@ -246,7 +245,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(
-                A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids =>
+                A<IEnumerable<BpdmIdentifierId>>.That.Matches(ids =>
                     ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
             .MustHaveHappenedOnceExactly();
 
@@ -387,14 +386,15 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        A.CallTo(() =>
-                _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(A<Guid>._, A<Guid>._, A<Guid?>._))
             .Returns(data);
 
         // Act
         var result = await sut.GetCompanyDetailData(applicationId).ConfigureAwait(false);
 
         // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
+            .MustHaveHappenedOnceExactly();
         result.Should().NotBeNull();
         result.UniqueIds.Should().HaveSameCount(data.UniqueIds);
     }
@@ -404,7 +404,6 @@ public class RegistrationBusinessLogicTest
     {
         //Arrange
         var applicationId = _fixture.Create<Guid>();
-        var userId = _fixture.Create<string>();
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
@@ -416,9 +415,8 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        A.CallTo(() =>
-                _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
-            .Returns((CompanyApplicationDetailData?)null);
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(A<Guid>._, A<Guid>._, A<Guid?>._))
+            .Returns<CompanyApplicationDetailData?>(null);
 
         // Act
         async Task Act() => await sut.GetCompanyDetailData(applicationId).ConfigureAwait(false);
@@ -426,6 +424,8 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"CompanyApplication {applicationId} not found");
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -444,8 +444,7 @@ public class RegistrationBusinessLogicTest
             _identityService,
             _dateTimeProvider);
 
-        A.CallTo(() =>
-                _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(A<Guid>._, A<Guid>._, A<Guid?>._))
             .Returns(_fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
 
         // Act
@@ -454,6 +453,8 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be($"The users company is not assigned with CompanyApplication {applicationId}");
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -525,7 +526,7 @@ public class RegistrationBusinessLogicTest
             null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
-            .ReturnsLazily(() => (CompanyApplicationDetailData?)null);
+            .Returns<CompanyApplicationDetailData?>(null);
 
         // Act
         async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
@@ -561,8 +562,7 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
-            .ReturnsLazily(() =>
-                _fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
+            .Returns(_fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
 
         // Act
         async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
@@ -683,7 +683,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => identityData.CompanyId).Returns(companyId);
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var companyData = _fixture.Build<CompanyDetailData>()
-            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
@@ -746,21 +746,21 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var companyData = _fixture.Build<CompanyDetailData>()
-            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
 
         var existingData = _fixture.Build<CompanyApplicationDetailData>()
             .With(x => x.CompanyId, companyId)
-            .With(x => x.AddressId, (Guid?)null)
-            .With(x => x.City, (string)null!)
-            .With(x => x.CountryAlpha2Code, (string)null!)
-            .With(x => x.Region, (string)null!)
-            .With(x => x.Streetadditional, (string)null!)
-            .With(x => x.Streetname, (string)null!)
-            .With(x => x.Streetnumber, (string)null!)
-            .With(x => x.Zipcode, (string)null!)
+            .With(x => x.AddressId, default(Guid?))
+            .With(x => x.City, default(string?))
+            .With(x => x.CountryAlpha2Code, default(string?))
+            .With(x => x.Region, default(string?))
+            .With(x => x.Streetadditional, default(string?))
+            .With(x => x.Streetname, default(string?))
+            .With(x => x.Streetnumber, default(string?))
+            .With(x => x.Zipcode, default(string?))
             .With(x => x.IsUserOfCompany, true)
             .Create();
 
@@ -843,7 +843,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => identityData.CompanyId).Returns(companyId);
 
         var companyData = _fixture.Build<CompanyDetailData>()
-            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
@@ -943,7 +943,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(2)).Create(); // shall create new
 
         var companyData = _fixture.Build<CompanyDetailData>()
-            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.UniqueIds, new[] { firstIdData, secondIdData, thirdIdData })
@@ -1025,7 +1025,7 @@ public class RegistrationBusinessLogicTest
     {
         //Arrange
         var companyData = _fixture.Build<CompanyDetailData>()
-            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
         var identityData = A.Fake<IIdentityData>();
@@ -1069,7 +1069,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
 
         var companyData = _fixture.Build<CompanyDetailData>()
-            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.UniqueIds,
                 identifiers.Select(id =>
@@ -1155,7 +1155,7 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
 
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>());
+            .Returns<(bool, CompanyApplicationStatusId)>(default);
 
         // Act
         async Task Act() =>
@@ -1189,7 +1189,7 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
         var existingStatus = CompanyApplicationStatusId.CREATED;
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, existingStatus));
+            .Returns((true, existingStatus));
         var status = CompanyApplicationStatusId.VERIFY;
 
         // Act
@@ -1244,7 +1244,7 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider);
 
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<Guid>._))
-            .ReturnsLazily(() => new ValueTuple<bool, CompanyApplicationStatusId>(true, currentStatus));
+            .Returns((true, currentStatus));
 
         // Act
         await sut.SetOwnCompanyApplicationStatusAsync(applicationId, expectedStatus).ConfigureAwait(false);
@@ -1695,7 +1695,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(identity);
 
         A.CallTo(() => _documentRepository.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, identity.IdentityId))
-            .Returns(((bool, IEnumerable<UploadDocuments>))default);
+            .Returns<(bool, IEnumerable<UploadDocuments>)>(default);
 
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -1758,7 +1758,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var notExistingId = _fixture.Create<Guid>();
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(notExistingId))
-            .ReturnsLazily(() => (CompanyRoleAgreementConsentData?)null);
+            .Returns<CompanyRoleAgreementConsentData?>(null);
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -1778,7 +1778,7 @@ public class RegistrationBusinessLogicTest
         var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
         var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), applicationStatusId, _fixture.CreateMany<CompanyRoleId>(2), _fixture.CreateMany<ConsentData>(5));
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -1803,10 +1803,10 @@ public class RegistrationBusinessLogicTest
         };
         var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)>
         {
-            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.APP_PROVIDER, _fixture.CreateMany<AgreementStatusData>(5)),
+            (CompanyRoleId.APP_PROVIDER, _fixture.CreateMany<AgreementStatusData>(5)),
         };
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
         A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(roleIds))
             .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
@@ -1830,22 +1830,20 @@ public class RegistrationBusinessLogicTest
             {
                 CompanyRoleId.APP_PROVIDER,
             },
-            new[]
+            new AgreementConsentStatus[]
             {
-                new AgreementConsentStatus(agreementIds1, ConsentStatusId.ACTIVE),
-                new AgreementConsentStatus(agreementIds2, ConsentStatusId.INACTIVE)
+                new(agreementIds1, ConsentStatusId.ACTIVE),
+                new(agreementIds2, ConsentStatusId.INACTIVE)
             });
         var applicationId = _fixture.Create<Guid>();
         var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
         var data = new CompanyRoleAgreementConsentData(_identity.CompanyId, applicationStatusId, new[] { CompanyRoleId.APP_PROVIDER }, new List<ConsentData>());
-        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)>
+        var companyRoleAssignedAgreements = new (CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)[]
         {
-            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.APP_PROVIDER,
-                new[]{new AgreementStatusData(agreementIds1, AgreementStatusId.ACTIVE),
-                new AgreementStatusData(agreementIds2, AgreementStatusId.ACTIVE)})
+            (CompanyRoleId.APP_PROVIDER, new AgreementStatusData[]{ new(agreementIds1, AgreementStatusId.ACTIVE), new(agreementIds2, AgreementStatusId.ACTIVE) })
         };
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
         A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(A<IEnumerable<CompanyRoleId>>._))
             .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
 
@@ -1900,14 +1898,14 @@ public class RegistrationBusinessLogicTest
             new[] {
                 new ConsentData(consentId, ConsentStatusId.INACTIVE, agreementId_1)
             });
-        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)>
+        var companyRoleAssignedAgreements = new (CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)[]
         {
-            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.APP_PROVIDER,
-                new [] { new AgreementStatusData(agreementId_1, AgreementStatusId.ACTIVE), new AgreementStatusData(agreementId_2, AgreementStatusId.ACTIVE) }),
-            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.ACTIVE_PARTICIPANT,
-                new [] { new AgreementStatusData(agreementId_1, AgreementStatusId.INACTIVE) }),
-            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.SERVICE_PROVIDER,
-                new [] { new AgreementStatusData(agreementId_1, AgreementStatusId.INACTIVE), new AgreementStatusData(agreementId_3, AgreementStatusId.INACTIVE) }),
+            (CompanyRoleId.APP_PROVIDER,
+                new AgreementStatusData[] { new(agreementId_1, AgreementStatusId.ACTIVE), new(agreementId_2, AgreementStatusId.ACTIVE) }),
+            (CompanyRoleId.ACTIVE_PARTICIPANT,
+                new AgreementStatusData[] { new(agreementId_1, AgreementStatusId.INACTIVE) }),
+            (CompanyRoleId.SERVICE_PROVIDER,
+                new AgreementStatusData[] { new(agreementId_1, AgreementStatusId.INACTIVE), new(agreementId_3, AgreementStatusId.INACTIVE) }),
         };
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
@@ -1976,14 +1974,15 @@ public class RegistrationBusinessLogicTest
         var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
 
         var data = new CompanyRoleAgreementConsentData(_identity.CompanyId, applicationStatusId, new[] { CompanyRoleId.APP_PROVIDER }, new List<ConsentData>());
-        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)>
+        var companyRoleAssignedAgreements = new (CompanyRoleId CompanyRoleId, IEnumerable<AgreementStatusData> AgreementIds)[]
         {
-            new ValueTuple<CompanyRoleId, IEnumerable<AgreementStatusData>>(CompanyRoleId.APP_PROVIDER,
-                new[]{new AgreementStatusData(agreementIds1, AgreementStatusId.ACTIVE),
-                new AgreementStatusData(agreementIds2, AgreementStatusId.ACTIVE)})
+            (CompanyRoleId.APP_PROVIDER,
+                new AgreementStatusData[]{
+                    new(agreementIds1, AgreementStatusId.ACTIVE),
+                    new(agreementIds2, AgreementStatusId.ACTIVE)})
         };
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
         A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(A<IEnumerable<CompanyRoleId>>._))
             .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
 
@@ -2014,7 +2013,7 @@ public class RegistrationBusinessLogicTest
             }
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
-            .Returns((CompanyApplicationUserEmailData?)null);
+            .Returns<CompanyApplicationUserEmailData?>(null);
         var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2042,9 +2041,9 @@ public class RegistrationBusinessLogicTest
         var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
@@ -2184,9 +2183,9 @@ public class RegistrationBusinessLogicTest
             new(Guid.NewGuid(),DocumentStatusId.PENDING),
             new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
         };
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         var settings = new RegistrationSettings
         {
@@ -2230,9 +2229,9 @@ public class RegistrationBusinessLogicTest
             new(Guid.NewGuid(),DocumentStatusId.PENDING),
             new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
         };
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         var settings = new RegistrationSettings
@@ -2269,9 +2268,9 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         var settings = new RegistrationSettings
@@ -2308,9 +2307,9 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), string.Empty, "Munich", "Germany", uniqueIds, companyRoleIds);
         var settings = new RegistrationSettings
@@ -2345,13 +2344,13 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         var companyData = new CompanyData("Test Company", null, "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2376,9 +2375,9 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         var companyData = new CompanyData(string.Empty, Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
@@ -2406,14 +2405,14 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var applicationId = _fixture.Create<Guid>();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
-         {
-             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
-         };
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
+        {
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
         var uniqueIdentifierData = Enumerable.Empty<UniqueIdentifierId>();
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIdentifierData, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2437,14 +2436,14 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
-         {
-             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
-         };
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
+        {
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
         var companyRoleIdData = Enumerable.Empty<CompanyRoleId>();
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIdData);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2472,7 +2471,7 @@ public class RegistrationBusinessLogicTest
         var agreementConsents = Enumerable.Empty<(Guid, ConsentStatusId)>();
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2497,13 +2496,13 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", string.Empty, "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2528,14 +2527,14 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
-         {
-             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
-         };
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
+        {
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
 
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", string.Empty, uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2555,9 +2554,9 @@ public class RegistrationBusinessLogicTest
         var now = DateTimeOffset.Now;
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         IEnumerable<DocumentStatusData> documents = new DocumentStatusData[]{
             new(
@@ -2605,9 +2604,9 @@ public class RegistrationBusinessLogicTest
         var now = DateTimeOffset.Now;
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        var agreementConsents = new (Guid AgreementId, ConsentStatusId ConsentStatusId)[]
         {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         IEnumerable<DocumentStatusData> documents = new DocumentStatusData[]{
             new(
@@ -2689,7 +2688,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._))
-            .Returns(((IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountry))default);
+            .Returns<(IEnumerable<UniqueIdentifierId>, bool)>(default);
 
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -2826,7 +2825,7 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", true, MediaTypeId.JSON));
+            .Returns((content, "test.json", true, MediaTypeId.JSON));
         var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         //Act
@@ -2845,7 +2844,7 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", false, MediaTypeId.JSON));
+            .Returns((content, "test.json", false, MediaTypeId.JSON));
         var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         //Act
@@ -2861,9 +2860,8 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var documentId = Guid.NewGuid();
-        var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>());
+            .Returns<(byte[], string, bool, MediaTypeId)>(default);
         var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         //Act
@@ -2883,9 +2881,9 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
-            .ReturnsLazily(() => new ValueTuple<Guid, bool>(documentId, true));
+            .Returns((documentId, true));
         A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
-            .ReturnsLazily(() => new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
+            .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2902,9 +2900,8 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var documentId = Guid.NewGuid();
-        var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
-            .ReturnsLazily(() => new ValueTuple<Guid, bool>(Guid.Empty, false));
+            .Returns((Guid.Empty, false));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2921,7 +2918,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var documentId = Guid.NewGuid();
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
-            .ReturnsLazily(() => new ValueTuple<Guid, bool>(documentId, false));
+            .Returns((documentId, false));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
@@ -2947,6 +2944,7 @@ public class RegistrationBusinessLogicTest
         var application = _fixture.Build<CompanyApplication>()
             .With(x => x.Id, _existingApplicationId)
             .Create();
+        var retval = _fixture.Create<int>();
 
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
         A.CallTo(() => _invitationRepository.GetInvitationStatusAsync(_identity.IdentityId))
@@ -2956,12 +2954,14 @@ public class RegistrationBusinessLogicTest
             {
                 setOptionalFields.Invoke(application);
             });
+        A.CallTo(() => _portalRepositories.SaveAsync()).Returns(retval);
         var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         // Act
         var result = await sut.SetInvitationStatusAsync().ConfigureAwait(false);
 
         // Assert
+        result.Should().Be(retval);
         A.CallTo(() => _invitationRepository.GetInvitationStatusAsync(_identity.IdentityId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         invitation.InvitationStatusId.Should().Be(InvitationStatusId.ACCEPTED);
@@ -2973,11 +2973,11 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         A.CallTo(() => _invitationRepository.GetInvitationStatusAsync(A<Guid>._))
-            .Returns((Invitation)null!);
+            .Returns<Invitation?>(null);
         var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
         //Act
-        var Act = async () => await sut.SetInvitationStatusAsync().ConfigureAwait(false);
+        var Act = sut.SetInvitationStatusAsync;
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -3082,7 +3082,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange;
         A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
-            .Returns(new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool, IEnumerable<Guid>>());
+            .Returns<(Guid, DocumentStatusId, bool, DocumentTypeId, bool, IEnumerable<Guid>)>(default);
 
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider);
 
@@ -3207,7 +3207,6 @@ public class RegistrationBusinessLogicTest
 
     private void SetupRepositories()
     {
-        var invitedUserRole = _fixture.CreateMany<string>(2).AsEnumerable();
         var invitedUser = _fixture.CreateMany<(InvitationStatusId InvitationStatus, string? EmailId, IEnumerable<string> Roles)>(1).ToAsyncEnumerable();
 
         A.CallTo(() => _invitationRepository.GetInvitedUserDetailsUntrackedAsync(_existingApplicationId))
@@ -3283,7 +3282,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                 .With(x => x.UserName, creationInfo.UserName)
-                .With(x => x.Error, (Exception?)null)
+                .With(x => x.Error, default(Exception?))
                 .Create());
     }
 
@@ -3296,8 +3295,8 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var data = ("Acme Corp", (string?)"Tony", (string?)"Stark", (string?)"t.stark@acme.corp", new[] {
-            (applicationId, CompanyApplicationStatusId.CREATED, new (string?, string?, string?)[] {
+        var data = ("Acme Corp", "Tony", "Stark", "t.stark@acme.corp", new (Guid, CompanyApplicationStatusId, IEnumerable<(string?, string?, string?)>)[] {
+            (applicationId, CompanyApplicationStatusId.CREATED, new(string?, string?, string?)[] {
                 ("Test", "User", "t.user@acme.corp"),
                 (null, null, "foo@bar.org")
             }.AsEnumerable())

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -45,7 +44,7 @@ public class TokenService : ITokenService
             settings.Scope,
             settings.TokenAddress);
 
-        var token = await this.GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
+        var token = await GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
 
         var httpClient = _httpClientFactory.CreateClient(typeof(T).Name);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -63,8 +62,9 @@ public class TokenService : ITokenService
             {"client_secret", settings.ClientSecret},
             {"scope", settings.Scope}
         };
-        var content = new FormUrlEncodedContent(formParameters);
-        var response = await _httpClientFactory.CreateClient(settings.HttpClientName).PostAsync(settings.TokenUrl, content, cancellationToken)
+        using var content = new FormUrlEncodedContent(formParameters);
+        using var httpClient = _httpClientFactory.CreateClient(settings.HttpClientName);
+        using var response = await httpClient.PostAsync(settings.TokenUrl, content, cancellationToken)
             .CatchingIntoServiceExceptionFor("token-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);

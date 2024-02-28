@@ -59,38 +59,16 @@ public class RegistrationControllerTest
     {
         //Arrange
         var id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-        var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
+        var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3);
         A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id))
-            .Returns(invitedUserMapper);
+            .Returns(invitedUserMapper.ToAsyncEnumerable());
 
         //Act
-        var result = this._controller.GetInvitedUsersAsync(id);
-        await foreach (var item in result)
-        {
-            //Assert
-            A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(item);
-            Assert.IsType<InvitedUser>(item);
-        }
-    }
-
-    [Fact]
-    public async Task GetInvitedUsersDetail_WhenIdisNull_ShouldThrowException()
-    {
-        //Arrange
-        var id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-        var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
-        A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id))
-            .Returns(invitedUserMapper);
-
-        //Act
-        var result = this._controller.GetInvitedUsersAsync(Guid.Empty);
+        var result = await _controller.GetInvitedUsersAsync(id).ToListAsync().ConfigureAwait(false);
 
         //Assert
-        await foreach (var item in result)
-        {
-            A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(Guid.Empty)).Throws(new Exception());
-        }
+        A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id)).MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(invitedUserMapper).And.ContainInOrder(invitedUserMapper);
     }
 
     [Fact]
@@ -109,8 +87,7 @@ public class RegistrationControllerTest
         //Assert
         A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT)).MustHaveHappenedOnceExactly();
 
-        result.Should().HaveSameCount(uploadDocuments);
-        result.Should().ContainInOrder(uploadDocuments);
+        result.Should().HaveSameCount(uploadDocuments).And.ContainInOrder(uploadDocuments);
     }
 
     [Fact]
@@ -123,7 +100,7 @@ public class RegistrationControllerTest
             .Returns(1);
 
         //Act
-        var result = await this._controller.SubmitCompanyRoleConsentToAgreementsAsync(applicationId, data).ConfigureAwait(false);
+        var result = await _controller.SubmitCompanyRoleConsentToAgreementsAsync(applicationId, data).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data)).MustHaveHappenedOnceExactly();
@@ -134,21 +111,16 @@ public class RegistrationControllerTest
     public async Task GetCompanyIdentifiers_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var applicationId = _fixture.Create<Guid>();
         var data = _fixture.CreateMany<UniqueIdentifierData>(1);
         A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE"))
             .Returns(data);
 
         //Act
-        var result = await this._controller.GetCompanyIdentifiers("DE").ConfigureAwait(false);
+        var result = await _controller.GetCompanyIdentifiers("DE").ConfigureAwait(false);
 
         // Assert
-        foreach (var item in result)
-        {
-            A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE")).MustHaveHappenedOnceExactly();
-            Assert.NotNull(item);
-            Assert.IsType<UniqueIdentifierData?>(item);
-        }
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE")).MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(data).And.ContainInOrder(data);
     }
 
     [Fact]
@@ -163,7 +135,7 @@ public class RegistrationControllerTest
             .Returns((fileName, content, contentType));
 
         //Act
-        var result = await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
+        var result = await _controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id)).MustHaveHappenedOnceExactly();
@@ -181,7 +153,7 @@ public class RegistrationControllerTest
             .Returns(new ValueTuple<string, byte[], string>("test.json", content, "application/json"));
 
         //Act
-        var result = await this._controller.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await _controller.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
@@ -199,7 +171,7 @@ public class RegistrationControllerTest
             .Returns(1);
 
         //Act
-        var result = await this._controller.InviteNewUserAsync(applicationId, creationInfo).ConfigureAwait(false);
+        var result = await _controller.InviteNewUserAsync(applicationId, creationInfo).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _registrationBusinessLogicFake.InviteNewUserAsync(applicationId, creationInfo)).MustHaveHappenedOnceExactly();
@@ -215,7 +187,7 @@ public class RegistrationControllerTest
             .Returns(companyApplicationWithStatus.ToAsyncEnumerable());
 
         //Act
-        var result = await this._controller.GetApplicationsWithStatusAsync().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetApplicationsWithStatusAsync().ToListAsync().ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _registrationBusinessLogicFake.GetAllApplicationsForUserWithStatus()).MustHaveHappenedOnceExactly();

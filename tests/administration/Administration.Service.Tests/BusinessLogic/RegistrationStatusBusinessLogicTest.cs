@@ -98,7 +98,7 @@ public class RegistrationStatusBusinessLogicTest
     {
         //Arrange
         A.CallTo(() => _companyRepository.GetCallbackEditData(A<Guid>._, A<CompanyRoleId>._))
-            .Returns(((bool, OspDetails?))default);
+            .Returns<(bool, OspDetails?)>(default);
 
         //Act
         async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https//auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);

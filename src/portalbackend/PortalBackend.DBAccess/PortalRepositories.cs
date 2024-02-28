@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -30,38 +29,41 @@ public class PortalRepositories : IPortalRepositories
 {
     private readonly PortalDbContext _dbContext;
 
-    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
-        { typeof(IAgreementRepository), context => new AgreementRepository(context) },
-        { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
-        { typeof(IApplicationChecklistRepository), context => new ApplicationChecklistRepository(context) },
-        { typeof(IAppInstanceRepository), context => new AppInstanceRepository(context) },
-        { typeof(IAppSubscriptionDetailRepository), context => new AppSubscriptionDetailRepository(context) },
-        { typeof(IClientRepository), context => new ClientRepository(context) },
-        { typeof(ICompanyRepository), context => new CompanyRepository(context) },
-        { typeof(ICompanySsiDetailsRepository), context => new CompanySsiDetailsRepository(context) },
-        { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
-        { typeof(IConsentAssignedOfferSubscriptionRepository), context => new ConsentAssignedOfferSubscriptionRepository(context) },
-        { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },
-        { typeof(IConsentRepository), context => new ConsentRepository(context) },
-        { typeof(ICountryRepository), context => new CountryRepository(context) },
-        { typeof(IDocumentRepository), context => new DocumentRepository(context) },
-        { typeof(IIdentityProviderRepository), context => new IdentityProviderRepository(context) },
-        { typeof(IIdentityRepository), context => new IdentityRepository(context) },
-        { typeof(IInvitationRepository), context => new InvitationRepository(context) },
-        { typeof(ILanguageRepository), context => new LanguageRepository(context) },
-        { typeof(INotificationRepository), context => new NotificationRepository(context) },
-        { typeof(INetworkRepository), context => new NetworkRepository(context) },
-        { typeof(IOfferRepository), context => new OfferRepository(context) },
-        { typeof(IOfferSubscriptionsRepository), context => new OfferSubscriptionsRepository(context) },
-        { typeof(IProcessStepRepository), context => new ProcessStepRepository(context) },
-        { typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
-        { typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
-        { typeof(ITechnicalUserProfileRepository), context => new TechnicalUserProfileRepository(context) },
-        { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
-        { typeof(IUserRepository), context => new UserRepository(context) },
-        { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
-        { typeof(ICompanyCertificateRepository), context => new CompanyCertificateRepository(context) },
-    }.ToImmutableDictionary();
+    private static KeyValuePair<Type, Func<PortalDbContext, object>> CreateTypeEntry<T>(Func<PortalDbContext, object> createFunc) => KeyValuePair.Create(typeof(T), createFunc);
+
+    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, object>> RepositoryTypes = ImmutableDictionary.CreateRange(new[]
+    {
+        CreateTypeEntry<IAgreementRepository>(context => new AgreementRepository(context)),
+        CreateTypeEntry<IApplicationRepository>(context => new ApplicationRepository(context)),
+        CreateTypeEntry<IApplicationChecklistRepository>(context => new ApplicationChecklistRepository(context)),
+        CreateTypeEntry<IAppInstanceRepository>(context => new AppInstanceRepository(context)),
+        CreateTypeEntry<IAppSubscriptionDetailRepository>(context => new AppSubscriptionDetailRepository(context)),
+        CreateTypeEntry<IClientRepository>(context => new ClientRepository(context)),
+        CreateTypeEntry<ICompanyRepository>(context => new CompanyRepository(context)),
+        CreateTypeEntry<ICompanySsiDetailsRepository>(context => new CompanySsiDetailsRepository(context)),
+        CreateTypeEntry<ICompanyRolesRepository>(context => new CompanyRolesRepository(context)),
+        CreateTypeEntry<IConsentAssignedOfferSubscriptionRepository>(context => new ConsentAssignedOfferSubscriptionRepository(context)),
+        CreateTypeEntry<IConnectorsRepository>(context => new ConnectorsRepository(context)),
+        CreateTypeEntry<IConsentRepository>(context => new ConsentRepository(context)),
+        CreateTypeEntry<ICountryRepository>(context => new CountryRepository(context)),
+        CreateTypeEntry<IDocumentRepository>(context => new DocumentRepository(context)),
+        CreateTypeEntry<IIdentityProviderRepository>(context => new IdentityProviderRepository(context)),
+        CreateTypeEntry<IIdentityRepository>(context => new IdentityRepository(context)),
+        CreateTypeEntry<IInvitationRepository>(context => new InvitationRepository(context)),
+        CreateTypeEntry<ILanguageRepository>(context => new LanguageRepository(context)),
+        CreateTypeEntry<INotificationRepository>(context => new NotificationRepository(context)),
+        CreateTypeEntry<INetworkRepository>(context => new NetworkRepository(context)),
+        CreateTypeEntry<IOfferRepository>(context => new OfferRepository(context)),
+        CreateTypeEntry<IOfferSubscriptionsRepository>(context => new OfferSubscriptionsRepository(context)),
+        CreateTypeEntry<IProcessStepRepository>(context => new ProcessStepRepository(context)),
+        CreateTypeEntry<IServiceAccountRepository>(context => new ServiceAccountRepository(context)),
+        CreateTypeEntry<IStaticDataRepository>(context => new StaticDataRepository(context)),
+        CreateTypeEntry<ITechnicalUserProfileRepository>(context => new TechnicalUserProfileRepository(context)),
+        CreateTypeEntry<IUserBusinessPartnerRepository>(context => new UserBusinessPartnerRepository(context)),
+        CreateTypeEntry<IUserRepository>(context => new UserRepository(context)),
+        CreateTypeEntry<IUserRolesRepository>(context => new UserRolesRepository(context)),
+        CreateTypeEntry<ICompanyCertificateRepository>(context => new CompanyCertificateRepository(context)),
+    });
 
     public PortalRepositories(PortalDbContext portalDbContext)
     {
@@ -70,9 +72,9 @@ public class PortalRepositories : IPortalRepositories
 
     public RepositoryType GetInstance<RepositoryType>()
     {
-        Object? repository = default;
+        object? repository = default;
 
-        if (_types.TryGetValue(typeof(RepositoryType), out var createFunc))
+        if (RepositoryTypes.TryGetValue(typeof(RepositoryType), out var createFunc))
         {
             repository = createFunc(_dbContext);
         }
@@ -90,9 +92,8 @@ public class PortalRepositories : IPortalRepositories
 
     public void AttachRange<TEntity>(IEnumerable<TEntity> entities, Action<TEntity> setOptionalParameters) where TEntity : class
     {
-        foreach (var entity in entities)
+        foreach (var attachedEntity in entities.Select(entity => _dbContext.Attach(entity).Entity))
         {
-            var attachedEntity = _dbContext.Attach(entity).Entity;
             setOptionalParameters.Invoke(attachedEntity);
         }
     }

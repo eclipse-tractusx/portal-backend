@@ -362,7 +362,7 @@ public class CsvParserTest
     private static async IAsyncEnumerable<(bool Processed, Exception? Error)> ProcessLinesError(IAsyncEnumerable<FakeLineType> lines)
     {
         var numLine = 0;
-        await foreach (var line in lines)
+        await foreach (var _ in lines)
         {
             numLine++;
             yield return numLine == 3
@@ -374,7 +374,7 @@ public class CsvParserTest
     private static async IAsyncEnumerable<(bool Processed, Exception? Error)> ProcessLinesThrows(IAsyncEnumerable<FakeLineType> lines)
     {
         var numLine = 0;
-        await foreach (var line in lines)
+        await foreach (var _ in lines)
         {
             numLine++;
             if (numLine == 3)

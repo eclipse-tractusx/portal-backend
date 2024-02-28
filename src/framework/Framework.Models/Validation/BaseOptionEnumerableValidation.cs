@@ -98,7 +98,7 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
                 (configSection.GetSection(propertyName).Get(property.PropertyType) as IEnumerable)
                 ?.ToIEnumerable()
                 .Select((_, i) => configSection.GetSection($"{propertyName}:{i}"))
-                .SelectMany(section => GetValidationErrors(genericType!, section)),
-            _ => null
-        } ?? Enumerable.Empty<ValidationResult>();
+                .SelectMany(section => GetValidationErrors(genericType!, section)) ?? Enumerable.Empty<ValidationResult>(),
+            _ => Enumerable.Empty<ValidationResult>()
+        };
 }

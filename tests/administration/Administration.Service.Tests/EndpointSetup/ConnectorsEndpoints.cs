@@ -30,12 +30,12 @@ public class ConnectorsEndpoints
 
     public ConnectorsEndpoints(HttpClient client)
     {
-        this._client = client;
+        _client = client;
     }
 
     public async Task<HttpResponseMessage> GetCompanyConnectorsForCurrentUserAsync()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
-        return await this._client.SendAsync(request);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
+        return await _client.SendAsync(request);
     }
 }

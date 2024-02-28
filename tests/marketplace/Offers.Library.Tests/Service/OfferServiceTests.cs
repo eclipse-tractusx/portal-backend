@@ -528,31 +528,30 @@ public class OfferServiceTests
         // Arrange
         var seedOfferId = _fixture.Create<Guid>();
         var seed = new Dictionary<(Guid, string), OfferDescription>() {
-            {(seedOfferId, "de"), new OfferDescription(seedOfferId, "de", _fixture.Create<string>(), _fixture.Create<string>())},
-            {(seedOfferId, "en"), new OfferDescription(seedOfferId, "en", _fixture.Create<string>(), _fixture.Create<string>())},
-            {(seedOfferId, "fr"), new OfferDescription(seedOfferId, "fr", _fixture.Create<string>(), _fixture.Create<string>())},
-            {(seedOfferId, "cz"), new OfferDescription(seedOfferId, "cz", _fixture.Create<string>(), _fixture.Create<string>())},
-            {(seedOfferId, "it"), new OfferDescription(seedOfferId, "it", _fixture.Create<string>(), _fixture.Create<string>())},
+            {(seedOfferId, "de"), new(seedOfferId, "de", _fixture.Create<string>(), _fixture.Create<string>())},
+            {(seedOfferId, "en"), new(seedOfferId, "en", _fixture.Create<string>(), _fixture.Create<string>())},
+            {(seedOfferId, "fr"), new(seedOfferId, "fr", _fixture.Create<string>(), _fixture.Create<string>())},
+            {(seedOfferId, "cz"), new(seedOfferId, "cz", _fixture.Create<string>(), _fixture.Create<string>())},
+            {(seedOfferId, "it"), new(seedOfferId, "it", _fixture.Create<string>(), _fixture.Create<string>())},
         };
 
-        var updateDescriptions = new[] {
-            new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>()),
-            new LocalizedDescription("fr", _fixture.Create<string>(), _fixture.Create<string>()),
-            new LocalizedDescription("sk", _fixture.Create<string>(), _fixture.Create<string>()),
-            new LocalizedDescription("se", _fixture.Create<string>(), _fixture.Create<string>()),
-            new LocalizedDescription("it", null!,null!)
+        var updateDescriptions = new LocalizedDescription[] {
+            new("de", _fixture.Create<string>(), _fixture.Create<string>()),
+            new("fr", _fixture.Create<string>(), _fixture.Create<string>()),
+            new("sk", _fixture.Create<string>(), _fixture.Create<string>()),
+            new("se", _fixture.Create<string>(), _fixture.Create<string>()),
+            new("it", null!,null!)
         };
+
+        var transformedUpdateDescriptions = updateDescriptions.Select(x => (x.LanguageCode, x.LongDescription, x.ShortDescription));
 
         var existingDescriptions = seed.Select((x) => x.Value).Select(y => new LocalizedDescription(y.LanguageShortName, y.DescriptionLong, y.DescriptionShort)).ToList();
-
-        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(seedOfferId, existingDescriptions,
-            updateDescriptions.Select(x => new ValueTuple<string, string, string>(x.LanguageCode, x.LongDescription, x.ShortDescription))));
 
         _sut.UpsertRemoveOfferDescription(seedOfferId, updateDescriptions, existingDescriptions);
 
         // Assert
-        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._, A<IEnumerable<LocalizedDescription>>._
-            , A<IEnumerable<(string, string, string)>>._)).MustHaveHappened();
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(seedOfferId, A<IEnumerable<LocalizedDescription>>.That.IsSameSequenceAs(existingDescriptions),
+            A<IEnumerable<(string, string, string)>>.That.IsSameSequenceAs(transformedUpdateDescriptions))).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -615,7 +614,7 @@ public class OfferServiceTests
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).Returns((OfferReleaseData?)null);
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).Returns<OfferReleaseData?>(null);
 
         // Act
         async Task Act() => await _sut.SubmitOfferAsync(notExistingOffer, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, Enumerable.Empty<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
@@ -970,7 +969,7 @@ public class OfferServiceTests
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).Returns((OfferReleaseData?)null);
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).Returns<OfferReleaseData?>(null);
 
         // Act
         async Task Act() => await _sut.SubmitServiceAsync(notExistingOffer, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
@@ -1078,7 +1077,7 @@ public class OfferServiceTests
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, offerTypeId))
-            .Returns(((string?, OfferStatusId, Guid?, IEnumerable<DocumentStatusData>))default);
+            .Returns<(string?, OfferStatusId, Guid?, IEnumerable<DocumentStatusData>)>(default);
 
         // Act
         async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
@@ -1115,7 +1114,7 @@ public class OfferServiceTests
         var notExistingOffer = _fixture.Create<Guid>();
         var documentStatusDatas = _fixture.CreateMany<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, offerTypeId))
-            .Returns(((string?)null, OfferStatusId.IN_REVIEW, Guid.NewGuid(), documentStatusDatas));
+            .Returns((null, OfferStatusId.IN_REVIEW, Guid.NewGuid(), documentStatusDatas));
 
         // Act
         async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, Enumerable.Empty<UserRoleConfig>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
@@ -1175,7 +1174,7 @@ public class OfferServiceTests
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, A<Guid>._))
-            .Returns(new[] { ("test@email.com", (string?)"Test User 1", (string?)"cx-user-2") }.ToAsyncEnumerable());
+            .Returns(new (string, string?, string?)[] { ("test@email.com", "Test User 1", "cx-user-2") }.ToAsyncEnumerable());
 
         IEnumerable<Document>? initial = null;
         IEnumerable<Document>? modified = null;
@@ -1249,7 +1248,7 @@ public class OfferServiceTests
         // Arrange
         var notExistingId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(notExistingId, offerTypeId, _companyId))
-            .Returns(((bool, bool))default);
+            .Returns<(bool, bool)>(default);
 
         // Act
         async Task Act() => await _sut.DeactivateOfferIdAsync(notExistingId, offerTypeId).ConfigureAwait(false);
@@ -1306,7 +1305,7 @@ public class OfferServiceTests
         var offer = _fixture.Create<Offer>();
         var offerId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, _companyId))
-            .Returns(new ValueTuple<bool, bool>(true, true));
+            .Returns((true, true));
 
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
@@ -1370,7 +1369,7 @@ public class OfferServiceTests
         var serviceId = Guid.NewGuid();
 
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsentById(A<Guid>._, A<Guid>._, OfferTypeId.SERVICE))
-            .Returns(((OfferAgreementConsent, bool))default);
+            .Returns<(OfferAgreementConsent, bool)>(default);
 
         // Act
         async Task Act() => await _sut.GetProviderOfferAgreementConsentById(serviceId, OfferTypeId.SERVICE).ConfigureAwait(false);
@@ -1394,7 +1393,7 @@ public class OfferServiceTests
         var agreementId = Guid.NewGuid();
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _companyId, OfferStatusId.CREATED, offerTypeId))
-            .Returns(((OfferAgreementConsentUpdate, bool))default);
+            .Returns<(OfferAgreementConsentUpdate, bool)>(default);
 
         // Act
         async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, offerTypeId).ConfigureAwait(false);
@@ -1548,7 +1547,7 @@ public class OfferServiceTests
         var documentId = _fixture.Create<Guid>();
 
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
-            .Returns((OfferDocumentContentData?)null);
+            .Returns<OfferDocumentContentData?>(null);
 
         // Act
         async Task Act() => await _sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, CancellationToken.None).ConfigureAwait(false);
@@ -1701,7 +1700,7 @@ public class OfferServiceTests
     {
         //Arrange
         A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _companyId, documentTypeIdSettings, offerTypeId))
-            .Returns(((IEnumerable<(OfferStatusId, Guid, bool)>, bool, DocumentStatusId, bool))default);
+            .Returns<(IEnumerable<(OfferStatusId, Guid, bool)>, bool, DocumentStatusId, bool)>(default);
 
         //Act
         async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
@@ -1718,7 +1717,7 @@ public class OfferServiceTests
     {
         //Arrange
         A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _companyId, documentTypeIdSettings, offerTypeId))
-            .Returns((new[] { ((OfferStatusId, Guid, bool))default }, true, DocumentStatusId.PENDING, true));
+            .Returns((new[] { default((OfferStatusId, Guid, bool)) }, true, DocumentStatusId.PENDING, true));
 
         //Act
         async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
@@ -1877,9 +1876,8 @@ public class OfferServiceTests
     {
         // Arrange
         var offerId = _fixture.Create<Guid>();
-        var data = _fixture.CreateMany<TechnicalUserProfileInformation>(5);
         A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId))
-            .Returns(((bool, IEnumerable<TechnicalUserProfileInformation>))default);
+            .Returns<(bool, IEnumerable<TechnicalUserProfileInformation>)>(default);
 
         // Act
         async Task Act() => await _sut.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
@@ -2093,7 +2091,7 @@ public class OfferServiceTests
             }),
         };
         A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _companyId))
-            .Returns((OfferProfileData?)null);
+            .Returns<OfferProfileData?>(null);
         A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
             .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
 
@@ -2163,7 +2161,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
-            .Returns(((bool, bool, ProviderSubscriptionDetailData))default);
+            .Returns<(bool, bool, ProviderSubscriptionDetailData)>(default);
 
         // Act
         async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
@@ -2270,7 +2268,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
-            .Returns(((bool, bool, AppProviderSubscriptionDetail))default);
+            .Returns<(bool, bool, AppProviderSubscriptionDetail)>(default);
 
         // Act
         async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
@@ -2384,7 +2382,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
-            .Returns(((bool, bool, SubscriberSubscriptionDetailData))default);
+            .Returns<(bool, bool, SubscriberSubscriptionDetailData)>(default);
 
         // Act
         async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
@@ -2490,7 +2488,7 @@ public class OfferServiceTests
     {
         // Arrange
         A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._))
-            .Returns((skip, take) => Task.FromResult((Pagination.Source<OfferSubscriptionStatusData>?)null));
+            .Returns((skip, take) => Task.FromResult<Pagination.Source<OfferSubscriptionStatusData>?>(null));
 
         // Act
         var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, offerTypeId, documentTypeId).ConfigureAwait(false);
@@ -2512,7 +2510,7 @@ public class OfferServiceTests
         // Arrange
         var notExistingSubscriptionId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(A<Guid>._, A<Guid>._))
-            .Returns(((OfferSubscriptionStatusId, bool, bool, IEnumerable<Guid>, IEnumerable<Guid>))default);
+            .Returns<(OfferSubscriptionStatusId, bool, bool, IEnumerable<Guid>, IEnumerable<Guid>)>(default);
 
         // Act
         async Task Act() => await _sut.UnsubscribeOwnCompanySubscriptionAsync(notExistingSubscriptionId).ConfigureAwait(false);
@@ -2658,13 +2656,13 @@ public class OfferServiceTests
             .Returns((_companyId, offerSubscription));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), _companyUserId, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
-            .Returns((_companyId, (OfferSubscription?)null));
+            .Returns<(Guid, OfferSubscription?)>((_companyId, null));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), _companyUserId, A<OfferTypeId>._))
-            .Returns((_companyId, (OfferSubscription?)null));
+            .Returns<(Guid, OfferSubscription?)>((_companyId, null));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), A<Guid>.That.Not.Matches(x => x == _companyUserId),
                 A<OfferTypeId>._))
-            .Returns(((Guid companyId, OfferSubscription? offerSubscription))default);
+            .Returns<(Guid companyId, OfferSubscription? offerSubscription)>(default);
 
         var agreementData = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => _agreementRepository.GetOfferAgreementDataForOfferId(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
@@ -2675,14 +2673,14 @@ public class OfferServiceTests
         A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE)))
             .Returns(new ConsentDetailData(_validConsentId, "The Company", this._companyUser.Id, ConsentStatusId.ACTIVE, "Agreed"));
         A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
-            .Returns((ConsentDetailData?)null);
+            .Returns<ConsentDetailData?>(null);
         A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
-            .Returns((ConsentDetailData?)null);
+            .Returns<ConsentDetailData?>(null);
 
         A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(_companyId))
             .Returns((true, "the company"));
         A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _companyId)))
-            .Returns(new ValueTuple<bool, string>());
+            .Returns<(bool, string)>(default);
 
         A.CallTo(() => _consentAssignedOfferSubscriptionRepository.GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(A<Guid>._, A<IEnumerable<Guid>>.That.Not.Matches(x => x.Any(y => y == _existingAgreementForSubscriptionId))))
             .Returns(Enumerable.Empty<(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId)>().ToAsyncEnumerable());

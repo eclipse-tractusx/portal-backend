@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
@@ -49,9 +50,9 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
             new () { Path = "/foo" }
         };
 
-        var app = WebApplication.Create();
+        using var app = WebApplication.Create();
 
-        var result = Assert.Throws<Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ConfigurationException>(() => app.MapDefaultHealthChecks(settings));
+        var result = Assert.Throws<ConfigurationException>(() => app.MapDefaultHealthChecks(settings));
         result.Message.Should().Be("HealthChecks mapping /foo, /foo contains ambiguous pathes");
     }
 
@@ -190,7 +191,8 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         await app.StartAsync().ConfigureAwait(false);
         try
         {
-            var result = await new HttpClient().GetAsync("http://localhost:5000/health").ConfigureAwait(false);
+            using var httpClient = new HttpClient();
+            using var result = await httpClient.GetAsync("http://localhost:5000/health").ConfigureAwait(false);
             await using var responseStream = await result.Content.ReadAsStreamAsync().ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<HealthResponse>(responseStream, _options).ConfigureAwait(false);
         }

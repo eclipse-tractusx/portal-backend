@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,12 +27,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 [Trait("Category", "PortalHC")]
 [TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.AlphabeticalOrderer", "EndToEnd.Tests")]
 [Collection("PortalHC")]
-public class RegistrationHealthCheck : EndToEndTestBase
+public class RegistrationHealthCheck : EndToEndTestBase, IAsyncLifetime
 {
     private readonly string _baseUrl = TestResources.BasePortalBackendUrl;
     private readonly string _endPoint = "/api/registration";
     private readonly string _portalUserCompanyName = TestResources.PortalUserCompanyName;
-    private static string? PortalUserToken;
+    private string? _portalUserToken;
 
     private static readonly Secrets Secrets = new();
 
@@ -41,47 +40,45 @@ public class RegistrationHealthCheck : EndToEndTestBase
     {
     }
 
-    [Fact]
-    public async Task GetAccessToken() // in order to just get token once, ensure that method name is alphabetically before other tests cases
+    public async Task InitializeAsync()
     {
-        PortalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
+        _portalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
             Secrets.PortalUserPassword);
-
-        PortalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
     }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task GetCompanyRoles()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken().ConfigureAwait(false);
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/company/companyRoles")
             .Then()
             .StatusCode(200)
             .Extract()
             .Response();
-        var data = response.Content.ReadAsStringAsync().Result;
+
+        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         data.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
     [Fact]
     public async Task GetCompanyRoleAgreementData()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken().ConfigureAwait(false);
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/companyRoleAgreementData")
             .Then()
@@ -89,48 +86,48 @@ public class RegistrationHealthCheck : EndToEndTestBase
             .Extract()
             .Response();
 
-        var data = response.Content.ReadAsStringAsync().Result;
+        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         data.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
     [Fact]
     public async Task GetClientRolesComposite()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken().ConfigureAwait(false);
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/rolesComposite")
             .Then()
             .StatusCode(200)
             .Extract()
             .Response();
-        var data = response.Content.ReadAsStringAsync().Result;
+
+        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         data.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
     [Fact]
     public async Task GetApplicationsWithStatus()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken().ConfigureAwait(false);
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/applications")
             .Then()
             .StatusCode(200)
             .Extract().Response();
-        var data = response.Content.ReadAsStringAsync().Result;
+
+        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         data.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 }

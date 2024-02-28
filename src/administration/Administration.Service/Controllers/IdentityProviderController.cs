@@ -383,6 +383,6 @@ public class IdentityProviderController : ControllerBase
     public async ValueTask<ActionResult> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId)
     {
         await _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
-        return (ActionResult)NoContent();
+        return NoContent();
     }
 }

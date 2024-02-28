@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -70,7 +69,7 @@ public class CustodianBusinessLogicTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(applicationId)).ReturnsLazily(() => (string?)null);
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(applicationId)).Returns<string?>(null);
 
         // Act
         async Task Act() => await _logic.GetWalletByBpnAsync(applicationId, CancellationToken.None).ConfigureAwait(false);
@@ -85,7 +84,7 @@ public class CustodianBusinessLogicTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(applicationId)).ReturnsLazily(() => ValidBpn);
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(applicationId)).Returns(ValidBpn);
 
         // Act
         await _logic.GetWalletByBpnAsync(applicationId, CancellationToken.None).ConfigureAwait(false);
@@ -271,10 +270,10 @@ public class CustodianBusinessLogicTests
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(IdWithBpn))
             .Returns((CompanyId, ValidCompanyName, ValidBpn));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Not.Matches(x => x == IdWithBpn || x == IdWithoutBpn)))
-            .Returns(((Guid, string, string?))default);
+            .Returns<(Guid, string, string?)>(default);
 
         A.CallTo(() => _custodianService.CreateWalletAsync(ValidBpn, ValidCompanyName, CancellationToken.None))
-            .ReturnsLazily(() => "It worked.");
+            .Returns("It worked.");
     }
 
     #endregion

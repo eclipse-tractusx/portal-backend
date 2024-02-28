@@ -35,7 +35,7 @@ public static class FlurlErrorHandler
             if (isDevelopment)
             {
                 var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
-                var requestBody = call.RequestBody == null ? "\n" : call.RequestBody.ToString() + "\n\n";
+                var requestBody = call.RequestBody == null ? "\n" : call.RequestBody + "\n\n";
                 var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
                 var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
                 logger.LogError(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);

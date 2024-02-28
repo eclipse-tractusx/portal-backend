@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -237,11 +236,9 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should()
-            .BeOfType<PortalEntities.Entities.Document>()
-                .Which.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Document>()
+            .Which.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
     }
 
     [Fact]
@@ -249,16 +246,19 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var id = Guid.NewGuid();
 
         // Act
-        sut.AttachAndModifyDocument(Guid.NewGuid(),
+        sut.AttachAndModifyDocument(id,
             docstatusId => { docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; },
             docstatusId => { docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; });
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeFalse();
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Document>()
+            .Which.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
     }
 
     #endregion
@@ -350,7 +350,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
             result.IsValidDocumentType.Should().Be(isValidDocumentType);
             result.IsValidOfferType.Should().Be(isValidOfferType);
             result.IsInactive.Should().Be(isInactive);
-            if (isDocumentExisting && isLinkedToOffer && isValidDocumentType && isValidOfferType && !isInactive)
+            if (isLinkedToOffer && isValidDocumentType && isValidOfferType && !isInactive)
             {
                 result.Content.Should().NotBeNull();
             }

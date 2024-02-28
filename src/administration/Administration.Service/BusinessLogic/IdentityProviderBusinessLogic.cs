@@ -150,7 +150,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             IamIdentityProviderProtocol.OIDC => await GetIdentityProviderDetailsOidc(identityProviderId, alias, IdentityProviderCategoryId.KEYCLOAK_OIDC, typeId, null).ConfigureAwait(false),
             IamIdentityProviderProtocol.SAML => await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false),
-            _ => throw new UnexpectedConditionException($"unexpected value of protocol: '{protocol.ToString()}'")
+            _ => throw new UnexpectedConditionException($"unexpected value of protocol: '{protocol}'")
         };
     }
 
@@ -268,7 +268,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 await UpdateIdentityProviderSaml(alias, details).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false);
             default:
-                throw new ControllerArgumentException($"unexpected value for category '{category.ToString()}' of identityProvider '{identityProviderId}'");
+                throw new ControllerArgumentException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'");
         }
     }
 

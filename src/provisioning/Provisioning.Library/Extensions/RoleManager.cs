@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -94,13 +93,14 @@ public partial class ProvisioningManager
             throw new ConflictException($"Client {clientName} does not exist");
         }
 
-        foreach (var roleName in roleNames.Except(result.RoleNames.Select(x => x.Name)))
+        foreach (var role in roleNames.Except(result.RoleNames.Select(x => x.Name))
+            .Select(roleName =>
+                new Role
+                {
+                    Name = roleName,
+                    ClientRole = true
+                }))
         {
-            var role = new Role
-            {
-                Name = roleName,
-                ClientRole = true,
-            };
             await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, result.ClientId, role).ConfigureAwait(false);
         }
     }

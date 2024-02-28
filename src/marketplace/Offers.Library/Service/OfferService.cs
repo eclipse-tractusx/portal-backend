@@ -333,7 +333,7 @@ public class OfferService : IOfferService
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         offerRepository.CreateUpdateDeleteOfferDescriptions(offerId, existingDescriptions,
-            updateDescriptions.Select(od => new ValueTuple<string, string, string>(od.LanguageCode, od.LongDescription, od.ShortDescription)));
+            updateDescriptions.Select(od => (od.LanguageCode, od.LongDescription, od.ShortDescription)));
     }
 
     public void CreateOrUpdateOfferLicense(Guid offerId, string licenseText, (Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers) offerLicense)

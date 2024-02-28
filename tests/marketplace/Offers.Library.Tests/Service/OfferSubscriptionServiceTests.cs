@@ -532,7 +532,7 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_identity.CompanyId, _identity.IdentityId))
             .Returns(new CompanyInformationData(_companyId, "The Company", "DE", "BPM00000001", "test@mail.com"));
         A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_notAssignedCompanyId, _identity.IdentityId))
-            .Returns((CompanyInformationData?)null);
+            .Returns<CompanyInformationData?>(null);
         A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_noBpnSetCompanyId, _identity.IdentityId))
             .Returns(new CompanyInformationData(_companyId, "The Company", "DE", null, "test@mail.com"));
         A.CallTo(() => _companyRepository.GetOwnCompanyInformationAsync(_existingActiveSubscriptionCompanyId, _identity.IdentityId))
@@ -557,7 +557,7 @@ public class OfferSubscriptionServiceTests
             }
             });
         A.CallTo(() => _offerRepository.GetOfferDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingOfferId), A<string>._, A<Guid>._, A<OfferTypeId>._))
-            .Returns((OfferDetailData?)null);
+            .Returns<OfferDetailData?>(null);
 
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferId), A<OfferTypeId>._))
             .Returns(new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", _salesManagerId, "https://www.testurl.com", false, _companyId));
@@ -568,7 +568,7 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferWithoutDetailsFilled), A<OfferTypeId>._))
             .Returns(new OfferProviderDetailsData(null, "Test Company", null, _salesManagerId, "https://www.fail.com", false, _companyId));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingOfferId || x == _existingOfferWithFailingAutoSetupId || x == _existingOfferWithoutDetailsFilled || x == _existingOfferIdWithoutProviderEmail), A<OfferTypeId>._))
-            .Returns((OfferProviderDetailsData?)null);
+            .Returns<OfferProviderDetailsData?>(null);
 
         var offerSubscription = _fixture.Create<OfferSubscription>();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailDataForOwnUserAsync(
@@ -580,7 +580,7 @@ public class OfferSubscriptionServiceTests
                 A<Guid>.That.Not.Matches(x => x == _validSubscriptionId),
                 A<Guid>.That.Matches(x => x == _companyId),
                 A<OfferTypeId>._))
-            .Returns((SubscriptionDetailData?)null);
+            .Returns<SubscriptionDetailData?>(null);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.IdentityId), A<OfferTypeId>._))
             .Returns((_companyId, offerSubscription));
@@ -591,7 +591,7 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Not.Matches(x => x == _identity.IdentityId),
                 A<OfferTypeId>._))
-            .Returns(((Guid companyId, OfferSubscription? offerSubscription))default);
+            .Returns<(Guid companyId, OfferSubscription? offerSubscription)>(default);
 
         A.CallTo(() => _agreementRepository.GetAgreementIdsForOfferAsync(A<Guid>.That.Matches(id => id == _existingOfferId || id == _existingOfferWithFailingAutoSetupId || id == _existingOfferWithoutDetailsFilled || id == _existingOfferIdWithoutProviderEmail)))
             .Returns(_offerAgreementIds.ToAsyncEnumerable());

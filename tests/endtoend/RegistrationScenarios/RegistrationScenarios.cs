@@ -44,33 +44,33 @@ public class RegistrationScenarios : EndToEndTestBase
         var userCompanyName = $"{testEntry.CompanyDetailData?.Name}_{now:s}";
         userCompanyName = userCompanyName.Replace(":", "").Replace("_", "");
 
-        var (companyToken, applicationId) = await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName);
+        var (companyToken, applicationId) = await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName).ConfigureAwait(false);
         companyToken.Should().NotBeNull();
         applicationId.Should().NotBeNull();
 
-        var companyDetailData = RegistrationEndpointHelper.SetCompanyDetailData(testEntry.CompanyDetailData);
+        var companyDetailData = await RegistrationEndpointHelper.SetCompanyDetailData(testEntry.CompanyDetailData).ConfigureAwait(false);
         companyDetailData.Name.Should().Be(userCompanyName);
-        Thread.Sleep(3000);
+        await Task.Delay(3000).ConfigureAwait(false);
 
         var roleSubmissionResult =
-            RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.CompanyRoles);
+            await RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.CompanyRoles).ConfigureAwait(false);
         int.Parse(roleSubmissionResult).Should().BeGreaterThan(0);
-        Thread.Sleep(3000);
+        await Task.Delay(3000).ConfigureAwait(false);
 
-        RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName);
+        await RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName).ConfigureAwait(false);
 
-        Thread.Sleep(3000);
-        var status = RegistrationEndpointHelper.SubmitRegistration();
+        await Task.Delay(3000).ConfigureAwait(false);
+        var status = await RegistrationEndpointHelper.SubmitRegistration().ConfigureAwait(false);
         status.Should().BeTrue();
-        Thread.Sleep(3000);
+        await Task.Delay(3000).ConfigureAwait(false);
 
-        var applicationDetails = RegistrationEndpointHelper.GetApplicationDetails(userCompanyName);
+        var applicationDetails = await RegistrationEndpointHelper.GetApplicationDetails(userCompanyName).ConfigureAwait(false);
         applicationDetails.Should().NotBeNull();
         applicationDetails!.CompanyApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
         applicationDetails.ApplicationId.ToString().Should().Be(applicationId);
 
-        Thread.Sleep(3000);
-        var storedCompanyDetailData = RegistrationEndpointHelper.GetCompanyWithAddress();
+        await Task.Delay(3000).ConfigureAwait(false);
+        var storedCompanyDetailData = await RegistrationEndpointHelper.GetCompanyWithAddress().ConfigureAwait(false);
         storedCompanyDetailData.Should().NotBeNull();
     }
 
@@ -87,9 +87,9 @@ public class RegistrationScenarios : EndToEndTestBase
         var userCompanyName = $"{testEntry.CompanyDetailData.Name}_{now:s}";
         userCompanyName = userCompanyName.Replace(":", "").Replace("_", "");
         await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName);
-        Thread.Sleep(3000);
-        RegistrationEndpointHelper.SetCompanyDetailData(testEntry.CompanyDetailData);
-        RegistrationEndpointHelper.UpdateCompanyDetailData(testEntry.UpdateCompanyDetailData);
+        await Task.Delay(3000).ConfigureAwait(false);
+        await RegistrationEndpointHelper.SetCompanyDetailData(testEntry.CompanyDetailData).ConfigureAwait(false);
+        await RegistrationEndpointHelper.UpdateCompanyDetailData(testEntry.UpdateCompanyDetailData).ConfigureAwait(false);
     }
 
     [Fact(DisplayName = "Company Registration with manual data input & additional user invite")]
@@ -99,16 +99,16 @@ public class RegistrationScenarios : EndToEndTestBase
         var userCompanyName = $"Test-Catena-X_{now:s}";
         userCompanyName = userCompanyName.Replace(":", "").Replace("_", "");
         await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName);
-        Thread.Sleep(10000);
-        RegistrationEndpointHelper.InviteNewUser();
+        await Task.Delay(10000).ConfigureAwait(false);
+        await RegistrationEndpointHelper.InviteNewUser().ConfigureAwait(false);
     }
 
     [Theory(DisplayName = "Company Registration by BPN")]
     [MemberData(nameof(GetDataEntriesForRegistrationWithBpn))]
     public async Task CompanyRegistration_ByBpn(TestDataRegistrationModel testEntry)
     {
-        var bpn = RegistrationEndpointHelper.GetBpn().Result;
-        var bpdmCompanyDetailData = RegistrationEndpointHelper.GetCompanyBpdmDetailData(bpn);
+        var bpn = await RegistrationEndpointHelper.GetBpn().ConfigureAwait(false);
+        var bpdmCompanyDetailData = await RegistrationEndpointHelper.GetCompanyBpdmDetailData(bpn).ConfigureAwait(false);
 
         var now = DateTime.Now;
         var userCompanyName = bpdmCompanyDetailData.Name + $"{now:s}";
@@ -118,68 +118,44 @@ public class RegistrationScenarios : EndToEndTestBase
         companyToken.Should().NotBeNullOrEmpty();
         applicationId.Should().NotBeNullOrEmpty();
 
-        var companyDetailData = RegistrationEndpointHelper.SetCompanyDetailData(bpdmCompanyDetailData);
+        var companyDetailData = await RegistrationEndpointHelper.SetCompanyDetailData(bpdmCompanyDetailData).ConfigureAwait(false);
         companyDetailData.Name.Should().Be(userCompanyName);
-        Thread.Sleep(3000);
+        await Task.Delay(3000).ConfigureAwait(false);
 
         var roleSubmissionResult =
-            RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.CompanyRoles);
+            await RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.CompanyRoles).ConfigureAwait(false);
         int.Parse(roleSubmissionResult).Should().BeGreaterThan(0);
-        Thread.Sleep(3000);
+        await Task.Delay(3000).ConfigureAwait(false);
 
-        RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName);
+        await RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName).ConfigureAwait(false);
 
-        Thread.Sleep(3000);
-        var status = RegistrationEndpointHelper.SubmitRegistration();
+        await Task.Delay(3000).ConfigureAwait(false);
+        var status = await RegistrationEndpointHelper.SubmitRegistration().ConfigureAwait(false);
         status.Should().BeTrue();
-        Thread.Sleep(3000);
+        await Task.Delay(3000).ConfigureAwait(false);
 
-        var applicationDetails = RegistrationEndpointHelper.GetApplicationDetails(userCompanyName);
+        var applicationDetails = await RegistrationEndpointHelper.GetApplicationDetails(userCompanyName).ConfigureAwait(false);
         applicationDetails.Should().NotBeNull();
         applicationDetails?.CompanyApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
         applicationDetails?.ApplicationId.ToString().Should().Be(applicationId);
 
-        Thread.Sleep(3000);
-        var storedCompanyDetailData = RegistrationEndpointHelper.GetCompanyWithAddress();
+        await Task.Delay(3000).ConfigureAwait(false);
+        var storedCompanyDetailData = await RegistrationEndpointHelper.GetCompanyWithAddress().ConfigureAwait(false);
         storedCompanyDetailData.Should().NotBeNull();
     }
 
     public static IEnumerable<object[]> GetDataEntriesForUpdateCompanyDetailDataWithoutBpn
     {
-        get
-        {
-            var testDataEntries =
-                TestDataHelper.GetTestDataForRegistrationWithoutBpn("TestDataHappyPathUpdateCompanyDetailData.json");
-            foreach (var t in testDataEntries)
-            {
-                yield return new object[] { t };
-            }
-        }
+        get => TestDataHelper.GetTestDataForRegistrationWithoutBpn("TestDataHappyPathUpdateCompanyDetailData.json").Select(t => new object[] { t });
     }
 
     public static IEnumerable<object[]> GetDataEntriesForRegistrationWithoutBpn
     {
-        get
-        {
-            var testDataEntries =
-                TestDataHelper.GetTestDataForRegistrationWithoutBpn("TestDataHappyPathRegistrationWithoutBpn.json");
-            foreach (var t in testDataEntries)
-            {
-                yield return new object[] { t };
-            }
-        }
+        get => TestDataHelper.GetTestDataForRegistrationWithoutBpn("TestDataHappyPathRegistrationWithoutBpn.json").Select(t => new object[] { t });
     }
 
     public static IEnumerable<object[]> GetDataEntriesForRegistrationWithBpn
     {
-        get
-        {
-            var testDataEntries =
-                TestDataHelper.GetTestDataForRegistrationWithBpn("TestDataHappyPathRegistrationWithBpn.json");
-            foreach (var t in testDataEntries)
-            {
-                yield return new object[] { t };
-            }
-        }
+        get => TestDataHelper.GetTestDataForRegistrationWithBpn("TestDataHappyPathRegistrationWithBpn.json").Select(t => new object[] { t });
     }
 }

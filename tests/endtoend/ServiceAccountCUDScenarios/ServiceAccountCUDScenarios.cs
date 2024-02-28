@@ -49,7 +49,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
         // get a snapshot of current existing service accounts
         try
         {
-            existingServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
+            existingServiceAccounts = await AdministrationEndpointHelper.GetServiceAccounts().ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -58,12 +58,12 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
         finally
         {
             //create a new service account
-            var newServiceAccount = AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
+            var newServiceAccount = await AdministrationEndpointHelper.CreateNewServiceAccount(permissions).ConfigureAwait(false);
 
             try
             {
                 //check if the new service account is added (validation against the previous taken snapshot)
-                var updatedServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
+                var updatedServiceAccounts = await AdministrationEndpointHelper.GetServiceAccounts().ConfigureAwait(false);
 
                 if (!existingServiceAccounts.IsNullOrEmpty())
                 {
@@ -89,8 +89,9 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
 
                 var jwtSecurityToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
                 jwtSecurityToken.Payload.Should().ContainKey("bpn", "Attribute BPN in user token was not found");
-                AdministrationEndpointHelper.DeleteServiceAccount(
-                        newServiceAccount.ServiceAccountId.ToString()).Should().BeTrue("Created service account could not be deleted");
+                var result = await AdministrationEndpointHelper.DeleteServiceAccount(
+                        newServiceAccount.ServiceAccountId.ToString()).ConfigureAwait(false);
+                result.Should().BeTrue("Created service account could not be deleted");
             }
         }
     }
@@ -103,21 +104,22 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
         await AdministrationEndpointHelper.GetOperatorToken().ConfigureAwait(false);
 
         //create a new service account
-        var newServiceAccount = AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
+        var newServiceAccount = await AdministrationEndpointHelper.CreateNewServiceAccount(permissions).ConfigureAwait(false);
 
         //update the previous created service account details by changing "name" and "description"
         var now = DateTime.Now;
         var newTechUserName = $"UpdatedTechUserName_{now:s}";
         var newDescription = "This is an updated description for a technical user via test automation e2e tests";
-        AdministrationEndpointHelper.UpdateServiceAccountDetailsById(newServiceAccount.ServiceAccountId.ToString(),
-            newTechUserName, newDescription);
+        await AdministrationEndpointHelper.UpdateServiceAccountDetailsById(newServiceAccount.ServiceAccountId.ToString(),
+            newTechUserName, newDescription).ConfigureAwait(false);
 
         //check if the change of the serviceAccount got successfully saved
-        var updatedServiceAccount = AdministrationEndpointHelper.GetServiceAccountDetailsById(newServiceAccount.ServiceAccountId.ToString());
+        var updatedServiceAccount = await AdministrationEndpointHelper.GetServiceAccountDetailsById(newServiceAccount.ServiceAccountId.ToString()).ConfigureAwait(false);
 
         updatedServiceAccount.Name.Should().Be(newTechUserName, "Updated technical user name was not stored correctly.");
         updatedServiceAccount.Description.Should().Be(newDescription, "Updated description of service account was not stored correctly");
-        AdministrationEndpointHelper.DeleteServiceAccount(updatedServiceAccount.ServiceAccountId.ToString()).Should().BeTrue("Created service account could not be deleted.");
+        var result = await AdministrationEndpointHelper.DeleteServiceAccount(updatedServiceAccount.ServiceAccountId.ToString()).ConfigureAwait(false);
+        result.Should().BeTrue("Created service account could not be deleted.");
     }
 
     //Scenario - Create a new service account and update the credentials
@@ -129,12 +131,12 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
 
         // create a new service account
         var newServiceAccount =
-            AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
+            await AdministrationEndpointHelper.CreateNewServiceAccount(permissions).ConfigureAwait(false);
 
         //reset service account credentials
         var updatedServiceAccount =
-            AdministrationEndpointHelper.ResetServiceAccountCredentialsById(
-                newServiceAccount.ServiceAccountId.ToString());
+            await AdministrationEndpointHelper.ResetServiceAccountCredentialsById(
+                newServiceAccount.ServiceAccountId.ToString()).ConfigureAwait(false);
         updatedServiceAccount.Should().NotBeNull();
 
         //check if the resetup of the credentials was successful
@@ -144,7 +146,8 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
         var token = TechTokenRetriever.GetToken(TokenUrl, updatedServiceAccount.ClientId, updatedServiceAccount.Secret);
 
         token.Should().NotBeNullOrEmpty("Token for new technical user could not be fetched correctly");
-        AdministrationEndpointHelper.DeleteServiceAccount(updatedServiceAccount.ServiceAccountId.ToString()).Should().BeTrue("Created service account could not be deleted");
+        var result = await AdministrationEndpointHelper.DeleteServiceAccount(updatedServiceAccount.ServiceAccountId.ToString()).ConfigureAwait(false);
+        result.Should().BeTrue("Created service account could not be deleted");
     }
 
     //Scenario - Create and delete a new service account
@@ -156,20 +159,20 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
 
         // create a new service account
         var newServiceAccount =
-            AdministrationEndpointHelper.CreateNewServiceAccount(permissions);
+            await AdministrationEndpointHelper.CreateNewServiceAccount(permissions).ConfigureAwait(false);
 
         //  check if the new service account is available
-        var existingServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
+        var existingServiceAccounts = await AdministrationEndpointHelper.GetServiceAccounts().ConfigureAwait(false);
 
         var checkAccountIsAvailable =
             existingServiceAccounts.Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);
         checkAccountIsAvailable.Should().NotBeNullOrEmpty();
 
         //delete the created service account
-        AdministrationEndpointHelper.DeleteServiceAccount(newServiceAccount.ServiceAccountId.ToString());
+        await AdministrationEndpointHelper.DeleteServiceAccount(newServiceAccount.ServiceAccountId.ToString()).ConfigureAwait(false);
 
         //check the endpoint, the deleted service account should not be available anymore
-        var updatedServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
+        var updatedServiceAccounts = await AdministrationEndpointHelper.GetServiceAccounts().ConfigureAwait(false);
 
         var checkAccountDeleted =
             updatedServiceAccounts.Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);

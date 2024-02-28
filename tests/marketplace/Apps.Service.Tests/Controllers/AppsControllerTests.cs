@@ -344,6 +344,10 @@ public class AppsControllerTests
 
         //Assert
         A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull().And.Match<FileResult>(x =>
+            x.ContentType == "image/png" &&
+            x.FileDownloadName == fileName
+        );
     }
 
     [Fact]
@@ -363,6 +367,10 @@ public class AppsControllerTests
 
         //Assert
         A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull().And.Match<FileResult>(x =>
+            x.ContentType == "application/pdf" &&
+            x.FileDownloadName == fileName
+        );
     }
 
     [Fact]

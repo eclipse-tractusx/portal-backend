@@ -109,7 +109,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var companyAddressDetailData = _fixture.Create<CompanyAddressDetailData>();
         A.CallTo(() => _companyRepository.GetCompanyDetailsAsync(_identity.CompanyId))
-            .ReturnsLazily(() => companyAddressDetailData);
+            .Returns(companyAddressDetailData);
 
         // Act
         var result = await _sut.GetCompanyDetailsAsync();
@@ -124,7 +124,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         A.CallTo(() => _companyRepository.GetCompanyDetailsAsync(_identity.CompanyId))
-            .ReturnsLazily(() => (CompanyAddressDetailData?)null);
+            .Returns<CompanyAddressDetailData?>(null);
 
         // Act
         async Task Act() => await _sut.GetCompanyDetailsAsync();
@@ -392,8 +392,6 @@ public class CompanyDataBusinessLogicTests
         var agreementId4 = _fixture.Create<Guid>();
         var agreementId5 = _fixture.Create<Guid>();
 
-        var utcNow = DateTimeOffset.UtcNow;
-
         var consentStatusDetails = new ConsentStatusDetails[] {
             new (_fixture.Create<Guid>(), agreementId1, ConsentStatusId.INACTIVE),
             new (_fixture.Create<Guid>(), agreementId5, ConsentStatusId.ACTIVE),
@@ -444,8 +442,6 @@ public class CompanyDataBusinessLogicTests
         var agreementId3 = _fixture.Create<Guid>();
         var agreementId4 = _fixture.Create<Guid>();
         var agreementId5 = _fixture.Create<Guid>();
-
-        var utcNow = DateTimeOffset.UtcNow;
 
         var consentStatusDetails = new ConsentStatusDetails[] {
             new (_fixture.Create<Guid>(), agreementId1, ConsentStatusId.INACTIVE),
@@ -526,7 +522,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
-            .Returns(((bool, bool, IEnumerable<CompanyRoleId>?, IEnumerable<ConsentStatusDetails>?))default);
+            .Returns<(bool, bool, IEnumerable<CompanyRoleId>?, IEnumerable<ConsentStatusDetails>?)>(default);
 
         // Act
         async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
@@ -1229,7 +1225,7 @@ public class CompanyDataBusinessLogicTests
         var alreadyActiveId = Guid.NewGuid();
         var approvalData = _fixture.Build<SsiApprovalData>()
             .With(x => x.Status, CompanySsiDetailStatusId.PENDING)
-            .With(x => x.Bpn, (string?)null)
+            .With(x => x.Bpn, default(string?))
             .With(x => x.CompanyName, "Test Company")
             .Create();
         A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
@@ -1256,7 +1252,7 @@ public class CompanyDataBusinessLogicTests
             .With(x => x.Bpn, "test")
             .With(x => x.CompanyName, "Test Company")
             .With(x => x.Kind, VerifiedCredentialTypeKindId.USE_CASE)
-            .With(x => x.UseCaseDetailData, (UseCaseDetailData?)null)
+            .With(x => x.UseCaseDetailData, default(UseCaseDetailData?))
             .Create();
         A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
             .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
