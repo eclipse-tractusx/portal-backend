@@ -100,15 +100,15 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 ))
         .SingleOrDefaultAsync();
 
-    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid CompanyCertificateId, bool IsSameCompany)> GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyUserId) =>
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid CompanyCertificateId, bool IsSameCompany)> GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyId) =>
             _context.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
-            .Select(document => ((Guid DocumentId, DocumentStatusId DocumentStatusId, Guid CompanyCertificateId, bool IsSameCompany))
-                new(document.Id,
+            .Select(document => new ValueTuple<Guid, DocumentStatusId, Guid, bool>(
+                    document.Id,
                     document.DocumentStatusId,
                     document.CompanyCertificates.Select(x => x.Id).SingleOrDefault(),
-                    document.CompanyUserId == companyUserId))
+                    document.CompanyUser!.Identity!.CompanyId == companyId))
             .SingleOrDefaultAsync();
 
     public void AttachAndModifyCompanyCertificateDetails(Guid id, Action<CompanyCertificate>? initialize, Action<CompanyCertificate> updateFields)

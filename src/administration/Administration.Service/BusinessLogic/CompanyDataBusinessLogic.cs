@@ -611,7 +611,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     {
         var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
 
-        var details = await companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identityData.IdentityId).ConfigureAwait(false);
+        var details = await companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identityData.CompanyId).ConfigureAwait(false);
 
         if (details.DocumentId == Guid.Empty)
         {

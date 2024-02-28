@@ -192,7 +192,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993")).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542")).ConfigureAwait(false);
 
         // Assert
         companyCertificateDetail.Should().NotBeNull();
@@ -207,7 +207,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019994")).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2544")).ConfigureAwait(false);
 
         // Assert
         companyCertificateDetail.Should().NotBeNull();

@@ -1677,7 +1677,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         //var sut = _fixture.Create<CompanyDataBusinessLogic>();
-        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid.NewGuid(), _identity.IdentityId))
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid.NewGuid(), _identity.CompanyId))
             .Returns((Guid.NewGuid(), DocumentStatusId.LOCKED, Guid.NewGuid(), false));
 
         // Act
@@ -1693,7 +1693,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var documentId = Guid.NewGuid();
-        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.IdentityId))
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.CompanyId))
             .Returns((documentId, DocumentStatusId.LOCKED, Guid.NewGuid(), false));
 
         // Act
@@ -1709,8 +1709,7 @@ public class CompanyDataBusinessLogicTests
     {
         //Arrange        
         var documentId = new Guid("aaf53459-c36b-408e-a805-0b406ce9751f");
-        var companyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993");
-        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.IdentityId))
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.CompanyId))
            .Returns((documentId, DocumentStatusId.LOCKED, new Guid("9f5b9934-4014-4099-91e9-7b1aee696c10"), true));
 
         //Act
