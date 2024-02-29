@@ -335,8 +335,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns)
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string>? bpns)
     {
+        bpns = bpns ?? Enumerable.Empty<string>();
         if (bpns.Any(bpn => !bpnRegex.IsMatch(bpn)))
         {
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_INCORRECT_BPN, new ErrorParameter[] { new("bpns", string.Join(", ", bpns.Where(bpn => !bpnRegex.IsMatch(bpn)))) });

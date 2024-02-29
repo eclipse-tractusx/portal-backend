@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -175,6 +176,23 @@ public class ConnectorsControllerTests
 
         //Assert
         A.CallTo(() => _logic.GetCompanyConnectorEndPointAsync(bpns)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetCompanyConnectorEndPoint_WithNull_ReturnsExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<ConnectorEndPointData>(5);
+
+        A.CallTo(() => _logic.GetCompanyConnectorEndPointAsync(null))
+            .Returns(data.ToAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetCompanyConnectorEndPointAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyConnectorEndPointAsync(null)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
