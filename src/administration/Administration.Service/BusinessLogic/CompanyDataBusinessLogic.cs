@@ -613,6 +613,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         var details = await companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identityData.CompanyId).ConfigureAwait(false);
 
+        if (details.CompanyCertificateId.Count() > 1)
+        {
+            throw new ConflictException($"There are more than one company certificate exists for document {documentId}");
+        }
+
         if (details.DocumentId == Guid.Empty)
         {
             throw new NotFoundException("Document is not existing");
@@ -630,11 +635,14 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 c.DateLastChanged = _dateTimeProvider.OffsetNow;
             });
 
-        companyCertificateRepository.AttachAndModifyCompanyCertificateDetails(details.CompanyCertificateId, null,
+        if (details.CompanyCertificateId.Count() == 1)
+        {
+            companyCertificateRepository.AttachAndModifyCompanyCertificateDetails(details.CompanyCertificateId.SingleOrDefault(), null,
         c =>
         {
             c.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTVIE;
         });
+        }
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
