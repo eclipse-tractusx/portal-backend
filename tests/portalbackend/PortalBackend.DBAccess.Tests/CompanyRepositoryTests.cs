@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -863,16 +864,22 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region CreateOnboardingServiceProviderDetails
 
-    [Fact]
-    public async Task CreateOnboardingServiceProviderDetails_Changed_ReturnsExpectedResult()
+    [Theory]
+    [InlineData("JHcycHPDfRwjT1J1NqBJtQ==")]
+    [InlineData(null)]
+    public async Task CreateOnboardingServiceProviderDetails_Changed_ReturnsExpectedResult(string? initVector)
     {
         // Arrange
         const string url = "https://service-url.com/new";
+        const string authUrl = "https://auth.url";
+        const string clientId = "acmeId";
         var (sut, context) = await CreateSut().ConfigureAwait(false);
-        var secret = "test123"u8.ToArray();
+        var secret = Convert.FromHexString("2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6");
+        var initializationVector = initVector == null ? null : Convert.FromBase64String(initVector);
+        var index = 5;
 
         // Act
-        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url, "https//auth.url", "test", secret);
+        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url, authUrl, clientId, secret, initializationVector, index);
 
         // Assert
         result.CompanyId.Should().Be(_validCompanyId);
@@ -880,12 +887,19 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
-        var entry = changedEntries.Single();
-        entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
-        entry.State.Should().Be(EntityState.Added);
+        changedEntries.Should().ContainSingle()
+            .Which.Should().Match<EntityEntry>(x =>
+                x.State == EntityState.Added &&
+                x.Entity.GetType() == typeof(OnboardingServiceProviderDetail) &&
+                ((OnboardingServiceProviderDetail)x.Entity).CompanyId.Equals(_validCompanyId) &&
+                ((OnboardingServiceProviderDetail)x.Entity).CallbackUrl.Equals(url) &&
+                ((OnboardingServiceProviderDetail)x.Entity).AuthUrl.Equals(authUrl) &&
+                ((OnboardingServiceProviderDetail)x.Entity).ClientId.Equals(clientId) &&
+                ((OnboardingServiceProviderDetail)x.Entity).ClientSecret.SequenceEqual(secret) &&
+                ((OnboardingServiceProviderDetail)x.Entity).InitializationVector == null
+                    ? initializationVector == null
+                    : ((OnboardingServiceProviderDetail)x.Entity).InitializationVector!.SequenceEqual(initializationVector!) &&
+                ((OnboardingServiceProviderDetail)x.Entity).EncryptionMode == index);
     }
 
     #endregion

@@ -19,12 +19,14 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Tests;
@@ -34,6 +36,7 @@ public class OnboardingServiceProviderBusinessLogicTests
     #region Initialization
 
     private readonly IFixture _fixture;
+    private readonly OnboardingServiceProviderSettings _settings;
     private readonly IOnboardingServiceProviderBusinessLogic _sut;
     private readonly IOnboardingServiceProviderService _onboardingServiceProviderService;
     private readonly INetworkRepository _networkRepository;
@@ -51,8 +54,17 @@ public class OnboardingServiceProviderBusinessLogicTests
 
         A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
 
-        var settings = new OnboardingServiceProviderSettings { EncryptionKey = "mysmallkey1234551298765134567890" };
-        _sut = new OnboardingServiceProviderBusinessLogic(_onboardingServiceProviderService, portalRepositories, Options.Create(settings));
+        _settings = new OnboardingServiceProviderSettings
+        {
+            EncryptionConfig = new EncryptionModeConfig[]
+            {
+                new() { Index=0, EncryptionKey="2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6", CipherMode=CipherMode.ECB, PaddingMode=PaddingMode.PKCS7 },
+                new() { Index=1, EncryptionKey="5892b7e151628aed2a6abf715892b7e151628aed2a62b7e151628aed2a6abf71", CipherMode=CipherMode.CFB, PaddingMode=PaddingMode.PKCS7 },
+            },
+            EncrptionConfigIndex = 1
+        };
+
+        _sut = new OnboardingServiceProviderBusinessLogic(_onboardingServiceProviderService, portalRepositories, Options.Create(_settings));
     }
 
     #endregion
@@ -102,7 +114,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         var networkRegistrationId = Guid.NewGuid();
         var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         const string Bpn = "BPNL00000001TEST";
-        var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
+        var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret, null, 0);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED))
             .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2)));
 
@@ -121,7 +133,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         var networkRegistrationId = Guid.NewGuid();
         var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         const string Bpn = "BPNL00000001TEST";
-        var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret);
+        var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret, null, 0);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP))
             .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
 
@@ -134,10 +146,13 @@ public class OnboardingServiceProviderBusinessLogicTests
     }
 
     [Theory]
-    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been submitted for further processing", CompanyApplicationStatusId.SUBMITTED)]
-    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been approved", CompanyApplicationStatusId.CONFIRMED)]
-    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, $"Application 2b965267-555c-4834-a323-09b7858c29ae has been declined with reason: this is a test", CompanyApplicationStatusId.DECLINED)]
-    public async Task TriggerProviderCallback_WithValidData_CallsExpected(ProcessStepTypeId processStepTypeId, string message, CompanyApplicationStatusId applicationStatusId)
+    [InlineData("/UJ0wr5w1HiXaLo25QfxqXWhyq6Pa9w+CvBFNs1782s=", null, 0, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been submitted for further processing", CompanyApplicationStatusId.SUBMITTED)]
+    [InlineData("/UJ0wr5w1HiXaLo25QfxqXWhyq6Pa9w+CvBFNs1782s=", null, 0, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been approved", CompanyApplicationStatusId.CONFIRMED)]
+    [InlineData("/UJ0wr5w1HiXaLo25QfxqXWhyq6Pa9w+CvBFNs1782s=", null, 0, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been declined with reason: this is a test", CompanyApplicationStatusId.DECLINED)]
+    [InlineData("i1NbZSnrQLI+uhcig43QJQYr+ew=", "qvsPgVJT/CjWNXuAHl1IBQ==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been submitted for further processing", CompanyApplicationStatusId.SUBMITTED)]
+    [InlineData("i1NbZSnrQLI+uhcig43QJQYr+ew=", "qvsPgVJT/CjWNXuAHl1IBQ==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been approved", CompanyApplicationStatusId.CONFIRMED)]
+    [InlineData("i1NbZSnrQLI+uhcig43QJQYr+ew=", "qvsPgVJT/CjWNXuAHl1IBQ==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been declined with reason: this is a test", CompanyApplicationStatusId.DECLINED)]
+    public async Task TriggerProviderCallback_WithValidData_CallsExpected(string clientSecret, string? initialVector, int index, ProcessStepTypeId processStepTypeId, string message, CompanyApplicationStatusId applicationStatusId)
     {
         // Act
         const string CallbackUrl = "https://callback.url";
@@ -145,7 +160,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         var externalId = Guid.NewGuid().ToString();
         var applicationId = new Guid("2b965267-555c-4834-a323-09b7858c29ae");
         var networkRegistrationId = Guid.NewGuid();
-        var details = new OspDetails(CallbackUrl, "https://auth.url", "test1", Convert.FromBase64String("9qCKYG0aXOWKl9PXcRhrSw=="));
+        var details = new OspDetails(CallbackUrl, "https://auth.url", "test1", Convert.FromBase64String(clientSecret), initialVector == null ? null : Convert.FromBase64String(initialVector), index);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, processStepTypeId))
             .Returns((details, externalId, Bpn, applicationId, processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? Enumerable.Repeat("this is a test", 1) : Enumerable.Empty<string>()));
 
@@ -154,7 +169,7 @@ public class OnboardingServiceProviderBusinessLogicTests
 
         // Assert
         A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback(
-                A<OspTriggerDetails>._,
+                new OspTriggerDetails(CallbackUrl, "https://auth.url", "test1", "Sup3rS3cureTest!"),
                 new OnboardingServiceProviderCallbackData(externalId, applicationId, Bpn, applicationStatusId, message),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();

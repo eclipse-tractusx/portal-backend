@@ -344,20 +344,22 @@ public class CompanyRepository : ICompanyRepository
                         c.OnboardingServiceProviderDetail!.CallbackUrl,
                         c.OnboardingServiceProviderDetail.AuthUrl,
                         c.OnboardingServiceProviderDetail.ClientId,
-                        c.OnboardingServiceProviderDetail.ClientSecret)
+                        c.OnboardingServiceProviderDetail.ClientSecret,
+                        c.OnboardingServiceProviderDetail.InitializationVector,
+                        c.OnboardingServiceProviderDetail.EncryptionMode)
                 ))
             .SingleOrDefaultAsync();
 
     public void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields)
     {
-        var ospDetails = new OnboardingServiceProviderDetail(companyId, null!, null!, null!, null!);
+        var ospDetails = new OnboardingServiceProviderDetail(companyId, null!, null!, null!, null!, null, default);
         initialize?.Invoke(ospDetails);
         _context.OnboardingServiceProviderDetails.Attach(ospDetails);
         setOptionalFields.Invoke(ospDetails);
     }
 
-    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret) =>
-        _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl, authUrl, clientId, clientSecret)).Entity;
+    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode) =>
+        _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl, authUrl, clientId, clientSecret, initializationVector, encryptionMode)).Entity;
 
     /// <inheritdoc />
     public Task<bool> CheckBpnExists(string bpn) =>

@@ -20,13 +20,12 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 
@@ -82,22 +81,14 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
                 throw new ArgumentException($"{processStepTypeId} is not supported");
         }
 
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-        using (var msDecrypt = new MemoryStream(data.OspDetails.ClientSecret))
-        {
-            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            using var srDecrypt = new StreamReader(csDecrypt, Encoding.UTF8);
-            var secret = srDecrypt.ReadToEnd();
-            await _onboardingServiceProviderService.TriggerProviderCallback(
-                    new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
-                    new OnboardingServiceProviderCallbackData(data.ExternalId, data.ApplicationId, data.Bpn, applicationStatusId, comment),
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
+        var cryptoConfig = _settings.EncryptionConfig.SingleOrDefault(x => x.Index == data.OspDetails.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.OspDetails.EncryptionMode} is not configured");
+        var secret = CryptoHelper.Decrypt(data.OspDetails.ClientSecret, data.OspDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
+        await _onboardingServiceProviderService.TriggerProviderCallback(
+                new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
+                new OnboardingServiceProviderCallbackData(data.ExternalId, data.ApplicationId, data.Bpn, applicationStatusId, comment),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return (Enumerable.Empty<ProcessStepTypeId>(), ProcessStepStatusId.DONE, false, null);
     }
