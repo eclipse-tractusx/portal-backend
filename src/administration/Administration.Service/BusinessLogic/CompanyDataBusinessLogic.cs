@@ -653,9 +653,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             .GetCompanyCertificateDocumentDataAsync(documentId, DocumentTypeId.COMPANY_CERTIFICATE)
             .ConfigureAwait(false);
 
-        if (!documentDetails.IsExist)
+        if (!documentDetails.IsExists)
         {
             throw new NotFoundException($"Company certificate document {documentId} does not exist");
+        }
+        if (!documentDetails.IsStatusLocked)
+        {
+            throw new ForbiddenException($"Document {documentId} status is not Locked");
         }
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());

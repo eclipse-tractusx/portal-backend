@@ -1702,6 +1702,21 @@ public class CompanyDataBusinessLogicTests
         ex.Message.Should().Be($"Company certificate document {documentId} does not exist");
     }
 
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithDocumentStatusIsNotLocked_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = new Guid("aaf53459-c36b-408e-a805-0b406ce9751d");
+        SetupFakesForGetDocument();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"Document {documentId} status is not Locked");
+    }
+
     #endregion
 
     #region DeleteCompanyCertificates
@@ -1815,7 +1830,9 @@ public class CompanyDataBusinessLogicTests
     {
         var content = new byte[7];
         A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(ValidDocumentId, DocumentTypeId.COMPANY_CERTIFICATE))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test.pdf", MediaTypeId.PDF, true, true));
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751d"), DocumentTypeId.COMPANY_CERTIFICATE))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test1.pdf", MediaTypeId.PDF, true, false));
     }
     #endregion
 }
