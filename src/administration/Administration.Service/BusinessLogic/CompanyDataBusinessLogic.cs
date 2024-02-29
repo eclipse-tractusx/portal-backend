@@ -653,7 +653,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             .GetCompanyCertificateDocumentByCompanyIdDataAsync(documentId, _identityData.IdentityId, DocumentTypeId.COMPANY_CERTIFICATE)
             .ConfigureAwait(false);
 
+<<<<<<< HEAD
         if (!documentDetails.IsExist)
+=======
+        if (!documentDetails.Exists)
+>>>>>>> IsExist changed to Exists
         {
             throw new NotFoundException($"Company certificate document {documentId} does not exist");
         }
