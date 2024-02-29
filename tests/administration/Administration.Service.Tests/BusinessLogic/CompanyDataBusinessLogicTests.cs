@@ -42,8 +42,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IIdentityData _identity;
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
-    private static readonly Guid ValidDocumentId = Guid.NewGuid();
-    private static readonly Guid ValidDocumentId = Guid.NewGuid();
+    private static readonly Guid _validDocumentId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IConsentRepository _consentRepository;
@@ -1680,7 +1679,7 @@ public class CompanyDataBusinessLogicTests
         SetupFakesForGetDocument();
 
         // Act
-        var result = await _sut.GetCompanyCertificateDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        var result = await _sut.GetCompanyCertificateDocumentAsync(_validDocumentId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -1830,7 +1829,7 @@ public class CompanyDataBusinessLogicTests
     private void SetupFakesForGetDocument()
     {
         var content = new byte[7];
-        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(ValidDocumentId, DocumentTypeId.COMPANY_CERTIFICATE))
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(_validDocumentId, DocumentTypeId.COMPANY_CERTIFICATE))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test.pdf", MediaTypeId.PDF, true, true));
         A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751d"), DocumentTypeId.COMPANY_CERTIFICATE))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test1.pdf", MediaTypeId.PDF, true, false));
