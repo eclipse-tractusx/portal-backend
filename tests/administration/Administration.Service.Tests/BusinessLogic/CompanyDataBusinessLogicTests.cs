@@ -1679,7 +1679,7 @@ public class CompanyDataBusinessLogicTests
         SetupFakesForGetDocumentByCompanyId();
 
         // Act
-        var result = await _sut.GetCompanyCertificateDocumentByCompanyIdAsync(ValidDocumentId).ConfigureAwait(false);
+        var result = await _sut.GetCompanyCertificateDocumentByCompanyIdAsync(_validDocumentId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -1863,7 +1863,7 @@ public class CompanyDataBusinessLogicTests
     private void SetupFakesForGetDocumentByCompanyId()
     {
         var content = new byte[7];
-        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentByCompanyIdDataAsync(ValidDocumentId, _identity.CompanyId, DocumentTypeId.COMPANY_CERTIFICATE))
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentByCompanyIdDataAsync(_validDocumentId, _identity.CompanyId, DocumentTypeId.COMPANY_CERTIFICATE))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
     }
 
