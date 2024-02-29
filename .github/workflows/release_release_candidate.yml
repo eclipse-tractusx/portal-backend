@@ -575,7 +575,7 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/eclipse-tractusx/portal-cd/actions/workflows/portal-backend-release-image-update.yml/dispatches \
+            --url https://api.github.com/repos/eclipse-tractusx/portal/actions/workflows/portal-backend-release-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
             --data '{"ref":"release-candidate", "inputs": { "new-image":"${{ github.ref_name }}" }}' \

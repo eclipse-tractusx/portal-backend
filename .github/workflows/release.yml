@@ -590,7 +590,7 @@ jobs:
           fi
         if: steps.hf-check.outputs.hf == 'false'
 
-      - name: Determine branch to update in portal-cd
+      - name: Determine branch to update in portal repository
         id: cd-branch
         run: |
           if [[ ${{ steps.rc-check.outputs.rc }} == 'true' ]]; then
@@ -615,7 +615,7 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/eclipse-tractusx/portal-cd/actions/workflows/portal-backend-release-image-update.yml/dispatches \
+            --url https://api.github.com/repos/eclipse-tractusx/portal/actions/workflows/portal-backend-release-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
             --data '{"ref":"${{ steps.cd-branch.outputs.branch }}", "inputs": { "new-image":"${{ github.ref_name }}" }}' \
