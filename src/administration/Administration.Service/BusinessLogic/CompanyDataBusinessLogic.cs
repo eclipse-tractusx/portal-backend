@@ -609,9 +609,9 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
     {
-        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
-
-        var details = await companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identityData.CompanyId).ConfigureAwait(false);
+        var documentDetails = await _portalRepositories.GetInstance<ICompanyCertificateRepository>()
+            .GetCompanyCertificateDocumentByCompanyIdDataAsync(documentId, _identityData.CompanyId, DocumentTypeId.COMPANY_CERTIFICATE)
+            .ConfigureAwait(false);
 
         var certificateCount = details.CompanyCertificateId.Count();
         if (certificateCount > 1)

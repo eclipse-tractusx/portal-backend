@@ -84,5 +84,5 @@ public interface ICompanyCertificateRepository
     /// <param name="companyUserId">id of the company user</param> 
     /// <param name="documentTypeId">document type id</param> 
     /// <returns>Returns the document data</returns>
-    Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool IsExist)> GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid documentId, Guid companyUserId, DocumentTypeId documentTypeId);
+    Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool IsExists)> GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid documentId, Guid companyUserId, DocumentTypeId documentTypeId);
 }

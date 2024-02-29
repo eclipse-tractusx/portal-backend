@@ -137,8 +137,8 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
     public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool IsExist)> GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid documentId, Guid companyUserId, DocumentTypeId documentTypeId) =>
         _context.Documents
         .Where(x => x.Id == documentId &&
-               x.CompanyUserId == companyUserId &&
-               x.DocumentTypeId == documentTypeId)
+               x.DocumentTypeId == documentTypeId &&
+               x.CompanyUser!.Identity!.CompanyId == companyId)
         .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, x.Id == documentId))
     .SingleOrDefaultAsync();
 }
