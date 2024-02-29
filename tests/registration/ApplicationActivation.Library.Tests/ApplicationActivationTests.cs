@@ -622,7 +622,7 @@ public class ApplicationActivationTests
 
         //Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("inconsistent data, roles not assigned in keycloak: client: catenax-portal, roles: [IT Admin]");
+        ex.Message.Should().Be("inconsistent data, roles not assigned in keycloak: client: catenax-portal, roles: [IT Admin], error: ");
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
@@ -982,11 +982,11 @@ public class ApplicationActivationTests
             .Returns(CentralUserId3);
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1, businessPartnerNumbers))
             .Returns(Task.CompletedTask);

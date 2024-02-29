@@ -233,26 +233,32 @@ public partial class KeycloakClient
             .DeleteAsync()
             .ConfigureAwait(false);
 
-    public async Task<IDictionary<string, object>> ImpersonateUserAsync(string realm, string userId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<IDictionary<string, object>> ImpersonateUserAsync(string realm, string userId)
+    {
+        using var stringContent = new StringContent("");
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/impersonation")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ReceiveJson<IDictionary<string, object>>()
             .ConfigureAwait(false);
+    }
 
-    public async Task RemoveUserSessionsAsync(string realm, string userId) =>
+    public async Task RemoveUserSessionsAsync(string realm, string userId)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/logout")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
     [Obsolete("Not working yet")]
     public async Task<IEnumerable<UserSession>> GetUserOfflineSessionsAsync(string realm, string userId, string clientId) =>
@@ -266,15 +272,18 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<UserSession>>()
             .ConfigureAwait(false);
 
-    public async Task RemoveUserTotpAsync(string realm, string userId) =>
+    public async Task RemoveUserTotpAsync(string realm, string userId)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/remove-totp")
-            .PutAsync(new StringContent(""))
+            .PutAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
     public async Task ResetUserPasswordAsync(string realm, string userId, Credentials credentials) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))

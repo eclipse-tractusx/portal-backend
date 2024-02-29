@@ -202,13 +202,14 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             // Assign the roles in keycloak, check if all roles were added foreach client, if not throw an exception with the client and the roles that were not assigned. 
             .Select(assigned => (
                 Client: assigned.Client,
-                UnassingedRoles: rolesToAdd.ExceptBy(assigned.Roles, toAdd => toAdd.CompanyUserRoleText)))
+                UnassingedRoles: rolesToAdd.ExceptBy(assigned.Roles, toAdd => toAdd.CompanyUserRoleText),
+                Error: assigned.Error))
             .Where(x => x.UnassingedRoles.Any())
             .IfAny(async unassigned =>
                 throw new ServiceException($"The following roles could not be added to the clients: \n {string.Join(
                         "\n",
                         await unassigned
-                            .Select(item => $"Client: {item.Client}, Roles: {string.Join(", ", item.UnassingedRoles.Select(r => r.CompanyUserRoleText))}")
+                            .Select(item => $"Client: {item.Client}, Roles: {string.Join(", ", item.UnassingedRoles.Select(r => r.CompanyUserRoleText))}, Error: {item.Error?.Message}")
                             .ToListAsync()
                             .ConfigureAwait(false))}"))
             .ConfigureAwait(false);

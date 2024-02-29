@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
@@ -35,16 +36,16 @@ public partial class ProvisioningManager
             throw new KeycloakEntityConflictException($"serviceAccountUser {internalClientId} has no Id in keycloak");
         }
         var assignedRoles = await AssignClientRolesToCentralUserAsync(serviceAccountUser.Id, config.ClientRoles)
-            .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles).ConfigureAwait(false);
+            .ToDictionaryAsync(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error)).ConfigureAwait(false);
 
-        var unassignedClientRoles = config.ClientRoles
-            .Select(clientRoles => (client: clientRoles.Key, roles: clientRoles.Value.Except(assignedRoles[clientRoles.Key])))
-            .Where(clientRoles => clientRoles.roles.Any());
-
-        if (unassignedClientRoles.Any())
-        {
-            throw new KeycloakNoSuccessException($"inconsistend data. roles were not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
-        }
+        config.ClientRoles
+            .Select(clientRoles => (ClientRoles: clientRoles, Assigned: assignedRoles[clientRoles.Key]))
+            .Select(x => (Client: x.ClientRoles.Key, UnAssignedRoles: x.ClientRoles.Value.Except(x.Assigned.Roles), Error: x.Assigned.Error))
+            .Where(x => x.UnAssignedRoles.Any())
+            .IfAny(unassignedClientRoles =>
+            {
+                throw new KeycloakNoSuccessException($"inconsistend data. roles were not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.Client}, roles: [{string.Join(", ", clientRoles.UnAssignedRoles)}], error: {clientRoles.Error?.Message}"))}");
+            });
 
         return new ServiceAccountData(
             internalClientId,

@@ -130,7 +130,8 @@ public class ClearinghouseServiceTests
     {
         // Arrange
         var data = _fixture.Create<ClearinghouseTransferData>();
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new StringContent("{ \"message\": \"Framework test!\" }"));
+        using var stringContent = new StringContent("{ \"message\": \"Framework test!\" }");
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, stringContent);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")

@@ -162,7 +162,7 @@ public class UserProvisioningServiceCreateUsersTests
             .Returns(iamUserId);
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new[] { (Client: _clientId, Roles: Enumerable.Empty<string>()) }.ToAsyncEnumerable());
+            .Returns(new (string, IEnumerable<string>, Exception?)[] { (_clientId, Enumerable.Empty<string>(), new Exception("some error")) }.ToAsyncEnumerable());
 
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
@@ -176,7 +176,7 @@ public class UserProvisioningServiceCreateUsersTests
         var error = result.ElementAt(_indexSpecialUser).Error;
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ConflictException));
-        error!.Message.Should().Be($"invalid role data [{string.Join(", ", specialUser.RoleDatas.Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}"))}] has not been assigned in keycloak");
+        error!.Message.Should().Be($"invalid role data [{string.Join(", ", specialUser.RoleDatas.Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}, error: some error"))}] has not been assigned in keycloak");
     }
 
     [Fact]
@@ -519,7 +519,7 @@ public class UserProvisioningServiceCreateUsersTests
             .ReturnsLazily(() => _fixture.Create<string>());
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => clientRoles.Select(x => (Client: x.Key, Roles: x.Value)).ToAsyncEnumerable());
+            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => clientRoles.Select(x => (Client: x.Key, Roles: x.Value, Error: default(Exception?))).ToAsyncEnumerable());
     }
 
     private IEnumerable<UserCreationRoleDataIdpInfo> CreateUserCreationInfoIdp(Func<UserCreationRoleDataIdpInfo>? createInvalidUser = null)

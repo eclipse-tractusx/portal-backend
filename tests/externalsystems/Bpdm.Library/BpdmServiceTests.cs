@@ -244,9 +244,10 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithEmtpyObjectResult_ThrowsServiceException()
     {
         // Arrange
+        using var stringContent = new StringContent("{}");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent("{}"));
+            stringContent);
 
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
@@ -268,9 +269,10 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithEmtpyResult_ThrowsServiceException()
     {
         // Arrange
+        using var stringContent = new StringContent("");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent(""));
+            stringContent);
 
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
@@ -383,9 +385,10 @@ public class BpdmServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        using var stringContent = new StringContent("{}");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent("{}"));
+            stringContent);
 
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
@@ -408,9 +411,10 @@ public class BpdmServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        using var stringContent = new StringContent("");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent(""));
+            stringContent);
 
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {

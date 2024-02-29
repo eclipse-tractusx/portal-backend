@@ -104,38 +104,50 @@ public partial class KeycloakClient
             .DeleteAsync()
             .ConfigureAwait(false);
 
-    public async Task ClearKeysCacheAsync(string realm) =>
+    public async Task ClearKeysCacheAsync(string realm)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clear-keys-cache")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
-    public async Task ClearRealmCacheAsync(string realm) =>
+    public async Task ClearRealmCacheAsync(string realm)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clear-realm-cache")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
-    public async Task ClearUserCacheAsync(string realm) =>
+    public async Task ClearUserCacheAsync(string realm)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clear-user-cache")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
-    public async Task<Client> BasePathForImportingClientsAsync(string realm, string description) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<Client> BasePathForImportingClientsAsync(string realm, string description)
+    {
+        using var stringContent = new StringContent(description);
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/client-description-converter")
-            .PostAsync(new StringContent(description))
+            .PostAsync(stringContent)
             .ReceiveJson<Client>()
             .ConfigureAwait(false);
+    }
 
     public async Task<IEnumerable<IDictionary<string, object>>> GetClientSessionStatsAsync(string realm) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
@@ -153,14 +165,17 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<ClientScope>>()
             .ConfigureAwait(false);
 
-    public async Task UpdateRealmDefaultClientScopeAsync(string realm, string clientScopeId) =>
+    public async Task UpdateRealmDefaultClientScopeAsync(string realm, string clientScopeId)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/default-default-client-scopes/")
             .AppendPathSegment(clientScopeId, true)
-            .PutAsync(new StringContent(""))
+            .PutAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
     public async Task DeleteRealmDefaultClientScopeAsync(string realm, string clientScopeId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
@@ -179,14 +194,17 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<Group>>()
             .ConfigureAwait(false);
 
-    public async Task UpdateRealmGroupAsync(string realm, string groupId) =>
+    public async Task UpdateRealmGroupAsync(string realm, string groupId)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/default-groups/")
             .AppendPathSegment(groupId, true)
-            .PutAsync(new StringContent(""))
+            .PutAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
     public async Task DeleteRealmGroupAsync(string realm, string groupId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
@@ -205,14 +223,17 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<ClientScope>>()
             .ConfigureAwait(false);
 
-    public async Task UpdateRealmOptionalClientScopeAsync(string realm, string clientScopeId) =>
+    public async Task UpdateRealmOptionalClientScopeAsync(string realm, string clientScopeId)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/default-optional-client-scopes/")
             .AppendPathSegment(clientScopeId, true)
-            .PutAsync(new StringContent(""))
+            .PutAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
     public async Task DeleteRealmOptionalClientScopeAsync(string realm, string clientScopeId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
@@ -280,14 +301,17 @@ public partial class KeycloakClient
             .GetJsonAsync<Group>()
             .ConfigureAwait(false);
 
-    public async Task<GlobalRequestResult> RemoveUserSessionsAsync(string realm) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<GlobalRequestResult> RemoveUserSessionsAsync(string realm)
+    {
+        using var stringContent = new StringContent("");
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/logout-all")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ReceiveJson<GlobalRequestResult>()
             .ConfigureAwait(false);
+    }
 
     public async Task<Realm> RealmPartialExportAsync(string realm, bool? exportClients = null, bool? exportGroupsAndRoles = null)
     {
@@ -297,12 +321,13 @@ public partial class KeycloakClient
             [nameof(exportGroupsAndRoles)] = exportGroupsAndRoles,
         };
 
+        using var stringContent = new StringContent("");
         return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/partial-export")
             .SetQueryParams(queryParams)
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ReceiveJson<Realm>()
             .ConfigureAwait(false);
     }
@@ -315,14 +340,17 @@ public partial class KeycloakClient
             .PostJsonAsync(rep)
             .ConfigureAwait(false);
 
-    public async Task<GlobalRequestResult> PushRealmRevocationPolicyAsync(string realm) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<GlobalRequestResult> PushRealmRevocationPolicyAsync(string realm)
+    {
+        using var stringContent = new StringContent("");
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/push-revocation")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ReceiveJson<GlobalRequestResult>()
             .ConfigureAwait(false);
+    }
 
     public async Task DeleteUserSessionAsync(string realm, string session) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
@@ -349,14 +377,17 @@ public partial class KeycloakClient
                 .AddString(nameof(useTruststoreSpi), useTruststoreSpi))
             .ConfigureAwait(false);
 
-    public async Task TestSmtpConnectionAsync(string realm, string config) =>
+    public async Task TestSmtpConnectionAsync(string realm, string config)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/testSMTPConnection/")
             .AppendPathSegment(config, true)
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
     public async Task<ManagementPermission> GetRealmUsersManagementPermissionsAsync(string realm) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))

@@ -749,7 +749,7 @@ public class UserBusinessLogicTests
             });
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()), (Client: iamClientId1, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()) }.ToAsyncEnumerable());
+            .Returns(new[] { (iamClientId, new[] { "Existing Role", "Supplier" }.AsEnumerable(), default(Exception?)), (iamClientId1, new[] { "Existing Role", "Supplier" }.AsEnumerable(), default(Exception?)) }.ToAsyncEnumerable());
 
         var sut = new UserRolesBusinessLogic(
             _portalRepositories,
@@ -798,7 +798,7 @@ public class UserBusinessLogicTests
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()), (Client: iamClientId1, Roles: new[] { "Existing Role" }.AsEnumerable()) }.ToAsyncEnumerable());
+            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable(), Error: null), (Client: iamClientId1, Roles: new[] { "Existing Role" }.AsEnumerable(), Error: new Exception("some error")) }.ToAsyncEnumerable());
 
         var sut = new UserRolesBusinessLogic(
             _portalRepositories,
@@ -819,7 +819,7 @@ public class UserBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be("The following roles could not be added to the clients: \n Client: Cl2-CX-Registration, Roles: Supplier");
+        ex.Message.Should().Be("The following roles could not be added to the clients: \n Client: Cl2-CX-Registration, Roles: Supplier, Error: some error");
     }
 
     [Fact]
@@ -1562,14 +1562,14 @@ public class UserBusinessLogicTests
             });
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()) }.ToAsyncEnumerable());
+            .Returns(new[] { (iamClientId, new[] { "Existing Role", "Supplier" }.AsEnumerable(), default(Exception?)) }.ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _createdCentralIamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Company Admin" }.AsEnumerable()) }.ToAsyncEnumerable());
+            .Returns(new[] { (iamClientId, new[] { "Company Admin" }.AsEnumerable(), default(Exception?)) }.ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(
                 A<string>.That.Not.Matches(x => x == _createdCentralIamUserId || x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new[] { (Client: iamClientId, Roles: Enumerable.Empty<string>()) }.ToAsyncEnumerable());
+            .Returns(new (string, IEnumerable<string>, Exception?)[] { (iamClientId, Enumerable.Empty<string>(), new Exception("some error")) }.ToAsyncEnumerable());
 
         if (notifications != null)
         {

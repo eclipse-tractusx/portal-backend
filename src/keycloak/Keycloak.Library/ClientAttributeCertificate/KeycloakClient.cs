@@ -53,17 +53,21 @@ public partial class KeycloakClient
         .ReceiveBytes()
         .ConfigureAwait(false);
 
-    public async Task<Certificate> GenerateCertificateWithNewKeyPairAsync(string realm, string clientId, string attribute) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/clients/")
-        .AppendPathSegment(clientId, true)
-        .AppendPathSegment("/certificates/")
-        .AppendPathSegment(attribute, true)
-        .AppendPathSegment("/generate")
-        .PostAsync(new StringContent(""))
-        .ReceiveJson<Certificate>()
-        .ConfigureAwait(false);
+    public async Task<Certificate> GenerateCertificateWithNewKeyPairAsync(string realm, string clientId, string attribute)
+    {
+        using var stringContent = new StringContent("");
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/clients/")
+            .AppendPathSegment(clientId, true)
+            .AppendPathSegment("/certificates/")
+            .AppendPathSegment(attribute, true)
+            .AppendPathSegment("/generate")
+            .PostAsync(stringContent)
+            .ReceiveJson<Certificate>()
+            .ConfigureAwait(false);
+    }
 
     public async Task<byte[]> GenerateCertificateWithNewKeyPairAndGetKeyStoreAsync(string realm, string clientId, string attribute, KeyStoreConfig keyStoreConfig) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
         .AppendPathSegment("/admin/realms/")

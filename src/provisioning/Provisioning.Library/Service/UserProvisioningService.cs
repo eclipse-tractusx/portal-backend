@@ -315,7 +315,7 @@ public class UserProvisioningService : IUserProvisioningService
                     userRolesRepository.CreateIdentityAssignedRole(userdata.CompanyUserId, roleId);
                 }
 
-                messages.AddRange(clientRoleNames[assigned.Client].Except(assigned.Roles).Select(roleName => $"clientId: {assigned.Client}, role: {roleName}"));
+                messages.AddRange(clientRoleNames[assigned.Client].Except(assigned.Roles).Select(roleName => $"clientId: {assigned.Client}, role: {roleName}, error: {assigned.Error?.Message}"));
             }
 
             if (messages.Any())
@@ -353,7 +353,7 @@ public class UserProvisioningService : IUserProvisioningService
 
         if (invalid.Any())
         {
-            throw new ControllerArgumentException($"invalid roles: clientId: '{clientId}', roles: [{String.Join(", ", invalid)}]");
+            throw new ControllerArgumentException($"invalid roles: clientId: '{clientId}', roles: [{string.Join(", ", invalid)}]");
         }
     }
 }

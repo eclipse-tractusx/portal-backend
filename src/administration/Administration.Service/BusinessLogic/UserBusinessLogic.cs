@@ -123,13 +123,13 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
-        await foreach (var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
+        await foreach (var (companyUserId, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
         {
             var email = emailData[userName];
 
             if (error != null)
             {
-                _logger.LogError(error, "Error while creating user {UserName} ({Email})", userName, email);
+                _logger.LogError(error, "Error while creating user {companyUserId}", companyUserId);
                 continue;
             }
 
@@ -148,7 +148,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", email, userName);
+                _logger.LogError(e, "Error sending email after creating user {companyUserId}", companyUserId);
             }
 
             yield return email;
@@ -220,7 +220,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", userCreationInfo.Email, userCreationInfo.UserName);
+            _logger.LogError(e, "Error sending email after creating user {CompanyUserId}", result.CompanyUserId);
         }
 
         return result.CompanyUserId;
