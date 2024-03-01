@@ -607,12 +607,12 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             _settings.MaxPageSize,
             _portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
 
-<<<<<<< HEAD
+    /// <inheritdoc />
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
     {
-        var documentDetails = await _portalRepositories.GetInstance<ICompanyCertificateRepository>()
-            .GetCompanyCertificateDocumentByCompanyIdDataAsync(documentId, _identityData.CompanyId, DocumentTypeId.COMPANY_CERTIFICATE)
-            .ConfigureAwait(false);
+        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
+
+        var details = await companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identityData.CompanyId).ConfigureAwait(false);
 
         var certificateCount = details.CompanyCertificateId.Count();
         if (certificateCount > 1)
@@ -645,25 +645,21 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
-=======
+    }
+
     /// <inheritdoc />
     public async Task<(string FileName, byte[] Content, string MediaType)> GetCompanyCertificateDocumentByCompanyIdAsync(Guid documentId)
     {
         var documentDetails = await _portalRepositories.GetInstance<ICompanyCertificateRepository>()
-            .GetCompanyCertificateDocumentByCompanyIdDataAsync(documentId, _identityData.IdentityId, DocumentTypeId.COMPANY_CERTIFICATE)
+            .GetCompanyCertificateDocumentByCompanyIdDataAsync(documentId, _identityData.CompanyId, DocumentTypeId.COMPANY_CERTIFICATE)
             .ConfigureAwait(false);
 
-<<<<<<< HEAD
-        if (!documentDetails.IsExist)
-=======
         if (!documentDetails.Exists)
->>>>>>> IsExist changed to Exists
         {
             throw new NotFoundException($"Company certificate document {documentId} does not exist");
         }
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
->>>>>>> Business logic with test cases added
     }
 
     /// <inheritdoc />
