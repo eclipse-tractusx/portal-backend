@@ -613,9 +613,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         var details = await companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identityData.CompanyId).ConfigureAwait(false);
 
-        if (details.CompanyCertificateId.Count() > 1)
+        var certificateCount = details.CompanyCertificateId.Count();
+        if (certificateCount > 1)
         {
-            throw new ConflictException($"There are more than one company certificate exists for document {documentId}");
+            throw new ConflictException($"There must not be multiple active certificates for document {documentId}");
         }
 
         if (details.DocumentId == Guid.Empty)
@@ -628,20 +629,18 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ForbiddenException("User is not allowed to delete this document");
         }
 
-        companyCertificateRepository.AttachAndModifyCompanyCertificateDocumentDetails(documentId, null,
-            c =>
+        companyCertificateRepository.AttachAndModifyCompanyCertificateDocumentDetails(documentId, null, c =>
             {
                 c.DocumentStatusId = DocumentStatusId.INACTIVE;
                 c.DateLastChanged = _dateTimeProvider.OffsetNow;
             });
 
-        if (details.CompanyCertificateId.Count() == 1)
+        if (certificateCount == 1)
         {
-            companyCertificateRepository.AttachAndModifyCompanyCertificateDetails(details.CompanyCertificateId.SingleOrDefault(), null,
-        c =>
-        {
-            c.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTVIE;
-        });
+            companyCertificateRepository.AttachAndModifyCompanyCertificateDetails(details.CompanyCertificateId.SingleOrDefault(), null, c =>
+            {
+                c.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTVIE;
+            });
         }
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);

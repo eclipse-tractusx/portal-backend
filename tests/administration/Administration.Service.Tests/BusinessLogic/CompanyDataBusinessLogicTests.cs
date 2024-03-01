@@ -1717,7 +1717,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"There are more than one company certificate exists for document {documentId}");
+        ex.Message.Should().Be($"There must not be multiple active certificates for document {documentId}");
     }
 
     [Fact]
