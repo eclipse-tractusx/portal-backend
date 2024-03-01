@@ -332,6 +332,25 @@ public class CompanyDataController : ControllerBase
         _logic.GetAllCompanyCertificatesAsync(page, size, sorting, certificateStatus, certificateType);
 
     /// <summary>
+    /// Deletes the company certificate with the given id
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+    /// <returns></returns>
+    /// <remarks>Example: Delete: /api/administration/companydata/companyCertificate/document/{documentId}</remarks>
+    /// <response code="200">Successfully deleted the company certificate</response>
+    /// <response code="400">Incorrect document state</response>
+    /// <response code="403">The user is not assigned with the Company.</response>    
+    [HttpDelete]
+    [Authorize(Roles = "delete_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("companyCertificate/document/{documentId}")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public Task<int> DeleteCompanyCertificate([FromRoute] Guid documentId) =>
+        _logic.DeleteCompanyCertificateAsync(documentId);
+
+    /// <summary>
     /// Gets all outstanding, existing and inactive credentials
     /// </summary>
     /// <remarks>Example: Get: /api/administration/companydata/credentials/</remarks>

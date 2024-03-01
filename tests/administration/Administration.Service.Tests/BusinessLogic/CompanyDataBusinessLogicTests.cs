@@ -1670,6 +1670,76 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region DeleteCompanyCertificates
+
+    [Fact]
+    public async Task DeleteCompanyCertificateAsync_WithDocumentNotExisting_ThrowsNotFoundException()
+    {
+        // Arrange
+        //var sut = _fixture.Create<CompanyDataBusinessLogic>();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid.NewGuid(), _identity.CompanyId))
+            .Returns((Guid.NewGuid(), DocumentStatusId.LOCKED, new[] { Guid.NewGuid() }.AsEnumerable(), false));
+
+        // Act
+        async Task Act() => await _sut.DeleteCompanyCertificateAsync(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Document is not existing");
+    }
+
+    [Fact]
+    public async Task DeleteCompanyCertificateAsync_WithDifferentCompanyIdNotExisting_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.CompanyId))
+            .Returns((documentId, DocumentStatusId.LOCKED, new[] { Guid.NewGuid() }.AsEnumerable(), false));
+
+        // Act
+        async Task Act() => await _sut.DeleteCompanyCertificateAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"User is not allowed to delete this document");
+    }
+
+    [Fact]
+    public async Task DeleteCompanyCertificateAsync_WithHavingMoreThanOneComapnyCertificate_ConflictException()
+    {
+        // Arrange
+        var documentId = new Guid("aaf53459-c36b-408e-a805-0b406ce9751f");
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.CompanyId))
+            .Returns((documentId, DocumentStatusId.LOCKED, new[] { new Guid("9f5b9934-4014-4099-91e9-7b1aee696c10"), Guid.NewGuid() }.AsEnumerable(), true));
+
+        // Act
+        async Task Act() => await _sut.DeleteCompanyCertificateAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"There must not be multiple active certificates for document {documentId}");
+    }
+
+    [Fact]
+    public async Task DeleteCompanyCertificateAsync_WithExpectedResult()
+    {
+        //Arrange        
+        var documentId = new Guid("aaf53459-c36b-408e-a805-0b406ce9751f");
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.CompanyId))
+           .Returns((documentId, DocumentStatusId.LOCKED, new[] { new Guid("9f5b9934-4014-4099-91e9-7b1aee696c10") }.AsEnumerable(), true));
+
+        //Act
+        await _sut.DeleteCompanyCertificateAsync(documentId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _companyCertificateRepository.AttachAndModifyCompanyCertificateDetails(A<Guid>._, null, A<Action<CompanyCertificate>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyCertificateRepository.AttachAndModifyCompanyCertificateDocumentDetails(documentId, null, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupCreateUseCaseParticipation()
