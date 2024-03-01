@@ -135,8 +135,9 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetOfferAgreementDataForOfferId(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().ContainSingle();
+        results.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018")
+            && x.AgreementName == "Data Sharing Approval - allow CX to submit company data (company name, requester) to process the subscription"
+            && x.Mandatory == true);
     }
 
     [Fact]
@@ -167,7 +168,8 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetAgreementIdsForOfferAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea")).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(1).And.Contain(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"));
+        result.Should().HaveCount(1).And.Satisfy(x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018")
+            && x.AgreementStatusId == AgreementStatusId.ACTIVE);
     }
 
     [Fact]

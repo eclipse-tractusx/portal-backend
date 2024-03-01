@@ -175,17 +175,19 @@ public class OfferService : IOfferService
 
     public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, OfferTypeId offerTypeId)
     {
-        var (dbAgreements, requiredAgreementIds) = await GetProviderOfferAgreementConsent(offerId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
-        var invalidConsents = offerAgreementConsent.Agreements.ExceptBy(requiredAgreementIds, consent => consent.AgreementId);
+        var (dbAgreements, requiredAgreement) = await GetProviderOfferAgreementConsent(offerId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+        var invalidConsents = offerAgreementConsent.Agreements.ExceptBy(requiredAgreement.Select(x => x.AgreementId), consent => consent.AgreementId);
         if (invalidConsents.Any())
         {
             throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsent));
         }
 
+        var activeAgreements = offerAgreementConsent.Agreements.ExceptBy(
+            requiredAgreement.Where(x => x.AgreementStatusId == AgreementStatusId.INACTIVE).Select(x => x.AgreementId), consent => consent.AgreementId);
         var ConsentStatusdata = _portalRepositories.GetInstance<IConsentRepository>()
             .AddAttachAndModifyOfferConsents(
                 dbAgreements,
-                offerAgreementConsent.Agreements,
+                activeAgreements,
                 offerId,
                 _identityData.CompanyId,
                 _identityData.IdentityId,

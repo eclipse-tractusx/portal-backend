@@ -1411,7 +1411,7 @@ public class OfferServiceTests
         var agreementId = Guid.NewGuid();
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _companyId, OfferStatusId.CREATED, offerTypeId))
-            .Returns((new OfferAgreementConsentUpdate(Enumerable.Empty<AppAgreementConsentStatus>(), Enumerable.Empty<Guid>()), false));
+            .Returns((new OfferAgreementConsentUpdate(Enumerable.Empty<AppAgreementConsentStatus>(), Enumerable.Empty<AgreementStatusData>()), false));
 
         // Act
         async Task Act() => await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, offerTypeId).ConfigureAwait(false);
@@ -1439,7 +1439,8 @@ public class OfferServiceTests
             },
             new[]
             {
-                agreementId
+
+                new AgreementStatusData(agreementId, AgreementStatusId.ACTIVE)
             });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _companyId, OfferStatusId.CREATED, offerTypeId))
             .Returns((offerAgreementConsent, true));
@@ -1463,19 +1464,23 @@ public class OfferServiceTests
         var offerId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
         var additionalAgreementId = Guid.NewGuid();
+        var additionalAgreementId1 = Guid.NewGuid();
         var consentId = Guid.NewGuid();
+        var consentId1 = Guid.NewGuid();
         var newCreatedConsentId = Guid.NewGuid();
         var utcNow = DateTimeOffset.UtcNow;
         var consentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE), new AgreementConsentStatus(additionalAgreementId, ConsentStatusId.ACTIVE) });
         var offerAgreementConsent = new OfferAgreementConsentUpdate(
             new[]
             {
-                new AppAgreementConsentStatus(agreementId, consentId, ConsentStatusId.INACTIVE)
+                new AppAgreementConsentStatus(agreementId, consentId, ConsentStatusId.INACTIVE),
+                new AppAgreementConsentStatus(additionalAgreementId1, consentId1, ConsentStatusId.ACTIVE)
             },
             new[]
             {
-                agreementId,
-                additionalAgreementId
+                new AgreementStatusData(agreementId, AgreementStatusId.ACTIVE),
+                new AgreementStatusData(additionalAgreementId, AgreementStatusId.ACTIVE),
+                new AgreementStatusData(additionalAgreementId1, AgreementStatusId.INACTIVE),
             });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _companyId, OfferStatusId.CREATED, offerTypeId))
             .Returns((offerAgreementConsent, true));
