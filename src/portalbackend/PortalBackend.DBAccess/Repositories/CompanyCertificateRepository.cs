@@ -139,6 +139,6 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
         .Where(x => x.Id == documentId &&
                x.DocumentTypeId == documentTypeId &&
                x.CompanyUser!.Identity!.CompanyId == companyId)
-        .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, x.Id == documentId))
+        .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, true))
     .SingleOrDefaultAsync();
 }
