@@ -100,11 +100,11 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 ))
         .SingleOrDefaultAsync();
 
-    public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool IsExists, bool IsStatusLocked)> GetCompanyCertificateDocumentDataAsync(Guid documentId, DocumentTypeId documentTypeId) =>
+    public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool Exists, bool IsStatusLocked)> GetCompanyCertificateDocumentDataAsync(Guid documentId, DocumentTypeId documentTypeId) =>
             _context.Documents
             .Where(x => x.Id == documentId &&
                    x.DocumentTypeId == documentTypeId)
-            .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, x.Id == documentId, x.DocumentStatusId == DocumentStatusId.LOCKED))
+            .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, true, x.DocumentStatusId == DocumentStatusId.LOCKED))
         .SingleOrDefaultAsync();
 
     public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> CompanyCertificateId, bool IsSameCompany)> GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyId) =>

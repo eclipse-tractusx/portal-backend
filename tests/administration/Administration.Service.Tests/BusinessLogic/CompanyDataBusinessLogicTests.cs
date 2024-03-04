@@ -1714,7 +1714,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Document {documentId} status is not Locked");
+        ex.Message.Should().Be($"Document {documentId} status is not locked");
     }
 
     #endregion
