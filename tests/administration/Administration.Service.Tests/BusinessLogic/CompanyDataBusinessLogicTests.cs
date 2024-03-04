@@ -42,6 +42,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IIdentityData _identity;
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
+    private static readonly Guid _validDocumentId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IConsentRepository _consentRepository;
@@ -55,7 +56,6 @@ public class CompanyDataBusinessLogicTests
     private readonly IMailingService _mailingService;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
-
     private readonly CompanyDataBusinessLogic _sut;
     private readonly IIdentityService _identityService;
 
@@ -1670,6 +1670,55 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region GetCompanyCertificateDocuments
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetDocument();
+
+        // Act
+        var result = await _sut.GetCompanyCertificateDocumentAsync(_validDocumentId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        SetupFakesForGetDocument();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Company certificate document {documentId} does not exist");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithDocumentStatusIsNotLocked_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = new Guid("aaf53459-c36b-408e-a805-0b406ce9751d");
+        SetupFakesForGetDocument();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"Document {documentId} status is not locked");
+    }
+
+    #endregion
+
     #region DeleteCompanyCertificates
 
     [Fact]
@@ -1777,5 +1826,13 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
     }
 
+    private void SetupFakesForGetDocument()
+    {
+        var content = new byte[7];
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(_validDocumentId, DocumentTypeId.COMPANY_CERTIFICATE))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test.pdf", MediaTypeId.PDF, true, true));
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751d"), DocumentTypeId.COMPANY_CERTIFICATE))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test1.pdf", MediaTypeId.PDF, true, false));
+    }
     #endregion
 }

@@ -645,4 +645,23 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId)
+    {
+        var documentDetails = await _portalRepositories.GetInstance<ICompanyCertificateRepository>()
+            .GetCompanyCertificateDocumentDataAsync(documentId, DocumentTypeId.COMPANY_CERTIFICATE)
+            .ConfigureAwait(false);
+
+        if (!documentDetails.Exists)
+        {
+            throw new NotFoundException($"Company certificate document {documentId} does not exist");
+        }
+        if (!documentDetails.IsStatusLocked)
+        {
+            throw new ForbiddenException($"Document {documentId} status is not locked");
+        }
+
+        return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
+    }
 }

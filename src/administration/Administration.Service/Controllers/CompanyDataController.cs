@@ -332,6 +332,31 @@ public class CompanyDataController : ControllerBase
         _logic.GetAllCompanyCertificatesAsync(page, size, sorting, certificateStatus, certificateType);
 
     /// <summary>
+    /// Retrieves a specific company certificate document for the given id.
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
+    /// <returns>Returns the file.</returns>
+    /// <remarks>Example: GET /api/administration/companydata/companyCertificates/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+    /// <response code="200">Returns the file.</response>
+    /// <response code="403">The document which is not in status "ACTIVE".</response>
+    /// <response code="404">The document was not found.</response>
+    /// <response code="503">document Content is null.</response>
+    [HttpGet]
+    [Route("companyCertificates/documents/{documentId}")]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult> GetCompanyCertificateDocumentContentFileAsync([FromRoute] Guid documentId)
+    {
+        var (fileName, content, mediaType) = await _logic.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(false);
+        return File(content, mediaType, fileName);
+    }
+
+    /// <summary>
     /// Deletes the company certificate with the given id
     /// </summary>
     /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
