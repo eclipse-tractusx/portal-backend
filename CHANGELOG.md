@@ -2,190 +2,117 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 1.8.0-RC7
-
-### Feature
-* Certificate Management (Administration Service)
-  * released new endpoint to fetch own company certificate data incl sorting and filters - GET /api/administration/companydata/companyCertificates
-  * released new endpoint to fetch other company certificate data using businesspartner number via the new endpoint GET /api/administration/companydata/{businessPartnerNumber}/companyCertificates
-
-### Bugfix
-* fixed endpoint GET /api/administration/user/owncompany/users/{userid} missing assignments of firstname, lastname and email were added to busineslogic and setters were removed from company-user related record-definitions
-* fixed endpoint api/administration/registration/application/{applicationId}/decline
-* fixed bpdm interface connection
-  * switch from Put to Post for the sharing-state/ready call
-  * add BpdmSharingStateBusinessPartnerType 'GENERIC'
-  * add BpdmSharingStateType 'Ready'
-
-## 1.8.0-RC6
-
-### Feature
-* Certificate Management (Administration Service)
-  * released static data endpoint to retrieve supported certificate types - GET /api/administration/staticdata/certificateTypes
-  * released endpoint for posting company certificates - POST /api/administration/companydata/companyCertificate
-* Others (Common for all services)
-  * support endpoint released returning all error-types, error-codes and error-messages that a service makes use of has been added
-
-### Technical Support
-* Adjusted the nuget push script
-* Updated release workflow to not run release workflow when a new framework version is getting published
-
-### Bugfix
-* IdentityProvider Configuration - added cancellationToken to UpdateOwnCompanyIdentityProvider
-* Added ValidCompany Attribute to endpoint POST api/registration/network/{externalId}/decline to initialize the companyId of the current user correctly
-* External Registration submission endpoint POST /api/registration/Network/partnerRegistration/submit fixed
-
-## 1.8.0-RC5
+## 1.8.0
 
 ### Change
-* Registration Service
-  * adjust endpoint GET: /api/registration/applications to additionally response the registrationType
-
-### Feature
-* Mailing
-  * make the sender email configurable
-* IdentityProvider
-  * add more metadata to identityProvider details
-
-### Technical Support
-* Nuget Packages
-  * Provide Framework Packages as Nuget Packages
-* add new keycloak user to delete idps
-* Bpdm Push
-  * ignore nullable values
-  * set the sharing state to ready
-* Company Certificates
-  * add database structure for company certificates
-  * add seeding for company certificates
-
-### Known Knowns
-n/a
-
-## 1.8.0-RC4
-
-### Change
-* updated response body of the GET: /api/administration/user/owncompany/users endpoint by changing the "role" section to an array to include role client information  ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
-* pattern harmonization of 'company name' insert endpoints
-  * POST: api/administration/invitation
-  * POST: api/administration/registration/network/partnerRegistration
-  * POST: api/registration/application/{applicationId}/companyDetailsWithAddress
-  * PUT: /api/apps/appreleaseprocess/{appID}
-  * POST: /api/apps/appreleaseprocess/createapp
-* pattern harmonization of 'company name' search endpoints
-  * GET: api/administration/registration/applicationsWithStatus
-  * GET: api/administration/registration/applications
-* adjusted business logic of post/put BPN endpoints to allow the post/put of lowercase BPNs and ensure the transition to all uppercase by the backend logic (connector controller, registration controller, user controller)
-
-### Feature
-* Administration Service
-  * API endpoints for user account creation backend logic updated to set the providerID (unique username on the IdP which holds the user identity) is getting stored inside the portal db
-    * POST: /api/administration/identityprovider/owncompany/usersfile
-    * POST: /api/administration/registration/network/{externalId}/partnerRegistration
-    * POST: /api/administration/invitation
-    * POST: /api/administration/user/owncompany/users
-    * POST: /api/administration/user/owncompany/identityprovider/{identityProviderId}/users
-    * POST: /api/administration/user/owncompany/identityprovider/{identityProviderId}/usersfile
-    * POST: /api/administration/user/owncompany/usersfile
-    * POST: /api/registration/application/{applicationId}/inviteNewUser
-  * added additional user identity provider attributes (such as idpDisplayName and providerID) for all GET user account data
-    * GET: /api/administration/user/owncompany/users?page=0&size=5
-    * GET: /api/administration/user/owncompany/users/{userId}
-    * GET: /api/administration/user/ownUser
-
-### Technical Support
-* fixed sonar cloud finding to use correct pagination params
-
-### Bugfix
-* changed claimTypes static class of clientId claim to client_id
-
-### Known Knowns
-n/a
-
-## 1.8.0-RC3
-
-### Change
-* External Interface Details
-  * BPDM interface refactored - bpdm push process was updated to support the new interface spec of the bpdm gate service
-  * Clearinghouse interface updated - possible generated clearinghouse service error content is getting saved inside the application comment level
-* Email Template "cx_admin_invitation" enhanced by adding the section and link of the decline url (portal-frontend implementation)
-
-### Feature
-* Onboarding Service Provider Function
-  * enabled deactivation of managed idps (administration service) via the existing idp status update endpoint
-  * enabled deletion of managed idps (administration service) via the existing idp delete endpoint
-  * added new endpoint to enable customer to decline their own company application which was created by an osp
-
-### Technical Support
-* Release workflow updated by adding additional image tag of type semver
-* Upgraded external packages with security vulnerabilities
-
-### Bugfix
-* Endpoint authorization on valid companyId added for
-  * POST: /api/apps/appreleaseprocess/consent/{appId}/agreementConsents
-  * POST: /api/services/servicerelease/consent/{serviceId}/agreementConsents
-* Adjusted endpoint GET: api/administration/serviceaccount/owncompany/serviceaccounts to filter for active service accounts by default if no parameter is submitted
-
-## 1.8.0-RC2
-
-### Bugfix
-* Notification Service
-  * fixed Get: /api/notification/ endpoint which resulted in a 'Sequence contains more than one element' error
-* Registration Service
-  * fixed Put: /api/registration/application/{applicationId}/status endpoint to allow same status as existing status
-
-## 1.8.0-RC1.1
-
-### Bugfix
-* fixed Database migration
-
-## 1.8.0-RC1
-
-### Change
-* Administration Service
-  * added filters and lastEditor data for serviceAccounts to support the retrieval of 'Inactive' companyServiceAccounts via the GET /serviceAccounts endpoint
+* **Registration Service**
+  * adjust endpoint `GET: /api/registration/applications` to additionally response the registrationType
+  * input pattern harmonization of 'company name' endpoint `POST api/registration/application/{applicationId}/companyDetailsWithAddress`
+  * enhanced backend logic implemented for endpoints posting business partner numbers to allow the input of lowercase BPNs and ensure the transition to uppercase by the backend logic (impact on registration business logic)
+* **Administration Service**
+  * added filters and lastEditor data for serviceAccounts to support the retrieval of 'Inactive' companyServiceAccounts via the `GET /serviceAccounts` endpoint
   * updated controller connector endpoints by enhancing the error to the new error handling method with extended user information
   * updated controller serviceAccount endpoints by enhancing the error to the new error handling method with extended user information
-* Seeding data generic/release scope updated
+  * input pattern harmonization of 'company name' endpoints `POST api/administration/invitation` & `POST api/administration/registration/network/partnerRegistration`
+  * search pattern harmonization of 'company name' endpoints `GET api/administration/registration/applicationsWithStatus` & `GET api/administration/registration/applications`
+  * updated response body of `GET /api/administration/user/owncompany/users` endpoint by changing the "role" section to an array to include role client information  ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * `GET /api/administration/identityprovider/owncompany/identityproviders/{identityProviderId}` enhanced with additional attributes ("metadataUrl", "authorizationUrl", "tokenUrl", "logoutUrl", "clientId", "hasClientSecret": true)
+  * enhanced backend logic implemented for endpoints posting business partner numbers to allow the input of lowercase BPNs and ensure the transition to uppercase by the backend logic (impact on connector business logic, registration business logic, user business logic)
+* **Apps Service**
+  * input pattern harmonization of 'company name' endpoints `PUT /api/apps/appreleaseprocess/{appID}` & `POST /api/apps/appreleaseprocess/createapp`
+  * enhanced `GET /api/apps/provided/subscription-status` endpoint by addding filter(s) to filter by companyName/customerName
+* **Services Service**
+  * enhanced `GET /api/services/provided/subscription-status` endpoint by addding filter(s) to filter by companyName/customerName
+* **External Interface Details**
+  * BPDM interface refactored - bpdm push process was updated to support the new interface spec of the bpdm gate service (incl automatic set of sharing state to ready) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * Clearinghouse interface updated - possible generated clearinghouse service error content is getting saved inside the application comment level
+* **Email Template**
+  * "cx_admin_invitation" enhanced by adding the section and link of the decline url
+* **Seeding data generic/release scope updated**
   * added additional ssi credentials
   * adjusted existing template urls
-  * released new technical user/service account roles 'BPDM Gate read' and 'BPDM Gate read&write'
-* App Service
-  * enhanced GET endpoint for offer subscription with a filter to filter by company name
-* Services Service
-  * enhanced GET endpoint for offer subscription with a filter to filter by company name
+  * released new technical user/service account roles `BPDM Gate read` and `BPDM Gate read&write`
 
 ### Feature
-* Database structure update and impact to endpoints
+* **Database structure update and impact to endpoints**
   * portal.countries table updated by introducing a new structure and help tables for multi language capability
-  * new endpoint GET /api/registration/staticdata/countrylist to respond with a list of countries and multi language country long description
-* Registration Service
-  * new endpoint GET /api/registration/applications/declinedata to retrieve decline information (companyName, invited users)
-* Agreement Status
+  * new endpoint `GET /api/registration/staticdata/countrylist` release responding with a list of countries and multi language country long description
+* **Decline Registration Feature (Registration Service & Email Template)**
+  * new endpoint `GET /api/registration/applications/declinedata` to retrieve decline information (companyName, invited users)
+  * new email template released 'Decline Registration'
+* **Agreement Status**
   * updated portal.agreement table including agreementStatus column to display active agreements
   * updated logic of POST and GET agreement endpoint to only consider active agreements
   * added agreementView to display agreements per companyRole
-* Email Template
-  * released 'Decline Registration' template
+* **Onboarding Service Provider Function**
+  * enabled deactivation of managed idps (administration service) via the existing idp status update endpoint
+  * enabled deletion of managed idps (administration service) via the existing idp delete endpoint
+  * added new endpoint to enable customer to decline their own company application which was created by an osp
+* **Manage user specific identity provider details (Administration Service)**
+  * API endpoints for user account creation backend logic updated to set the providerID (unique username on the IdP which holds the user identity) is getting stored inside the portal db
+    * `POST /api/administration/identityprovider/owncompany/usersfile`
+    * `POST /api/administration/registration/network/{externalId}/partnerRegistration`
+    * `POST /api/administration/invitation`
+    * `POST /api/administration/user/owncompany/users`
+    * `POST /api/administration/user/owncompany/identityprovider/{identityProviderId}/users`
+    * `POST /api/administration/user/owncompany/identityprovider/{identityProviderId}/usersfile`
+    * `POST /api/administration/user/owncompany/usersfile`
+    * `POST /api/registration/application/{applicationId}/inviteNewUser`
+  * added additional user identity provider attributes (such as idpDisplayName and providerID) for all GET user account data
+    * `GET /api/administration/user/owncompany/users?page=0&size=5`
+    * `GET /api/administration/user/owncompany/users/{userId}`
+    * `GET /api/administration/user/ownUser`
+* **Certificate Management (Administration Service)**
+  * added database structure for company certificates (new tables and connections - for detail refer to the upgrade documentation)
+  * added seeding for company certificates (certificate types; certificate type description and certificate type status)
+  * released static data endpoint to retrieve supported certificate types - `GET /api/administration/staticdata/certificateTypes`
+  * released endpoint for posting company certificates - `POST /api/administration/companydata/companyCertificate`
+  * released new endpoint to fetch own company certificate data incl sorting and filters - `GET /api/administration/companydata/companyCertificates`
+  * released new endpoint to fetch other company certificate data using businesspartner number via the new endpoint `GET /api/administration/companydata/{businessPartnerNumber}/companyCertificates`
+* **Others (Common for all services)**
+  * released support endpoint(s) returning for each backend service all supported error-types, error-codes and error-messages
 
 ### Technical Support
-* removed configuration values needed for the process identity - identity needed for the process worker is now done with a database request to get the needed values for the specified user
+* Removed configuration values needed for the process identity - identity needed for the process worker is now done with a database request to get the needed values for the specified user
 * Updated claims to include/set identityType and companyId
-* refactored the IdentityService implementation - IdentityData is read asynchronously from the database which is triggered by the respective policy in the controller. This avoids unnecessary accesses to the database in case only the identity_id or no identity-data at all is required to execute the respective business-logic
-* adjusted the path for portal backend dbaccess in the maintenance docker image
-* changed registration of identity service to scoped
-* updated Swagger document schema - nullable and fix values updated
+* Refactored the IdentityService implementation - IdentityData is read asynchronously from the database which is triggered by the respective policy in the controller. This avoids unnecessary accesses to the database in case only the identity_id or no identity-data at all is required to execute the respective business-logic
+* Adjusted the path for portal backend dbaccess in the maintenance docker image
+* Changed registration of identity service to scoped
+* Updated Swagger document schema - nullable and fix values updated
 * IdentityService has been refactored using claims preferred_username or clientId from token querying the database for identityId or (for service_accounts) clientClientId instead of UserEntityId. As a fallback (for inconsistent test-data) the previous logic (using claim sub + UserEntityId) still exists. Code that makes use of UserEntityId or (ServiceAccount) ClientId has been refactored to use IdentityId and ClientClientId instead. The (now obsolete) ServiceAccountSync-process has been removed.
-* removed obsolete UserEntityId != null condition from queries being used in authorization
-* fixed security vulnerability for referenced external packages
-* updated dependencies file and file header template
-* updated the Newtonsoft.Json package to fix a high security finding
-* added additional image tags of type semver to release workflows
+* Removed obsolete UserEntityId != null condition from queries being used in authorization
+* Fixed security vulnerability for referenced external packages
+* Updated dependencies file and file header template
+* Updated the Newtonsoft.Json package to fix a high security finding
+* Added additional image tags of type semver to release workflows
+* Release workflow updated by adding additional image tag of type semver
+* Upgraded external packages with security vulnerabilities
+* Fixed sonar fcloud finding to use correct pagination params
+* Nuget Packages - provide Framework Packages as Nuget Packages
+* Adjusted the nuget push script
+* Updated release workflow to not run release workflow when a new framework version is getting published
+* Email Service - updated implementation of the email service allowing the configuration of the sender's email address to enable customization of the sender information for outgoing emails
 
 ### Bugfix
-* updated GET /api/services/{serviceId}/subscription/{subscriptionID}/provider to return clientClientId instead of the serviceAccount name
+* fixed GET /api/services/{serviceId}/subscription/{subscriptionID}/provider to return clientClientId instead of the serviceAccountName
 * fixed inner exception handling of the new error handling method implementation of 1.7.0 which resulted in a infinity loop
-* updated backend endpoint logic of DELETE POST /api/administration/registration/applications/{applicationId}/decline by setting the idp of the company to 'disabled' inside the IdP (keycloak)
+* endpoint POST /api/administration/registration/applications/{applicationId}/decline
+  * fixed backend logic by setting the idp connection of the company to 'disabled' inside the IdP (keycloak)
+  * fixed backend logic by fetching the user email upfront to deactivating the user
 * disabled the duplicate bpn check for endpoint /api/registration/application/{applicationId}/companyDetailsWithAddress
+* endpoint authorization on valid companyId fixed for
+  * POST /api/apps/appreleaseprocess/consent/{appId}/agreementConsents
+  * POST /api/services/servicerelease/consent/{serviceId}/agreementConsents
+* changed claimTypes static class of clientId claim to client_id
+* identityProvider Configuration - added cancellationToken to UpdateOwnCompanyIdentityProvider
+* ExternalRegistration
+  * added ValidCompany Attribute to endpoint POST api/registration/network/{externalId}/decline to initialize the companyId of the current user correctly
+  * external Registration submission endpoint POST /api/registration/Network/partnerRegistration/submit fixed
+* fixed endpoint GET /api/administration/user/owncompany/users/{userid} missing assignments of firstname, lastname and email were added to busineslogic and setters were removed from company-user related record-definitions
+
+### Known Knowns
+* Certificate Feature
+  * POST /api/administration/companydata/companyCertificate uploads the document with the wrong status
 
 ## 1.7.0
 
