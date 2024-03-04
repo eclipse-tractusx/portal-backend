@@ -115,7 +115,7 @@ public class CompanyCertificateRepositoryTests
     [Theory]
     [InlineData(CompanyCertificateStatusId.ACTIVE, CompanyCertificateTypeId.AEO_CTPAT_Security_Declaration, 0, 2, 1, 1)]
     [InlineData(CompanyCertificateStatusId.ACTIVE, CompanyCertificateTypeId.ISO_9001, 0, 2, 1, 1)]
-    [InlineData(CompanyCertificateStatusId.INACTVIE, CompanyCertificateTypeId.IATF, 0, 2, 0, 0)]
+    [InlineData(CompanyCertificateStatusId.INACTIVE, CompanyCertificateTypeId.IATF, 0, 2, 0, 0)]
     public async Task GetAllCertificates_WithExistingCompanyCertificateAndCertificateType_ReturnsExpectedResult(CompanyCertificateStatusId companyCertificateStatusId, CompanyCertificateTypeId companyCertificateTypeId, int page, int size, int count, int numData)
     {
         // Arrange
@@ -256,7 +256,7 @@ public class CompanyCertificateRepositoryTests
         // Act
         sut.AttachAndModifyCompanyCertificateDetails(new("9f5b9934-4014-4099-91e9-7b1aee696c12"), null, x =>
             {
-                x.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTVIE;
+                x.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTIVE;
             });
 
         // Assert
@@ -265,7 +265,7 @@ public class CompanyCertificateRepositoryTests
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().ContainSingle()
             .Which.Entity.Should().BeOfType<CompanyCertificate>()
-            .And.Match<CompanyCertificate>(x => x.CompanyCertificateStatusId == CompanyCertificateStatusId.INACTVIE);
+            .And.Match<CompanyCertificate>(x => x.CompanyCertificateStatusId == CompanyCertificateStatusId.INACTIVE);
     }
 
     [Fact]

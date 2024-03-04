@@ -178,7 +178,7 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Arrange
         var (context, sut) = await CreateSutWithContext().ConfigureAwait(false);
         var active = new CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId.ISO_15504_SPICE, CompanyCertificateTypeStatusId.ACTIVE);
-        var inactive = new CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId.ISO_15504_SPICE, CompanyCertificateTypeStatusId.INACTVIE);
+        var inactive = new CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId.ISO_15504_SPICE, CompanyCertificateTypeStatusId.INACTIVE);
         context.Remove(active);
         context.Add(inactive);
         await context.SaveChangesAsync().ConfigureAwait(false);

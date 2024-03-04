@@ -1026,7 +1026,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<Action<Document>>._))
             .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
             {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentTypeId);
                 setupOptionalFields?.Invoke(document);
                 documents.Add(document);
             })
@@ -1041,7 +1041,7 @@ public class CompanyDataBusinessLogicTests
         documents.Should().ContainSingle();
         var document = documents.Single();
         document.DocumentTypeId.Should().Be(DocumentTypeId.COMPANY_CERTIFICATE);
-        document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
+        document.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
         A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, CompanyCertificateTypeId.IATF, document.Id, A<Action<CompanyCertificate>>._))
             .MustHaveHappenedOnceExactly();
         companyCertificates.Should().ContainSingle();

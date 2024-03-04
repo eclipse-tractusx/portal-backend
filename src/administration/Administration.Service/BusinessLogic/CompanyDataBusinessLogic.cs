@@ -392,7 +392,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             hash, mediaTypeId, DocumentTypeId.COMPANY_CERTIFICATE, x =>
             {
                 x.CompanyUserId = _identityData.IdentityId;
-                x.DocumentStatusId = DocumentStatusId.PENDING;
+                x.DocumentStatusId = DocumentStatusId.LOCKED;
             });
 
         companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, doc.Id,
@@ -639,7 +639,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             companyCertificateRepository.AttachAndModifyCompanyCertificateDetails(details.CompanyCertificateId.SingleOrDefault(), null, c =>
             {
-                c.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTVIE;
+                c.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTIVE;
             });
         }
 

@@ -114,7 +114,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
             .Select(document => new ValueTuple<Guid, DocumentStatusId, IEnumerable<Guid>, bool>(
                     document.Id,
                     document.DocumentStatusId,
-                    document.CompanyCertificates.Where(x => x.CompanyCertificateStatusId != CompanyCertificateStatusId.INACTVIE).Select(x => x.Id),
+                    document.CompanyCertificates.Where(x => x.CompanyCertificateStatusId != CompanyCertificateStatusId.INACTIVE).Select(x => x.Id),
                     document.CompanyUser!.Identity!.CompanyId == companyId))
             .SingleOrDefaultAsync();
 
