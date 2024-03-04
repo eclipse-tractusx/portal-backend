@@ -81,7 +81,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
                 throw new ArgumentException($"{processStepTypeId} is not supported");
         }
 
-        var cryptoConfig = _settings.EncryptionConfig.SingleOrDefault(x => x.Index == data.OspDetails.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.OspDetails.EncryptionMode} is not configured");
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.OspDetails.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.OspDetails.EncryptionMode} is not configured");
         var secret = CryptoHelper.Decrypt(data.OspDetails.ClientSecret, data.OspDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         await _onboardingServiceProviderService.TriggerProviderCallback(

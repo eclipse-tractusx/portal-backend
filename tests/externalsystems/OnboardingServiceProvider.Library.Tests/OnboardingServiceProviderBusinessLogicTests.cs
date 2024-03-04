@@ -56,10 +56,10 @@ public class OnboardingServiceProviderBusinessLogicTests
 
         _settings = new OnboardingServiceProviderSettings
         {
-            EncryptionConfig = new EncryptionModeConfig[]
+            EncryptionConfigs = new EncryptionModeConfig[]
             {
                 new() { Index=0, EncryptionKey="2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6", CipherMode=CipherMode.ECB, PaddingMode=PaddingMode.PKCS7 },
-                new() { Index=1, EncryptionKey="5892b7e151628aed2a6abf715892b7e151628aed2a62b7e151628aed2a6abf71", CipherMode=CipherMode.CFB, PaddingMode=PaddingMode.PKCS7 },
+                new() { Index=1, EncryptionKey="5892b7e151628aed2a6abf715892b7e151628aed2a62b7e151628aed2a6abf71", CipherMode=CipherMode.CBC, PaddingMode=PaddingMode.PKCS7 },
             },
             EncrptionConfigIndex = 1
         };
@@ -149,9 +149,9 @@ public class OnboardingServiceProviderBusinessLogicTests
     [InlineData("/UJ0wr5w1HiXaLo25QfxqXWhyq6Pa9w+CvBFNs1782s=", null, 0, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been submitted for further processing", CompanyApplicationStatusId.SUBMITTED)]
     [InlineData("/UJ0wr5w1HiXaLo25QfxqXWhyq6Pa9w+CvBFNs1782s=", null, 0, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been approved", CompanyApplicationStatusId.CONFIRMED)]
     [InlineData("/UJ0wr5w1HiXaLo25QfxqXWhyq6Pa9w+CvBFNs1782s=", null, 0, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been declined with reason: this is a test", CompanyApplicationStatusId.DECLINED)]
-    [InlineData("i1NbZSnrQLI+uhcig43QJQYr+ew=", "qvsPgVJT/CjWNXuAHl1IBQ==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been submitted for further processing", CompanyApplicationStatusId.SUBMITTED)]
-    [InlineData("i1NbZSnrQLI+uhcig43QJQYr+ew=", "qvsPgVJT/CjWNXuAHl1IBQ==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been approved", CompanyApplicationStatusId.CONFIRMED)]
-    [InlineData("i1NbZSnrQLI+uhcig43QJQYr+ew=", "qvsPgVJT/CjWNXuAHl1IBQ==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been declined with reason: this is a test", CompanyApplicationStatusId.DECLINED)]
+    [InlineData("hzl/2shJlzl64Y4FGNYtuFjR2c4VKXsfBz4UeQKDovQ=", "7hFxEXvfoiRTrHYMA+vkug==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been submitted for further processing", CompanyApplicationStatusId.SUBMITTED)]
+    [InlineData("hzl/2shJlzl64Y4FGNYtuFjR2c4VKXsfBz4UeQKDovQ=", "7hFxEXvfoiRTrHYMA+vkug==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been approved", CompanyApplicationStatusId.CONFIRMED)]
+    [InlineData("hzl/2shJlzl64Y4FGNYtuFjR2c4VKXsfBz4UeQKDovQ=", "7hFxEXvfoiRTrHYMA+vkug==", 1, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, "Application 2b965267-555c-4834-a323-09b7858c29ae has been declined with reason: this is a test", CompanyApplicationStatusId.DECLINED)]
     public async Task TriggerProviderCallback_WithValidData_CallsExpected(string clientSecret, string? initialVector, int index, ProcessStepTypeId processStepTypeId, string message, CompanyApplicationStatusId applicationStatusId)
     {
         // Act

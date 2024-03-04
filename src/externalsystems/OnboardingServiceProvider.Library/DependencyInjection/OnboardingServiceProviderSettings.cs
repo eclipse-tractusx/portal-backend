@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.
 public class OnboardingServiceProviderSettings
 {
     [Required]
-    public IEnumerable<EncryptionModeConfig> EncryptionConfig { get; set; } = null!;
+    public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
 
     [Required]
     public int EncrptionConfigIndex { get; set; }

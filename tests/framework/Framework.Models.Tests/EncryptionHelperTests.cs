@@ -67,7 +67,7 @@ public class CryptoHelperTests
 
     [Theory]
     [InlineData("Sup3rS3cureTest!", "2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6", CipherMode.ECB, PaddingMode.PKCS7)]
-    [InlineData("Sup3rS3cureTest!", "5892b7e151628aed2a6abf715892b7e151628aed2a62b7e151628aed2a6abf71", CipherMode.CFB, PaddingMode.PKCS7)]
+    [InlineData("Sup3rS3cureTest!", "5892b7e151628aed2a6abf715892b7e151628aed2a62b7e151628aed2a6abf71", CipherMode.CBC, PaddingMode.PKCS7)]
     public void Foo(string data, string key, CipherMode cipherMode, PaddingMode paddingMode)
     {
         var (foo, bar) = CryptoHelper.Encrypt(data, Convert.FromHexString(key), cipherMode, paddingMode);

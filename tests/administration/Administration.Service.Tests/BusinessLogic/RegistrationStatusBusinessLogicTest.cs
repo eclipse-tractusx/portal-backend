@@ -60,10 +60,10 @@ public class RegistrationStatusBusinessLogicTest
 
         _options = new OnboardingServiceProviderSettings
         {
-            EncryptionConfig = new EncryptionModeConfig[]
+            EncryptionConfigs = new EncryptionModeConfig[]
             {
                 new() { Index=0, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.ECB, PaddingMode=PaddingMode.PKCS7 },
-                new() { Index=1, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.CFB, PaddingMode=PaddingMode.PKCS7 },
+                new() { Index=1, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.CBC, PaddingMode=PaddingMode.PKCS7 },
             },
             EncrptionConfigIndex = 1
         };
@@ -178,11 +178,11 @@ public class RegistrationStatusBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
 
-        var cryptoConfig = _options.EncryptionConfig.ElementAtOrDefault(_options.EncrptionConfigIndex);
+        var cryptoConfig = _options.EncryptionConfigs.ElementAtOrDefault(_options.EncrptionConfigIndex);
         cryptoConfig.Should().NotBeNull()
             .And.Match<EncryptionModeConfig>(x =>
                 x.Index == 1 &&
-                x.CipherMode == CipherMode.CFB &&
+                x.CipherMode == CipherMode.CBC &&
                 x.PaddingMode == PaddingMode.PKCS7
             );
 
