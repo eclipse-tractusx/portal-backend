@@ -133,4 +133,12 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
         _context.Attach(entity);
         updateFields.Invoke(entity);
     }
+
+    public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool Exists)> GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid documentId, Guid companyId, DocumentTypeId documentTypeId) =>
+        _context.Documents
+        .Where(x => x.Id == documentId &&
+               x.DocumentTypeId == documentTypeId &&
+               x.CompanyUser!.Identity!.CompanyId == companyId)
+        .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, true))
+    .SingleOrDefaultAsync();
 }
