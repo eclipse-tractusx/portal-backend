@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 BMW Group AG
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -63,7 +63,8 @@ public static class ProtocolMappersUpdater
             UserAttributeRegion = update.GetValueOrDefault("user.attribute.region"),
             UserAttributeLocality = update.GetValueOrDefault("user.attribute.locality"),
             IncludedClientAudience = update.GetValueOrDefault("included.client.audience"),
-            Multivalued = update.GetValueOrDefault("multivalued")
+            Multivalued = update.GetValueOrDefault("multivalued"),
+            UserSessionNote = update.GetValueOrDefault("user.session.note"),
         };
 
     private static bool CompareProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string> update) =>
@@ -83,5 +84,6 @@ public static class ProtocolMappersUpdater
             config.UserAttributeRegion == update.GetValueOrDefault("user.attribute.region") &&
             config.UserAttributeLocality == update.GetValueOrDefault("user.attribute.locality") &&
             config.IncludedClientAudience == update.GetValueOrDefault("included.client.audience") &&
-            config.Multivalued == update.GetValueOrDefault("multivalued");
+            config.Multivalued == update.GetValueOrDefault("multivalued") &&
+            config.UserSessionNote == update.GetValueOrDefault("user.session.note");
 }
