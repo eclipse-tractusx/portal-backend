@@ -70,7 +70,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * released static data endpoint to retrieve supported certificate types - `GET /api/administration/staticdata/certificateTypes`
   * released endpoint for posting company certificates - `POST /api/administration/companydata/companyCertificate`
   * released new endpoint to fetch own company certificate data incl sorting and filters - `GET /api/administration/companydata/companyCertificates`
-  * released new endpoint to fetch other company certificate data using businesspartner number via the new endpoint `GET /api/administration/companydata/{businessPartnerNumber}/companyCertificates`
+  * released new endpoint to fetch other company certificate data using business partner number via the new endpoint `GET /api/administration/companydata/{businessPartnerNumber}/companyCertificates`
 * **Others (Common for all services)**
   * released support endpoint(s) returning for each backend service all supported error-types, error-codes and error-messages
 
@@ -79,7 +79,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Updated claims to include/set identityType and companyId
 * Refactored the IdentityService implementation - IdentityData is read asynchronously from the database which is triggered by the respective policy in the controller. This avoids unnecessary accesses to the database in case only the identity_id or no identity-data at all is required to execute the respective business-logic
 * Adjusted the path for portal backend dbaccess in the maintenance docker image
-* Changed registration of identity service to scoped
+* Identity Service is now created only once per request to minimize database access
 * Updated Swagger document schema - nullable and fix values updated
 * IdentityService has been refactored using claims preferred_username or clientId from token querying the database for identityId or (for service_accounts) clientClientId instead of UserEntityId. As a fallback (for inconsistent test-data) the previous logic (using claim sub + UserEntityId) still exists. Code that makes use of UserEntityId or (ServiceAccount) ClientId has been refactored to use IdentityId and ClientClientId instead. The (now obsolete) ServiceAccountSync-process has been removed.
 * Removed obsolete UserEntityId != null condition from queries being used in authorization
@@ -89,9 +89,9 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Added additional image tags of type semver to release workflows
 * Release workflow updated by adding additional image tag of type semver
 * Upgraded external packages with security vulnerabilities
-* Fixed sonar fcloud finding to use correct pagination params
+* Fixed sonar cloud finding to use correct pagination params
 * Nuget Packages - provide Framework Packages as Nuget Packages
-* Adjusted the nuget push script
+* Added scripts for an easy nuget package creation and update process
 * Updated release workflow to not run release workflow when a new framework version is getting published
 * Email Service - updated implementation of the email service allowing the configuration of the sender's email address to enable customization of the sender information for outgoing emails
 * Changed portal-cd references to portal due to repository renaming
