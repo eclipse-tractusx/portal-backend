@@ -15,14 +15,14 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * updated controller serviceAccount endpoints by enhancing the error to the new error handling method with extended user information
   * input pattern harmonization of 'company name' endpoints `POST api/administration/invitation` & `POST api/administration/registration/network/partnerRegistration`
   * search pattern harmonization of 'company name' endpoints `GET api/administration/registration/applicationsWithStatus` & `GET api/administration/registration/applications`
-  * updated response body of `GET /api/administration/user/owncompany/users` endpoint by changing the "role" section to an array to include role client information  ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * updated response body of `GET /api/administration/user/owncompany/users` endpoint by changing the "role" section to an array to include role client information ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
   * `GET /api/administration/identityprovider/owncompany/identityproviders/{identityProviderId}` enhanced with additional attributes ("metadataUrl", "authorizationUrl", "tokenUrl", "logoutUrl", "clientId", "hasClientSecret": true)
   * enhanced backend logic implemented for endpoints posting business partner numbers to allow the input of lowercase BPNs and ensure the transition to uppercase by the backend logic (impact on connector business logic, registration business logic, user business logic)
 * **Apps Service**
   * input pattern harmonization of 'company name' endpoints `PUT /api/apps/appreleaseprocess/{appID}` & `POST /api/apps/appreleaseprocess/createapp`
-  * enhanced `GET /api/apps/provided/subscription-status` endpoint by addding filter(s) to filter by companyName/customerName
+  * enhanced `GET /api/apps/provided/subscription-status` endpoint by adding filter(s) to filter by companyName/customerName
 * **Services Service**
-  * enhanced `GET /api/services/provided/subscription-status` endpoint by addding filter(s) to filter by companyName/customerName
+  * enhanced `GET /api/services/provided/subscription-status` endpoint by adding filter(s) to filter by companyName/customerName
 * **External Interface Details**
   * BPDM interface refactored - bpdm push process was updated to support the new interface spec of the bpdm gate service (incl automatic set of sharing state to ready) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
   * Clearinghouse interface updated - possible generated clearinghouse service error content is getting saved inside the application comment level
@@ -32,6 +32,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * added additional ssi credentials
   * adjusted existing template urls
   * released new technical user/service account roles `BPDM Gate read` and `BPDM Gate read&write`
+* **IAM Seeding**
+  * added user.session.note from client protocol mapper to seeding service
 
 ### Feature
 * **Database structure update and impact to endpoints**
@@ -92,6 +94,11 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Adjusted the nuget push script
 * Updated release workflow to not run release workflow when a new framework version is getting published
 * Email Service - updated implementation of the email service allowing the configuration of the sender's email address to enable customization of the sender information for outgoing emails
+* Changed portal-cd references to portal due to repository renaming
+* Updated link to dockerfile in docker-notice files
+* Updated README.md
+  * mentioned `docs` folder in portal-assets repository
+  * referenced docker notice files in notice section instead duplicating the content
 
 ### Bugfix
 * fixed GET /api/services/{serviceId}/subscription/{subscriptionID}/provider to return clientClientId instead of the serviceAccountName
@@ -108,7 +115,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * ExternalRegistration
   * added ValidCompany Attribute to endpoint POST api/registration/network/{externalId}/decline to initialize the companyId of the current user correctly
   * external Registration submission endpoint POST /api/registration/Network/partnerRegistration/submit fixed
-* fixed endpoint GET /api/administration/user/owncompany/users/{userid} missing assignments of firstname, lastname and email were added to busineslogic and setters were removed from company-user related record-definitions
+* fixed endpoint GET /api/administration/user/owncompany/users/{userid} missing assignments of firstname, lastname and email were added to businesslogic and setters were removed from company-user related record-definitions
 
 ### Known Knowns
 * Certificate Feature
@@ -124,7 +131,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Administration Service
   * enhanced DELETE ServiceAccount endpoint by adding a validation to allow provider as well as owner of the service account to trigger the deletion
   * added validation for DELETE ServiceAccount to not allow to deactivate if active subscription exists
-  * enhanced DELETE connector business logic by automatically deactive technical users which (if any) are linked to the connector
+  * enhanced DELETE connector business logic by automatically deactivate technical users which (if any) are linked to the connector
   * enhanced GET /administration/companydata/certificateTypes business logic to return only those certificateTypes which the users company is able to request
   * added agreement_link to agreement table and enhanced existing agreement endpoint response to include the agreement link - GET api/administration/companydata/companyRolesAndConsents
   * enhanced response body of GET /api/administration/Connectors/{connectorId}; GET /api/administration/connectors & GET /api/administration/connectors/managed by adding linked technical user data (id, name, role, etc.)
@@ -180,7 +187,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * added /api/administration/identityprovider/network/identityproviders/managed/{identityProviderId} endpoint to retrieve idp information regarding IdP connected companies
 * Email templates
   * released new email template 'offer release approval'
-  * released new email tempülate 'welcome onboarding service provider registration company' (connected to feature release Onboarding Service Provider)
+  * released new email template 'welcome onboarding service provider registration company' (connected to feature release Onboarding Service Provider)
 
 ### Technical Support
 * Swagger Documentation updated
