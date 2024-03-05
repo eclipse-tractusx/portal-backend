@@ -17,4 +17,4 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-leadingRepository: "https://github.com/eclipse-tractusx/portal-cd"
+leadingRepository: "https://github.com/eclipse-tractusx/portal"

@@ -1,21 +1,26 @@
-# Catena-X Portal Backend
+[![LeadingRepository](https://img.shields.io/badge/Leading_Repository-Portal-blue)](https://github.com/eclipse-tractusx/portal)
 
-This repository contains the backend code for the Catena-X Portal written in C#.
+# Portal Backend
 
-The Catena-X Portal application consists of
+This repository contains the backend code for the Portal written in C#.
 
-* [portal-frontend](https://github.com/eclipse-tractusx/portal-frontend),
-* [portal-frontend-registration](https://github.com/eclipse-tractusx/portal-frontend-registration),
-* [portal-assets](https://github.com/eclipse-tractusx/portal-assets) and
-* [portal-backend](https://github.com/eclipse-tractusx/portal-backend).
+The Portal application consists of
 
-![Tag](https://img.shields.io/static/v1?label=&message=LeadingRepository&color=green&style=flat) The helm chart for installing the Catena-X Portal is available in [portal-cd](https://github.com/eclipse-tractusx/portal-cd).
+- [portal-frontend](https://github.com/eclipse-tractusx/portal-frontend),
+- [portal-frontend-registration](https://github.com/eclipse-tractusx/portal-frontend-registration),
+- [portal-shared-components](https://github.com/eclipse-tractusx/portal-shared-components),
+- [portal-assets](https://github.com/eclipse-tractusx/portal-assets) and
+- [portal-backend](https://github.com/eclipse-tractusx/portal-backend).
 
-The Catena-X Portal is designed to work with the [Catena-X IAM](https://github.com/eclipse-tractusx/portal-iam).
+The helm chart for installing the Portal is available in the [portal](https://github.com/eclipse-tractusx/portal) repository.
+
+Please refer to the `docs` directory of the [portal-assets](https://github.com/eclipse-tractusx/portal-assets) repository for the overarching user and developer documentation of the Portal application.
+
+The Portal is designed to work with the [IAM](https://github.com/eclipse-tractusx/portal-iam).
 
 ## How to build and run
 
-Install [the .NET 7.0 SDK](https://www.microsoft.com/net/download).
+Install the [.NET 7.0 SDK](https://www.microsoft.com/net/download).
 
 Run the following command from the CLI:
 
@@ -34,31 +39,17 @@ dotnet run
 
 This application provides container images for demonstration purposes.
 
-### DockerHub
+See Docker notice files for more information:
 
-* [portal-registration-service](https://hub.docker.com/r/tractusx/portal-registration-service)
-* [portal-administration-service](https://hub.docker.com/r/tractusx/portal-administration-service)
-* [portal-marketplace-app-service](https://hub.docker.com/r/tractusx/portal-marketplace-app-service)
-* [portal-services-service](https://hub.docker.com/r/tractusx/portal-services-service)
-* [portal-notification-service](https://hub.docker.com/r/tractusx/portal-notification-service)
-* [portal-processes-worker](https://hub.docker.com/r/tractusx/portal-processes-worker)
-* [portal-portal-migrations](https://hub.docker.com/r/tractusx/portal-portal-migrations)
-* [portal-provisioning-migrations](https://hub.docker.com/r/tractusx/portal-provisioning-migrations)
-* [portal-maintenance-service](https://hub.docker.com/r/tractusx/portal-maintenance-service)
-
-### Base images
-
-mcr.microsoft.com/dotnet/aspnet:7.0-alpine:
-
-* Dockerfile: [mcr.microsoft.com/dotnet/aspnet:7.0-alpine](https://github.com/dotnet/dotnet-docker/blob/main/src/aspnet/7.0/alpine3.17/amd64/Dockerfile)
-* GitHub project: [https://github.com/dotnet/dotnet-docker](https://github.com/dotnet/dotnet-docker)
-* DockerHub: [https://hub.docker.com/_/microsoft-dotnet-aspnet](https://hub.docker.com/_/microsoft-dotnet-aspnet)
-
-mcr.microsoft.com/dotnet/runtime:7.0-alpine:
-
-* Dockerfile: [mcr.microsoft.com/dotnet/runtime:7.0-alpine](https://github.com/dotnet/dotnet-docker/blob/main/src/runtime/7.0/alpine3.17/amd64/Dockerfile)
-* GitHub project: [https://github.com/dotnet/dotnet-docker](https://github.com/dotnet/dotnet-docker)
-* DockerHub: [https://hub.docker.com/_/microsoft-dotnet-runtime](https://hub.docker.com/_/microsoft-dotnet-runtime)
+* [portal-registration-service](./docker/notice-registration-service.md)
+* [portal-administration-service](./docker/notice-administration-service.md)
+* [portal-marketplace-app-service](./docker/notice-marketplace-app-service.md)
+* [portal-services-service](./docker/notice-services-service.md)
+* [portal-notification-service](./docker/notice-notification-service.md)
+* [portal-processes-worker](./docker/notice-processes-worker.md)
+* [portal-portal-migrations](./docker/notice-portal-migrations.md)
+* [portal-provisioning-migrations](./docker/notice-provisioning-migrations.md)
+* [portal-maintenance-service](./docker/notice-maintenance-service.md)
 
 ## Notice for Nuget Packages
 

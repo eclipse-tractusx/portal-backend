@@ -13,3 +13,11 @@ Every time you create a new file or edit a file that you created and doesn't yet
 Currently the following templates are available:
 * cx_header_default
 * cx_header_with_#
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2021-2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/portal-backend
