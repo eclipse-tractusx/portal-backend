@@ -232,5 +232,6 @@ public class ClientsUpdater : IClientsUpdater
         config.ClaimName == update.GetValueOrDefault("claim.name") &&
         config.JsonTypelabel == update.GetValueOrDefault("jsonType.label") &&
         config.FriendlyName == update.GetValueOrDefault("friendly.name") &&
-        config.AttributeName == update.GetValueOrDefault("attribute.name");
+        config.AttributeName == update.GetValueOrDefault("attribute.name") &&
+        config.UserSessionNote == update.GetValueOrDefault("user.session.note");
 }
