@@ -326,7 +326,7 @@ public class CompanyDataController : ControllerBase
     [Authorize(Roles = "view_certificates")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(Pagination.Response<ServiceOverviewData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Pagination.Response<CompanyCertificateData>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] CertificateSorting? sorting = null, [FromQuery] CompanyCertificateStatusId? certificateStatus = null, [FromQuery] CompanyCertificateTypeId? certificateType = null) =>
         _logic.GetAllCompanyCertificatesAsync(page, size, sorting, certificateStatus, certificateType);
