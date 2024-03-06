@@ -1153,7 +1153,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.IdentityId).Returns(userId);
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
-            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
@@ -1178,7 +1178,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.IdentityId).Returns(userId);
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
-            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
@@ -1354,7 +1354,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.IdentityId).Returns(userId);
         A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(userId, A<IEnumerable<Guid>>._))
-            .Returns((CompanyOwnUserTransferDetails)default!);
+            .Returns<CompanyOwnUserTransferDetails?>(default);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, null!, _options);
 
         // Act
@@ -1405,7 +1405,7 @@ public class UserBusinessLogicTests
         var companyId = Guid.NewGuid();
         A.CallTo(() => _identity.CompanyId).Returns(companyId);
         A.CallTo(() => _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(A<Guid>._, A<Guid>._))
-            .Returns((CompanyUserDetailTransferData)default!);
+            .Returns<CompanyUserDetailTransferData?>(default);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, _identityService, null!, _logger, null!, _options);
 
         // Act
@@ -1471,8 +1471,8 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userBusinessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._)).MustHaveHappened(4, Times.Exactly);
         A.CallTo(() => _bpnAccess.FetchLegalEntityByBpn(A<string>._, A<string>._, CancellationToken.None)).MustHaveHappened(8, Times.Exactly);
         result.Should().NotBeNull();
-        result.SuccessfullBpns.Should().HaveCount(successfullBpns.Count());
-        result.UnSuccessfullBpns.Should().HaveCount(4).And.Satisfy(
+        result.SuccessfulBpns.Should().HaveCount(successfullBpns.Count());
+        result.UnsuccessfulBpns.Should().HaveCount(4).And.Satisfy(
             x => x.Bpns == "THISBPNISVALID11" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
             x => x.Bpns == "THISBPNISVALID15" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
             x => x.Bpns == "THISBPNISVALID17" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
@@ -1520,7 +1520,7 @@ public class UserBusinessLogicTests
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act);
-        error.Message.Should().Be("user {userId} not found in keycloak");
+        error.Message.Should().Be($"user {userId} not found in keycloak");
     }
 
     #endregion

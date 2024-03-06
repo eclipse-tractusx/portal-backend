@@ -18,15 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
 public static class BpnAccessCollectionExtension
 {
-    public static IServiceCollection AddBpnAccess(this IServiceCollection services, string baseAddress)
+    public static IServiceCollection AddBpnAccess(this IServiceCollection services, IConfigurationSection configSection)
     {
+        services.AddOptions<BpdmAccessSettings>()
+            .Bind(configSection)
+            .ValidateOnStart();
+
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<BpdmAccessSettings>>();
+        var baseAddress = settings.Value.BaseUrl;
         services.AddTransient<LoggingHandler<BpnAccess>>();
         services.AddHttpClient(nameof(BpnAccess), c =>
             {

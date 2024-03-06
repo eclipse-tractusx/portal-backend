@@ -26,15 +26,15 @@ public record BpdmLegalEntityDto(
     [property: JsonPropertyName("bpnl")] string Bpn,
     [property: JsonPropertyName("legalName")] string? LegalName,
     [property: JsonPropertyName("legalShortName")] string? LegalShortName,
-    [property: JsonPropertyName("currentness")] DateTimeOffset Currentness,
-    [property: JsonPropertyName("createdAt")] DateTimeOffset CreatedAt,
-    [property: JsonPropertyName("updatedAt")] DateTimeOffset UpdatedAt,
-    [property: JsonPropertyName("identifiers")] IEnumerable<BpdmIdentifierDto> Identifiers,
     [property: JsonPropertyName("legalForm")] BpdmLegalFormDto? LegalForm,
+    [property: JsonPropertyName("identifiers")] IEnumerable<BpdmIdentifierDto> Identifiers,
     [property: JsonPropertyName("states")] IEnumerable<BpdmStatusDto> States,
+    [property: JsonPropertyName("relations")] IEnumerable<BpdmRelationDto> Relations,
+    [property: JsonPropertyName("currentness")] DateTimeOffset Currentness,
     [property: JsonPropertyName("confidenceCriteria")] BpdmConfidenceCriteria? ConfidenceCriteria,
     [property: JsonPropertyName("isCatenaXMemberData")] bool IsCatenaXMemberData,
-    [property: JsonPropertyName("relations")] IEnumerable<BpdmRelationDto> Relations,
+    [property: JsonPropertyName("createdAt")] DateTimeOffset CreatedAt,
+    [property: JsonPropertyName("updatedAt")] DateTimeOffset UpdatedAt,
     [property: JsonPropertyName("legalAddress")] BpdmLegalEntityAddress? LegalEntityAddress
 );
 
