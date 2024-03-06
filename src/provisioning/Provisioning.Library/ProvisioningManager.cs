@@ -161,7 +161,7 @@ public partial class ProvisioningManager : IProvisioningManager
     {
         var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
         return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))?
-            .Where(r => r.Composite == true).Select(x => x.Name ?? throw new KeycloakInvalidResponseException("name of role is null")) ?? throw new KeycloakInvalidResponseException();
+            .Where(r => r.Composite.HasValue && r.Composite.Value).Select(x => x.Name ?? throw new KeycloakInvalidResponseException("name of role is null")) ?? throw new KeycloakInvalidResponseException();
     }
 
     public async ValueTask<bool> IsCentralIdentityProviderEnabled(string alias)
@@ -169,17 +169,20 @@ public partial class ProvisioningManager : IProvisioningManager
         return (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).Enabled ?? false;
     }
 
+    private static readonly string NullDisplayNameMessage = "display_name of identityProvider is null";
+    private static readonly string NullConfigMessage = "config of identityProvider is null";
+
     public async Task<string> GetCentralIdentityProviderDisplayName(string alias) =>
-        (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).DisplayName ?? throw new KeycloakInvalidResponseException("display_name of identityProvider is null");
+        (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).DisplayName ?? throw new KeycloakInvalidResponseException(NullDisplayNameMessage);
 
     public async ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias)
     {
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         var redirectUri = await GetCentralBrokerEndpointOIDCAsync(alias).ConfigureAwait(false);
         return new IdentityProviderConfigOidc(
-            identityProvider.DisplayName ?? throw new KeycloakInvalidResponseException("display_name of identityProvider is null"),
+            identityProvider.DisplayName ?? throw new KeycloakInvalidResponseException(NullDisplayNameMessage),
             redirectUri,
-            (identityProvider.Config ?? throw new KeycloakInvalidResponseException("config of identityProvider is null")).TokenUrl ?? throw new KeycloakInvalidResponseException("token_url of identityProvider is null"),
+            (identityProvider.Config ?? throw new KeycloakInvalidResponseException(NullConfigMessage)).TokenUrl ?? throw new KeycloakInvalidResponseException("token_url of identityProvider is null"),
             identityProvider.Config.LogoutUrl,
             identityProvider.Config.ClientId ?? throw new KeycloakInvalidResponseException("client_id of identityProvider is null"),
             identityProvider.Config.ClientSecret,
@@ -202,14 +205,14 @@ public partial class ProvisioningManager : IProvisioningManager
     {
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         var sharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
-        await UpdateSharedRealmAsync(sharedKeycloak, alias, identityProvider.DisplayName ?? throw new KeycloakInvalidResponseException("display_name of identityProvider is null"), loginTheme).ConfigureAwait(false);
+        await UpdateSharedRealmAsync(sharedKeycloak, alias, identityProvider.DisplayName ?? throw new KeycloakInvalidResponseException(NullDisplayNameMessage), loginTheme).ConfigureAwait(false);
     }
 
     public async ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled)
     {
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         identityProvider.Enabled = enabled;
-        (identityProvider.Config ?? throw new KeycloakInvalidResponseException("config of identityProvider is null")).HideOnLoginPage = enabled ? "false" : "true";
+        (identityProvider.Config ?? throw new KeycloakInvalidResponseException(NullConfigMessage)).HideOnLoginPage = enabled ? "false" : "true";
         var sharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
         await SetSharedRealmStatusAsync(sharedKeycloak, alias, enabled).ConfigureAwait(false);
         await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
@@ -219,7 +222,7 @@ public partial class ProvisioningManager : IProvisioningManager
     {
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         identityProvider.Enabled = enabled;
-        (identityProvider.Config ?? throw new KeycloakInvalidResponseException("config of identityProvider is null")).HideOnLoginPage = enabled ? "false" : "true";
+        (identityProvider.Config ?? throw new KeycloakInvalidResponseException(NullConfigMessage)).HideOnLoginPage = enabled ? "false" : "true";
         await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
     }
 
@@ -256,7 +259,7 @@ public partial class ProvisioningManager : IProvisioningManager
         var (alias, displayName, metadataUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
         var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false), metadataUrl, cancellationToken).ConfigureAwait(false);
         identityProvider.DisplayName = displayName;
-        (identityProvider.Config ?? throw new KeycloakInvalidResponseException("config of identityProvider is null")).ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
+        (identityProvider.Config ?? throw new KeycloakInvalidResponseException(NullConfigMessage)).ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
         identityProvider.Config.ClientId = clientId;
         identityProvider.Config.ClientSecret = secret;
         identityProvider.Config.ClientAssertionSigningAlg = signatureAlgorithm?.ToString();
@@ -268,9 +271,9 @@ public partial class ProvisioningManager : IProvisioningManager
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         var redirectUri = await GetCentralBrokerEndpointSAMLAsync(alias).ConfigureAwait(false);
         return new IdentityProviderConfigSaml(
-            identityProvider.DisplayName ?? throw new KeycloakInvalidResponseException("display_name of identityProvider is null"),
+            identityProvider.DisplayName ?? throw new KeycloakInvalidResponseException(NullDisplayNameMessage),
             redirectUri ?? throw new KeycloakInvalidResponseException("same endpoint of identityProvider is null"),
-            (identityProvider.Config ?? throw new KeycloakInvalidResponseException("config of identityProvider is null")).ClientId ?? throw new KeycloakInvalidResponseException("client_id of identityProvider is null"),
+            (identityProvider.Config ?? throw new KeycloakInvalidResponseException(NullConfigMessage)).ClientId ?? throw new KeycloakInvalidResponseException("client_id of identityProvider is null"),
             identityProvider.Enabled ?? false,
             identityProvider.Config.EntityId ?? throw new KeycloakInvalidResponseException("entity_id of identityProvider is null"),
             identityProvider.Config.SingleSignOnServiceUrl ?? throw new KeycloakInvalidResponseException("single_sign_on_service_url of identityProvider is null"));
@@ -281,7 +284,7 @@ public partial class ProvisioningManager : IProvisioningManager
         var (alias, displayName, entityId, singleSignOnServiceUrl) = identityProviderEditableConfigSaml;
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         identityProvider.DisplayName = displayName;
-        (identityProvider.Config ?? throw new KeycloakInvalidResponseException("config of identityProvider is null")).EntityId = entityId;
+        (identityProvider.Config ?? throw new KeycloakInvalidResponseException(NullConfigMessage)).EntityId = entityId;
         identityProvider.Config.SingleSignOnServiceUrl = singleSignOnServiceUrl;
         await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
     }

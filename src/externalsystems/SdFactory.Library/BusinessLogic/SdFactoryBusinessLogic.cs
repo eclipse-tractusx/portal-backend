@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -167,7 +166,6 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
     private async Task<Guid> ProcessDocument(SdFactoryResponseModelTitle title, SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        using var sha512Hash = SHA512.Create();
         using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = true });
         var jsonDocument = JsonDocument.Parse(data.Content!);
@@ -175,7 +173,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
         await writer.FlushAsync(cancellationToken);
         var documentContent = ms.ToArray();
-        var hash = sha512Hash.ComputeHash(documentContent);
+        var hash = SHA512.HashData(documentContent);
 
         var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
             $"SelfDescription_{title}.json",

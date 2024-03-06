@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -131,7 +130,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", "companyName");
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
         }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
@@ -173,7 +172,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", "companyName");
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
         }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 

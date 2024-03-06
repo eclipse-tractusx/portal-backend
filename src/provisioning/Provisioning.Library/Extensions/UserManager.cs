@@ -142,10 +142,12 @@ public partial class ProvisioningManager
         return CreateAndRetrieveUserIdMappingError(_CentralIdp, _Settings.CentralRealm, newUser);
     }
 
+    private static readonly string ParamUserName = "userName";
+    private static readonly string ParamRealm = "realm";
     private static async Task<string> CreateAndRetrieveUserIdMappingError(Keycloak.Library.KeycloakClient keycloak, string realm, User newUser)
     {
         if (newUser.UserName == null)
-            throw ControllerArgumentException.Create(ProvisioningServiceErrors.USER_CREATION_USERNAME_NULL, new ErrorParameter[] { new("userName", "null"), new("realm", realm) });
+            throw ControllerArgumentException.Create(ProvisioningServiceErrors.USER_CREATION_USERNAME_NULL, new ErrorParameter[] { new(ParamUserName, "null"), new(ParamRealm, realm) });
 
         string? newUserId;
         try
@@ -156,16 +158,16 @@ public partial class ProvisioningManager
         {
             throw error switch
             {
-                KeycloakEntityConflictException => ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
-                KeycloakEntityNotFoundException => NotFoundException.Create(ProvisioningServiceErrors.USER_CREATION_NOTFOUND, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
-                ArgumentException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_ARGUMENT, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
-                ServiceException serviceException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, serviceException.StatusCode, serviceException.IsRecoverable, error),
-                _ => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error)
+                KeycloakEntityConflictException => ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, error),
+                KeycloakEntityNotFoundException => NotFoundException.Create(ProvisioningServiceErrors.USER_CREATION_NOTFOUND, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, error),
+                ArgumentException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_ARGUMENT, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, error),
+                ServiceException serviceException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, serviceException.StatusCode, serviceException.IsRecoverable, error),
+                _ => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, error)
             };
         }
         if (newUserId == null)
         {
-            throw ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) });
+            throw ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) });
         }
         return newUserId;
     }

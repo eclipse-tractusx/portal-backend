@@ -226,7 +226,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException($"All agreements need to get signed as Active or InActive. Missing consents: [{string.Join(", ", missing.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.MissingAgreementIds)}]"))}]");
         }
 
-        if (!joined.Any(x => x.AllActiveAgreements))
+        if (!joined.Exists(x => x.AllActiveAgreements))
         {
             throw new ConflictException("Company can't unassign from all roles, Atleast one Company role need to signed as active");
         }

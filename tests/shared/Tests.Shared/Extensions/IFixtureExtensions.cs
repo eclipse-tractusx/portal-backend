@@ -26,8 +26,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 public static class AutoFixtureExtensions
 {
-    public static string EmailRegex = @"[a-z]{20}@[a-z]{10}\.[a-z]{2}";
-    public static string NameRegex = @"^[a-z]{20}$";
+    public static readonly string EmailRegex = @"[a-z]{20}@[a-z]{10}\.[a-z]{2}";
+    public static readonly string NameRegex = @"^[a-z]{20}$";
 
     public static IPostprocessComposer<T> WithEmailPattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
     {

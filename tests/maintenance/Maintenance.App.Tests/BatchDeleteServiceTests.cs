@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -65,10 +64,10 @@ public class BatchDeleteServiceTests : IAssemblyFixture<TestDbFixture>
     private async Task<BatchDeleteService> CreateSut()
     {
         var hostApplicationLifetime = _fixture.Create<IHostApplicationLifetime>();
-        var inMemorySettings = new Dictionary<string, string>
+        var inMemorySettings = new[]
         {
-            { "DeleteIntervalInDays", "5" }
-        }.ToImmutableDictionary();
+            KeyValuePair.Create<string, string?>("DeleteIntervalInDays", "5")
+        };
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();

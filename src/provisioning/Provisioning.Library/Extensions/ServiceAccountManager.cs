@@ -27,6 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
+    private static readonly string MasterRealm = "master";
     public async Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config, bool enabled)
     {
         var internalClientId = await CreateServiceAccountClient(_CentralIdp, _Settings.CentralRealm, clientId, config.Name, config.IamClientAuthMethod, enabled);
@@ -67,13 +68,13 @@ public partial class ProvisioningManager
     {
         var sharedIdp = _Factory.CreateKeycloakClient("shared");
         var clientId = GetServiceAccountClientId(realm);
-        var internalClientId = await CreateServiceAccountClient(sharedIdp, "master", clientId, clientId, IamClientAuthMethod.SECRET, true);
-        var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync("master", internalClientId).ConfigureAwait(false);
-        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync("master", "create-realm").ConfigureAwait(false);
+        var internalClientId = await CreateServiceAccountClient(sharedIdp, MasterRealm, clientId, clientId, IamClientAuthMethod.SECRET, true);
+        var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync(MasterRealm, internalClientId).ConfigureAwait(false);
+        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync(MasterRealm, "create-realm").ConfigureAwait(false);
 
-        await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUser.Id ?? throw new KeycloakInvalidResponseException("id of serviceAccountUser is null"), Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
+        await sharedIdp.AddRealmRoleMappingsToUserAsync(MasterRealm, serviceAccountUser.Id ?? throw new KeycloakInvalidResponseException("id of serviceAccountUser is null"), Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
 
-        var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
+        var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(false);
         return new ValueTuple<string, string>(clientId, credentials.Value);
     }
 
@@ -82,7 +83,7 @@ public partial class ProvisioningManager
         var clientId = GetServiceAccountClientId(realm);
         var sharedIdp = _Factory.CreateKeycloakClient("shared");
         var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(sharedIdp, clientId).ConfigureAwait(false);
-        var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
+        var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(false);
         return new ValueTuple<string, string>(clientId, credentials.Value);
     }
 
@@ -90,7 +91,7 @@ public partial class ProvisioningManager
     {
         var clientId = GetServiceAccountClientId(realm);
         var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(keycloak, clientId).ConfigureAwait(false);
-        await keycloak.DeleteClientAsync("master", internalClientId).ConfigureAwait(false);
+        await keycloak.DeleteClientAsync(MasterRealm, internalClientId).ConfigureAwait(false);
     }
 
     private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod, bool enabled)
@@ -110,7 +111,7 @@ public partial class ProvisioningManager
 
     private static async Task<string> GetInternalClientIdOfSharedIdpServiceAccount(KeycloakClient keycloak, string clientId)
     {
-        var internalClientId = (await keycloak.GetClientsAsync("master", clientId).ConfigureAwait(false)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
+        var internalClientId = (await keycloak.GetClientsAsync(MasterRealm, clientId).ConfigureAwait(false)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
         if (internalClientId == null)
         {
             throw new KeycloakEntityNotFoundException($"clientId {clientId} not found on shared idp");
