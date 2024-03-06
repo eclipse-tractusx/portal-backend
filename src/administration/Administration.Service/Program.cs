@@ -97,5 +97,5 @@ WebAppHelper
             .AddSingleton<IErrorMessageContainer, ProvisioningServiceErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
-        builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address") ?? throw new ConfigurationException("BPN_Address is not configured"));
+        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BPN_Address"));
     });

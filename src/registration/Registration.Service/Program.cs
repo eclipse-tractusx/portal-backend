@@ -49,5 +49,5 @@ WebAppHelper
             .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
 
         builder.Services.AddApplicationChecklistCreation();
-        builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address") ?? throw new ConfigurationException("BPN_Address is not configured"));
+        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BPN_Address"));
     });
