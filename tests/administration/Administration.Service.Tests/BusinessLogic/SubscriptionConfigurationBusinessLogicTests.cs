@@ -337,7 +337,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         //Arrange
         SetupProviderCompanyDetails();
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, ExistingCompanyId))
-            .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), false));
+            .Returns((new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), false));
 
         //Act
         async Task Action() => await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
@@ -357,7 +357,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Matches(x => x == NoServiceProviderCompanyId), A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, false));
         A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Not.Matches(x => x == ExistingCompanyId || x == NoServiceProviderCompanyId), A<IEnumerable<CompanyRoleId>>._))
-            .Returns(((bool, bool))default);
+            .Returns<(bool, bool)>(default);
 
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>?>._))
             .Invokes((Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter) =>
@@ -368,12 +368,12 @@ public class SubscriptionConfigurationBusinessLogicTests
             });
 
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<Guid>.That.Matches(x => x == ExistingCompanyId)))
-            .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), true));
+            .Returns((new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), true));
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<Guid>.That.Not.Matches(x => x == ExistingCompanyId)))
-            .ReturnsLazily(() => ((ProviderDetailReturnData, bool))default);
+            .Returns<(ProviderDetailReturnData, bool)>(default);
 
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Matches(x => x == ExistingCompanyId)))
-            .ReturnsLazily(() => (Guid.NewGuid(), _fixture.Create<string>()));
+            .Returns((Guid.NewGuid(), _fixture.Create<string>()));
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Not.Matches(x => x == ExistingCompanyId)))
             .Returns((Guid.Empty, null!));
     }

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,7 +19,7 @@
 
 using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Controllers;
-using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.EnpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.EndpointSetup;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 using System.Net;

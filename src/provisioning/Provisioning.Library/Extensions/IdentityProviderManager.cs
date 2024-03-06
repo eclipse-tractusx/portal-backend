@@ -207,7 +207,7 @@ public partial class ProvisioningManager
             case IamIdentityProviderProtocol.SAML:
                 return _Settings.SamlIdentityProvider;
             default:
-                throw new ArgumentOutOfRangeException($"unexpexted value of providerProtocol: {providerProtocol.ToString()}");
+                throw new ArgumentOutOfRangeException($"unexpexted value of providerProtocol: {providerProtocol}");
         }
     }
 

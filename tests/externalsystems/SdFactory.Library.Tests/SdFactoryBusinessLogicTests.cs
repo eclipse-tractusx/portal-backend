@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -121,9 +120,7 @@ public class SdFactoryBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
-            .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, Bpn, CountryCode, UniqueIdentifiers));
-        A.CallTo(() => _service.RegisterSelfDescriptionAsync(ApplicationId, UniqueIdentifiers, CountryCode, Bpn, CancellationToken.None))
-            .ReturnsLazily(() => Task.CompletedTask);
+            .Returns((CompanyId, Bpn, CountryCode, UniqueIdentifiers));
 
         // Act
         var result = await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
@@ -153,7 +150,7 @@ public class SdFactoryBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
-            .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>());
+            .Returns<(Guid, string?, string, IEnumerable<(UniqueIdentifierId, string)>)>(default);
 
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
@@ -178,7 +175,7 @@ public class SdFactoryBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
-            .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, null, CountryCode, new List<(UniqueIdentifierId Id, string Value)>()));
+            .Returns((CompanyId, null, CountryCode, Enumerable.Empty<(UniqueIdentifierId Id, string Value)>()));
 
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
@@ -200,7 +197,7 @@ public class SdFactoryBusinessLogicTests
         // Arrange
         var applicationChecklistEntry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         var company = _fixture.Build<Company>()
-            .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
+            .With(x => x.SelfDescriptionDocumentId, default(Guid?))
             .Create();
         const string contentJson = "{\"@context\":[\"https://www.w3.org/2018/credentials/v1\",\"https://github.com/catenax-ng/tx-sd-factory/raw/clearing-house/src/main/resources/verifiablecredentials.jsonld/sd-document-v22.10.jsonld\",\"https://w3id.org/vc/status-list/2021/v1\"],\"type\":[\"VerifiableCredential\",\"LegalPerson\"],\"issuer\":\"did:sov:12345\",\"issuanceDate\":\"2023-02-18T23:03:16Z\",\"expirationDate\":\"2023-05-19T23:03:16Z\",\"credentialSubject\":{\"bpn\":\"BPNL000000000000\",\"registrationNumber\":[{\"type\":\"local\",\"value\":\"o12345678\"}],\"headquarterAddress\":{\"countryCode\":\"DE\"},\"type\":\"LegalPerson\",\"legalAddress\":{\"countryCode\":\"DE\"},\"id\":\"did:sov:12345\"},\"credentialStatus\":{\"id\":\"https://managed-identity-wallets.int.demo.catena-x.net/api/credentials/status/123\",\"type\":\"StatusList2021Entry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"58\",\"statusListCredential\":\"https://managed-identity-wallets.int.demo.catena-x.net/api/credentials/status/123\"},\"proof\":{\"type\":\"Ed25519Signature2018\",\"created\":\"2023-02-18T23:03:18Z\",\"proofPurpose\":\"assertionMethod\",\"verificationMethod\":\"did:sov:12345#key-1\",\"jws\":\"test\"}}";
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, contentJson);
@@ -227,9 +224,8 @@ public class SdFactoryBusinessLogicTests
     public async Task ProcessFinishSelfDescriptionLp_ConfirmWitNoDocument_ThrowsConflictException()
     {
         // Arrange
-        var applicationChecklistEntry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         var company = _fixture.Build<Company>()
-            .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
+            .With(x => x.SelfDescriptionDocumentId, default(Guid?))
             .Create();
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, null);
 
@@ -247,7 +243,7 @@ public class SdFactoryBusinessLogicTests
         // Arrange
         var applicationChecklistEntry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         var company = _fixture.Build<Company>()
-            .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
+            .With(x => x.SelfDescriptionDocumentId, default(Guid?))
             .Create();
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Failed, "test message", null);
         SetupForProcessFinish(company, applicationChecklistEntry);
@@ -271,7 +267,7 @@ public class SdFactoryBusinessLogicTests
     {
         // Arrange
         var company = _fixture.Build<Company>()
-            .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
+            .With(x => x.SelfDescriptionDocumentId, default(Guid?))
             .Create();
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Failed, null, null);
 
@@ -296,7 +292,7 @@ public class SdFactoryBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
-            .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>());
+            .Returns<(Guid, string?, string, IEnumerable<(UniqueIdentifierId, string)>)>(default);
 
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
@@ -319,7 +315,7 @@ public class SdFactoryBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
-            .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, null, CountryCode, new List<(UniqueIdentifierId Id, string Value)>()));
+            .Returns((CompanyId, null, CountryCode, Enumerable.Empty<(UniqueIdentifierId Id, string Value)>()));
 
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
@@ -453,10 +449,10 @@ public class SdFactoryBusinessLogicTests
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
                 null,
                 new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP }))
-            .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _process, Guid.NewGuid(),
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _process, Guid.NewGuid(),
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
                 ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty,
-                new List<ProcessStep>()));
+                Enumerable.Empty<ProcessStep>()));
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._,
                 A<IEnumerable<ProcessStepTypeId>>._))

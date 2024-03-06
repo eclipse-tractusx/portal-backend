@@ -123,13 +123,13 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
-        await foreach (var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
+        await foreach (var (companyUserId, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
         {
             var email = emailData[userName];
 
             if (error != null)
             {
-                _logger.LogError(error, "Error while creating user {UserName} ({Email})", userName, email);
+                _logger.LogError(error, "Error while creating user {companyUserId}", companyUserId);
                 continue;
             }
 
@@ -148,7 +148,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", email, userName);
+                _logger.LogError(e, "Error sending email after creating user {companyUserId}", companyUserId);
             }
 
             yield return email;
@@ -220,7 +220,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", userCreationInfo.Email, userCreationInfo.UserName);
+            _logger.LogError(e, "Error sending email after creating user {CompanyUserId}", result.CompanyUserId);
         }
 
         return result.CompanyUserId;
@@ -271,26 +271,6 @@ public class UserBusinessLogic : IUserBusinessLogic
     }
 
     private async Task<string> GetDisplayName(string alias) => await _provisioningManager.GetIdentityProviderDisplayName(alias).ConfigureAwait(false) ?? throw new ConflictException($"Display Name should not be null for alias: {alias}");
-
-    [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
-    public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
-    {
-        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        if (!await appRepository.CheckAppExistsById(appId).ConfigureAwait(false))
-        {
-            throw new NotFoundException($"app {appId} does not found");
-        }
-
-        if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName))
-        {
-            throw new ArgumentException($"language {languageShortName} does not exist");
-        }
-
-        await foreach (var roles in appRepository.GetClientRolesAsync(appId, languageShortName ?? Constants.DefaultLanguage).ConfigureAwait(false))
-        {
-            yield return new ClientRoles(roles.RoleId, roles.Role, roles.Description);
-        }
-    }
 
     public async Task<CompanyUserDetailData> GetOwnCompanyUserDetailsAsync(Guid userId)
     {

@@ -80,15 +80,18 @@ public partial class KeycloakClient
             .GetJsonAsync<IEnumerable<Role>>(cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task RemoveRolesFromCompositeAsync(string realm, string roleId, IEnumerable<Role> roles) =>
+    public async Task RemoveRolesFromCompositeAsync(string realm, string roleId, IEnumerable<Role> roles)
+    {
+        using var jsonContent = new CapturedJsonContent(_serializer.Serialize(roles));
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/roles-by-id/")
             .AppendPathSegment(roleId, true)
             .AppendPathSegment("/composites")
-            .SendJsonAsync(HttpMethod.Delete, new CapturedJsonContent(_serializer.Serialize(roles)))
+            .SendJsonAsync(HttpMethod.Delete, jsonContent)
             .ConfigureAwait(false);
+    }
 
     public async Task<IEnumerable<Role>> GetClientRolesForCompositeByIdAsync(string realm, string roleId, string clientId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))

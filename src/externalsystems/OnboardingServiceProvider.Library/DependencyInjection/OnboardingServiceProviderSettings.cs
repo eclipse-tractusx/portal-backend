@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,15 +17,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 
 public class OnboardingServiceProviderSettings
 {
-    /// <summary>
-    /// The key used to encrypt the callback data
-    /// </summary>
-    [Required(AllowEmptyStrings = false)]
-    public string EncryptionKey { get; set; } = null!;
+    [Required]
+    public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
+
+    [Required]
+    public int EncrptionConfigIndex { get; set; }
 }

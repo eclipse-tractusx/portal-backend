@@ -52,13 +52,13 @@ public class PartnerNetworkBusinessLogicTests
         var bpnIds = _fixture.CreateMany<string>(3);
         A.CallTo(() => _companyRepository.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>._))
             .Returns(_fixture.CreateMany<string>(2).ToAsyncEnumerable());
+        var uppercaseIds = bpnIds.Select(x => x.ToUpper());
 
         // Act
         var result = await _sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull().And.HaveCount(2);
-        A.CallTo(() => _companyRepository.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>.That.IsSameAs(bpnIds))).MustHaveHappenedOnceExactly();
-
+        A.CallTo(() => _companyRepository.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>.That.IsSameSequenceAs(uppercaseIds))).MustHaveHappenedOnceExactly();
     }
 }

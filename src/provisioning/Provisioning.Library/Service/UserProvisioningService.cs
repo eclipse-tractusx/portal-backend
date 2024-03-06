@@ -255,15 +255,15 @@ public class UserProvisioningService : IUserProvisioningService
 
         if (lastName != null)
         {
-            sb.AppendFormat((firstName == null ? "{0}" : ", {0}"), lastName);
+            sb.AppendFormat(sb.Length == 0 ? "{0}" : ", {0}", lastName);
         }
 
         if (email != null)
         {
-            sb.AppendFormat((firstName == null && lastName == null) ? "{0}" : " ({0})", email);
+            sb.AppendFormat(sb.Length == 0 ? "{0}" : " ({0})", email);
         }
 
-        return firstName == null && lastName == null && email == null ? "Dear User" : sb.ToString();
+        return sb.Length == 0 ? "Dear User" : sb.ToString();
     }
 
     public Task<string> GetIdentityProviderDisplayName(string idpAlias) =>
@@ -315,7 +315,7 @@ public class UserProvisioningService : IUserProvisioningService
                     userRolesRepository.CreateIdentityAssignedRole(userdata.CompanyUserId, roleId);
                 }
 
-                messages.AddRange(clientRoleNames[assigned.Client].Except(assigned.Roles).Select(roleName => $"clientId: {assigned.Client}, role: {roleName}"));
+                messages.AddRange(clientRoleNames[assigned.Client].Except(assigned.Roles).Select(roleName => $"clientId: {assigned.Client}, role: {roleName}, error: {assigned.Error?.Message}"));
             }
 
             if (messages.Any())
@@ -353,7 +353,7 @@ public class UserProvisioningService : IUserProvisioningService
 
         if (invalid.Any())
         {
-            throw new ControllerArgumentException($"invalid roles: clientId: '{clientId}', roles: [{String.Join(", ", invalid)}]");
+            throw new ControllerArgumentException($"invalid roles: clientId: '{clientId}', roles: [{string.Join(", ", invalid)}]");
         }
     }
 }

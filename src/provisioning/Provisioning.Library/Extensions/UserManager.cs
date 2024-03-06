@@ -91,9 +91,9 @@ public partial class ProvisioningManager
         foreach (var federatedIdentity in await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(false))
         {
             yield return new IdentityProviderLink(
-                federatedIdentity.IdentityProvider,
-                federatedIdentity.UserId,
-                federatedIdentity.UserName);
+                federatedIdentity.IdentityProvider ?? throw new KeycloakInvalidResponseException("identity_provider of ferderated_identity is null"),
+                federatedIdentity.UserId ?? throw new KeycloakInvalidResponseException("user_id of ferderated_identity is null"),
+                federatedIdentity.UserName ?? throw new KeycloakInvalidResponseException("user_name of ferderated_identity is null"));
         }
     }
 

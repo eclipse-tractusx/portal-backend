@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -174,12 +173,6 @@ public class ChecklistHandlerServiceTests
     public void GetProcessStepExecution_InvalidStep_Throws(ProcessStepTypeId stepTypeId)
     {
         // Arrange
-        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
-            Guid.NewGuid(),
-            stepTypeId,
-            _fixture.Create<IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
-            _fixture.CreateMany<ProcessStepTypeId>());
-
         var sut = CreateSut();
 
         var Act = () => sut.GetProcessStepExecution(stepTypeId);

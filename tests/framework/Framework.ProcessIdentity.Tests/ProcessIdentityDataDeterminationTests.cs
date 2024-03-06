@@ -74,7 +74,7 @@ public class ProcessIdentityDataDeterminationTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _processIdentityDataBuilder.IdentityId).Returns(identityId);
         A.CallTo(() => _identityRepository.GetActiveIdentityDataByIdentityId(A<Guid>._))
-            .Returns(default((IdentityTypeId, Guid)));
+            .Returns<(IdentityTypeId, Guid)>(default);
 
         // Act
         var error = await Assert.ThrowsAsync<ConflictException>(async () => await _sut.GetIdentityData().ConfigureAwait(false)).ConfigureAwait(false);

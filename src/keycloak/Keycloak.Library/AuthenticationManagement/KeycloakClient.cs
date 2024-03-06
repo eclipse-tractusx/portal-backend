@@ -116,25 +116,31 @@ public partial class KeycloakClient
             .PostJsonAsync(authenticatorConfig, cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task LowerAuthenticationExecutionPriorityAsync(string realm, string executionId) =>
+    public async Task LowerAuthenticationExecutionPriorityAsync(string realm, string executionId)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/executions/")
             .AppendPathSegment(executionId, true)
             .AppendPathSegment("/lower-priority")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
-    public async Task RaiseAuthenticationExecutionPriorityAsync(string realm, string executionId) =>
+    public async Task RaiseAuthenticationExecutionPriorityAsync(string realm, string executionId)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/executions/")
             .AppendPathSegment(executionId, true)
             .AppendPathSegment("/raise-priority")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
     public async Task CreateAuthenticationFlowAsync(string realm, AuthenticationFlow authenticationFlow, CancellationToken cancellationToken = default) =>
         await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
@@ -316,25 +322,31 @@ public partial class KeycloakClient
             .DeleteAsync()
             .ConfigureAwait(false);
 
-    public async Task LowerRequiredActionPriorityAsync(string realm, string requiredActionAlias) =>
+    public async Task LowerRequiredActionPriorityAsync(string realm, string requiredActionAlias)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/required-actions/")
             .AppendPathSegment(requiredActionAlias, true)
             .AppendPathSegment("/lower-priority")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
-    public async Task RaiseRequiredActionPriorityAsync(string realm, string requiredActionAlias) =>
+    public async Task RaiseRequiredActionPriorityAsync(string realm, string requiredActionAlias)
+    {
+        using var stringContent = new StringContent("");
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/required-actions/")
             .AppendPathSegment(requiredActionAlias, true)
             .AppendPathSegment("/raise-priority")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ConfigureAwait(false);
+    }
 
     public async Task<IEnumerable<IDictionary<string, object>>> GetUnregisteredRequiredActionsAsync(string realm) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))

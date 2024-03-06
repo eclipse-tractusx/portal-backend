@@ -601,7 +601,6 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var appId = Guid.NewGuid();
-        var userId = _fixture.Create<string>();
         var data = _fixture.Create<OfferProviderResponse>();
         A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._))
             .Returns(data);
@@ -636,9 +635,8 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var appId = Guid.NewGuid();
-        var userId = _fixture.Create<string>();
         var data = _fixture.Build<OfferProviderResponse>()
-                        .With(x => x.UseCase, (IEnumerable<AppUseCaseData>?)null)
+                        .With(x => x.UseCase, default(IEnumerable<AppUseCaseData>?))
                         .Create();
 
         A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._))
@@ -852,7 +850,7 @@ public class AppReleaseBusinessLogicTest
                 A<IEnumerable<UserRoleConfig>>._,
                 A<IEnumerable<NotificationTypeId>>._,
                 A<IEnumerable<UserRoleConfig>>._,
-                A<ValueTuple<string, string>>.That.Matches(x => x.Item1 == _settings.OfferSubscriptionAddress && x.Item2 == _settings.OfferDetailAddress),
+                A<(string, string)>.That.Matches(x => x.Item1 == _settings.OfferSubscriptionAddress && x.Item2 == _settings.OfferDetailAddress),
                 A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }
@@ -898,7 +896,7 @@ public class AppReleaseBusinessLogicTest
         var appId = Guid.NewGuid();
         var data = new AppInstanceSetupData(true, "https://test.de");
         A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, _identity.CompanyId, OfferTypeId.APP))
-            .Returns(default((OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>)));
+            .Returns<(OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>)>(default);
 
         //Act
         async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
@@ -1157,7 +1155,7 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
 
         A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP))
-            .Returns(default(InReviewOfferData?));
+            .Returns<InReviewOfferData?>(default);
 
         //Act
         async Task Act() => await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
@@ -1219,7 +1217,7 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>._))
             .Returns(_languageCodes.ToAsyncEnumerable());
         A.CallTo(() => _offerRepository.GetAppUpdateData(_notExistingAppId, _identity.CompanyId, A<IEnumerable<string>>._))
-            .Returns((AppUpdateData?)null);
+            .Returns<AppUpdateData?>(null);
         A.CallTo(() => _offerRepository.GetAppUpdateData(_activeAppId, _identity.CompanyId, A<IEnumerable<string>>._))
             .Returns(_fixture.Build<AppUpdateData>()
                 .With(x => x.OfferState, OfferStatusId.ACTIVE)

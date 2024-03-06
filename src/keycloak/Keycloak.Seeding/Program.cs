@@ -72,7 +72,7 @@ try
 
     Log.Information("Building keycloak-seeder completed");
 
-    var tokenSource = new CancellationTokenSource();
+    using var tokenSource = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>
     {
         Log.Information("Canceling...");

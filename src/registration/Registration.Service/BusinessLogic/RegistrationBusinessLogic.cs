@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -126,23 +125,18 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             physicalPostalAddress?.City ?? "",
             physicalPostalAddress?.Street?.Name ?? "",
             physicalPostalAddress?.AdministrativeAreaLevel1?.RegionCode,
-            null, // TODO clarify how to map from bpdm data
+            null,
             physicalPostalAddress?.Street?.HouseNumber,
             physicalPostalAddress?.PostalCode,
             portalIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
         );
     }
 
-    private static IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> ParseBpdmIdentifierDtos(IEnumerable<BpdmIdentifierDto> bpdmIdentifierDtos)
-    {
-        foreach (var identifier in bpdmIdentifierDtos)
-        {
-            if (Enum.TryParse<BpdmIdentifierId>(identifier.Type.TechnicalKey, out var bpdmIdentifierId))
-            {
-                yield return (bpdmIdentifierId, identifier.Value);
-            }
-        }
-    }
+    private static IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> ParseBpdmIdentifierDtos(IEnumerable<BpdmIdentifierDto> bpdmIdentifierDtos) =>
+        bpdmIdentifierDtos
+            .Select(dto => (Valid: Enum.TryParse<BpdmIdentifierId>(dto.Type.TechnicalKey, out var bpdmIdentifierId), IdentifierId: bpdmIdentifierId, dto.Value))
+            .Where(x => x.Valid)
+            .Select(x => (x.IdentifierId, x.Value));
 
     public async Task UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, CancellationToken cancellationToken)
     {
@@ -220,15 +214,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
             if (lastName != null)
             {
-                sb.AppendFormat(firstName == null ? "{0}" : ", {0}", lastName);
+                sb.AppendFormat(sb.Length == 0 ? "{0}" : ", {0}", lastName);
             }
 
             if (email != null)
             {
-                sb.AppendFormat(firstName == null && lastName == null ? "{0}" : " ({0})", email);
+                sb.AppendFormat(sb.Length == 0 ? "{0}" : " ({0})", email);
             }
 
-            return firstName == null && lastName == null && email == null ? "unknown user" : sb.ToString();
+            return sb.Length == 0 ? "unknown user" : sb.ToString();
         }
 
         var data = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsDeclineData(_identityData.IdentityId, _settings.ApplicationDeclineStatusIds).ConfigureAwait(false);

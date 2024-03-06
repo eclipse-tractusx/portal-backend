@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -300,43 +299,6 @@ public class IdentityProviderController : ControllerBase
         _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, cancellationToken);
 
     /// <summary>
-    /// Adds the user to the given identity provider
-    /// </summary>
-    /// <param name="companyUserId">Id of the company user</param>
-    /// <param name="identityProviderLinkData">The link data for the identity provider</param>
-    /// <returns>Returns the link data</returns>
-    /// <remarks>
-    /// Example: POST: api/administration/identityprovider/owncompany/users/A744E2AA-55AA-4511-9F42-80371220BE26/identityprovider
-    /// </remarks>
-    /// <response code="200">Returns the link data.</response>
-    /// <response code="400">user is not associated with a company.</response>
-    /// <response code="403">user does not belong to company of companyUserId.</response>
-    /// <response code="404">companyUserId does not exist.</response>
-    /// <response code="409">identityProviderLink for identityProvider already exists for user.</response>
-    /// <response code="500">companyUserId is not linked to keycloak</response>
-    /// <response code="502">Bad Gateway Service Error.</response>
-    [Obsolete("use CreateOrUpdateOwnCompanyUserIdentityProviderDataAsync (PUT api/administration/identityprovider/owncompany/users/{companyUserId/identityprovider/{identityProviderId}) instead")]
-    [HttpPost]
-    [Authorize(Roles = "modify_user_account")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("owncompany/users/{companyUserId}/identityprovider")]
-    [ProducesResponseType(typeof(UserIdentityProviderLinkData), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public async ValueTask<ActionResult<UserIdentityProviderLinkData>> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromBody] UserIdentityProviderLinkData identityProviderLinkData)
-    {
-        var linkData = await _businessLogic.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderLinkData).ConfigureAwait(false);
-        return (ActionResult<UserIdentityProviderLinkData>)CreatedAtRoute(
-            nameof(GetOwnCompanyUserIdentityProviderDataAsync),
-            new { companyUserId = companyUserId, identityProviderId = linkData.identityProviderId },
-            linkData);
-    }
-
-    /// <summary>
     /// Updates the given user for the given identity provider
     /// </summary>
     /// <param name="companyUserId">Id of the company user</param>
@@ -421,6 +383,6 @@ public class IdentityProviderController : ControllerBase
     public async ValueTask<ActionResult> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId)
     {
         await _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
-        return (ActionResult)NoContent();
+        return NoContent();
     }
 }

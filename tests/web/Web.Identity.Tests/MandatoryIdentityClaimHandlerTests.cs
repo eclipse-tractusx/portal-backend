@@ -70,8 +70,8 @@ public class MandatoryIdentityClaimHandlerTests
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityRepository>()).Returns(_identityRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
 
-        A.CallTo(() => _serviceAccountRepository.GetServiceAccountDataByClientId(A<string>._)).Returns(default((Guid, Guid)));
-        A.CallTo(() => _identityRepository.GetActiveIdentityDataByUserEntityId(A<string>._)).Returns(default((Guid, IdentityTypeId, Guid)));
+        A.CallTo(() => _serviceAccountRepository.GetServiceAccountDataByClientId(A<string>._)).Returns<(Guid, Guid)>(default);
+        A.CallTo(() => _identityRepository.GetActiveIdentityDataByUserEntityId(A<string>._)).Returns<(Guid, IdentityTypeId, Guid)>(default);
         A.CallTo(() => _identityRepository.GetActiveCompanyIdByIdentityId(A<Guid>._)).Returns(Guid.Empty);
 
         A.CallTo(() => _serviceAccountRepository.GetServiceAccountDataByClientId(_clientId)).Returns((_serviceAccountId, _serviceAccountCompanyId));

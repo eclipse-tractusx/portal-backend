@@ -87,6 +87,8 @@ public class AppChangeControllerTest
 
         //Assert
         A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._)).MustHaveHappened();
+        result.Should().NotBeNull()
+            .And.ContainInOrder(offerDescriptionData);
     }
 
     [Fact]
@@ -110,14 +112,13 @@ public class AppChangeControllerTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<IFormFile>._, CancellationToken.None))
-            .ReturnsLazily(() => Task.CompletedTask);
+        var cancellationToken = CancellationToken.None;
 
         // Act
-        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
+        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -132,6 +133,7 @@ public class AppChangeControllerTest
 
         //Assert
         A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 
     [Fact]

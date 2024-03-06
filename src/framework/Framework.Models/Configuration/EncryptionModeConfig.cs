@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,20 +17,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
-{
-    [Obsolete("only referenced by code that is marked as obsolte")]
-    public class ClientRoles
-    {
-        public ClientRoles(Guid roleId, string role, string description)
-        {
-            RoleId = roleId;
-            Role = role;
-            Description = description;
-        }
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 
-        public Guid RoleId { get; set; }
-        public string Role { get; set; }
-        public string Description { get; set; }
-    }
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+
+public class EncryptionModeConfig
+{
+    [Required]
+    public int Index { get; set; }
+
+    [Required(AllowEmptyStrings = false)]
+    public string EncryptionKey { get; set; } = null!;
+
+    [Required]
+    [ValidateEnumValue]
+    public CipherMode CipherMode { get; set; }
+
+    [Required]
+    [ValidateEnumValue]
+    public PaddingMode PaddingMode { get; set; }
 }

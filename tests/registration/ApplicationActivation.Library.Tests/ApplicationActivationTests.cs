@@ -368,15 +368,8 @@ public class ApplicationActivationTests
         };
         var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
-        var processSteps = new List<ProcessStep>();
         var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
-        var companyApplication = _fixture.Build<CompanyApplication>()
-            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .Create();
-        var company = _fixture.Build<Company>()
-            .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
-            .Create();
         SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
         SetupForDelete();
 
@@ -629,7 +622,7 @@ public class ApplicationActivationTests
 
         //Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("inconsistent data, roles not assigned in keycloak: client: catenax-portal, roles: [IT Admin]");
+        ex.Message.Should().Be("inconsistent data, roles not assigned in keycloak: client: catenax-portal, roles: [IT Admin], error: ");
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
@@ -697,7 +690,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .Returns(((Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?))default);
+            .Returns<(Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?)>(default);
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -989,11 +982,11 @@ public class ApplicationActivationTests
             .Returns(CentralUserId3);
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1, businessPartnerNumbers))
             .Returns(Task.CompletedTask);
@@ -1035,17 +1028,16 @@ public class ApplicationActivationTests
                 Guid _,
                 bool? done) =>
             {
-                foreach (var notificationData in notifications)
-                {
-                    var notification = new Notification(Guid.NewGuid(), Guid.NewGuid(),
-                        DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
-                    {
-                        CreatorUserId = creatorId,
-                        Content = notificationData.content,
-                        Done = done
-                    };
-                    _notifications.Add(notification);
-                }
+                _notifications.AddRange(
+                    notifications.Select(notificationData =>
+                        new Notification(Guid.NewGuid(), Guid.NewGuid(),
+                            DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
+                        {
+                            CreatorUserId = creatorId,
+                            Content = notificationData.content,
+                            Done = done
+                        }));
+
                 return CreateNotificationsUserIds(new[] {
                     CompanyUserId1,
                     CompanyUserId2,

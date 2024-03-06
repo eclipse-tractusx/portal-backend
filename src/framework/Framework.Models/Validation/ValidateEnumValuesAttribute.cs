@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -41,13 +40,11 @@ public class ValidateEnumValuesAttribute : ValidationAttribute
         }
         var values = type.GetEnumValues();
 
-        foreach (var item in value!.ToIEnumerable())
+        if (value!.ToIEnumerable().Where(item => item is null || Array.BinarySearch(values, item) < 0).IfAny(x => x.First(), out var item))
         {
-            if (item is null || Array.BinarySearch(values, item) < 0)
-            {
-                return new ValidationResult($"{item} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}");
-            }
+            return new ValidationResult($"{item} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}");
         }
+
         return null;
     }
 }

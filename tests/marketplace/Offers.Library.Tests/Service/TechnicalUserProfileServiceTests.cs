@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -55,7 +54,7 @@ public class TechnicalUserProfileServiceTests
     {
         // Arrange
         A.CallTo(() => _offerRepository.GetServiceAccountProfileData(_offerId, A<OfferTypeId>._))
-            .Returns(((bool, IEnumerable<IEnumerable<UserRoleData>>, string?))default);
+            .Returns<(bool, IEnumerable<IEnumerable<UserRoleData>>, string?)>(default);
 
         // Act
         async Task Act() => await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP).ConfigureAwait(false);
@@ -116,7 +115,7 @@ public class TechnicalUserProfileServiceTests
     {
         // Arrange
         A.CallTo(() => _offerRepository.GetServiceAccountProfileDataForSubscription(_offerSubscriptionId))
-            .Returns((true, Enumerable.Empty<IEnumerable<UserRoleData>>(), (string?)null));
+            .Returns((true, Enumerable.Empty<IEnumerable<UserRoleData>>(), null));
 
         // Act
         async Task Act() => await _sut.GetTechnicalUserProfilesForOfferSubscription(_offerSubscriptionId).ConfigureAwait(false);

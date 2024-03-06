@@ -37,6 +37,6 @@ public class PartnerNetworkBusinessLogic : IPartnerNetworkBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds) =>
-        _portalRepositories.GetInstance<ICompanyRepository>().GetAllMemberCompaniesBPNAsync(bpnIds);
+    public IAsyncEnumerable<string> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds) =>
+        _portalRepositories.GetInstance<ICompanyRepository>().GetAllMemberCompaniesBPNAsync(bpnIds?.Select(x => x.ToUpper()));
 }

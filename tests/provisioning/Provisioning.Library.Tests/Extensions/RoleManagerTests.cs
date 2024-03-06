@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -109,7 +108,7 @@ public class RoleManagerTests
             "test"
         };
         var client = "notvalid";
-        var httpTest = new HttpTest();
+        using var httpTest = new HttpTest();
         httpTest.RespondWithJson(new { access_token = "123" }).RespondWithJson(new List<Client>());
 
         // Act

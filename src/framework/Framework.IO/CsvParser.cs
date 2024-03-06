@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -92,7 +91,7 @@ public static class CsvParser
         Func<IAsyncEnumerable<TLineType>, IAsyncEnumerable<(bool Processed, Exception? Error)>> processLines,
         CancellationToken cancellationToken)
     {
-        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
+        using var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
 
         var numProcessed = 0;
         var errors = new List<(int Line, Exception Error)>();

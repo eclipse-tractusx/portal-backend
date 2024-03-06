@@ -129,14 +129,17 @@ public class ApplicationActivationService : IApplicationActivationService
 
         if (assignedRoles != null)
         {
-            var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+            _settings.ApplicationApprovalInitialRoles
                 .Select(initialClientRoles => (
-                    initialClientRoles.ClientId,
-                    Roles: initialClientRoles.UserRoleNames.Except(assignedRoles[initialClientRoles.ClientId])))
-                .Where(clientRoles => clientRoles.Roles.Any());
-
-            unassignedClientRoles.IfAny(unassigned =>
-                throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassigned.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.Roles)}]"))}"));
+                    Initial: initialClientRoles,
+                    AssignedRoles: assignedRoles[initialClientRoles.ClientId]))
+                .Select(x => (
+                    x.Initial.ClientId,
+                    Unassigned: x.Initial.UserRoleNames.Except(x.AssignedRoles.Roles),
+                    x.AssignedRoles.Error))
+                .Where(clientRoles => clientRoles.Unassigned.Any())
+                .IfAny(unassigned =>
+                    throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassigned.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.Unassigned)}], error: {clientRoles.Error}"))}"));
         }
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
@@ -167,14 +170,14 @@ public class ApplicationActivationService : IApplicationActivationService
             now >= startTime && now <= endTime;
     }
 
-    private async Task<IDictionary<string, IEnumerable<string>>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
+    private async Task<IDictionary<string, (IEnumerable<string> Roles, Exception? Error)>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
     {
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var approvalInitialRoles = _settings.ApplicationApprovalInitialRoles;
         var initialRolesData = await GetRoleData(userRolesRepository, approvalInitialRoles).ConfigureAwait(false);
 
-        IDictionary<string, IEnumerable<string>>? assignedRoles = null;
+        IDictionary<string, (IEnumerable<string> Roles, Exception? Error)>? assignedRoles = null;
         var invitedUsersData = applicationRepository
             .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
         await foreach (var userData in invitedUsersData.ConfigureAwait(false))
@@ -183,11 +186,11 @@ public class ApplicationActivationService : IApplicationActivationService
 
             assignedRoles = await _provisioningManager
                 .AssignClientRolesToCentralUserAsync(iamUserId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
-                .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
+                .ToDictionaryAsync(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error))
                 .ConfigureAwait(false);
 
             foreach (var roleData in initialRolesData.Where(roleData => !userData.RoleIds.Contains(roleData.UserRoleId) &&
-                                                                        assignedRoles[roleData.ClientClientId].Contains(roleData.UserRoleText)))
+                                                                        assignedRoles[roleData.ClientClientId].Roles.Contains(roleData.UserRoleText)))
             {
                 userRolesRepository.CreateIdentityAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
             }

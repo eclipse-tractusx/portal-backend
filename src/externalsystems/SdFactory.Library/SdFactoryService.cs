@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -54,7 +53,6 @@ public class SdFactoryService : ISdFactoryService
     {
         var httpClient = await _tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
             .ConfigureAwait(false);
-        // TODO The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
         var requestModel = new ConnectorSdFactoryRequestModel(
             connectorId.ToString(),
             SdFactoryRequestModelSdType.ServiceOffering,
@@ -65,7 +63,7 @@ public class SdFactoryService : ISdFactoryService
             _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
-        await httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken)
+        await httpClient.PostAsJsonAsync(default(string?), requestModel, cancellationToken)
             .CatchingIntoServiceExceptionFor("sd-factory-connector-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 
@@ -84,7 +82,7 @@ public class SdFactoryService : ISdFactoryService
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
 
-        await httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken)
+        await httpClient.PostAsJsonAsync(default(string?), requestModel, cancellationToken)
             .CatchingIntoServiceExceptionFor("sd-factory-selfdescription-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 }

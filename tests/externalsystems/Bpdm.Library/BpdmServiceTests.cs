@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -67,7 +66,7 @@ public class BpdmServiceTests
         var data = _fixture.Create<BpdmTransferData>();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -88,7 +87,7 @@ public class BpdmServiceTests
         // Arrange
         var data = _fixture.Create<BpdmTransferData>();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -113,7 +112,7 @@ public class BpdmServiceTests
         // Arrange
         var externalId = Guid.NewGuid().ToString();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -134,7 +133,7 @@ public class BpdmServiceTests
         // Arrange
         var externalId = Guid.NewGuid().ToString();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -225,7 +224,7 @@ public class BpdmServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
             new StringContent(json));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -245,11 +244,12 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithEmtpyObjectResult_ThrowsServiceException()
     {
         // Arrange
+        using var stringContent = new StringContent("{}");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent("{}"));
+            stringContent);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com"),
         };
@@ -269,11 +269,12 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithEmtpyResult_ThrowsServiceException()
     {
         // Arrange
+        using var stringContent = new StringContent("");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent(""));
+            stringContent);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com"),
         };
@@ -294,7 +295,7 @@ public class BpdmServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.NotFound);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -314,7 +315,7 @@ public class BpdmServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -359,7 +360,7 @@ public class BpdmServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
             new StringContent(json));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -384,11 +385,12 @@ public class BpdmServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        using var stringContent = new StringContent("{}");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent("{}"));
+            stringContent);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com"),
         };
@@ -409,11 +411,12 @@ public class BpdmServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        using var stringContent = new StringContent("");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent(""));
+            stringContent);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com"),
         };
@@ -435,7 +438,7 @@ public class BpdmServiceTests
         // Arrange
         var applicationId = Guid.NewGuid();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.NotFound);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -456,7 +459,7 @@ public class BpdmServiceTests
         // Arrange
         var applicationId = Guid.NewGuid();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -80,13 +79,13 @@ public class ProcessExecutorTests
     public async Task ExecuteProcess_WithInvalidProcessTypeId_Throws()
     {
         // Arrange
-        var Act = async () => await _sut.ExecuteProcess(Guid.NewGuid(), (ProcessTypeId)default, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var Act = async () => await _sut.ExecuteProcess(Guid.NewGuid(), default, CancellationToken.None).ToListAsync().ConfigureAwait(false);
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
 
         // Assert
-        result.Message.Should().Be($"processType {(ProcessTypeId)default} is not a registered executable processType.");
+        result.Message.Should().Be($"processType {default(ProcessTypeId)} is not a registered executable processType.");
     }
 
     [Theory]

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -41,7 +40,6 @@ public class KeycloakRealmModelTests
         var identityProviders = sut.IdentityProviders;
         var identityProviderMappers = sut.IdentityProviderMappers;
         var users = sut.Users;
-        var authenticationFlows = sut.TopLevelCustomAuthenticationFlows;
         var clientScopes = sut.ClientScopes;
 
         // Assert
@@ -95,9 +93,9 @@ public class KeycloakRealmModelTests
                 x.FailureFactor == 30 &&
                 x.Roles != null &&
                 x.Roles.Client != null &&
-                x.Roles.Client == clientRoles &&
+                x.Roles.Client.SequenceEqual(clientRoles) &&
                 x.Roles.Realm != null &&
-                x.Roles.Realm == realmRoles &&
+                x.Roles.Realm.SequenceEqual(realmRoles) &&
                 x.Groups != null &&
                 // roles and groups are being asserted separately
                 x.DefaultRole != null &&
@@ -146,9 +144,9 @@ public class KeycloakRealmModelTests
                 x.ScopeMappings != null &&
                 x.ClientScopeMappings != null &&
                 x.Clients != null &&
-                x.Clients == clients &&
+                x.Clients.SequenceEqual(clients) &&
                 x.ClientScopes != null &&
-                x.ClientScopes == clientScopes &&
+                x.ClientScopes.SequenceEqual(clientScopes) &&
                 // users, scopeMappings, clientScopeMappings, clients, clientScopes are being asserted separately
                 x.DefaultDefaultClientScopes != null &&
                 x.DefaultDefaultClientScopes.SequenceEqual(new[] { "role_list", "profile", "email", "roles", "web-origins" }) &&
@@ -187,9 +185,9 @@ public class KeycloakRealmModelTests
                 x.AdminEventsEnabled == false &&
                 x.AdminEventsDetailsEnabled == false &&
                 x.IdentityProviders != null &&
-                x.IdentityProviders == identityProviders &&
+                x.IdentityProviders.SequenceEqual(identityProviders) &&
                 x.IdentityProviderMappers != null &&
-                x.IdentityProviderMappers == identityProviderMappers &&
+                x.IdentityProviderMappers.SequenceEqual(identityProviderMappers) &&
                 // identityProviders, identityProviderMappers, components are being asserted separately
                 x.InternationalizationEnabled == true &&
                 x.SupportedLocales != null &&

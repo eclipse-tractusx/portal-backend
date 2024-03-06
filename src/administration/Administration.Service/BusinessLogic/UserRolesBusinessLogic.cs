@@ -116,15 +116,6 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
                 }, _options), NotificationTypeId.ROLE_UPDATE_APP_OFFER);
             });
 
-    [Obsolete("to be replaced by endpoint UserRolesBusinessLogic.ModifyAppUserRolesAsync. Remove as soon frontend is adjusted")]
-    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo) =>
-        ModifyUserRolesInternal(
-            () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, _identityData.CompanyId),
-            (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
-                .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId).Select(x => new UserRoleModificationData(x.UserRoleText, x.RoleId, x.IsAssigned, true)),
-            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, _identityData.CompanyId, null);
-
     private async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesInternal(
         Func<Task<OfferIamUserData?>> getIamUserData,
         Func<Guid, IEnumerable<string>, Guid, IAsyncEnumerable<UserRoleModificationData>> getUserRoleModificationData,
@@ -211,13 +202,14 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             // Assign the roles in keycloak, check if all roles were added foreach client, if not throw an exception with the client and the roles that were not assigned. 
             .Select(assigned => (
                 Client: assigned.Client,
-                UnassingedRoles: rolesToAdd.ExceptBy(assigned.Roles, toAdd => toAdd.CompanyUserRoleText)))
+                UnassingedRoles: rolesToAdd.ExceptBy(assigned.Roles, toAdd => toAdd.CompanyUserRoleText),
+                Error: assigned.Error))
             .Where(x => x.UnassingedRoles.Any())
             .IfAny(async unassigned =>
                 throw new ServiceException($"The following roles could not be added to the clients: \n {string.Join(
                         "\n",
                         await unassigned
-                            .Select(item => $"Client: {item.Client}, Roles: {string.Join(", ", item.UnassingedRoles.Select(r => r.CompanyUserRoleText))}")
+                            .Select(item => $"Client: {item.Client}, Roles: {string.Join(", ", item.UnassingedRoles.Select(r => r.CompanyUserRoleText))}, Error: {item.Error?.Message}")
                             .ToListAsync()
                             .ConfigureAwait(false))}"))
             .ConfigureAwait(false);

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -329,7 +328,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         results.Should().NotBeNull();
         results!.Data.Count().Should().Be(count);
-        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == false));
+        results.Data.Should().AllSatisfy(detailData => detailData.IsRead.Should().BeFalse());
     }
 
     [Theory]
@@ -348,7 +347,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         results.Should().NotBeNull();
         results!.Data.Count().Should().Be(count);
-        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true));
+        results.Data.Should().AllSatisfy(detailData => detailData.IsRead.Should().BeTrue());
     }
 
     [Theory]
@@ -367,8 +366,8 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results!.Data.Count().Should().Be(count);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x =>
             searchSemanticTypeId == SearchSemanticTypeId.AND
-            ? (x.IsRead == true && x.TypeId == NotificationTypeId.INFO)
-            : (x.IsRead == true || x.TypeId == NotificationTypeId.INFO)));
+            ? (x.IsRead && x.TypeId == NotificationTypeId.INFO)
+            : (x.IsRead || x.TypeId == NotificationTypeId.INFO)));
     }
 
     [Theory]
@@ -387,8 +386,8 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results!.Data.Count().Should().Be(count);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x =>
             searchSemanticTypeId == SearchSemanticTypeId.AND
-                ? (x.IsRead == true && x.TypeId == NotificationTypeId.ACTION)
-                : (x.IsRead == true || x.TypeId == NotificationTypeId.ACTION)));
+                ? (x.IsRead && x.TypeId == NotificationTypeId.ACTION)
+                : (x.IsRead || x.TypeId == NotificationTypeId.ACTION)));
     }
 
     [Theory]

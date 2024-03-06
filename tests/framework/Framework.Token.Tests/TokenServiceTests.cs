@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -62,7 +61,7 @@ public class TokenServiceTests
 
         var sut = new TokenService(_httpClientFactory);
 
-        var result = await sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken).ConfigureAwait(false);
+        using var result = await sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken).ConfigureAwait(false);
 
         result.Should().NotBeNull();
         result.BaseAddress.Should().Be(_validBaseAddress);
@@ -77,9 +76,9 @@ public class TokenServiceTests
 
         var sut = new TokenService(_httpClientFactory);
 
-        var act = () => sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
+        Task<HttpClient> Act() => sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
 
-        var error = await Assert.ThrowsAsync<ServiceException>(act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
 
         error.Should().NotBeNull();
         error.Message.Should().Be($"call to external system token-post failed with statuscode 500 - Message: {errorResponse}");
@@ -94,9 +93,9 @@ public class TokenServiceTests
 
         var sut = new TokenService(_httpClientFactory);
 
-        var act = () => sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
+        Task<HttpClient> Act() => sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
 
-        var error = await Assert.ThrowsAsync<ServiceException>(act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
 
         error.Should().NotBeNull();
         error.InnerException.Should().Be(_testException);

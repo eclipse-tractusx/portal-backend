@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -78,7 +77,7 @@ public class HasNextEnumeratorExtensionsTests
         }
 
         // Act
-        var result = Assert.Throws<InvalidOperationException>(() => Act(sut).ToList());
+        Assert.Throws<InvalidOperationException>(() => Act(sut).ToList());
 
         // Assert
         A.CallTo(() => enumerator.MoveNext()).MustHaveHappened(6, Times.Exactly);

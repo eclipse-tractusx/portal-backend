@@ -53,16 +53,14 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         result.CompanyId.Should().Be(_companyId);
         result.IdentityProviderId.Should().Be(identityProviderId);
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<CompanyIdentityProvider>();
-        var idp = changedEntries.Single().Entity as CompanyIdentityProvider;
-        idp!.CompanyId.Should().Be(_companyId);
-        idp.IdentityProviderId.Should().Be(identityProviderId);
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyIdentityProvider>()
+            .Which.Should().Match<CompanyIdentityProvider>(x =>
+                x.CompanyId == _companyId &&
+                x.IdentityProviderId == identityProviderId);
     }
 
     #endregion
@@ -79,16 +77,14 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         result.IamIdpAlias.Should().Be("idp-999");
         result.IdentityProviderId.Should().Be(identityProviderId);
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<IamIdentityProvider>();
-        var idp = changedEntries.Single().Entity as IamIdentityProvider;
-        idp!.IamIdpAlias.Should().Be("idp-999");
-        idp.IdentityProviderId.Should().Be(identityProviderId);
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<IamIdentityProvider>()
+            .Which.Should().Match<IamIdentityProvider>(x =>
+                x.IamIdpAlias == "idp-999" &&
+                x.IdentityProviderId == identityProviderId);
     }
 
     #endregion
@@ -261,6 +257,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var result = await Assert.ThrowsAsync<InvalidOperationException>(Act).ConfigureAwait(false);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -273,7 +270,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88")).ConfigureAwait(false);
 
         // Assert
-        result.Should().Be(((Guid, string?))default);
+        result.Should().Be(default((Guid, string?)));
     }
 
     #endregion

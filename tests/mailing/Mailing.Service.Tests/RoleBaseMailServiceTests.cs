@@ -77,7 +77,7 @@ public class RoleBaseMailServiceTests
         };
         var userNameParam = hasUserNameParameter
             ? ("offerProviderName", "user")
-            : ((string, string)?)null;
+            : default((string, string)?);
         var receiverRoles = new[]
         {
             new UserRoleConfig("ClientId", new[] { "TestApp Manager", "TestSale Manager" })
@@ -159,7 +159,7 @@ public class RoleBaseMailServiceTests
         };
         var userNameParam = hasUserNameParameter
             ? ("username", "user")
-            : ((string, string)?)null;
+            : default((string, string)?);
         var receiverRoles = new[]
         {
             new UserRoleConfig("ClientId", new[] { "IT Admin", "Company Admin" })

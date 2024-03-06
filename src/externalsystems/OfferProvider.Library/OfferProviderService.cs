@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -46,7 +45,7 @@ public class OfferProviderService : IOfferProviderService
     /// <inheritdoc />
     public async Task<bool> TriggerOfferProvider(OfferThirdPartyAutoSetupData autoSetupData, string autoSetupUrl, CancellationToken cancellationToken)
     {
-        var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
+        using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
             .ConfigureAwait(false);
         await httpClient.PostAsJsonAsync(autoSetupUrl, autoSetupData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-offer-provider")
@@ -58,7 +57,7 @@ public class OfferProviderService : IOfferProviderService
     /// <inheritdoc />
     public async Task<bool> TriggerOfferProviderCallback(OfferProviderCallbackData callbackData, string callbackUrl, CancellationToken cancellationToken)
     {
-        var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
+        using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
             .ConfigureAwait(false);
         await httpClient.PostAsJsonAsync(callbackUrl, callbackData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-offer-provider-callback")

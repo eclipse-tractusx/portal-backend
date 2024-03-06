@@ -115,7 +115,7 @@ public class ConnectorsBusinessLogicTests
         var data = _fixture.CreateMany<ConnectorData>(numberOfElements).ToImmutableArray();
 
         A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(A<Guid>._))
-            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<ConnectorData>?)new Pagination.Source<ConnectorData>(data.Length, data.Skip(skip).Take(take))));
+            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
 
         // Act
         var result = await _logic.GetAllCompanyConnectorDatas(page, size);
@@ -446,7 +446,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
-            .Returns((connectorId, (Guid?)null));
+            .Returns((connectorId, null));
 
         // Act
         await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
@@ -465,7 +465,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
-            .Returns(((Guid, Guid?))default);
+            .Returns<(Guid, Guid?)>(default);
 
         // Act
         async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
@@ -564,7 +564,7 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
-        var userId = id == null ? (Guid?)null : new Guid(id);
+        var userId = id == null ? default(Guid?) : new Guid(id);
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
             .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, statusId, userId));
 
@@ -701,7 +701,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((DeleteConnectorData)default!);
+            .Returns(default(DeleteConnectorData));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
@@ -793,7 +793,7 @@ public class ConnectorsBusinessLogicTests
         var data = _fixture.CreateMany<ManagedConnectorData>(numberOfElements).ToImmutableArray();
 
         A.CallTo(() => _connectorsRepository.GetManagedConnectorsForCompany(A<Guid>._))
-            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<ManagedConnectorData>?)new Pagination.Source<ManagedConnectorData>(data.Length, data.Skip(skip).Take(take))));
+            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ManagedConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
 
         // Act
         var result = await _logic.GetManagedConnectorForCompany(page, size);
@@ -813,7 +813,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         A.CallTo(() => _connectorsRepository.GetManagedConnectorsForCompany(A<Guid>._))
-            .Returns((int _, int _) => Task.FromResult((Pagination.Source<ManagedConnectorData>?)null));
+            .Returns((int _, int _) => Task.FromResult<Pagination.Source<ManagedConnectorData>?>(null));
 
         // Act
         var result = await _logic.GetManagedConnectorForCompany(0, 10);
@@ -838,7 +838,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
-            .Returns((ConnectorUpdateInformation?)null);
+            .Returns<ConnectorUpdateInformation?>(null);
 
         // Act
         async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de")).ConfigureAwait(false);
@@ -917,7 +917,7 @@ public class ConnectorsBusinessLogicTests
             .With(x => x.IsHostCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
-            .With(x => x.Bpn, (string?)null)
+            .With(x => x.Bpn, default(string?))
             .Create();
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
             .Returns(data);
@@ -945,7 +945,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
             .Returns(data);
         A.CallTo(() => _userRepository.GetCompanyBpnForIamUserAsync(_identity.IdentityId))
-            .Returns((string?)null);
+            .Returns<string?>(null);
 
         // Act
         async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
@@ -1090,7 +1090,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorByIdForCompany(connectorId, _identity.CompanyId))
-            .Returns(new ValueTuple<ConnectorData, bool>());
+            .Returns<(ConnectorData, bool)>(default);
 
         // Act
         async Task Act() => await _logic.GetCompanyConnectorData(connectorId).ConfigureAwait(false);
@@ -1158,7 +1158,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, _identity.CompanyId))
             .Returns((_fixture.Create<ConnectorInformationData>(), true));
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(A<Guid>.That.Not.Matches(x => x == ExistingConnectorId), _identity.CompanyId))
-            .Returns(((ConnectorInformationData, bool))default);
+            .Returns<(ConnectorInformationData, bool)>(default);
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .Returns((_fixture.Create<ConnectorInformationData>(), false));
 

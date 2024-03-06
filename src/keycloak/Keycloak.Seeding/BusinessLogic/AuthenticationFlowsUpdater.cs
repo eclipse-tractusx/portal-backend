@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -307,12 +306,12 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
         private Task<(bool IsEqual, AuthenticatorConfig? AuthenticatorConfig)> CompareExecutions(AuthenticationFlowExecution execution, AuthenticationExecutionModel update, CancellationToken cancellationToken) =>
             (execution.ProviderId != update.Authenticator ||
             execution.Requirement != update.Requirement)
-                ? Task.FromResult((false, (AuthenticatorConfig?)null))
+                ? Task.FromResult<(bool, AuthenticatorConfig?)>((false, null))
                 : ((execution.AuthenticationConfig, update.AuthenticatorConfig) switch
                 {
-                    (null, null) => Task.FromResult((true, (AuthenticatorConfig?)null)),
-                    (null, _) => Task.FromResult((false, (AuthenticatorConfig?)null)),
-                    (_, null) => Task.FromResult((false, (AuthenticatorConfig?)null)),
+                    (null, null) => Task.FromResult<(bool, AuthenticatorConfig?)>((true, null)),
+                    (null, _) => Task.FromResult<(bool, AuthenticatorConfig?)>((false, null)),
+                    (_, null) => Task.FromResult<(bool, AuthenticatorConfig?)>((false, null)),
                     (_, _) => CompareAuthenticationConfig(execution.AuthenticationConfig, update.AuthenticatorConfig, cancellationToken)
                 });
 

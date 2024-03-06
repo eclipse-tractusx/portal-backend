@@ -5810,6 +5810,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("bytea")
                         .HasColumnName("client_secret");
 
+                    b.Property<int>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
+
+                    b.Property<byte[]>("InitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
                     b.HasKey("CompanyId")
                         .HasName("pk_onboarding_service_provider_details");
 

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -472,7 +471,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ConflictException("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
         }
 
-        var typeValue = data.Type.GetEnumValue() ?? throw new UnexpectedConditionException($"VerifiedCredentialType {data.Type.ToString()} does not exists");
+        var typeValue = data.Type.GetEnumValue() ?? throw new UnexpectedConditionException($"VerifiedCredentialType {data.Type} does not exists");
         var content = JsonSerializer.Serialize(new { Type = data.Type, CredentialId = credentialId }, Options);
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(data.RequesterData.RequesterId, NotificationTypeId.CREDENTIAL_APPROVAL, false, n =>
             {
@@ -540,7 +539,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ConflictException($"Credential {credentialId} must be {CompanySsiDetailStatusId.PENDING}");
         }
 
-        var typeValue = type.GetEnumValue() ?? throw new UnexpectedConditionException($"VerifiedCredentialType {type.ToString()} does not exists");
+        var typeValue = type.GetEnumValue() ?? throw new UnexpectedConditionException($"VerifiedCredentialType {type} does not exists");
         var content = JsonSerializer.Serialize(new { Type = type, CredentialId = credentialId }, Options);
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_REJECTED, false, n =>
             {

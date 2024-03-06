@@ -234,7 +234,7 @@ public class IdentityProviderBusinessLogicTests
 
         SetupFakes(users, lines);
 
-        var changedEmailResult = (string?)null;
+        var changedEmailResult = default(string?);
 
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._))
             .Invokes(x =>
@@ -725,7 +725,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(A<Guid>._, A<Guid>._))
-            .Returns(default((bool, string?, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>, string)));
+            .Returns<(bool, string?, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>, string)>(default);
 
         // Act
         async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(invalidId).ConfigureAwait(false);
@@ -894,14 +894,14 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(A<Guid>._, A<Guid>._))
-            .Returns((true, "test", IdentityProviderTypeId.MANAGED, Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<string>>(company.Id, Enumerable.Empty<string>()), 1), string.Empty));
+            .Returns((true, "test", IdentityProviderTypeId.MANAGED, Enumerable.Repeat((company.Id, Enumerable.Empty<string>()), 1), string.Empty));
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test"))
             .Returns(false);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(identity.Id.ToString())).Returns((string?)keycloakUserId);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(identity.Id.ToString())).Returns(keycloakUserId);
         A.CallTo(() => _roleBaseMailService.GetRoleData(_options.Value.DeleteIdpRoles)).Returns(new List<Guid> { role1, role2 });
         A.CallTo(() => _identityProviderRepository.GetManagedIdpLinkedData(identityProviderId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2 && x.Contains(role1) && x.Contains(role2)))).Returns(
-            new ValueTuple<Guid, CompanyStatusId, bool, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser, (string? UserMail, string? FirstName, string? LastName) Userdata, bool IsInUserRoles, IEnumerable<Guid> UserRoleIds)>>[] {
-                new (company.Id, CompanyStatusId.ACTIVE, multipleIdps, Enumerable.Repeat((identity.Id, true, new ValueTuple<string?, string?, string?>("test@example.org", "Test", "User"), true, userRoleIds), 1))
+            new (Guid, CompanyStatusId, bool, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser, (string? UserMail, string? FirstName, string? LastName) Userdata, bool IsInUserRoles, IEnumerable<Guid> UserRoleIds)>)[] {
+                new (company.Id, CompanyStatusId.ACTIVE, multipleIdps, Enumerable.Repeat<(Guid, bool, (string?, string?, string?), bool, IEnumerable<Guid>)>((identity.Id, true, ("test@example.org", "Test", "User"), true, userRoleIds), 1))
             }.ToAsyncEnumerable());
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(company.Id, A<Action<Company>>._, A<Action<Company>>._))
             .Invokes((Guid _, Action<Company>? initialize, Action<Company> modify) =>
@@ -909,7 +909,7 @@ public class IdentityProviderBusinessLogicTests
                 initialize?.Invoke(company);
                 modify(company);
             });
-        A.CallTo(() => _userRepository.AttachAndModifyIdentities(A<IEnumerable<ValueTuple<Guid, Action<Identity>?, Action<Identity>>>>._))
+        A.CallTo(() => _userRepository.AttachAndModifyIdentities(A<IEnumerable<(Guid, Action<Identity>?, Action<Identity>)>>._))
             .Invokes((IEnumerable<(Guid IdentityId, Action<Identity>? Initialize, Action<Identity> Modify)> identityData) =>
             {
                 var initial = identityData.Select(x => (Identity: identity, x.Initialize, x.Modify)).ToList();
@@ -963,10 +963,10 @@ public class IdentityProviderBusinessLogicTests
             _logger);
         var oidcGuid = Guid.NewGuid();
         var samlGuid = Guid.NewGuid();
-        var oidc = (oidcGuid, IdentityProviderCategoryId.KEYCLOAK_OIDC, (string?)"oidc-alias", IdentityProviderTypeId.OWN, "http://metadata");
-        var saml = (samlGuid, IdentityProviderCategoryId.KEYCLOAK_SAML, (string?)"saml-alias", IdentityProviderTypeId.OWN, (string?)null);
+        var oidc = (oidcGuid, IdentityProviderCategoryId.KEYCLOAK_OIDC, "oidc-alias", IdentityProviderTypeId.OWN, "http://metadata");
+        var saml = (samlGuid, IdentityProviderCategoryId.KEYCLOAK_SAML, "saml-alias", IdentityProviderTypeId.OWN, default(string?));
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>._))
-            .Returns(new[] { oidc, saml }.ToAsyncEnumerable());
+            .Returns(new (Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?)[] { oidc, saml }.ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("oidc-alias"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
         A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("oidc-alias"))
@@ -1109,7 +1109,7 @@ public class IdentityProviderBusinessLogicTests
             x.TokenUrl == details.TokenUrl &&
             x.LogoutUrl == details.LogoutUrl &&
             x.ClientId == details.ClientId &&
-            x.HasClientSecret == true &&
+            x.HasClientSecret &&
             x.ClientAuthMethod == details.ClientAuthMethod &&
             x.SignatureAlgorithm == details.SignatureAlgorithm);
     }
@@ -1191,7 +1191,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
-            .Returns(default((bool, (string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?), IEnumerable<(Guid, IEnumerable<string>)>, bool, string)));
+            .Returns<(bool, (string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?), IEnumerable<(Guid, IEnumerable<string>)>?, bool, string)>(default);
 
         // Act
         async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
@@ -1486,7 +1486,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
-            .Returns(default((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)));
+            .Returns<(bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)>(default);
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
@@ -1514,7 +1514,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
-            .Returns(default((bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)));
+            .Returns<(bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)>(default);
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
@@ -1558,7 +1558,7 @@ public class IdentityProviderBusinessLogicTests
         // Arrange
         var identityProviderId = Guid.NewGuid();
         var data = _fixture.Build<IdentityProviderEditableDetails>()
-            .With(x => x.Oidc, (IdentityProviderEditableDetailsOidc?)null)
+            .With(x => x.Oidc, default(IdentityProviderEditableDetailsOidc?))
             .With(x => x.DisplayName, "new-display-name")
             .Create();
         var sut = new IdentityProviderBusinessLogic(
@@ -1618,7 +1618,7 @@ public class IdentityProviderBusinessLogicTests
         var identityProviderId = Guid.NewGuid();
         var data = _fixture.Build<IdentityProviderEditableDetails>()
             .With(x => x.Oidc, _fixture.Build<IdentityProviderEditableDetailsOidc>().With(x => x.Secret, "test").With(x => x.MetadataUrl, "http://new").Create())
-            .With(x => x.Saml, (IdentityProviderEditableDetailsSaml?)null)
+            .With(x => x.Saml, default(IdentityProviderEditableDetailsSaml?))
             .With(x => x.DisplayName, "new-display-name")
             .Create();
         var sut = new IdentityProviderBusinessLogic(
@@ -1671,7 +1671,7 @@ public class IdentityProviderBusinessLogicTests
         // Arrange
         var identityProviderId = Guid.NewGuid();
         var data = _fixture.Build<IdentityProviderEditableDetails>()
-            .With(x => x.Saml, (IdentityProviderEditableDetailsSaml?)null)
+            .With(x => x.Saml, default(IdentityProviderEditableDetailsSaml?))
             .With(x => x.DisplayName, "new-display-name")
             .Create();
         var sut = new IdentityProviderBusinessLogic(
@@ -1730,7 +1730,7 @@ public class IdentityProviderBusinessLogicTests
         // Arrange
         var identityProviderId = Guid.NewGuid();
         var data = _fixture.Build<IdentityProviderEditableDetails>()
-            .With(x => x.Oidc, (IdentityProviderEditableDetailsOidc?)null)
+            .With(x => x.Oidc, default(IdentityProviderEditableDetailsOidc?))
             .With(x => x.Saml, _fixture.Build<IdentityProviderEditableDetailsSaml>().With(x => x.SingleSignOnServiceUrl, "https://sso.com").Create())
             .With(x => x.DisplayName, "new-display-name")
             .Create();
@@ -1796,7 +1796,7 @@ public class IdentityProviderBusinessLogicTests
         // Arrange
         var identityProviderId = Guid.NewGuid();
         var data = _fixture.Build<IdentityProviderEditableDetails>()
-            .With(x => x.Oidc, (IdentityProviderEditableDetailsOidc?)null)
+            .With(x => x.Oidc, default(IdentityProviderEditableDetailsOidc?))
             .With(x => x.Saml, _fixture.Create<IdentityProviderEditableDetailsSaml>())
             .With(x => x.DisplayName, "new-display-name")
             .Create();
@@ -1827,8 +1827,8 @@ public class IdentityProviderBusinessLogicTests
         var identityProviderId = Guid.NewGuid();
         var data = _fixture.Build<IdentityProviderEditableDetails>()
             .With(x => x.DisplayName, "dis-shared")
-            .With(x => x.Oidc, (IdentityProviderEditableDetailsOidc?)null)
-            .With(x => x.Saml, (IdentityProviderEditableDetailsSaml?)null)
+            .With(x => x.Oidc, default(IdentityProviderEditableDetailsOidc?))
+            .With(x => x.Saml, default(IdentityProviderEditableDetailsSaml?))
             .Create();
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
@@ -1859,194 +1859,6 @@ public class IdentityProviderBusinessLogicTests
 
     #endregion
 
-    #region CreateOwnCompanyUserIdentityProviderLinkDataAsync
-
-    [Fact]
-    public async Task CreateOwnCompanyUserIdentityProviderLinkDataAsync_WithoutIamUserId_ThrowsNotFoundException()
-    {
-        // Arrange
-        var identityProviderId = Guid.NewGuid();
-        var companyUserId = Guid.NewGuid();
-        var data = _fixture.Build<UserIdentityProviderLinkData>()
-            .With(x => x.identityProviderId, identityProviderId)
-            .Create();
-        var sut = new IdentityProviderBusinessLogic(
-            _portalRepositories,
-            _provisioningManager,
-            _identityService,
-            _errorMessageService,
-            _roleBaseMailService,
-            _mailingService,
-            _options,
-            _logger);
-        A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
-            .Returns(((bool, string?, bool))default);
-
-        // Act
-        async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"companyUserId {companyUserId} does not exist");
-    }
-
-    [Fact]
-    public async Task CreateOwnCompanyUserIdentityProviderLinkDataAsync_WithoutIamUserId_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var identityProviderId = Guid.NewGuid();
-        var companyUserId = Guid.NewGuid();
-        var data = _fixture.Build<UserIdentityProviderLinkData>()
-            .With(x => x.identityProviderId, identityProviderId)
-            .Create();
-        var sut = new IdentityProviderBusinessLogic(
-            _portalRepositories,
-            _provisioningManager,
-            _identityService,
-            _errorMessageService,
-            _roleBaseMailService,
-            _mailingService,
-            _options,
-            _logger);
-        A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
-            .Returns((true, "cl1", true));
-        A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString()))
-            .Returns((string?)null);
-
-        // Act
-        async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"companyUserId {companyUserId} is not linked to keycloak");
-    }
-
-    [Fact]
-    public async Task CreateOwnCompanyUserIdentityProviderLinkDataAsync_WithoutAlias_ThrowsNotFoundException()
-    {
-        // Arrange
-        var identityProviderId = Guid.NewGuid();
-        var companyUserId = Guid.NewGuid();
-        var data = _fixture.Build<UserIdentityProviderLinkData>()
-            .With(x => x.identityProviderId, identityProviderId)
-            .Create();
-        var sut = new IdentityProviderBusinessLogic(
-            _portalRepositories,
-            _provisioningManager,
-            _identityService,
-            _errorMessageService,
-            _roleBaseMailService,
-            _mailingService,
-            _options,
-            _logger);
-        A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
-            .Returns((true, null, false));
-
-        // Act
-        async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} not found in company of user {companyUserId}");
-    }
-
-    [Fact]
-    public async Task CreateOwnCompanyUserIdentityProviderLinkDataAsync_WithoutSameCompany_ThrowsForbiddenException()
-    {
-        // Arrange
-        var identityProviderId = Guid.NewGuid();
-        var companyUserId = Guid.NewGuid();
-        var data = _fixture.Build<UserIdentityProviderLinkData>()
-            .With(x => x.identityProviderId, identityProviderId)
-            .Create();
-        var sut = new IdentityProviderBusinessLogic(
-            _portalRepositories,
-            _provisioningManager,
-            _identityService,
-            _errorMessageService,
-            _roleBaseMailService,
-            _mailingService,
-            _options,
-            _logger);
-        A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
-            .Returns((true, "cl1", false));
-
-        // Act
-        async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} is not associated with company {_identity.CompanyId}");
-    }
-
-    [Fact]
-    public async Task CreateOwnCompanyUserIdentityProviderLinkDataAsync_WithKeycloakFailing_ThrowsForbiddenException()
-    {
-        // Arrange
-        var identityProviderId = Guid.NewGuid();
-        var iamUserId = _fixture.Create<string>();
-        var companyUserId = Guid.NewGuid();
-        var data = _fixture.Build<UserIdentityProviderLinkData>()
-            .With(x => x.identityProviderId, identityProviderId)
-            .Create();
-        var sut = new IdentityProviderBusinessLogic(
-            _portalRepositories,
-            _provisioningManager,
-            _identityService,
-            _errorMessageService,
-            _roleBaseMailService,
-            _mailingService,
-            _options,
-            _logger);
-        A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
-            .Returns((true, "cl1", true));
-        A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString())).Returns(iamUserId);
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(iamUserId, A<IdentityProviderLink>._))
-            .Throws(new KeycloakEntityConflictException("test"));
-
-        // Act
-        async Task Act() => await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"identityProviderLink for identityProvider {identityProviderId} already exists for user {companyUserId}");
-    }
-
-    [Fact]
-    public async Task CreateOwnCompanyUserIdentityProviderLinkDataAsync_WithValid_CallsExpected()
-    {
-        // Arrange
-        var identityProviderId = Guid.NewGuid();
-        var iamUserId = _fixture.Create<string>();
-        var companyUserId = Guid.NewGuid();
-        var data = _fixture.Build<UserIdentityProviderLinkData>()
-            .With(x => x.identityProviderId, identityProviderId)
-            .With(x => x.userName, "test-user")
-            .Create();
-        var sut = new IdentityProviderBusinessLogic(
-            _portalRepositories,
-            _provisioningManager,
-            _identityService,
-            _errorMessageService,
-            _roleBaseMailService,
-            _mailingService,
-            _options,
-            _logger);
-        A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
-            .Returns((true, "cl1", true));
-        A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString())).Returns(iamUserId);
-
-        // Act
-        var result = await sut.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, data).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(iamUserId, A<IdentityProviderLink>._))
-            .MustHaveHappenedOnceExactly();
-        result.userName.Should().Be("test-user");
-    }
-
-    #endregion
-
     #region CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync
 
     [Fact]
@@ -2068,7 +1880,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
-            .Returns(((bool, string?, bool))default);
+            .Returns<(bool, string?, bool)>(default);
 
         // Act
         async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data).ConfigureAwait(false);
@@ -2099,7 +1911,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
         A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString()))
-            .Returns((string?)null);
+            .Returns<string?>(null);
 
         // Act
         async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data).ConfigureAwait(false);
@@ -2222,7 +2034,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
-            .Returns(((bool, string?, bool))default);
+            .Returns<(bool, string?, bool)>(default);
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
@@ -2250,7 +2062,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
         A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString()))
-            .Returns((string?)null);
+            .Returns<string?>(null);
 
         // Act
         async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
@@ -2448,7 +2260,6 @@ public class IdentityProviderBusinessLogicTests
     public async Task GetOwnCompanyUsersIdentityProviderDataAsync_WithoutIdentityProviderIds_ThrowsControllerArgumentException()
     {
         // Arrange
-        var iamUserId = Guid.NewGuid();
         var identityProviderId = Guid.NewGuid();
         var companyUserId = Guid.NewGuid();
         var sut = new IdentityProviderBusinessLogic(
@@ -2682,7 +2493,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_invalidCompanyId, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, "test", false));
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(A<Guid>.That.Not.Matches(x => x == _identity.CompanyId || x == _invalidCompanyId), A<IEnumerable<CompanyRoleId>>._))
-            .Returns(((bool, string, bool))default);
+            .Returns<(bool, string, bool)>(default);
 
         if (idps != null)
         {
@@ -2762,8 +2573,8 @@ public class IdentityProviderBusinessLogicTests
 
         A.CallTo(() => _userRepository.GetCompanyUserAssignedIdentityProvider(A<Guid>._, A<Guid>._)).ReturnsLazily(
             (Guid companyUserId, Guid _) => _existingUserId == companyUserId ?
-                new ValueTuple<bool, string, string>(true, _userProviderId, _username) :
-                new ValueTuple<bool, string, string>());
+                (true, _userProviderId, _username) :
+                default((bool, string, string)));
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.Not.IsEqualTo(_companyId))).Returns(
             Enumerable.Empty<(Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?)>().ToAsyncEnumerable());
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.IsEqualTo(_companyId))).Returns(

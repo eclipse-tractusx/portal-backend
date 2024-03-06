@@ -30,7 +30,7 @@ public class OnboardingServiceProviderDetail
         ClientSecret = null!;
     }
 
-    public OnboardingServiceProviderDetail(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret)
+    public OnboardingServiceProviderDetail(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode)
         : this()
     {
         CompanyId = companyId;
@@ -38,6 +38,8 @@ public class OnboardingServiceProviderDetail
         AuthUrl = authUrl;
         ClientId = clientId;
         ClientSecret = clientSecret;
+        InitializationVector = initializationVector;
+        EncryptionMode = encryptionMode;
     }
 
     public Guid CompanyId { get; set; }
@@ -49,6 +51,8 @@ public class OnboardingServiceProviderDetail
     public string ClientId { get; set; }
 
     public byte[] ClientSecret { get; set; }
+    public byte[]? InitializationVector { get; set; }
+    public int EncryptionMode { get; set; }
 
     public virtual Company? Company { get; private set; }
 }

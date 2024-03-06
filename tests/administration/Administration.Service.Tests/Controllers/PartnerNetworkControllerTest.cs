@@ -28,13 +28,16 @@ public class PartnerNetworkControllerTest
 
     private readonly IPartnerNetworkBusinessLogic _logic;
     private readonly PartnerNetworkController _controller;
-
-    // private readonly IAsyncEnumerable<string> companyBpns;
+    private readonly IFixture _fixture;
 
     public PartnerNetworkControllerTest()
     {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+        .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _logic = A.Fake<IPartnerNetworkBusinessLogic>();
-        this._controller = new PartnerNetworkController(_logic);
+        _controller = new PartnerNetworkController(_logic);
     }
 
     [Theory]
@@ -44,16 +47,15 @@ public class PartnerNetworkControllerTest
     {
         //Arrange
         var bpn = bpnIds == null ? null : bpnIds.ToList();
-        A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>._));
+        var data = _fixture.CreateMany<string>(5);
+        A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>?>._)).Returns(data.ToAsyncEnumerable());
 
         //Act
-        var result = this._controller.GetAllMemberCompaniesBPNAsync(bpn);
+        var result = await _controller.GetAllMemberCompaniesBPNAsync(bpn).ToListAsync();
 
         //Assert
-        await foreach (var item in result)
-        {
-            A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>.That.IsSameAs(bpn!))).MustHaveHappenedOnceExactly();
-            Assert.IsType<string>(result);
-        }
+        A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>?>.That.IsSameAs(bpn))).MustHaveHappenedOnceExactly();
+
+        result.Should().HaveSameCount(data).And.ContainInOrder(data);
     }
 }

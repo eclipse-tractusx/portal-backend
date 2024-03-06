@@ -150,7 +150,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             IamIdentityProviderProtocol.OIDC => await GetIdentityProviderDetailsOidc(identityProviderId, alias, IdentityProviderCategoryId.KEYCLOAK_OIDC, typeId, null).ConfigureAwait(false),
             IamIdentityProviderProtocol.SAML => await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false),
-            _ => throw new UnexpectedConditionException($"unexpected value of protocol: '{protocol.ToString()}'")
+            _ => throw new UnexpectedConditionException($"unexpected value of protocol: '{protocol}'")
         };
     }
 
@@ -268,7 +268,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 await UpdateIdentityProviderSaml(alias, details).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false);
             default:
-                throw new ControllerArgumentException($"unexpected value for category '{category.ToString()}' of identityProvider '{identityProviderId}'");
+                throw new ControllerArgumentException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'");
         }
     }
 
@@ -585,32 +585,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     identityProviderDataSaml.EntityId,
                     identityProviderDataSaml.SingleSignOnServiceUrl)
         };
-    }
-
-    public async ValueTask<UserIdentityProviderLinkData> CreateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, UserIdentityProviderLinkData identityProviderLinkData)
-    {
-        var companyId = _identityData.CompanyId;
-        var (iamUserId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderLinkData.identityProviderId, companyId).ConfigureAwait(false);
-
-        try
-        {
-            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(
-                iamUserId,
-                new IdentityProviderLink(
-                    alias,
-                    identityProviderLinkData.userId,
-                    identityProviderLinkData.userName))
-                .ConfigureAwait(false);
-        }
-        catch (KeycloakEntityConflictException ce)
-        {
-            throw new ConflictException($"identityProviderLink for identityProvider {identityProviderLinkData.identityProviderId} already exists for user {companyUserId}", ce);
-        }
-
-        return new UserIdentityProviderLinkData(
-            identityProviderLinkData.identityProviderId,
-            identityProviderLinkData.userId,
-            identityProviderLinkData.userName);
     }
 
     public async ValueTask<UserIdentityProviderLinkData> CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData)

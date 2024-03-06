@@ -44,7 +44,7 @@ public class ClearinghouseEndToEndTests : EndToEndTestBase
     }
 
     [Fact]
-    public void ClearinghouseInterface_HealthCheck()
+    public async Task ClearinghouseInterface_HealthCheck()
     {
         ClearingHouseUserToken =
             TechTokenRetriever.GetToken(BaseTokenUrl,
@@ -80,6 +80,7 @@ public class ClearinghouseEndToEndTests : EndToEndTestBase
             .StatusCode(200)
             .Extract()
             .Response();
-        data.Content.ReadAsStringAsync().Result.Should().NotBeNullOrEmpty("Response should not be null or empty");
+        var result = await data.Content.ReadAsStringAsync().ConfigureAwait(false);
+        result.Should().NotBeNullOrEmpty("Response should not be null or empty");
     }
 }

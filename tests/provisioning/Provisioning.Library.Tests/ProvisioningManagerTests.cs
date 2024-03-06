@@ -108,7 +108,7 @@ public class ProvisioningManagerTests
         const string url = "https://newurl.com";
         const string newClientId = "cl1";
         using var httpTest = new HttpTest();
-        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).ReturnsLazily(() => 1);
+        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
         httpTest.WithAuthorization()
             .WithCreateClient(newClientId)
             .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" });

@@ -172,7 +172,7 @@ public class DocumentsBusinessLogicTests
         // Arrange
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(ValidDocumentId, DocumentTypeId.SELF_DESCRIPTION))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>(content, "test.json", MediaTypeId.JSON));
+            .Returns((content, "test.json", MediaTypeId.JSON));
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
@@ -189,9 +189,8 @@ public class DocumentsBusinessLogicTests
     {
         // Arrange
         var documentId = Guid.NewGuid();
-        var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>());
+            .Returns<(byte[], string, MediaTypeId)>(default);
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
@@ -211,7 +210,7 @@ public class DocumentsBusinessLogicTests
         var documentId = Guid.NewGuid();
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", true, MediaTypeId.JSON));
+            .Returns((content, "test.json", true, MediaTypeId.JSON));
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         //Act
@@ -230,7 +229,7 @@ public class DocumentsBusinessLogicTests
         var documentId = Guid.NewGuid();
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", false, MediaTypeId.JSON));
+            .Returns((content, "test.json", false, MediaTypeId.JSON));
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         //Act
@@ -247,7 +246,7 @@ public class DocumentsBusinessLogicTests
         // Arrange
         var documentId = Guid.NewGuid();
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>());
+            .Returns<(byte[], string, bool, MediaTypeId)>(default);
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         //Act
@@ -265,18 +264,18 @@ public class DocumentsBusinessLogicTests
         A.CallTo(() => _documentRepository.GetDocumentSeedDataByIdAsync(A<Guid>.That.Matches(x => x == ValidDocumentId)))
             .Returns(_fixture.Create<DocumentSeedData>());
         A.CallTo(() => _documentRepository.GetDocumentSeedDataByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId)))
-            .Returns((DocumentSeedData?)null);
+            .Returns<DocumentSeedData?>(null);
     }
 
     private void SetupFakesForGetDocument()
     {
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, _identity.CompanyId))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
+            .Returns((content, "test.pdf", MediaTypeId.PDF, true));
         A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId), _identity.CompanyId))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>());
+            .Returns<(byte[]?, string, MediaTypeId, bool)>(default);
         A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, false));
+            .Returns((content, "test.pdf", MediaTypeId.PDF, false));
     }
 
     #endregion

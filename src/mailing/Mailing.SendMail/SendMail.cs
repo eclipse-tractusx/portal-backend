@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -36,18 +35,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
 
         Task ISendMail.Send(string sender, string recipient, string subject, string body, bool useHtml)
         {
-            var message = new MimeMessage();
+            using var message = new MimeMessage();
             message.From.Add(MailboxAddress.Parse(sender));
             message.To.Add(MailboxAddress.Parse(recipient));
             message.Subject = subject;
-            if (useHtml)
-            {
-                message.Body = new TextPart("html") { Text = body };
-            }
-            else
-            {
-                message.Body = new TextPart("plain") { Text = body };
-            }
+            message.Body = useHtml
+                ? new TextPart("html") { Text = body }
+                : new TextPart("plain") { Text = body };
             return _send(message);
         }
 

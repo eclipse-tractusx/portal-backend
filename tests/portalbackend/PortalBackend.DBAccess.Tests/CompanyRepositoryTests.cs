@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -395,7 +395,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         new[] { "value-1", "value-2", "value-3" },                                                                                           // initialValues
         new[] { "added-1", "changed-1", "added-2" },                                                                                         // updateValues
         new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VIES },                                                         // addedEntityKeys
-        new[] { "added-1", "added-2" },                                                                                                       // addedEntityValues
+        new[] { "added-1", "added-2" },                                                                                                      // addedEntityValues
         new[] { UniqueIdentifierId.EORI },                                                                                                   // updatedEntityKeys
         new[] { "changed-1" },                                                                                                               // updatedEntityValues
         new[] { UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID }                                                                     // removedEntityKeys
@@ -409,8 +409,8 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         IEnumerable<UniqueIdentifierId> removedEntityKeys)
     {
         var companyId = Guid.NewGuid();
-        var initialItems = initialKeys.Zip(initialValues).Select(x => ((UniqueIdentifierId InitialKey, string InitialValue))(x.First, x.Second)).ToImmutableArray();
-        var updateItems = updateKeys.Zip(updateValues).Select(x => ((UniqueIdentifierId UpdateKey, string UpdateValue))(x.First, x.Second)).ToImmutableArray();
+        var initialItems = initialKeys.Zip(initialValues).Select(x => (InitialKey: x.First, InitialValue: x.Second)).ToImmutableArray();
+        var updateItems = updateKeys.Zip(updateValues).Select(x => (UpdateKey: x.First, UpdateValue: x.Second)).ToImmutableArray();
         var addedEntities = addedEntityKeys.Zip(addedEntityValues).Select(x => new CompanyIdentifier(companyId, x.First, x.Second)).OrderBy(x => x.UniqueIdentifierId).ToImmutableArray();
         var updatedEntities = updatedEntityKeys.Zip(updatedEntityValues).Select(x => new CompanyIdentifier(companyId, x.First, x.Second)).OrderBy(x => x.UniqueIdentifierId).ToImmutableArray();
         var removedEntities = removedEntityKeys.Select(x => new CompanyIdentifier(companyId, x, null!)).OrderBy(x => x.UniqueIdentifierId).ToImmutableArray();
@@ -424,9 +424,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().AllSatisfy(entry => entry.Entity.Should().BeOfType<CompanyIdentifier>());
         changedEntries.Should().HaveCount(addedEntities.Length + updatedEntities.Length + removedEntities.Length);
-        var added = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Added).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
-        var modified = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Modified).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
-        var deleted = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
+        var added = changedEntries.Where(entry => entry.State == EntityState.Added).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
+        var modified = changedEntries.Where(entry => entry.State == EntityState.Modified).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
+        var deleted = changedEntries.Where(entry => entry.State == EntityState.Deleted).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
 
         added.Should().HaveSameCount(addedEntities);
         added.OrderBy(x => x.UniqueIdentifierId).Zip(addedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
@@ -551,7 +551,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetCompanyRoleAndConsentAgreementDetailsAsync_ReturnsExpected()
     {
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
         var companyId = new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd");
         var activeDescription = "The participant role is covering the data provider, data consumer or app user scenario. As participant you are an active member of the network with enabled services to particiapte as contributer and user.";
         var serviceDscription = "The Service Provider is able to offer 3rd party services, such as dataspace service offerings to Catena-X Members. Catena-X members can subscribe for those services.";
@@ -563,13 +563,13 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull()
             .And.HaveCount(4)
             .And.Satisfy(
-                x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT && x.RoleDescription == activeDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 2 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
-                x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER && x.RoleDescription == appDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
-                x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.RoleDescription == serviceDscription && x.CompanyRolesActive == true && x.Agreements.Count() == 3
+                x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT && x.RoleDescription == activeDescription && !x.CompanyRolesActive && x.Agreements.Count() == 2 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
+                x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER && x.RoleDescription == appDescription && !x.CompanyRolesActive && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0),
+                x => x.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER && x.RoleDescription == serviceDscription && x.CompanyRolesActive && x.Agreements.Count() == 3
                      && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") && agr.DocumentId == null && agr.AgreementName == "Terms & Conditions - Consultant" && agr.ConsentStatus == ConsentStatusId.ACTIVE)
                      && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018") && agr.DocumentId == null && agr.AgreementName == "Data Sharing Approval - allow CX to submit company data (company name, requester) to process the subscription" && agr.ConsentStatus == 0)
-                    && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017") && agr.DocumentId == new Guid("00000000-0000-0000-0000-000000000004") && agr.AgreementName == "Terms & Conditions Service Provider" && agr.ConsentStatus == 0),
-                x => x.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER && x.RoleDescription == onboardingServiceProviderDescription && x.CompanyRolesActive == false && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0));
+                     && x.Agreements.Any(agr => agr.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017") && agr.DocumentId == new Guid("00000000-0000-0000-0000-000000000004") && agr.AgreementName == "Terms & Conditions Service Provider" && agr.ConsentStatus == 0),
+                x => x.CompanyRoleId == CompanyRoleId.ONBOARDING_SERVICE_PROVIDER && x.RoleDescription == onboardingServiceProviderDescription && !x.CompanyRolesActive && x.Agreements.Count() == 1 && x.Agreements.All(agreement => agreement.ConsentStatus == 0));
     }
 
     #endregion
@@ -581,7 +581,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var companyRoleIds = new[] { CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT };
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetCompanyRolesDataAsync(new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"), companyRoleIds).ConfigureAwait(false);
@@ -604,7 +604,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var companyRoleIds = new[] { CompanyRoleId.APP_PROVIDER };
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetAgreementAssignedRolesDataAsync(companyRoleIds).ToListAsync().ConfigureAwait(false);
@@ -624,7 +624,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var companyRoleIds = new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT };
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetAgreementAssignedRolesDataAsync(companyRoleIds).ToListAsync().ConfigureAwait(false);
@@ -864,16 +864,22 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region CreateOnboardingServiceProviderDetails
 
-    [Fact]
-    public async Task CreateOnboardingServiceProviderDetails_Changed_ReturnsExpectedResult()
+    [Theory]
+    [InlineData("JHcycHPDfRwjT1J1NqBJtQ==")]
+    [InlineData(null)]
+    public async Task CreateOnboardingServiceProviderDetails_Changed_ReturnsExpectedResult(string? initVector)
     {
         // Arrange
         const string url = "https://service-url.com/new";
+        const string authUrl = "https://auth.url";
+        const string clientId = "acmeId";
         var (sut, context) = await CreateSut().ConfigureAwait(false);
-        var secret = "test123"u8.ToArray();
+        var secret = Convert.FromHexString("2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6");
+        var initializationVector = initVector == null ? null : Convert.FromBase64String(initVector);
+        var index = 5;
 
         // Act
-        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url, "https//auth.url", "test", secret);
+        var result = sut.CreateOnboardingServiceProviderDetails(_validCompanyId, url, authUrl, clientId, secret, initializationVector, index);
 
         // Assert
         result.CompanyId.Should().Be(_validCompanyId);
@@ -881,12 +887,19 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
-        var entry = changedEntries.Single();
-        entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
-        entry.State.Should().Be(EntityState.Added);
+        changedEntries.Should().ContainSingle()
+            .Which.Should().Match<EntityEntry>(x =>
+                x.State == EntityState.Added &&
+                x.Entity.GetType() == typeof(OnboardingServiceProviderDetail) &&
+                ((OnboardingServiceProviderDetail)x.Entity).CompanyId.Equals(_validCompanyId) &&
+                ((OnboardingServiceProviderDetail)x.Entity).CallbackUrl.Equals(url) &&
+                ((OnboardingServiceProviderDetail)x.Entity).AuthUrl.Equals(authUrl) &&
+                ((OnboardingServiceProviderDetail)x.Entity).ClientId.Equals(clientId) &&
+                ((OnboardingServiceProviderDetail)x.Entity).ClientSecret.SequenceEqual(secret) &&
+                ((OnboardingServiceProviderDetail)x.Entity).InitializationVector == null
+                    ? initializationVector == null
+                    : ((OnboardingServiceProviderDetail)x.Entity).InitializationVector!.SequenceEqual(initializationVector!) &&
+                ((OnboardingServiceProviderDetail)x.Entity).EncryptionMode == index);
     }
 
     #endregion

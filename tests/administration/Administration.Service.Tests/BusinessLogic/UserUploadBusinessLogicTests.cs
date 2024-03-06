@@ -522,7 +522,7 @@ public class UserUploadBusinessLogicTests
     private void SetupFakes(IEnumerable<string> lines)
     {
         A.CallTo(() => _document.ContentType).Returns("text/csv");
-        A.CallTo(() => _document.OpenReadStream()).ReturnsLazily(() => new AsyncEnumerableStringStream(lines.ToAsyncEnumerable(), _encoding));
+        A.CallTo(() => _document.OpenReadStream()).Returns(new AsyncEnumerableStringStream(lines.ToAsyncEnumerable(), _encoding));
 
         A.CallTo(() => _options.Value).Returns(_settings);
 
@@ -543,7 +543,7 @@ public class UserUploadBusinessLogicTests
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                 .With(x => x.UserName, creationInfo.UserName)
-                .With(x => x.Error, (Exception?)null)
+                .With(x => x.Error, default(Exception?))
                 .Create());
     }
 

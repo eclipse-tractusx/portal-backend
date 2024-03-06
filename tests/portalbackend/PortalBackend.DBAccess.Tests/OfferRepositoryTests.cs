@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -49,36 +48,6 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
-
-    #region CheckAppExistsById
-
-    [Fact]
-    public async Task CheckAppExistsById_WithExistingEntry_ReturnsTrue()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.CheckAppExistsById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007")).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CheckAppExistsById_WithNonExistingEntry_ReturnsFalse()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.CheckAppExistsById(Guid.NewGuid()).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
 
     #region GetOfferProviderDetailsAsync
 
@@ -1178,6 +1147,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Theory]
     [InlineData(new[] { OfferStatusId.ACTIVE }, OfferSorting.NameDesc, null, "en")]
     [InlineData(new[] { OfferStatusId.ACTIVE }, OfferSorting.NameAsc, null, "en")]
+    [InlineData(new[] { OfferStatusId.ACTIVE }, null, null, "en")]
     public async Task GetAllInReviewStatusServiceAsync_ReturnsExpectedResult(IEnumerable<OfferStatusId> statusids, OfferSorting? sorting, string? serviceName, string languagename)
     {
         // Arrange
@@ -1188,7 +1158,6 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Data.Should().NotBeEmpty();
         result!.Data.Should().HaveCount(4);
         if (sorting == OfferSorting.NameAsc)
         {
@@ -1207,12 +1176,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllInReviewStatusServiceAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, OfferSorting.NameAsc, null, "en", Constants.DefaultLanguage)(0, 10).ConfigureAwait(false);
+        var result = await sut.GetAllInReviewStatusServiceAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, OfferSorting.DateDesc, null, "en", Constants.DefaultLanguage)(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Data.Should().NotBeEmpty()
-            .And.HaveCount(4)
+        result!.Data.Should().HaveCount(4)
             .And.StartWith(new InReviewServiceData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "Consulting Service - Data Readiness", OfferStatusId.ACTIVE, "Catena-X", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."));
     }
 

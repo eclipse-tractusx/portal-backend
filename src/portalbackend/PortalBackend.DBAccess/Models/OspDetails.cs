@@ -25,5 +25,7 @@ public record OspDetails
     string CallbackUrl,
     string AuthUrl,
     string ClientId,
-    byte[] ClientSecret
+    byte[] ClientSecret,
+    byte[]? InitializationVector,
+    int EncryptionMode
 );

@@ -261,11 +261,11 @@ public class ChecklistCreationServiceTests
             ApplicationChecklistEntryTypeId.CLEARING_HOUSE
         };
         A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithBpnId))
-            .ReturnsLazily(() => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>("testbpn", new List<ApplicationChecklistEntryTypeId>()));
+            .Returns(("testbpn", Enumerable.Empty<ApplicationChecklistEntryTypeId>()));
         A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithoutBpnId))
-            .ReturnsLazily(() => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>(null, new List<ApplicationChecklistEntryTypeId>()));
+            .Returns((null, Enumerable.Empty<ApplicationChecklistEntryTypeId>()));
         A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithChecklist))
-            .ReturnsLazily(() => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>("123", checklist));
+            .Returns(("123", checklist));
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
