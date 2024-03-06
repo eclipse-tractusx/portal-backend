@@ -23,40 +23,28 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
+public class UserBusinessPartnerRepository(PortalDbContext dbContext)
+    : IUserBusinessPartnerRepository
 {
-    private readonly PortalDbContext _dbContext;
-
-    public UserBusinessPartnerRepository(PortalDbContext portalDbContext)
-    {
-        _dbContext = portalDbContext;
-    }
-
-    public CompanyUserAssignedBusinessPartner CreateCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
-    {
-        if (businessPartnerNumber.Length > 20)
-        {
-            throw new ArgumentException($"{nameof(businessPartnerNumber)} {businessPartnerNumber} exceeds maximum length of 20 characters", nameof(businessPartnerNumber));
-        }
-        return _dbContext.CompanyUserAssignedBusinessPartners.Add(
+    public CompanyUserAssignedBusinessPartner CreateCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
+        dbContext.CompanyUserAssignedBusinessPartners.Add(
             new CompanyUserAssignedBusinessPartner(
                 companyUserId,
                 businessPartnerNumber
             )).Entity;
-    }
 
     public CompanyUserAssignedBusinessPartner DeleteCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
-        _dbContext.Remove(
+        dbContext.Remove(
             new CompanyUserAssignedBusinessPartner(
                 companyUserId,
                 businessPartnerNumber
             )).Entity;
 
     public void DeleteCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserAssignedBusinessPartnerIds) =>
-        _dbContext.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
+        dbContext.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
 
     public Task<(bool IsValidUser, bool IsAssignedBusinessPartner, bool IsSameCompany)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, Guid userCompanyId, string businessPartnerNumber) =>
-        _dbContext.CompanyUsers
+        dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new ValueTuple<bool, bool, bool>(
