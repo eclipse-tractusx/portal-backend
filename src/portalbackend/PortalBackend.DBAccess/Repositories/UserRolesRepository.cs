@@ -93,7 +93,8 @@ public class UserRolesRepository : IUserRolesRepository
                     Id = userRole.Id,
                     Text = userRole.UserRoleText
                 })
-                .AsAsyncEnumerable())
+                .AsAsyncEnumerable()
+                .ConfigureAwait(false))
             {
                 yield return new UserRoleData(
                     userRoleData.Id,

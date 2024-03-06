@@ -140,7 +140,7 @@ public partial class ProvisioningManager
         foreach (var mapper in await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
         {
             yield return new IdentityProviderMapperModel(
-                mapper?.Id ?? throw new KeycloakInvalidResponseException("mapper.Id is null"),
+                mapper.Id ?? throw new KeycloakInvalidResponseException("mapper.Id is null"),
                 mapper.Name ?? throw new KeycloakInvalidResponseException("mapper.Name is null"),
                 KeycloakIdentityProviderMapperTypeToEnum(mapper._IdentityProviderMapper ?? throw new KeycloakInvalidResponseException("mapper._IdentityProviderMapper is null")),
                 mapper.Config ?? throw new KeycloakInvalidResponseException("mapper.Config is null")
