@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +19,7 @@
 
 using Flurl;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
@@ -75,7 +75,7 @@ public partial class ProvisioningManager
     private async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, OpenIDConfiguration config)
     {
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-        identityProvider.Config.AuthorizationUrl = config.AuthorizationEndpoint.ToString();
+        (identityProvider.Config ?? throw new KeycloakInvalidResponseException("identityProvider.Config is null")).AuthorizationUrl = config.AuthorizationEndpoint.ToString();
         identityProvider.Config.TokenUrl = config.TokenEndpoint.ToString();
         identityProvider.Config.LogoutUrl = config.EndSessionEndpoint.ToString();
         identityProvider.Config.JwksUrl = config.JwksUri.ToString();
@@ -140,10 +140,10 @@ public partial class ProvisioningManager
         foreach (var mapper in await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
         {
             yield return new IdentityProviderMapperModel(
-                mapper.Id,
-                mapper.Name,
-                KeycloakIdentityProviderMapperTypeToEnum(mapper._IdentityProviderMapper),
-                mapper.Config
+                mapper.Id ?? throw new KeycloakInvalidResponseException("mapper.Id is null"),
+                mapper.Name ?? throw new KeycloakInvalidResponseException("mapper.Name is null"),
+                KeycloakIdentityProviderMapperTypeToEnum(mapper._IdentityProviderMapper ?? throw new KeycloakInvalidResponseException("mapper._IdentityProviderMapper is null")),
+                mapper.Config ?? throw new KeycloakInvalidResponseException("mapper.Config is null")
             );
         }
     }
@@ -155,7 +155,7 @@ public partial class ProvisioningManager
     {
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         identityProvider.Enabled = true;
-        identityProvider.Config.HideOnLoginPage = "false";
+        (identityProvider.Config ?? throw new KeycloakInvalidResponseException("identityProvider.Config is null")).HideOnLoginPage = "false";
         await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
     }
 

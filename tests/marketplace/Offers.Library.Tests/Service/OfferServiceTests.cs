@@ -2161,7 +2161,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
-            .Returns<(bool, bool, ProviderSubscriptionDetailData)>(default);
+            .Returns<(bool, bool, ProviderSubscriptionDetailData?)>(default);
 
         // Act
         async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, companyAdminRoles).ConfigureAwait(false);
@@ -2268,7 +2268,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
-            .Returns<(bool, bool, AppProviderSubscriptionDetail)>(default);
+            .Returns<(bool, bool, AppProviderSubscriptionDetail?)>(default);
 
         // Act
         async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);
@@ -2382,7 +2382,7 @@ public class OfferServiceTests
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
-            .Returns<(bool, bool, SubscriberSubscriptionDetailData)>(default);
+            .Returns<(bool, bool, SubscriberSubscriptionDetailData?)>(default);
 
         // Act
         async Task Act() => await _sut.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles).ConfigureAwait(false);

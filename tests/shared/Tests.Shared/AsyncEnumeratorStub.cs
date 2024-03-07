@@ -20,7 +20,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
-public class AsyncEnumeratorStub<T> : IAsyncEnumerator<T>
+public sealed class AsyncEnumeratorStub<T> : IAsyncEnumerator<T>
 {
     private readonly IEnumerator<T> _inner;
 

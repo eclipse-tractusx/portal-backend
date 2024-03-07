@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -59,15 +58,11 @@ public class TemplateManager : ITemplateManager
 
     private static async Task<string> GetTemplateStringFromType(EmailTemplateType type)
     {
-        var path = typeof(EmailTemplateType)?
-            .GetMember(type.ToString())?
-            .FirstOrDefault(m => m.DeclaringType == typeof(EmailTemplateType))?
-            .GetCustomAttribute<PathAttribute>()?.Path;
-
-        if (path == null)
-        {
-            throw new NoSuchTemplateException(type.ToString());
-        }
+        var path =
+            Array.Find(
+                typeof(EmailTemplateType).GetMember(type.ToString()) ?? throw new NoSuchTemplateException(type.ToString()),
+                m => m.DeclaringType == typeof(EmailTemplateType))?
+            .GetCustomAttribute<PathAttribute>()?.Path ?? throw new NoSuchTemplateException(type.ToString());
 
         try
         {

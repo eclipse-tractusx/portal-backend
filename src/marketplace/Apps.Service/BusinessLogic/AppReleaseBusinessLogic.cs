@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -239,7 +238,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
             return appId;
         }
-        catch (Exception exception) when (exception?.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
+        catch (Exception exception) when (exception.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
         {
             throw new ControllerArgumentException($"invalid language code or UseCaseId specified");
         }

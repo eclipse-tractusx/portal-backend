@@ -46,7 +46,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 x.Id == certificateTypeId);
 
     /// <inheritdoc />
-    public CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields)
+    public CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null)
     {
         var companyCertificate = new CompanyCertificate(Guid.NewGuid(), DateTimeOffset.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
         setOptionalFields?.Invoke(companyCertificate);
@@ -120,7 +120,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
 
     public void AttachAndModifyCompanyCertificateDetails(Guid id, Action<CompanyCertificate>? initialize, Action<CompanyCertificate> updateFields)
     {
-        var entity = new CompanyCertificate(id, default, default, default, default, default);
+        var entity = new CompanyCertificate(id, default, default, default, Guid.Empty, Guid.Empty);
         initialize?.Invoke(entity);
         _context.Attach(entity);
         updateFields.Invoke(entity);

@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -37,7 +38,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
@@ -204,29 +204,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<IEnumerable<CompanyApplicationDeclineData>> GetApplicationsDeclineData()
     {
-        string CreateNameString(string? firstName, string? lastName, string? email)
-        {
-            var sb = new StringBuilder();
-            if (firstName != null)
-            {
-                sb.Append(firstName);
-            }
-
-            if (lastName != null)
-            {
-                sb.AppendFormat(sb.Length == 0 ? "{0}" : ", {0}", lastName);
-            }
-
-            if (email != null)
-            {
-                sb.AppendFormat(sb.Length == 0 ? "{0}" : " ({0})", email);
-            }
-
-            return sb.Length == 0 ? "unknown user" : sb.ToString();
-        }
-
         var data = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsDeclineData(_identityData.IdentityId, _settings.ApplicationDeclineStatusIds).ConfigureAwait(false);
-        var user = CreateNameString(data.FirstName, data.LastName, data.Email);
+        var user = NameHelper.CreateNameString(data.FirstName, data.LastName, data.Email, "unknown user");
 
         return data.Applications.Select(application =>
             new CompanyApplicationDeclineData(
@@ -234,7 +213,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 application.ApplicationStatusId,
                 user,
                 data.CompanyName,
-                application.InvitedUsers.Select(user => CreateNameString(user.FirstName, user.LastName, user.Email))
+                application.InvitedUsers.Select(user => NameHelper.CreateNameString(user.FirstName, user.LastName, user.Email, "unknown user"))
         ));
     }
 

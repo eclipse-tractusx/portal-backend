@@ -34,11 +34,7 @@ public static class FlurlErrorHandler
 
             if (isDevelopment)
             {
-                var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
-                var requestBody = call.RequestBody == null ? "\n" : call.RequestBody + "\n\n";
-                var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
-                var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
-                logger.LogError(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);
+                LogDevelopmentError(logger, call);
             }
             else
             {
@@ -47,21 +43,23 @@ public static class FlurlErrorHandler
 
             if (call.HttpResponseMessage != null)
             {
-                switch (call.HttpResponseMessage.StatusCode)
+                throw call.HttpResponseMessage.StatusCode switch
                 {
-                    case HttpStatusCode.NotFound:
-                        throw new KeycloakEntityNotFoundException(message, call.Exception);
-
-                    case HttpStatusCode.Conflict:
-                        throw new KeycloakEntityConflictException(message, call.Exception);
-
-                    case HttpStatusCode.BadRequest:
-                        throw new ArgumentException(message, call.Exception);
-
-                    default:
-                        throw new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode);
-                }
+                    HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
+                    HttpStatusCode.Conflict => new KeycloakEntityConflictException(message, call.Exception),
+                    HttpStatusCode.BadRequest => new ArgumentException(message, call.Exception),
+                    _ => new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode),
+                };
             }
         });
+    }
+
+    private static void LogDevelopmentError(ILogger logger, FlurlCall call)
+    {
+        var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
+        var requestBody = call.RequestBody == null ? "\n" : call.RequestBody + "\n\n";
+        var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
+        var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
+        logger.LogError(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);
     }
 }

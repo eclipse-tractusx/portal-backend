@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,18 +17,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using System.Text;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
-public class FakeIdentityService : IIdentityService
+public static class NameHelper
 {
-    private readonly Guid _identityId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
+    public static string CreateNameString(string? firstName, string? lastName, string? email, string fallback)
+    {
+        var sb = new StringBuilder();
+        if (firstName != null)
+        {
+            sb.Append(firstName);
+        }
 
-    /// <inheritdoc />
-    public IIdentityData IdentityData =>
-        new FakeIdentityData(_identityId, IdentityTypeId.COMPANY_USER, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        if (lastName != null)
+        {
+            sb.AppendFormat(sb.Length == 0 ? "{0}" : ", {0}", lastName);
+        }
 
-    private sealed record FakeIdentityData(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId) : IIdentityData;
+        if (email != null)
+        {
+            sb.AppendFormat(sb.Length == 0 ? "{0}" : " ({0})", email);
+        }
+
+        return sb.Length == 0 ? fallback : sb.ToString();
+    }
 }

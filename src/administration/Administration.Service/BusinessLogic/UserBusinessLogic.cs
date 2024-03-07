@@ -433,9 +433,9 @@ public class UserBusinessLogic : IUserBusinessLogic
         var companyId = _identityData.CompanyId;
         var iamIdpAlias = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasDataUntrackedAsync(companyId);
 
+        bool success;
         await foreach (var accountData in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserAccountDataUntrackedAsync(userIds, companyId).ConfigureAwait(false))
         {
-            var success = false;
             try
             {
                 await DeleteUserInternalAsync(iamIdpAlias, accountData).ConfigureAwait(false);
@@ -443,6 +443,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
             catch (Exception e)
             {
+                success = false;
                 if (iamIdpAlias == null)
                 {
                     _logger.LogError(e, "Error while deleting companyUser {userId}", accountData.CompanyUserId);

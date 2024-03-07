@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -26,7 +25,7 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
 
-public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<HealthCheckExtensionsTests>>
+public class HealthCheckExtensionsTests
 {
     private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IFixture _fixture;

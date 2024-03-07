@@ -692,7 +692,8 @@ public class IdentityProviderBusinessLogicTests
         result.Should().Match<IdentityProviderDetails>(x =>
             x.Mappers != null &&
             x.Mappers.Count() == 3 &&
-            x.Enabled == true &&
+            x.Enabled.HasValue &&
+            x.Enabled.Value &&
             x.RedirectUrl == "https://redirect.com/*" &&
             protocol == IamIdentityProviderProtocol.OIDC
                 ? x.DisplayName == "test-oidc" &&

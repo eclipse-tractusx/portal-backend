@@ -195,8 +195,8 @@ public class ServiceControllerTest
     {
         //Arrange
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
-        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5);
-        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5).ToImmutableArray();
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Length, 1, 0, data.Length), data);
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._, A<string?>._))
             .Returns(pagination);
 
@@ -234,8 +234,8 @@ public class ServiceControllerTest
     public async Task GetCompanyProvidedServiceStatusDataAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = _fixture.CreateMany<AllOfferStatusData>(5);
-        var paginationResponse = new Pagination.Response<AllOfferStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        var data = _fixture.CreateMany<AllOfferStatusData>(5).ToImmutableArray();
+        var paginationResponse = new Pagination.Response<AllOfferStatusData>(new Pagination.Metadata(data.Length, 1, 0, data.Length), data);
         A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15, null, null, null))
             .Returns(paginationResponse);
 
@@ -305,7 +305,7 @@ public class ServiceControllerTest
     {
         //Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
-        var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Length, 1, 0, data.Length), data);
         A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._))
             .Returns(pagination);
 

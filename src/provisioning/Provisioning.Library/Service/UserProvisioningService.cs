@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -208,7 +209,7 @@ public class UserProvisioningService : IUserProvisioningService
             throw new ConflictException($"assertion failed: companyName of company {company.CompanyId} should never be null here");
         }
 
-        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
+        var createdByName = NameHelper.CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, "Dear User");
 
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, identityProvider.IdpAlias, identityProviderId, identityProvider.IsSharedIdp), createdByName);
     }
@@ -239,31 +240,10 @@ public class UserProvisioningService : IUserProvisioningService
             throw new ConflictException($"user {companyUserId} is associated with more than one shared idp");
         }
 
-        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
+        var createdByName = NameHelper.CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, "Dear User");
 
         var idpAlias = idpAliase.First();
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAlias.Alias, idpAlias.IdentityProviderId, true), createdByName);
-    }
-
-    private static string CreateNameString(string? firstName, string? lastName, string? email)
-    {
-        var sb = new StringBuilder();
-        if (firstName != null)
-        {
-            sb.Append(firstName);
-        }
-
-        if (lastName != null)
-        {
-            sb.AppendFormat(sb.Length == 0 ? "{0}" : ", {0}", lastName);
-        }
-
-        if (email != null)
-        {
-            sb.AppendFormat(sb.Length == 0 ? "{0}" : " ({0})", email);
-        }
-
-        return sb.Length == 0 ? "Dear User" : sb.ToString();
     }
 
     public Task<string> GetIdentityProviderDisplayName(string idpAlias) =>
