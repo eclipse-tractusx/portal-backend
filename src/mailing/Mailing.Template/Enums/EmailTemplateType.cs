@@ -116,7 +116,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
         /// <summary>
         /// Email template for new users being created on own idp
         /// </summary>
-        [Path("new_user_account_ownidp.html")]
+        [Path("new_user_account_externalIdP.html")]
         NewUserAccountOwnIdp,
 
         /// <summary>
