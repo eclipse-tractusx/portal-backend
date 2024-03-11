@@ -51,7 +51,7 @@ public class OfferSubscriptionServiceTests
     private readonly Guid _validSubscriptionId;
     private readonly Guid _newOfferSubscriptionId;
     private readonly Guid _userRoleId;
-    private readonly IEnumerable<Guid> _offerAgreementIds;
+    private readonly IEnumerable<AgreementStatusData> _agreementStatusDatas;
     private readonly IEnumerable<OfferAgreementConsentData> _validConsentData;
     private readonly IFixture _fixture;
     private readonly IAgreementRepository _agreementRepository;
@@ -89,8 +89,8 @@ public class OfferSubscriptionServiceTests
         _validSubscriptionId = _fixture.Create<Guid>();
         _newOfferSubscriptionId = _fixture.Create<Guid>();
         _userRoleId = _fixture.Create<Guid>();
-        _offerAgreementIds = _fixture.CreateMany<Guid>().ToImmutableArray();
-        _validConsentData = _offerAgreementIds.Select(x => new OfferAgreementConsentData(x, ConsentStatusId.ACTIVE));
+        _agreementStatusDatas = _fixture.CreateMany<Guid>().Select(x => new AgreementStatusData(x, AgreementStatusId.ACTIVE)).ToImmutableArray();
+        _validConsentData = _agreementStatusDatas.Select(x => new OfferAgreementConsentData(x.AgreementId, ConsentStatusId.ACTIVE));
         _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
@@ -388,7 +388,7 @@ public class OfferSubscriptionServiceTests
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("offerAgreementConsentData");
         ex.Message.Should().EndWith($"must be given for offer {_existingOfferId} (Parameter 'offerAgreementConsentData')");
-        ex.Message.Should().ContainAll(_offerAgreementIds.Select(id => id.ToString()));
+        ex.Message.Should().ContainAll(_agreementStatusDatas.Select(x => x.AgreementId).Select(id => id.ToString()));
     }
 
     [Theory]
@@ -424,7 +424,7 @@ public class OfferSubscriptionServiceTests
             new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })} : new[]{
             new UserRoleConfig("portal", new [] { "Service Manager", "Sales Manager" })};
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
-        var consentData = _offerAgreementIds.Select(id => new OfferAgreementConsentData(id, ConsentStatusId.INACTIVE)).ToImmutableArray();
+        var consentData = _agreementStatusDatas.Select(id => new OfferAgreementConsentData(id.AgreementId, ConsentStatusId.INACTIVE)).ToImmutableArray();
 
         // Act
         async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, consentData, offerTypeId, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles).ConfigureAwait(false);
@@ -433,7 +433,7 @@ public class OfferSubscriptionServiceTests
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("offerAgreementConsentData");
         ex.Message.Should().EndWith($"must be given for offer {_existingOfferId} (Parameter 'offerAgreementConsentData')");
-        ex.Message.Should().ContainAll(_offerAgreementIds.Select(id => id.ToString()));
+        ex.Message.Should().ContainAll(_agreementStatusDatas.Select(x => x.AgreementId).Select(id => id.ToString()));
     }
 
     [Theory]
@@ -594,9 +594,9 @@ public class OfferSubscriptionServiceTests
             .Returns<(Guid companyId, OfferSubscription? offerSubscription)>(default);
 
         A.CallTo(() => _agreementRepository.GetAgreementIdsForOfferAsync(A<Guid>.That.Matches(id => id == _existingOfferId || id == _existingOfferWithFailingAutoSetupId || id == _existingOfferWithoutDetailsFilled || id == _existingOfferIdWithoutProviderEmail)))
-            .Returns(_offerAgreementIds.ToAsyncEnumerable());
+            .Returns(_agreementStatusDatas.ToAsyncEnumerable());
         A.CallTo(() => _agreementRepository.GetAgreementIdsForOfferAsync(A<Guid>.That.Not.Matches(id => id == _existingOfferId || id == _existingOfferWithFailingAutoSetupId || id == _existingOfferWithoutDetailsFilled || id == _existingOfferIdWithoutProviderEmail)))
-            .Returns(_fixture.CreateMany<Guid>().ToAsyncEnumerable());
+            .Returns(_fixture.CreateMany<AgreementStatusData>().ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(new[] { Guid.NewGuid() }.ToAsyncEnumerable());

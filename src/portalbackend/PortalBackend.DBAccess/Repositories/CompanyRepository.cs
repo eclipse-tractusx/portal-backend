@@ -234,7 +234,8 @@ public class CompanyRepository : ICompanyRepository
                         assigned.Agreement!.Name,
                         assigned.Agreement!.DocumentId,
                         assigned.Agreement.Consents.Where(consent => consent.CompanyId == companyId).OrderByDescending(consent => consent.DateCreated).Select(consent => consent.ConsentStatusId).FirstOrDefault(),
-                        assigned.Agreement.AgreementLink
+                        assigned.Agreement.AgreementLink,
+                        assigned.Agreement.Mandatory
                     ))))
             .AsAsyncEnumerable();
 

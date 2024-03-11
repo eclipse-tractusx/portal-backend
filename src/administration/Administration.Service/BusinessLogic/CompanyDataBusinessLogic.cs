@@ -164,7 +164,8 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                     x.ConsentStatus == 0
                         ? null
                         : x.ConsentStatus,
-                    x.AgreementLink
+                    x.AgreementLink,
+                    x.Mandatory
                 ))
             );
         }
