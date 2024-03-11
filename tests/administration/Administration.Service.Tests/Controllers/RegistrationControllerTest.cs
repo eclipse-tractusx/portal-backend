@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
@@ -38,12 +39,12 @@ public class RegistrationControllerTest
     private readonly IRegistrationBusinessLogic _logic;
     private readonly RegistrationController _controller;
     private readonly IFixture _fixture;
+
     public RegistrationControllerTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-        .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
+
         _identity = A.Fake<IIdentityData>();
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
@@ -261,5 +262,46 @@ public class RegistrationControllerTest
 
         //Assert
         A.CallTo(() => _logic.GetDocumentAsync(id)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ProcessDimResponse_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var data = _fixture.Create<DimWalletData>();
+
+        //Act
+        await _controller.ProcessDimResponse("bpn", data, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.ProcessDimResponseAsync("bpn", data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateDimWallet_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerCreateDimWallet(applicationId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerValidateDid_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerValidateDid(applicationId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

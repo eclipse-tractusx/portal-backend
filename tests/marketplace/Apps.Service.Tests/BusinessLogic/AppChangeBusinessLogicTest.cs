@@ -71,9 +71,7 @@ public class AppChangeBusinessLogicTest
     public AppChangeBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();

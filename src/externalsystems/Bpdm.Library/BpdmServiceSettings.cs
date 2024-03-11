@@ -30,4 +30,6 @@ public class BpdmServiceSettings : KeyVaultAuthSettings
 {
     [Required(AllowEmptyStrings = false)]
     public string BaseAddress { get; set; } = null!;
+
+    public bool UseDimWallet { get; set; }
 }

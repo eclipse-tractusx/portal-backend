@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,21 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class OnboardingServiceProviderDetail
+public class OnboardingServiceProviderDetail : IBaseEntity
 {
-    public OnboardingServiceProviderDetail()
+    public OnboardingServiceProviderDetail(Guid id, Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode)
     {
-        CallbackUrl = null!;
-        AuthUrl = null!;
-        ClientId = null!;
-        ClientSecret = null!;
-    }
-
-    public OnboardingServiceProviderDetail(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode)
-        : this()
-    {
+        Id = id;
         CompanyId = companyId;
         CallbackUrl = callbackUrl;
         AuthUrl = authUrl;
@@ -42,7 +35,9 @@ public class OnboardingServiceProviderDetail
         EncryptionMode = encryptionMode;
     }
 
-    public Guid CompanyId { get; set; }
+    public Guid Id { get; private set; }
+
+    public Guid CompanyId { get; private set; }
 
     public string CallbackUrl { get; set; }
 

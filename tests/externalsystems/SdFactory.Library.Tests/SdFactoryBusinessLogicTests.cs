@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
@@ -60,9 +61,7 @@ public class SdFactoryBusinessLogicTests
     public SdFactoryBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _process = _fixture.Create<Process>();
 

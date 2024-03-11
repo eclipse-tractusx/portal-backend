@@ -850,11 +850,7 @@ public class OfferService : IOfferService
             throw new ForbiddenException($"Company {companyId} is not part of the {offerCompanyRole} company");
         }
 
-        if (details == null)
-        {
-            throw new UnexpectedConditionException($"details for offer {offerId}, subscription {subscriptionId}, company {companyId}, offerType {offerTypeId}, should never be null here");
-        }
-        return details;
+        return details ?? throw new UnexpectedConditionException($"details for offer {offerId}, subscription {subscriptionId}, company {companyId}, offerType {offerTypeId}, should never be null here");
     }
 
     private async Task<IEnumerable<Guid>> ValidateRoleData(IEnumerable<UserRoleConfig> userRoles)

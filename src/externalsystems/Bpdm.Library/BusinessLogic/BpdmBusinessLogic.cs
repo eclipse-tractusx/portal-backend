@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -31,11 +32,13 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IBpdmService _bpdmService;
+    private readonly BpdmServiceSettings _settings;
 
-    public BpdmBusinessLogic(IPortalRepositories portalRepositories, IBpdmService bpdmService)
+    public BpdmBusinessLogic(IPortalRepositories portalRepositories, IBpdmService bpdmService, IOptions<BpdmServiceSettings> options)
     {
         _portalRepositories = portalRepositories;
         _bpdmService = bpdmService;
+        _settings = options.Value;
     }
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> PushLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
@@ -155,9 +158,11 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
-                : new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET },
+                : new[] { CreateWalletStep() },
             new[] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL },
             true,
             null);
     }
+
+    private ProcessStepTypeId CreateWalletStep() => _settings.UseDimWallet ? ProcessStepTypeId.CREATE_DIM_WALLET : ProcessStepTypeId.CREATE_IDENTITY_WALLET;
 }

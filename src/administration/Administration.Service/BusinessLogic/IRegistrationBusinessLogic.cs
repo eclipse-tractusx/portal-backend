@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -54,6 +55,14 @@ public interface IRegistrationBusinessLogic
     /// <param name="data">the response data</param>
     /// <param name="cancellationToken">cancellation token</param>
     Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Processes the dim response
+    /// </summary>
+    /// <param name="bpn">the companies business partner number</param>
+    /// <param name="data">the response data</param>
+    /// <param name="cancellationToken"></param>
+    Task ProcessDimResponseAsync(string bpn, DimWalletData data, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the checklist details for the given application

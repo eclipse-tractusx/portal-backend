@@ -459,11 +459,43 @@ public class ApplicationRepository : IApplicationRepository
                 x.CompanyId,
                 x.Company!.Name,
                 x.Company.NetworkRegistration!.ProcessId,
-                x.Company.IdentityProviders.Select(idp => new ValueTuple<Guid, string, IdentityProviderTypeId, IEnumerable<Guid>>(idp.Id, idp.IamIdentityProvider!.IamIdpAlias, idp.IdentityProviderTypeId, idp.CompanyUserAssignedIdentityProviders.Select(assigned => assigned.CompanyUserId))),
-                x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER && i.UserStatusId != UserStatusId.DELETED).Select(i => i.Id)))
+                x.Company.IdentityProviders.Select(idp => new ValueTuple<Guid, string, IdentityProviderTypeId, IEnumerable<Guid>>(
+                    idp.Id,
+                    idp.IamIdentityProvider!.IamIdpAlias,
+                    idp.IdentityProviderTypeId,
+                    idp.CompanyUserAssignedIdentityProviders.Select(assigned => assigned.CompanyUserId))),
+                x.Company.Identities
+                    .Where(i =>
+                        i.IdentityTypeId == IdentityTypeId.COMPANY_USER &&
+                        i.UserStatusId != UserStatusId.DELETED)
+                    .Select(i => i.Id)))
             .SingleOrDefaultAsync();
 
     public Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId) =>
         _dbContext.CompanyApplications
             .AnyAsync(application => application.Id == applicationId && application.CompanyId == companyId);
+
+    public Task<(bool Exists, string? Did, IEnumerable<DateTimeOffset> ProcessStepsDateCreated)> GetDidApplicationId(Guid applicationId) =>
+        _dbContext.CompanyApplications
+            .Where(ca => ca.Id == applicationId)
+            .Select(x => new ValueTuple<bool, string?, IEnumerable<DateTimeOffset>>(
+                true,
+                x.Company!.CompanyWalletData == null
+                    ? null
+                    : x.Company!.CompanyWalletData!.Did,
+                x.ChecklistProcess!.ProcessSteps
+                    .Where(ps =>
+                        ps.ProcessStepTypeId == ProcessStepTypeId.VALIDATE_DID_DOCUMENT &&
+                        ps.ProcessStepStatusId == ProcessStepStatusId.TODO)
+                    .Select(ps => ps.DateCreated)))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId)> GetCompanyIdForSubmittedApplication(Guid applicationId) =>
+        _dbContext.CompanyApplications
+            .Where(a => a.Id == applicationId)
+            .Select(a => new ValueTuple<bool, Guid, CompanyApplicationStatusId>(
+                true,
+                a.CompanyId,
+                a.ApplicationStatusId))
+            .SingleOrDefaultAsync();
 }

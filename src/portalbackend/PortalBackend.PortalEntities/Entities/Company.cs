@@ -80,12 +80,13 @@ public class Company : IBaseEntity
     public virtual NetworkRegistration? NetworkRegistration { get; set; }
     public virtual OnboardingServiceProviderDetail? OnboardingServiceProviderDetail { get; set; }
     public virtual ProviderCompanyDetail? ProviderCompanyDetail { get; private set; }
+    public virtual CompanyStatus? CompanyStatus { get; set; }
+    public virtual Document? SelfDescriptionDocument { get; set; }
+    public virtual CompanyWalletData? CompanyWalletData { get; set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Offer> BoughtOffers { get; private set; }
     public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }
     public virtual ICollection<OfferSubscription> OfferSubscriptions { get; private set; }
-    public virtual CompanyStatus? CompanyStatus { get; set; }
-    public virtual Document? SelfDescriptionDocument { get; set; }
     public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
     public virtual ICollection<Identity> Identities { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }

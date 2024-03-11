@@ -1,5 +1,5 @@
 /********************************************************************************
-  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -690,19 +691,23 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task CreateNotification_ReturnsExpectedResult()
     {
         // Arrange
+        var offerSubscriptionId = new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba");
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = sut.CreateOfferSubscriptionProcessData(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), "https://www.test.de");
+        var results = sut.CreateOfferSubscriptionProcessData(offerSubscriptionId, "https://www.test.de");
 
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         results.OfferUrl.Should().Be("https://www.test.de");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<OfferSubscriptionProcessData>().Which.OfferUrl.Should().Be("https://www.test.de");
+        changedEntries.Should().ContainSingle()
+            .Which.Should().Match<EntityEntry>(x =>
+                x.State == EntityState.Added &&
+                x.Entity.GetType() == typeof(OfferSubscriptionProcessData) &&
+                ((OfferSubscriptionProcessData)x.Entity).OfferSubscriptionId == offerSubscriptionId &&
+                ((OfferSubscriptionProcessData)x.Entity).OfferUrl == "https://www.test.de");
     }
 
     #endregion
@@ -713,19 +718,21 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOfferSubscriptionProcessData_WithExisting_RemovesOfferSubscriptionProcessData()
     {
         // Arrange
+        var id = Guid.NewGuid();
         var (sut, dbContext) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.RemoveOfferSubscriptionProcessData(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
+        sut.RemoveOfferSubscriptionProcessData(id);
 
         // Assert
         var changeTracker = dbContext.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        var changedEntity = changedEntries.Single();
-        changedEntity.State.Should().Be(EntityState.Deleted);
+        changedEntries.Should().ContainSingle()
+            .Which.Should().Match<EntityEntry>(x =>
+                x.State == EntityState.Deleted &&
+                x.Entity.GetType() == typeof(OfferSubscriptionProcessData) &&
+                ((OfferSubscriptionProcessData)x.Entity).Id == id);
     }
 
     #endregion

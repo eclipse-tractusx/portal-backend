@@ -789,8 +789,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCallbackEditData(_validCompanyId, companyRoleId).ConfigureAwait(false);
 
         // Assert
-        result.ospDetails.Should().BeNull();
-        result.hasCompanyRole.Should().Be(hasRole);
+        result.OnboardingServiceProviderDetailId.Should().BeNull();
+        result.OspDetails.Should().BeNull();
+        result.HasCompanyRole.Should().Be(hasRole);
     }
 
     [Fact]
@@ -804,9 +805,14 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCallbackEditData(_validOspCompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER).ConfigureAwait(false);
 
         // Assert
-        result.ospDetails.Should().NotBeNull();
-        result.ospDetails!.CallbackUrl.Should().Be(url);
-        result.hasCompanyRole.Should().BeTrue();
+        result.OnboardingServiceProviderDetailId.Should().Be(new Guid("6e293a28-da95-432a-b10c-9cec44de09e9"));
+        result.OspDetails.Should().NotBeNull()
+            .And.Match<OspDetails>(x =>
+                x.CallbackUrl == url &&
+                x.EncryptionMode == 1 &&
+                x.InitializationVector == null
+            );
+        result.HasCompanyRole.Should().BeTrue();
     }
 
     #endregion
@@ -817,11 +823,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyOnboardingServiceProvider_Changed_ReturnsExpectedResult()
     {
         // Arrange
+        var onboardingServiceProviderDetailId = Guid.NewGuid();
         const string url = "https://service-url.com/new";
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.AttachAndModifyOnboardingServiceProvider(_validOspCompanyId,
+        sut.AttachAndModifyOnboardingServiceProvider(onboardingServiceProviderDetailId,
             detail => { detail.CallbackUrl = null!; },
             detail => { detail.CallbackUrl = url; });
 
@@ -829,23 +836,23 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
-        var entry = changedEntries.Single();
-        entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
-        entry.State.Should().Be(EntityState.Modified);
+        changedEntries.Should().ContainSingle()
+            .Which.Should().Match<EntityEntry>(x =>
+                x.State == EntityState.Modified &&
+                x.Entity.GetType() == typeof(OnboardingServiceProviderDetail) &&
+                ((OnboardingServiceProviderDetail)x.Entity).CallbackUrl == url);
     }
 
     [Fact]
     public async Task AttachAndModifyOnboardingServiceProvider_Unchanged_ReturnsExpectedResult()
     {
         // Arrange
+        var onboardingServiceProviderDetailId = Guid.NewGuid();
         const string url = "https://service-url.com/new";
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.AttachAndModifyOnboardingServiceProvider(_validOspCompanyId,
+        sut.AttachAndModifyOnboardingServiceProvider(onboardingServiceProviderDetailId,
             detail => { detail.CallbackUrl = url; },
             detail => { detail.CallbackUrl = url; });
 
@@ -853,11 +860,11 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeFalse();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        var entry = changedEntries.Single();
-        entry.Entity.Should().BeOfType<OnboardingServiceProviderDetail>().Which.CallbackUrl.Should().Be(url);
-        entry.State.Should().Be(EntityState.Unchanged);
+        changedEntries.Should().ContainSingle()
+            .Which.Should().Match<EntityEntry>(x =>
+                x.State == EntityState.Unchanged &&
+                x.Entity.GetType() == typeof(OnboardingServiceProviderDetail)
+            );
     }
 
     #endregion

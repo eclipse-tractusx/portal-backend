@@ -204,6 +204,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyRoleCollectionRolesView> CompanyRoleCollectionRolesView { get; set; } = default!;
     public virtual DbSet<AgreementStatus> AgreementStatuses { get; set; } = default!;
     public virtual DbSet<AgreementView> AgreementView { get; set; } = default!;
+    public virtual DbSet<CompanyWalletData> CompanyWalletDatas { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -424,15 +425,6 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasAuditV1Triggers<Offer, AuditOffer20231115>();
-        });
-
-        modelBuilder.Entity<OfferSubscriptionProcessData>(entity =>
-        {
-            entity.HasKey(x => x.OfferSubscriptionId);
-
-            entity.HasOne(x => x.OfferSubscription)
-                .WithOne(x => x.OfferSubscriptionProcessData)
-                .HasForeignKey<OfferSubscriptionProcessData>(x => x.OfferSubscriptionId);
         });
 
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>
@@ -874,7 +866,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<IdentityAssignedRole>(entity =>
         {
-            entity.HasKey(e => new { IdentityId = e.IdentityId, e.UserRoleId });
+            entity.HasKey(e => new { e.IdentityId, e.UserRoleId });
 
             entity
                 .HasOne(d => d.UserRole)
@@ -1498,15 +1490,11 @@ public class PortalDbContext : DbContext
                   .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.ServiceAccountId);
         });
 
-        modelBuilder.Entity<OnboardingServiceProviderDetail>(entity =>
-        {
-            entity.HasKey(x => x.CompanyId);
-
-            entity.HasOne(x => x.Company)
-                .WithOne(x => x.OnboardingServiceProviderDetail)
-                .HasForeignKey<OnboardingServiceProviderDetail>(x => x.CompanyId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
+        modelBuilder.Entity<OnboardingServiceProviderDetail>()
+            .HasOne(x => x.Company)
+            .WithOne(x => x.OnboardingServiceProviderDetail)
+            .HasForeignKey<OnboardingServiceProviderDetail>(x => x.CompanyId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
         modelBuilder.Entity<NetworkRegistration>(entity =>
         {
@@ -1548,16 +1536,16 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<Document>(entity =>
-        {
-            entity.HasAuditV1Triggers<Document, AuditDocument20231115>();
-        });
+        modelBuilder.Entity<Document>()
+            .HasAuditV1Triggers<Document, AuditDocument20231115>();
+
         modelBuilder.Entity<AgreementStatus>()
             .HasData(
                 Enum.GetValues(typeof(AgreementStatusId))
                     .Cast<AgreementStatusId>()
                     .Select(e => new AgreementStatus(e))
             );
+
         modelBuilder.Entity<AgreementView>()
             .ToView("agreement_view", "portal")
             .HasNoKey();

@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -197,6 +198,28 @@ public class RegistrationController : ControllerBase
     }
 
     /// <summary>
+    /// Processes the dim middlelayer response
+    /// </summary>
+    /// <param name="responseData">Response data from dim</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/dim/{bpn}
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the clearing_house process is not in status IN_PROGRESS.</response>
+    /// <response code="404">No application found for the bpn.</response>
+    [HttpPost]
+    [Authorize(Roles = "store_didDocument")]
+    [Route("dim/{bpn}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ProcessDimResponse([FromRoute] string bpn, [FromBody] DimWalletData responseData, CancellationToken cancellationToken)
+    {
+        await _logic.ProcessDimResponseAsync(bpn, responseData, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Gets the information of an applications checklist
     /// </summary>
     /// <param name="applicationId">Id of the application the checklist should be provided for</param>
@@ -363,5 +386,49 @@ public class RegistrationController : ControllerBase
     {
         var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
         return File(content, contentType, fileName);
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/{applicationId}/retrigger-create-dim-wallet
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("application/{applicationId}/retrigger-create-dim-wallet")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCreateDimWallet([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/{applicationId}/retrigger-validate-did
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("application/{applicationId}/retrigger-clearinghouse")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerValidateDid([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT).ConfigureAwait(false);
+        return NoContent();
     }
 }

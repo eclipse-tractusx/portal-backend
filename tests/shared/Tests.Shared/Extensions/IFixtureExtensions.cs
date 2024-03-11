@@ -18,9 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using AutoFixture;
 using AutoFixture.Dsl;
 using AutoFixture.Kernel;
 using System.Linq.Expressions;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
@@ -28,6 +30,15 @@ public static class AutoFixtureExtensions
 {
     public static readonly string EmailRegex = @"[a-z]{20}@[a-z]{10}\.[a-z]{2}";
     public static readonly string NameRegex = @"^[a-z]{20}$";
+
+    public static IFixture ConfigureFixture(this IFixture _fixture)
+    {
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Customize<JsonDocument>(x => x.FromFactory(() => JsonDocument.Parse("{}")));
+        return _fixture;
+    }
 
     public static IPostprocessComposer<T> WithEmailPattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
     {

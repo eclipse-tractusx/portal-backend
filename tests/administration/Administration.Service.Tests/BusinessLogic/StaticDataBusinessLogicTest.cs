@@ -18,11 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -36,9 +39,7 @@ public class StaticDataBusinessLogicTest
     public StaticDataBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _companyRepository = A.Fake<ICompanyRepository>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
@@ -157,4 +158,41 @@ public class StaticDataBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         result.Should().HaveCount(3).And.ContainInOrder(data);
     }
+
+    #region GetDidDocument
+
+    [Fact]
+    public async Task GetDidDocument_ReturnsExpectedResult()
+    {
+        // Arrange
+        var jsonDocument = _fixture.Create<JsonDocument>();
+        A.CallTo(() => _companyRepository.GetDidDocumentById("bpn"))
+            .Returns(new ValueTuple<bool, JsonDocument>(true, jsonDocument));
+
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+
+        // Act
+        var result = await sut.GetDidDocument("bpn").ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(jsonDocument);
+    }
+
+    [Fact]
+    public async Task GetDidDocument_WithNotExisting_ThrowsNotFoundException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDidDocumentById("bpn"))
+            .Returns(new ValueTuple<bool, JsonDocument>(false, null!));
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+        async Task Act() => await sut.GetDidDocument("bpn").ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be("The did document does not exist");
+    }
+
+    #endregion
 }

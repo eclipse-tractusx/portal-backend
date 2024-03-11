@@ -18,9 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -59,4 +61,15 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
     /// <inheritdoc />
     public IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes() =>
         _portalRepositories.GetInstance<IStaticDataRepository>().GetCertificateTypes();
+
+    public async Task<JsonDocument> GetDidDocument(string bpn)
+    {
+        var (exists, didDocument) = await _portalRepositories.GetInstance<ICompanyRepository>().GetDidDocumentById(bpn).ConfigureAwait(false);
+        if (!exists)
+        {
+            throw new NotFoundException("The did document does not exist");
+        }
+
+        return didDocument;
+    }
 }
