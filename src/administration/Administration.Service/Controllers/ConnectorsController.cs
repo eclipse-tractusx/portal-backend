@@ -188,7 +188,7 @@ public class ConnectorsController : ControllerBase
     [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     [PublicUrl(CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT)]
-    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string>? bpns = null) =>
         _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
 
     /// <summary>
