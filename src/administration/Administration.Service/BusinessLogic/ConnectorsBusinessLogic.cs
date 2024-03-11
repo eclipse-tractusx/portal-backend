@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -337,11 +338,10 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// <inheritdoc/>
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string>? bpns)
     {
-        bpns = bpns ?? Enumerable.Empty<string>();
-        if (bpns.Any(bpn => !bpnRegex.IsMatch(bpn)))
-        {
-            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_INCORRECT_BPN, new ErrorParameter[] { new("bpns", string.Join(", ", bpns.Where(bpn => !bpnRegex.IsMatch(bpn)))) });
-        }
+        bpns ??= Enumerable.Empty<string>();
+
+        bpns.Where(bpn => !bpnRegex.IsMatch(bpn)).IfAny(invalid =>
+            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_INCORRECT_BPN, new ErrorParameter[] { new("bpns", string.Join(", ", invalid)) }));
 
         return _portalRepositories.GetInstance<IConnectorsRepository>()
             .GetConnectorEndPointDataAsync(bpns.Select(x => x.ToUpper()))
