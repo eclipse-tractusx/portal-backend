@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -66,7 +67,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             throw new ConflictException($"{offerTypeId} providing company is not set");
         }
 
-        var activeAgreements = await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(false);
+        var activeAgreementConsents = await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(false);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerSubscription = offerTypeId == OfferTypeId.APP
@@ -74,7 +75,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, _identityData.IdentityId);
 
         CreateProcessSteps(offerSubscription);
-        CreateConsentsForSubscription(offerSubscription.Id, activeAgreements, companyInformation.CompanyId, _identityData.IdentityId);
+        CreateConsentsForSubscription(offerSubscription.Id, activeAgreementConsents, companyInformation.CompanyId, _identityData.IdentityId);
 
         var content = JsonSerializer.Serialize(new
         {
@@ -181,18 +182,25 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     {
         var agreementData = await _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementIdsForOfferAsync(offerId).ToListAsync().ConfigureAwait(false);
 
-        var invalid = offerAgreementConsentData.Select(data => data.AgreementId).Except(agreementData.Select(x => x.AgreementId));
-        if (invalid.Any())
-        {
-            throw new ControllerArgumentException($"agreements {string.Join(",", invalid)} are not valid for offer {offerId}", nameof(offerAgreementConsentData));
-        }
-        var missing = agreementData.Select(x => x.AgreementId).Except(offerAgreementConsentData.Where(data => data.ConsentStatusId == ConsentStatusId.ACTIVE).Select(data => data.AgreementId));
-        if (missing.Any())
-        {
-            throw new ControllerArgumentException($"consent to agreements {string.Join(",", missing)} must be given for offer {offerId}", nameof(offerAgreementConsentData));
-        }
-        var activeAgreements = offerAgreementConsentData.ExceptBy(agreementData.Where(x => x.AgreementStatusId == AgreementStatusId.INACTIVE).Select(x => x.AgreementId), consent => consent.AgreementId);
-        return activeAgreements;
+        offerAgreementConsentData
+            .ExceptBy(
+                agreementData.Select(x => x.AgreementId),
+                x => x.AgreementId)
+            .IfAny(invalidConsents =>
+                throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsentData)));
+
+        agreementData.Where(x => x.AgreementStatusId == AgreementStatusId.ACTIVE)
+            .ExceptBy(
+                offerAgreementConsentData.Where(data => data.ConsentStatusId == ConsentStatusId.ACTIVE).Select(data => data.AgreementId),
+                x => x.AgreementId)
+            .IfAny(missing =>
+                throw new ControllerArgumentException($"consent to agreements {string.Join(",", missing.Select(x => x.AgreementId))} must be given for offer {offerId}", nameof(offerAgreementConsentData)));
+
+        // ignore consents for inactive agreements
+        return offerAgreementConsentData
+            .ExceptBy(
+                agreementData.Where(x => x.AgreementStatusId == AgreementStatusId.INACTIVE).Select(x => x.AgreementId),
+                consent => consent.AgreementId);
     }
 
     private async Task<CompanyInformationData> ValidateCompanyInformationAsync(Guid companyId, Guid companyUserId)

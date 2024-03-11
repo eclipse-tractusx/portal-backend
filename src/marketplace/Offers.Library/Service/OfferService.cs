@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
@@ -175,15 +176,21 @@ public class OfferService : IOfferService
 
     public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, OfferTypeId offerTypeId)
     {
-        var (dbAgreements, requiredAgreement) = await GetProviderOfferAgreementConsent(offerId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
-        var invalidConsents = offerAgreementConsent.Agreements.ExceptBy(requiredAgreement.Select(x => x.AgreementId), consent => consent.AgreementId);
-        if (invalidConsents.Any())
-        {
-            throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsent));
-        }
+        var (dbAgreements, requiredAgreements) = await GetProviderOfferAgreementConsent(offerId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
 
-        var activeAgreements = offerAgreementConsent.Agreements.ExceptBy(
-            requiredAgreement.Where(x => x.AgreementStatusId == AgreementStatusId.INACTIVE).Select(x => x.AgreementId), consent => consent.AgreementId);
+        offerAgreementConsent.Agreements
+            .ExceptBy(
+                requiredAgreements.Select(x => x.AgreementId),
+                consent => consent.AgreementId)
+            .IfAny(invalidConsents =>
+                throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsent)));
+
+        // ignore consents refering to inactive agreements
+        var activeAgreements = offerAgreementConsent.Agreements
+            .ExceptBy(
+                requiredAgreements.Where(x => x.AgreementStatusId == AgreementStatusId.INACTIVE).Select(x => x.AgreementId),
+                consent => consent.AgreementId);
+
         var ConsentStatusdata = _portalRepositories.GetInstance<IConsentRepository>()
             .AddAttachAndModifyOfferConsents(
                 dbAgreements,

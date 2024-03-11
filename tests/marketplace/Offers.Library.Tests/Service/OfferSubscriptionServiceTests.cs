@@ -89,7 +89,7 @@ public class OfferSubscriptionServiceTests
         _validSubscriptionId = _fixture.Create<Guid>();
         _newOfferSubscriptionId = _fixture.Create<Guid>();
         _userRoleId = _fixture.Create<Guid>();
-        _agreementStatusDatas = _fixture.CreateMany<AgreementStatusData>().ToImmutableArray();
+        _agreementStatusDatas = _fixture.CreateMany<Guid>().Select(x => new AgreementStatusData(x, AgreementStatusId.ACTIVE)).ToImmutableArray();
         _validConsentData = _agreementStatusDatas.Select(x => new OfferAgreementConsentData(x.AgreementId, ConsentStatusId.ACTIVE));
         _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
