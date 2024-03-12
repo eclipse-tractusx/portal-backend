@@ -422,7 +422,7 @@ public class RegistrationController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
-    [Route("application/{applicationId}/retrigger-clearinghouse")]
+    [Route("application/{applicationId}/retrigger-validate-did")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
