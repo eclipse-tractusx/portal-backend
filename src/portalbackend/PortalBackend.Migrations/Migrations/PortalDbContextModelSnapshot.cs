@@ -3421,6 +3421,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("client_id");
 
+                    b.Property<int?>("ClientIdEncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("client_id_encryption_mode");
+
+                    b.Property<byte[]>("ClientIdInitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("client_id_initialization_vector");
+
                     b.Property<byte[]>("ClientSecret")
                         .HasColumnType("bytea")
                         .HasColumnName("client_secret");
@@ -3452,6 +3460,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Property<byte[]>("Password")
                         .HasColumnType("bytea")
                         .HasColumnName("password");
+
+                    b.Property<int?>("PasswordEncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("password_encryption_mode");
+
+                    b.Property<byte[]>("PasswordInitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("password_initialization_vector");
 
                     b.Property<Guid>("ProcessId")
                         .HasColumnType("uuid")

@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 
@@ -157,16 +158,16 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
         await foreach (var (receiver, firstName, lastName, displayNames) in companyUserWithRoleIdForCompany)
         {
             var userName = string.Join(" ", firstName, lastName);
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : receiver },
-                { "osp", ospName },
-                { "loginDocumentUrl", _settings.LoginDocumentAddress },
-                { "externalRegistrationUrl", _settings.ExternalRegistrationAddress },
-                { "closeApplicationUrl", _settings.CloseApplicationAddress },
-                { "url", _settings.BasePortalAddress },
-                { "idpAlias", string.Join(",", displayNames) }
-            };
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : receiver),
+                KeyValuePair.Create("osp", ospName),
+                KeyValuePair.Create("loginDocumentUrl", _settings.LoginDocumentAddress),
+                KeyValuePair.Create("externalRegistrationUrl", _settings.ExternalRegistrationAddress),
+                KeyValuePair.Create("closeApplicationUrl", _settings.CloseApplicationAddress),
+                KeyValuePair.Create("url", _settings.BasePortalAddress),
+                KeyValuePair.Create("idpAlias", string.Join(",", displayNames))
+            });
             _mailingProcessCreation.CreateMailProcess(receiver, "CredentialRejected", mailParameters);
         }
     }
@@ -186,32 +187,27 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
         }
 
         var companyUserId = enumerator.Current;
-        string? iamUserId;
-        IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
+
         try
         {
-            iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString())
-                .ConfigureAwait(false);
-            if (iamUserId == null)
-            {
-                throw new KeycloakEntityNotFoundException($"no user found for user {companyUserId}");
-            }
+            var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString())
+                .ConfigureAwait(false) ?? throw new KeycloakEntityNotFoundException($"no user found for user {companyUserId}");
+            await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
+
+            return await ModifyIdentityAndCreateReturnValues($"deleted user {iamUserId} for company user {companyUserId}").ConfigureAwait(false);
         }
         catch (KeycloakEntityNotFoundException) // we will ignore a not found exception and proceed with the next identity
         {
-            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, null, x => { x.UserStatusId = UserStatusId.INACTIVE; });
-            nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
-                ? Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1) // in case there are further company users eligible for remove reschedule the same stepTypeId
-                : null;
-            return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"no user found for company user id {companyUserId}");
+            return await ModifyIdentityAndCreateReturnValues($"no user found for company user id {companyUserId}").ConfigureAwait(false);
         }
 
-        await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, null, x => { x.UserStatusId = UserStatusId.INACTIVE; });
-
-        nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
-            ? Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1) // in case there are further company users eligible for remove reschedule the same stepTypeId
-            : null;
-        return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"deleted user {iamUserId} for company user {companyUserId}");
+        async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ModifyIdentityAndCreateReturnValues(string message)
+        {
+            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, null, x => { x.UserStatusId = UserStatusId.INACTIVE; });
+            var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
+                ? Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1) // in case there are further company users eligible for remove reschedule the same stepTypeId
+                : null;
+            return (nextStepTypeIds, ProcessStepStatusId.DONE, true, message);
+        }
     }
 }

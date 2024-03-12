@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -133,14 +134,14 @@ public class UserBusinessLogic : IUserBusinessLogic
                 continue;
             }
 
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "password", password ?? "" },
-                { "companyName", companyDisplayName },
-                { "nameCreatedBy", nameCreatedBy },
-                { "url", _settings.Portal.BasePortalAddress },
-                { "passwordResendUrl", _settings.Portal.PasswordResendAddress },
-            };
+                KeyValuePair.Create("password", password ?? ""),
+                KeyValuePair.Create("companyName", companyDisplayName),
+                KeyValuePair.Create("nameCreatedBy", nameCreatedBy),
+                KeyValuePair.Create("url", _settings.Portal.BasePortalAddress),
+                KeyValuePair.Create("passwordResendUrl", _settings.Portal.PasswordResendAddress),
+            });
             _mailingProcessCreation.CreateMailProcess(email, "NewUserTemplate", mailParameters);
             _mailingProcessCreation.CreateMailProcess(email, "NewUserPasswordTemplate", mailParameters);
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -210,7 +211,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         foreach (var template in mailTemplates)
         {
-            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, template, mailParameters);
+            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, template, mailParameters.ToImmutableDictionary());
         }
 
         return result.CompanyUserId;

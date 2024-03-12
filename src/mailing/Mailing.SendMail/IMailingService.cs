@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,5 +21,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 
 public interface IMailingService
 {
-    Task SendMails(string recipient, IDictionary<string, string> parameters, string template);
+    Task SendMails(string recipient, IReadOnlyDictionary<string, string> parameters, string template);
 }

@@ -101,9 +101,9 @@ public class MailingProcessTypeExecutorTests
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ProcessMessage.Should().Be("send mail to test@mail.de");
 
-        A.CallTo(() => _mailingService.SendMails(mailing1.Email, A<IDictionary<string, string>>._, mailing1.Template))
+        A.CallTo(() => _mailingService.SendMails(mailing1.Email, A<IReadOnlyDictionary<string, string>>._, mailing1.Template))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("other@email.com", A<IDictionary<string, string>>._, "test-template"))
+        A.CallTo(() => _mailingService.SendMails("other@email.com", A<IReadOnlyDictionary<string, string>>._, "test-template"))
             .MustNotHaveHappened();
     }
 
@@ -124,7 +124,7 @@ public class MailingProcessTypeExecutorTests
         // Arrange execute
         SetupFakes(processId, _fixture.Create<MailingInformation>());
         var error = _fixture.Create<TestException>();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<string>._))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IReadOnlyDictionary<string, string>>._, A<string>._))
             .Throws(error);
 
         // Act execute
@@ -155,7 +155,7 @@ public class MailingProcessTypeExecutorTests
         // Arrange execute
         SetupFakes(processId, _fixture.Create<MailingInformation>());
         var error = new SystemException(_fixture.Create<string>());
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<string>._))
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IReadOnlyDictionary<string, string>>._, A<string>._))
             .Throws(error);
 
         // Act execute

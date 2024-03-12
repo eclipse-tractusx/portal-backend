@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -39,13 +38,14 @@ public class InvitationSettings
     public string InitialLoginTheme { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
-    public string PasswordResendAddress { get; set; }
+    public string PasswordResendAddress { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)]
-    public string CloseApplicationAddress { get; set; } = null!;
+    [Required]
+    public int EncryptionConfigIndex { get; set; }
 
-    [Required(AllowEmptyStrings = false)]
-    public string EncryptionKey { get; set; } = null!;
+    [Required]
+    [DistinctValues("x => x.Index")]
+    public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
 }
 
 public static class InvitationSettingsExtension

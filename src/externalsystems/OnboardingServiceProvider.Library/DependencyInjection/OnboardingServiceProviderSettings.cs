@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
@@ -25,8 +26,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.
 public class OnboardingServiceProviderSettings
 {
     [Required]
+    [DistinctValues("x => x.Index")]
     public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
 
     [Required]
-    public int EncrptionConfigIndex { get; set; }
+    public int EncryptionConfigIndex { get; set; }
 }

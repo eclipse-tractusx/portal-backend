@@ -18,29 +18,30 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection
+namespace Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
+
+public class DimSettings : KeyVaultAuthSettings
 {
-    public class DimSettings : KeyVaultAuthSettings
-    {
-        [Required(AllowEmptyStrings = false)]
-        public string BaseAddress { get; set; } = null!;
+    [Required(AllowEmptyStrings = false)]
+    public string BaseAddress { get; set; } = null!;
 
-        [Required(AllowEmptyStrings = false)]
-        public string UniversalResolverAddress { get; set; } = null!;
+    [Required(AllowEmptyStrings = false)]
+    public string UniversalResolverAddress { get; set; } = null!;
 
-        [Required(AllowEmptyStrings = false)]
-        public string DidDocumentBaseLocation { get; set; } = null!;
+    [Required(AllowEmptyStrings = false)]
+    public string DidDocumentBaseLocation { get; set; } = null!;
 
-        [Required(AllowEmptyStrings = false)]
-        public int MaxValidationTimeInDays { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public int MaxValidationTimeInDays { get; set; }
 
-        [Required]
-        public int EncryptionConfigIndex { get; set; }
+    [Required]
+    public int EncryptionConfigIndex { get; set; }
 
-        [Required]
-        public IEnumerable<EncryptionModeConfig> EncryptionModeConfigs { get; set; } = null!;
-    }
+    [Required]
+    [DistinctValues("x => x.Index")]
+    public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
 }

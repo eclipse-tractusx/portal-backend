@@ -79,7 +79,7 @@ public class IdpManagement : IIdpManagement
         }
 
         var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(false);
-        return new(clientId, credentials.Value, serviceAccountUser.Id);
+        return (clientId, credentials.Value, serviceAccountUser.Id);
     }
 
     public async Task AddRealmRoleMappingsToUserAsync(string serviceAccountUserId)

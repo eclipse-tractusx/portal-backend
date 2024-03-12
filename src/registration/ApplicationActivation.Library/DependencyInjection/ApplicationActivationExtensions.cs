@@ -36,6 +36,7 @@ public static class ApplicationActivationExtensions
             .Bind(section)
             .Validate(ApplicationActivationSettings.Validate)
             .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
 
         return services

@@ -61,8 +61,14 @@ public class CompanyInvitation : IBaseEntity
     public string? IdpName { get; set; }
 
     public byte[]? Password { get; set; }
+    public byte[]? PasswordInitializationVector { get; set; }
+    public int? PasswordEncryptionMode { get; set; }
+
     public string? ClientId { get; set; }
     public byte[]? ClientSecret { get; set; }
+    public byte[]? ClientIdInitializationVector { get; set; }
+    public int? ClientIdEncryptionMode { get; set; }
+
     public string? ServiceAccountUserId { get; set; }
 
     public virtual Process? Process { get; private set; }

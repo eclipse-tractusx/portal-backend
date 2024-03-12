@@ -31,7 +31,7 @@ public class MailingInformation : IBaseEntity
         MailParameter = null!;
     }
 
-    public MailingInformation(Guid id, Guid processId, string email, string template, Dictionary<string, string> mailParameter, MailingStatusId mailingStatusId)
+    public MailingInformation(Guid id, Guid processId, string email, string template, IReadOnlyDictionary<string, string> mailParameter, MailingStatusId mailingStatusId)
         : this()
     {
         Id = id;
@@ -52,7 +52,7 @@ public class MailingInformation : IBaseEntity
 
     public MailingStatusId MailingStatusId { get; set; }
 
-    public Dictionary<string, string> MailParameter { get; set; }
+    public IReadOnlyDictionary<string, string> MailParameter { get; set; }
 
     public virtual Process? Process { get; private set; }
 

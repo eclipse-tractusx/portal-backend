@@ -107,12 +107,12 @@ public class MailingProcessCreationTests
             A<Guid>._,
             "TestApp@bmw",
             template.Single(),
-            A<Dictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "AppFirst AppLast")))).MustHaveHappenedOnceExactly();
+            A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "AppFirst AppLast")))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(
             A<Guid>._,
             "TestSale@bmw",
             template.Single(),
-            A<Dictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "SaleFirst SaleLast")))
+            A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "SaleFirst SaleLast")))
             ).MustHaveHappenedOnceExactly();
     }
 
@@ -147,7 +147,7 @@ public class MailingProcessCreationTests
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>.That.IsSameSequenceAs(roleData), _companyId)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustNotHaveHappened();
     }
 
     #region Setup

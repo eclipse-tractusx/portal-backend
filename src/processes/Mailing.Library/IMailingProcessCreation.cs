@@ -23,8 +23,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 
 public interface IMailingProcessCreation
 {
-    void CreateMailProcess(string email, string template, Dictionary<string, string> mailParameters);
+    void CreateMailProcess(string email, string template, IReadOnlyDictionary<string, string> mailParameters);
     Task RoleBaseSendMail(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> templates, Guid companyId);
     Task RoleBaseSendMailForIdp(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> templates, Guid identityProviderId);
-    Task<List<Guid>> GetRoleData(IEnumerable<UserRoleConfig> receiverRoles);
+    Task<IEnumerable<Guid>> GetRoleData(IEnumerable<UserRoleConfig> receiverRoles);
 }

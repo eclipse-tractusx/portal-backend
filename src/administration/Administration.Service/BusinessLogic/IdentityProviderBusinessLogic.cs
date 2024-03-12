@@ -25,8 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -36,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -400,7 +399,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var roleIds = await _mailingProcessCreation.GetRoleData(_settings.DeleteIdpRoles).ConfigureAwait(false);
         var idpLinkedData = identityProviderRepository.GetManagedIdpLinkedData(identityProviderId, roleIds.Distinct());
 
-        async IAsyncEnumerable<(string Email, Dictionary<string, string> Parameters)> DeleteLinksReturningMaildata()
+        async IAsyncEnumerable<(string Email, IReadOnlyDictionary<string, string> Parameters)> DeleteLinksReturningMaildata()
         {
             var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
             var userRepository = _portalRepositories.GetInstance<IUserRepository>();
@@ -424,18 +423,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 foreach (var userData in data.Identities.Where(i => i is { IsInUserRoles: true, Userdata.UserMail: not null }).Select(i => i.Userdata))
                 {
                     var userName = string.Join(" ", new[] { userData.FirstName, userData.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-                    var mailParameters = new Dictionary<string, string>
+                    var mailParameters = ImmutableDictionary.CreateRange(new[]
                     {
-                        {"idpAlias", alias ?? identityProviderId.ToString()},
-                        {"ownerCompanyName", ownerCompanyName},
-                        { "username", string.IsNullOrWhiteSpace(userName) ? "User" : userName }
-                    };
+                        KeyValuePair.Create("idpAlias", alias ?? identityProviderId.ToString()),
+                        KeyValuePair.Create("ownerCompanyName", ownerCompanyName),
+                        KeyValuePair.Create("username", string.IsNullOrWhiteSpace(userName) ? "User" : userName)
+                    });
                     yield return (userData.UserMail!, mailParameters);
                 }
             }
         }
 
-        foreach (var mailData in await DeleteLinksReturningMaildata().ToListAsync().ConfigureAwait(false))
+        await foreach (var mailData in DeleteLinksReturningMaildata().ConfigureAwait(false))
         {
             _mailingProcessCreation.CreateMailProcess(mailData.Email, "DeleteManagedIdp", mailData.Parameters);
         }

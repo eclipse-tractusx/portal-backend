@@ -426,7 +426,7 @@ public class RegistrationBusinessLogicTest
         entry.Comment.Should().BeNull();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
 
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
             A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
@@ -450,7 +450,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.Comment.Should().BeNull();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, null, A<Action<ApplicationChecklistEntry>>._, null)).MustHaveHappenedOnceExactly();
     }

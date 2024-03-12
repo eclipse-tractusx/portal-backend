@@ -38,6 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -528,11 +529,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 ? null
                 : new[] { ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED });
 
+        PostRegistrationCancelEmailAsync(emailData, companyName, comment);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await PostRegistrationCancelEmailAsync(emailData, companyName, comment).ConfigureAwait(false);
     }
 
-    private async Task PostRegistrationCancelEmailAsync(ICollection<EmailData> emailData, string companyName, string comment)
+    private void PostRegistrationCancelEmailAsync(ICollection<EmailData> emailData, string companyName, string comment)
     {
         if (string.IsNullOrWhiteSpace(comment))
         {
@@ -548,13 +549,13 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 throw new ConflictException($"user {userName} has no assigned email");
             }
 
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
-                { "companyName", companyName },
-                { "declineComment", comment },
-                { "helpUrl", _settings.HelpAddress }
-            };
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
+                KeyValuePair.Create("companyName", companyName),
+                KeyValuePair.Create("declineComment", comment),
+                KeyValuePair.Create("helpUrl", _settings.HelpAddress)
+            });
             _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
         }
     }

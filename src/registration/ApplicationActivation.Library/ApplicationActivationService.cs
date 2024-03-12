@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -261,16 +260,16 @@ public class ApplicationActivationService : IApplicationActivationService
                 continue;
             }
 
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
-                { "companyName", companyName },
-                { "bpn", businessPartnerNumber },
-                { "homeUrl", _settings.PortalHomeAddress },
-                { "passwordResendUrl", _settings.PasswordResendAddress },
-                { "companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress },
-                { "dataspaceUrl", _settings.DataspaceAddress }
-            };
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
+                KeyValuePair.Create("companyName", companyName),
+                KeyValuePair.Create("bpn", businessPartnerNumber),
+                KeyValuePair.Create("homeUrl", _settings.PortalHomeAddress),
+                KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
+                KeyValuePair.Create("companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress),
+                KeyValuePair.Create("dataspaceUrl", _settings.DataspaceAddress)
+            });
             _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationWelcomeTemplate", mailParameters);
         }
 

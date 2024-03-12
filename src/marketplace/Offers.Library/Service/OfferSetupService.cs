@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -386,12 +387,12 @@ public class OfferSetupService : IOfferSetupService
 
     private void SendMail(string basePortalAddress, string userName, string requesterEmail, string? offerName, OfferTypeId offerType)
     {
-        var mailParams = new Dictionary<string, string>
+        var mailParams = ImmutableDictionary.CreateRange(new[]
         {
-            {"offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "User"},
-            {"offerName", offerName ?? "unnamed Offer"},
-            {"url", basePortalAddress},
-        };
+            KeyValuePair.Create("offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "User"),
+            KeyValuePair.Create("offerName", offerName ?? "unnamed Offer"),
+            KeyValuePair.Create("url", basePortalAddress),
+        });
         _mailingProcessCreation.CreateMailProcess(requesterEmail, $"{offerType.ToString().ToLower()}-subscription-activation", mailParams);
     }
 

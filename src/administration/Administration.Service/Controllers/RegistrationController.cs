@@ -200,6 +200,7 @@ public class RegistrationController : ControllerBase
     /// <summary>
     /// Processes the dim middlelayer response
     /// </summary>
+    /// <param name="bpn">BusinessPartnerNumber for dim</param>
     /// <param name="responseData">Response data from dim</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>NoContent</returns>

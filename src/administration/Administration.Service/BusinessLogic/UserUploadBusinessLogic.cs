@@ -23,14 +23,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -154,11 +153,11 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                 continue;
             }
 
-            var mailParameters = new Dictionary<string, string>()
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "nameCreatedBy", nameCreatedBy },
-                { "url", _settings.Portal.BasePortalAddress },
-            };
+                KeyValuePair.Create("nameCreatedBy", nameCreatedBy),
+                KeyValuePair.Create("url", _settings.Portal.BasePortalAddress),
+            });
             _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, "NewUserOwnIdpTemplate", mailParameters);
 
             yield return (result.CompanyUserId, result.UserName, result.Password, null);

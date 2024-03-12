@@ -20,7 +20,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -29,8 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.Dependen
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using System.Security.Cryptography;
-using System.Text;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor;
 
@@ -95,37 +94,33 @@ public class InvitationProcessService : IInvitationProcessService
 
         var (clientId, clientSecret, serviceAccountUserId) = await _idpManagement.CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(false);
 
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-        using (var memoryStream = new MemoryStream())
-        {
-            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-            {
-                using var sw = new StreamWriter(cryptoStream, Encoding.UTF8);
-                sw.Write(clientSecret);
-            }
+        var (secret, initializationVector, encryptionMode) = Encrypt(clientSecret);
 
-            var secret = memoryStream.ToArray();
-            companyInvitationRepository.AttachAndModifyCompanyInvitation(invitationId, x =>
-                {
-                    x.ClientId = null;
-                    x.ClientSecret = null;
-                    x.ServiceAccountUserId = null;
-                },
-                x =>
-                {
-                    x.ClientId = clientId;
-                    x.ClientSecret = secret;
-                    x.ServiceAccountUserId = serviceAccountUserId;
-                });
-        }
+        companyInvitationRepository.AttachAndModifyCompanyInvitation(invitationId, x =>
+            {
+                x.ClientId = null;
+                x.ClientSecret = null;
+                x.ServiceAccountUserId = null;
+            },
+            x =>
+            {
+                x.ClientId = clientId;
+                x.ClientSecret = secret;
+                x.ClientIdInitializationVector = initializationVector;
+                x.ClientIdEncryptionMode = encryptionMode;
+                x.ServiceAccountUserId = serviceAccountUserId;
+            });
 
         companyInvitationRepository.AttachAndModifyCompanyInvitation(invitationId, x => { x.IdpName = null; }, x => { x.IdpName = idpName; });
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_ADD_REALM_ROLE, 1), ProcessStepStatusId.DONE, true, null);
+    }
+
+    private (byte[] Secret, byte[] InitializationVector, int EncryptionMode) Encrypt(string clientSecret)
+    {
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");
+        var (secret, initializationVector) = CryptoHelper.Encrypt(clientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        return (secret, initializationVector, _settings.EncryptionConfigIndex);
     }
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> AddRealmRoleMappingsToUserAsync(Guid invitationId)
@@ -146,7 +141,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> UpdateCentralIdpUrl(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (orgName, idpName, clientId, clientSecret) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
+        var (orgName, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -158,32 +153,39 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException("ClientId must not be null");
         }
 
+        var secret = Decrypt(clientSecret, initializationVector, encryptionMode);
+
+        await _idpManagement.UpdateCentralIdentityProviderUrlsAsync(idpName, orgName, _settings.InitialLoginTheme, clientId, secret).ConfigureAwait(false);
+
+        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, 1), ProcessStepStatusId.DONE, true, null);
+    }
+
+    private string Decrypt(byte[]? clientSecret, byte[]? initializationVector, int? encryptionMode)
+    {
         if (clientSecret == null)
         {
             throw new ConflictException("ClientSecret must not be null");
         }
 
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-        using (var msDecrypt = new MemoryStream(clientSecret))
+        if (encryptionMode == null)
         {
-            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            using var srDecrypt = new StreamReader(csDecrypt, Encoding.UTF8);
-            var secret = srDecrypt.ReadToEnd();
-            await _idpManagement.UpdateCentralIdentityProviderUrlsAsync(idpName, orgName, _settings.InitialLoginTheme, clientId, secret).ConfigureAwait(false);
+            throw new ConflictException("EncryptionMode must not be null");
         }
 
-        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, 1), ProcessStepStatusId.DONE, true, null);
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == encryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {encryptionMode} is not configured");
+
+        return CryptoHelper.Decrypt(clientSecret, initializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
     }
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateCentralIdpOrgMapper(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (orgName, idpName) = await companyInvitationRepository.GetIdpAndOrgNameAsync(invitationId).ConfigureAwait(false);
+        var (exists, orgName, idpName) = await companyInvitationRepository.GetIdpAndOrgName(invitationId).ConfigureAwait(false);
 
+        if (!exists)
+        {
+            throw new ConflictException($"Invitation {invitationId} does not exist");
+        }
         if (string.IsNullOrWhiteSpace(idpName))
         {
             throw new ConflictException(IdpNotSetErrorMessage);
@@ -197,7 +199,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedIdpRealm(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (orgName, idpName, clientId, clientSecret) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
+        var (orgName, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -209,25 +211,11 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException("ClientId must not be null");
         }
 
-        if (clientSecret == null)
-        {
-            throw new ConflictException("ClientSecret must not be null");
-        }
+        var secret = Decrypt(clientSecret, initializationVector, encryptionMode);
 
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-        using (var msDecrypt = new MemoryStream(clientSecret))
-        {
-            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            using var srDecrypt = new StreamReader(csDecrypt, Encoding.UTF8);
-            var secret = srDecrypt.ReadToEnd();
-            await _idpManagement
-                .CreateSharedRealmIdpClientAsync(idpName, _settings.InitialLoginTheme, orgName, clientId, secret)
-                .ConfigureAwait(false);
-        }
+        await _idpManagement
+            .CreateSharedRealmIdpClientAsync(idpName, _settings.InitialLoginTheme, orgName, clientId, secret)
+            .ConfigureAwait(false);
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT, 1), ProcessStepStatusId.DONE, true, null);
     }
@@ -235,7 +223,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedClient(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (_, idpName, clientId, clientSecret) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
+        var (_, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -247,25 +235,11 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException("ClientId must not be null");
         }
 
-        if (clientSecret == null)
-        {
-            throw new ConflictException("ClientSecret must not be null");
-        }
+        var secret = Decrypt(clientSecret, initializationVector, encryptionMode);
 
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-        using (var msDecrypt = new MemoryStream(clientSecret))
-        {
-            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            using var srDecrypt = new StreamReader(csDecrypt, Encoding.UTF8);
-            var secret = srDecrypt.ReadToEnd();
-            await _idpManagement
-                .CreateSharedClientAsync(idpName, clientId, secret)
-                .ConfigureAwait(false);
-        }
+        await _idpManagement
+            .CreateSharedClientAsync(idpName, clientId, secret)
+            .ConfigureAwait(false);
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, 1), ProcessStepStatusId.DONE, true, null);
     }
@@ -290,7 +264,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateIdpDatabase(Guid companyInvitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (exists, orgName, idpName) = await companyInvitationRepository.GetInvitationIdpCreationData(companyInvitationId).ConfigureAwait(false);
+        var (exists, orgName, idpName) = await companyInvitationRepository.GetIdpAndOrgName(companyInvitationId).ConfigureAwait(false);
         if (!exists)
         {
             throw new NotFoundException($"CompanyInvitation {companyInvitationId} does not exist");
@@ -380,37 +354,31 @@ public class InvitationProcessService : IInvitationProcessService
 
         foreach (var template in new[] { "RegistrationTemplate", "PasswordForRegistrationTemplate" })
         {
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                {"password", password ?? ""},
-                {"companyName", companyName},
-                {"url", _settings.RegistrationAppAddress},
-                {"passwordResendUrl", _settings.PasswordResendAddress},
-            };
+                KeyValuePair.Create("password", password ?? ""),
+                KeyValuePair.Create("companyName", companyName),
+                KeyValuePair.Create("url", _settings.RegistrationAppAddress),
+                KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
+            });
             _mailingProcessCreation.CreateMailProcess(userInformation.Email, template, mailParameters);
         }
 
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-        using (var memoryStream = new MemoryStream())
+        if (password != null)
         {
-            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-            {
-                using var sw = new StreamWriter(cryptoStream, Encoding.UTF8);
-                sw.Write(password);
-            }
+            var (secret, initializationVector, encryptionMode) = Encrypt(password);
 
-            var secret = memoryStream.ToArray();
             companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitationId, x =>
                 {
                     x.Password = null;
+                    x.PasswordInitializationVector = null;
+                    x.PasswordEncryptionMode = null;
                 },
                 x =>
                 {
                     x.Password = secret;
+                    x.PasswordInitializationVector = initializationVector;
+                    x.PasswordEncryptionMode = encryptionMode;
                 });
         }
 

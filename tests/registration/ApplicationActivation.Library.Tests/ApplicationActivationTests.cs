@@ -258,7 +258,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
@@ -341,7 +341,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
@@ -556,7 +556,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustNotHaveHappened();
         _notifications.Should().BeEmpty();
@@ -640,7 +640,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);

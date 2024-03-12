@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
 
 #nullable disable
 
@@ -47,8 +46,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     application_id = table.Column<Guid>(type: "uuid", nullable: true),
                     idp_name = table.Column<string>(type: "text", nullable: true),
                     password = table.Column<byte[]>(type: "bytea", nullable: true),
+                    password_initialization_vector = table.Column<byte[]>(type: "bytea", nullable: true),
+                    password_encryption_mode = table.Column<int>(type: "integer", nullable: true),
                     client_id = table.Column<string>(type: "text", nullable: true),
                     client_secret = table.Column<byte[]>(type: "bytea", nullable: true),
+                    client_id_initialization_vector = table.Column<byte[]>(type: "bytea", nullable: true),
+                    client_id_encryption_mode = table.Column<int>(type: "integer", nullable: true),
                     service_account_user_id = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>

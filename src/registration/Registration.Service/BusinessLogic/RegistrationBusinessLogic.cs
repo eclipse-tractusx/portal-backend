@@ -38,6 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
@@ -424,16 +425,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
-        var mailParameters = new Dictionary<string, string>
+        var mailParameters = ImmutableDictionary.CreateRange(new[]
         {
-            { "password", password },
-            { "companyName", companyDisplayName },
-            { "message", userCreationInfo.Message ?? "" },
-            { "nameCreatedBy", createdByName },
-            { "url", _settings.BasePortalAddress },
-            { "passwordResendUrl", _settings.PasswordResendAddress },
-            { "username", userCreationInfo.eMail },
-        };
+            KeyValuePair.Create("password", password),
+            KeyValuePair.Create("companyName", companyDisplayName),
+            KeyValuePair.Create("message", userCreationInfo.Message ?? ""),
+            KeyValuePair.Create("nameCreatedBy", createdByName),
+            KeyValuePair.Create("url", _settings.BasePortalAddress),
+            KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
+            KeyValuePair.Create("username", userCreationInfo.eMail),
+        });
 
         _mailingProcessCreation.CreateMailProcess(userCreationInfo.eMail, inviteTemplateName, mailParameters);
         _mailingProcessCreation.CreateMailProcess(userCreationInfo.eMail, "password", mailParameters);
@@ -592,10 +593,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        var mailParameters = new Dictionary<string, string>
+        var mailParameters = ImmutableDictionary.CreateRange(new[]
         {
-            { "url", $"{_settings.BasePortalAddress}"},
-        };
+            KeyValuePair.Create("url", $"{_settings.BasePortalAddress}"),
+        });
 
         if (applicationUserData.Email != null)
         {

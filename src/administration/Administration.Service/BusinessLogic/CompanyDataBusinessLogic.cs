@@ -27,7 +27,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -35,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text.Json;
 
@@ -508,16 +508,16 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         if (!string.IsNullOrWhiteSpace(data.RequesterData.RequesterEmail))
         {
             var userName = string.Join(" ", new[] { data.RequesterData.Firstname, data.RequesterData.Lastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : data.RequesterData.RequesterEmail },
-                { "requestName", typeValue },
-                { "companyName", data.CompanyName },
-                { "credentialType", typeValue },
-                {
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : data.RequesterData.RequesterEmail),
+                KeyValuePair.Create("requestName", typeValue),
+                KeyValuePair.Create("companyName", data.CompanyName),
+                KeyValuePair.Create("credentialType", typeValue),
+                KeyValuePair.Create(
                     "expiryDate", data.ExpiryDate == null ? string.Empty : data.ExpiryDate.Value.ToString("o", CultureInfo.InvariantCulture)
-                }
-            };
+                )
+            });
             _mailingProcessCreation.CreateMailProcess(data.RequesterData.RequesterEmail, "CredentialApproval", mailParameters);
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -560,15 +560,14 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         if (!string.IsNullOrWhiteSpace(requesterEmail))
         {
             var userName = string.Join(" ", new[] { requesterFirstname, requesterLastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : requesterEmail },
-                { "requestName", typeValue }
-            };
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : requesterEmail),
+                KeyValuePair.Create("requestName", typeValue)
+            });
             _mailingProcessCreation.CreateMailProcess(requesterEmail, "CredentialRejected", mailParameters);
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
     }
 
     /// <inheritdoc />

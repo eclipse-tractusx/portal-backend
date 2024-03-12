@@ -28,9 +28,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Depe
 public class ApplicationActivationSettings
 {
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ApplicationApprovalInitialRoles { get; set; } = null!;
 
     [Required]
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> CompanyAdminRoles { get; set; } = null!;
 
     /// <summary>

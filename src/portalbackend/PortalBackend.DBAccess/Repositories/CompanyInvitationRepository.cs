@@ -62,7 +62,7 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, string OrgName, string? IdpName)> GetInvitationIdpCreationData(Guid invitationId) =>
+    public Task<(bool Exists, string OrgName, string? IdpName)> GetIdpAndOrgName(Guid invitationId) =>
         _context.CompanyInvitations
             .Where(x => x.Id == invitationId)
             .Select(x => new ValueTuple<bool, string, string?>(
@@ -86,16 +86,16 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
             .Select(x => x.IdpName)
             .SingleOrDefaultAsync();
 
-    public Task<(string orgName, string? idpName, string? clientId, byte[]? clientSecret)> GetUpdateCentralIdpUrlData(Guid invitationId) =>
+    public Task<(string OrgName, string? IdpName, string? ClientId, byte[]? ClientSecret, byte[]? InitializationVector, int? EncryptionMode)> GetUpdateCentralIdpUrlData(Guid invitationId) =>
         _context.CompanyInvitations
             .Where(x => x.Id == invitationId)
-            .Select(x => new ValueTuple<string, string?, string?, byte[]?>(x.OrganisationName, x.IdpName, x.ClientId, x.ClientSecret))
-            .SingleOrDefaultAsync();
-
-    public Task<(string orgName, string? idpName)> GetIdpAndOrgNameAsync(Guid invitationId) =>
-        _context.CompanyInvitations
-            .Where(x => x.Id == invitationId)
-            .Select(x => new ValueTuple<string, string?>(x.OrganisationName, x.IdpName))
+            .Select(x => new ValueTuple<string, string?, string?, byte[]?, byte[]?, int?>(
+                x.OrganisationName,
+                x.IdpName,
+                x.ClientId,
+                x.ClientSecret,
+                x.ClientIdInitializationVector,
+                x.ClientIdEncryptionMode))
             .SingleOrDefaultAsync();
 
     public Task<string?> GetServiceAccountUserIdForInvitation(Guid invitationId) =>

@@ -158,38 +158,6 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetInvitationIdpCreationData
-
-    [Fact]
-    public async Task GetInvitationIdpCreationData_WithExistingForProcessId_ReturnsExpected()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var data = await sut.GetInvitationIdpCreationData(_invitationId).ConfigureAwait(false);
-
-        // Assert
-        data.Exists.Should().BeTrue();
-        data.OrgName.Should().Be("stark industry");
-        data.IdpName.Should().Be("test idp");
-    }
-
-    [Fact]
-    public async Task GetInvitationIdpCreationData_WithoutExistingForProcessId_ReturnsExpected()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var data = await sut.GetInvitationIdpCreationData(Guid.NewGuid()).ConfigureAwait(false);
-
-        // Assert
-        data.Exists.Should().BeFalse();
-    }
-
-    #endregion
-
     #region AttachAndModifyCompanyInvitation
 
     [Fact]
@@ -255,14 +223,14 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetUpdateCentralIdpUrlData(_invitationId).ConfigureAwait(false);
 
         // Assert
-        data.orgName.Should().Be("stark industry");
-        data.idpName.Should().Be("test idp");
-        data.clientId.Should().Be("cl1");
+        data.OrgName.Should().Be("stark industry");
+        data.IdpName.Should().Be("test idp");
+        data.ClientId.Should().Be("cl1");
     }
 
     #endregion
 
-    #region GetUpdateCentralIdpUrlData
+    #region GetIdpAndOrgName
 
     [Fact]
     public async Task GetIdpAndOrgNameAsync_WithExistingForProcessId_ReturnsExpected()
@@ -271,11 +239,25 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetIdpAndOrgNameAsync(_invitationId).ConfigureAwait(false);
+        var data = await sut.GetIdpAndOrgName(_invitationId).ConfigureAwait(false);
 
         // Assert
-        data.orgName.Should().Be("stark industry");
-        data.idpName.Should().Be("test idp");
+        data.Exists.Should().BeTrue();
+        data.OrgName.Should().Be("stark industry");
+        data.IdpName.Should().Be("test idp");
+    }
+
+    [Fact]
+    public async Task GetInvitationIdpCreationData_WithoutExistingForProcessId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var data = await sut.GetIdpAndOrgName(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        data.Exists.Should().BeFalse();
     }
 
     #endregion

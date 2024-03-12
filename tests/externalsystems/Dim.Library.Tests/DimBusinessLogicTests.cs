@@ -69,7 +69,7 @@ public class DimBusinessLogicTests
         {
             DidDocumentBaseLocation = "https://example.org/did",
             EncryptionConfigIndex = 1,
-            EncryptionModeConfigs = new[] { new EncryptionModeConfig() { Index = 1, EncryptionKey = Convert.ToHexString(_encryptionKey), CipherMode = System.Security.Cryptography.CipherMode.CBC, PaddingMode = System.Security.Cryptography.PaddingMode.PKCS7 } },
+            EncryptionConfigs = new[] { new EncryptionModeConfig() { Index = 1, EncryptionKey = Convert.ToHexString(_encryptionKey), CipherMode = System.Security.Cryptography.CipherMode.CBC, PaddingMode = System.Security.Cryptography.PaddingMode.PKCS7 } },
         });
 
         A.CallTo(() => portalRepository.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);

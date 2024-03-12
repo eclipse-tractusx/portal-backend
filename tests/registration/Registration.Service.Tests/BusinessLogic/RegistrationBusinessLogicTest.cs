@@ -1552,7 +1552,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(_existingApplicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<string>._, A<Dictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName)))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<string>._, A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName)))
             .MustHaveHappened();
         application.DateLastChanged.Should().Be(now);
     }
@@ -1585,7 +1585,7 @@ public class RegistrationBusinessLogicTest
         error.Message.Should().Be("email must not be empty");
 
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
     }
 
@@ -1616,7 +1616,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _userRepository.IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
     }
 
@@ -1652,7 +1652,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
     }
 
@@ -2596,7 +2596,7 @@ public class RegistrationBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened();
         result.Should().BeTrue();
         application.DateLastChanged.Should().Be(now);
@@ -2647,7 +2647,7 @@ public class RegistrationBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         result.Should().BeTrue();
         application.DateLastChanged.Should().Be(now);

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -27,16 +26,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class ServiceAccountSettings
 {
-    public ServiceAccountSettings()
-    {
-        ClientId = null!;
-    }
-
     /// <summary>
     /// Service account clientId.
     /// </summary>
     [Required(AllowEmptyStrings = false)]
-    public string ClientId { get; set; }
+    public string ClientId { get; set; } = null!;
 }
 
 public static class ServiceAccountSettingsExtensions

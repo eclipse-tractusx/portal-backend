@@ -172,9 +172,9 @@ public class UserBusinessLogicTests
         var result = await sut.CreateOwnCompanyUsersAsync(userList).ToListAsync().ConfigureAwait(false);
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedANumberOfTimesMatching(times => times == userList.Length);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedANumberOfTimesMatching(times => times == userList.Length);
 
         result.Should().NotBeNull()
@@ -298,9 +298,9 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedANumberOfTimesMatching(times => times == 4);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedANumberOfTimesMatching(times => times == 4);
 
         result.Should().HaveCount(4);
@@ -349,9 +349,9 @@ public class UserBusinessLogicTests
         ))).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedANumberOfTimesMatching(times => times == 2);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedANumberOfTimesMatching(times => times == 2);
 
         error.Should().BeSameAs(expected);
@@ -380,7 +380,7 @@ public class UserBusinessLogicTests
 
         var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp).ConfigureAwait(false);
         result.Should().NotBe(Guid.Empty);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>.That.IsEqualTo(userCreationInfoIdp.Email), A<string>._, A<Dictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName)))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>.That.IsEqualTo(userCreationInfoIdp.Email), A<string>._, A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName)))
             .MustHaveHappened();
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
     }
@@ -441,7 +441,7 @@ public class UserBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
     }
 
@@ -468,7 +468,7 @@ public class UserBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
     }
 

@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -106,7 +105,7 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(0);
         result.Total.Should().Be(0);
         result.Errors.Should().BeEmpty();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
     }
 
@@ -131,7 +130,7 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(0);
         result.Total.Should().Be(5);
         result.Errors.Should().BeEmpty();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(5, Times.Exactly);
     }
 
@@ -202,7 +201,7 @@ public class UserUploadBusinessLogicTests
                 x.Parameters.Count() == 2 &&
                 x.Parameters.First(p => p.Name == "userName").Value == "foo" &&
                 x.Parameters.First(p => p.Name == "realm").Value == "bar");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(4, Times.Exactly);
     }
 
@@ -234,7 +233,7 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(1);
         result.Total.Should().Be(5);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == "at least one role must be specified");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(4, Times.Exactly);
     }
 
@@ -259,7 +258,7 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(1);
         result.Total.Should().Be(5);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == "value for LastName type string expected (Parameter 'document')");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(4, Times.Exactly);
     }
 
@@ -291,7 +290,7 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(1);
         result.Total.Should().Be(3);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == _error.Message);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(2, Times.Exactly);
     }
 
@@ -337,7 +336,7 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(0);
         result.Total.Should().Be(5);
         result.Errors.Should().BeEmpty();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
     }
 

@@ -234,11 +234,11 @@ public class NetworkRegistrationHandlerTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(user2.CompanyUserId, A<Action<Identity>>._, A<Action<Identity>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("tony@stark.com", "CredentialRejected", A<Dictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1")))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("tony@stark.com", "CredentialRejected", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1")))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("steven@strange.com", "CredentialRejected", A<Dictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1")))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("steven@strange.com", "CredentialRejected", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1")))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("foo@bar.com", "CredentialRejected", A<Dictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2")))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("foo@bar.com", "CredentialRejected", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2")))
             .MustHaveHappenedOnceExactly();
 
         result.modified.Should().BeFalse();

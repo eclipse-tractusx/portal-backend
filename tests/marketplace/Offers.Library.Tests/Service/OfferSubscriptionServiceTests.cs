@@ -596,7 +596,7 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _agreementRepository.GetAgreementIdsForOfferAsync(A<Guid>.That.Matches(id => id == _existingOfferId || id == _existingOfferWithFailingAutoSetupId || id == _existingOfferWithoutDetailsFilled || id == _existingOfferIdWithoutProviderEmail)))
             .Returns(_agreementStatusDatas.ToAsyncEnumerable());
         A.CallTo(() => _agreementRepository.GetAgreementIdsForOfferAsync(A<Guid>.That.Not.Matches(id => id == _existingOfferId || id == _existingOfferWithFailingAutoSetupId || id == _existingOfferWithoutDetailsFilled || id == _existingOfferIdWithoutProviderEmail)))
-            .Returns(_fixture.CreateMany<AgreementStatusData>().ToAsyncEnumerable());
+            .Returns(_fixture.CreateMany<Guid>().Select(x => new AgreementStatusData(x, AgreementStatusId.ACTIVE)).ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(new[] { Guid.NewGuid() }.ToAsyncEnumerable());

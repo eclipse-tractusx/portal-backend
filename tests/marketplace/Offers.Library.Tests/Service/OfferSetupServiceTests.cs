@@ -242,7 +242,7 @@ public class OfferSetupServiceTests
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         if (!isSingleInstance)
         {
-            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, $"{offerTypeId.ToString().ToLower()}-subscription-activation", A<Dictionary<string, string>>._))
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, $"{offerTypeId.ToString().ToLower()}-subscription-activation", A<IReadOnlyDictionary<string, string>>._))
                 .MustHaveHappenedOnceExactly();
         }
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1215,11 +1215,11 @@ public class OfferSetupServiceTests
             .MustHaveHappenedOnceExactly();
         if (string.IsNullOrWhiteSpace(requesterEmail))
         {
-            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustNotHaveHappened();
         }
         else
         {
-            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(requesterEmail, A<string>._, A<Dictionary<string, string>>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(requesterEmail, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustHaveHappenedOnceExactly();
         }
     }
 
@@ -1279,11 +1279,11 @@ public class OfferSetupServiceTests
             .MustHaveHappenedOnceExactly();
         if (string.IsNullOrWhiteSpace(requesterEmail))
         {
-            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustNotHaveHappened();
         }
         else
         {
-            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(requesterEmail, A<string>._, A<Dictionary<string, string>>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _mailingProcessCreation.CreateMailProcess(requesterEmail, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustHaveHappenedOnceExactly();
         }
     }
 

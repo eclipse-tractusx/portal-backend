@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 
@@ -31,6 +32,8 @@ public static class DimServiceCollectionExtension
     {
         services.AddOptions<DimSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         services.AddTransient<LoggingHandler<DimService>>();
 

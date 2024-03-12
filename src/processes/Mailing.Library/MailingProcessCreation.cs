@@ -34,7 +34,7 @@ public class MailingProcessCreation : IMailingProcessCreation
         _portalRepositories = portalRepositories;
     }
 
-    public void CreateMailProcess(string email, string template, Dictionary<string, string> mailParameters)
+    public void CreateMailProcess(string email, string template, IReadOnlyDictionary<string, string> mailParameters)
     {
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
@@ -61,7 +61,7 @@ public class MailingProcessCreation : IMailingProcessCreation
         await CreateMailProcesses(parameters, userNameParameter, templates, companyUserWithRoleIdForIdp);
     }
 
-    public async Task<List<Guid>> GetRoleData(IEnumerable<UserRoleConfig> receiverRoles)
+    public async Task<IEnumerable<Guid>> GetRoleData(IEnumerable<UserRoleConfig> receiverRoles)
     {
         var receiverUserRoles = receiverRoles;
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();

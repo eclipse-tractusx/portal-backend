@@ -108,12 +108,12 @@ public class RoleBaseMailServiceTests
             A<Guid>._,
             "TestApp@bmw",
             template.Single(),
-            A<Dictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "AppFirst AppLast")))).MustHaveHappenedOnceExactly();
+            A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "AppFirst AppLast")))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(
             A<Guid>._,
             "TestSale@bmw",
             template.Single(),
-            A<Dictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "SaleFirst SaleLast")))
+            A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "SaleFirst SaleLast")))
             ).MustHaveHappenedOnceExactly();
     }
 
@@ -148,7 +148,7 @@ public class RoleBaseMailServiceTests
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>.That.IsSameSequenceAs(roleData), _companyId)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustNotHaveHappened();
     }
 
     #endregion
@@ -196,13 +196,13 @@ public class RoleBaseMailServiceTests
             A<Guid>._,
             "TestIt@bmw",
             template,
-            A<Dictionary<string, string>>.That.Matches(x => x.Count() == (hasUserNameParameter ? 3 : 2) && x["idpAlias"] == idpAlias && x["ownerCompanyName"] == ownerCompanyName && (!hasUserNameParameter || x["username"] == "ItFirst ItLast"))
+            A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.Count() == (hasUserNameParameter ? 3 : 2) && x["idpAlias"] == idpAlias && x["ownerCompanyName"] == ownerCompanyName && (!hasUserNameParameter || x["username"] == "ItFirst ItLast"))
             )).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(
             A<Guid>._,
             "TestCompany@bmw",
             template,
-            A<Dictionary<string, string>>.That.Matches(x => x.Count() == (hasUserNameParameter ? 3 : 2) && x["idpAlias"] == idpAlias && x["ownerCompanyName"] == ownerCompanyName && (!hasUserNameParameter || x["username"] == "CompanyFirst CompanyLast"))
+            A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.Count() == (hasUserNameParameter ? 3 : 2) && x["idpAlias"] == idpAlias && x["ownerCompanyName"] == ownerCompanyName && (!hasUserNameParameter || x["username"] == "CompanyFirst CompanyLast"))
             )).MustHaveHappenedOnceExactly();
     }
 
@@ -234,7 +234,7 @@ public class RoleBaseMailServiceTests
         ex.Message.Should().Be($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(receiverRoles))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.GetCompanyUserEmailForIdpWithoutOwnerAndRoleId(A<IEnumerable<Guid>>.That.IsSameSequenceAs(roleData), _idpId)).MustNotHaveHappened();
-        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustNotHaveHappened();
     }
 
     #region Setup

@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -1190,7 +1189,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1214,7 +1213,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Credential {alreadyActiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1238,7 +1237,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Bpn should be set for company {approvalData.CompanyName}");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1264,7 +1263,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1328,7 +1327,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(recipientMail, "CredentialApproval", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(recipientMail, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
@@ -1455,7 +1454,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
@@ -1500,7 +1499,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1521,7 +1520,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Credential {alreadyInactiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1557,7 +1556,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.RejectCredential(_validCredentialId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
@@ -1599,7 +1598,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.RejectCredential(_validCredentialId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 

@@ -27,8 +27,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -906,7 +904,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(company.Id, identityProviderId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("test@example.org", "DeleteManagedIdp", A<Dictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("test@example.org", "DeleteManagedIdp", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedOnceExactly();
         company.CompanyStatusId.Should().Be(multipleIdps ? CompanyStatusId.ACTIVE : CompanyStatusId.INACTIVE);
         if (multipleIdps)
