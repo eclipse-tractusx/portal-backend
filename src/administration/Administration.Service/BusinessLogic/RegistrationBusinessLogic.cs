@@ -27,6 +27,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -55,6 +57,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IDimBusinessLogic _dimBusinessLogic;
+    private readonly IIssuerComponentBusinessLogic _issuerComponentBusinessLogic;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
@@ -66,6 +69,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
         IDimBusinessLogic dimBusinessLogic,
+        IIssuerComponentBusinessLogic issuerComponentBusinessLogic,
         IProvisioningManager provisioningManager,
         IMailingProcessCreation mailingProcessCreation,
         ILogger<RegistrationBusinessLogic> logger)
@@ -76,6 +80,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
         _dimBusinessLogic = dimBusinessLogic;
+        _issuerComponentBusinessLogic = issuerComponentBusinessLogic;
         _provisioningManager = provisioningManager;
         _mailingProcessCreation = mailingProcessCreation;
         _logger = logger;
@@ -591,5 +596,38 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
+    }
+
+    /// <inheritdoc />
+    public async Task ProcessIssuerBpnResponseAsync(IssuerResponseData data, CancellationToken cancellationToken)
+    {
+        var applicationId = await GetApplicationIdByBpn(data, cancellationToken);
+
+        await _issuerComponentBusinessLogic.StoreBpnlCredential(applicationId, data).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task ProcessIssuerMembershipResponseAsync(IssuerResponseData data, CancellationToken cancellationToken)
+    {
+        var applicationId = await GetApplicationIdByBpn(data, cancellationToken);
+        await _issuerComponentBusinessLogic.StoreMembershipCredential(applicationId, data).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private async Task<Guid> GetApplicationIdByBpn(IssuerResponseData data, CancellationToken cancellationToken)
+    {
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.Bpn.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (!result.Any())
+        {
+            throw new NotFoundException($"No companyApplication for BPN {data.Bpn} is not in status SUBMITTED");
+        }
+
+        if (result.Count > 1)
+        {
+            throw new ConflictException($"more than one companyApplication in status SUBMITTED found for BPN {data.Bpn} [{string.Join(", ", result)}]");
+        }
+
+        return result.Single();
     }
 }

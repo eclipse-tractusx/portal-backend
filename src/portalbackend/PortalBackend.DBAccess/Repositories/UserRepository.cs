@@ -518,6 +518,15 @@ public class UserRepository : IUserRepository
         modify.Invoke(updatedEntity);
     }
 
+    public Task<(bool Exists, string? RecipientMail)> GetUserMailData(Guid companyUserId) =>
+        _dbContext.CompanyUsers
+            .Where(x => x.Id == companyUserId)
+            .Select(x => new ValueTuple<bool, string?>(true, x.Email))
+            .SingleOrDefaultAsync();
+
+    public Task<bool> CheckUserExists(Guid companyUserId) =>
+        _dbContext.CompanyUsers.AnyAsync(x => x.Id == companyUserId);
+
     public IAsyncEnumerable<Guid> GetNextIdentitiesForNetworkRegistration(Guid networkRegistrationId, IEnumerable<UserStatusId> validUserStates) =>
         _dbContext.CompanyUsers
             .Where(cu =>

@@ -490,6 +490,25 @@ public class ApplicationRepository : IApplicationRepository
                     .Select(ps => ps.DateCreated)))
             .SingleOrDefaultAsync();
 
+    public Task<(bool exists, string? holder, string? businessPartnerNumber, WalletInformation? walletInformation)> GetBpnlCredentialIformationByApplicationId(Guid applicationId) =>
+        _dbContext.CompanyApplications
+            .Where(ca => ca.Id == applicationId)
+            .Select(ca => new { Company = ca.Company!, Wallet = ca.Company!.CompanyWalletData })
+            .Select(c => new ValueTuple<bool, string?, string?, WalletInformation?>(
+                true,
+                c.Company.DidDocumentLocation,
+                c.Company.BusinessPartnerNumber,
+                c.Wallet == null ?
+                    null :
+                    new WalletInformation(
+                        c.Wallet.ClientId,
+                        c.Wallet.ClientSecret,
+                        c.Wallet.InitializationVector,
+                        c.Wallet.EncryptionMode,
+                        c.Wallet.AuthenticationServiceUrl
+                    )))
+            .SingleOrDefaultAsync();
+
     public Task<(bool Exists, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId)> GetCompanyIdForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .Where(a => a.Id == applicationId)
