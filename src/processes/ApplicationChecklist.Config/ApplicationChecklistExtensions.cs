@@ -25,10 +25,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 
 public static class ApplicationChecklistExtensions
 {
@@ -40,9 +41,11 @@ public static class ApplicationChecklistExtensions
             .AddCustodianService(section.GetSection("Custodian"))
             .AddClearinghouseService(section.GetSection("Clearinghouse"))
             .AddSdFactoryService(section.GetSection("SdFactory"))
-            .AddDimService(section.GetSection("Dim"));
+            .AddDimService(section.GetSection("Dim"))
+            .AddIssuerComponentService(section.GetSection("IssuerComponent"));
 
-    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services) =>
+    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services, IConfigurationSection section) =>
         services
+            .ConfigureApplicationChecklistSettings(section)
             .AddTransient<IApplicationChecklistCreationService, ApplicationChecklistCreationService>();
 }

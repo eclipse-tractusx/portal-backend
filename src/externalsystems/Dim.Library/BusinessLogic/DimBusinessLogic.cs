@@ -96,6 +96,7 @@ public class DimBusinessLogic : IDimBusinessLogic
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
 
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(result.CompanyId, c => c.DidDocumentLocation = null, c => c.DidDocumentLocation = $"{_settings.DidDocumentBaseLocation}/{businessPartnerNumber}/did.json");
         await _dimService.CreateWalletAsync(companyName, businessPartnerNumber, $"{_settings.DidDocumentBaseLocation}/{businessPartnerNumber}/did.json", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -192,7 +193,7 @@ public class DimBusinessLogic : IDimBusinessLogic
                 {
                     checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
                 },
-                new[] { ProcessStepTypeId.START_CLEARING_HOUSE },
+                new[] { ProcessStepTypeId.REQUEST_BPN_CREDENTIAL },
                 null,
                 true,
                 null);
@@ -200,7 +201,6 @@ public class DimBusinessLogic : IDimBusinessLogic
 
         // Do stuff
         var maxTime = dateCreated.AddDays(_settings.MaxValidationTimeInDays);
-
         return _dateTimeProvider.OffsetNow > maxTime
             ? new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.FAILED,

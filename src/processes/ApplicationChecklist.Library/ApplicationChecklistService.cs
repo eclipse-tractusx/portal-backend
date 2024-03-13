@@ -63,6 +63,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
         {
             throw new ConflictException($"application {applicationId} checklist entry {entryTypeId}, process step {processStepTypeId} is not eligible to run");
         }
+
         return checklistData.CreateManualChecklistProcessStepData(applicationId, entryTypeId, processStep);
     }
 

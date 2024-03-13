@@ -71,4 +71,10 @@ public interface INotificationBusinessLogic
     /// </summary>
     /// <param name="notificationId">Id of the notification that should be deleted</param>
     Task DeleteNotificationAsync(Guid notificationId);
+
+    /// <summary>
+    /// Creates a notification with the given data
+    /// </summary>
+    /// <param name="data">The notification request data</param>
+    Task CreateNotification(NotificationRequest data);
 }

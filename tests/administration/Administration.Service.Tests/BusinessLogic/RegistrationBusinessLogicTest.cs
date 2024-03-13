@@ -27,6 +27,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -74,6 +76,7 @@ public class RegistrationBusinessLogicTest
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
+    private readonly IIssuerComponentBusinessLogic _issuerComponentBusinessLogic;
     private readonly IDocumentRepository _documentRepository;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IDimBusinessLogic _dimBusinessLogic;
@@ -102,6 +105,7 @@ public class RegistrationBusinessLogicTest
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _dimBusinessLogic = A.Fake<IDimBusinessLogic>();
         _checklistService = A.Fake<IApplicationChecklistService>();
+        _issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
         _provisioningManager = A.Fake<IProvisioningManager>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
@@ -113,7 +117,7 @@ public class RegistrationBusinessLogicTest
 
         var logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _provisioningManager, _mailingProcessCreation, logger);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _issuerComponentBusinessLogic, _provisioningManager, _mailingProcessCreation, logger);
     }
 
     #region GetCompanyApplicationDetailsAsync
@@ -345,7 +349,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _options.Value).Returns(new RegistrationSettings { UseDimWallet = useDimWallet });
         var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForUpdateCompanyBpn(entry);
-        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, _provisioningManager, null!, null!);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, _provisioningManager, null!, null!);
 
         // Act
         await logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn);
@@ -422,7 +426,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
-        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!, null!);
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForApproveRegistrationVerification(entry);
 
@@ -861,6 +865,110 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _dimBusinessLogic.ProcessDimResponse(BusinessPartnerNumber, data, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region ProcessIssuerBpnResponseAsync
+
+    [Fact]
+    public async Task ProcessIssuerBpnResponseAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _applicationRepository.GetSubmittedApplicationIdsByBpn(BusinessPartnerNumber))
+            .Returns(Enumerable.Repeat(ApplicationId, 1).ToAsyncEnumerable());
+
+        // Act
+        var data = new IssuerResponseData(BusinessPartnerNumber, IssuerResponseStatus.SUCCESSFUL, "test Message");
+        await _logic.ProcessIssuerBpnResponseAsync(data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _issuerComponentBusinessLogic.StoreBpnlCredential(ApplicationId, data))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ProcessIssuerBpnResponseAsync_WithMultipleApplications_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _applicationRepository.GetSubmittedApplicationIdsByBpn(BusinessPartnerNumber))
+            .Returns(new[] { CompanyId, Guid.NewGuid() }.ToAsyncEnumerable());
+
+        // Act
+        var data = new IssuerResponseData(BusinessPartnerNumber, IssuerResponseStatus.SUCCESSFUL, "test Message");
+        async Task Act() => await _logic.ProcessIssuerBpnResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Contain($"more than one companyApplication in status SUBMITTED found for BPN {BusinessPartnerNumber}");
+    }
+
+    [Fact]
+    public async Task ProcessIssuerBpnResponseAsync_WithNoApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        A.CallTo(() => _applicationRepository.GetSubmittedApplicationIdsByBpn(BusinessPartnerNumber))
+            .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
+
+        // Act
+        var data = new IssuerResponseData(BusinessPartnerNumber, IssuerResponseStatus.SUCCESSFUL, "test Message");
+        async Task Act() => await _logic.ProcessIssuerBpnResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Contain($"No companyApplication for BPN {BusinessPartnerNumber} is not in status SUBMITTED");
+    }
+
+    #endregion
+
+    #region ProcessIssuerMembershipResponseAsync
+
+    [Fact]
+    public async Task ProcessIssuerMembershipResponseAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _applicationRepository.GetSubmittedApplicationIdsByBpn(BusinessPartnerNumber))
+            .Returns(Enumerable.Repeat(ApplicationId, 1).ToAsyncEnumerable());
+
+        // Act
+        var data = new IssuerResponseData(BusinessPartnerNumber, IssuerResponseStatus.SUCCESSFUL, "test Message");
+        await _logic.ProcessIssuerMembershipResponseAsync(data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _issuerComponentBusinessLogic.StoreMembershipCredential(ApplicationId, data))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ProcessIssuerMembershipResponseAsync_WithMultipleApplications_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _applicationRepository.GetSubmittedApplicationIdsByBpn(BusinessPartnerNumber))
+            .Returns(new[] { CompanyId, Guid.NewGuid() }.ToAsyncEnumerable());
+
+        // Act
+        var data = new IssuerResponseData(BusinessPartnerNumber, IssuerResponseStatus.SUCCESSFUL, "test Message");
+        async Task Act() => await _logic.ProcessIssuerMembershipResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Contain($"more than one companyApplication in status SUBMITTED found for BPN {BusinessPartnerNumber}");
+    }
+
+    [Fact]
+    public async Task ProcessIssuerMembershipResponseAsync_WithNoApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        A.CallTo(() => _applicationRepository.GetSubmittedApplicationIdsByBpn(BusinessPartnerNumber))
+            .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
+
+        // Act
+        var data = new IssuerResponseData(BusinessPartnerNumber, IssuerResponseStatus.SUCCESSFUL, "test Message");
+        async Task Act() => await _logic.ProcessIssuerMembershipResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Contain($"No companyApplication for BPN {BusinessPartnerNumber} is not in status SUBMITTED");
     }
 
     #endregion

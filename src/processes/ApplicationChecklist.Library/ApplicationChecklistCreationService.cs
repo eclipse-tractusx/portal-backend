@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -27,10 +28,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Lib
 public class ApplicationChecklistCreationService : IApplicationChecklistCreationService
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly ApplicationChecklistSettings _settings;
 
-    public ApplicationChecklistCreationService(IPortalRepositories portalRepositories)
+    public ApplicationChecklistCreationService(IPortalRepositories portalRepositories, IOptions<ApplicationChecklistSettings> options)
     {
         _portalRepositories = portalRepositories;
+        _settings = options.Value;
     }
 
     /// <inheritdoc />
@@ -49,7 +52,7 @@ public class ApplicationChecklistCreationService : IApplicationChecklistCreation
 
     private IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> CreateEntries(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds, string? bpn)
     {
-        var missingEntries = Enum.GetValues<ApplicationChecklistEntryTypeId>()
+        var missingEntries = GetApplicationChecklistTypes()
             .Except(existingChecklistEntryTypeIds);
         if (missingEntries.Any())
         {
@@ -58,7 +61,20 @@ public class ApplicationChecklistCreationService : IApplicationChecklistCreation
                 .CreateChecklistForApplication(applicationId, newEntries);
             return newEntries;
         }
+
         return Enumerable.Empty<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>();
+    }
+
+    private IEnumerable<ApplicationChecklistEntryTypeId> GetApplicationChecklistTypes()
+    {
+        if (_settings.UseDimWallet)
+            return Enum.GetValues<ApplicationChecklistEntryTypeId>();
+
+        return Enum.GetValues<ApplicationChecklistEntryTypeId>().Except(new[]
+        {
+            ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL,
+            ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL
+        });
     }
 
     private static ApplicationChecklistEntryStatusId GetInitialChecklistStatus(ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, string? bpn) =>
