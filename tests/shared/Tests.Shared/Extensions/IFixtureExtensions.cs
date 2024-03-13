@@ -28,6 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 public static class AutoFixtureExtensions
 {
+    public static readonly string OrgNameRegex = @"[a-z]{40}";
     public static readonly string EmailRegex = @"[a-z]{20}@[a-z]{10}\.[a-z]{2}";
     public static readonly string NameRegex = @"^[a-z]{20}$";
 
@@ -48,5 +49,10 @@ public static class AutoFixtureExtensions
     public static IPostprocessComposer<T> WithNamePattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
     {
         return composer.With(propertyPicker, new SpecimenContext(composer).Resolve(new RegularExpressionRequest(NameRegex)));
+    }
+
+    public static IPostprocessComposer<T> WithOrgNamePattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
+    {
+        return composer.With(propertyPicker, new SpecimenContext(composer).Resolve(new RegularExpressionRequest(OrgNameRegex)));
     }
 }

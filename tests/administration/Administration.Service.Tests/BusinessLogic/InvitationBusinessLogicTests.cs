@@ -94,10 +94,11 @@ public class InvitationBusinessLogicTests
         var processes = new List<Process>();
         var processSteps = new List<ProcessStep>();
         var invitations = new List<CompanyInvitation>();
+
         SetupFakesForInvite(processes, processSteps, invitations);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.OrganisationName, _fixture.Create<string>())
+            .WithOrgNamePattern(x => x.OrganisationName)
             .With(x => x.UserName, "testUserName")
             .WithNamePattern(x => x.FirstName)
             .WithNamePattern(x => x.LastName)
