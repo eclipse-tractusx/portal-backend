@@ -821,9 +821,9 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOfferReleaseDataById
 
     [Theory]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA9", "Test App", "Catena-X", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", false, false)]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7", "Latest App", "Catena-X", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", true, true)]
-    public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected(Guid offerId, string name, string companyName, Guid companyId, bool hasTechnicalUserProfiles, bool hasPrivacyPolicies)
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA9", "Test App", "Catena-X", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", false)]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7", "Latest App", "Catena-X", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", true)]
+    public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected(Guid offerId, string name, string companyName, Guid companyId, bool hasPrivacyPolicies)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
@@ -838,7 +838,6 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.CompanyName.Should().Be(companyName);
         result!.ProviderCompanyId.Should().Be(companyId);
         result.HasPrivacyPolicies.Should().Be(hasPrivacyPolicies);
-        result.HasTechnicalUserProfiles.Should().Be(hasTechnicalUserProfiles);
     }
 
     #endregion

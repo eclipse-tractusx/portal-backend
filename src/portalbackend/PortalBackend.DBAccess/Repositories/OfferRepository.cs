@@ -335,7 +335,6 @@ public class OfferRepository : IOfferRepository
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
                 o.OfferDescriptions.Any(description => description.DescriptionShort == ""),
                 o.UserRoles.Any(),
-                o.TechnicalUserProfiles.Any(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()),
                 o.OfferAssignedPrivacyPolicies.Any(),
                 o.Documents.Where(doc => doc.DocumentStatusId == DocumentStatusId.PENDING || doc.DocumentStatusId == DocumentStatusId.LOCKED)
                     .Select(doc => new ValueTuple<Guid, DocumentStatusId, DocumentTypeId>(doc.Id, doc.DocumentStatusId, doc.DocumentTypeId))

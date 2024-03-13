@@ -631,7 +631,7 @@ public class OfferServiceTests
     public async Task SubmitOffer_WithInvalidOffer_ThrowsConflictException(string? name, string? providerCompanyId, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
     {
         // Arrange
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
 
         // Act
         async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
@@ -702,7 +702,6 @@ public class OfferServiceTests
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
             .With(x => x.HasPrivacyPolicies, true)
-            .With(x => x.HasTechnicalUserProfiles, true)
             .With(x => x.DocumentDatas, new[] {
                 (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS),
                 (Guid.NewGuid(), DocumentStatusId.INACTIVE, DocumentTypeId.APP_LEADIMAGE),
@@ -755,29 +754,6 @@ public class OfferServiceTests
     }
 
     [Fact]
-    public async Task SubmitOffer_WithInvalidTechnicalUserProfiles_ThrowsConflictException()
-    {
-        // Arrange
-        var data = _fixture.Build<OfferReleaseData>()
-            .With(x => x.IsDescriptionLongNotSet, false)
-            .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.HasUserRoles, true)
-            .With(x => x.HasTechnicalUserProfiles, false)
-            .With(x => x.DocumentDatas, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
-            .Create();
-
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
-        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService, _logger);
-
-        // Act
-        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        result.Message.Should().StartWith("Technical user profile setup is missing for the app");
-    }
-
-    [Fact]
     public async Task SubmitOffer_WithInvalidPrivacyPolicies_ThrowsConflictException()
     {
         // Arrange
@@ -785,7 +761,6 @@ public class OfferServiceTests
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
             .With(x => x.HasUserRoles, true)
-            .With(x => x.HasTechnicalUserProfiles, true)
             .With(x => x.HasPrivacyPolicies, false)
             .With(x => x.DocumentDatas, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
             .Create();
@@ -985,7 +960,7 @@ public class OfferServiceTests
     public async Task SubmitService_WithInvalidOffer_ThrowsConflictException(string? name, string? providerCompanyId, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
     {
         // Arrange
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
 
         // Act
         async Task Act() => await _sut.SubmitServiceAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>()).ConfigureAwait(false);
