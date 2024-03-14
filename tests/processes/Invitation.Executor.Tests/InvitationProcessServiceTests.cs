@@ -661,7 +661,6 @@ public class InvitationProcessServiceTests
         var result = await _sut.CreateUser(companyInvitation.Id, CancellationToken.None).ConfigureAwait(false);
 
         // Act
-        companyInvitation.Password.Should().NotBeNull();
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);

@@ -29,7 +29,7 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240312153158_CPLP-3383-AddNewProcesses")]
+    [Migration("20240314113057_CPLP-3383-AddNewProcesses")]
     partial class CPLP3383AddNewProcesses
     {
         /// <inheritdoc />
@@ -3424,14 +3424,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("client_id");
 
-                    b.Property<int?>("ClientIdEncryptionMode")
-                        .HasColumnType("integer")
-                        .HasColumnName("client_id_encryption_mode");
-
-                    b.Property<byte[]>("ClientIdInitializationVector")
-                        .HasColumnType("bytea")
-                        .HasColumnName("client_id_initialization_vector");
-
                     b.Property<byte[]>("ClientSecret")
                         .HasColumnType("bytea")
                         .HasColumnName("client_secret");
@@ -3440,6 +3432,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("email");
+
+                    b.Property<int?>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -3450,6 +3446,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("idp_name");
 
+                    b.Property<byte[]>("InitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("text")
@@ -3459,18 +3459,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("organisation_name");
-
-                    b.Property<byte[]>("Password")
-                        .HasColumnType("bytea")
-                        .HasColumnName("password");
-
-                    b.Property<int?>("PasswordEncryptionMode")
-                        .HasColumnType("integer")
-                        .HasColumnName("password_encryption_mode");
-
-                    b.Property<byte[]>("PasswordInitializationVector")
-                        .HasColumnType("bytea")
-                        .HasColumnName("password_initialization_vector");
 
                     b.Property<Guid>("ProcessId")
                         .HasColumnType("uuid")
@@ -5118,10 +5106,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("email");
 
-                    b.Property<string>("MailParameter")
+                    b.Property<int>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
+
+                    b.Property<byte[]>("InitializationVector")
                         .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("mail_parameter");
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
+                    b.Property<byte[]>("MailParameters")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("mail_parameters");
 
                     b.Property<int>("MailingStatusId")
                         .HasColumnType("integer")

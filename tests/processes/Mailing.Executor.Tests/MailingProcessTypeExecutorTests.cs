@@ -17,11 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.Tests;
 
@@ -32,6 +38,7 @@ public class MailingProcessTypeExecutorTests
     private readonly IFixture _fixture;
     private readonly IEnumerable<ProcessStepTypeId> _executableSteps;
     private readonly IMailingService _mailingService;
+    private readonly byte[] _encryptionKey;
 
     public MailingProcessTypeExecutorTests()
     {
@@ -47,7 +54,24 @@ public class MailingProcessTypeExecutorTests
         A.CallTo(() => portalRepositories.GetInstance<IMailingInformationRepository>())
             .Returns(_mailingInformationRepository);
 
-        _executor = new MailingProcessTypeExecutor(portalRepositories, _mailingService);
+        _encryptionKey = _fixture.CreateMany<byte>(32).ToArray();
+
+        var settings = new MailingProcessCreationSettings
+        {
+            EncryptionConfigIndex = 1,
+            EncryptionConfigs = new[]
+            {
+                new EncryptionModeConfig
+                {
+                    Index = 1,
+                    EncryptionKey = Convert.ToHexString(_encryptionKey),
+                    CipherMode = CipherMode.CBC,
+                    PaddingMode = PaddingMode.PKCS7
+                }
+            }
+        };
+
+        _executor = new MailingProcessTypeExecutor(portalRepositories, _mailingService, Options.Create(settings));
 
         _executableSteps = Enumerable.Repeat(ProcessStepTypeId.SEND_MAIL, 1);
     }
@@ -88,8 +112,12 @@ public class MailingProcessTypeExecutorTests
         // Arrange
         var mailingId1 = Guid.NewGuid();
         var mailingId2 = Guid.NewGuid();
-        var mailing1 = new MailingInformation(mailingId1, processId, "test@mail.de", "test-template", new Dictionary<string, string>(), MailingStatusId.PENDING);
-        var mailing2 = new MailingInformation(mailingId2, processId, "other@mail.de", "test-template", new Dictionary<string, string>(), MailingStatusId.PENDING);
+
+        var (mailParameters1, encryptedParameters1, initializationVector1) = CreateMailParameters();
+        var (mailParameters2, encryptedParameters2, initializationVector2) = CreateMailParameters();
+
+        var mailing1 = new MailingInformation(mailingId1, processId, "test@mail.de", "test-template", encryptedParameters1, initializationVector1, 1, MailingStatusId.PENDING);
+        var mailing2 = new MailingInformation(mailingId2, processId, "other@mail.de", "test-template", encryptedParameters2, initializationVector2, 1, MailingStatusId.PENDING);
         SetupFakes(processId, mailing1, mailing2);
 
         // Act
@@ -101,7 +129,7 @@ public class MailingProcessTypeExecutorTests
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ProcessMessage.Should().Be("send mail to test@mail.de");
 
-        A.CallTo(() => _mailingService.SendMails(mailing1.Email, A<IReadOnlyDictionary<string, string>>._, mailing1.Template))
+        A.CallTo(() => _mailingService.SendMails(mailing1.Email, A<IReadOnlyDictionary<string, string>>.That.IsSameSequenceAs(mailParameters1), mailing1.Template))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails("other@email.com", A<IReadOnlyDictionary<string, string>>._, "test-template"))
             .MustNotHaveHappened();
@@ -122,7 +150,8 @@ public class MailingProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange execute
-        SetupFakes(processId, _fixture.Create<MailingInformation>());
+        var (_, encryptedParameters, initializationVector) = CreateMailParameters();
+        SetupFakes(processId, _fixture.Build<MailingInformation>().With(x => x.MailParameters, encryptedParameters).With(x => x.InitializationVector, initializationVector).With(x => x.EncryptionMode, 1).Create());
         var error = _fixture.Create<TestException>();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IReadOnlyDictionary<string, string>>._, A<string>._))
             .Throws(error);
@@ -153,7 +182,8 @@ public class MailingProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange execute
-        SetupFakes(processId, _fixture.Create<MailingInformation>());
+        var (_, encryptedParameters, initializationVector) = CreateMailParameters();
+        SetupFakes(processId, _fixture.Build<MailingInformation>().With(x => x.MailParameters, encryptedParameters).With(x => x.InitializationVector, initializationVector).With(x => x.EncryptionMode, 1).Create());
         var error = new SystemException(_fixture.Create<string>());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IReadOnlyDictionary<string, string>>._, A<string>._))
             .Throws(error);
@@ -232,10 +262,17 @@ public class MailingProcessTypeExecutorTests
 
     #region Setup
 
+    private (IReadOnlyDictionary<string, string> Parameters, byte[] EncryptedParameters, byte[] InitializationVector) CreateMailParameters()
+    {
+        var mailParameters = _fixture.Create<Dictionary<string, string>>();
+        var (encryptedParameters, initializationVector) = CryptoHelper.Encrypt(JsonSerializer.Serialize(mailParameters), _encryptionKey, CipherMode.CBC, PaddingMode.PKCS7);
+        return (mailParameters, encryptedParameters, initializationVector);
+    }
+
     private void SetupFakes(Guid id, params MailingInformation[] mailingInformation)
     {
         A.CallTo(() => _mailingInformationRepository.GetMailingInformationForProcess(id))
-            .Returns(mailingInformation.Select(x => (x.Id, x.Email, x.Template, x.MailParameter)).ToAsyncEnumerable());
+            .Returns(mailingInformation.Select(x => (x.Id, x.Email, x.Template, x.MailParameters, x.InitializationVector, x.EncryptionMode)).ToAsyncEnumerable());
 
         A.CallTo(() => _mailingInformationRepository.AttachAndModifyMailingInformation(A<Guid>.That.Matches(x => mailingInformation.Any(y => y.Id == x)), A<Action<MailingInformation>>._, A<Action<MailingInformation>>._))
             .Invokes((Guid id, Action<MailingInformation> initialize, Action<MailingInformation> setOptionalFields) =>

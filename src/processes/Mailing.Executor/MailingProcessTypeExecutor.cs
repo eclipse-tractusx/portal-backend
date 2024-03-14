@@ -17,13 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor;
 
@@ -31,14 +35,16 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
+    private readonly MailingProcessCreationSettings _settings;
 
     private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps = ImmutableArray.Create(ProcessStepTypeId.SEND_MAIL);
     private Guid _processId;
 
-    public MailingProcessTypeExecutor(IPortalRepositories portalRepositories, IMailingService mailingService)
+    public MailingProcessTypeExecutor(IPortalRepositories portalRepositories, IMailingService mailingService, IOptions<MailingProcessCreationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
+        _settings = options.Value;
     }
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.MAILING;
@@ -81,10 +87,16 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
         var mailingRepository = _portalRepositories.GetInstance<IMailingInformationRepository>();
         var mailingInformation = mailingRepository.GetMailingInformationForProcess(_processId);
         await using var enumerator = mailingInformation.GetAsyncEnumerator();
+
         if (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
-            var (id, mail, template, mailParameter) = enumerator.Current;
-            await _mailingService.SendMails(mail, mailParameter, template).ConfigureAwait(false);
+            var (id, mail, template, mailParameters, initializationVector, encryptionMode) = enumerator.Current;
+
+            await _mailingService.SendMails(
+                mail,
+                DecryptMailParameters(mailParameters, initializationVector, encryptionMode),
+                template).ConfigureAwait(false);
+
             mailingRepository.AttachAndModifyMailingInformation(id,
                 i =>
                 {
@@ -105,4 +117,16 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex) =>
         (ProcessStepStatusId.FAILED, ex.Message, Enumerable.Repeat(ProcessStepTypeId.RETRIGGER_SEND_MAIL, 1));
+
+    private IReadOnlyDictionary<string, string> DecryptMailParameters(byte[] mailParameters, byte[] initializationVector, int encryptionMode)
+    {
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == encryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {encryptionMode} is not configured");
+        return JsonSerializer.Deserialize<Dictionary<string, string>>(
+            CryptoHelper.Decrypt(
+                mailParameters,
+                initializationVector,
+                Convert.FromHexString(cryptoConfig.EncryptionKey),
+                cryptoConfig.CipherMode,
+                cryptoConfig.PaddingMode)) ?? throw new ConflictException("failed to deserialize mailParameters");
+    }
 }

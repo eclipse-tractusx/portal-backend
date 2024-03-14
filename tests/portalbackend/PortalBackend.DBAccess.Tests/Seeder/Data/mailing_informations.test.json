@@ -5,6 +5,8 @@
     "email": "test@email.de",
     "template": "CredentialRejected",
     "mailing_status_id": 1,
-    "mail_parameter": {"userName": "tony stark", "requestName": "Traceability Framework"}
+    "mail_parameters": "gb2FVMfdE06kq7tY/b0iCeAJiYAktW+99RaTF9BlNNtsZLV5DDn6vJSDn4XovXviM16ZqM+B7Bxm6btufh6rfYGbXhqbJ+U5YwzW82WdMWw=",
+    "initialization_vector": "ehGUJhkI3HP5Y61hiY2QqQ==",
+    "encryption_mode": 1
   }
 ]

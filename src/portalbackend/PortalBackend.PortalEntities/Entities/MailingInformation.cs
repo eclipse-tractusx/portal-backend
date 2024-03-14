@@ -24,21 +24,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class MailingInformation : IBaseEntity
 {
-    private MailingInformation()
-    {
-        Email = null!;
-        Template = null!;
-        MailParameter = null!;
-    }
-
-    public MailingInformation(Guid id, Guid processId, string email, string template, IReadOnlyDictionary<string, string> mailParameter, MailingStatusId mailingStatusId)
-        : this()
+    public MailingInformation(Guid id, Guid processId, string email, string template, byte[] mailParameters, byte[] initializationVector, int encryptionMode, MailingStatusId mailingStatusId)
     {
         Id = id;
         ProcessId = processId;
         Email = email;
         Template = template;
-        MailParameter = mailParameter;
+        MailParameters = mailParameters;
+        InitializationVector = initializationVector;
+        EncryptionMode = encryptionMode;
         MailingStatusId = mailingStatusId;
     }
 
@@ -52,7 +46,9 @@ public class MailingInformation : IBaseEntity
 
     public MailingStatusId MailingStatusId { get; set; }
 
-    public IReadOnlyDictionary<string, string> MailParameter { get; set; }
+    public byte[] MailParameters { get; set; }
+    public byte[] InitializationVector { get; set; }
+    public int EncryptionMode { get; set; }
 
     public virtual Process? Process { get; private set; }
 

@@ -23,7 +23,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IMailingInformationRepository
 {
-    IAsyncEnumerable<(Guid Id, string EmailAddress, string Template, IReadOnlyDictionary<string, string> MailParameter)> GetMailingInformationForProcess(Guid processId);
+    IAsyncEnumerable<(Guid Id, string EmailAddress, string Template, byte[] MailParameters, byte[] InitializationVector, int EncryptionMode)> GetMailingInformationForProcess(Guid processId);
     void AttachAndModifyMailingInformation(Guid id, Action<MailingInformation> initialize, Action<MailingInformation> setFields);
-    MailingInformation CreateMailingInformation(Guid processId, string email, string template, IReadOnlyDictionary<string, string> mailParameter);
+    MailingInformation CreateMailingInformation(Guid processId, string email, string template, byte[] mailParameters, byte[] initializationVector, int encryptionMode);
 }

@@ -94,8 +94,8 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
                 x.IdpName,
                 x.ClientId,
                 x.ClientSecret,
-                x.ClientIdInitializationVector,
-                x.ClientIdEncryptionMode))
+                x.InitializationVector,
+                x.EncryptionMode))
             .SingleOrDefaultAsync();
 
     public Task<string?> GetServiceAccountUserIdForInvitation(Guid invitationId) =>

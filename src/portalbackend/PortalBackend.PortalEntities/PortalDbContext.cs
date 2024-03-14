@@ -22,10 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEnti
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 using System.Collections.Immutable;
-using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -1580,9 +1578,6 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<MailingInformation>(entity =>
         {
             entity.HasKey(x => x.Id);
-
-            entity.Property(p => p.MailParameter)
-                .HasJsonConversion();
 
             entity.HasOne(x => x.Process)
                 .WithOne(x => x.MailingInformation)

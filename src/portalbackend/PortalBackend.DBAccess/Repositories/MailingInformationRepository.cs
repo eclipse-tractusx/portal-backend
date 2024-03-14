@@ -32,25 +32,27 @@ public class MailingInformationRepository : IMailingInformationRepository
         _context = context;
     }
 
-    public IAsyncEnumerable<(Guid Id, string EmailAddress, string Template, IReadOnlyDictionary<string, string> MailParameter)> GetMailingInformationForProcess(Guid processId) =>
+    public IAsyncEnumerable<(Guid Id, string EmailAddress, string Template, byte[] MailParameters, byte[] InitializationVector, int EncryptionMode)> GetMailingInformationForProcess(Guid processId) =>
         _context.MailingInformations.Where(x => x.ProcessId == processId && x.MailingStatusId == MailingStatusId.PENDING)
-            .Select(x => new ValueTuple<Guid, string, string, IReadOnlyDictionary<string, string>>(
+            .Select(x => new ValueTuple<Guid, string, string, byte[], byte[], int>(
                     x.Id,
                     x.Email,
                     x.Template,
-                    x.MailParameter
+                    x.MailParameters,
+                    x.InitializationVector,
+                    x.EncryptionMode
                 ))
             .ToAsyncEnumerable();
 
-    public MailingInformation CreateMailingInformation(Guid processId, string email, string template, IReadOnlyDictionary<string, string> mailParameter)
+    public MailingInformation CreateMailingInformation(Guid processId, string email, string template, byte[] mailParameters, byte[] initializationVector, int encryptionMode)
     {
-        var mailingInformation = new MailingInformation(Guid.NewGuid(), processId, email, template, mailParameter, MailingStatusId.PENDING);
+        var mailingInformation = new MailingInformation(Guid.NewGuid(), processId, email, template, mailParameters, initializationVector, encryptionMode, MailingStatusId.PENDING);
         return _context.Add(mailingInformation).Entity;
     }
 
     public void AttachAndModifyMailingInformation(Guid id, Action<MailingInformation> initialize, Action<MailingInformation> setFields)
     {
-        var mailingInformation = new MailingInformation(id, Guid.Empty, null!, null!, null!, default);
+        var mailingInformation = new MailingInformation(id, Guid.Empty, null!, null!, null!, null!, int.MinValue, default);
         initialize.Invoke(mailingInformation);
         _context.Attach(mailingInformation);
         setFields.Invoke(mailingInformation);

@@ -106,8 +106,8 @@ public class InvitationProcessService : IInvitationProcessService
             {
                 x.ClientId = clientId;
                 x.ClientSecret = secret;
-                x.ClientIdInitializationVector = initializationVector;
-                x.ClientIdEncryptionMode = encryptionMode;
+                x.InitializationVector = initializationVector;
+                x.EncryptionMode = encryptionMode;
                 x.ServiceAccountUserId = serviceAccountUserId;
             });
 
@@ -362,24 +362,6 @@ public class InvitationProcessService : IInvitationProcessService
                 KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
             });
             _mailingProcessCreation.CreateMailProcess(userInformation.Email, template, mailParameters);
-        }
-
-        if (password != null)
-        {
-            var (secret, initializationVector, encryptionMode) = Encrypt(password);
-
-            companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitationId, x =>
-                {
-                    x.Password = null;
-                    x.PasswordInitializationVector = null;
-                    x.PasswordEncryptionMode = null;
-                },
-                x =>
-                {
-                    x.Password = secret;
-                    x.PasswordInitializationVector = initializationVector;
-                    x.PasswordEncryptionMode = encryptionMode;
-                });
         }
 
         _portalRepositories.GetInstance<IApplicationRepository>().CreateInvitation(applicationId.Value, companyUserId);

@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
+    <ProjectReference Include="..\Mailing.Library\Mailing.Library.csproj" />
   </ItemGroup>
 
 </Project>

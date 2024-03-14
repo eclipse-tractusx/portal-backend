@@ -45,13 +45,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     process_id = table.Column<Guid>(type: "uuid", nullable: false),
                     application_id = table.Column<Guid>(type: "uuid", nullable: true),
                     idp_name = table.Column<string>(type: "text", nullable: true),
-                    password = table.Column<byte[]>(type: "bytea", nullable: true),
-                    password_initialization_vector = table.Column<byte[]>(type: "bytea", nullable: true),
-                    password_encryption_mode = table.Column<int>(type: "integer", nullable: true),
                     client_id = table.Column<string>(type: "text", nullable: true),
                     client_secret = table.Column<byte[]>(type: "bytea", nullable: true),
-                    client_id_initialization_vector = table.Column<byte[]>(type: "bytea", nullable: true),
-                    client_id_encryption_mode = table.Column<int>(type: "integer", nullable: true),
+                    initialization_vector = table.Column<byte[]>(type: "bytea", nullable: true),
+                    encryption_mode = table.Column<int>(type: "integer", nullable: true),
                     service_account_user_id = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -94,7 +91,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     email = table.Column<string>(type: "text", nullable: false),
                     template = table.Column<string>(type: "text", nullable: false),
                     mailing_status_id = table.Column<int>(type: "integer", nullable: false),
-                    mail_parameter = table.Column<string>(type: "jsonb", nullable: false)
+                    mail_parameters = table.Column<byte[]>(type: "bytea", nullable: false),
+                    initialization_vector = table.Column<byte[]>(type: "bytea", nullable: false),
+                    encryption_mode = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {

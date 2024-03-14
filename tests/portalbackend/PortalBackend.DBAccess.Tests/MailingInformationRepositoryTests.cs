@@ -18,11 +18,14 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Security.Cryptography;
+using System.Text.Json;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -30,14 +33,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly IFixture _fixture;
     private readonly Guid _processId = new("44927361-3766-4f07-9f18-860158880d86");
     public MailingInformationRepositoryTests(TestDbFixture testDbFixture)
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -48,12 +52,20 @@ public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
+        var encryptionKey = Convert.FromHexString("7769F42A68708AD145CEE5F5FAFD8734B396C15660A28FE8C6F9BBDB1044986C");
 
         // Act
         var data = await sut.GetMailingInformationForProcess(_processId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        data.Should().ContainSingle().And.Satisfy(x => x.Template == "CredentialRejected" && x.EmailAddress == "test@email.de");
+        data.Should().ContainSingle().And.Satisfy(x => x.Template == "CredentialRejected" && x.EmailAddress == "test@email.de" && x.EncryptionMode == 1);
+
+        var mailingInformation = data.Single();
+        var mailParameters = JsonSerializer.Deserialize<Dictionary<string, string>>(CryptoHelper.Decrypt(mailingInformation.MailParameters, mailingInformation.InitializationVector, encryptionKey, CipherMode.CBC, PaddingMode.PKCS7));
+        mailParameters.Should().HaveCount(2).And.Satisfy(
+            x => x.Key == "userName" && x.Value == "tony stark",
+            x => x.Key == "requestName" && x.Value == "Traceability Framework"
+        );
     }
 
     [Fact]
@@ -78,7 +90,10 @@ public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
-        var mailingInformation = sut.CreateMailingInformation(_processId, "test@email.de", "test mail", new Dictionary<string, string>());
+        var mailParameters = _fixture.CreateMany<byte>(64).ToArray();
+        var initializationVector = _fixture.CreateMany<byte>(64).ToArray();
+
+        var mailingInformation = sut.CreateMailingInformation(_processId, "test@email.de", "test mail", mailParameters, initializationVector, 1);
 
         // Assert
         mailingInformation.Id.Should().NotBeEmpty();
@@ -86,7 +101,12 @@ public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().Should().ContainSingle()
             .Which.Entity.Should().BeOfType<MailingInformation>()
-            .Which.Email.Should().Be("test@email.de");
+            .Which.Should().Match<MailingInformation>(x =>
+                x.Email == "test@email.de" &&
+                x.ProcessId == _processId &&
+                x.MailParameters.SequenceEqual(mailParameters) &&
+                x.InitializationVector.SequenceEqual(initializationVector) &&
+                x.EncryptionMode == 1);
     }
 
     #endregion

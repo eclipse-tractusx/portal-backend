@@ -22,12 +22,17 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Service.Tests;
 
@@ -42,6 +47,7 @@ public class MailingProcessCreationTests
     private readonly IProcessStepRepository _processStepRepository;
     private readonly Guid _companyId;
     private readonly IEnumerable<Guid> _userRoleIds;
+    private readonly byte[] _encryptionKey;
     private readonly MailingProcessCreation _sut;
 
     public MailingProcessCreationTests()
@@ -61,7 +67,23 @@ public class MailingProcessCreationTests
 
         SetupRepositories();
 
-        _sut = new MailingProcessCreation(_portalRepositories);
+        _encryptionKey = _fixture.CreateMany<byte>(32).ToArray();
+
+        var settings = new MailingProcessCreationSettings
+        {
+            EncryptionConfigIndex = 1,
+            EncryptionConfigs = new[]
+            {
+                new EncryptionModeConfig
+                {
+                    Index = 1,
+                    CipherMode = CipherMode.CBC,
+                    PaddingMode = PaddingMode.PKCS7,
+                    EncryptionKey = Convert.ToHexString(_encryptionKey)
+                }
+            }
+        };
+        _sut = new MailingProcessCreation(_portalRepositories, Options.Create(settings));
     }
 
     [Theory]
@@ -95,6 +117,16 @@ public class MailingProcessCreationTests
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, A<Guid>._))
             .Returns(companyUserData.ToAsyncEnumerable());
 
+        var mailingInformations = new List<MailingInformation>();
+
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<byte[]>._, A<byte[]>._, A<int>._))
+            .ReturnsLazily((Guid processId, string email, string template, byte[] mailParameters, byte[] initializationVector, int encryptionMode) =>
+            {
+                var instance = new MailingInformation(Guid.NewGuid(), processId, email, template, mailParameters, initializationVector, encryptionMode, MailingStatusId.PENDING);
+                mailingInformations.Add(instance);
+                return instance;
+            });
+
         // Act
         await _sut.RoleBaseSendMail(receiverRoles, mailParams, userNameParam, template, _companyId);
 
@@ -103,17 +135,14 @@ public class MailingProcessCreationTests
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>.That.IsSameSequenceAs(_userRoleIds), _companyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING)).MustHaveHappenedTwiceExactly();
         A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, A<Guid>._)).MustHaveHappenedTwiceExactly();
-        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(
-            A<Guid>._,
-            "TestApp@bmw",
-            template.Single(),
-            A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "AppFirst AppLast")))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(
-            A<Guid>._,
-            "TestSale@bmw",
-            template.Single(),
-            A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "SaleFirst SaleLast")))
-            ).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, "TestApp@bmw", template.Single(), A<byte[]>._, A<byte[]>._, 1)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, "TestSale@bmw", template.Single(), A<byte[]>._, A<byte[]>._, 1)).MustHaveHappenedOnceExactly();
+
+        mailingInformations.Select(x => JsonSerializer.Deserialize<Dictionary<string, string>>(CryptoHelper.Decrypt(x.MailParameters, x.InitializationVector, _encryptionKey, CipherMode.CBC, PaddingMode.PKCS7))).ToList()
+            .Should().HaveCount(2).And.Satisfy(
+                x => x != null && x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "AppFirst AppLast"),
+                x => x != null && x.Count == (hasUserNameParameter ? 3 : 2) && x["offerName"] == offerName && x["url"] == BasePortalUrl && (!hasUserNameParameter || x["offerProviderName"] == "SaleFirst SaleLast")
+            );
     }
 
     [Fact]
@@ -147,7 +176,7 @@ public class MailingProcessCreationTests
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>.That.IsSameSequenceAs(roleData), _companyId)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.MAILING)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingInformationRepository.CreateMailingInformation(A<Guid>._, A<string>._, A<string>._, A<byte[]>._, A<byte[]>._, A<int>._)).MustNotHaveHappened();
     }
 
     #region Setup
