@@ -31,7 +31,6 @@
     <ItemGroup>
       <ProjectReference Include="..\..\framework\Framework.HttpClientExtensions\Framework.HttpClientExtensions.csproj" />
       <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
-      <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
       <ProjectReference Include="..\..\processes\Mailing.Library\Mailing.Library.csproj" />

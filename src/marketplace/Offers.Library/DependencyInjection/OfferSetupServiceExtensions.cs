@@ -21,7 +21,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.DependencyInjection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
@@ -37,7 +36,6 @@ public static class OfferSetupServiceCollectionExtension
             .AddTransient<IOfferService, OfferService>()
             .AddTransient<IOfferSetupService, OfferSetupService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-            .AddMailingProcessCreation()
             .AddOfferSubscriptionProcess();
     }
 }

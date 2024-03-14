@@ -45,7 +45,6 @@ public static class MailingProcessCreationSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateDistinctValues(section)
-            .ValidateEnumEnumeration(section)
             .ValidateOnStart();
         return services;
     }

@@ -17,13 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 
 public static class MailingProcessCreationDependencyInjection
 {
-    public static IServiceCollection AddMailingProcessCreation(this IServiceCollection services) =>
+    public static IServiceCollection AddMailingProcessCreation(this IServiceCollection services, IConfigurationSection section) =>
         services
-            .AddTransient<IMailingProcessCreation, MailingProcessCreation>();
+            .AddTransient<IMailingProcessCreation, MailingProcessCreation>()
+            .ConfigureMailingProcessCreationSettings(section);
 }
