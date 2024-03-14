@@ -33,12 +33,12 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [main,chore/introduce-codeql]
-    # paths:
-    #   - 'src/**'
+    branches: [main]
+    paths:
+      - 'src/**'
   pull_request:
-    # paths:
-    #   - 'src/**'
+    paths:
+      - 'src/**'
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
