@@ -198,11 +198,12 @@ public class UserBusinessLogic : IUserBusinessLogic
             { "companyName", displayName },
             { "nameCreatedBy", nameCreatedBy },
             { "url", _settings.Portal.BasePortalAddress },
+            { "idpAlias", displayName },
         };
 
         var mailTemplates = companyNameIdpAliasData.IsSharedIdp
             ? new[] { "NewUserTemplate", "NewUserPasswordTemplate" }
-            : new[] { "NewUserOwnIdpTemplate" };
+            : new[] { "NewUserExternalIdpTemplate" };
 
         if (companyNameIdpAliasData.IsSharedIdp)
         {

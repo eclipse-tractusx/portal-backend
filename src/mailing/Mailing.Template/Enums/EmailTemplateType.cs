@@ -114,10 +114,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
         ServiceRequestDecline,
 
         /// <summary>
-        /// Email template for new users being created on own idp
+        /// Email template for new users being created on external idp
         /// </summary>
-        [Path("new_user_account_externalIdP.html")]
-        NewUserAccountOwnIdp,
+        [Path("new_user_account_external_idp.html")]
+        NewUserAccountExternalIdp,
 
         /// <summary>
         /// Email template for credential approvals
